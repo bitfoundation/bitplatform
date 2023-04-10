@@ -5,21 +5,21 @@
      @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-txt-wrapper">
+    <div class="wrapper">
         @if (LabelTemplate is not null)
         {
-            <label class="bit-txt-label" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="label @LabelClass" id="@_labelId" for="@_textFieldId">
                 @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label style="@LabelStyle" class="bit-txt-label @LabelClass" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="label @LabelClass" id="@_labelId" for="@_textFieldId">
                 @Label
             </label>
         }
 
-        <div class="bit-txt-field-grp">
+        <div class="field-grp">
             @if (PrefixTemplate is not null)
             {
                 <span>
@@ -40,14 +40,14 @@
                           style="@InputStyle"
                           class="txt-field @InputClass"
                           rows="@Rows"
-                          disabled=@(!IsEnabled)
+                          disabled=@(IsEnabled is false)
                           readonly=@IsReadonly
                           required=@IsRequired
                           placeholder="@Placeholder"
                           maxlength="@MaxLength"
                           aria-label="@AriaLabel"
                           aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                          aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
+                          aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
                           @onclick="@HandleOnClick"
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
@@ -65,7 +65,7 @@
                        @attributes="InputHtmlAttributes"
                        style="@InputStyle"
                        class="txt-field @InputClass"
-                       disabled=@(!IsEnabled)
+                       disabled=@(IsEnabled is false)
                        readonly=@IsReadonly
                        required=@IsRequired
                        type="@_inputType"
@@ -74,7 +74,7 @@
                        maxlength="@MaxLength"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                       aria-aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
+                       aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
                        autocomplete="@AutoComplete"
                        @onclick="@HandleOnClick"
                        @onfocusin="@HandleOnFocusIn"

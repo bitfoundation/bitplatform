@@ -17,7 +17,7 @@
         position: relative;
         flex-grow: 1;
         margin-bottom: spacing(1);
-        border: spacing(0.125) solid $color-neutrals-gray20;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray20;
         border-radius: spacing(0.25);
         outline: none;
         box-sizing: border-box;
@@ -50,7 +50,7 @@
         position: absolute;
         width: spacing(2.5);
         height: spacing(2.5);
-        border: spacing(0.125) solid $color-neutrals-gray110;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray110;
         border-radius: 50%;
         box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
         transform: translate(-50%,-50%);
@@ -59,7 +59,7 @@
         &::before {
             position: absolute;
             inset: 0;
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
             border-radius: 50%;
             box-sizing: border-box;
             content: "";
@@ -78,7 +78,7 @@
         position: relative;
         width: 100%;
         height: spacing(2.5);
-        border: spacing(0.125) solid $color-neutrals-gray30;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray30;
         border-radius: spacing(0.25);
         margin-bottom: spacing(1);
         outline: none;
@@ -98,9 +98,9 @@
             width: spacing(2.5);
             height: spacing(2.5);
             border-radius: 50%;
-            border: spacing(0.125) solid $color-neutrals-gray110;
+            border: $shape-border-width $shape-border-style $color-neutrals-gray110;
             box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             cursor: pointer;
             -webkit-appearance: none;
             appearance: none;
@@ -110,9 +110,9 @@
             width: spacing(2.5);
             height: spacing(2.5);
             border-radius: 50%;
-            border: spacing(0.125) solid $color-neutrals-gray110;
+            border: $shape-border-width $shape-border-style $color-neutrals-gray110;
             box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             cursor: pointer;
         }
     }
@@ -125,6 +125,6 @@
         width: spacing(6);
         height: spacing(6);
         margin-left: spacing(1);
-        border: spacing(0.125) solid $color-neutrals-gray60;
+        border: $shape-border-width $shape-border-style $color-neutrals-gray60;
     }
 }

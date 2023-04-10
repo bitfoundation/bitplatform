@@ -20,7 +20,7 @@
         box-sizing: border-box;
         border-radius: $shape-border-radius;
         border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         cursor: pointer;
         text-align: center;
         -moz-appearance: textfield; // Firefox
@@ -35,13 +35,13 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .input {
             background-color: $color-neutrals-gray30;
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .input {
             outline: none;
             border: spacing(0.25) $shape-border-style $color-state-invalid;

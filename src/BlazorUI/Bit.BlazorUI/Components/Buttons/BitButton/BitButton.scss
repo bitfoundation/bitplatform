@@ -4,8 +4,8 @@
     position: relative;
     min-width: spacing(8);
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
@@ -13,7 +13,7 @@
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
 
-    &.disabled {
+    &.bit-dis {
         border-color: $color-border-disabled;
         color: $color-text-disabled;
         background-color: $color-action-disabled;
@@ -22,8 +22,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -38,8 +38,8 @@
     }
 
     &.primary {
+        color: $color-text-secondary;
         border-color: $color-border-primary;
-        color: $color-text-primary;
         background-color: $color-primary-main;
 
         &:hover {
@@ -62,7 +62,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
     }
 
     &.large {

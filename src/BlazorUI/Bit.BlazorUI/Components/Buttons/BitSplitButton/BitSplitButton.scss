@@ -4,12 +4,12 @@
     position: relative;
     display: inline-flex;
     min-width: spacing(10);
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     outline: transparent;
     -webkit-font-smoothing: antialiased;
 
-    &.disabled {
+    &.bit-dis {
         .operator-btn, .chevron-btn {
             border-color: $color-border-disabled;
             color: $color-text-disabled;
@@ -37,8 +37,8 @@
 
     &.standard {
         .operator-btn, .chevron-btn {
+            color: $color-text-primary;
             border-color: $color-border-secondary;
-            color: $color-text-secondary;
             background-color: $color-secondary-main;
 
             &:hover {
@@ -62,8 +62,8 @@
 
     &.primary {
         .operator-btn, .chevron-btn {
+            color: $color-text-secondary;
             border-color: $color-border-primary;
-            color: $color-text-primary;
             background-color: $color-primary-main;
 
             &:hover {
@@ -96,7 +96,7 @@
 
     &.medium {
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
 
         .operator-btn {
             padding: spacing(0.5) spacing(2);
@@ -125,7 +125,7 @@
         border-style: $shape-border-style;
         border-radius: $shape-border-radius;
 
-        &.disabled {
+        &.bit-dis {
             border-color: $color-border-disabled;
             color: $color-text-disabled;
             background-color: $color-action-disabled;
@@ -158,7 +158,7 @@
         background-color: $color-neutrals-gray60;
 
         &.primary {
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
         }
     }
 
@@ -170,7 +170,7 @@
         box-sizing: border-box;
         border-radius: 0 0 spacing(0.25) spacing(0.25);
         box-shadow: rgba(0, 0, 0, 0.13) 0px spacing(0.4) spacing(0.9) 0px, rgba(0, 0, 0, 0.11) 0px spacing(0.075) spacing(0.225) 0px;
-        animation-name: bit-splb-open-callout-y;
+        animation-name: bit-fade-show, bit-slide-down;
         animation-duration: 0.367s;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
@@ -189,13 +189,13 @@
 
     .item {
         display: flex;
+        color: $color-text-primary;
         background-color: transparent;
         width: 100%;
         align-items: center;
         text-align: left;
         cursor: pointer;
         border: none;
-        color: $color-text-secondary;
         gap: spacing(1);
         line-height: inherit;
         font-size: inherit;
@@ -213,7 +213,7 @@
             white-space: nowrap;
         }
 
-        &.disabled {
+        &.bit-dis {
             cursor: default;
             color: $color-text-disabled;
 
@@ -221,19 +221,5 @@
                 color: $color-text-disabled;
             }
         }
-    }
-}
-
-@keyframes bit-splb-open-callout-y {
-    0% {
-        opacity: 0;
-        transform: translate3d(0px, spacing(-1.25), 0px);
-        pointer-events: none;
-    }
-
-    100% {
-        opacity: 1;
-        transform: translate3d(0px, 0px, 0px);
-        pointer-events: auto;
     }
 }

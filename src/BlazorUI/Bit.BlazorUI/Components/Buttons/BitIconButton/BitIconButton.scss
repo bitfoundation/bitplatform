@@ -3,8 +3,8 @@
 .bit-icob {
     display: inline-block;
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
@@ -35,7 +35,7 @@
         background-color: $color-neutrals-gray20;
     }
 
-    &.disabled {
+    &.bit-dis {
         background: $color-neutrals-gray20;
         color: $color-neutrals-gray90;
         border-width: $shape-border-width;
@@ -56,7 +56,7 @@
         width: spacing(4.5);
         height: spacing(4.5);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
     }
 
     &.large {

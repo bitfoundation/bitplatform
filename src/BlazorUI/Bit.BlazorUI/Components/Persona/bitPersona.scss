@@ -74,7 +74,7 @@
         right: spacing(-0.25);
         bottom: spacing(-0.25);
         border-radius: 50%;
-        border: spacing(0.25) solid $color-neutrals-white;
+        border: spacing(0.25) $shape-border-style $color-neutrals-white;
         box-sizing: content-box;
         text-align: center;
         background-clip: border-box;
@@ -132,7 +132,7 @@
         height: spacing(4);
         padding: 0 spacing(0.5);
         box-sizing: border-box;
-        font-family: $typography-button-font-family;
+        font-family: $typography-font-family;
         font-size: spacing(1.75);
         font-weight: 400;
         text-decoration: none;
@@ -193,7 +193,7 @@
         .presence {
             height: spacing(1);
             width: spacing(1);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .details {
@@ -232,7 +232,7 @@
         .presence {
             height: spacing(1);
             width: spacing(1);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .details {
@@ -270,7 +270,7 @@
         .presence {
             height: spacing(1);
             width: spacing(1);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .details {
@@ -308,7 +308,7 @@
         .presence {
             height: spacing(1.5);
             width: spacing(1.5);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -363,7 +363,7 @@
         .presence {
             height: spacing(1.5);
             width: spacing(1.5);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -418,7 +418,7 @@
         .presence {
             height: spacing(2);
             width: spacing(2);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -473,7 +473,7 @@
         .presence {
             height: spacing(2.5);
             width: spacing(2.5);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -530,7 +530,7 @@
         .presence {
             height: spacing(3.5);
             width: spacing(3.5);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -589,7 +589,7 @@
         .presence {
             height: spacing(4);
             width: spacing(4);
-            border: spacing(0.25) solid $color-neutrals-white;
+            border: spacing(0.25) $shape-border-style $color-neutrals-white;
         }
 
         .icon {
@@ -653,7 +653,7 @@
                 position: absolute;
                 top: 0;
                 left: 0;
-                border: spacing(0.25) solid $color-general-red2;
+                border: spacing(0.25) $shape-border-style $color-general-red2;
                 border-radius: 50%;
                 box-sizing: border-box;
             }

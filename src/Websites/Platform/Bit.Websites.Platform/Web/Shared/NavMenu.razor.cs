@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-namespace Bit.Websites.Platform.Web.Shared;
+namespace Bit.Websites.Platform.Web;
 
 public partial class NavMenu
 {
@@ -133,5 +133,5 @@ public partial class NavMenu
         }
     }
 
-    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e);
+    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
 }

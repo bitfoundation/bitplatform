@@ -8,13 +8,13 @@
     font-size: spacing(1.75);
     font-family: $typography-font-family;
     color: $color-neutrals-gray160;
-    background-color: $color-neutrals-white;
-    border: 1px solid $color-neutrals-gray30;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-neutrals-gray30;
     padding: 0 spacing(1.5);
     box-sizing: border-box;
     user-select: none;
 
-    &.disabled {
+    &.bit-dis {
         background-color: $color-neutrals-gray10;
         color: $color-neutrals-gray90;
 

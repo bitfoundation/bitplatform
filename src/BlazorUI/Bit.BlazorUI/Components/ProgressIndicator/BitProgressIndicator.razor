@@ -4,15 +4,15 @@
 <div @ref="RootElement"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (LabelFragment is not null)
+    @if (LabelTemplate is not null)
     {
-        <div class="bit-pi-lbl" id="@LabelId">
-            @LabelFragment
+        <div class="label" id="@LabelId">
+            @LabelTemplate
         </div>
     }
     else if (Label.HasValue())
     {
-        <div class="bit-pi-lbl" id="@LabelId">
+        <div class="label" id="@LabelId">
             @Label
         </div>
     }
@@ -25,9 +25,9 @@
         }
         else
         {
-            <div class="bit-pi-wrapper" style="@($"height: {BarHeight}px;")">
-                <div class="bit-pi-track"></div>
-                <div class="bit-pi-bar"
+            <div class="wrapper" style="@($"height: {BarHeight}px;")">
+                <div class="track"></div>
+                <div class="bar"
                      style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")"
                      role="progressbar"
                      aria-describedby="@DescriptionId"
@@ -41,15 +41,15 @@
         }
     }
 
-    @if (DescriptionFragment is not null)
+    @if (DescriptionTemplate is not null)
     {
-        <div class="bit-pi-dsc" id="@DescriptionId">
-            @DescriptionFragment
+        <div class="description" id="@DescriptionId">
+            @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div class="bit-pi-dsc" id="@DescriptionId">
+        <div class="description" id="@DescriptionId">
             @Description
         </div>
     }

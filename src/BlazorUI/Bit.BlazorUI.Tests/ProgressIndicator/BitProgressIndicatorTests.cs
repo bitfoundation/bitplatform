@@ -12,12 +12,12 @@ public class BitProgressIndicatorTests : BunitTestContext
     ]
     public void BitProgressIndicatorBarHeightTest(int barHeight)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.BarHeight, barHeight);
         });
 
-        var piWrapper = component.Find(".bit-pi-wrapper");
+        var piWrapper = component.Find(".wrapper");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {barHeight}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
@@ -27,14 +27,14 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(52),
         DataRow(43)
     ]
-    public void BitProgressIndicatorBarWidthShouldBeEqualPrecentCompleteValue(double percentComplete)
+    public void BitProgressIndicatorBarWidthShouldBeEqualPercentCompleteValue(double percentComplete)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
+        var piBar = component.Find(".bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = $"width: {percentComplete}%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
@@ -44,16 +44,16 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(520),
         DataRow(430)
     ]
-    public void BitProgressIndicatorBarWidthCanNotBeBiggerThan100(double precentComplete)
+    public void BitProgressIndicatorBarWidthCanNotBeBiggerThan100(double percentComplete)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.PercentComplete, precentComplete);
+            parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
+        var piBar = component.Find(".bar");
         var piBarStyle = piBar.GetAttribute("style");
-        var expectedValue = $"width: 100%";
+        var expectedValue = "width: 100%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
     }
 
@@ -63,56 +63,31 @@ public class BitProgressIndicatorTests : BunitTestContext
     ]
     public void BitProgressIndicatorBarWidthCanNotBeSmallerThan0(double percentComplete)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
+        var piBar = component.Find(".bar");
         var piBarStyle = piBar.GetAttribute("style");
-        var expectedValue = $"width: 0%";
+        var expectedValue = "width: 0%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
     }
 
+    
     [DataTestMethod,
-        DataRow(Visual.Fluent),
-        DataRow(Visual.Cupertino),
-        DataRow(Visual.Material)
+        DataRow(32.0),
+        DataRow(null)
     ]
-    public void BitProgressIndicatorMustRespectVisual(Visual visual)
+    public void BitProgressIndicatorIndeterminateClassTest(double? percentComplete)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.Visual, visual);
-        });
-
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var pi = component.Find(".bit-pi");
-        Assert.IsTrue(pi.ClassList.Contains($"bit-pi-{visualClass}"));
-    }
-
-    [DataTestMethod,
-        DataRow(Visual.Fluent, 32.0),
-        DataRow(Visual.Fluent, null),
-
-        DataRow(Visual.Cupertino, 32.0),
-        DataRow(Visual.Cupertino, null),
-
-        DataRow(Visual.Material, 32.0),
-        DataRow(Visual.Material, null)
-    ]
-    public void BitProgressIndicatorIndeterminateClassTest(Visual visual, double? percentComplete)
-    {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
-        {
-            parameters.Add(p => p.Visual, visual);
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
-        var pi = component.Find(".bit-pi");
-        var hasIndeterminateClass = pi.ClassList.Contains($"bit-pi-indeterminate-{visualClass}");
-        Assert.AreEqual(percentComplete is null, hasIndeterminateClass);
+        var pin = component.Find(".bit-pin");
+        Assert.AreEqual(percentComplete is null, pin.ClassList.Contains("indeterminate"));
     }
 
     [DataTestMethod,
@@ -121,22 +96,22 @@ public class BitProgressIndicatorTests : BunitTestContext
     ]
     public void BitProgressIndicatorLabelTest(string label)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.Label, label);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
-        if (label is not null)
+        var piBar = component.Find(".bar");
+        if (string.IsNullOrEmpty(label))
         {
-            var piLabel = component.Find(".bit-pi-lbl");
-            Assert.AreEqual(label, piLabel.TextContent);
-            Assert.IsNotNull(piBar.GetAttribute("aria-labelledby"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".label"));
+            Assert.IsNull(piBar.GetAttribute("aria-labelledby"));
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pi-lbl"));
-            Assert.IsNull(piBar.GetAttribute("aria-labelledby"));
+            var piLabel = component.Find(".label");
+            Assert.AreEqual(label, piLabel.TextContent);
+            Assert.IsNotNull(piBar.GetAttribute("aria-labelledby"));
         }
     }
 
@@ -146,22 +121,22 @@ public class BitProgressIndicatorTests : BunitTestContext
     ]
     public void BitProgressIndicatorDescriptionTest(string description)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.Description, description);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
-        if (description is not null)
+        var piBar = component.Find(".bar");
+        if (string.IsNullOrEmpty(description))
         {
-            var piDescription = component.Find(".bit-pi-dsc");
-            Assert.AreEqual(description, piDescription.TextContent);
-            Assert.IsNotNull(piBar.GetAttribute("aria-describedby"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".description"));
+            Assert.IsNull(piBar.GetAttribute("aria-describedby"));
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pi-dsc"));
-            Assert.IsNull(piBar.GetAttribute("aria-describedby"));
+            var piDescription = component.Find(".description");
+            Assert.AreEqual(description, piDescription.TextContent);
+            Assert.IsNotNull(piBar.GetAttribute("aria-describedby"));
         }
     }
 
@@ -171,58 +146,58 @@ public class BitProgressIndicatorTests : BunitTestContext
     ]
     public void BitProgressIndicatorAriaValueTextTest(string txt)
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, txt);
         });
 
-        var piBar = component.Find(".bit-pi-bar");
-        if (txt is not null)
+        var piBar = component.Find(".bar");
+        if (string.IsNullOrEmpty(txt))
         {
-            Assert.AreEqual(txt, piBar.GetAttribute("aria-valuetext"));
+            Assert.IsNull(piBar.GetAttribute("aria-valuetext"));
         }
         else
         {
-            Assert.IsNull(piBar.GetAttribute("aria-valuetext"));
+            Assert.AreEqual(txt, piBar.GetAttribute("aria-valuetext"));
         }
     }
 
     [DataTestMethod]
     public void BitProgressIndicatorIsProgressHiddenTest()
     {
-        var component = RenderComponent<BitProgressIndicatorTest>(parameters =>
+        var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
             parameters.Add(p => p.IsProgressHidden, true);
         });
 
-        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pi-wrapper"));
+        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".wrapper"));
     }
 
     [DataTestMethod,
         DataRow("<h1>this is a custom label</h1>")
     ]
-    public void BitProgressIndicatorLabelFragmentTest(string labelFragment)
+    public void BitProgressIndicatorLabelTemplateTest(string labelTemplate)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.LabelFragment, labelFragment);
+            parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component.Find(".bit-pi-lbl").ChildNodes;
-        labelChildNodes.MarkupMatches(labelFragment);
+        var labelChildNodes = component.Find(".label").ChildNodes;
+        labelChildNodes.MarkupMatches(labelTemplate);
     }
 
     [DataTestMethod,
         DataRow("<h1>this is a custom description</h1>"),
     ]
-    public void BitProgressIndicatorDescriptionFragmentTest(string descriptionFragment)
+    public void BitProgressIndicatorDescriptionTemplateTest(string descriptionTemplate)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.DescriptionFragment, descriptionFragment);
+            parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });
 
-        var descriptionChildNodes = component.Find(".bit-pi-dsc").ChildNodes;
-        descriptionChildNodes.MarkupMatches(descriptionFragment);
+        var descriptionChildNodes = component.Find(".description").ChildNodes;
+        descriptionChildNodes.MarkupMatches(descriptionTemplate);
     }
 }

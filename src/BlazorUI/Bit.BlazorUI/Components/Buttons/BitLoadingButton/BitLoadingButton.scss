@@ -4,8 +4,8 @@
     position: relative;
     min-width: spacing(15);
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
@@ -15,7 +15,7 @@
     border-style: $shape-border-style;
     border-width: $shape-border-width;
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         background-color: $color-action-disabled;
         border-color: $color-border-disabled;
@@ -33,7 +33,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
         min-height: spacing(4.5);
     }
 
@@ -45,8 +45,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -61,8 +61,8 @@
     }
 
     &.primary {
+        color: $color-text-secondary;
         border-color: $color-border-primary;
-        color: $color-text-primary;
         background-color: $color-primary-main;
 
         &:hover {
@@ -154,8 +154,8 @@
 
         &.primary {
             .spinner {
-                border: spacing(2) solid $color-neutrals-gray60;
-                border-top: spacing(2) solid $color-neutrals-white;
+                border: spacing(2) $shape-border-style $color-neutrals-gray60;
+                border-top: spacing(2) $shape-border-style $color-neutrals-white;
                 border-radius: 50%;
                 border-width: spacing(0.2125);
             }
@@ -167,8 +167,8 @@
 
         &.standard {
             .spinner {
-                border: spacing(2) solid $color-neutrals-gray60;
-                border-top: spacing(2) solid $color-primary-main;
+                border: spacing(2) $shape-border-style $color-neutrals-gray60;
+                border-top: spacing(2) $shape-border-style $color-primary-main;
                 border-radius: 50%;
                 border-width: spacing(0.1875);
             }

@@ -6,11 +6,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumericTextField<TValue>
 {
-    protected override bool UseVisual => false;
-
-    const int INITIAL_STEP_DELAY = 400;
-    const int STEP_DELAY = 75;
-
+    private const int INITIAL_STEP_DELAY = 400;
+    private const int STEP_DELAY = 75;
 
     private TValue? step;
     private TValue? min;
@@ -262,7 +259,7 @@ public partial class BitNumericTextField<TValue>
         _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
         if (ValueHasBeenSet is false)
         {
-            SetValue(GetDoubleValueOrDefault(DefaultValue) ?? Math.Min(0, _internalMin.Value));
+            SetValue(GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault());
         }
         else
         {
@@ -302,7 +299,7 @@ public partial class BitNumericTextField<TValue>
         await base.OnParametersSetAsync();
     }
 
-    private async Task HandleOnMouseDown(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDown(BitNumericTextFieldAction action, MouseEventArgs e)
     {
         //Change focus from input to numeric text field
         if (action == BitNumericTextFieldAction.Increment)
@@ -315,18 +312,18 @@ public partial class BitNumericTextField<TValue>
         }
 
 
-        await HandleOnMouseDownAction(action, e);
+        await HandleOnPointerDownAction(action, e);
         _timer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
-                await HandleOnMouseDownAction(action, e);
+                await HandleOnPointerDownAction(action, e);
                 StateHasChanged();
             });
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
     }
 
-    private void HandleOnMouseUpOrOut()
+    private void HandleOnPointerUpOrOut()
     {
         if (_timer is null) return;
         _timer.Dispose();
@@ -340,7 +337,7 @@ public partial class BitNumericTextField<TValue>
         _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
-    private async Task HandleOnMouseDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;

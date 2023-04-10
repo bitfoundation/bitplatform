@@ -2,8 +2,6 @@
 
 public partial class BitMessageBar
 {
-    protected override bool UseVisual => false;
-
     private static Dictionary<BitMessageBarType, BitIconName> IconMap = new()
     {
         [BitMessageBarType.Info] = BitIconName.Info,

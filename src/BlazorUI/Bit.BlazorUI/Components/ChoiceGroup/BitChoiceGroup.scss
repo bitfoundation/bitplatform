@@ -1,131 +1,24 @@
-﻿@import "../../Styles/Fluent/colors.fluent.scss", "../../Styles/functions.scss";
+﻿@import "../../Styles/functions.scss";
 
 .bit-chg {
-    &.bit-chg-fluent {
-        display: block;
-        font-size: rem(14px);
-        font-weight: 400;
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    &.bit-chg-required-fluent {
-        .bit-chg-label {
-            &::after {
-                content: " *";
-                padding-right: rem(12px);
-                color: $Red20;
-            }
-        }
-    }
-
-    &.bit-chg-invalid-fluent {
-        .bit-chgi-lbl {
-            color: $Red20;
-
-            &:before {
-                border-color: $Red20;
-            }
-
-            &:after {
-                border-color: $Red20;
-                background-color: $Red20;
-            }
-
-            &:hover {
-                .bit-chgi-txt {
-                    color: $PinkRed10;
-                }
-
-                &:after {
-                    background-color: $PinkRed10;
-                    border-color: $PinkRed10;
-                }
-
-                &:before {
-                    border-color: $PinkRed10;
-                }
-            }
-        }
-
-        .bit-chgi-lbl-with-img {
-            color: $Red20;
-            border-color: $Red20;
-
-            &:before {
-                border-color: $Red20;
-            }
-
-            &:after {
-                border-color: $Red20;
-                background-color: $Red20;
-            }
-
-            &:hover {
-                border-color: $Red20;
-
-                &:before {
-                    border-color: $PinkRed10;
-                    opacity: 1;
-                }
-
-                &:after {
-                    border-color: $PinkRed10;
-                    background-color: $PinkRed10;
-                }
-            }
-        }
-    }
-
-    &.bit-chg-rtl-fluent {
-        direction: rtl;
-
-        .bit-chgi {
-            margin-left: rem(8px);
-            margin-right: 0;
-        }
-
-        .bit-chgi-lbl {
-
-            &::before {
-                right: 0;
-            }
-
-            &:hover {
-                &:after {
-                    right: rem(5px);
-                }
-            }
-
-            .bit-chgi-txt {
-                padding-right: rem(26px);
-                padding-left: 0;
-            }
-        }
-
-        .bit-chgi-checked {
-            .bit-chgi-lbl {
-                &::after {
-                    right: rem(5px);
-                }
-            }
-        }
-    }
+    display: block;
+    font-size: spacing(1.75);
+    font-weight: 400;
+    font-family: $typography-font-family;
 
     .bit-chg-label {
         display: block;
         margin: 0;
-        padding: rem(5px) 0;
+        padding: spacing(0.625) 0;
         box-shadow: none;
         box-sizing: border-box;
-        font-size: rem(14px);
+        font-size: spacing(1.75);
         font-weight: 600;
-        color: $Grey160;
+        color: $color-neutrals-gray160;
         overflow-wrap: break-word;
-        -webkit-font-smoothing: antialiased;
     }
 
-    .choice-field-group {
+    .bit-chg-field-group {
         display: flex;
         flex-flow: column nowrap;
 
@@ -133,21 +26,20 @@
             flex-flow: row wrap;
         }
     }
-    /*--- Radio button list item styles ---*/
+
     .bit-chgi {
         position: relative;
         display: flex;
         align-items: center;
-        min-height: rem(26px);
+        min-height: spacing(3.25);
         border: none;
         box-sizing: border-box;
-        font-size: rem(14px);
+        font-size: spacing(1.75);
         font-weight: 400;
-        margin-top: rem(8px);
-        margin-right: rem(8px);
-        color: $Grey160;
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
+        margin-top: spacing(1);
+        margin-right: spacing(1);
+        color: $color-neutrals-gray160;
+        font-family: $typography-font-family;
     }
 
     .bit-chgi-with-img {
@@ -155,11 +47,11 @@
         width: fit-content;
         height: 100%;
         padding-left: 0;
-        font-size: 0px;
-        background-color: $Grey20;
+        font-size: 0;
+        background-color: $color-neutrals-gray20;
     }
 
-    .input {
+    .bit-chgi-input {
         position: absolute;
         top: 0;
         right: 0;
@@ -172,7 +64,7 @@
     .bit-chgi-lbl {
         position: relative;
         display: inline-block;
-        min-height: rem(20px);
+        min-height: spacing(2.5);
         margin-top: 0;
         vertical-align: top;
         user-select: none;
@@ -184,11 +76,11 @@
             top: 0;
             left: 0;
             display: inline-block;
-            width: rem(20px);
-            height: rem(20px);
+            width: spacing(2.5);
+            height: spacing(2.5);
             border-radius: 50%;
-            border: rem(1px) solid $Grey160;
-            background-color: $White;
+            border: $shape-border-width $shape-border-style $color-neutrals-gray160;
+            background-color: $color-background-primary;
             box-sizing: border-box;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         }
@@ -196,7 +88,7 @@
         &:after {
             content: "";
             position: absolute;
-            left: rem(10px);
+            left: spacing(1.25);
             right: 0;
             width: 0;
             height: 0;
@@ -205,27 +97,27 @@
             transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         }
 
-        .txt {
+        .bit-chgi-txt {
             display: inline-block;
-            padding-left: rem(26px);
+            padding-left: spacing(3.25);
         }
 
         &:hover {
             .bit-chgi-txt {
-                color: $Grey190;
+                color: $color-neutrals-gray190;
             }
 
             &:after {
                 transition-property: background-color;
-                left: rem(5px);
-                top: rem(5px);
-                width: rem(10px);
-                height: rem(10px);
-                background-color: $Grey130;
+                left: spacing(0.625);
+                top: spacing(0.625);
+                width: spacing(1.25);
+                height: spacing(1.25);
+                background-color: $color-neutrals-gray130;
             }
 
             &:before {
-                border-color: $Grey160;
+                border-color: $color-neutrals-gray160;
             }
         }
     }
@@ -236,10 +128,10 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
-        min-height: rem(20px);
+        min-height: spacing(2.5);
         margin: 0;
-        padding-top: rem(22px);
-        border: rem(1px) solid transparent;
+        padding-top: spacing(2.75);
+        border: $shape-border-width $shape-border-style transparent;
         box-sizing: content-box;
         text-align: center;
         vertical-align: top;
@@ -250,16 +142,16 @@
         &:before {
             content: "";
             position: absolute;
-            top: rem(3px);
+            top: spacing(0.375);
             left: auto;
-            right: rem(3px);
+            right: spacing(0.375);
             display: inline-block;
-            width: rem(20px);
-            height: rem(20px);
+            width: spacing(2.5);
+            height: spacing(2.5);
             border-radius: 50%;
-            border: rem(1px) solid $Grey160;
+            border: $shape-border-width $shape-border-style $color-neutrals-gray160;
             box-sizing: border-box;
-            background-color: $White;
+            background-color: $color-background-primary;
             transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
             opacity: 0;
         }
@@ -267,7 +159,7 @@
         &:after {
             content: "";
             position: absolute;
-            left: rem(10px);
+            left: spacing(1.25);
             right: 0;
             width: 0;
             height: 0;
@@ -277,27 +169,26 @@
         }
 
         &:hover {
-            border-color: $Grey160;
+            border-color: $color-neutrals-gray160;
 
             &:before {
-                border-color: $Grey160;
+                border-color: $color-neutrals-gray160;
                 opacity: 1;
             }
         }
     }
 
-    .txt-wrapper {
+    .bit-chgi-txt-wrapper {
         position: relative;
         display: block;
-        max-width: rem(64px);
-        height: rem(32px);
-        margin: rem(4px) rem(8px) rem(2px);
-        font-size: rem(14px);
-        line-height: rem(15px);
+        max-width: spacing(8);
+        height: spacing(4);
+        margin: spacing(0.5) spacing(1) spacing(0.25);
+        font-size: spacing(1.75);
+        line-height: spacing(1.875);
         font-weight: 400;
         white-space: pre-wrap;
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-        -webkit-font-smoothing: antialiased;
+        font-family: $typography-font-family;
         overflow: hidden;
 
         .bit-chgi-txt {
@@ -306,18 +197,18 @@
         }
     }
 
-    .img-inner-field {
+    .bit-chgi-img-field {
         position: relative;
         display: inline-block;
-        height: rem(32px);
-        padding: 0 rem(30px);
+        height: spacing(4);
+        padding: 0 spacing(3.75);
     }
 
-    .img-wrapper {
-        padding-bottom: rem(2px);
+    .bit-chgi-img-wrapper {
+        padding-bottom: spacing(0.25);
         transition: opacity 0.2s ease;
 
-        .img {
+        .bit-chgi-img {
             display: inline-block;
             border-style: none;
 
@@ -330,82 +221,81 @@
         }
     }
 
-    .icon-inner-field {
+    .bit-chgi-icon-field {
         position: relative;
         display: inline-block;
-        padding: 0 rem(30px);
+        padding: 0 spacing(3.75);
     }
 
-    .icon-wrapper {
-        height: rem(32px);
-        font-size: rem(32px);
-        line-height: rem(32px);
+    .bit-chgi-icon-wrapper {
+        height: spacing(4);
+        font-size: spacing(4);
+        line-height: spacing(4);
 
         i {
             display: inline-block;
-            -webkit-font-smoothing: antialiased;
             speak: none;
         }
     }
 
     .bit-chgi-checked {
         .bit-chgi-lbl {
-            border-color: $Primary;
+            border-color: $color-primary-main;
 
             &:before {
-                border-color: $Primary;
+                border-color: $color-primary-main;
             }
 
             &:after {
-                top: rem(5px);
-                left: rem(5px);
-                width: rem(10px);
-                height: rem(10px);
-                border: rem(5px) solid $Primary;
-                background-color: $Primary;
+                top: spacing(0.625);
+                left: spacing(0.625);
+                width: spacing(1.25);
+                height: spacing(1.25);
+                border: spacing(0.625) $shape-border-style $color-primary-main;
+                background-color: $color-primary-main;
             }
 
             &:hover {
                 &:before {
-                    border-color: $Dark;
+                    border-color: $color-primary-darker;
                 }
 
                 &:after {
-                    border: rem(5px) solid $Dark;
-                    background-color: $Dark;
+                    border: spacing(0.625) $shape-border-style $color-primary-darker;
+                    background-color: $color-primary-darker;
                 }
             }
         }
 
         .bit-chgi-lbl-with-img {
-            border-color: $Primary;
+            border-color: $color-primary-main;
 
             &:before {
-                border-color: $Primary;
+                border-color: $color-primary-main;
                 opacity: 1;
             }
 
             &:after {
-                top: rem(8px);
+                top: spacing(1);
                 left: auto;
-                right: rem(8px);
-                width: rem(10px);
-                height: rem(10px);
-                border: rem(5px) solid $Primary;
-                background-color: $Primary;
+                right: spacing(1);
+                width: spacing(1.25);
+                height: spacing(1.25);
+                border: spacing(0.625) $shape-border-style $color-primary-main;
+                background-color: $color-primary-main;
             }
 
             &:hover {
-                border-color: $Dark;
+                border-color: $color-primary-darker;
 
                 &:before {
-                    border-color: $Dark;
+                    border-color: $color-primary-darker;
                     opacity: 1;
                 }
 
                 &:after {
-                    background-color: $Dark;
-                    border-color: $Dark;
+                    background-color: $color-primary-darker;
+                    border-color: $color-primary-darker;
                 }
             }
         }
@@ -415,45 +305,45 @@
         .bit-chgi-lbl {
             cursor: default;
             pointer-events: none;
-            color: $Grey90;
+            color: $color-neutrals-gray90;
 
             &:before {
-                border-color: $Grey60;
+                border-color: $color-neutrals-gray60;
             }
 
             &:after {
-                border-color: $Grey60;
+                border-color: $color-neutrals-gray60;
             }
 
             .bit-chgi-txt {
-                color: $Grey90;
+                color: $color-neutrals-gray90;
             }
 
             &:hover {
                 .bit-chgi-txt {
-                    color: $Grey90;
+                    color: $color-neutrals-gray90;
                 }
 
                 &:before {
-                    border-color: $Grey60;
+                    border-color: $color-neutrals-gray60;
                 }
             }
         }
 
         .bit-chgi-lbl-with-img {
-            color: $Grey90;
+            color: $color-neutrals-gray90;
             cursor: default;
             border-color: transparent;
 
             &:before {
-                border-color: $Grey60;
+                border-color: $color-neutrals-gray60;
             }
 
             &:hover {
                 border-color: transparent;
 
                 &:before {
-                    border-color: $Grey60;
+                    border-color: $color-neutrals-gray60;
                     opacity: 0;
                 }
             }
@@ -462,8 +352,8 @@
         &.bit-chgi-checked {
             .bit-chgi-lbl-with-img {
                 &:after {
-                    border: rem(5px) solid $Grey60;
-                    background-color: $Grey60;
+                    border: spacing(0.625) $shape-border-style $color-neutrals-gray60;
+                    background-color: $color-neutrals-gray60;
                 }
 
                 &:hover {
@@ -475,10 +365,112 @@
         }
 
         .bit-chgi-icon-wrapper {
-            color: $Grey90;
+            color: $color-neutrals-gray90;
 
             i {
-                color: $Grey90;
+                color: $color-neutrals-gray90;
+            }
+        }
+    }
+
+    &.bit-chg-required {
+        .bit-chg-label {
+            &::after {
+                content: " *";
+                padding-right: spacing(1.5);
+                color: $color-general-red;
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-chgi-lbl {
+            color: $color-state-invalid;
+
+            &:before {
+                border-color: $color-state-invalid;
+            }
+
+            &:after {
+                border-color: $color-state-invalid;
+                background-color: $color-state-invalid;
+            }
+
+            &:hover {
+                .bit-chgi-txt {
+                    color: $color-state-invalid-hover;
+                }
+
+                &:after {
+                    background-color: $color-state-invalid-hover;
+                    border-color: $color-state-invalid-hover;
+                }
+
+                &:before {
+                    border-color: $color-state-invalid-hover;
+                }
+            }
+        }
+
+        .bit-chgi-lbl-with-img {
+            color: $color-general-red;
+            border-color: $color-general-red;
+
+            &:before {
+                border-color: $color-general-red;
+            }
+
+            &:after {
+                border-color: $color-general-red;
+                background-color: $color-general-red;
+            }
+
+            &:hover {
+                border-color: $color-general-red;
+
+                &:before {
+                    border-color: $color-general-darkred;
+                    opacity: 1;
+                }
+
+                &:after {
+                    border-color: $color-general-darkred;
+                    background-color: $color-general-darkred;
+                }
+            }
+        }
+    }
+
+    &.bit-chg-rtl {
+        direction: rtl;
+
+        .bit-chgi {
+            margin-left: spacing(1);
+            margin-right: 0;
+        }
+
+        .bit-chgi-lbl {
+            &::before {
+                right: 0;
+            }
+
+            &:hover {
+                &:after {
+                    right: spacing(0.625);
+                }
+            }
+
+            .bit-chgi-txt {
+                padding-right: spacing(3.25);
+                padding-left: 0;
+            }
+        }
+
+        .bit-chgi-checked {
+            .bit-chgi-lbl {
+                &::after {
+                    right: spacing(0.625);
+                }
             }
         }
     }

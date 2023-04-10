@@ -13,7 +13,7 @@ public class BitNavItem
     /// Aria-current token for active nav links.
     /// Must be a valid token value, and defaults to 'page'
     /// </summary>
-    public BitNavItemAriaCurrent AriaCurrent { get; set; } = BitNavItemAriaCurrent.Page;
+    public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
 
     /// <summary>
     /// Aria label when items is collapsed and can be expanded
@@ -34,7 +34,7 @@ public class BitNavItem
     /// <summary>
     /// A list of items to render as children of the current item
     /// </summary>
-    public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
 
     /// <summary>
     /// Name of an icon to render next to this link button

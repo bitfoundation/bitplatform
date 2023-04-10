@@ -1,13 +1,22 @@
-﻿namespace Bit.Websites.Sales.Web.Shared;
+﻿namespace Bit.Websites.Sales.Web;
 
 public partial class MessageBox : IDisposable
 {
     private static event Func<string, string, Task> OnShow = default!;
 
+    private bool _isOpen;
+    private string _title = string.Empty;
+    private string _body = string.Empty;
+
+    private static TaskCompletionSource<object?>? _tsc;
+
     public static async Task Show(string message, string title = "")
     {
-        if (OnShow is not null)
-            await OnShow.Invoke(message, title);
+        _tsc = new TaskCompletionSource<object?>();
+
+        await OnShow.Invoke(message, title);
+
+        await _tsc.Task;
     }
 
     protected override void OnInitialized()
@@ -21,33 +30,27 @@ public partial class MessageBox : IDisposable
     {
         await InvokeAsync(() =>
         {
-            IsOpen = true;
+            _isOpen = true;
 
-            Title = title;
-            Body = message;
+            _title = title;
+            _body = message;
 
             StateHasChanged();
         });
     }
 
-    // ========================================================================
-
-    private bool IsOpen { get; set; }
-    private string Title { get; set; } = string.Empty;
-    private string Body { get; set; } = string.Empty;
-
     private void OnCloseClick()
     {
-        IsOpen = false;
+        _isOpen = false;
+        _tsc?.SetResult(null);
     }
+
 
     private void OnOkClick()
     {
-        IsOpen = false;
+        _isOpen = false;
+        _tsc?.SetResult(null);
     }
 
-    public void Dispose()
-    {
-        OnShow -= ShowMessageBox;
-    }
+    public void Dispose() => OnShow -= ShowMessageBox;
 }

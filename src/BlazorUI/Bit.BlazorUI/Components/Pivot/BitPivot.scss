@@ -6,6 +6,7 @@
     .header-container {
         display: flex;
         height: spacing(6.25);
+        white-space: nowrap;
     }
 
     .content-container {
@@ -18,9 +19,8 @@
         box-sizing: border-box;
         position: relative;
         color: $color-neutrals-gray160;
-        white-space: nowrap;
 
-        &.disabled {
+        &.bit-dis {
             color: $color-text-disabled;
             cursor: default;
             pointer-events: none;
@@ -129,7 +129,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .content-container {
             color: $color-text-disabled;
             cursor: default;
@@ -226,7 +226,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         cursor: default;
         pointer-events: none;

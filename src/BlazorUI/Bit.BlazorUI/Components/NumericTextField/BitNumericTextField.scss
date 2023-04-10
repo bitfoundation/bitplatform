@@ -17,7 +17,7 @@
 
         .bit-icon {
             display: inline-block;
-            font-family: $typography-icon-font-family;
+            font-family: $typography-font-family-icons;
             font-weight: normal;
             font-size: spacing(2.5);
             padding: 0 spacing(0.625);
@@ -54,7 +54,7 @@
             font-size: spacing(1.75);
             font-family: inherit;
             color: $color-neutrals-gray160;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
             height: 100%;
             padding: 0 spacing(1) 0 spacing(1.125);
             outline: 0;
@@ -121,7 +121,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         .lbl-wrapper {
             color: $color-neutrals-gray90;
 
@@ -153,7 +153,7 @@
         }
     }
 
-    &.invalid {
+    &.bit-inv {
         .wrapper {
             border-color: $color-state-invalid;
         }

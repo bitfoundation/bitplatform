@@ -1,30 +1,26 @@
-﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Reflection;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.ComponentModel.DataAnnotations;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Playground.Web")]
+[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Client.Shared")]
 namespace Bit.BlazorUI;
 
 internal static class EnumExtensions
 {
     internal static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
     {
-        if (enumValue is null)
-        {
-            return null;
-        }
+        if (enumValue is null) return null;
 
         var name = enumValue.GetType()
-          .GetMember(enumValue.ToString())
-          .FirstOrDefault()?
-          .GetCustomAttribute<DisplayAttribute>()
-          ?.GetName();
+                            .GetMember(enumValue.ToString())
+                            .FirstOrDefault()?
+                            .GetCustomAttribute<DisplayAttribute>()?
+                            .GetName();
 
         string? displayName = null;
+
         if (name.HasValue())
         {
             displayName = name!;
@@ -44,18 +40,12 @@ internal static class EnumExtensions
 
     internal static string? GetName(this BitIconName? bitIconName, bool ignoreDefaultValue = true)
     {
-        if (!bitIconName.HasValue)
-        {
-            return null;
-        }
+        if (bitIconName.HasValue is false) return null;
 
         return GetIconName(bitIconName.Value, ignoreDefaultValue);
     }
 
-    internal static string? GetName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
-    {
-        return GetIconName(bitIconName, ignoreDefaultValue);
-    }
+    internal static string? GetName(this BitIconName bitIconName, bool ignoreDefaultValue = true) => GetIconName(bitIconName, ignoreDefaultValue);
 
     private static string? GetIconName(this BitIconName bitIconName, bool ignoreDefaultValue = true)
     {

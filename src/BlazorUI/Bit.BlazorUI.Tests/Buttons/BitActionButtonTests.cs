@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,21 +9,14 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitActionButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(Visual.Fluent, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Fluent, false, BitIconName.AddFriend, "title"),
-
-        DataRow(Visual.Cupertino, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Cupertino, false, BitIconName.AddFriend, "title"),
-
-        DataRow(Visual.Material, true, BitIconName.AddFriend, "title"),
-        DataRow(Visual.Material, false, BitIconName.AddFriend, "title"),
+        DataRow(true, BitIconName.AddFriend, "title"),
+        DataRow(false, BitIconName.AddFriend, "title")
     ]
-    public void BitActionButtonTest(Visual visual, bool isEnabled, BitIconName iconName, string title)
+    public void BitActionButtonTest(bool isEnabled, BitIconName iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.AddCascadingValue(visual);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.Title, title);
@@ -34,11 +28,11 @@ public class BitActionButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitButton.ClassList.Contains($"disabled"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitButton.ClassList.Contains($"disabled"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
@@ -66,11 +60,11 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-acb");
 
-        var hasTabindexAttr = bitButton.HasAttribute("tabindex");
+        var hasTabIndexAttr = bitButton.HasAttribute("tabindex");
 
-        Assert.AreEqual(hasTabindexAttr, expectedResult);
+        Assert.AreEqual(hasTabIndexAttr, expectedResult);
 
-        if (hasTabindexAttr)
+        if (hasTabIndexAttr)
         {
             Assert.IsTrue(bitButton.GetAttribute("tabindex").Equals("-1"));
         }
@@ -150,10 +144,17 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitActionButton = component.Find(".bit-acb");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
+
         Assert.AreEqual(buttonTypeName, bitActionButton.GetAttribute("type"));
     }
-    
+
     [TestMethod]
     public void BitActionButtonSubmitStateInEditContextTest()
     {
@@ -161,23 +162,52 @@ public class BitActionButtonTests : BunitTestContext
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
         });
-        
+
         var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("submit", bitButton.GetAttribute("type"));
     }
-    
+
     [TestMethod]
-    public void BitActionButtonButtonStateNotOverridenInEditContextTest()
+    public void BitActionButtonButtonStateNotOverriddenInEditContextTest()
     {
         var com = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.EditContext, new EditContext(this));
             parameters.Add(p => p.ButtonType, BitButtonType.Button);
         });
-        
+
         var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
+    }
+
+    [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null),
+    ]
+    public void BitActionButtonSizeTest(BitButtonSize? bitButtonSize)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            if (bitButtonSize.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, bitButtonSize.Value);
+            }
+        });
+
+        var bitActionButton = component.Find(".bit-acb");
+
+        var bitButtonSizeName = bitButtonSize switch
+        {
+            BitButtonSize.Small => "bit-acb-sm",
+            BitButtonSize.Medium => "bit-acb-md",
+            BitButtonSize.Large => "bit-acb-lg",
+            _ => "bit-acb-md",
+        };
+
+        Assert.IsTrue(bitActionButton.ClassList.Contains(bitButtonSizeName));
     }
 }

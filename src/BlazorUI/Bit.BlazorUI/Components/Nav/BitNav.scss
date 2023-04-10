@@ -1,0 +1,117 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-nav {
+    font-family: $typography-font-family;
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        padding: 0;
+    }
+
+    .chevron-btn, .group-chevron-btn {
+        width: spacing(3.75);
+        font-size: spacing(1.5);
+        background-color: transparent;
+        color: $color-neutrals-gray160;
+        user-select: none;
+        cursor: pointer;
+
+        i {
+            transition: transform 0.1s linear 0s;
+
+            &.expand {
+                transform: rotate(-180deg);
+            }
+        }
+    }
+
+    .group-chevron-btn {
+        display: flex;
+        align-items: center;
+        gap: spacing(1.25);
+        width: 100%;
+        height: spacing(5.5);
+        border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray30;
+
+        .group-header {
+            font-size: spacing(2.25);
+            font-weight: 500;
+        }
+    }
+
+    .item-container {
+        display: flex;
+        flex-flow: row nowrap;
+        width: 100%;
+        height: spacing(5.5);
+        border-radius: $shape-border-radius;
+        box-sizing: border-box;
+
+        button, a {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        &:hover {
+            background-color: $color-neutrals-gray30;
+
+            .item {
+                color: $color-primary-main;
+            }
+        }
+
+        &.selected {
+            background-color: $color-neutrals-gray30;
+            border-left: spacing(0.25) $shape-border-style $color-primary-main;
+
+            &:hover {
+                background-color: $color-neutrals-gray20;
+
+                .item {
+                    color: $color-primary-main;
+                }
+            }
+
+            .item {
+                font-weight: 500;
+                color: $color-neutrals-black;
+            }
+        }
+
+        &.bit-dis {
+            background-color: transparent;
+            pointer-events: none;
+            cursor: none;
+
+            .item {
+                color: $color-neutrals-gray90;
+            }
+        }
+    }
+
+    .item {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        width: 100%;
+        user-select: none;
+        cursor: pointer;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.75);
+        font-weight: 400;
+        color: $color-neutrals-gray160;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+
+        .item-icon {
+            margin: 0 spacing(0.5);
+            color: $color-primary-main;
+        }
+    }
+}

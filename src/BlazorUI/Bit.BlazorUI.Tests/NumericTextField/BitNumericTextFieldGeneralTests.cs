@@ -12,8 +12,7 @@ public class BitNumericTextFieldGeneralTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod,
-     DataRow("The placeholder")]
+    [DataTestMethod, DataRow("The placeholder")]
     public void BitNumericTextFieldShouldHaveCorrectPlaceholder(string placeholder)
     {
         var component = RenderComponent<BitNumericTextField<byte>>(parameters =>

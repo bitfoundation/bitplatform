@@ -206,7 +206,7 @@
     <value>Les mots de passe doivent avoir au moins une majuscule ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>{0} doit comporter au moins {1} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -337,8 +337,8 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="FullName" xml:space="preserve">
     <value>Nom et prénom</value>
   </data>
-  <data name="GenderCustom" xml:space="preserve">
-    <value>Personnalisé</value>
+  <data name="GenderOther" xml:space="preserve">
+    <value>Autre</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
     <value>Femelle</value>
@@ -373,16 +373,10 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a été modifié avec succès.</value>
   </data>
-  <data name="PrivacyPolicyAgreementMessage" xml:space="preserve">
+  <data name="EulaPrivacyPolicyAgreementMessage" xml:space="preserve">
     <value>je suis d'accord avec le </value>
   </data>
-  <data name="PrivacyPolicyPageMessage" xml:space="preserve">
-    <value>Utilisez cette page pour détailler la politique de confidentialité de votre site.</value>
-  </data>
-  <data name="PrivacyPolicySectionMessage" xml:space="preserve">
-    <value>Utilisez cette section pour détailler la politique de confidentialité de votre site.</value>
-  </data>
-  <data name="PrivacyPolicyTitle" xml:space="preserve">
+  <data name="EulaPrivacyPolicyTitle" xml:space="preserve">
     <value>Politique de confidentialité</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
@@ -532,9 +526,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="MinLengthAttribute_InvalidMinLength" xml:space="preserve">
     <value>MinLengthAttribute doit avoir une valeur de longueur égale ou supérieure à zéro.</value>
   </data>
-    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} doit être une chaîne ou un type de tableau avec une longueur minimale de '{1}'.</value>
-  </data>
   <data name="PhoneAttribute_Invalid" xml:space="preserve">
     <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
   </data>
@@ -610,8 +601,8 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Validator_Property_Value_Wrong_Type" xml:space="preserve">
     <value>La valeur de la propriété '{0}' doit être de type '{1}'.</value>
   </data>
-  <data name="IsAcceptPrivacy" xml:space="preserve">
-    <value>Accepte-t-il la politique de confidentialité ?</value>
+  <data name="IsEulaPrivacyPolicyAccepted" xml:space="preserve">
+    <value>Acceptez-vous la PLU et la politique de confidentialité?</value>
   </data>
   <data name="PhoneNumber" xml:space="preserve">
     <value>Numéro de téléphone</value>
@@ -619,8 +610,8 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="UserName" xml:space="preserve">
     <value>Nom d'utilisateur</value>
   </data>
-  <data name="YouHaveToAcceptPrivacyPolicy" xml:space="preserve">
-    <value>Vous devez accepter notre politique de confidentialité.</value>
+  <data name="YouHaveToAcceptEulaPrivacyPolicy" xml:space="preserve">
+    <value>Vous devez accepter notre PLU et la politique de confidentialité.</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
     <value>Aller à aujourd'hui</value>
@@ -631,8 +622,8 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Gender" xml:space="preserve">
     <value>Le genre</value>
   </data>
-  <data name="Privacy" xml:space="preserve">
-    <value>Intimité</value>
+  <data name="EulaPrivacyPolicy" xml:space="preserve">
+    <value>CLUF - Politique de confidentialité</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
     <value>Êtes-vous certain de vouloir vous déconnecter?</value>

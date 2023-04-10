@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitOtpInput
 {
-    protected override bool UseVisual => false;
-
     private ElementReference[] _inputRefs = default!;
     private string?[] _inputValue = default!;
     private string _inputType = default!;
@@ -269,6 +267,13 @@ public partial class BitOtpInput
         if (IsEnabled is false) return;
 
         await OnPaste.InvokeAsync(e);
+    }
+
+    private async Task HandleOnFocus(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await _js.SelectText(_inputRefs[index]);
     }
 
     [JSInvokable]

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitProgressIndicator
 {
@@ -16,7 +12,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Custom label template to display above the component
     /// </summary>
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Height of the ProgressIndicator
@@ -44,7 +40,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Custom template for describing or supplementing the operation
     /// </summary>
-    [Parameter] public RenderFragment? DescriptionFragment { get; set; }
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// Text alternative of the progress status, used by screen readers for reading the value of the progress
@@ -61,23 +57,16 @@ public partial class BitProgressIndicator
     /// </summary>
     [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
 
-    public string? LabelId { get; set; } = string.Empty;
-    public string? DescriptionId { get; set; } = string.Empty;
+    private string? LabelId => Label.HasValue() || LabelTemplate is not null 
+                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
+    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null 
+                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
 
-    protected override async Task OnParametersSetAsync()
-    {
-        LabelId = Label.HasValue() ? $"progress-indicator{UniqueId}-label" : null;
-        DescriptionId = Description.HasValue() ? $"progress-indicator{UniqueId}-description" : null;
-
-        await base.OnParametersSetAsync();
-    }
-
-    protected override string RootElementClass => "bit-pi";
+    protected override string RootElementClass => "bit-pin";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => PercentComplete is not null ? string.Empty
-                                            : $"{RootElementClass}-indeterminate-{VisualClassRegistrar()}");
+        ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : "indeterminate");
     }
 
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);

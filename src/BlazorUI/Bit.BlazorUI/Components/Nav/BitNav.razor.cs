@@ -1,59 +1,214 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
-public partial class BitNav : IDisposable
+public partial class BitNav<TItem> : IDisposable where TItem : class
 {
-    private bool SelectedItemHasBeenSet;
-    private BitNavItem? selectedItem;
+    private const string KEY_FIELD = nameof(BitNavItem.Key);
+    private const string FORCE_ANCHOR_FIELD = nameof(BitNavItem.ForceAnchor);
+    private const string TEXT_FIELD = nameof(BitNavItem.Text);
+    private const string TITLE_FIELD = nameof(BitNavItem.Title);
+    private const string URL_FIELD = nameof(BitNavItem.Url);
+    private const string ARIA_CURRENT_FIELD = nameof(BitNavItem.AriaCurrent);
+    private const string EXPAND_ARIA_LABEL_FIELD = nameof(BitNavItem.ExpandAriaLabel);
+    private const string COLLAPSE_ARIA_LABEL_FIELD = nameof(BitNavItem.CollapseAriaLabel);
+    private const string ARIA_LABEL_FIELD = nameof(BitNavItem.AriaLabel);
+    private const string ICON_NAME_FIELD = nameof(BitNavItem.IconName);
+    private const string IS_EXPANDED_FIELD = nameof(BitNavItem.IsExpanded);
+    private const string IS_ENABLED_FIELD = nameof(BitNavItem.IsEnabled);
+    private const string STYLE_FIELD = nameof(BitNavItem.Style);
+    private const string TARGET_FIELD = nameof(BitNavItem.Target);
+    private const string CHILD_ITEMS_FIELD = nameof(BitNavItem.ChildItems);
 
+    private bool SelectedItemHasBeenSet;
+    private TItem? selectedItem;
+
+    private string _internalKeyField = KEY_FIELD;
+    private string _internalForceAnchorField = FORCE_ANCHOR_FIELD;
+    private string _internalTextField = TEXT_FIELD;
+    private string _internalTitleField = TITLE_FIELD;
+    private string _internalUrlField = URL_FIELD;
+    private string _internalAriaCurrentField = ARIA_CURRENT_FIELD;
+    private string _internalExpandAriaLabelField = EXPAND_ARIA_LABEL_FIELD;
+    private string _internalCollapseAriaLabelField = COLLAPSE_ARIA_LABEL_FIELD;
+    private string _internalAriaLabelField = ARIA_LABEL_FIELD;
+    private string _internalIconNameField = ICON_NAME_FIELD;
+    private string _internalIsExpandedField = IS_EXPANDED_FIELD;
+    private string _internalIsEnabledField = IS_ENABLED_FIELD;
+    private string _internalStyleField = STYLE_FIELD;
+    private string _internalTargetField = TARGET_FIELD;
+    private string _internalChildItemsField = CHILD_ITEMS_FIELD;
+
+    internal List<TItem> _items = new();
+    private IEnumerable<TItem> _oldItems = default!;
+    internal Dictionary<TItem, bool> _itemExpandStates = new();
     private bool _disposed;
 
+
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Aria-current token for active nav item.
+    /// Must be a valid token value, and defaults to 'page'.
+    /// </summary>
+    [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT_FIELD;
+
+    /// <summary>
+    /// Aria-current token for active nav item.
+    /// Must be a valid token value, and defaults to 'page'.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, BitNavAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
+
+    /// <summary>
+    /// Aria label for the item.
+    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
+    /// </summary>
+    [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL_FIELD;
+
+    /// <summary>
+    /// Aria label for the item.
+    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// Items to render as children.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// A list of items to render as children of the current item.
+    /// </summary>
+    [Parameter] public string ChildItemsField { get; set; } = CHILD_ITEMS_FIELD;
+
+    /// <summary>
+    /// A list of items to render as children of the current item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ChildItemsFieldSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the component.
+    /// </summary>
+    [Parameter] public BitNavClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
+    /// Aria label when group is collapsed.
+    /// </summary>
+    [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL_FIELD;
+
+    /// <summary>
+    /// Aria label when group is collapsed.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
 
     /// <summary>
     /// The initially selected item in manual mode.
     /// </summary>
-    [Parameter] public BitNavItem? DefaultSelectedItem { get; set; }
+    [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// Aria label when group is expanded.
+    /// </summary>
+    [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL_FIELD;
+
+    /// <summary>
+    /// Aria label when group is expanded.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
+    /// (Links without onClick defined will render as anchors by default.)
+    /// </summary>
+    [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR_FIELD;
+
+    /// <summary>
+    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
+    /// (Links without onClick defined will render as anchors by default.)
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldSelector { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
     /// </summary>
-    [Parameter] public RenderFragment<BitNavItem>? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// Used to customize how content inside the link tag is rendered.
+    /// Name of an icon to render next to the item button.
     /// </summary>
-    [Parameter] public RenderFragment<BitNavItem>? ItemTemplate { get; set; }
+    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
 
     /// <summary>
-    /// A collection of link items to display in the navigation bar.
+    /// Name of an icon to render next to the item button.
     /// </summary>
-    [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+
+    /// <summary>
+    /// Whether or not the group is in an expanded state.
+    /// </summary>
+    [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED_FIELD;
+
+    /// <summary>
+    /// Whether or not the group is in an expanded state.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
+
+    /// <summary>
+    /// Whether or not the item is disabled.
+    /// </summary>
+    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
+
+    /// <summary>
+    /// Whether or not the item is disabled.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
+
+    /// <summary>
+    /// A collection of item to display in the navigation bar.
+    /// </summary>
+    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
+
+    /// <summary>
+    /// Used to customize how content inside the item is rendered.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// A unique value to use as a key or id of the item.
+    /// </summary>
+    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
+
+    /// <summary>
+    /// A unique value to use as a key or id of the item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled.
-    /// The default value is Automatic.
     /// </summary>
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
 
     /// <summary>
     /// Callback invoked when an item is clicked.
     /// </summary>
-    [Parameter] public EventCallback<BitNavItem> OnItemClick { get; set; }
-
-    /// <summary>
-    /// Callback invoked when an item is selected.
-    /// </summary>
-    [Parameter] public EventCallback<BitNavItem> OnSelectItem { get; set; }
+    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
     /// Callback invoked when a group header is clicked and Expanded or Collapse.
     /// </summary>
-    [Parameter] public EventCallback<BitNavItem> OnItemToggle { get; set; }
+    [Parameter] public EventCallback<TItem> OnItemToggle { get; set; }
 
     /// <summary>
-    /// The way to render nav links.
+    /// Callback invoked when an item is selected.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// The way to render nav items.
     /// </summary>
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
@@ -61,81 +216,464 @@ public partial class BitNav : IDisposable
     /// Selected item to show in Nav.
     /// </summary>
     [Parameter]
-    public BitNavItem? SelectedItem
+    public TItem? SelectedItem
     {
         get => selectedItem;
         set
         {
             if (value == selectedItem) return;
+
             selectedItem = value;
             _ = SelectedItemChanged.InvokeAsync(value);
-            if (value is not null) 
+
+            if (value is not null)
             {
-                ExpandParents(Items);
+                ExpandParents(_items);
             }
         }
     }
-    [Parameter] public EventCallback<BitNavItem> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
-    protected override string RootElementClass => "bit-nav";
+    /// <summary>
+    /// Custom style for the each item element.
+    /// </summary>
+    [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
 
-    internal async Task SetSelectedItem(BitNavItem item)
+    /// <summary>
+    /// Custom style for the each item element.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
+
+    /// <summary>
+    /// Link target, specifies how to open the item link.
+    /// </summary>
+    [Parameter] public string TargetField { get; set; } = TARGET_FIELD;
+
+    /// <summary>
+    /// Link target, specifies how to open the item link.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TargetFieldSelector { get; set; }
+
+    /// <summary>
+    /// Text to render for the item.
+    /// </summary>
+    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
+
+    /// <summary>
+    /// Text to render for the item.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
+
+    /// <summary>
+    /// Text for the item tooltip.
+    /// </summary>
+    [Parameter] public string TitleField { get; set; } = TITLE_FIELD;
+
+    /// <summary>
+    /// Text for the item tooltip.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TitleFieldSelector { get; set; }
+
+    /// <summary>
+    /// URL to navigate for the item link.
+    /// </summary>
+    [Parameter] public string UrlField { get; set; } = URL_FIELD;
+
+    /// <summary>
+    /// URL to navigate for the item link.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? UrlFieldSelector { get; set; }
+
+
+
+    internal string? GetKey(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Key ?? navItem.Text;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Key ?? navOption.Text;
+        }
+
+        return item.GetValueFromProperty(_internalKeyField, GetText(item) ?? string.Empty);
+    }
+
+    internal bool GetForceAnchor(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.ForceAnchor;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.ForceAnchor;
+        }
+
+        return item.GetValueFromProperty(_internalForceAnchorField, false);
+    }
+
+    internal string? GetText(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Text;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Text;
+        }
+
+        return item.GetValueFromProperty<string>(_internalTextField);
+    }
+
+    internal string? GetTitle(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Title;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Title;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalTitleField);
+    }
+
+    internal string? GetUrl(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Url;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Url;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalUrlField);
+    }
+
+    internal BitNavAriaCurrent GetAriaCurrent(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.AriaCurrent;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.AriaCurrent;
+        }
+
+        return item.GetValueFromProperty(_internalAriaCurrentField, BitNavAriaCurrent.Page);
+    }
+
+    internal string? GetExpandAriaLabel(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.ExpandAriaLabel;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.ExpandAriaLabel;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalExpandAriaLabelField);
+    }
+
+    internal string? GetCollapseAriaLabel(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.CollapseAriaLabel;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.CollapseAriaLabel;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalCollapseAriaLabelField);
+    }
+
+    internal string? GetAriaLabel(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.AriaLabel;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.AriaLabel;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
+    }
+
+    internal BitIconName? GetIconName(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.IconName;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.IconName;
+        }
+
+        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
+    }
+
+    private bool? GetIsExpanded(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.IsExpanded;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.IsExpanded;
+        }
+
+        return item.GetValueFromProperty<bool?>(_internalIsExpandedField, null);
+    }
+
+    private void SetIsExpanded(TItem item, bool value)
+    {
+        if (item is BitNavItem navItem)
+        {
+            navItem.IsExpanded = value;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            navOption.IsExpanded = value;
+        }
+
+        item.SetValueToProperty(_internalIsExpandedField, value);
+    }
+
+    internal bool GetIsEnabled(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.IsEnabled;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.IsEnabled;
+        }
+
+        return item.GetValueFromProperty(_internalIsEnabledField, true);
+    }
+
+    internal string? GetStyle(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Style;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Style;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalStyleField);
+    }
+
+    internal string? GetTarget(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Target;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Target;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalTargetField);
+    }
+
+    internal List<TItem> GetChildItems(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.ChildItems as List<TItem> ?? new List<TItem>();
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Items as List<TItem> ?? new List<TItem>();
+        }
+
+        return item.GetValueFromProperty(_internalChildItemsField, new List<TItem>())!;
+    }
+
+    internal void SetItemExpanded(TItem item, bool value)
+    {
+        var isExpanded = GetIsExpanded(item);
+
+        if (isExpanded is not null)
+        {
+            SetIsExpanded(item, value);
+            return;
+        }
+
+        if (_itemExpandStates.ContainsKey(item))
+        {
+            _itemExpandStates[item] = value;
+        }
+        else
+        {
+            _itemExpandStates.Add(item, value);
+        }
+    }
+
+    internal bool GetItemExpanded(TItem item)
+    {
+        var isExpanded = GetIsExpanded(item);
+
+        if (isExpanded is not null)
+        {
+            return isExpanded.Value;
+        }
+
+        return _itemExpandStates[item];
+    }
+
+    internal async Task SetSelectedItem(TItem item)
     {
         SelectedItem = item;
         await OnSelectItem.InvokeAsync(item);
         StateHasChanged();
     }
 
+    internal void RegisterOption(BitNavOption option)
+    {
+        _items.Add((option as TItem)!);
+        StateHasChanged();
+    }
+
+    internal void UnregisterOption(BitNavOption option)
+    {
+        _items.Remove((option as TItem)!);
+        StateHasChanged();
+    }
+
+
+
+    protected override string RootElementClass => "bit-nav";
+
     protected override async Task OnInitializedAsync()
     {
+        _internalForceAnchorField = ForceAnchorFieldSelector?.GetName() ?? ForceAnchorField;
+        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
+        _internalTitleField = TitleFieldSelector?.GetName() ?? TitleField;
+        _internalUrlField = UrlFieldSelector?.GetName() ?? UrlField;
+        _internalAriaCurrentField = AriaCurrentFieldSelector?.GetName() ?? AriaCurrentField;
+        _internalExpandAriaLabelField = ExpandAriaLabelFieldSelector?.GetName() ?? ExpandAriaLabelField;
+        _internalCollapseAriaLabelField = CollapseAriaLabelFieldSelector?.GetName() ?? CollapseAriaLabelField;
+        _internalAriaLabelField = AriaLabelFieldSelector?.GetName() ?? AriaLabelField;
+        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
+        _internalIsExpandedField = IsExpandedFieldSelector?.GetName() ?? IsExpandedField;
+        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
+        _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
+        _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
+        _internalChildItemsField = ChildItemsFieldSelector?.GetName() ?? ChildItemsField;
+        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
+
+        if (ChildContent is null && Items.Any())
+        {
+            _items = Items.ToList();
+            _oldItems = Items;
+        }
+
+        foreach (var item in Flatten(_items))
+        {
+            SetItemExpanded(item, GetIsExpanded(item) ?? false);
+        }
+
         if (Mode == BitNavMode.Automatic)
         {
+            SetSelectedItemByCurrentUrl();
             _navigationManager.LocationChanged += OnLocationChanged;
-
-            SelectItemByCurrentUrl();
         }
-        else if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+        else
         {
-            SelectedItem = DefaultSelectedItem;
+            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+            {
+                SelectedItem = DefaultSelectedItem;
+            }
         }
 
         await base.OnInitializedAsync();
     }
 
-    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ChildContent is null && Items.Any() && Items != _oldItems)
+        {
+            _items = Items.ToList();
+            _oldItems = Items;
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+
+
+    private List<TItem> Flatten(IList<TItem> e) => e.SelectMany(c => Flatten(GetChildItems(c))).Concat(e).ToList();
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SelectItemByCurrentUrl();
+        SetSelectedItemByCurrentUrl();
 
         StateHasChanged();
     }
 
-    private void SelectItemByCurrentUrl()
+    private void SetSelectedItemByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = Flatten(Items).FirstOrDefault(item => item.Url == currentUrl);
+        var currentItem = Flatten(_items).FirstOrDefault(item => GetUrl(item) == currentUrl);
 
-        SelectedItem = currentItem;
+        if (currentItem is not null)
+        {
+            SelectedItem = currentItem;
+        }
     }
 
-    private bool ExpandParents(IList<BitNavItem> items)
+    private bool ExpandParents(IList<TItem> items)
     {
-        foreach (var item in items)
+        foreach (var parent in items)
         {
-            if (item == SelectedItem)
+            if (parent == SelectedItem || (GetChildItems(parent).Any() && ExpandParents(GetChildItems(parent))))
             {
-                return item.IsExpanded = true;
-            }
-
-            if (item.Items.Any() && ExpandParents(item.Items))
-            {
-                return item.IsExpanded = true;
+                SetItemExpanded(parent, true);
+                return true;
             }
         }
 
         return false;
     }
+
+
 
     public void Dispose()
     {

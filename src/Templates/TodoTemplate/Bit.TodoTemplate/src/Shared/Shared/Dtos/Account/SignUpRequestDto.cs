@@ -21,7 +21,7 @@ public class SignUpRequestDto
     public string? Password { get; set; }
 
     [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessageResourceName = nameof(AppStrings.YouHaveToAcceptPrivacyPolicy))]
-    [Display(Name = nameof(AppStrings.IsAcceptPrivacy))]
-    public bool IsAcceptPrivacy { get; set; }
+    [Range(typeof(bool), "true", "true", ErrorMessageResourceName = nameof(AppStrings.YouHaveToAcceptEulaPrivacyPolicy))]
+    [Display(Name = nameof(AppStrings.IsEulaPrivacyPolicyAccepted))]
+    public bool EulaPrivacyPolicyAccepted { get; set; }
 }

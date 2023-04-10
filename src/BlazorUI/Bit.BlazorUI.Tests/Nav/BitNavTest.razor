@@ -1,0 +1,29 @@
+﻿<BitNav AriaLabel="@AriaLabel"
+        RenderType="@RenderType"
+        Items="Items"
+        SelectedItem="@SelectedItem"
+        OnItemClick="(BitNavItem item) => OnItemClick(item)"
+        OnItemToggle="(BitNavItem item) => OnItemExpand(item)"
+        Mode="@Mode">
+</BitNav>
+
+@code {
+    [Parameter] public string AriaLabel { get; set; }
+    [Parameter] public BitNavRenderType RenderType { get; set; }
+    [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+    [Parameter] public BitNavItem SelectedItem { get; set; } = new BitNavItem();
+    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+
+    public string ClickedItemName = string.Empty;
+    public string ExpandedItemName = string.Empty;
+
+    public void OnItemClick(BitNavItem navLinkItem)
+    {
+        ClickedItemName = navLinkItem.Text;
+    }
+
+    public void OnItemExpand(BitNavItem navLinkItem)
+    {
+        ExpandedItemName = navLinkItem.Text;
+    }
+}

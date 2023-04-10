@@ -1,0 +1,16 @@
+﻿<PageTitle>Bit's Native Blazor UI Components</PageTitle>
+
+<LayoutView Layout="@typeof(MainLayout)">
+    <Router AppAssembly="@GetType().Assembly"
+            OnNavigateAsync="@OnNavigateAsync">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+        </Found>
+        <NotFound>
+            <NotFoundComponent />
+        </NotFound>
+        <Navigating>
+            <LoadingComponent />
+        </Navigating>
+    </Router>
+</LayoutView>

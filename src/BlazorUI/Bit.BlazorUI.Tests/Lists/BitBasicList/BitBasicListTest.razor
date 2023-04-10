@@ -1,0 +1,20 @@
+﻿<BitBasicList Items="Items" EnableVirtualization="Virtualize"
+              Role="@Role" Style="@ListStyle" ItemSize="ItemSize" OverscanCount="OverscanCount">
+    <RowTemplate Context="person">
+        <div class="list-item" style="height:@($"{ItemSize}px")">
+            <p>Id: <strong>@person.Id</strong></p>
+            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+            <p>Job: <strong>@person.Job</strong></p>
+        </div>
+    </RowTemplate>
+</BitBasicList>
+
+@code {
+    [Parameter] public ICollection<Person> Items { get; set; }
+    [Parameter] public string Role { get; set; } = "list";
+    [Parameter] public bool Virtualize { get; set; }
+    [Parameter] public int OverscanCount { get; set; }
+    [Parameter] public int ItemSize { get; set; }
+    [Parameter] public string ListStyle { get; set; }
+    [Parameter] public RenderFragment<Person> RowTemplate { get; set; }
+}

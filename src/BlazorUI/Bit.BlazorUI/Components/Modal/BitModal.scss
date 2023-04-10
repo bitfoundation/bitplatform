@@ -10,12 +10,20 @@
     width: 100%;
     height: 100%;
 
-    &.absolute {
+    .bit-mdl-nta {
+        touch-action: none;
+
+        * {
+            touch-action: none;
+        }
+    }
+
+    &.bit-mdl-abs {
         position: absolute;
         z-index: unset;
     }
 
-    .modal {
+    .bit-mdl-doc {
         position: absolute;
         display: flex;
         height: 100%;
@@ -26,14 +34,14 @@
         transition: opacity 300ms ease 0s;
     }
 
-    .overlay {
+    .bit-mdl-ovl {
         position: absolute;
         z-index: 0;
         inset: 0;
-        background-color: rgba(0, 0, 0, 0.4);
+        background-color: rgba($color-background-secondary, 0.4);
     }
 
-    .scroll-content {
+    .bit-mdl-scr-cnt {
         flex-grow: 1;
         overflow-y: auto;
         max-height: 100vh;
@@ -41,55 +49,55 @@
         flex-direction: column;
     }
 
-    .container {
+    .bit-mdl-ctn {
         box-shadow: rgba(0, 0, 0, 22%) 0 spacing(3.25) spacing(7.25) 0, rgba(0, 0, 0, 18%) 0 spacing(0.625) spacing(1.75) 0;
         border-radius: $shape-border-radius;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         box-sizing: border-box;
         position: absolute;
     }
 
-    .center {
+    .bit-mdl-ctr {
         align-items: center;
         justify-content: center;
     }
 
-    .top-left {
+    .bit-mdl-tl {
         align-items: flex-start;
         justify-content: flex-start;
     }
 
-    .top-center {
+    .bit-mdl-tc {
         align-items: flex-start;
         justify-content: center;
     }
 
-    .top-right {
+    .bit-mdl-tr {
         align-items: flex-start;
         justify-content: flex-end;
     }
 
-    .center-left {
+    .bit-mdl-cl {
         align-items: center;
         justify-content: flex-start;
     }
 
-    .center-right {
+    .bit-mdl-cr {
         align-items: center;
         justify-content: flex-end;
     }
 
-    .bottom-left {
+    .bit-mdl-bl {
         align-items: flex-end;
         justify-content: flex-start;
     }
 
-    .bottom-center {
+    .bit-mdl-bc {
         align-items: flex-end;
         justify-content: center;
     }
 
-    .bottom-right {
+    .bit-mdl-br {
         align-items: flex-end;
         justify-content: flex-end;
     }

@@ -1,21 +1,18 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
-@namespace Bit.Websites.Platform.Web.Pages
-
-@using Bit.Websites.Platform.Web
-@using Bit.Websites.Platform.Shared;
+﻿@using Bit.Websites.Platform.Shared.Infra;
 @using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Http
-@using Microsoft.Extensions.Configuration
-
+@namespace Bit.Websites.Platform.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
 @inject IConfiguration Configuration
-
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
 
+    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
+    var shoudAddAspAppendVersion = true;
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
@@ -24,26 +21,21 @@
         if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
         {
             renderMode = RenderMode.Static;
+            isStatic = true;
         }
     }
 }
 
-@*
-    Unlike most client-side Blazor projects (WASM Blazor), we use .cshtml instead of .html index file.
-    This provides PreRendering(SSR) to the client blazor projects and the ability to use "asp-append-version".
-    Note that these files(_Host.cshtml & _Layout.cshtml) are being used for both "Client" and "Server" blazor.
-*@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms." />
-    <base href="~/" />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="Bit.Websites.Platform.Web.styles.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <style>
         * {
             font-family: "OpenSans";
@@ -62,6 +54,7 @@
 
         ::-webkit-scrollbar {
             width: 6.5px;
+            height: 6.5px;
             background-color: #fff;
         }
 
@@ -70,9 +63,9 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background-color: #c8c6c4;
             border-radius: 8px;
             border: 4px solid #c8c6c4;
+            background-color: #c8c6c4;
         }
 
         ::-webkit-scrollbar-button {
@@ -80,32 +73,52 @@
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background-color: #0064EF;
             border-radius: 8px;
-            border: 4px solid #0064EF;
+            border: 4px solid #106ebe;
+            background-color: #106ebe;
         }
     </style>
-    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link href="Bit.Websites.Platform.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
+    <div id="app-container">
+        @RenderBody()
+    </div>
 
-    @RenderBody()
-
-    @*<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/csharp.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/xml.min.js"></script>*@
-    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="true"></script>
-    <script src="~/scripts/app.js" asp-append-version="true"></script>
-
-    @if (isBlazorServer)
+    @if (isStatic is false)
     {
-        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+        @if (isBlazorServer)
+        {
+            <script src="_framework/blazor.server.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        }
+        else
+        {
+            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+            @if (isSsr)
+            {
+                <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+            }
+            else
+            {
+                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+               param-AutoHide="true"
+               param-HideApp="true"
+               param-AppContainer="@("#app-container")" />
+            }
+        }
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-    else
+    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+    @if (isSsr)
     {
-        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+        <persist-component-state />
     }
-    <persist-component-state />
 
     <!-- Google Tag Manager -->
     <script>
@@ -120,7 +133,7 @@
     <!-- End Google Tag Manager -->
 
     <!-- TrustBox script -->
-    <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>
+    <!-- <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script> -->
     <!-- End TrustBox script -->
 </body>
 </html>

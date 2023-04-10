@@ -1,32 +1,29 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <CascadingValue Value="Visual">
-        <BitDropDown IsEnabled="IsEnabled"
-                     OnClick="HandleClick"
-                     IsMultiSelect="IsMultiSelect"
-                     @bind-IsOpen="IsOpen"
-                     Items="Items"
-                     MultiSelectDelimiter="@MultiSelectDelimiter"
-                     DefaultValues="DefaultValues"
-                     DefaultValue="@DefaultValue"
-                     Placeholder="@Placeholder"
-                     Label="@Label"
-                     Title="@Title"
-                     NotifyOnReselect="NotifyOnReselect"
-                     OnSelectItem="HandleSelectItem"
-                     @bind-Value="@TestModel.Value"
-                     IsRequired="IsRequired">
-            <LabelFragment>
-                @LabelFragment
-            </LabelFragment>
-        </BitDropDown>
-    </CascadingValue>
+    <BitDropDown IsEnabled="IsEnabled"
+                 OnClick="HandleClick"
+                 IsMultiSelect="IsMultiSelect"
+                 @bind-IsOpen="IsOpen"
+                 Items="Items"
+                 MultiSelectDelimiter="@MultiSelectDelimiter"
+                 DefaultValues="DefaultValues"
+                 DefaultValue="@DefaultValue"
+                 Placeholder="@Placeholder"
+                 Label="@Label"
+                 Title="@Title"
+                 NotifyOnReselect="NotifyOnReselect"
+                 OnSelectItem="HandleSelectItem"
+                 @bind-Value="@TestModel.Value"
+                 IsRequired="IsRequired">
+        <LabelTemplate>
+            @LabelTemplate
+        </LabelTemplate>
+    </BitDropDown>
 
 </EditForm>
 
 @code {
-    [Parameter] public Visual Visual { get; set; }
     [Parameter] public bool IsMultiSelect { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
@@ -42,7 +39,7 @@
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
     [Parameter] public bool NotifyOnReselect { get; set; } = false;
-    [Parameter] public RenderFragment LabelFragment { get; set; }
+    [Parameter] public RenderFragment LabelTemplate { get; set; }
 
     public int Counter { get; set; }
     public int SelectItemCounter { get; set; }

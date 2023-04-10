@@ -49,7 +49,7 @@
                             role="menuitem"
                             aria-disabled="@GetIsEnabled(item)"
                             tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="item @(GetIsEnabled(item) ? "" : "disabled")">
+                            class="item @(GetIsEnabled(item) ? "" : "bit-dis")">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)

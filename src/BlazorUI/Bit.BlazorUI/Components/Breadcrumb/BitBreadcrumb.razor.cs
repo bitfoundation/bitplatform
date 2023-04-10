@@ -1,12 +1,11 @@
-﻿using System.Linq.Expressions;
+﻿using System.Globalization;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class 
+public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 {
-    protected override bool UseVisual => false;
-
     private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);
     private const string HREF_FIELD = nameof(BitBreadcrumbItem.Href);
     private const string IS_SELECTED_FIELD = nameof(BitBreadcrumbItem.IsSelected);
@@ -259,7 +258,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         }
     }
 
-    private string GetItemClasses(TItem item)
+    private string GetClasses(TItem item)
     {
         StringBuilder itemClasses = new();
 
@@ -267,7 +266,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
         if (GetItemClass(item).HasValue())
         {
-            itemClasses.Append($" {GetItemClass(item)}");
+            itemClasses.Append(' ')
+                       .Append(GetItemClass(item)!);
         }
 
         if (GetIsSelected(item))
@@ -277,7 +277,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
         if (GetIsSelected(item) && SelectedItemClass.HasValue())
         {
-            itemClasses.Append($" {SelectedItemClass}");
+            itemClasses.Append(' ')
+                       .Append(SelectedItemClass!);
         }
 
         if (GetIsEnabled(item) is false)
@@ -288,7 +289,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         return itemClasses.ToString();
     }
 
-    private string GetItemStyles(TItem item)
+    private string GetStyles(TItem item)
     {
         StringBuilder itemStyles = new();
 
@@ -317,10 +318,10 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
             return bitBreadcrumbOption.Href;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalHrefField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalHrefField);
     }
 
-    private string? GetItemClass(TItem item) 
+    private string? GetItemClass(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
@@ -332,7 +333,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
             return bitBreadcrumbOption.Class;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalClassField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalClassField);
     }
 
     private string? GetItemStyle(TItem item)
@@ -347,7 +348,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
             return bitBreadcrumbOption.Style;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalStyleField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalStyleField);
     }
 
     private string? GetItemText(TItem item)
@@ -362,7 +363,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
             return bitBreadcrumbOption.Text;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalTextField);
     }
 
     private bool GetIsSelected(TItem item)

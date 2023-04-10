@@ -39,28 +39,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         {
             if (OnValueChanging is not null)
             {
-                var valueChangingEventArgs = new ValueChangingEventArgs<TValue>
-                {
-                    Value = value
-                };
+                var valueChangingEventArgs = new ValueChangingEventArgs<TValue> { Value = value };
 
                 OnValueChanging(this, valueChangingEventArgs);
 
-                if (valueChangingEventArgs.ShouldChange is false)
-                {
-                    return;
-                }
+                if (valueChangingEventArgs.ShouldChange is false) return;
             }
 
             var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
-            if (hasChanged)
-            {
-                _value = value;
+            if (hasChanged is false) return;
 
-                if (OnValueChanged is not null)
-                {
-                    OnValueChanged(this, EventArgs.Empty);
-                }
+            _value = value;
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
             }
         }
     }
@@ -100,16 +93,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         set
         {
             var hasChanged = EqualityComparer<TValue>.Default.Equals(value, _value) is false;
-            if (hasChanged)
-            {
-                _value = value;
-                _ = ValueChanged.InvokeAsync(_value);
-                EditContext?.NotifyFieldChanged(FieldIdentifier);
+            if (hasChanged is false) return;
 
-                if (OnValueChanged is not null)
-                {
-                    OnValueChanged(this, EventArgs.Empty);
-                }
+            _value = value;
+            _ = ValueChanged.InvokeAsync(_value);
+            EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
             }
         }
     }
@@ -196,10 +188,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        if (UseVisual is false)
-        {
-            ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
-        }
+        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
 
         base.OnInitialized();
     }
@@ -352,7 +341,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed || disposing is false) return;
 
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)

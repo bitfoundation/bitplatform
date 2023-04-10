@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.Websites.Platform.Web.Shared;
+namespace Bit.Websites.Platform.Web;
 
 public partial class NavigationButtons
 {

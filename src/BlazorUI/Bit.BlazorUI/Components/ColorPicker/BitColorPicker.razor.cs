@@ -4,24 +4,21 @@ namespace Bit.BlazorUI;
 
 public partial class BitColorPicker : IAsyncDisposable
 {
-    protected override bool UseVisual => false;
-
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
 
     private ElementReference _saturationPickerRef;
-    private string? _onWindowMouseUpAbortControllerId;
-    private string? _onWindowMouseMoveAbortControllerId;
+    private string? _onWindowPointerUpAbortControllerId;
+    private string? _onWindowPointerMoveAbortControllerId;
     private string? _saturationPickerBackgroundRgbCss;
-    private string? _saturationPickerBackgroundRgbaCss;
-    private bool _saturationPickerMouseDown;
+    private bool _saturationPickerPointerDown;
     private BitColorPosition? _saturationPickerThumbPosition;
     private BitColor _color = new();
     private BitColorType _colorType;
     private double _hue;
     private double _selectedSaturation = 1;
     private double _selectedValue = 1;
-    private string _colorRectangleDescriptionId => $"ColorRectangle-Description-{UniqueId}";
+    private string? _colorRectangleDescriptionId;
 
     public string? Hex => _color.Hex;
     public string? Rgb => _color.Rgb;
@@ -93,6 +90,8 @@ public partial class BitColorPicker : IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        _colorRectangleDescriptionId = $"ColorRectangle-Description-{UniqueId}";
+
         SetSaturationPickerBackground();
 
         base.OnInitialized();
@@ -102,8 +101,8 @@ public partial class BitColorPicker : IAsyncDisposable
     {
         if (firstRender)
         {
-            _onWindowMouseUpAbortControllerId = await _js.RegisterOnWindowMouseUpEvent(this, "OnWindowMouseUp");
-            _onWindowMouseMoveAbortControllerId = await _js.RegisterOnWindowMouseMoveEvent(this, "OnWindowMouseMove");
+            _onWindowPointerUpAbortControllerId = await _js.RegisterOnWindowPointerUpEvent(this, "OnWindowPointerUp");
+            _onWindowPointerMoveAbortControllerId = await _js.RegisterOnWindowPointerMoveEvent(this, "OnWindowPointerMove");
 
             await SetPositionAsync();
         }
@@ -131,7 +130,6 @@ public partial class BitColorPicker : IAsyncDisposable
     private void SetSaturationPickerBackground()
     {
         var bitColor = new BitColor(_hue, 1, 1, 1);
-        _saturationPickerBackgroundRgbaCss = bitColor.Rgba;
         _saturationPickerBackgroundRgbCss = bitColor.Rgb;
     }
 
@@ -187,15 +185,15 @@ public partial class BitColorPicker : IAsyncDisposable
         return (value - min) * (newMax - newMin) / (max - min);
     }
 
-    private async Task OnSaturationPickerMouseDown(MouseEventArgs e)
+    private async Task OnSaturationPickerPointerDown(MouseEventArgs e)
     {
-        _saturationPickerMouseDown = true;
+        _saturationPickerPointerDown = true;
         await PickColorTune(e);
     }
 
-    private async Task OnSaturationPickerMouseMove(MouseEventArgs e)
+    private async Task OnSaturationPickerPointerMove(MouseEventArgs e)
     {
-        if (_saturationPickerMouseDown is false) return;
+        if (_saturationPickerPointerDown is false) return;
 
         await PickColorTune(e);
     }
@@ -217,22 +215,22 @@ public partial class BitColorPicker : IAsyncDisposable
 
 
     [JSInvokable]
-    public void OnWindowMouseUp(MouseEventArgs e)
+    public void OnWindowPointerUp(MouseEventArgs e)
     {
-        _saturationPickerMouseDown = false;
+        _saturationPickerPointerDown = false;
     }
 
     [JSInvokable]
-    public async Task OnWindowMouseMove(MouseEventArgs e)
+    public async Task OnWindowPointerMove(MouseEventArgs e)
     {
-        await OnSaturationPickerMouseMove(e);
+        await OnSaturationPickerPointerMove(e);
     }
 
 
     public async ValueTask DisposeAsync()
     {
-        await _js.AbortProcedure(_onWindowMouseUpAbortControllerId);
-        await _js.AbortProcedure(_onWindowMouseMoveAbortControllerId);
+        await _js.AbortProcedure(_onWindowPointerUpAbortControllerId);
+        await _js.AbortProcedure(_onWindowPointerMoveAbortControllerId);
 
         GC.SuppressFinalize(this);
     }

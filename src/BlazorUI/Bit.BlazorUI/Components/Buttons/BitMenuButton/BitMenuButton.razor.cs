@@ -11,7 +11,6 @@ public partial class BitMenuButton<TItem> where TItem : class
     private const string TEXT_FIELD = nameof(BitMenuButtonItem.Text);
     private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
 
-    protected override bool UseVisual => false;
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
@@ -19,7 +18,7 @@ public partial class BitMenuButton<TItem> where TItem : class
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalIconNameField = ICON_NAME_FIELD;
     private string _internalTextField = TEXT_FIELD;
-    private string _internalkeyField = KEY_FIELD;
+    private string _internalKeyField = KEY_FIELD;
 
     private string _menuButtonId => $"{RootElementClass}-{UniqueId}";
     private string _menuButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
@@ -198,7 +197,7 @@ public partial class BitMenuButton<TItem> where TItem : class
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
         _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalkeyField = KeyFieldSelector?.GetName() ?? KeyField;
+        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
         await base.OnInitializedAsync();
     }
@@ -250,7 +249,7 @@ public partial class BitMenuButton<TItem> where TItem : class
             return menuButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<BitIconName>(_internalIconNameField);
+        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
     } 
 
     private string? GetText(TItem item) 
@@ -265,7 +264,7 @@ public partial class BitMenuButton<TItem> where TItem : class
             return menuButtonOption.Text;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalTextField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalTextField);
     } 
 
     private string? GetKey(TItem item)
@@ -280,7 +279,7 @@ public partial class BitMenuButton<TItem> where TItem : class
             return menuButtonOption.Key;
         }
 
-        return item.GetValueAsObjectFromProperty(_internalkeyField)?.ToString();
+        return item.GetValueFromProperty<string?>(_internalKeyField);
     }
 
     private bool GetIsEnabled(TItem item) 

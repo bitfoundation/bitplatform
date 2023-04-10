@@ -7,26 +7,22 @@
      class="@ClassBuilder.Value"
      id="@UniqueId">
 
-    @if (LabelFragment is not null)
+    @if (LabelTemplate is not null)
     {
-        <label class="dtrp-label" id="@LabelId" for="@TextFieldId">
-            @LabelFragment
+        <label class="bit-dtrp-lbl" id="@_labelId" for="@_textFieldId">
+            @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="dtrp-label" id="@LabelId" for="@TextFieldId">
+        <label class="bit-dtrp-lbl" id="@_labelId" for="@_textFieldId">
             @Label
         </label>
     }
-    <div class="dtrp-wrapper"
-         id="@WrapperId"
-         aria-owns="@(IsOpen ? CalloutId : null)"
-         @onclick="HandleOnClick">
-
-        <div class="dtrp-field-grp @(AllowTextInput ? "editable-input" : null)">
+    <div class="bit-dtrp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div class="bit-dtrp-fld-grp @(AllowTextInput ? "bit-dtrp-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
-                   id="@TextFieldId"
+                   id="@_textFieldId"
                    disabled=@(IsEnabled is false)
                    role="combobox"
                    readonly=@(AllowTextInput is false)
@@ -35,18 +31,18 @@
                    placeholder="@Placeholder"
                    tabindex="@TabIndex"
                    aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() ? LabelId : null)"
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-haspopup="dialog"
-                   aria-controls="@(IsOpen ? CalloutId : null)"
-                   @onfocusin="@HandleFocusIn"
-                   @onfocusout="@HandleFocusOut"
-                   @onfocus="@HandleFocus"
-                   @onchange="@HandleChange" />
+                   aria-controls="@(IsOpen ? _calloutId : null)"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @onchange="@HandleOnChange" />
 
-            @if (IconFragment is not null)
+            @if (IconTemplate is not null)
             {
-                @IconFragment
+                @IconTemplate
             }
             else
             {
@@ -55,85 +51,80 @@
         </div>
     </div>
 
-    <div class="dtrp-overlay"
-         id="@OverlayId"
-         @onclick="CloseCallout">
-    </div>
+    <div class="bit-dtrp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
 
-    <div class="dtrp-callout @(IsResponsive ? "responsive" : string.Empty)" id="@CalloutId">
-        <div class="dtrp-callout-main" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+    <div class="bit-dtrp-cal @(IsResponsive ? "bit-dtrp-rsp" : null)" id="@_calloutId">
+        <div class="bit-dtrp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
-            <div class="dtrp-group"
-                 role="group"
-                 aria-label="">
-                <div aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
+            <div class="bit-dtrp-grp" role="group" aria-label="">
+                <div class="bit-dtrp-sd" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
                 {
-                    <div class="day-picker-wrapper">
-                        <div class="picker-header">
+                    <div class="bit-dtrp-dwp">
+                        <div class="bit-dtrp-pkr-hdr">
                             @if (_showMonthPickerAsOverlayInternal)
                             {
-                                <button class="header-title"
+                                <button class="bit-dtrp-pkr-tit"
                                         aria-label="@($"{_monthTitle}, change month")"
                                         aria-live="polite"
                                         aria-atomic="true"
                                         tabindex="0"
                                         type="button"
                                         @onclick="@ToggleMonthPickerAsOverlay">
-                                    <span id="@MonthTitleId">@_monthTitle</span>
+                                    <span id="@_monthTitleId">@_monthTitle</span>
                                 </button>
                             }
                             else
                             {
-                                <div class="header-title"
+                                <div class="bit-dtrp-pkr-tit"
                                      aria-live="polite"
                                      aria-atomic="true"
                                      tabindex="-1">
-                                    <span id="@MonthTitleId">@_monthTitle</span>
+                                    <span id="@_monthTitleId">@_monthTitle</span>
                                 </div>
                             }
-                            <div class="navigation-btn-container">
-                                <button class="navigation-btn"
+                            <div class="bit-dtrp-nav-btn-ctn">
+                                <button class="bit-dtrp-nav-btn"
                                         type="button"
                                         title="@GoToPrevMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
-                                        @onclick="() => HandleMonthChange(ChangeDirection.Previous)">
+                                        @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
-                                <button class="navigation-btn"
+                                <button class="bit-dtrp-nav-btn"
                                         type="button"
                                         title="@GoToNextMonthTitle"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
-                                        @onclick="() => HandleMonthChange(ChangeDirection.Next)">
+                                        @onclick="() => HandleOnMonthChange(ChangeDirection.Next)">
                                     <i class="bit-icon" aria-hidden="true"></i>
                                 </button>
                                 @if (ShowCloseButton)
                                 {
                                     <BitIconButton IconName="BitIconName.ChromeClose"
-                                           Class="header-icon-btn"
-                                           Title="Close date picker"
-                                           ButtonType="BitButtonType.Button"
-                                           OnClick="CloseCallout" />
+                                                   Class="bit-dtrp-hdr-ibtn"
+                                                   Title="Close date picker"
+                                                   ButtonType="BitButtonType.Button"
+                                                   OnClick="CloseCallout" />
                                 }
                             </div>
                         </div>
                         <table role="grid"
                                aria-readonly="true"
                                aria-multiselectable="false"
-                               aria-labelledby="@MonthTitleId"
-                               aria-activedescendant="@ActiveDescendantId">
+                               aria-labelledby="@_monthTitleId"
+                               aria-activedescendant="@_activeDescendantId">
                             <tbody>
                                 <tr>
                                     @if (ShowWeekNumbers)
                                     {
-                                        <th class="week-day-label"></th>
+                                        <th class="bit-dtrp-wd-lbl"></th>
                                     }
 
                                     @for (var index = 0; index < 7; index++)
                                     {
-                                        <th class="week-day-label" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
+                                        <th class="bit-dtrp-wd-lbl" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
                                             @Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
                                         </th>
                                     }
@@ -149,7 +140,7 @@
                                     <tr>
                                         @if (ShowWeekNumbers)
                                         {
-                                            <th class="week-num-cell"
+                                            <th class="bit-dtrp-wnumc"
                                                 title="@($"Week number {GetWeekNumber(week)}")"
                                                 aria-label="@($"Week number {GetWeekNumber(week)}")"
                                                 scope="row">
@@ -162,7 +153,7 @@
                                             var localWeek = week;
                                             var localDay = day;
                                             <td class="@GetDateElClass(localDay, localWeek)" role="presentation">
-                                                <button class="day-btn"
+                                                <button class="bit-dtrp-dbtn"
                                                         role="gridcell"
                                                         type="button"
                                                         tabindex="@((week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek) || (week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek) ? 0 : -1)"
@@ -190,28 +181,81 @@
 
                         @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
                         {
-                            <button class="go-today-btn"
+                            <button class="bit-dtrp-gtd-btn"
                                     type="button"
-                                    disabled="@IsGoTodayDisabeld()"
-                                    @onclick="HandleGoToToday">
+                                    disabled="@IsGoTodayDisabled()"
+                                    @onclick="HandleOnGoToToday">
                                 @GoToToday
                             </button>
+                        }
+
+                        @if (ShowTimePicker)
+                        {
+                            <div class="bit-dtrp-tgrp">
+                                <div class="bit-dtrp-twp">
+                                    <input @ref="_inputStartTimeHourRef" 
+                                           class="bit-dtrp-tinp" 
+                                           type="number" 
+                                           inputmode="numeric"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="23"
+                                           @bind="@_startTimeHour" 
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnStartTimeHourFocus" />
+                                    <span class="bit-dtrp-tdiv">:</span>
+                                    <input @ref="_inputStartTimeMinuteRef"
+                                           class="bit-dtrp-tinp" 
+                                           type="number"
+                                           inputmode="numeric"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="59"
+                                           @bind="@_startTimeMinute"
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnStartTimeMinuteFocus" />
+                                </div>
+
+                                <div class="bit-dtrp-twp">
+                                    <input @ref="_inputEndTimeHourRef" 
+                                           class="bit-dtrp-tinp" 
+                                           type="number" 
+                                           inputmode="numeric"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="23"
+                                           @bind="@_endTimeHour" 
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnEndTimeHourFocus" />
+                                    <span class="bit-dtrp-tdiv">:</span>
+                                    <input @ref="_inputEndTimeMinuteRef"
+                                           class="bit-dtrp-tinp" 
+                                           type="number"
+                                           inputmode="numeric"
+                                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                                           min="0"
+                                           max="59"
+                                           @bind="@_endTimeMinute" 
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnEndTimeMinuteFocus" />
+                                </div>
+                            </div>
                         }
                     </div>
                 }
 
                 @if (_showMonthPickerAsOverlayInternal is false)
                 {
-                    <div class="divider"></div>
+                    <div class="bit-dtrp-div"></div>
                 }
 
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || _showMonthPickerAsOverlayInternal is false)
                 {
-                    <div class="month-picker-wrapper">
+                    <div class="bit-dtrp-mwp">
                         @if (_showMonthPicker)
                         {
-                            <div class="picker-header">
-                                <button class="header-title"
+                            <div class="bit-dtrp-pkr-hdr">
+                                <button class="bit-dtrp-pkr-tit"
                                         aria-label="@($"{_displayYear}, change year")"
                                         tabindex="0"
                                         type="button"
@@ -220,29 +264,29 @@
                                         @onclick="ToggleBetweenMonthAndYearPicker">
                                     @_displayYear
                                 </button>
-                                <div class="navigation-btn-container">
-                                    <button class="navigation-btn"
+                                <div class="bit-dtrp-nav-btn-ctn">
+                                    <button class="bit-dtrp-nav-btn"
                                             disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
                                             type="button"
                                             title="Go to previous year @(_displayYear - 1)"
-                                            @onclick="() => HandleYearChange(ChangeDirection.Previous)">
+                                            @onclick="() => HandleOnYearChange(ChangeDirection.Previous)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
-                                    <button class="navigation-btn"
+                                    <button class="bit-dtrp-nav-btn"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)"
                                             disabled="@(CanYearChange(ChangeDirection.Next) is false)"
                                             type="button"
                                             title="Go to next year @(_displayYear + 1)"
-                                            @onclick="() => HandleYearChange(ChangeDirection.Next)">
+                                            @onclick="() => HandleOnYearChange(ChangeDirection.Next)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="grid-container" role="grid" aria-label="@_displayYear">
+                            <div class="bit-dtrp-gctn" role="grid" aria-label="@_displayYear">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
-                                    <div class="btn-row" role="row">
+                                    <div class="bit-dtrp-btn-row" role="row">
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var monthIndex = (rowIndex * 4) + cellIndex;
@@ -274,38 +318,38 @@
                         }
                         else
                         {
-                            <div class="picker-header">
-                                <button class="header-title"
+                            <div class="bit-dtrp-pkr-hdr">
+                                <button class="bit-dtrp-pkr-tit"
                                         aria-label="@($"{_yearRangeFrom} - {_yearRangeTo}, change month")"
                                         type="button"
                                         aria-atomic="true"
                                         aria-live="polite"
                                         @onclick="ToggleBetweenMonthAndYearPicker">
-                                    @_yearRangeFrom - @_yearRangeTo
+                                        @_yearRangeFrom - @_yearRangeTo
                                 </button>
-                                <div class="navigation-btn-container">
-                                    <button class="navigation-btn"
+                                <div class="bit-dtrp-nav-btn-ctn">
+                                    <button class="bit-dtrp-nav-btn"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             type="button"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)"
-                                            @onclick="() => HandleYearRangeChange(ChangeDirection.Previous)">
+                                            @onclick="() => HandleOnYearRangeChange(ChangeDirection.Previous)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
-                                    <button class="navigation-btn"
+                                    <button class="bit-dtrp-nav-btn"
                                             type="button"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)"
-                                            @onclick="() => HandleYearRangeChange(ChangeDirection.Next)">
+                                            @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)">
                                         <i class="bit-icon" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="grid-container" role="grid" aria-label="@_yearRangeFrom - @_yearRangeTo">
+                            <div class="bit-dtrp-gctn" role="grid" aria-label="@_yearRangeFrom - @_yearRangeTo">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
-                                    <div class="btn-row" role="row">
+                                    <div class="bit-dtrp-btn-row" role="row">
                                         @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
                                         {
                                             var year = _yearRangeFrom + (rowIndex * 4) + cellIndex;
@@ -334,15 +378,16 @@
 
                         @if (ShowGoToToday)
                         {
-                            <button class="go-today-btn"
+                            <button class="bit-dtrp-gtd-btn"
                                     type="button"
-                                    disabled="@IsGoTodayDisabeld()"
-                                    @onclick="HandleGoToToday">
+                                    disabled="@IsGoTodayDisabled()"
+                                    @onclick="HandleOnGoToToday">
                                 @GoToToday
                             </button>
                         }
                     </div>
                 }
+
             </div>
             <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
         </div>

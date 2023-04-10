@@ -50,18 +50,18 @@ jobs:
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/AdminPanel.Server.Api.csproj
       failOnStderr: true
 
-  - task: Bash@3
-    displayName: 'Install wasm-tools'
-    inputs:
-      targetType: 'inline'
-      script: dotnet workload install wasm-tools
-
   - task: FileTransform@1
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
       folderPath: './'
       targetFiles: 'src/Client/Shared/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Restore workloads'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
 
   - task: Bash@3
     displayName: 'Build (To generate CSS/JS files)'
@@ -174,6 +174,12 @@ jobs:
       targetFiles: 'src/Client/Shared/appsettings.json'
 
   - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
+
+  - task: Bash@3
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
@@ -215,6 +221,12 @@ jobs:
     displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
     inputs:
       version: 6.x
+
+  - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Restore workloads'
@@ -295,6 +307,12 @@ jobs:
       fileType: 'json'
       folderPath: './'
       targetFiles: 'src/Client/Shared/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Restore workloads'

@@ -22,7 +22,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
       
     - name: Build
       run: dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

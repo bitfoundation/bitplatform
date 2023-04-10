@@ -29,10 +29,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
-
-    - name: Install wasm-tools
-      run: dotnet workload install wasm-tools
+        global-json-file: global.json
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
@@ -136,7 +133,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -145,6 +142,9 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
   
@@ -172,7 +172,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -188,6 +188,9 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
   
@@ -218,7 +221,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/global.json
+         global-json-file: global.json
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -226,7 +229,10 @@ jobs:
          files: 'src/Client/Shared/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-   
+
+     - name: Install Maui
+       run: dotnet workload install maui
+
      - name: Restore workloads
        run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
    
@@ -254,7 +260,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/global.json
+        global-json-file: global.json
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -288,6 +294,9 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
   
+    - name: Install Maui
+      run: dotnet workload install maui
+
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
   

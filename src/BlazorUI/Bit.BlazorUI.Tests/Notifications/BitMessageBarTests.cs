@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Notifications;
 
@@ -15,13 +15,12 @@ public class BitMessageBarTests : BunitTestContext
         DataRow(BitMessageBarType.Success),
         DataRow(BitMessageBarType.Warning)
     ]
-    public void BitMessageBarShouldTakeCorrectTypeAndVisual(BitMessageBarType messageBarType)
+    public void BitMessageBarShouldTakeCorrectType(BitMessageBarType messageBarType)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.MessageBarType, messageBarType);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.MessageBarType, messageBarType);
+        });
 
         var bitMessageBar = component.Find(".bit-msb");
 
@@ -53,15 +52,15 @@ public class BitMessageBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2)
+        DataRow(BitIconName.Emoji2),
+        DataRow(BitIconName.WordLogo)
     ]
     public void BitMessageBarShouldRespectCustomIcon(BitIconName iconName)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.MessageBarIconName, iconName);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.MessageBarIconName, iconName);
+        });
 
         var icon = component.Find(".icon > i");
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
@@ -75,19 +74,18 @@ public class BitMessageBarTests : BunitTestContext
     ]
     public void BitMessageBarShouldRespectMultiline(bool isMultiline, bool truncated)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.IsMultiline, isMultiline);
-                parameters.Add(p => p.Truncated, truncated);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.IsMultiline, isMultiline);
+            parameters.Add(p => p.Truncated, truncated);
+        });
 
         var bitMessageBar = component.Find(".bit-msb > div");
 
         var messageBarMultilineType = isMultiline ? "multiline" : "singleline";
         Assert.IsTrue(bitMessageBar.ClassList.Contains(messageBarMultilineType));
 
-        if (!isMultiline && truncated)
+        if (isMultiline is false && truncated)
         {
             var truncateButton = component.Find(".truncate > button");
 
@@ -106,25 +104,30 @@ public class BitMessageBarTests : BunitTestContext
     [DataTestMethod]
     public void BitMessageBarDismissButtonShouldWorkCorrect()
     {
-        var component = RenderComponent<BitMessageBarTest>();
+        int currentCount = 0;
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, () => currentCount++);
+        });
 
         var dismissButton = component.Find(".dismiss > button");
 
         dismissButton.Click();
 
-        Assert.AreEqual(1, component.Instance.CurrentCount);
+        Assert.AreEqual(1, currentCount);
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2)
+        DataRow(BitIconName.Emoji2),
+        DataRow(BitIconName.WordLogo)
     ]
     public void BitMessageBarShouldRespectCustomDismissIcon(BitIconName iconName)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.DismissIconName, iconName);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.DismissIconName, iconName);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
 
         var icon = component.Find(".dismiss button span i");
 
@@ -134,15 +137,15 @@ public class BitMessageBarTests : BunitTestContext
     [DataTestMethod,
         DataRow("test dismiss aria label", false),
         DataRow("test dismiss aria label", true)
-        ]
+    ]
     public void BitMessageBarDismissButtonAriaLabelTest(string ariaLabel, bool isMultiline)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.IsMultiline, isMultiline);
-                parameters.Add(p => p.DismissButtonAriaLabel, ariaLabel);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.IsMultiline, isMultiline);
+            parameters.Add(p => p.DismissButtonAriaLabel, ariaLabel);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
 
         var dismissButton = component.Find(".dismiss button");
 
@@ -158,13 +161,12 @@ public class BitMessageBarTests : BunitTestContext
     ]
     public void BitMessageBarOverflowButtonAriaLabelTest(string ariaLabel)
     {
-        var component = RenderComponent<BitMessageBarTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.IsMultiline, false);
-                parameters.Add(p => p.Truncated, true);
-                parameters.Add(p => p.OverflowButtonAriaLabel, ariaLabel);
-            });
+        var component = RenderComponent<BitMessageBar>(parameters =>
+        {
+            parameters.Add(p => p.IsMultiline, false);
+            parameters.Add(p => p.Truncated, true);
+            parameters.Add(p => p.OverflowButtonAriaLabel, ariaLabel);
+        });
 
         var dismissButton = component.Find(".truncate button");
 
@@ -203,7 +205,7 @@ public class BitMessageBarTests : BunitTestContext
     ]
     public void BitMessageBarRoleTest(string role, BitMessageBarType type)
     {
-        var component = RenderComponent<BitMessageBarTest>(parameter =>
+        var component = RenderComponent<BitMessageBar>(parameter =>
         {
             parameter.Add(p => p.Role, role);
             parameter.Add(p => p.MessageBarType, type);
@@ -216,11 +218,9 @@ public class BitMessageBarTests : BunitTestContext
     }
 
     private static string GetRole(BitMessageBarType type)
-    {
-        return type switch
-        {
-            BitMessageBarType.Blocked or BitMessageBarType.Error or BitMessageBarType.SevereWarning => "alert",
-            _ => "status",
-        };
-    }
+     => type switch
+     {
+         BitMessageBarType.Blocked or BitMessageBarType.Error or BitMessageBarType.SevereWarning => "alert",
+         _ => "status",
+     };
 }

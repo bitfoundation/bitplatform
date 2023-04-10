@@ -1,12 +1,12 @@
-﻿@import "../../../Styles/functions.scss", "../../../Styles/general.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-cmpb {
     position: relative;
     display: inline-flex;
     min-width: spacing(9);
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
     text-align: left;
     cursor: pointer;
@@ -29,7 +29,7 @@
     }
 
     &.primary {
-        color: $color-text-primary;
+        color: $color-text-secondary;
         background: $color-primary-main;
         border-color: $color-border-primary;
 
@@ -45,8 +45,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -60,7 +60,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         border-color: $color-border-disabled;
         background-color: $color-action-disabled;
         cursor: default;
@@ -90,7 +90,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
 
         .secondary-text {
             font-size: spacing(1.25);

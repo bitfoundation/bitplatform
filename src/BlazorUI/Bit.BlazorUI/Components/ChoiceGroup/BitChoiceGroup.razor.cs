@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq.Expressions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -84,6 +84,8 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         get => isRequired;
         set
         {
+            if (isRequired == value) return;
+
             isRequired = value;
             ClassBuilder.Reset();
         }
@@ -214,8 +216,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// </summary>
     [Parameter] public Expression<Func<TItem, TValue>>? ValueFieldSelector { get; set; }
 
-    protected override string RootElementClass => "bit-chg";
-
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Add((option as TItem)!);
@@ -232,6 +232,17 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         _items.Remove((option as TItem)!);
         StateHasChanged();
+    }
+
+
+
+    protected override string RootElementClass => "bit-chg";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-required" : string.Empty);
+
+        ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -272,20 +283,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         }
     }
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IsEnabled && IsRequired
-                                   ? $"{RootElementClass}-required-{VisualClassRegistrar()}"
-                                   : string.Empty);
 
-        ClassBuilder.Register(() => ValueInvalid is true
-                                   ? $"{RootElementClass}-invalid-{VisualClassRegistrar()}"
-                                   : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl
-                                   ? $"{RootElementClass}-rtl-{VisualClassRegistrar()}"
-                                   : string.Empty);
-    }
 
     private string? GetAriaLabel(TItem item)
     {
@@ -299,7 +297,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.AriaLabel;
         }
 
-        return item.GetValueFromProperty<string>(_internalAriaLabelField);
+        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
     }
 
     private string? GetId(TItem item)
@@ -314,7 +312,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Id;
         }
 
-        return item.GetValueFromProperty<string>(_internalIdField);
+        return item.GetValueFromProperty<string?>(_internalIdField);
     }
 
     private bool GetIsEnabled(TItem item)
@@ -344,7 +342,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageSrc;
         }
 
-        return item.GetValueFromProperty<string>(_internalImageSrcField);
+        return item.GetValueFromProperty<string?>(_internalImageSrcField);
     }
 
     private string? GetImageAlt(TItem item)
@@ -359,7 +357,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageAlt;
         }
 
-        return item.GetValueFromProperty<string>(_internalImageAltField);
+        return item.GetValueFromProperty<string?>(_internalImageAltField);
     }
 
     private Size GetImageSize(TItem item)
@@ -374,7 +372,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.ImageSize ?? new Size(0, 0);
         }
 
-        return item.GetValueFromProperty(_internalImageSizeField, new Size(0,0));
+        return item.GetValueFromProperty(_internalImageSizeField, new Size(0, 0));
     }
 
     private BitIconName? GetIconName(TItem item)
@@ -404,7 +402,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.SelectedImageSrc;
         }
 
-        return item.GetValueFromProperty<string>(_internalSelectedImageSrcField);
+        return item.GetValueFromProperty<string?>(_internalSelectedImageSrcField);
     }
 
     private string? GetText(TItem item)
@@ -419,7 +417,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Text;
         }
 
-        return item.GetValueFromProperty<string>(_internalTextField);
+        return item.GetValueFromProperty<string?>(_internalTextField);
     }
 
     private TValue? GetValue(TItem item)
@@ -434,7 +432,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Value;
         }
 
-        return item.GetValueFromProperty<TValue>(_internalValueField);
+        return item.GetValueFromProperty<TValue?>(_internalValueField);
     }
 
     private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
@@ -490,7 +488,9 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     }
 
     private string GetLabelClassNameItem(TItem item) =>
-        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null ? "bit-chgi-lbl-with-img" : "bit-chgi-lbl";
+        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null 
+        ? "bit-chgi-lbl-with-img" 
+        : "bit-chgi-lbl";
 
     private async Task HandleClick(MouseEventArgs e)
     {

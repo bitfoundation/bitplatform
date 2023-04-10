@@ -1,27 +1,55 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitSwiperItem
 {
-    internal int Index;
+    private string internalStyle = string.Empty;
+    private string internalTransformStyle = string.Empty;
+    private string internalTransitionStyle = string.Empty;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter] protected BitSwiper? Swiper { get; set; }
 
-    protected override Task OnInitializedAsync()
-    {
-        if (Swiper is not null)
-        {
-            Swiper.RegisterItem(this);
-        }
+    internal int Index;
 
-        return base.OnInitializedAsync();
+    internal string InternalStyle
+    {
+        get => internalStyle;
+        set
+        {
+            if (internalStyle == value) return;
+
+            internalStyle = value;
+            StyleBuilder.Reset();
+        }
     }
 
-    protected override string RootElementClass => "bit-swp-item";
+    internal string InternalTransformStyle
+    {
+        get => internalTransformStyle;
+        set
+        {
+            if (internalTransformStyle == value) return;
+
+            internalTransformStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    internal string InternalTransitionStyle
+    {
+        get => internalTransitionStyle;
+        set
+        {
+            if (internalTransitionStyle == value) return;
+
+            internalTransitionStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+
+    protected override string RootElementClass => "bit-swpi";
 
     protected override void RegisterComponentClasses()
     {
@@ -30,36 +58,10 @@ public partial class BitSwiperItem
         StyleBuilder.Register(() => internalTransitionStyle);
     }
 
-    private string internalStyle = string.Empty;
-    internal string InternalStyle
+    protected override Task OnInitializedAsync()
     {
-        get => internalStyle;
-        set
-        {
-            internalStyle = value;
-            StyleBuilder.Reset();
-        }
-    }
+        Swiper?.RegisterItem(this);
 
-    private string internalTransformStyle = string.Empty;
-    internal string InternalTransformStyle
-    {
-        get => internalTransformStyle;
-        set
-        {
-            internalTransformStyle = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    private string internalTransitionStyle = string.Empty;
-    internal string InternalTransitionStyle
-    {
-        get => internalTransitionStyle;
-        set
-        {
-            internalTransitionStyle = value;
-            StyleBuilder.Reset();
-        }
+        return base.OnInitializedAsync();
     }
 }

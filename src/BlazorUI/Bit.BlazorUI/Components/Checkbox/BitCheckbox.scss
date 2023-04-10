@@ -43,7 +43,7 @@
             color: $color-neutrals-white;
             font-size: spacing(1.375);
             transition: 0.1s;
-            font-family: $typography-icon-font-family;
+            font-family: $typography-font-family-icons;
             -webkit-font-smoothing: antialiased;
             opacity: 0;
         }
@@ -55,7 +55,7 @@
         margin: 0 0 0 spacing(0.5);
     }
 
-    &.invalid {
+    &.bit-inv {
         .checkbox {
             border-color: $color-state-invalid;
         }
@@ -82,19 +82,19 @@
             background-color: $color-primary-main;
 
             .bit-icon {
-                color: $color-text-primary;
+                color: $color-text-secondary;
                 opacity: 1;
             }
         }
 
-        &.invalid {
+        &.bit-inv {
             .checkbox {
                 background-color: $color-state-invalid;
                 border-color: $color-state-invalid;
             }
         }
 
-        &.disabled {
+        &.bit-dis {
             .checkbox {
                 border-color: $color-neutrals-gray60;
                 background-color: $color-neutrals-gray60;
@@ -111,7 +111,7 @@
     &.indeterminate {
         .checkbox {
             border-color: $color-primary-main;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
 
             .bit-icon {
                 display: inline-block;
@@ -127,7 +127,7 @@
             }
         }
 
-        &.invalid {
+        &.bit-inv {
             .checkbox {
                 border-color: $color-state-invalid-hover;
 
@@ -137,7 +137,7 @@
             }
         }
 
-        &.disabled {
+        &.bit-dis {
             .checkbox {
                 .bit-icon {
                     background-color: $color-neutrals-gray60;
@@ -146,7 +146,7 @@
         }
     }
 
-    &.disabled {
+    &.bit-dis {
         pointer-events: none;
 
         .label {
@@ -155,12 +155,12 @@
 
         .checkbox {
             border-color: $color-neutrals-gray60;
-            background-color: $color-neutrals-white;
+            background-color: $color-background-primary;
 
             .bit-icon {
                 opacity: 1;
                 color: $color-neutrals-white;
-                background-color: $color-neutrals-white;
+                background-color: $color-background-primary;
             }
         }
 
@@ -192,14 +192,14 @@
                 }
             }
 
-            &.invalid:hover {
+            &.bit-inv:hover {
                 .checkbox {
                     border-color: $color-state-invalid-hover;
                     background-color: $color-state-invalid-hover;
                 }
             }
 
-            &.disabled:hover {
+            &.bit-dis:hover {
                 .checkbox {
                     border-color: $color-neutrals-gray60;
                     background-color: $color-neutrals-gray60;
@@ -217,7 +217,7 @@
             &:hover {
                 .checkbox {
                     border-color: $color-primary-darker;
-                    background-color: $color-neutrals-white;
+                    background-color: $color-background-primary;
 
                     .bit-icon {
                         background-color: $color-primary-darker;
@@ -225,7 +225,7 @@
                 }
             }
 
-            &.invalid:hover {
+            &.bit-inv:hover {
                 .checkbox {
                     border-color: $color-state-invalid-hover;
 
@@ -235,7 +235,7 @@
                 }
             }
 
-            &.disabled:hover {
+            &.bit-dis:hover {
                 .checkbox {
                     .bit-icon {
                         background-color: $color-neutrals-gray60;
@@ -245,7 +245,7 @@
             }
         }
 
-        &.disabled:hover {
+        &.bit-dis:hover {
             .checkbox {
                 border-color: $color-neutrals-gray60;
 

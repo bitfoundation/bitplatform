@@ -1,14 +1,7 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-brc {
-    &.disabled {
-        .overflow-btn, .item, .selected-item, i {
-            cursor: default;
-            font-weight: 400;
-            pointer-events: none;
-            color: $color-neutrals-gray60;
-        }
-    }
+    white-space: nowrap;
 
     .items-wrapper {
         ul {
@@ -60,13 +53,6 @@
         color: $color-neutrals-gray160;
     }
 
-    .disabled {
-        cursor: default;
-        font-weight: 400;
-        pointer-events: none;
-        color: $color-neutrals-gray60;
-    }
-
     .overflow-menu-wrapper {
         display: none;
         position: fixed;
@@ -79,7 +65,7 @@
         animation-duration: 300ms;
         animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
         animation-fill-mode: both;
-        background-color: $color-neutrals-white;
+        background-color: $color-background-primary;
         z-index: $space-overlay-zindex1;
         overflow: hidden auto;
 
@@ -100,7 +86,7 @@
             text-align: left;
             box-sizing: border-box;
             outline: transparent;
-            border: spacing(0.125) solid transparent;
+            border: $shape-border-width $shape-border-style transparent;
             text-decoration: none;
             padding: 0 spacing(1);
             color: $color-neutrals-gray160;
@@ -127,5 +113,21 @@
         left: 0;
         z-index: $space-overlay-zindex0;
         background-color: transparent;
+    }
+
+    .bit-dis {
+        cursor: default;
+        font-weight: 400;
+        pointer-events: none;
+        color: $color-neutrals-gray60;
+    }
+
+    &.bit-dis {
+        .overflow-btn, .item, .selected-item, i {
+            cursor: default;
+            font-weight: 400;
+            pointer-events: none;
+            color: $color-neutrals-gray60;
+        }
     }
 }

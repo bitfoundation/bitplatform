@@ -21,7 +21,7 @@ public class BlazorModeDetector
     {
         get
         {
-#if BlazorWebAssembly
+#if BlazorWebAssembly                  
             return BlazorMode.BlazorWebAssembly;
 #else
             return BlazorMode.BlazorServer;

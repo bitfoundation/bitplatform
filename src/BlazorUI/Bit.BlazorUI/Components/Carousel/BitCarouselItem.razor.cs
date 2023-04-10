@@ -2,13 +2,55 @@
 
 public partial class BitCarouselItem
 {
-    protected override bool UseVisual => false;
+    private string internalStyle = string.Empty;
 
-    internal int Index;
+    private string internalTransformStyle = string.Empty;
+
+    private string internalTransitionStyle = string.Empty;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter] protected BitCarousel? Carousel { get; set; }
+
+
+    internal int Index;
+
+    internal string InternalStyle
+    {
+        get => internalStyle;
+        set
+        {
+            if (internalStyle == value) return;
+
+            internalStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    internal string InternalTransformStyle
+    {
+        get => internalTransformStyle;
+        set
+        {
+            if (internalStyle == value) return;
+
+            internalTransformStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    internal string InternalTransitionStyle
+    {
+        get => internalTransitionStyle;
+        set
+        {
+            if (internalStyle == value) return;
+
+            internalTransitionStyle = value;
+            StyleBuilder.Reset();
+        }
+    }
+
 
     protected override Task OnInitializedAsync()
     {
@@ -27,38 +69,5 @@ public partial class BitCarouselItem
         StyleBuilder.Register(() => internalStyle);
         StyleBuilder.Register(() => internalTransformStyle);
         StyleBuilder.Register(() => internalTransitionStyle);
-    }
-
-    private string internalStyle = string.Empty;
-    internal string InternalStyle
-    {
-        get => internalStyle;
-        set
-        {
-            internalStyle = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    private string internalTransformStyle = string.Empty;
-    internal string InternalTransformStyle
-    {
-        get => internalTransformStyle;
-        set
-        {
-            internalTransformStyle = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    private string internalTransitionStyle = string.Empty;
-    internal string InternalTransitionStyle
-    {
-        get => internalTransitionStyle;
-        set
-        {
-            internalTransitionStyle = value;
-            StyleBuilder.Reset();
-        }
     }
 }

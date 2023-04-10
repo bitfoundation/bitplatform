@@ -1,16 +1,24 @@
-﻿using Microsoft.Net.Http.Headers;
+﻿using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Net.Http.Headers;
 
 namespace Bit.Websites.Platform.Api.Startup;
 
-public static class Middlewares
+public class Middlewares
 {
-    public static void Use(IApplicationBuilder app, IHostEnvironment env)
+    public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
+        app.UseForwardedHeaders();
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+
 #if BlazorWebAssembly
-            app.UseWebAssemblyDebugging();
+            if (env.IsDevelopment())
+            {
+                app.UseWebAssemblyDebugging();
+            }
 #endif
         }
 
@@ -20,12 +28,15 @@ public static class Middlewares
 
         if (env.IsDevelopment() is false)
         {
+            app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
+
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = ctx =>
             {
+                // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
                     MaxAge = TimeSpan.FromDays(365),
@@ -34,19 +45,45 @@ public static class Middlewares
             }
         });
 
-        // Swagger middleware
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        });
-
         app.UseRouting();
-        app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
+        app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+
+        app.UseResponseCaching();
+
+#if MultilingualEnabled
+        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            ApplyCurrentCultureToResponseHeaders = true
+        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+#endif
+
+        app.UseHttpResponseExceptionHandler();
+
+        app.UseSwagger();
+
+        app.UseSwaggerUI();
 
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapDefaultControllerRoute();
+
+            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+            var healthCheckSettings = appsettings.HealthCheckSettings;
+
+            if (healthCheckSettings.EnableHealthChecks)
+            {
+                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+                {
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
+
+                endpoints.MapHealthChecksUI();
+            }
 
 #if BlazorWebAssembly
             endpoints.MapFallbackToPage("/_Host");

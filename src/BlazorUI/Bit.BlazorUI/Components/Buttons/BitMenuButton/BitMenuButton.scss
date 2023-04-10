@@ -5,8 +5,8 @@
     display: inline-flex;
     min-width: spacing(10);
     box-sizing: border-box;
-    font-family: $typography-button-font-family;
-    font-weight: $typography-button-font-weight;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight-buttons;
     justify-content: center;
     align-items: center;
     cursor: pointer;
@@ -16,7 +16,7 @@
     border-width: $shape-border-width;
     border-style: $shape-border-style;
 
-    &.disabled {
+    &.bit-dis {
         color: $color-text-disabled;
         background-color: $color-action-disabled;
         border-color: $color-border-disabled;
@@ -25,8 +25,8 @@
     }
 
     &.standard {
+        color: $color-text-primary;
         border-color: $color-border-secondary;
-        color: $color-text-secondary;
         background-color: $color-secondary-main;
 
         &:hover {
@@ -41,8 +41,8 @@
     }
 
     &.primary {
+        color: $color-text-secondary;
         border-color: $color-border-primary;
-        color: $color-text-primary;
         background-color: $color-primary-main;
 
         &:hover {
@@ -65,7 +65,7 @@
     &.medium {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
-        line-height: $typography-button-line-height;
+        line-height: $typography-line-height-buttons;
     }
 
     &.large {
@@ -141,7 +141,7 @@
         text-align: left;
         cursor: pointer;
         border: none;
-        color: $color-text-secondary;
+        color: $color-text-primary;
         gap: spacing(1);
         line-height: inherit;
         font-size: inherit;
@@ -159,7 +159,7 @@
             white-space: nowrap;
         }
 
-        &.disabled {
+        &.bit-dis {
             cursor: default;
             color: $color-text-disabled;
 

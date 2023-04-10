@@ -6,57 +6,62 @@ namespace Bit.BlazorUI.Tests.SearchBoxes;
 [TestClass]
 public class BitSearchBoxTests : BunitTestContext
 {
-    [DataTestMethod, DataRow("Search"), DataRow("Filter")]
-    public void SearchBox_Placeholder_MeetEnteredValue(string componentPlaceholder)
+    [DataTestMethod,
+        DataRow("Search"),
+        DataRow("Filter")]
+    public void SearchBoxPlaceholderMeetEnteredValue(string componentPlaceholder)
     {
-        var component = RenderComponent<BitSearchBoxTest>(parameter =>
-        parameter.Add(p => p.Placeholder, componentPlaceholder));
-        var input = component.Find(".input");
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Placeholder, componentPlaceholder));
 
+        var input = component.Find(".input");
         var inputPlaceholder = input.GetAttribute("placeholder");
 
         Assert.AreEqual(componentPlaceholder, inputPlaceholder);
     }
 
-    [DataTestMethod, DataRow("Search"), DataRow("Closed Issue"), DataRow("fake value")]
-    public void SearchBox_DefaultValue_MeetEnteredValue(string value)
+    [DataTestMethod,
+        DataRow("Search"),
+        DataRow("Closed Issue"),
+        DataRow("fake value")]
+    public void SearchBoxDefaultValueMeetEnteredValue(string value)
     {
-        var component = RenderComponent<BitSearchBoxTest>(parameter =>
-        parameter.Add(p => p.Value, value));
-        var input = component.Find(".input");
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Value, value));
 
+        var input = component.Find(".input");
         var inputValue = input.GetAttribute("value");
 
         Assert.AreEqual(value, inputValue);
     }
 
-    [DataTestMethod, DataRow(true), DataRow(false)]
-    public void SearchBox_NoAnimation_ShouldHaveClassName(bool disableAnimation)
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void SearchBoxNoAnimationShouldHaveClassName(bool disableAnimation)
     {
-        var component = RenderComponent<BitSearchBoxTest>(parameter =>
-        parameter.Add(p => p.DisableAnimation, disableAnimation));
-        var searchBox = component.Find(".bit-srb-fluent");
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.DisableAnimation, disableAnimation));
 
-        Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("bit-srb-no-animation-fluent"));
+        var searchBox = component.Find(".bit-srb");
+
+        Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("no-animation"));
     }
 
-    [DataTestMethod, DataRow(true), DataRow(false)]
-    public void SearchBox_Underlined_ShouldHaveClassName(bool isUnderlined)
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void SearchBoxUnderlinedShouldHaveClassName(bool isUnderlined)
     {
-        var component = RenderComponent<BitSearchBoxTest>(parameter =>
-        parameter.Add(p => p.IsUnderlined, isUnderlined));
-        var searchBox = component.Find(".bit-srb-fluent");
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.IsUnderlined, isUnderlined));
 
-        Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-srb-underlined-fluent"));
+        var searchBox = component.Find(".bit-srb");
+
+        Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("underlined"));
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [DataTestMethod,
+        DataRow("Detailed label")]
     public void BitSearchBoxAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitSearchBoxTest>(parameters =>
-        {
-            parameters.Add(p => p.AriaLabel, ariaLabel);
-        });
+        var com = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
 
         var bitSearchBox = com.Find(".input");
 
@@ -70,12 +75,11 @@ public class BitSearchBoxTests : BunitTestContext
     ]
     public void BitSearchBoxShouldTakeDefaultValue(string value, string defaultValue)
     {
-        var component = RenderComponent<BitSearchBoxTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.Value, value);
-                parameters.Add(p => p.DefaultValue, defaultValue);
-            });
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
 
         var input = component.Find(".input");
         var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
@@ -87,34 +91,38 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow("hello world", true),
         DataRow("hello world", false)
     ]
-    public void BitSearchBoxdMustShowSearchIconEvenHasValueWhenShowIconTrue(string value, bool showIcon)
+    public void BitSearchBoxedMustShowSearchIconEvenHasValueWhenShowIconTrue(string value, bool fixedIcon)
     {
-        var component = RenderComponent<BitSearchBoxTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.Value, value);
-                parameters.Add(p => p.ShowIcon, showIcon);
-            });
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.FixedIcon, fixedIcon);
+        });
 
         var bitSearchBox = component.Find(".bit-srb");
-        Assert.AreEqual(showIcon, bitSearchBox.ClassList.Contains("bit-srb-fixed-icon-has-value-fluent"));
+
+        Assert.AreEqual(fixedIcon, bitSearchBox.ClassList.Contains("fixed-icon-has-value"));
     }
 
+    [Ignore("bypassed - BUnit oninput event issue")]
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
     ]
     public void BitSearchBoxMustRespondToTheChangeEvent(bool isEnabled)
     {
-        var component = RenderComponent<BitSearchBoxTest>(
-            parameters =>
-            {
-                parameters.Add(p => p.IsEnabled, isEnabled);
-            });
+        int currentCount = 0;
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnChange, () => currentCount++);
+        });
+
         var input = component.Find(".input");
+
         //TODO: bypassed - BUnit oninput event issue
-        //input.KeyDown("a");
-        //Assert.AreEqual(isEnabled ? 1 : 0, component.Instance.CurrentCount);
+        input.KeyDown("a");
+        Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
     }
 
     [DataTestMethod,
@@ -124,9 +132,9 @@ public class BitSearchBoxTests : BunitTestContext
     ]
     public void BitSearchBoxAutoCompleteTest(string autoComplete)
     {
-        var component = RenderComponent<BitSearchBoxTest>(parameters =>
+        var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.AutoComplete, autoComplete);
+            parameters.Add(p => p.Autocomplete, autoComplete);
             parameters.Add(p => p.IsEnabled, true);
         });
 
@@ -177,8 +185,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, 1);
-        Assert.AreEqual(component.Instance.InvalidCount, 1);
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
@@ -204,10 +212,10 @@ public class BitSearchBoxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(input.HasAttribute("aria-invalid"), isInvalid);
+        Assert.AreEqual(isInvalid, input.HasAttribute("aria-invalid"));
         if (input.HasAttribute("aria-invalid"))
         {
-            Assert.AreEqual(input.GetAttribute("aria-invalid"), "true");
+            Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         }
 
         if (isInvalid)
@@ -223,33 +231,27 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(Visual.Fluent, "abc123"),
-        DataRow(Visual.Fluent, "test@bit.com"),
-        DataRow(Visual.Cupertino, "abc123"),
-        DataRow(Visual.Cupertino, "test@bit.com"),
-        DataRow(Visual.Material, "abc123"),
-        DataRow(Visual.Material, "test@bit.com"),
+        DataRow("abc123"),
+        DataRow("test@bit.com")
     ]
-    public void BitSearchBoxValidationInvalidCssClassTest(Visual visual, string value)
+    public void BitSearchBoxValidationInvalidCssClassTest(string value)
     {
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.Visual, visual);
         });
 
         var isInvalid = value != "test@bit.com";
 
         var bitSearchBox = component.Find(".bit-srb");
-        var visualClass = visual == Visual.Cupertino ? "cupertino" : visual == Visual.Material ? "material" : "fluent";
 
-        Assert.IsFalse(bitSearchBox.ClassList.Contains($"bit-srb-invalid-{visualClass}"));
+        Assert.IsFalse(bitSearchBox.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitSearchBox.ClassList.Contains($"bit-srb-invalid-{visualClass}"), isInvalid);
+        Assert.AreEqual(isInvalid, bitSearchBox.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
         if (isInvalid)
@@ -261,6 +263,6 @@ public class BitSearchBoxTests : BunitTestContext
             input.Input("abc123");
         }
 
-        Assert.AreEqual(bitSearchBox.ClassList.Contains($"bit-srb-invalid-{visualClass}"), !isInvalid);
+        Assert.AreEqual(isInvalid is false, bitSearchBox.ClassList.Contains("bit-inv"));
     }
 }

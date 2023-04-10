@@ -29,34 +29,33 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <None Include="Shared\LoadingComponent.razor.scss" />
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.6" />
-        <PackageReference Include="Bit.Bup" Version="4.9.6" />
-        <PackageReference Include="Bit.Bswup" Version="4.9.6" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.6">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.9" />
+        <PackageReference Include="Bit.Bup" Version="4.9.9" />
+        <PackageReference Include="Bit.Bswup" Version="4.9.9" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.6">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="LibSassBuilder" Version="3.0.0" Watch="false">
+        <PackageReference Include="DartSassBuilder" Version="1.0.0" Watch="false">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.4" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.3" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.3" PrivateAssets="all" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.4" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.4" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.3" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.9.5">
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

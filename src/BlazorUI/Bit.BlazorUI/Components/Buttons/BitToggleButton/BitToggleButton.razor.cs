@@ -3,7 +3,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
-    protected override bool UseVisual => false;
     private bool IsCheckedHasBeenSet;
     private bool isChecked;
     private BitButtonSize buttonSize = BitButtonSize.Medium;

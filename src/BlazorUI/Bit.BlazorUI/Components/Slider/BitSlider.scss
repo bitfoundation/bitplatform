@@ -1,0 +1,411 @@
+﻿@import "../../Styles/functions.scss";
+
+$BgDefult: $color-neutrals-gray90;
+$BgTrack: $color-neutrals-gray130;
+$BgHover: $color-general-lightblue;
+$BgTrackHover: $color-primary-dark;
+
+.bit-sld {
+    font-family: $typography-font-family;
+
+    input {
+        --range: calc(var(--max) - var(--min));
+        --ratio: calc((var(--value) - var(--min))/var(--range));
+        --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
+
+        &:focus {
+            outline: none;
+        }
+    }
+    /*webkit*/
+    input::-webkit-slider-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        margin-top: spacing(-0.75);
+        border: spacing(0.25) $shape-border-style $BgTrack;
+        border-radius: spacing(1.25);
+        box-sizing: border-box;
+        background: $color-neutrals-white;
+        -webkit-appearance: none;
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*mozilla*/
+    input::-moz-range-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: spacing(0.25) $shape-border-style $BgTrack;
+        border-radius: spacing(1.25);
+        box-sizing: border-box;
+        background: $color-neutrals-white;
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    input::-moz-range-track {
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-moz-range-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /*ms*/
+    input::-ms-fill-upper {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-fill-lower {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: spacing(0.25) $shape-border-style $BgTrack;
+        border-radius: spacing(1.25);
+        box-sizing: border-box;
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    input::-ms-track {
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-ms-fill-lower {
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background: $BgDefult;
+        box-shadow: none;
+    }
+
+    input::-webkit-slider-runnable-track,
+    input::-webkit-slider-thumb,
+    input {
+        -webkit-appearance: none;
+    }
+
+    input:hover .zero-tick {
+        background-color: $color-secondary-light;
+    }
+
+    input::-webkit-slider-thumb:hover,
+    input::-webkit-slider-thumb:active,
+    input:hover::-webkit-slider-thumb,
+    input:active::-webkit-slider-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:active::-webkit-slider-runnable-track {
+        background: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track,
+    input:active::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-moz-range-thumb:hover,
+    input:hover::-moz-range-track,
+    input::-moz-range-thumb:active,
+    input:active::-moz-range-track {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-moz-range-track,
+    input:active::-moz-range-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-ms-thumb:hover,
+    input:hover::-ms-thumb,
+    input::-ms-thumb:active,
+    input:active::-ms-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-ms-fill-lower,
+    input:active::-ms-fill-lower {
+        background: $BgTrackHover;
+    }
+
+    .label {
+        display: block;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
+        font-size: spacing(1.75);
+        font-weight: 600;
+        color: $color-neutrals-gray160;
+    }
+
+    .container {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        position: relative;
+    }
+
+    .value-label {
+        display: block;
+        width: spacing(5);
+        margin: 0 spacing(1);
+        padding: spacing(0.625) 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        font-size: spacing(1.75);
+        font-weight: 600;
+        color: $color-neutrals-gray160;
+        overflow-wrap: break-word;
+        white-space: nowrap;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .zero-tick {
+        position: absolute;
+        background-color: $color-neutrals-gray60;
+        z-index: 2;
+    }
+
+    &.bit-dis {
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.65;
+
+        .label,
+        .value-label {
+            color: $color-neutrals-gray90;
+        }
+
+        .zero-tick {
+            background-color: $color-neutrals-gray20;
+        }
+    }
+
+    &.vertical {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .value-label {
+            text-align: center;
+            padding-top: spacing(6.25);
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: spacing(6.25);
+            height: 100%;
+            margin-left: 0;
+            display: block;
+        }
+
+        input {
+            transform-origin: left;
+            margin: 0 spacing(3.125);
+            margin-top: spacing(1.25);
+            height: spacing(7.5);
+        }
+
+        .zero-tick {
+            width: spacing(1.75);
+            height: spacing(0.125);
+            margin-left: spacing(2.25);
+        }
+    }
+
+    &.horizontal {
+        input {
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .zero-tick {
+            width: spacing(0.125);
+            height: spacing(2);
+        }
+    }
+
+    &.ranged-vertical {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .value-label {
+            text-align: center;
+        }
+
+        .box {
+            --dif: calc(var(--max) - var(--min));
+            display: grid;
+            grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+            grid-template: repeat(2, max-content) 4px/1fr 1fr;
+            position: relative;
+            margin: 1em auto;
+            background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+        }
+
+        .box::before,
+        .box::after {
+            height: spacing(0.5);
+            grid-column: 1/span 2;
+            grid-row: 3;
+            background: $BgTrack;
+            content: "";
+        }
+
+        .box::before {
+            width: calc((var(--h) - var(--l))/var(--dif)*100%);
+            margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        }
+
+        .box::after {
+            width: calc((var(--l) - var(--h))/var(--dif)*100%);
+            margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        }
+
+        .container {
+            flex-grow: 1;
+            margin: 1rem 0;
+            transform: rotate(270deg);
+        }
+
+        input {
+            grid-column: 1/span 2;
+            grid-row: 3;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            margin: 0;
+            background: none;
+            --col: #000;
+        }
+
+        input::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        input::-moz-range-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        .zero-tick {
+            width: spacing(2);
+            height: spacing(0.125);
+            margin-top: spacing(0.125);
+            margin-left: spacing(2.25);
+            transform: rotate(270deg);
+        }
+    }
+
+    &.ranged-horizontal {
+        .box {
+            --dif: calc(var(--max) - var(--min));
+            display: grid;
+            grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+            grid-template: repeat(2, max-content) 4px/1fr 1fr;
+            position: relative;
+            margin: 1em auto;
+            width: 100%;
+            background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+        }
+
+        .box::before,
+        .box::after {
+            height: spacing(0.5);
+            grid-column: 1/span 2;
+            grid-row: 3;
+            background: $BgTrack;
+            content: "";
+        }
+
+        .box::before {
+            width: calc((var(--h) - var(--l))/var(--dif)*100%);
+            margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        }
+
+        .box::after {
+            width: calc((var(--l) - var(--h))/var(--dif)*100%);
+            margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        }
+
+        input {
+            grid-column: 1/span 2;
+            grid-row: 3;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            margin: 0;
+            background: none;
+            /* get rid of white Chrome background */
+            --col: #000;
+        }
+
+        input::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        input::-moz-range-track {
+            width: 100%;
+            height: 100%;
+            background: none;
+        }
+
+        .zero-tick {
+            width: spacing(0.125);
+            height: spacing(2);
+            margin-top: spacing(-0.625);
+        }
+    }
+
+    &.ranged-horizontal,
+    &.ranged-vertical {
+        input {
+            pointer-events: none;
+        }
+
+        .box:hover {
+            background: linear-gradient(0deg, $BgHover spacing(0.5), transparent 0);
+        }
+
+        .box:hover::before,
+        .box:hover::after {
+            background: $BgTrackHover;
+        }
+    }
+}

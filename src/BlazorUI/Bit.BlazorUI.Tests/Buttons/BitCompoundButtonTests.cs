@@ -26,11 +26,11 @@ public class BitCompoundButtonTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitButton.ClassList.Contains("disabled"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitButton.ClassList.Contains("disabled"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
         bitButton.Click();
