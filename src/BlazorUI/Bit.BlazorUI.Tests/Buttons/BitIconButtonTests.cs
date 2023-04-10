@@ -36,7 +36,7 @@ public class BitIconButtonTests : BunitTestContext
             Assert.IsTrue(bitIconButton.ClassList.Contains("bit-dis"));
         }
 
-        var bitIconITag = com.Find(".bit-icob > span.bit-icob-ico-ctn > i.bit-icon");
+        var bitIconITag = com.Find(".bit-icob > span.bit-icob-ict > i.bit-icon");
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
         if (title.HasValue())
