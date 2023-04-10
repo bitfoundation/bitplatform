@@ -211,7 +211,7 @@ public int StandardCounter;";
         gap: 0.5rem;
     }
 
-    .custom-button.primary {
+    .custom-button.bit-btn-pri {
         height: 2.5rem;
         width: 10.375rem;
         font-size: 1rem;
@@ -219,7 +219,7 @@ public int StandardCounter;";
         border-color: #0054C6;
     }
 
-    .custom-button.primary:hover {
+    .custom-button.bit-btn-pri:hover {
         background-color: #01367e;
         border-color: #01367e;
     }
@@ -317,21 +317,21 @@ public int StandardCounter;";
         gap: 0.5rem;
     }
     
-    .custom-btn-sm.small {
+    .custom-btn-sm.bit-btn-sm {
         padding: 4px 8px;
         font-size: 8px;
         line-height: 1.5;
         border-radius: 3px;
     }
     
-    .custom-btn-md.medium {
+    .custom-btn-md.bit-btn-md {
         padding: 12px 24px;
         font-size: 16px;
         line-height: 1.4;
         border-radius: 4px;
     }
     
-    .custom-btn-lg.large {
+    .custom-btn-lg.bit-btn-lg {
         padding: 20px 32px;
         font-size: 32px;
         line-height: 1.33;
