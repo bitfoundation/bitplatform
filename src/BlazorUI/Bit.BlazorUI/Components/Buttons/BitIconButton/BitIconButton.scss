@@ -13,7 +13,7 @@
     background-color: transparent;
     color: $color-primary-main;
 
-    .icon-container {
+    .bit-icob-ico-ctn {
         display: flex;
         height: 100%;
         flex-wrap: nowrap;
@@ -45,21 +45,21 @@
         pointer-events: none;
     }
 
-    &.small {
+    &.bit-icob-sm {
         width: spacing(3.5);
         height: spacing(3.5);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
     }
 
-    &.medium {
+    &.bit-icob-md {
         width: spacing(4.5);
         height: spacing(4.5);
         font-size: spacing(1.75);
         line-height: $typography-line-height-buttons;
     }
 
-    &.large {
+    &.bit-icob-lg {
         width: spacing(5.5);
         height: spacing(5.5);
         font-size: spacing(2);

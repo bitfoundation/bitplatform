@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -35,7 +36,7 @@ public class BitIconButtonTests : BunitTestContext
             Assert.IsTrue(bitIconButton.ClassList.Contains("bit-dis"));
         }
 
-        var bitIconITag = com.Find(".bit-icob > span.icon-container > i.bit-icon");
+        var bitIconITag = com.Find(".bit-icob > span.bit-icob-ico-ctn > i.bit-icon");
         Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
 
         if (title.HasValue())
@@ -140,6 +141,34 @@ public class BitIconButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
+    ]
+    public void BitIconButtonSizeTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitIconButton>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
+        });
+
+        var bitIconButton = com.Find(".bit-icob");
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "bit-icob-sm",
+            BitButtonSize.Medium or null => "bit-icob-md",
+            BitButtonSize.Large => "bit-icob-lg",
+            _ => throw new NotSupportedException()
+        };
+
+        Assert.IsTrue(bitIconButton.ClassList.Contains(sizeClass));
+    }
+
+    [DataTestMethod,
         DataRow(BitButtonType.Button),
         DataRow(BitButtonType.Submit),
         DataRow(BitButtonType.Reset)
@@ -153,7 +182,13 @@ public class BitIconButtonTests : BunitTestContext
 
         var bitIconButton = component.Find(".bit-icob");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
         Assert.AreEqual(bitIconButton.GetAttribute("type"), buttonTypeName);
     }
     

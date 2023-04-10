@@ -79,9 +79,9 @@ public partial class BitIconButton
     {
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
     }
 
