@@ -36,6 +36,16 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
+        if (isEnabled)
+        {
+            var btnStyle = style == BitButtonStyle.Primary ? "bit-btn-pri" : "bit-btn-std";
+            Assert.IsTrue(bitButton.ClassList.Contains(btnStyle));
+        }
+        else
+        {
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-pri"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-std"));
+        }
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
         bitButton.Click();

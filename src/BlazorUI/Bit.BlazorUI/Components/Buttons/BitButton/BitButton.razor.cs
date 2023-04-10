@@ -95,8 +95,8 @@ public partial class BitButton
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? "primary"
-                                           : "standard");
+                                           ? $"{RootElementClass}-pri"
+                                           : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
