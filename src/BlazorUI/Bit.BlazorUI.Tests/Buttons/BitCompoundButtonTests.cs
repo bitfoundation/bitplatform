@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -127,25 +128,29 @@ public class BitCompoundButtonTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitButtonStyle.Primary),
         DataRow(BitButtonStyle.Standard),
+        DataRow(null),
     ]
-    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle buttonStyle)
+    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle? buttonStyle)
     {
         var component = RenderComponent<BitCompoundButton>(parameters =>
         {
-            parameters.Add(p => p.ButtonStyle, buttonStyle);
+            if (buttonStyle.HasValue)
+            {
+                parameters.Add(p => p.ButtonStyle, buttonStyle.Value);
+            }
         });
 
         var bitCompoundButton = component.Find(".bit-cmpb");
 
-        if (buttonStyle == BitButtonStyle.Primary)
+        if (buttonStyle == BitButtonStyle.Standard)
         {
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("primary"));
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("standard"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmpb-pri"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmpb-std"));
         }
         else
         {
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("primary"));
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("standard"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmpb-pri"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmpb-std"));
         }
     }
 
@@ -163,7 +168,13 @@ public class BitCompoundButtonTests : BunitTestContext
 
         var bitCompoundButton = component.Find(".bit-cmpb");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
         Assert.AreEqual(bitCompoundButton.GetAttribute("type"), buttonTypeName);
     }
 }

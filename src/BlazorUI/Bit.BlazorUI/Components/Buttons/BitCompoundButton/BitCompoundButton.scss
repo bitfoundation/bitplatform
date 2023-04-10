@@ -14,21 +14,21 @@
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
 
-    .text-container {
+    .bit-cmpb-txt-ctn {
         display: block;
         @extend .no-text-select;
 
-        .primary-text {
+        .bit-cmpb-pri-txt {
             display: block;
             margin-bottom: spacing(0.625);
         }
 
-        .secondary-text {
+        .bit-cmpb-sec-txt {
             display: block;
         }
     }
 
-    &.primary {
+    &.bit-cmpb-pri {
         color: $color-text-secondary;
         background: $color-primary-main;
         border-color: $color-border-primary;
@@ -44,7 +44,7 @@
         }
     }
 
-    &.standard {
+    &.bit-cmpb-std {
         color: $color-text-primary;
         border-color: $color-border-secondary;
         background-color: $color-secondary-main;
@@ -66,45 +66,45 @@
         cursor: default;
         pointer-events: none;
 
-        &.primary {
+        &.bit-cmpb-pri {
             color: $color-neutrals-gray50;
         }
 
-        &.standard {
+        &.bit-cmpb-std {
             color: $color-neutrals-gray90;
         }
     }
 
-    &.small {
+    &.bit-cmpb-sm {
         padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
 
-        .secondary-text {
+        .bit-cmpb-sec-txt {
             font-size: spacing(1);
             line-height: spacing(2.25);
             font-weight: 400;
         }
     }
 
-    &.medium {
+    &.bit-cmpb-md {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
         line-height: $typography-line-height-buttons;
 
-        .secondary-text {
+        .bit-cmpb-sec-txt {
             font-size: spacing(1.25);
             line-height: spacing(2.25);
             font-weight: 400;
         }
     }
 
-    &.large {
+    &.bit-cmpb-lg {
         padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);
 
-        .secondary-text {
+        .bit-cmpb-sec-txt {
             font-size: spacing(1.5);
             line-height: spacing(2.5);
             font-weight: 400;
