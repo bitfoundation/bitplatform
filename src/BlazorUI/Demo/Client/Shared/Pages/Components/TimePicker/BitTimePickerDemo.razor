@@ -121,8 +121,8 @@
 
     <ComponentExampleBox Title="BitTimePicker with value two-way binding" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
-            <BitTimePicker Style="max-width: 300px"
-            @bind-Value="@selectedTime"
+            <BitTimePicker @bind-Value="@selectedTime"
+                           Style="max-width: 300px"
                            AriaLabel="Select a time"
                            Placeholder="Select a time..." />
             <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>

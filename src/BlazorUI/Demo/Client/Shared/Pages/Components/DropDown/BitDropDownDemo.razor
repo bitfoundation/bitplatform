@@ -33,10 +33,10 @@
 
     <ComponentExampleBox Title="Controlled Single-Select" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <BitDropDown Label="Single-select Controlled"
+            <BitDropDown @bind-Value="ControlledValue"
+                         Label="Single-select Controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select an option"
-            @bind-Value="ControlledValue"
                          Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
             </BitDropDown>
         </ExamplePreview>
@@ -44,10 +44,10 @@
 
     <ComponentExampleBox Title="Controlled Multi-Select" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
-            <BitDropDown Label="Multi-select controlled"
+            <BitDropDown @bind-Values="ControlledValues"
+                         Label="Multi-select controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select options"
-            @bind-Values="ControlledValues"
                          IsMultiSelect="true"
                          Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
             </BitDropDown>
@@ -115,17 +115,17 @@
         <ExamplePreview>
             <div class="grid-wrap">
                 <div>
-                    <BitDropDown Label="Category"
+                    <BitDropDown @bind-Value="@CurrentCategory"
+                                 Label="Category"
                                  Items="Categories"
                                  Placeholder="Select options"
-                    @bind-Value="@CurrentCategory"
                                  Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
 
-                    <BitDropDown Label="Product"
+                    <BitDropDown @bind-Value="@CurrentProduct"
+                                 Label="Product"
                                  Items="@(Products.Where(p => p.Value.StartsWith($"{CurrentCategory}-")).ToList())"
                                  Placeholder="Select options"
-                    @bind-Value="@CurrentProduct"
                                  IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
                                  Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
                     </BitDropDown>
@@ -151,10 +151,10 @@
                     </div>
 
                     <div>
-                        <BitDropDown Label="Select category"
+                        <BitDropDown @bind-Value="formValidationDropDownModel.Category"
+                                     Label="Select category"
                                      Items="GetCategoryDropdownItems()"
                                      IsMultiSelect="false"
-                        @bind-Value="formValidationDropDownModel.Category"
                                      Placeholder="Select an option"
                                      Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
@@ -162,10 +162,10 @@
                     </div>
 
                     <div>
-                        <BitDropDown Label="Select two ptoducts"
+                        <BitDropDown @bind-Values="formValidationDropDownModel.Products"
+                                     Label="Select two ptoducts"
                                      Items="GetProductDropdownItems()"
                                      IsMultiSelect="true"
-                        @bind-Values="formValidationDropDownModel.Products"
                                      Placeholder="Select an option"
                                      Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
 
@@ -331,24 +331,24 @@
         <ExamplePreview>
             <div class="example-desc">Select an item for the Clear button to show.</div>
             <div>
-                <BitDropDown ShowClearButton="true"
+                <BitDropDown @bind-Value="SelectedValue"
+                             ShowClearButton="true"
                              Label="Basic Uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0"
-                @bind-Value="SelectedValue">
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
                 </BitDropDown>
                 <div>Value: @SelectedValue</div>
                 <br>
                 <hr />
                 <br>
-                <BitDropDown ShowClearButton="true"
+                <BitDropDown @bind-Values="SelectedValues"
+                             ShowClearButton="true"
                              Label="Multi-select uncontrolled"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;"
-                @bind-Values="SelectedValues">
+                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
                 </BitDropDown>
                 <div>Values: @string.Join(',', SelectedValues)</div>
             </div>

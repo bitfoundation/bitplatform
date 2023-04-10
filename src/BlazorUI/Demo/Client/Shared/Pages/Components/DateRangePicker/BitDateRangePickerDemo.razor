@@ -102,8 +102,8 @@
 
     <ComponentExampleBox Title="BitDateRangePicker with value two-way binding" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
-            <BitDateRangePicker Style="max-width: 300px"
-            @bind-Value="@selectedDateRange"
+            <BitDateRangePicker @bind-Value="@selectedDateRange"
+                                Style="max-width: 300px"
                                 AriaLabel="Select dates"
                                 Placeholder="Select dates..." />
             <BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>
