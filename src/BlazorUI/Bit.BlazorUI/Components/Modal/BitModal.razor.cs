@@ -35,7 +35,7 @@ public partial class BitModal : IDisposable
     [Parameter] public string? DragElementSelector { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Modal (alert dialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
     [Parameter]
     public bool? IsAlert
