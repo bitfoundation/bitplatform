@@ -21,7 +21,7 @@
         pointer-events: none;
     }
 
-    &.standard {
+    &.bit-btn-std {
         color: $color-text-primary;
         border-color: $color-border-secondary;
         background-color: $color-secondary-main;
@@ -37,7 +37,7 @@
         }
     }
 
-    &.primary {
+    &.bit-btn-pri {
         color: $color-text-secondary;
         border-color: $color-border-primary;
         background-color: $color-primary-main;
@@ -53,19 +53,19 @@
         }
     }
 
-    &.small {
+    &.bit-btn-sm {
         padding: spacing(0.25) spacing(1.25);
         font-size: spacing(1.5);
         line-height: spacing(2.75);
     }
 
-    &.medium {
+    &.bit-btn-md {
         padding: spacing(0.5) spacing(2);
         font-size: spacing(1.75);
         line-height: $typography-line-height-buttons;
     }
 
-    &.large {
+    &.bit-btn-lg {
         padding: spacing(0.75) spacing(2.75);
         font-size: spacing(2);
         line-height: spacing(3.75);

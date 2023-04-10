@@ -46,21 +46,25 @@ public class BitButtonTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitButtonSize.Small),
         DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large)
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
     ]
-    public void BitButtonSizeTest(BitButtonSize size)
+    public void BitButtonSizeTest(BitButtonSize? size)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.ButtonSize, size);
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
         });
 
         var bitButton = com.Find(".bit-btn");
         var sizeClass = size switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Medium => "medium",
-            BitButtonSize.Large => "large",
+            BitButtonSize.Small => "bit-btn-sm",
+            BitButtonSize.Medium or null => "bit-btn-md",
+            BitButtonSize.Large => "bit-btn-lg",
             _ => throw new NotSupportedException()
         };
 
