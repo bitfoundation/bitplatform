@@ -86,7 +86,7 @@
             text-align: left;
             box-sizing: border-box;
             outline: transparent;
-            border: spacing(0.125) solid transparent;
+            border: $shape-border-width $shape-border-style transparent;
             text-decoration: none;
             padding: 0 spacing(1);
             color: $color-neutrals-gray160;

@@ -9,7 +9,7 @@
     font-family: $typography-font-family;
     color: $color-neutrals-gray160;
     background-color: $color-background-primary;
-    border: $shape-border-width solid $color-neutrals-gray30;
+    border: $shape-border-width $shape-border-style $color-neutrals-gray30;
     padding: 0 spacing(1.5);
     box-sizing: border-box;
     user-select: none;

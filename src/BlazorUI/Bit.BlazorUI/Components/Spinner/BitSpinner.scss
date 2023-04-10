@@ -7,8 +7,8 @@
     .spinner {
         animation: bit-spn-animation 1.3s linear infinite;
         animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
-        border: spacing(2) solid $color-neutrals-gray60;
-        border-top: spacing(2) solid $color-primary-main;
+        border: spacing(2) $shape-border-style $color-neutrals-gray60;
+        border-top: spacing(2) $shape-border-style $color-primary-main;
         border-radius: 50%;
         border-width: spacing(0.1875);
     }
