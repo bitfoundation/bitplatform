@@ -222,6 +222,11 @@ jobs:
        uses: actions/setup-dotnet@v3
        with:
          global-json-file: global.json
+
+     - name: Use .NET sdk 5.x for DartSassBuilder
+       uses: actions/setup-dotnet@v3
+       with:
+         dotnet-version: 5.x
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -261,6 +266,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - name: Use .NET sdk 5.x for DartSassBuilder
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 5.x
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
