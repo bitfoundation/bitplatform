@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-icob {
+.bit-icb {
     display: inline-block;
     box-sizing: border-box;
     font-family: $typography-font-family;
@@ -12,18 +12,6 @@
     border: none;
     background-color: transparent;
     color: $color-primary-main;
-
-    .icon-container {
-        display: flex;
-        height: 100%;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-
-        .bit-icon {
-            margin: 0 spacing(0.5);
-        }
-    }
 
     &:active {
         color: $color-primary-darker;
@@ -44,25 +32,37 @@
         cursor: default;
         pointer-events: none;
     }
+}
 
-    &.small {
-        width: spacing(3.5);
-        height: spacing(3.5);
-        font-size: spacing(1.5);
-        line-height: spacing(2.75);
-    }
+.bit-icb-ict {
+    display: flex;
+    height: 100%;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
 
-    &.medium {
-        width: spacing(4.5);
-        height: spacing(4.5);
-        font-size: spacing(1.75);
-        line-height: $typography-line-height-buttons;
+    .bit-icon {
+        margin: 0 spacing(0.5);
     }
+}
 
-    &.large {
-        width: spacing(5.5);
-        height: spacing(5.5);
-        font-size: spacing(2);
-        line-height: spacing(3.75);
-    }
+.bit-icb-sm {
+    width: spacing(3.5);
+    height: spacing(3.5);
+    font-size: spacing(1.5);
+    line-height: spacing(2.75);
+}
+
+.bit-icb-md {
+    width: spacing(4.5);
+    height: spacing(4.5);
+    font-size: spacing(1.75);
+    line-height: $typography-line-height-buttons;
+}
+
+.bit-icb-lg {
+    width: spacing(5.5);
+    height: spacing(5.5);
+    font-size: spacing(2);
+    line-height: spacing(3.75);
 }

@@ -73,15 +73,15 @@ public partial class BitIconButton
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
-    protected override string RootElementClass => "bit-icob";
+    protected override string RootElementClass => "bit-icb";
 
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
     }
 
