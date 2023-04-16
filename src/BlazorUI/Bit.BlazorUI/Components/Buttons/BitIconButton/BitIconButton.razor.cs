@@ -73,7 +73,7 @@ public partial class BitIconButton
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
-    protected override string RootElementClass => "bit-icob";
+    protected override string RootElementClass => "bit-icb";
 
     protected override void RegisterComponentClasses()
     {
