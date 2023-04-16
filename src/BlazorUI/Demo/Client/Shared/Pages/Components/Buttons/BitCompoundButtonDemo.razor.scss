@@ -15,44 +15,36 @@
 
 ::deep {
     .custom-compound-button {
-        &.bit-cmpb-std {
-            width: 15rem;
-            font-size: 1rem;
-            color: #FFFFFF;
-            background-color: #0054C6;
-            border-color: #0054C6;
+        width: 15rem;
+        font-size: 1rem;
+        color: #FFFFFF;
+        background-color: #0054C6;
+        border-color: #0054C6;
 
-            &:hover {
-                background-color: #0065EF;
-                border-color: #0065EF;
-            }
+        &:hover {
+            background-color: #0065EF;
+            border-color: #0065EF;
         }
     }
 
     .custom-btn-sm {
-        &.bit-cmpb-sm {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.bit-cmpb-md {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.bit-cmpb-lg {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 }

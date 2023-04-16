@@ -33,15 +33,17 @@
 .bit-cmb-txt-ctn {
     display: block;
     @extend .no-text-select;
+}
 
-    .bit-cmb-pri-txt {
-        display: block;
-        margin-bottom: spacing(0.625);
-    }
+.bit-cmb-pri-txt {
+    display: block;
+    margin-bottom: spacing(0.625);
+}
 
-    .bit-cmb-sec-txt {
-        display: block;
-    }
+.bit-cmb-sec-txt {
+    display: block;
+    font-weight: 400;
+    line-height: spacing(2.25);
 }
 
 .bit-cmb-pri {
@@ -83,8 +85,6 @@
 
     .bit-cmb-sec-txt {
         font-size: spacing(1);
-        line-height: spacing(2.25);
-        font-weight: 400;
     }
 }
 
@@ -95,8 +95,6 @@
 
     .bit-cmb-sec-txt {
         font-size: spacing(1.25);
-        line-height: spacing(2.25);
-        font-weight: 400;
     }
 }
 
@@ -108,6 +106,5 @@
     .bit-cmb-sec-txt {
         font-size: spacing(1.5);
         line-height: spacing(2.5);
-        font-weight: 400;
     }
 }

@@ -217,7 +217,7 @@ public partial class BitCompoundButtonDemo
         gap: 0.5rem;
     }
 
-    .custom-compound-button.bit-cmpb-std {
+    .custom-compound-button {
         width: 15rem;
         font-size: 1rem;
         color: #FFFFFF;
@@ -225,7 +225,7 @@ public partial class BitCompoundButtonDemo
         border-color: #0054C6;
     }
 
-    .custom-compound-button.bit-cmpb-std:hover {
+    .custom-compound-button:hover {
         background-color: #0065EF;
         border-color: #0065EF;
     }
@@ -312,21 +312,21 @@ public partial class BitCompoundButtonDemo
         gap: 0.5rem;
     }
     
-    .custom-btn-sm.bit-cmpb-sm {
+    .custom-btn-sm {
         padding: 4px 8px;
         font-size: 8px;
         line-height: 1.5;
         border-radius: 3px;
     }
     
-    .custom-btn-md.bit-cmpb-md {
+    .custom-btn-md {
         padding: 12px 24px;
         font-size: 16px;
         line-height: 1.4;
         border-radius: 4px;
     }
     
-    .custom-btn-lg.bit-cmpb-lg {
+    .custom-btn-lg {
         padding: 20px 32px;
         font-size: 32px;
         line-height: 1.33;
