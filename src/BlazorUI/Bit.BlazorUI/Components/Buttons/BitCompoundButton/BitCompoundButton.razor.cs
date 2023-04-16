@@ -93,19 +93,17 @@ public partial class BitCompoundButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-cmpb";
+    protected override string RootElementClass => "bit-cmb";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                        ? "primary"
-                                        : "standard");
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary ? $"{RootElementClass}-pri" : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
     }
 

@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-cmpb {
+.bit-cmb {
     position: relative;
     display: inline-flex;
     min-width: spacing(9);
@@ -14,100 +14,97 @@
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
 
-    .text-container {
-        display: block;
-        @extend .no-text-select;
-
-        .primary-text {
-            display: block;
-            margin-bottom: spacing(0.625);
-        }
-
-        .secondary-text {
-            display: block;
-        }
-    }
-
-    &.primary {
-        color: $color-text-secondary;
-        background: $color-primary-main;
-        border-color: $color-border-primary;
-
-        &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
-        }
-
-        &:active {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
-    }
-
-    &.standard {
-        color: $color-text-primary;
-        border-color: $color-border-secondary;
-        background-color: $color-secondary-main;
-
-        &:hover {
-            border-color: $color-action-border-hover-secondary;
-            background-color: $color-action-hover-secondary;
-        }
-
-        &:active {
-            border-color: $color-action-border-active-secondary;
-            background-color: $color-action-active-secondary;
-        }
-    }
-
     &.bit-dis {
         border-color: $color-border-disabled;
         background-color: $color-action-disabled;
         cursor: default;
         pointer-events: none;
 
-        &.primary {
+        &.bit-cmb-pri {
             color: $color-neutrals-gray50;
         }
 
-        &.standard {
+        &.bit-cmb-std {
             color: $color-neutrals-gray90;
         }
     }
+}
 
-    &.small {
-        padding: spacing(0.25) spacing(1.25);
+.bit-cmb-tcn {
+    display: block;
+    @extend .no-text-select;
+}
+
+.bit-cmb-prt {
+    display: block;
+    margin-bottom: spacing(0.625);
+}
+
+.bit-cmb-sct {
+    display: block;
+    font-weight: 400;
+    line-height: spacing(2.25);
+}
+
+.bit-cmb-pri {
+    color: $color-text-secondary;
+    background: $color-primary-main;
+    border-color: $color-border-primary;
+
+    &:hover {
+        border-color: $color-action-hover-primary;
+        background-color: $color-action-hover-primary;
+    }
+
+    &:active {
+        border-color: $color-action-active-primary;
+        background-color: $color-action-active-primary;
+    }
+}
+
+.bit-cmb-std {
+    color: $color-text-primary;
+    border-color: $color-border-secondary;
+    background-color: $color-secondary-main;
+
+    &:hover {
+        border-color: $color-action-border-hover-secondary;
+        background-color: $color-action-hover-secondary;
+    }
+
+    &:active {
+        border-color: $color-action-border-active-secondary;
+        background-color: $color-action-active-secondary;
+    }
+}
+
+.bit-cmb-sm {
+    padding: spacing(0.25) spacing(1.25);
+    font-size: spacing(1.5);
+    line-height: spacing(2.75);
+
+    .bit-cmb-sct {
+        font-size: spacing(1);
+    }
+}
+
+.bit-cmb-md {
+    padding: spacing(0.5) spacing(2);
+    font-size: spacing(1.75);
+    line-height: $typography-line-height-buttons;
+
+    .bit-cmb-sct {
+        font-size: spacing(1.25);
+    }
+}
+
+.bit-cmb-lg {
+    padding: spacing(0.75) spacing(2.75);
+    font-size: spacing(2);
+    line-height: spacing(3.75);
+
+    .bit-cmb-sct {
         font-size: spacing(1.5);
-        line-height: spacing(2.75);
-
-        .secondary-text {
-            font-size: spacing(1);
-            line-height: spacing(2.25);
-            font-weight: 400;
-        }
-    }
-
-    &.medium {
-        padding: spacing(0.5) spacing(2);
-        font-size: spacing(1.75);
-        line-height: $typography-line-height-buttons;
-
-        .secondary-text {
-            font-size: spacing(1.25);
-            line-height: spacing(2.25);
-            font-weight: 400;
-        }
-    }
-
-    &.large {
-        padding: spacing(0.75) spacing(2.75);
-        font-size: spacing(2);
-        line-height: spacing(3.75);
-
-        .secondary-text {
-            font-size: spacing(1.5);
-            line-height: spacing(2.5);
-            font-weight: 400;
-        }
+        line-height: spacing(2.5);
     }
 }
