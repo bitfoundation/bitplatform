@@ -23,7 +23,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitButton = com.Find(".bit-cmpb");
+        var bitButton = com.Find(".bit-cmb");
 
         if (isEnabled)
         {
@@ -54,7 +54,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
-        var bitButton = com.Find(".bit-cmpb");
+        var bitButton = com.Find(".bit-cmb");
 
         var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
@@ -74,7 +74,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.IsTrue(bitCompoundButton.GetAttribute("aria-describedby").Contains(ariaDescription));
     }
@@ -87,7 +87,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.IsTrue(bitCompoundButton.GetAttribute("aria-label").Contains(ariaLabel));
     }
@@ -100,7 +100,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.AreEqual(bitCompoundButton.HasAttribute("aria-hidden"), expectedResult);
     }
@@ -118,7 +118,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
         var tagName = bitCompoundButton.TagName;
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
@@ -140,17 +140,17 @@ public class BitCompoundButtonTests : BunitTestContext
             }
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
 
         if (buttonStyle == BitButtonStyle.Standard)
         {
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmpb-pri"));
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmpb-std"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
         }
         else
         {
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmpb-pri"));
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmpb-std"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
         }
     }
 
@@ -170,12 +170,12 @@ public class BitCompoundButtonTests : BunitTestContext
             }
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
         var sizeClass = size switch
         {
-            BitButtonSize.Small => "bit-cmpb-sm",
-            BitButtonSize.Medium or null => "bit-cmpb-md",
-            BitButtonSize.Large => "bit-cmpb-lg",
+            BitButtonSize.Small => "bit-cmb-sm",
+            BitButtonSize.Medium or null => "bit-cmb-md",
+            BitButtonSize.Large => "bit-cmb-lg",
             _ => throw new NotSupportedException()
         };
 
@@ -194,7 +194,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.ButtonType, buttonType);
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
 
         var buttonTypeName = buttonType switch
         {
