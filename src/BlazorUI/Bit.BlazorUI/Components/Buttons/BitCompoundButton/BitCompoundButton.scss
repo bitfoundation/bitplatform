@@ -30,17 +30,17 @@
     }
 }
 
-.bit-cmb-txt-ctn {
+.bit-cmb-tcn {
     display: block;
     @extend .no-text-select;
 }
 
-.bit-cmb-pri-txt {
+.bit-cmb-prt {
     display: block;
     margin-bottom: spacing(0.625);
 }
 
-.bit-cmb-sec-txt {
+.bit-cmb-sct {
     display: block;
     font-weight: 400;
     line-height: spacing(2.25);
@@ -83,7 +83,7 @@
     font-size: spacing(1.5);
     line-height: spacing(2.75);
 
-    .bit-cmb-sec-txt {
+    .bit-cmb-sct {
         font-size: spacing(1);
     }
 }
@@ -93,7 +93,7 @@
     font-size: spacing(1.75);
     line-height: $typography-line-height-buttons;
 
-    .bit-cmb-sec-txt {
+    .bit-cmb-sct {
         font-size: spacing(1.25);
     }
 }
@@ -103,7 +103,7 @@
     font-size: spacing(2);
     line-height: spacing(3.75);
 
-    .bit-cmb-sec-txt {
+    .bit-cmb-sct {
         font-size: spacing(1.5);
         line-height: spacing(2.5);
     }
