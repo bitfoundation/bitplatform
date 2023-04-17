@@ -156,11 +156,11 @@ public class BitLoadingButtonTests : BunitTestContext
 
         var labelPositionClass = labelPosition switch
         {
-            BitLabelPosition.Top => "bit-ldb-t",
-            BitLabelPosition.Right => "bit-ldb-r",
-            BitLabelPosition.Bottom => "bit-ldb-b",
-            BitLabelPosition.Left => "bit-ldb-l",
-            _ => "bit-ldb-r"
+            BitLabelPosition.Top => "bit-ldb-top",
+            BitLabelPosition.Right => "bit-ldb-right",
+            BitLabelPosition.Bottom => "bit-ldb-bottom",
+            BitLabelPosition.Left => "bit-ldb-left",
+            _ => "bit-ldb-right"
         };
 
         var spinnerSizeClass = spinnerSize switch

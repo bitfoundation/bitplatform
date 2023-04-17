@@ -120,7 +120,7 @@
     text-align: center;
 }
 
-.bit-ldb-t {
+.bit-ldb-top {
     flex-direction: column-reverse;
 
     .bit-ldb-lbl {
@@ -128,7 +128,7 @@
     }
 }
 
-.bit-ldb-b {
+.bit-ldb-bottom {
     flex-direction: column;
 
     .bit-ldb-lbl {
@@ -136,7 +136,7 @@
     }
 }
 
-.bit-ldb-r {
+.bit-ldb-right {
     flex-direction: row;
 
     .bit-ldb-lbl {
@@ -144,7 +144,7 @@
     }
 }
 
-.bit-ldb-l {
+.bit-ldb-left {
     flex-direction: row-reverse;
 
     .bit-ldb-lbl {

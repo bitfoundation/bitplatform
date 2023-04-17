@@ -147,11 +147,11 @@ public partial class BitLoadingButton
     private string GetClassLoadingLabelPosition()
         => LoadingLabelPosition switch
         {
-            BitLabelPosition.Top => $"{RootElementClass}-t",
-            BitLabelPosition.Right => $"{RootElementClass}-r",
-            BitLabelPosition.Bottom => $"{RootElementClass}-b",
-            BitLabelPosition.Left => $"{RootElementClass}-l",
-            _ => $"{RootElementClass}-r"
+            BitLabelPosition.Top => $"{RootElementClass}-top",
+            BitLabelPosition.Right => $"{RootElementClass}-right",
+            BitLabelPosition.Bottom => $"{RootElementClass}-bottom",
+            BitLabelPosition.Left => $"{RootElementClass}-left",
+            _ => $"{RootElementClass}-right"
         };
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
