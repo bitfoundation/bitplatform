@@ -1072,7 +1072,7 @@ private void Example6ToggleOnChange()
         flex-direction: column;
     }
 
-    .custom-btn-sm.small {
+    .custom-btn-sm {
         max-width: 7rem;
         width: 7rem;
         padding: 1rem 1.25rem;
@@ -1081,7 +1081,7 @@ private void Example6ToggleOnChange()
         border-radius: 0.1875rem;
     }
 
-    .custom-btn-md.medium {
+    .custom-btn-md {
         max-width: 10rem;
         width: 10rem;
         padding: 1.125rem 1.5rem;
@@ -1090,7 +1090,7 @@ private void Example6ToggleOnChange()
         border-radius: 0.25rem;
     }
 
-    .custom-btn-lg.large {
+    .custom-btn-lg {
         max-width: 12.5rem;
         width: 12.5rem;
         padding: 1.375rem 1.625rem;
