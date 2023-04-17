@@ -104,7 +104,7 @@ public partial class BitLoadingButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-lbtn";
+    protected override string RootElementClass => "bit-ldb";
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,56 +123,41 @@ public partial class BitLoadingButton
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? "primary"
-                                           : "standard");
+                                           ? $"{RootElementClass}-pri"
+                                           : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
     }
 
     private string GetClassLoadingSize()
-    {
-        return LoadingSpinnerSize switch
+        => LoadingSpinnerSize switch
         {
-            BitSpinnerSize.XSmall => "xSmall",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Large => "large",
-            _ => "small"
+            BitSpinnerSize.XSmall => $"{RootElementClass}-xs",
+            BitSpinnerSize.Small => $"{RootElementClass}-sm",
+            BitSpinnerSize.Medium => $"{RootElementClass}-md",
+            BitSpinnerSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-sm"
         };
-    }
 
     private string GetClassLoadingLabelPosition()
-    {
-        return LoadingLabelPosition switch
+        => LoadingLabelPosition switch
         {
-            BitLabelPosition.Top => "top",
-            BitLabelPosition.Right => "right",
-            BitLabelPosition.Bottom => "bottom",
-            BitLabelPosition.Left => "left",
-            _ => "right"
+            BitLabelPosition.Top => $"{RootElementClass}-t",
+            BitLabelPosition.Right => $"{RootElementClass}-r",
+            BitLabelPosition.Bottom => $"{RootElementClass}-b",
+            BitLabelPosition.Left => $"{RootElementClass}-l",
+            _ => $"{RootElementClass}-r"
         };
-    }
-
-    private string GetClassLoadingStyle()
-    {
-        return buttonStyle switch
-        {
-            BitButtonStyle.Primary => "primary",
-            BitButtonStyle.Standard => "standard",
-            _ => "primary"
-        };
-    }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 }
