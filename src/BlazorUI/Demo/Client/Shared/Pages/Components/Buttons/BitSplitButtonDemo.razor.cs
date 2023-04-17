@@ -1602,27 +1602,21 @@ private string TemplateClickedItem;
     private readonly string example6BitSplitButtonOptionHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            height: 38px;
-            font-size: 8px;
-            line-height: 1.5;
-        }
+        height: 38px;
+        font-size: 8px;
+        line-height: 1.5;
     }
 
     .custom-btn-md {
-        &.medium {
-            height: 48px;
-            font-size: 16px;
-            line-height: 1.4;
-        }
+        height: 48px;
+        font-size: 16px;
+        line-height: 1.4;
     }
 
     .custom-btn-lg {
-        &.large {
-            height:50px;
-            font-size: 30px;
-            line-height: 1.33;
-        }
+        height:50px;
+        font-size: 30px;
+        line-height: 1.33;
     }
 </style>
 
