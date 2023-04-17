@@ -3,13 +3,7 @@
 @import "fabric.mdl2.icons.scss";
 @import "theme-variables.scss";
 @import "components.scss";
-
-.bit-bg-primary {
-    background-color: $color-background-primary;
-}
-.bit-bg-secondary {
-    background-color: $color-background-secondary;
-}
+@import "bit-css.scss";
 
 button {
     border: none;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class ElementStyleBuilder : ElementAttributeBuilder
 {

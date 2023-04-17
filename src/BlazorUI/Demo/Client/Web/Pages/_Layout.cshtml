@@ -39,7 +39,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" bit-theme="dark">
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
@@ -77,7 +77,7 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
-<body>
+<body class="@BitCss.BgColor.Primary @BitCss.Text.Primary">
     <div id="app-container">
         @if (isDefaultDeploymentType)
         {
