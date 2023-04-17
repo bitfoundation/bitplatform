@@ -222,18 +222,18 @@ public partial class BitMenuButton<TItem> where TItem : class
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
-                                           ? "primary"
-                                           : "standard");
+                                           ? $"{RootElementClass}-pri"
+                                           : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
 
         ClassBuilder.Register(() => _isCalloutOpen
-                                       ? "open-menu"
+                                       ? $"{RootElementClass}-omn"
                                        : string.Empty);
     }
 

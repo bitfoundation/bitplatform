@@ -1040,16 +1040,14 @@ private string example3SelectedItem;
     }
 
     .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
+        height: 2.5rem;
+        width: 10.5rem;
+        background-color: #515151;
+        border-color: black;
 
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
+        &:hover {
+            background-color: #403f3f;
+            border-color: black;
         }
     }
 </style>
@@ -1095,16 +1093,14 @@ private string example3SelectedItem;
     }
 
     .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
+        height: 2.5rem;
+        width: 10.5rem;
+        background-color: #515151;
+        border-color: black;
 
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
+        &:hover {
+            background-color: #403f3f;
+            border-color: black;
         }
     }
 </style>
@@ -1156,16 +1152,14 @@ private string example3SelectedItem;
     }
 
     .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
+        height: 2.5rem;
+        width: 10.5rem;
+        background-color: #515151;
+        border-color: black;
 
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
+        &:hover {
+            background-color: #403f3f;
+            border-color: black;
         }
     }
 </style>
@@ -1658,30 +1652,24 @@ private string example1SelectedItem;
     private readonly string example7BitMenuButtonItemHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
@@ -1715,30 +1703,24 @@ private string example1SelectedItem;
     private readonly string example7CustomItemHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
@@ -1781,30 +1763,24 @@ private string example1SelectedItem;
     private readonly string example7BitMenuButtonOptionHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 

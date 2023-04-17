@@ -14,14 +14,14 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId">
-    <div id="@_menuButtonOverlayId" class="overlay" @onclick="CloseCallout"></div>
+    <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
     <button id="@_menuButtonId"
             type="@ButtonType?.GetValue()"
             aria-label="@AriaLabel"
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
             tabindex="@(IsEnabled ? 0 : -1)"
-            class="menu-btn"
+            class="bit-mnb-mbt"
             @onclick="HandleOnClick">
         @if (HeaderTemplate is not null)
         {
@@ -33,13 +33,11 @@
             {
                 <i class="bit-icon bit-icon--@IconName.GetName()"></i>
             }
-            <span class="text">@Text</span>
+            <span class="bit-mnb-txt">@Text</span>
             <i class="bit-icon bit-icon--ChevronDown"></i>
         }
     </button>
-    <div id="@_menuButtonCalloutId"
-         class="items"
-         tabindex="@(IsEnabled ? 0 : -1)">
+    <div id="@_menuButtonCalloutId" class="bit-mnb-its" tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
@@ -49,7 +47,7 @@
                             role="menuitem"
                             aria-disabled="@GetIsEnabled(item)"
                             tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="item @(GetIsEnabled(item) ? "" : "bit-dis")">
+                            class="bit-mnb-itm @(GetIsEnabled(item) ? "" : "bit-dis")">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
@@ -60,7 +58,7 @@
                             {
                                 <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                             }
-                            <span class="text">
+                            <span class="bit-mnb-txt">
                                 @GetText(item)
                             </span>
                         }
