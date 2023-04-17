@@ -22,16 +22,6 @@
         cursor: default;
         pointer-events: none;
     }
-
-    @keyframes spinner-key-frame {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 .bit-ldb-sm {
@@ -110,7 +100,7 @@
 }
 
 .bit-ldb-spn {
-    animation: spinner-key-frame 1.3s linear infinite;
+    animation: bit-ldb-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
@@ -184,5 +174,15 @@
             height: spacing(1.5);
             width: spacing(1.5);
         }
+    }
+}
+
+@keyframes bit-ldb-spinner-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
     }
 }
