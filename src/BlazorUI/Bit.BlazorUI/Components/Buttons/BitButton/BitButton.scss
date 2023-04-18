@@ -20,54 +20,54 @@
         cursor: default;
         pointer-events: none;
     }
+}
 
-    &.bit-btn-std {
-        color: $color-text-primary;
-        border-color: $color-border-secondary;
-        background-color: $color-secondary-main;
+.bit-btn-std {
+    color: $color-text-primary;
+    border-color: $color-border-secondary;
+    background-color: $color-secondary-main;
 
-        &:hover {
-            border-color: $color-action-border-hover-secondary;
-            background-color: $color-action-hover-secondary;
-        }
-
-        &:active {
-            border-color: $color-action-border-active-secondary;
-            background-color: $color-action-active-secondary;
-        }
+    &:hover {
+        border-color: $color-action-border-hover-secondary;
+        background-color: $color-action-hover-secondary;
     }
 
-    &.bit-btn-pri {
-        color: $color-text-secondary;
-        border-color: $color-border-primary;
-        background-color: $color-primary-main;
+    &:active {
+        border-color: $color-action-border-active-secondary;
+        background-color: $color-action-active-secondary;
+    }
+}
 
-        &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
-        }
+.bit-btn-pri {
+    color: $color-text-secondary;
+    border-color: $color-border-primary;
+    background-color: $color-primary-main;
 
-        &:active {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
+    &:hover {
+        border-color: $color-action-hover-primary;
+        background-color: $color-action-hover-primary;
     }
 
-    &.bit-btn-sm {
-        padding: spacing(0.25) spacing(1.25);
-        font-size: spacing(1.5);
-        line-height: spacing(2.75);
+    &:active {
+        border-color: $color-action-active-primary;
+        background-color: $color-action-active-primary;
     }
+}
 
-    &.bit-btn-md {
-        padding: spacing(0.5) spacing(2);
-        font-size: spacing(1.75);
-        line-height: $typography-line-height-buttons;
-    }
+.bit-btn-sm {
+    padding: spacing(0.25) spacing(1.25);
+    font-size: spacing(1.5);
+    line-height: spacing(2.75);
+}
 
-    &.bit-btn-lg {
-        padding: spacing(0.75) spacing(2.75);
-        font-size: spacing(2);
-        line-height: spacing(3.75);
-    }
+.bit-btn-md {
+    padding: spacing(0.5) spacing(2);
+    font-size: spacing(1.75);
+    line-height: $typography-line-height-buttons;
+}
+
+.bit-btn-lg {
+    padding: spacing(0.75) spacing(2.75);
+    font-size: spacing(2);
+    line-height: spacing(3.75);
 }
