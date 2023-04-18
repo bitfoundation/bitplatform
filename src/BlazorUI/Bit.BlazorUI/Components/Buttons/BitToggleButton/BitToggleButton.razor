@@ -15,7 +15,7 @@
        href="@Href"
        tabindex="@_tabIndex"
        @onclick="HandleOnClick">
-        <span class="content-container">
+        <span class="bit-tgb-con">
             @if (IconName.HasValue)
             {
                 <i class="bit-icon bit-icon--@IconName.GetName()"></i>
@@ -23,7 +23,7 @@
 
             @if (Label.HasValue())
             {
-                <span class="text">@Label</span>
+                <span class="bit-tgb-txt">@Label</span>
             }
         </span>
     </a>
@@ -41,7 +41,7 @@ else
             tabindex="@_tabIndex"
             title="@Title"
             @onclick="HandleOnClick">
-        <span class="content-container">
+        <span class="bit-tgb-con">
             @if (IconName.HasValue)
             {
                 <i class="bit-icon bit-icon--@IconName.GetName()"></i>
@@ -49,7 +49,7 @@ else
 
             @if (Label.HasValue())
             {
-                <span class="text">@Label</span>
+                <span class="bit-tgb-txt">@Label</span>
             }
         </span>
     </button>

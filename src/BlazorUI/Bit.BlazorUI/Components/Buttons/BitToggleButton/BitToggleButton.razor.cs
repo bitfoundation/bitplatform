@@ -8,7 +8,7 @@ public partial class BitToggleButton
     private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private int? _tabIndex;
-    
+
     /// <summary>
     /// Whether the toggle button can have focus in disabled mode.
     /// </summary>
@@ -43,7 +43,7 @@ public partial class BitToggleButton
     /// <summary>
     /// The style of compound button, Possible values: Primary | Standard.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public BitButtonStyle ButtonStyle
     {
         get => buttonStyle;
@@ -112,23 +112,23 @@ public partial class BitToggleButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-tglb";
+    protected override string RootElementClass => "bit-tgb";
 
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                       ? "primary"
-                                       : "standard");
+                                          ? $"{RootElementClass}-pri"
+                                          : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
 
         ClassBuilder.Register(() => IsChecked
-                                       ? "checked"
+                                       ? $"{RootElementClass}-chk"
                                        : string.Empty);
     }
 
@@ -149,12 +149,11 @@ public partial class BitToggleButton
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-            if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
-            IsChecked = !IsChecked;
-            await OnChange.InvokeAsync(IsChecked);
-        }
+        if (IsEnabled is false) return;
+        await OnClick.InvokeAsync(e);
+
+        if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+        IsChecked = !IsChecked;
+        await OnChange.InvokeAsync(IsChecked);
     }
 }
