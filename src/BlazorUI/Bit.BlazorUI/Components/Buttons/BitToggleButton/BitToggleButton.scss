@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-tglb {
+.bit-tgb {
     position: relative;
     display: inline-block;
     min-width: spacing(10);
@@ -14,78 +14,6 @@
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
 
-    .content-container {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: center;
-
-        .text {
-            display: block;
-        }
-
-        .bit-icon {
-            margin: 0 spacing(0.5);
-            text-align: center;
-            flex-shrink: 0;
-        }
-    }
-
-    &.standard {
-        color: $color-text-primary;
-        border-color: $color-border-secondary;
-        background-color: $color-secondary-main;
-
-        &:hover {
-            background-color: $color-action-hover-secondary;
-            color: $color-neutrals-gray190;
-        }
-
-        &:active {
-            background-color: $color-action-active-secondary;
-            color: $color-neutrals-gray190;
-        }
-
-        &.checked {
-            background-color: $color-neutrals-gray30;
-            color: $color-neutrals-gray190;
-
-            &:hover {
-                background-color: $color-neutrals-gray30;
-                color: $color-neutrals-black;
-            }
-        }
-    }
-
-    &.primary {
-        color: $color-text-secondary;
-        border-color: $color-border-primary;
-        background-color: $color-primary-main;
-
-        &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
-        }
-
-        &:active {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
-
-        &.checked {
-            background-color: $color-primary-darker;
-
-            &:hover {
-                border-color: $color-border-primary;
-                background-color: $color-action-hover-primary;
-            }
-
-            &:active {
-                border-color: $color-border-primary;
-            }
-        }
-    }
-
     &.bit-dis {
         background-color: $color-action-disabled;
         color: $color-text-disabled;
@@ -97,26 +25,98 @@
             color: $color-neutrals-gray90;
         }
 
-        &.primary {
+        &.bit-tgb-pri {
             color: $color-neutrals-gray50;
         }
     }
+}
 
-    &.small {
-        padding: spacing(0.25) spacing(1.25);
-        font-size: spacing(1.5);
-        line-height: spacing(2.75);
+.bit-tgb-con {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+
+    .bit-icon {
+        margin: 0 spacing(0.5);
+        text-align: center;
+        flex-shrink: 0;
+    }
+}
+
+.bit-tgb-txt {
+    display: block;
+}
+
+.bit-tgb-std {
+    color: $color-text-primary;
+    border-color: $color-border-secondary;
+    background-color: $color-secondary-main;
+
+    &:hover {
+        background-color: $color-action-hover-secondary;
+        color: $color-neutrals-gray190;
     }
 
-    &.medium {
-        padding: spacing(0.5) spacing(2);
-        font-size: spacing(1.75);
-        line-height: $typography-line-height-buttons;
+    &:active {
+        background-color: $color-action-active-secondary;
+        color: $color-neutrals-gray190;
     }
 
-    &.large {
-        padding: spacing(0.75) spacing(2.75);
-        font-size: spacing(2);
-        line-height: spacing(3.75);
+    &.bit-tgb-chk {
+        background-color: $color-neutrals-gray30;
+        color: $color-neutrals-gray190;
+
+        &:hover {
+            background-color: $color-neutrals-gray30;
+            color: $color-neutrals-black;
+        }
     }
+}
+
+.bit-tgb-pri {
+    color: $color-text-secondary;
+    border-color: $color-border-primary;
+    background-color: $color-primary-main;
+
+    &:hover {
+        border-color: $color-action-hover-primary;
+        background-color: $color-action-hover-primary;
+    }
+
+    &:active {
+        border-color: $color-action-active-primary;
+        background-color: $color-action-active-primary;
+    }
+
+    &.bit-tgb-chk {
+        background-color: $color-primary-darker;
+
+        &:hover {
+            border-color: $color-border-primary;
+            background-color: $color-action-hover-primary;
+        }
+
+        &:active {
+            border-color: $color-border-primary;
+        }
+    }
+}
+
+.bit-tgb-sm {
+    padding: spacing(0.25) spacing(1.25);
+    font-size: spacing(1.5);
+    line-height: spacing(2.75);
+}
+
+.bit-tgb-md {
+    padding: spacing(0.5) spacing(2);
+    font-size: spacing(1.75);
+    line-height: $typography-line-height-buttons;
+}
+
+.bit-tgb-lg {
+    padding: spacing(0.75) spacing(2.75);
+    font-size: spacing(2);
+    line-height: spacing(3.75);
 }
