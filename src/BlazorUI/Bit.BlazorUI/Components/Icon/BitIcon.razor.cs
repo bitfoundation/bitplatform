@@ -12,11 +12,9 @@ public partial class BitIcon
 
     protected override string RootElementClass => "bit-ico";
 
-    protected override Task OnInitializedAsync()
+    protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => $"bit-icon bit-icon--{_internalIconName}");
-
-        return base.OnInitializedAsync();
     }
 
     protected override Task OnParametersSetAsync()
