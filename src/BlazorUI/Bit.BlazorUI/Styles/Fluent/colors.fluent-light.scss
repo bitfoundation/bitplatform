@@ -1,19 +1,32 @@
-﻿:root {
+﻿:root,
+:root[bit-theme="light"],
+:root[bit-theme="fluent"],
+:root[bit-theme="fluent-light"] {
     --bit-clr-primary-main: #0078D4;
+    --bit-clr-primary-light: #2b88d8;
+    --bit-clr-primary-lighter: #2b88d8;
     --bit-clr-primary-dark: #106EBE;
     --bit-clr-primary-darker: #005A9E;
-    --bit-clr-primary-light: #2b88d8;
     --bit-clr-secondary-main: #FFFFFF;
     --bit-clr-secondary-light: #DEECF9;
+    --bit-clr-secondary-lighter: #DEECF9;
     --bit-clr-secondary-dark: #F3F2F1;
     --bit-clr-secondary-darker: #EDEBE9;
     //texts
     --bit-clr-txt-primary: #000;
+    --bit-clr-txt-primary2: #111;
+    --bit-clr-txt-primary3: #222;
     --bit-clr-txt-secondary: #FFF;
+    --bit-clr-txt-secondary2: #EEE;
+    --bit-clr-txt-secondary3: #DDD;
     --bit-clr-txt-disabled: #A19F9D;
     //backgrounds
     --bit-clr-bg-primary: #FFF;
+    --bit-clr-bg-primary2: #F3F6F9;
+    --bit-clr-bg-primary3: #CCC;
     --bit-clr-bg-secondary: #000;
+    --bit-clr-bg-secondary2: #111;
+    --bit-clr-bg-secondary3: #222;
     //generals
     --bit-clr-gnr-red: #A4262C;
     --bit-clr-gnr-darkred: #750B1C;

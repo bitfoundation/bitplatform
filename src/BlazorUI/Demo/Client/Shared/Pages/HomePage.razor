@@ -4,21 +4,26 @@
     <section class="page-section hero-section">
         <div class="page-section-contnet">
             <div class="hero-section-content">
-                <h1 class="hero-title">Bit BlazorUI</h1>
-                <div class="hero-desc">Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</div>
-                <a class="primary-btn" href="/getting-started">Get started<span class="chevron-icon"></span></a>
+                <BitTypography Variant="BitTypographyVariant.H1">Bit BlazorUI</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
+                <br />
+                <BitButton Href="/getting-started">
+                    <BitTypography Variant="BitTypographyVariant.H6" Style="display: flex">
+                        Get started &nbsp; <BitIcon IconName="BitIconName.ChevronRightSmall" />
+                    </BitTypography>
+                </BitButton>
             </div>
             <div class="hero-section-content">
-                <div class="hero-section-components">
+                <div class="hero-section-components @BitCss.BgColor.Primary2">
                     <div class="hero-section-components-col">
-                        <div class="component-box">
+                        <div class="component-box @BitCss.BgColor.Primary">
                             <BitDropDown Label="Select two ptoducts"
                                          Items="GetProductDropdownItems()"
                                          IsMultiSelect="true"
                                          Placeholder="Select an option"
                                          Style="width: 326px; margin: 20px 0 20px 0" />
                         </div>
-                        <div class="component-box">
+                        <div class="component-box @BitCss.BgColor.Primary">
                             <BitColorPicker ShowPreview="true" @bind-Color="@SelectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
                         </div>
                         <div class="component-box--transparent" style="height: fit-content;">
@@ -34,7 +39,7 @@
                                 <BitRadioButtonOption Text="Disabeled" IsEnabled="false" Value="disabeled_option" ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png" ImageAlt="alt for image Option 2" SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" ImageSize="new System.Drawing.Size( width: 32, height: 32)"></BitRadioButtonOption>
                             </BitRadioButtonGroup>
                         </div>
-                        <div class="component-box">
+                        <div class="component-box @BitCss.BgColor.Primary">
                             <BitSlider Label="Origin from zero"
                                        Min="-5"
                                        Max="5"
@@ -44,7 +49,7 @@
                                        IsRanged="true"
                                        IsOriginFromZero="true" />
                         </div>
-                        <div class="component-box">
+                        <div class="component-box @BitCss.BgColor.Primary">
                             <BitCompoundButton IsEnabled="true"
                                                Text="Primary"
                                                SecondaryText="This Button is a compound button">
@@ -67,7 +72,7 @@
                             <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
                             <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
                         </BitPivot>
-                        <div class="tab-content">
+                        <div class="tab-content @(BitCss.BgColor.Primary)">
                             @if (PivotSelectedKey == "Overview")
                             {
                                 <div>The is the "Overview" section.</div>
@@ -91,7 +96,7 @@
         </div>
     </section>
 
-    <section class="page-section popular-components-section">
+    <section class="page-section popular-components-section @(BitCss.BgColor.Primary2)">
         <div class="page-section-contnet">
             <PopularComponents />
         </div>
@@ -99,9 +104,7 @@
 
     <section class="page-section benefit-section">
         <div class="page-section-contnet">
-            <h2 class="section-title">
-                Why <span class="text--gradiant">Bit BlazorUI</span>
-            </h2>
+            <BitTypography Variant="BitTypographyVariant.H3">Why Bit BlazorUI?</BitTypography>
             <div class="card-list">
                 <div class="benefit-card">
                     <div class="benefit-card-title native-icon">
@@ -295,8 +298,8 @@
                     <div class="list">
                         <div class="list-title">Surfaces</div>
                         <BitLink Class="component-list-item" Href="/components/accordion" title="Accordion (Expander)">
-                          <span>Accordion (Expander)</span>
-                        </BitLink> 
+                            <span>Accordion (Expander)</span>
+                        </BitLink>
                         <BitLink Class="component-list-item" Href="/components/modal" title="Modal">
                             <span>Modal</span>
                         </BitLink>
@@ -317,8 +320,8 @@
 
     <section class="page-section contribution-section">
         <div class="page-section-contnet">
-            <h2 class="section-title"><span class="text--gradiant">Open Source</span> contribution</h2>
-            <div class="section-desc">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</div>
+            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Open Source contribution</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Body1" Gutter Style="max-width: 700px">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</BitTypography>
             <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform">
                 <span class="github-icon"></span>
                 GitHub

@@ -1,6 +1,7 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/bit-css-variables.scss';
 
 .main-container {
     display: flex;
@@ -32,17 +33,6 @@
             margin-left: 0;
         }
     }
-}
-
-.main-title {
-    margin: 0;
-    font-size: clamp(1.5rem, 0.9643rem + 1.4286vw, 2.25rem);
-    font-weight: 800;
-    line-height: 1.2222222222222223;
-    color: #132F4C;
-    margin-top: rem(10px);
-    margin-bottom: rem(20px);
-    max-width: rem(500px);
 }
 
 .component-list {
@@ -78,10 +68,9 @@
     text-decoration: none;
     transition-property: all;
     transition-duration: 150ms;
-    color: #A0AAB4;
 
     &:hover {
-        background-color: #E7EBF0;
+        background-color: $bit-color-background-primary3;
     }
 
     .component-icon {
@@ -112,7 +101,7 @@
         font-size: rem(14px);
         line-height: 1.5;
         letter-spacing: 0;
-        color: #1A2027;
+        color: $bit-color-text-primary;
         font-weight: 700;
     }
 
@@ -123,7 +112,7 @@
         line-height: 1.5;
         letter-spacing: 0;
         font-weight: 400;
-        color: #3E5060;
+        color: $bit-color-text-primary3;
         text-align: left;
     }
 
@@ -152,12 +141,7 @@
 }
 
 .component-row--active {
-    border-color: #E0E3E7;
-    background-color: $White;
-
-    &:hover {
-        background-color: $White;
-    }
+    background-color: $bit-color-background-primary3;
 
     .component-icon {
         background-color: #eaeef3;
@@ -189,10 +173,10 @@
     border-radius: rem(4px) rem(4px) 0 0;
     border: rem(1px) solid rgb(205, 210, 215);
     box-sizing: border-box;
-    color: rgb(26, 32, 39);
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    background-color: rgb(231, 235, 240);
     overflow: auto;
+    color: rgb(26, 32, 39);
+    background-color: $bit-color-background-primary;
 
     @include lt-lg {
         margin-top: rem(20px);
@@ -212,7 +196,7 @@
     box-shadow: rgba(61, 71, 82, 0.25) 0px 4px 20px;
     box-sizing: border-box;
     color: rgb(26, 32, 39);
-    background-color: $White;
+    background-color: $bit-color-background-primary2;
 }
 
 .example-code {
@@ -227,7 +211,6 @@
     overflow: auto;
 
     pre {
-        background-color: $White;
         direction: ltr;
         overflow: auto;
         margin: 0;
