@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Buttons;
 [TestClass]
 public class BitSplitButtonTests : BunitTestContext
 {
-    private List<BitSplitButtonItem> items = new()
+    private readonly List<BitSplitButtonItem> items = new()
     {
         new BitSplitButtonItem()
         {
@@ -48,7 +48,7 @@ public class BitSplitButtonTests : BunitTestContext
             Assert.IsTrue(bitSplitButton.ClassList.Contains("bit-dis"));
         }
 
-        var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "primary" : "standard";
+        var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "bit-spl-pri" : "bit-spl-std";
         Assert.AreEqual(isEnabled, bitSplitButton.ClassList.Contains(buttonStyle));
     }
 
@@ -67,7 +67,7 @@ public class BitSplitButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, (item) => clickedItem = item);
         });
 
-        var operatorButton = com.Find(".operator-btn");
+        var operatorButton = com.Find(".bit-spl-opb");
         operatorButton.Click();
 
         if (isEnabled)
@@ -76,7 +76,7 @@ public class BitSplitButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(clickedItem, null);
+            Assert.IsNull(clickedItem);
         }
     }
 
@@ -96,10 +96,10 @@ public class BitSplitButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, (item) => clickedItem = item);
         });
 
-        var lastItem = com.Find("li:last-child .item");
+        var lastItem = com.Find("li:last-child .bit-spl-itm");
         lastItem.Click();
 
-        Assert.AreEqual(itemIsEnabled, lastItem.ClassList.Contains("disabled") is false);
+        Assert.AreEqual(itemIsEnabled, lastItem.ClassList.Contains("bit-dis") is false);
 
         if (itemIsEnabled)
         {
@@ -107,7 +107,7 @@ public class BitSplitButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(clickedItem, null);
+            Assert.IsNull(clickedItem);
         }
     }
 
@@ -126,10 +126,10 @@ public class BitSplitButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, (item) => clickedItem = item);
         });
 
-        var lastItem = com.Find("li:last-child .item");
+        var lastItem = com.Find("li:last-child .bit-spl-itm");
         lastItem.Click();
 
-        var operatorButton = com.Find(".operator-btn");
+        var operatorButton = com.Find(".bit-spl-opb");
         operatorButton.Click();
 
         if (isSticky)
@@ -154,18 +154,47 @@ public class BitSplitButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var button = com.Find("button.chevron-btn");
+        var button = com.Find("button.bit-spl-chb");
         var bitSplitButton = com.Find(".bit-spl");
-        Assert.IsFalse(bitSplitButton.ClassList.Contains("open-menu"));
+        Assert.IsFalse(bitSplitButton.ClassList.Contains("bit-spl-omn"));
         button.Click();
 
         if (isEnabled)
         {
-            Assert.IsTrue(bitSplitButton.ClassList.Contains("open-menu"));
+            Assert.IsTrue(bitSplitButton.ClassList.Contains("bit-spl-omn"));
         }
         else
         {
-            Assert.IsFalse(bitSplitButton.ClassList.Contains("open-menu"));
+            Assert.IsFalse(bitSplitButton.ClassList.Contains("bit-spl-omn"));
         }
+    }
+
+    [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
+    ]
+    public void BitSplitButtonSizeTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
+        });
+
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "bit-spl-sm",
+            BitButtonSize.Medium => "bit-spl-md",
+            BitButtonSize.Large => "bit-spl-lg",
+            _ => "bit-spl-md",
+        };
+
+        var bitSplitButton = com.Find(".bit-spl");
+
+        Assert.IsTrue(bitSplitButton.ClassList.Contains(sizeClass));
     }
 }

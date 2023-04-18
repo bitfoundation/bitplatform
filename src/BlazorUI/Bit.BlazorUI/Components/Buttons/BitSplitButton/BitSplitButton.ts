@@ -32,19 +32,13 @@
             splitButtonOverlay.style.display = "block";
 
             const splitButtonCalloutHeight = splitButtonCallout.offsetHeight;
-            const splitButtonCalloutWidth = splitButtonCallout.offsetWidth;
-
             const splitButtonHeight = splitButton.offsetHeight;
-            const splitButtonTop = splitButton.getBoundingClientRect().y;
-
-            const splitButtonWrapperWidth = splitButtonWrapper.offsetWidth;
             const splitButtonWrapperHeight = splitButtonWrapper.offsetHeight;
 
             const splitButtonWrapperX = splitButtonWrapper.getBoundingClientRect().x;
             const splitButtonWrapperY = splitButtonWrapper.getBoundingClientRect().y;
 
             const splitButtonWrapperBottom = window.innerHeight - (splitButtonWrapperHeight + splitButtonWrapperY);
-            const splitButtonWrapperRight = window.innerWidth - (splitButtonWrapperWidth + splitButtonWrapperX);
 
             splitButtonCallout.style.left = splitButtonWrapperX + "px";
             splitButtonCallout.style.right = "unset";

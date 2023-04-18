@@ -22,10 +22,9 @@ public partial class BitSplitButton<TItem> where TItem : class
     private IEnumerable<TItem> _oldItems;
     private TItem? _currentItem;
 
-    private string _splitButtonId => $"{RootElementClass}-{UniqueId}";
-    private string _splitButtonCalloutId => $"{RootElementClass}-callout-{UniqueId}";
-    private string _splitButtonOverlayId => $"{RootElementClass}-overlay-{UniqueId}";
-
+    private string? _splitButtonId;
+    private string? _splitButtonCalloutId;
+    private string? _splitButtonOverlayId;
     private bool _isCalloutOpen
     {
         get => isCalloutOpen;
@@ -150,21 +149,30 @@ public partial class BitSplitButton<TItem> where TItem : class
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsEnabled is false
-                               ? string.Empty
-                               : ButtonStyle == BitButtonStyle.Primary
-                                   ? "primary"
-                                   : "standard");
+                                      ? string.Empty
+                                      : ButtonStyle == BitButtonStyle.Primary
+                                          ? $"{RootElementClass}-pri"
+                                          : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => ButtonSize switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Large => "large",
-            _ => "medium"
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
+            _ => $"{RootElementClass}-md"
         });
 
         ClassBuilder.Register(() => _isCalloutOpen
-                                       ? "open-menu"
+                                       ? $"{RootElementClass}-omn"
                                        : string.Empty);
+    }
+
+    protected override void OnInitialized()
+    {
+        _splitButtonId = $"{RootElementClass}-{UniqueId}";
+        _splitButtonCalloutId = $"{RootElementClass}-callout-{UniqueId}";
+        _splitButtonOverlayId = $"{RootElementClass}-overlay-{UniqueId}";
+
+        base.OnInitialized();
     }
 
     [JSInvokable("CloseCallout")]
