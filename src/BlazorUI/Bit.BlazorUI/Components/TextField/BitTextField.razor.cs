@@ -334,20 +334,18 @@ public partial class BitTextField
     protected override void RegisterComponentClasses()
     {
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"multiline{(IsResizable is false ? "-fix" : string.Empty)}"
+                                    ? $"{RootElementClass}-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsReadonly ? "readonly" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? "required" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
-
-        ClassBuilder.Register(() => HasBorder is false ? "no-border" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
 
-        ClassBuilder.Register(() => IsRequired && Label is null ? "required-no-label" : string.Empty);
+        ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -388,7 +386,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-fcs";
         ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
@@ -406,7 +404,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "focused";
+        _focusClass = $"{RootElementClass}-fcs";
         ClassBuilder.Reset();
         await OnFocus.InvokeAsync(e);
     }

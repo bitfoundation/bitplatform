@@ -23,7 +23,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var bitTextField = component.Find(".bit-txt");
-        var textField = component.Find(".txt-field");
+        var textField = component.Find(".bit-txt-txf");
 
         if (isEnabled)
         {
@@ -37,7 +37,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", textField.TagName);
 
         Assert.AreEqual(isRequired, textField.HasAttribute("required"));
-        Assert.AreEqual(isRequired, bitTextField.ClassList.Contains("required"));
+        Assert.AreEqual(isRequired, bitTextField.ClassList.Contains("bit-txt-req"));
     }
 
     [DataTestMethod,
@@ -52,7 +52,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IsMultiline, isMultiline);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         if (isMultiline)
         {
@@ -72,7 +72,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitTextFieldLabel = com.Find(".label").TextContent;
+        var bitTextFieldLabel = com.Find(".bit-txt-lbl").TextContent;
 
         Assert.AreEqual(label, bitTextFieldLabel);
     }
@@ -93,7 +93,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IsReadonly, isReadOnly);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         Assert.IsTrue(bitTextField.HasAttribute("maxlength"));
         Assert.AreEqual(bitTextField.GetAttribute("maxlength"), maxLength.ToString());
@@ -112,7 +112,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IconName, iconName);
         });
 
-        var bitTextFieldIcon = component.Find(".txt-field + .bit-icon");
+        var bitTextFieldIcon = component.Find(".bit-txt-txf + .bit-icon");
 
         Assert.IsTrue(bitTextFieldIcon.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -130,9 +130,9 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.CanRevealPassword, true);
         });
 
-        var textField = component.Find(".txt-field");
-        var revealPasswordBtn = component.Find(".password-reveal-btn");
-        var revealPasswordIcon = component.Find(".password-reveal-btn > span > i");
+        var textField = component.Find(".bit-txt-txf");
+        var revealPasswordBtn = component.Find(".bit-txt-prb");
+        var revealPasswordIcon = component.Find(".bit-txt-prb > span > i");
 
         Assert.AreEqual("password", textField.GetAttribute("type"));
         Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--RedEye"));
@@ -155,7 +155,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Type, type);
         });
 
-        var textField = component.Find(".txt-field");
+        var textField = component.Find(".bit-txt-txf");
 
         Assert.AreEqual(type.GetDisplayName(toLowerDisplayName: true), textField.GetAttribute("type"));
     }
@@ -176,7 +176,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => currentCount++);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         bitTextField.Click();
 
@@ -203,7 +203,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnFocusOut, () => focusedOutValue++);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         bitTextField.Focus();
         Assert.AreEqual(isEnabled ? 1 : 0, focusedValue);
@@ -233,7 +233,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnKeyDown, (KeyboardEventArgs e) => keyDownedValue = e.Key);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         bitTextField.KeyUp(keyUpValue);
         Assert.AreEqual(isEnabled ? keyUpValue : null, keyUppedValue);
@@ -258,7 +258,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => currentCount++);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         bitTextField.Input("a");
 
@@ -273,7 +273,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Prefix, prefix);
         });
 
-        var bitTextFieldPrefix = component.Find(".txt-prefix > span");
+        var bitTextFieldPrefix = component.Find(".bit-txt-txp > span");
         Assert.AreEqual(prefix, bitTextFieldPrefix.TextContent);
     }
 
@@ -285,7 +285,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Suffix, suffix);
         });
 
-        var bitTextFieldSuffix = component.Find(".txt-suffix > span");
+        var bitTextFieldSuffix = component.Find(".bit-txt-txs > span");
         Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
     }
 
@@ -304,7 +304,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IsMultiline, isMultiline);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
 
         var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
 
@@ -326,7 +326,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Description, description);
         });
 
-        var bitTextFieldDescription = component.Find(".txt-desc > span");
+        var bitTextFieldDescription = component.Find(".bit-txt-txd > span");
         Assert.AreEqual(description, bitTextFieldDescription.TextContent);
     }
 
@@ -342,7 +342,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var bitTextField = component.Find(".bit-txt");
-        Assert.AreEqual(isUnderlined, bitTextField.ClassList.Contains("underlined"));
+        Assert.AreEqual(isUnderlined, bitTextField.ClassList.Contains("bit-txt-und"));
     }
 
     [DataTestMethod,
@@ -357,7 +357,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var bitTextField = component.Find(".bit-txt");
-        Assert.AreEqual(hasBorder is false, bitTextField.ClassList.Contains("no-border"));
+        Assert.AreEqual(hasBorder is false, bitTextField.ClassList.Contains("bit-txt-nbd"));
     }
 
     [DataTestMethod, DataRow(5)]
@@ -373,7 +373,10 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(rows.ToString(), input.GetAttribute("rows"));
     }
 
-    [DataTestMethod, DataRow(true), DataRow(false)]
+    [DataTestMethod, 
+        DataRow(true), 
+        DataRow(false)
+    ]
     public void BitTextFieldShouldRespectIsResizableWhenItIsMultiline(bool isResizable)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -383,7 +386,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var bitTextField = component.Find(".bit-txt");
-        Assert.AreEqual(!isResizable, bitTextField.ClassList.Contains("multiline-fix"));
+        Assert.AreEqual(!isResizable, bitTextField.ClassList.Contains("bit-txt-mlf"));
     }
 
     [DataTestMethod,
@@ -399,7 +402,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
 
-        var input = component.Find(".txt-field");
+        var input = component.Find(".bit-txt-txf");
 
         Assert.IsTrue(input.HasAttribute("aria-label"));
         Assert.AreEqual(input.GetAttribute("aria-label"), ariaLabel);
@@ -419,7 +422,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IsMultiline, isMultiline);
         });
 
-        var input = component.Find(".txt-field");
+        var input = component.Find(".bit-txt-txf");
         Assert.AreEqual(label.HasValue(), input.HasAttribute("aria-labelledby"));
     }
 
@@ -436,7 +439,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.AutoComplete, autoComplete);
         });
 
-        var input = component.Find(".txt-field");
+        var input = component.Find(".bit-txt-txf");
 
         if (autoComplete.HasValue())
         {
@@ -650,7 +653,7 @@ public class BitTextFieldTests : BunitTestContext
         DataRow("bit  "),
         DataRow(" bit component "),
         DataRow("  bit  "),
-   ]
+    ]
     public void BitTextFieldTrimmedDefaultValueTest(string value)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -659,7 +662,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, value);
         });
 
-        var bitTextField = component.Find(".txt-field");
+        var bitTextField = component.Find(".bit-txt-txf");
         var trimmedValue = bitTextField.GetAttribute("value");
 
         Assert.AreEqual(value.Trim(), trimmedValue);
