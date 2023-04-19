@@ -93,7 +93,7 @@ public partial class BitOtpInput
 
     protected override async Task OnParametersSetAsync()
     {
-        if (CurrentValue != null && CurrentValue != string.Join("", _inputValue))
+        if (CurrentValue is not null && CurrentValue != string.Join(string.Empty, _inputValue))
         {
             SetInputValue(CurrentValue);
         }
@@ -123,10 +123,10 @@ public partial class BitOtpInput
     {
         ClassBuilder.Register(() => Direction switch
         {
-            BitOtpInputDirection.LeftToRight => "left-to-right",
-            BitOtpInputDirection.RightToLeft => "right-to-left",
-            BitOtpInputDirection.TopToBottom => "top-to-bottom",
-            BitOtpInputDirection.BottomToTop => "bottom-to-top",
+            BitOtpInputDirection.LeftToRight => $"{RootElementClass}-ltr",
+            BitOtpInputDirection.RightToLeft => $"{RootElementClass}-rtl",
+            BitOtpInputDirection.TopToBottom => $"{RootElementClass}-ttb",
+            BitOtpInputDirection.BottomToTop => $"{RootElementClass}-btt",
             _ => string.Empty
         });
     }
@@ -176,7 +176,7 @@ public partial class BitOtpInput
             _inputValue[index] = null;
         }
 
-        CurrentValue = string.Join("", _inputValue);
+        CurrentValue = string.Join(string.Empty, _inputValue);
 
         await OnInput.InvokeAsync(e);
         await OnChange.InvokeAsync(CurrentValue);

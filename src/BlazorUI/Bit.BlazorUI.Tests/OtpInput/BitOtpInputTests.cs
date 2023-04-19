@@ -60,10 +60,10 @@ public class BitOtpInputTests : BunitTestContext
 
         string directionClass = direction switch
         {
-            BitOtpInputDirection.LeftToRight => "left-to-right",
-            BitOtpInputDirection.RightToLeft => "right-to-left",
-            BitOtpInputDirection.TopToBottom => "top-to-bottom",
-            BitOtpInputDirection.BottomToTop => "bottom-to-top",
+            BitOtpInputDirection.LeftToRight => "bit-otp-ltr",
+            BitOtpInputDirection.RightToLeft => "bit-otp-rtl",
+            BitOtpInputDirection.TopToBottom => "bit-otp-ttb",
+            BitOtpInputDirection.BottomToTop => "bit-otp-btt",
             _ => null
         };
 
@@ -101,7 +101,7 @@ public class BitOtpInputTests : BunitTestContext
             _ => string.Empty
         };
 
-        var bitOtpInput = com.Find(".input");
+        var bitOtpInput = com.Find(".bit-otp-inp");
 
         Assert.AreEqual(inputTypeAttribute, bitOtpInput.GetAttribute("type"));
         Assert.AreEqual(inputModeAttribute, bitOtpInput.GetAttribute("inputmode"));

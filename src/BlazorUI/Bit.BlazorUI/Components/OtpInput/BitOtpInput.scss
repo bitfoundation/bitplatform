@@ -11,89 +11,89 @@
     box-shadow: none;
     position: relative;
 
-    .input {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: spacing(3.75);
-        height: spacing(3.75);
-        box-sizing: border-box;
-        border-radius: $shape-border-radius;
-        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-        background-color: $color-background-primary;
-        cursor: pointer;
-        text-align: center;
-        -moz-appearance: textfield; // Firefox
-
-        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
-            -webkit-appearance: none
-        }
-
-        &:focus {
-            outline: none;
-            border: spacing(0.25) $shape-border-style $color-primary-main;
-        }
-    }
-
     &.bit-dis {
-        .input {
+        .bit-otp-inp {
             background-color: $color-neutrals-gray30;
         }
     }
 
     &.bit-inv {
-        .input {
+        .bit-otp-inp {
             outline: none;
             border: spacing(0.25) $shape-border-style $color-state-invalid;
         }
     }
+}
 
-    &.left-to-right {
-        flex-direction: row;
+.bit-otp-inp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    box-sizing: border-box;
+    border-radius: $shape-border-radius;
+    border: $shape-border-width $shape-border-style $color-neutrals-gray130;
+    background-color: $color-background-primary;
+    cursor: pointer;
+    text-align: center;
+    -moz-appearance: textfield; // Firefox
 
-        .input {
-            margin-right: spacing(1.25);
-
-            &:last-child {
-                margin-right: unset;
-            }
-        }
+    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
+        -webkit-appearance: none
     }
 
-    &.right-to-left {
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+    &:focus {
+        outline: none;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
 
-        .input {
-            margin-left: spacing(1.25);
+.bit-otp-ltr {
+    flex-direction: row;
 
-            &:last-child {
-                margin-left: unset;
-            }
+    .bit-otp-inp {
+        margin-right: spacing(1.25);
+
+        &:last-child {
+            margin-right: unset;
         }
     }
+}
 
-    &.top-to-bottom {
-        flex-direction: column;
+.bit-otp-rtl {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
 
-        .input {
-            margin-bottom: spacing(1.25);
+    .bit-otp-inp {
+        margin-left: spacing(1.25);
 
-            &:last-child {
-                margin-bottom: unset;
-            }
+        &:last-child {
+            margin-left: unset;
         }
     }
+}
 
-    &.bottom-to-top {
-        flex-direction: column-reverse;
+.bit-otp-ttb {
+    flex-direction: column;
 
-        .input {
-            margin-top: spacing(1.25);
+    .bit-otp-inp {
+        margin-bottom: spacing(1.25);
 
-            &:last-child {
-                margin-top: unset;
-            }
+        &:last-child {
+            margin-bottom: unset;
+        }
+    }
+}
+
+.bit-otp-btt {
+    flex-direction: column-reverse;
+
+    .bit-otp-inp {
+        margin-top: spacing(1.25);
+
+        &:last-child {
+            margin-top: unset;
         }
     }
 }
