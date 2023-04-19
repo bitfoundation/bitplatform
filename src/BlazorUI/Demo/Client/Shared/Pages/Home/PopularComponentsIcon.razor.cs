@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Shared.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages;
 
 public partial class PopularComponentsIcon
 {

@@ -2,16 +2,27 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_vars.scss';
+@import '../Styles/bit-css-variables.scss';
 
 .main-header {
-    position: fixed;
     top: 0;
     z-index: 2;
     width: 100%;
-    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    -webkit-backdrop-filter: blur(20px);
+    position: fixed;
     backdrop-filter: blur(20px);
-    box-shadow: inset 0px -1px 1px #e7ebf0;
+    -webkit-backdrop-filter: blur(20px);
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    box-shadow: inset 0px -1px 1px $bit-color-background-primary3;
+
+    &::before {
+        inset: 0;
+        z-index: -1;
+        content: " ";
+        opacity: 0.69;
+        display: block;
+        position: absolute;
+        background-color: $bit-color-background-primary;
+    }
 }
 
 .main-header--full-page {
@@ -21,17 +32,17 @@
 }
 
 .header-main-container {
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: space-between;
     width: 100%;
-    min-height: rem($HeaderHeight);
+    display: flex;
     margin-left: auto;
     margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
     padding-left: rem(20px);
     padding-right: rem(20px);
-    box-sizing: border-box;
+    justify-content: space-between;
+    min-height: rem($HeaderHeight);
 
     @include md {
         padding-left: rem(30px);
@@ -48,33 +59,33 @@
 }
 
 .header-content-container {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
     height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
 }
 
 .header-logo {
+    cursor: pointer;
     width: rem(50px);
     height: rem(50px);
-    background-image: url('images/bit-logo.svg');
+    margin-right: rem(30px);
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain;
-    cursor: pointer;
-    margin-right: rem(30px);
+    background-image: url('images/bit-logo.svg');
 }
 
 .header-link {
     height: 100%;
-    padding: rem(10px);
-    box-sizing: border-box;
-    font-size: rem(16px);
-    line-height: 1.5;
-    color: $Gray1;
-    text-decoration: none;
     cursor: pointer;
+    line-height: 1.5;
     padding-bottom: 0;
+    padding: rem(10px);
+    font-size: rem(16px);
+    text-decoration: none;
+    box-sizing: border-box;
+    color: $bit-color-text-primary3;
 }
 
 .header-link--active {
@@ -82,26 +93,26 @@
 }
 
 .github-btn {
+    cursor: pointer;
     width: rem(34px);
     height: rem(34px);
     border-radius: 50%;
-    background-image: url('images/github-icon.webp');
+    margin-left: rem(10px);
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
-    cursor: pointer;
-    margin-left: rem(10px);
+    background-image: url('images/github-icon.webp');
 }
 
 .header-second-row {
-    display: none;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
     width: 100%;
-    height: rem($HeaderSecondRowHeight);
+    display: none;
+    align-items: center;
     padding: 0 rem(16px);
+    flex-flow: row nowrap;
     box-sizing: border-box;
+    justify-content: flex-start;
+    height: rem($HeaderSecondRowHeight);
 
     @include sm {
         display: flex;
@@ -109,30 +120,30 @@
 }
 
 .header-nav {
-    position: fixed;
-    z-index: 9999;
-    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     left: 0;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
     width: 100%;
-    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
+    display: flex;
+    z-index: 9999;
+    position: fixed;
     padding: rem(20px);
     box-sizing: border-box;
-    background-color: rgba(255, 255, 255, 0.85);
+    align-items: flex-start;
+    flex-flow: column nowrap;
     backdrop-filter: blur(20px);
+    justify-content: flex-start;
     -webkit-backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, 0.85);
+    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
+    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
 }
 
 .header-nav-link {
-    padding: rem(8px) 0;
-    margin-bottom: rem(16px);
-    font-size: rem(16px);
     line-height: 1.5;
-    color: $Gray1;
+    padding: rem(8px) 0;
+    font-size: rem(16px);
     text-decoration: none;
+    margin-bottom: rem(16px);
+    color: $bit-color-text-primary3;
 }
 
 .header-nav-link--active {
@@ -140,22 +151,22 @@
 }
 
 ::deep .header-nav-close-btn {
-    position: absolute;
-    right: rem(10px);
     top: rem(10px);
     color: $B2Color;
+    right: rem(10px);
     width: rem(44px);
     height: rem(44px);
+    position: absolute;
 }
 
 ::deep .header-action-button {
     &.bit-acb {
-        flex-grow: 1;
         padding: 0;
-        font-size: rem(15px);
+        flex-grow: 1;
         font-weight: 600;
         line-height: 1.5;
         color: $Gray1;
+        font-size: rem(15px);
 
         span {
             i {
@@ -167,17 +178,17 @@
 }
 
 ::deep .header-menu-btn {
+    border-radius: 50%;
     min-width: rem(30px);
-    min-height: rem(30px);
     max-width: rem(30px);
+    min-height: rem(30px);
     max-height: rem(30px);
     margin-right: rem(16px);
-    border-radius: 50%;
     background-color: $B2Color;
 
     .bit-icon {
-        font-size: rem(12px);
         color: $White;
+        font-size: rem(12px);
     }
 
     &:hover {

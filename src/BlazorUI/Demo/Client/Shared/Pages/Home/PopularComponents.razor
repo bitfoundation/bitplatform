@@ -1,4 +1,5 @@
-﻿@inherits AppComponentBase
+﻿@namespace Bit.BlazorUI.Demo.Client.Shared.Pages
+@inherits AppComponentBase
 
 <section class="main-container">
     <div class="content-container">
@@ -40,7 +41,7 @@
 
     <div class="content-container">
         <div class="example-preview">
-            <div class="white-box">
+            <div class="component-container">
                 @if (SelectedComponent.Name == "ColorPicker")
                 {
                     <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb">Default ColorPicker</BitColorPicker>
