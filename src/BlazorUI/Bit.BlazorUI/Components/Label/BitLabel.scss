@@ -18,10 +18,10 @@
     &.bit-dis {
         color: $color-neutrals-gray90;
     }
+}
 
-    &.required::after {
-        content: "*";
-        color: $color-general-red;
-        margin-left: spacing(0.625);
-    }
+.bit-lbl-req::after {
+    content: "*";
+    color: $color-general-red;
+    margin-left: spacing(0.625);
 }
