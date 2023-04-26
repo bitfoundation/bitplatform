@@ -20,7 +20,7 @@
         color: $color;
     }
 
-    .upload-status {
+    .bit-upl-us {
         width: 100%;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -36,150 +36,6 @@
     font-family: $typography-font-family;
     -webkit-font-smoothing: antialiased;
 
-    .file-input {
-        display: none;
-    }
-
-    .label {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: spacing(4.375);
-        padding: spacing(2);
-        border: $shape-border-width $shape-border-style $color-neutrals-gray60;
-        border-radius: spacing(0.5);
-        outline: 0;
-        font-size: spacing(2);
-        font-weight: 300;
-        color: $color-neutrals-gray160;
-        background-color: $color-background-primary;
-        cursor: pointer;
-        user-select: none;
-
-        &:hover {
-            border-color: $color-neutrals-gray180;
-        }
-
-        &:active {
-            background-color: $color-neutrals-gray20;
-        }
-
-        i {
-            padding-right: spacing(0.625);
-        }
-    }
-
-    .file-list {
-        padding: 0;
-        margin: 0;
-    }
-
-    .in-progress {
-        @include getLiBaseStyle($class: "in-progress");
-    }
-
-    .uploaded {
-        @include getLiBaseStyle($class: "uploaded");
-    }
-
-    .failed {
-        @include getLiBaseStyle($class: "failed");
-    }
-
-    .paused {
-        @include getLiBaseStyle($class: "paused");
-    }
-
-    .file-item {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: spacing(0.625);
-        margin-top: spacing(0.375);
-        font-size: spacing(1.75);
-        font-weight: 100;
-        overflow: hidden;
-    }
-
-    .file-info-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: calc(100% - #{40px});
-        height: 100%;
-        padding: spacing(1) spacing(2);
-        box-sizing: border-box;
-        cursor: default;
-
-        .file-name-container {
-            display: flex;
-            width: 100%;
-
-            i {
-                padding-top: spacing(1);
-            }
-        }
-    }
-
-    .file-name {
-        width: calc(100% - #{32px});
-        height: 100%;
-        padding-top: spacing(1);
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-
-    .file-size-container {
-        display: flex;
-        width: 100%;
-    }
-
-    .file-size {
-        padding-top: spacing(1);
-        margin-right: spacing(1);
-    }
-
-    .upload-percent {
-        padding-top: spacing(1);
-    }
-
-    .progress-bar-container {
-        width: 100%;
-        height: spacing(0.25);
-        padding-top: spacing(1);
-        padding-bottom: spacing(1);
-        padding-left: spacing(0.25);
-        overflow: hidden;
-
-        .progress-bar {
-            height: spacing(0.25);
-            background-color: $color-primary-main;
-            transition: width 0.15s linear 0s;
-        }
-    }
-
-    .upload-status-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: spacing(4);
-        height: 100%;
-        cursor: pointer;
-
-        &:hover {
-            i {
-                color: $color-primary-main;
-            }
-        }
-    }
-
-    .file-format {
-        margin-right: spacing(0.625);
-    }
-
     &.bit-dis {
         border-color: $color-neutrals-gray60;
         color: $color-neutrals-gray120;
@@ -191,6 +47,146 @@
 
         &:active {
             background-color: $color-neutrals-gray20;
+        }
+    }
+}
+
+.bit-upl-fi {
+    display: none;
+}
+
+.bit-upl-lbl {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: spacing(4.375);
+    padding: spacing(2);
+    border: $shape-border-width $shape-border-style $color-neutrals-gray60;
+    border-radius: spacing(0.5);
+    outline: 0;
+    font-size: spacing(2);
+    font-weight: 300;
+    color: $color-neutrals-gray160;
+    background-color: $color-background-primary;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        border-color: $color-neutrals-gray180;
+    }
+
+    &:active {
+        background-color: $color-neutrals-gray20;
+    }
+
+    i {
+        padding-right: spacing(0.625);
+    }
+}
+
+.bit-upl-fl {
+    padding: 0;
+    margin: 0;
+}
+
+.bit-upl-ip {
+    @include getLiBaseStyle($class: "in-progress");
+}
+
+.bit-upl-uld {
+    @include getLiBaseStyle($class: "uploaded");
+}
+
+.bit-upl-fld {
+    @include getLiBaseStyle($class: "failed");
+}
+
+.bit-upl-psd {
+    @include getLiBaseStyle($class: "paused");
+}
+
+.bit-upl-itm {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: spacing(0.625);
+    margin-top: spacing(0.375);
+    font-size: spacing(1.75);
+    font-weight: 100;
+    overflow: hidden;
+}
+
+.bit-upl-fic {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: calc(100% - #{40px});
+    height: 100%;
+    padding: spacing(1) spacing(2);
+    box-sizing: border-box;
+    cursor: default;
+
+    .bit-upl-fnc {
+        display: flex;
+        width: 100%;
+
+        i {
+            padding-top: spacing(1);
+        }
+    }
+}
+
+.bit-upl-fn {
+    width: calc(100% - #{32px});
+    height: 100%;
+    padding-top: spacing(1);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-upl-fsc {
+    display: flex;
+    width: 100%;
+}
+
+.bit-upl-fs {
+    padding-top: spacing(1);
+    margin-right: spacing(1);
+}
+
+.bit-upl-pct {
+    padding-top: spacing(1);
+}
+
+.bit-upl-pbc {
+    width: 100%;
+    height: spacing(0.25);
+    padding-top: spacing(1);
+    padding-bottom: spacing(1);
+    padding-left: spacing(0.25);
+    overflow: hidden;
+
+    .bit-upl-pbr {
+        height: spacing(0.25);
+        background-color: $color-primary-main;
+        transition: width 0.15s linear 0s;
+    }
+}
+
+.bit-upl-usi {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: spacing(4);
+    height: 100%;
+    cursor: pointer;
+
+    &:hover {
+        i {
+            color: $color-primary-main;
         }
     }
 }

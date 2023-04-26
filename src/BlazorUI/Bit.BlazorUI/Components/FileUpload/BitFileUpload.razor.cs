@@ -583,14 +583,15 @@ public partial class BitFileUpload : IAsyncDisposable
         await _httpClient.SendAsync(request);
     }
 
-    private static string GetFileElClass(BitFileUploadStatus status)
+    private string GetFileElClass(BitFileUploadStatus status)
         => status switch
         {
-            BitFileUploadStatus.Completed => "uploaded",
-            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => "failed",
-            BitFileUploadStatus.Paused => "paused",
-            _ => "in-progress",
+            BitFileUploadStatus.Completed => $"{RootElementClass}-uld",
+            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => $"{RootElementClass}-fld",
+            BitFileUploadStatus.Paused => $"{RootElementClass}-psd",
+            _ => $"{RootElementClass}-ip",
         };
+
     private string GetUploadMessageStr(BitFileInfo file)
         => file.Status switch
         {

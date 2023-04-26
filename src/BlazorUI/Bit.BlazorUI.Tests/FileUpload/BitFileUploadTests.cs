@@ -18,7 +18,7 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitFileUpload = com.Find(".file-input");
+        var bitFileUpload = com.Find(".bit-upl-fi");
 
         Assert.IsNotNull(bitFileUpload);
     }
@@ -34,7 +34,7 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
 
-        var bitFileUpload = com.Find(".file-input");
+        var bitFileUpload = com.Find(".bit-upl-fi");
         Assert.AreEqual(isMultiSelect, bitFileUpload.HasAttribute("multiple"));
     }
 
@@ -47,7 +47,7 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.AllowedExtensions, allowedExtensions);
         });
 
-        var bitFileUpload = com.Find(".file-input");
+        var bitFileUpload = com.Find(".bit-upl-fi");
         var attribute = bitFileUpload.GetAttribute("accept");
         Assert.AreEqual(".mp4,.mp3", attribute);
     }
@@ -64,7 +64,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var bitFileUpload = com.Find(".bit-upl");
-        var bitFileUploadInput = com.Find(".file-input");
+        var bitFileUploadInput = com.Find(".bit-upl-fi");
 
         if (isEnabled)
         {
