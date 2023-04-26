@@ -128,16 +128,17 @@ public partial class BitCheckbox
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsIndeterminate ? $"indeterminate" : string.Empty);
+        ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
 
-        ClassBuilder.Register(() => CurrentValue ? "checked" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-ckd" : string.Empty);
 
-        ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End ? "side-end" : string.Empty);
+        ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End ? $"{RootElementClass}-se" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
         OnValueChanged += HandleOnValueChanged;
+        _inputId = $"checkbox-{UniqueId}";
 
         await base.OnInitializedAsync();
     }
@@ -164,7 +165,6 @@ public partial class BitCheckbox
             IsIndeterminate = DefaultIsIndeterminate.Value;
         }
 
-        _inputId = $"checkbox-{UniqueId}";
         await base.OnParametersSetAsync();
     }
 
