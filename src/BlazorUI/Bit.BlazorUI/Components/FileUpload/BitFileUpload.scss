@@ -127,14 +127,14 @@
     padding: spacing(1) spacing(2);
     box-sizing: border-box;
     cursor: default;
+}
 
-    .bit-upl-fnc {
-        display: flex;
-        width: 100%;
+.bit-upl-fnc {
+    display: flex;
+    width: 100%;
 
-        i {
-            padding-top: spacing(1);
-        }
+    i {
+        padding-top: spacing(1);
     }
 }
 
@@ -168,12 +168,12 @@
     padding-bottom: spacing(1);
     padding-left: spacing(0.25);
     overflow: hidden;
+}
 
-    .bit-upl-pbr {
-        height: spacing(0.25);
-        background-color: $color-primary-main;
-        transition: width 0.15s linear 0s;
-    }
+.bit-upl-pbr {
+    height: spacing(0.25);
+    background-color: $color-primary-main;
+    transition: width 0.15s linear 0s;
 }
 
 .bit-upl-usi {
