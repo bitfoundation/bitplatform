@@ -8,10 +8,6 @@
         "inputFile": "Components/ComponentExampleBox.razor.scss"
     },
     {
-        "outputFile": "Components/PopularComponents.razor.css",
-        "inputFile": "Components/PopularComponents.razor.scss"
-    },
-    {
         "outputFile": "Components/SideRail.razor.css",
         "inputFile": "Components/SideRail.razor.scss"
     },
@@ -42,6 +38,38 @@
     {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/HeroSection.razor.css",
+        "inputFile": "Pages/Home/HeroSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/PopularComponents.razor.css",
+        "inputFile": "Pages/Home/PopularComponents.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/BenefitsSection.razor.css",
+        "inputFile": "Pages/Home/BenefitsSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/ComponentsSection.razor.css",
+        "inputFile": "Pages/Home/ComponentsSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/IconsPage.razor.css",
+        "inputFile": "Pages/IconsPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/OverviewPage.razor.css",
+        "inputFile": "Pages/OverviewPage.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
@@ -132,18 +160,6 @@
         "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/GettingStartedPage.razor.css",
-        "inputFile": "Pages/GettingStartedPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/IconsPage.razor.css",
-        "inputFile": "Pages/IconsPage.razor.scss"
-    },
-    {
         "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
         "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
     },
@@ -182,10 +198,6 @@
     {
         "outputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.scss"
-    },
-    {
-        "outputFile": "Pages/OverviewPage.razor.css",
-        "inputFile": "Pages/OverviewPage.razor.scss"
     },
     {
         "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",

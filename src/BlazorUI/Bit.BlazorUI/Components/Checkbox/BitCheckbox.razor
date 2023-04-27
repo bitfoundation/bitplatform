@@ -21,14 +21,14 @@
            name="@Name"
            hidden
            @onclick="@HandleCheckboxClick" />
-    <label title="@Title" for="@_inputId" class="label">
+    <label title="@Title" for="@_inputId" class="bit-chb-lbl">
         @if (ChildContent is not null)
         {
             @ChildContent
         }
         else
         {
-            <div class="checkbox">
+            <div class="bit-chb-ctn">
                 <i class=@($"bit-icon bit-icon--{CheckmarkIconName.GetName()}")
                    aria-hidden="true"
                    aria-label="@CheckmarkIconAriaLabel">
@@ -41,7 +41,7 @@
             }
             else if (Label.HasValue())
             {
-                <span class="text no-text-select">
+                <span class="bit-chb-txt bit-nts">
                     @Label
                 </span>
             }
