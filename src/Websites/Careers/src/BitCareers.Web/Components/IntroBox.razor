@@ -1,0 +1,20 @@
+﻿<div class="intro-box">
+    <img src=@IntroBoxModel.ImgUrl class="intro-box-img" />
+    <div class="intro-box-content">
+        <div class="intro-box-subject">@IntroBoxModel.Subject</div>
+        <div class="author-info">
+            <div class="author-name">@IntroBoxModel.AuthorName</div>
+            <img class="author-avatar" src=@IntroBoxModel.AuthorAvatarUrl />
+        </div>
+        <div class="intro-box-times">
+            <div class="intro-box-times-item">
+                <span class="time-text">@IntroBoxModel.UploadDate</span>
+                <img src="/images/main-page/calendar-icon.svg" class="calendar-icon" />
+            </div>
+            <div class="intro-box-times-item">
+                <span class="time-text"> @(IntroBoxModel.Type == IntroBoxType.Video ? IntroBoxModel.WatchingTime : IntroBoxModel.StudyTime) دقیقه</span>
+                <img src="/images/main-page/watch-icon.svg" class="watch-icon" />
+            </div>
+        </div>
+    </div>
+</div>
