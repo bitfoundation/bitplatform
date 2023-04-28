@@ -9,13 +9,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-                <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Careers.Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Careers.Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
-        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Careers.Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
-        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Careers.Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
+        <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Services\Implementations\ServerSideAuthTokenProvider.cs" Link="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.4" />
-        <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Careers.Web\Bit.Websites.Careers.Web.csproj" />
+        <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Bit.Websites.Careers.Web.csproj" />
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.9">
@@ -70,12 +70,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Shared\Bit.Websites.Careers.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="IdentityCertificate.pfx">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
 </Project>

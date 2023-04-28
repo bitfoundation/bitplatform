@@ -39,12 +39,8 @@ public class Middlewares
                 // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-#if PWA
-                    NoCache = true
-#else
                     MaxAge = TimeSpan.FromDays(365),
                     Public = true
-#endif
                 };
             }
         });

@@ -12,11 +12,6 @@ public class WebAppDeploymentTypeDetector
         return Mode == WebAppDeploymentType.Default;
     }
 
-    public virtual bool IsPwa()
-    {
-        return Mode == WebAppDeploymentType.Pwa;
-    }
-
     public virtual bool IsStatic()
     {
         return Mode == WebAppDeploymentType.Static;
@@ -33,8 +28,6 @@ public class WebAppDeploymentTypeDetector
         {
 #if SSR
             return WebAppDeploymentType.Ssr;
-#elif PWA
-            return WebAppDeploymentType.Pwa;
 #elif Static
             return WebAppDeploymentType.Static;
 #else

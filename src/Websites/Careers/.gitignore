@@ -219,11 +219,9 @@ ModelManifest.xml
 dotnet-tools.json
 profile.arm.json
 
-# BitCareers
+# Bit.Websites.Careers
 *.map
 *Resource.designer.cs
 /**/*.css
 
-/src/Server/Api/Attachments/**/*.*
-
-/src/BitCareers.Web/wwwroot/scripts/app*.js
+/Bit.Websites.Careers/Web/wwwroot/scripts/app*.js

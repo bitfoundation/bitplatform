@@ -5,12 +5,11 @@
         <!-- You can use either BlazorServer or BlazorWebAssembly -->
         
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
-        <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
+        <!-- You can choose either Static, DefaultDeploymentType or SSR -->
         
         <DefineConstants Condition="'$(BlazorMode)' == 'BlazorWebAssembly'">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition="'$(BlazorMode)' == 'BlazorServer'">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition="'$(WebAppDeploymentType)' == 'DefaultDeploymentType'">$(DefineConstants);DefaultDeploymentType</DefineConstants>
-        <DefineConstants Condition="'$(WebAppDeploymentType)' == 'PWA'">$(DefineConstants);PWA</DefineConstants>
         <DefineConstants Condition="'$(WebAppDeploymentType)' == 'SSR'">$(DefineConstants);SSR</DefineConstants>
         <DefineConstants Condition="'$(WebAppDeploymentType)' == 'Static'">$(DefineConstants);Static</DefineConstants>
 

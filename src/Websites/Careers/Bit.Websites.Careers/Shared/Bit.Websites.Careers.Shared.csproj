@@ -18,22 +18,4 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
         <PackageReference Include="System.Text.Json" Version="7.0.2" />
     </ItemGroup>
-
-    <ItemGroup>
-        <SupportedPlatform Include="browser" />
-        <Using Include="Bit.Websites.Careers.Shared.Attributes" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
-
 </Project>

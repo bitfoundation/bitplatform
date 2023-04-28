@@ -6,18 +6,16 @@
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-                <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
-            </PropertyGroup>
+    </PropertyGroup>
 
     <ItemGroup>
-                <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
+        <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
-            </ItemGroup>
+    </ItemGroup>
 
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
@@ -43,9 +41,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.4" />
-                <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.4" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.4" />
         <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.4" PrivateAssets="all" />
-                <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -69,7 +67,4 @@
         <ProjectReference Include="..\Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ServiceWorker Condition="'$(WebAppDeploymentType)' == 'PWA'" Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-    </ItemGroup>
 </Project>
