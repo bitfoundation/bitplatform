@@ -17,16 +17,15 @@
     background-clip: padding-box;
     background-color: $bit-color-background-primary2;
     border: rem(1px) solid $bit-color-background-primary2;
-    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.13), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.11);
 }
 
 .card-container {
+    gap: 10px;
+    width: 100%;
     display: flex;
     flex-flow: row wrap;
-    justify-content: flex-start;
     align-items: flex-start;
-    width: 100%;
-    gap: 10px;
+    justify-content: flex-start;
 
     @include sm {
         justify-content: center;
@@ -50,7 +49,6 @@
     color: $bit-color-text-primary2;
     background-color: $bit-color-background-primary2;
     border: rem(1px) solid $bit-color-background-primary2;
-    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.13), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.11);
 
     @include lg {
         width: calc((100% / 3) - 8px);
@@ -72,46 +70,32 @@
     background-size: cover;
     background-repeat: no-repeat;
     margin-bottom: rem(8px);
-}
 
-.input-card {
-    .card-img {
+    &.basic-inputs {
         background-image: url('images/icon/input-icon.svg');
     }
-}
 
-.picker-card {
-    .card-img {
+    &.galleries-pickers {
         background-image: url('images/icon/pickers-icon.svg');
     }
-}
 
-.list-card {
-    .card-img {
+    &.items-lists {
         background-image: url('images/icon/lists-icon.svg');
     }
-}
 
-.nav-card {
-    .card-img {
+    &.menus-navs {
         background-image: url('images/icon/navs-icon.svg');
     }
-}
 
-.notification-card {
-    .card-img {
+    &.notification {
         background-image: url('images/icon/notifications-icon.svg');
     }
-}
 
-.progress-card {
-    .card-img {
+    &.progress {
         background-image: url('images/icon/progrss-icon.svg');
     }
-}
 
-.surface-card {
-    .card-img {
+    &.surfaces {
         background-image: url('images/icon/surfaces-icon.svg');
     }
 }
