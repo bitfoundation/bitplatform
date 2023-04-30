@@ -1,0 +1,41 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.header-container {
+    min-height: rem(72px);
+    background-color: $Blue1;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: rem(20px) rem(140px);
+    font-weight: 500;
+    user-select: none;
+}
+
+.header-bit-icon {
+    width: rem(42px);
+}
+
+.header-items-container {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.header-item {
+    margin: auto;
+    cursor: pointer;
+    color: $Gray1;
+
+    &:hover {
+        color: $Primary;
+    }
+
+    &.margin-around {
+        margin: auto rem(56px) !important;
+    }
+
+    &.blue-font-color {
+        color: $Primary !important;
+    }
+}

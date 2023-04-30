@@ -1,0 +1,33 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.main {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.title {
+    font-weight: 600;
+    font-size: rem(120px);
+    line-height: rem(168px);
+    color: $White;
+
+    @include lt-xl {
+        font-size: rem(100px);
+    }
+}
+
+.description {
+    font-weight: 400;
+    font-size: rem(18px);
+    line-height: rem(28px);
+    color: $White;
+
+    @include lt-xl {
+        font-size: rem(16px);
+        line-height: rem(24px);
+    }
+}
