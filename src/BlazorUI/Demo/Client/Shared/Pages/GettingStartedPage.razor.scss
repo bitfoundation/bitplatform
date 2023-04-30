@@ -43,12 +43,12 @@
     align-items: center;
 
     .gitpod-icon {
-        background-image: url('images/icon/gitpod-icon.webp');
-        display: inline-block;
-        background-repeat: no-repeat;
-        background-size: contain;
         width: rem(35px);
         height: rem(35px);
+        display: inline-block;
         margin-right: rem(12px);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-image: url('images/icon/gitpod-icon.webp');
     }
 }
