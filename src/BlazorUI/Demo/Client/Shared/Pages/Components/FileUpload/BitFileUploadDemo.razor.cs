@@ -30,6 +30,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "ChunkedUploadEnabled",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Enables or disables the chunked upload feature."
+        },
+        new()
+        {
             Name = "ChunkSize",
             Type = "long",
             DefaultValue = "10485760 (10 MB)",
@@ -188,13 +195,6 @@ public partial class BitFileUploadDemo
             Type = "string",
             DefaultValue = "",
             Description = "URL of the server endpoint receiving the files."
-        },
-        new()
-        {
-            Name = "EnableChunkedUpload",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Enables or disables the chunked upload feature."
         }
     };
 
@@ -346,7 +346,7 @@ private string RemoveUrl = $""/Remove"";
 
     private readonly string example8HtmlCode = @"
 <BitFileUpload Label=""Select or drag and drop files""
-               EnableChunkedUpload=""false""
+               ChunkedUploadEnabled=""false""
                UploadUrl=""@UploadUrl"">
 </BitFileUpload>
 ";

@@ -71,14 +71,14 @@
 
                         @if (file.Status == BitFileUploadStatus.InProgress)
                         {
-                            <div class="bit-upl-usi" @onclick="() => RequestToPause(index)">
+                            <div class="bit-upl-usi" @onclick="() => PauseUpload(index)">
                                 <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true"></i>
                             </div>
                         }
 
                         @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
                         {
-                            <div class="bit-upl-usi" @onclick="() => RequestToCancel(index)">
+                            <div class="bit-upl-usi" @onclick="() => CancelUpload(index)">
                                 <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true"></i>
                             </div>
                         }
