@@ -1,35 +1,39 @@
 ﻿@page "/icons"
 
+<PageTitle>Bit BlazorUI - Iconography</PageTitle>
+
 <div class="page-container">
-    <div class="page-contnet">
-        <div class="page-title">Iconography</div>
-        <section class="page-section">
-            <div class="section-desc">Bit has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.</div>
-        </section>
-        <section class="page-section">
-            <div class="section-title">Available icons</div>
-            <BitSearchBox Class="icongraphy-search-box"
-                          Placeholder="Search icons"
-                          IconName="BitIconName.Search"
-                          Value="@searchText"
-                          ValueChanged="@HandleChange"
-                          OnClear="@HandleClear"></BitSearchBox>
-            <div class="icon-list">
-                @if (filteredIcons.Count == 0)
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Iconography</BitTypography>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Bit has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.
+        </BitTypography>
+    </section>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Available icons</BitTypography>
+        <BitSearchBox Class="iconography-search-box"
+                      Placeholder="Search icons"
+                      IconName="BitIconName.Search"
+                      Value="@searchText"
+                      ValueChanged="@HandleChange"
+                      OnClear="@HandleClear"></BitSearchBox>
+        <div class="icon-list">
+            @if (filteredIcons.Count == 0)
+            {
+                <div class="empty-list">
+                    <BitTypography Variant="BitTypographyVariant.H4">No result</BitTypography>
+                </div>
+            }
+            else
+            {
+                foreach (var icon in filteredIcons)
                 {
-                    <div class="empty-list"></div>
+                    <div class="icon-box">
+                        <i class="bit-icon bit-icon--iconography bit-icon--@icon"></i>
+                        <span class="icon-name">@icon</span>
+                    </div>
                 }
-                else
-                {
-                    foreach (var icon in filteredIcons)
-                    {
-                        <div class="icon-box">
-                            <i class="bit-icon bit-icon--icongraphy bit-icon--@icon"></i>
-                            <span class="icon-name">@icon</span>
-                        </div>
-                    }
-                }
-            </div>
-        </section>
-    </div>
+            }
+        </div>
+    </section>
 </div>
