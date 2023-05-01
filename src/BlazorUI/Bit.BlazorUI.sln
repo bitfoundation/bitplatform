@@ -29,8 +29,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Charts", "Bit.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{0EB8B659-FE79-46B6-A87A-3EAC7A5AE321}"
 	ProjectSection(SolutionItems) = preProject
+		Demo\.gitignore = Demo\.gitignore
 		Demo\Directory.Build.props = Demo\Directory.Build.props
 		Demo\global.json = Demo\global.json
+		Demo\README.md = Demo\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{90459635-8633-482F-9A01-AD07AC033B99}"
