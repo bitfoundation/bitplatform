@@ -222,7 +222,7 @@ profile.arm.json
 # Bit.BlazorUI.Demo
 *.map
 *Resource.designer.cs
-/**/*.css
+/Client/Shared/**/*.css
 custom.aprof
 
 /Server/Api/Attachments/**/*.*

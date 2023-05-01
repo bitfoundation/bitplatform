@@ -16,7 +16,7 @@
     margin-bottom: rem(28px);
     background-clip: padding-box;
     background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary2;
+    border: rem(1px) solid $bit-color-background-primary3;
 }
 
 .card-container {
@@ -48,7 +48,7 @@
     flex-flow: column nowrap;
     color: $bit-color-text-primary2;
     background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary2;
+    border: rem(1px) solid $bit-color-background-primary3;
 
     @include lg {
         width: calc((100% / 3) - 8px);
