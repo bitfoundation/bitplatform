@@ -13,7 +13,7 @@
         .bit-spl-opb, .bit-spl-chb {
             border-color: $color-border-disabled;
             color: $color-text-disabled;
-            background-color: $color-action-disabled;
+            background-color: $color-background-disabled;
             cursor: default;
             pointer-events: none;
         }
@@ -37,19 +37,19 @@
             background-color: $color-secondary-main;
 
             &:hover {
-                border-color: $color-action-border-hover-secondary;
+                border-color: $color-action-border-hover;
                 background-color: $color-action-hover-secondary;
             }
 
             &:active {
-                border-color: $color-action-border-active-secondary;
+                border-color: $color-action-border-active;
                 background-color: $color-action-active-secondary;
             }
         }
 
         &.bit-spl-omn {
             .bit-spl-chb {
-                border-color: $color-action-border-active-secondary;
+                border-color: $color-action-border-active;
                 background-color: $color-action-active-secondary;
             }
         }
@@ -152,7 +152,7 @@
     &.bit-dis {
         border-color: $color-border-disabled;
         color: $color-text-disabled;
-        background-color: $color-action-disabled;
+        background-color: $color-background-disabled;
         cursor: default;
         pointer-events: none;
     }

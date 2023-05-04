@@ -16,7 +16,7 @@
 
     &.bit-dis {
         border-color: $color-border-disabled;
-        background-color: $color-action-disabled;
+        background-color: $color-background-disabled;
         cursor: default;
         pointer-events: none;
 
@@ -68,12 +68,12 @@
     background-color: $color-secondary-main;
 
     &:hover {
-        border-color: $color-action-border-hover-secondary;
+        border-color: $color-action-border-hover;
         background-color: $color-action-hover-secondary;
     }
 
     &:active {
-        border-color: $color-action-border-active-secondary;
+        border-color: $color-action-border-active;
         background-color: $color-action-active-secondary;
     }
 }

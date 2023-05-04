@@ -65,11 +65,13 @@ section {
 }
 
 .go-to-top {
-    position: absolute;
-    right: rem(2px);
     bottom: 0;
-    background-color: $Gray3;
+    right: rem(2px);
+    cursor: pointer;
+    position: absolute;
     padding: rem(8px) rem(12px);
+    color: $bit-color-text-primary3;
+    background-color: $bit-color-background-primary3;
 }
 
 .address-info {

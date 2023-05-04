@@ -21,7 +21,7 @@
     margin-top: rem(64px);
     box-sizing: border-box;
     justify-content: space-between;
-    border-bottom: rem(1px) solid $bit-color-background-primary3;
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
 }
 
 .header-btn-group {
@@ -70,7 +70,7 @@
     background-color: transparent;
     border-bottom: none !important;
     border-radius: rem(4px) rem(4px) 0 0;
-    border: rem(1px) solid $bit-color-background-primary3;
+    border: rem(1px) solid $bit-color-border-secondary;
 
     &:first-child {
         min-width: rem(130px);
