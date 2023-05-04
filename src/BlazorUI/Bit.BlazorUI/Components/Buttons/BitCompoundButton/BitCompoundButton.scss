@@ -1,32 +1,25 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-cmb {
+    cursor: pointer;
+    text-align: left;
     position: relative;
     display: inline-flex;
+    text-decoration: none;
     min-width: spacing(9);
     box-sizing: border-box;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
-    text-decoration: none;
-    text-align: left;
-    cursor: pointer;
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight;
 
     &.bit-dis {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
         cursor: default;
         pointer-events: none;
-
-        &.bit-cmb-pri {
-            color: $color-neutrals-gray50;
-        }
-
-        &.bit-cmb-std {
-            color: $color-neutrals-gray90;
-        }
+        color: $color-text-disabled;
+        border-color: $color-border-disabled;
+        background-color: $color-background-disabled;
     }
 }
 
@@ -79,9 +72,9 @@
 }
 
 .bit-cmb-sm {
-    padding: spacing(0.25) spacing(1.25);
     font-size: spacing(1.5);
     line-height: spacing(2.75);
+    padding: spacing(0.25) spacing(1.25);
 
     .bit-cmb-sct {
         font-size: spacing(1);
@@ -89,8 +82,8 @@
 }
 
 .bit-cmb-md {
-    padding: spacing(0.5) spacing(2);
     font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
     line-height: $typography-line-height-buttons;
 
     .bit-cmb-sct {
@@ -99,9 +92,9 @@
 }
 
 .bit-cmb-lg {
-    padding: spacing(0.75) spacing(2.75);
     font-size: spacing(2);
     line-height: spacing(3.75);
+    padding: spacing(0.75) spacing(2.75);
 
     .bit-cmb-sct {
         font-size: spacing(1.5);
