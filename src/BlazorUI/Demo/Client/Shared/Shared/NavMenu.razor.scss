@@ -1,7 +1,8 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .nav-menu {
     left: 0;
@@ -11,15 +12,13 @@
     flex-shrink: 0;
     flex: 1 0 auto;
     position: sticky;
-    box-shadow: none;
     overflow-y: auto;
     top: rem($HeaderHeight);
     flex-direction: column;
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
-    border-right: rem(1px) solid rgb(231, 235, 240);
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-right: rem(1px) solid $bit-color-border-secondary;
 
     @include lt-lg {
         top: 0;

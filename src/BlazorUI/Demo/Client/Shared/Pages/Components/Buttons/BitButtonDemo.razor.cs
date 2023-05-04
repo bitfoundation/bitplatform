@@ -177,40 +177,27 @@ public partial class BitButtonDemo
     public int StandardCounter;
 
     private readonly string example1HTMLCode = @"
-<style>
-    .buttons-container {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 0.5rem;
-    }
-</style>
+<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
+    Primary (@PrimaryCounter)
+</BitButton>
 
-<div class=""buttons-container"">
-    <BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
-        Primary (@PrimaryCounter)
-    </BitButton>
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
-        Standard (@StandardCounter)
-    </BitButton>
-    <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
-        Disabled
-    </BitButton>
-    <BitButton Class=""label-btn"" IsEnabled=""true"">
-        <label>A Text from label element</label>
-    </BitButton>
-</div>";
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+    Standard (@StandardCounter)
+</BitButton>
+
+<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
+    Disabled
+</BitButton>
+
+<BitButton Class=""label-btn"" IsEnabled=""true"">
+    <label>A Text from label element</label>
+</BitButton>";
     private readonly string example1CSharpCode = @"
 public int PrimaryCounter;
 public int StandardCounter;";
 
     private readonly string example2HTMLCode = @"
 <style>
-    .buttons-container {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 0.5rem;
-    }
-
     .custom-button {
         height: 2.5rem;
         width: 10.375rem;
@@ -225,98 +212,59 @@ public int StandardCounter;";
     }
 </style>
 
-<div class=""buttons-container"">
-    <BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
-        Styled Button
-    </BitButton>
-    <BitButton Class=""custom-button"">
-        Classed Button
-    </BitButton>
-</div>";
+<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
+    Styled Button
+</BitButton>
+
+<BitButton Class=""custom-button"">
+    Classed Button
+</BitButton>";
 
     private readonly string example3HTMLCode = @"
-<style>
-    .buttons-container-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-</style>
+<div><BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton></div>
 
-<div class=""buttons-container-grid"">
-    <div><BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton></div>
-    <div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
-    <div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>
-</div>";
+<div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
+
+<div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
 
     private readonly string example4HTMLCode = @"
-<style>
-    .buttons-container {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 0.5rem;
-    }
-</style>
+<BitButton AriaDescription=""Detailed description used for screen reader."">
+    Button with Aria Description
+</BitButton>
 
-<div class=""buttons-container"">
-    <BitButton AriaDescription=""Detailed description used for screen reader."">
-        Button with Aria Description
-    </BitButton>
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
-        Button with Aria Hidden
-    </BitButton>
-</div>";
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
+    Button with Aria Hidden
+</BitButton>";
 
     private readonly string example5HTMLCode = @"
-<style>
-    .buttons-container {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 0.5rem;
-    }
-</style>
+<BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+    Open Bit Platform In New Tab
+</BitButton>
 
-<div class=""buttons-container"">
-    <BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-        Open Bit Platform In New Tab
-    </BitButton>
-    <BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
-        Go To Bit Platform
-    </BitButton>
-    <BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-        <span>Bit Platform From Span</span>
-    </BitButton>
-</div>";
+<BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+    Go To Bit Platform
+</BitButton>
+
+<BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
+    <span>Bit Platform From Span</span>
+</BitButton>";
 
     private readonly string example6HTMLCode = @"
-<style>
-    .buttons-container-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-</style>
-
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
-    </div>
+<div>
+    <BitLabel>Small size</BitLabel>
+    <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Medium size</BitLabel>
+    <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Large size</BitLabel>
+    <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
 </div>";
 
     private readonly string example7HTMLCode = @"
-<style>
-    .buttons-container-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-    
+<style>    
     .custom-btn-sm {
         padding: 4px 8px;
         font-size: 8px;
@@ -339,21 +287,16 @@ public int StandardCounter;";
     }
 </style>
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitButton Class=""custom-btn-sm""
-                    ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitButton Class=""custom-btn-md""
-                    ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitButton Class=""custom-btn-lg""
-                    ButtonSize=""BitButtonSize.Large"">Button</BitButton>
-    </div>
+<div>
+    <BitLabel>Small size</BitLabel>
+    <BitButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Medium size</BitLabel>
+    <BitButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+</div>
+<div>
+    <BitLabel>Large size</BitLabel>
+    <BitButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"">Button</BitButton>
 </div>";
 }

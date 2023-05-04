@@ -27,17 +27,16 @@ $color-background-primary3: var(--bit-clr-bg-primary3);
 $color-background-secondary: var(--bit-clr-bg-secondary);
 $color-background-secondary2: var(--bit-clr-bg-secondary2);
 $color-background-secondary3: var(--bit-clr-bg-secondary3);
+$color-background-disabled: var(--bit-clr-bg-disabled);
 
-//generals
-$color-general-red: var(--bit-clr-gnr-red);
-$color-general-darkred: var(--bit-clr-gnr-darkred);
-$color-general-red2: var(--bit-clr-gnr-red2);
-$color-general-red3: var(--bit-clr-gnr-red3);
-$color-general-green: var(--bit-clr-gnr-green);
-$color-general-orange: var(--bit-clr-gnr-orange);
-$color-general-magenta: var(--bit-clr-gnr-magenta);
-$color-general-blue: var(--bit-clr-gnr-blue);
-$color-general-lightblue: var(--bit-clr-gnr-lightblue);
+//actions
+$color-action-hover-primary: var(--bit-clr-act-hover-pri);
+$color-action-hover-secondary: var(--bit-clr-act-hover-sec);
+$color-action-active-primary: var(--bit-clr-act-active-pri);
+$color-action-active-primary2: var(--bit-clr-act-active-pri2);
+$color-action-active-secondary: var(--bit-clr-act-active-sec);
+$color-action-border-hover: var(--bit-clr-act-border-hover);
+$color-action-border-active: var(--bit-clr-act-border-active);
 
 //states
 $color-state-invalid: var(--bit-clr-sta-invalid);
@@ -52,20 +51,22 @@ $color-state-success-dark: var(--bit-clr-sta-success-dark);
 $color-state-warning-bg: var(--bit-clr-sta-warning-bg);
 $color-state-warning-dark: var(--bit-clr-sta-warning-dark);
 
-//actions
-$color-action-hover-primary: var(--bit-clr-act-hover-pri);
-$color-action-active-primary: var(--bit-clr-act-active-pri);
-$color-action-hover-secondary: var(--bit-clr-act-hover-sec);
-$color-action-active-secondary: var(--bit-clr-act-active-sec);
-$color-action-disabled: var(--bit-clr-act-disabled);
-$color-action-border-hover-secondary: var(--bit-clr-act-border-hover-sec);
-$color-action-border-active-secondary: var(--bit-clr-act-border-active-sec);
-$color-action2-active-primary: var(--bit-clr-act2-active);
-
 //borders
 $color-border-primary: var(--bit-clr-brd-primary);
 $color-border-secondary: var(--bit-clr-brd-secondary);
 $color-border-disabled: var(--bit-clr-brd-disabled);
+
+
+//generals
+$color-general-red: var(--bit-clr-gnr-red);
+$color-general-darkred: var(--bit-clr-gnr-darkred);
+$color-general-red2: var(--bit-clr-gnr-red2);
+$color-general-red3: var(--bit-clr-gnr-red3);
+$color-general-green: var(--bit-clr-gnr-green);
+$color-general-orange: var(--bit-clr-gnr-orange);
+$color-general-magenta: var(--bit-clr-gnr-magenta);
+$color-general-blue: var(--bit-clr-gnr-blue);
+$color-general-lightblue: var(--bit-clr-gnr-lightblue);
 
 //neutrals
 $color-neutrals-white: var(--bit-clr-ntr-white);
