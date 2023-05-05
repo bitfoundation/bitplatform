@@ -902,7 +902,7 @@ public class BitDropDownTests : BunitTestContext
         {
             Assert.AreEqual(1, searchBox.Count);
 
-            var searchInput = component.Find(".bit-drp-srch-inp");
+            var searchInput = component.Find(".bit-drp-sin");
             var inputPlaceholder = searchInput.GetAttribute("placeholder");
 
             Assert.AreEqual(searchBoxPlaceholder, inputPlaceholder);
@@ -939,7 +939,7 @@ public class BitDropDownTests : BunitTestContext
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
-        var searchInput = component.Find(".bit-drp-srch-inp");
+        var searchInput = component.Find(".bit-drp-sin");
         searchInput.Input(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(i => i.Text.Contains(search, StringComparison.OrdinalIgnoreCase));
@@ -1040,11 +1040,11 @@ public class BitDropDownTests : BunitTestContext
 
         if (iconName.HasValue)
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-ictn > i").ClassList.Contains($"bit-icon--{iconName.GetDisplayName()}"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains($"bit-icon--{iconName.GetDisplayName()}"));
         }
         else
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-ictn > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
         }
     }
 
@@ -1064,11 +1064,11 @@ public class BitDropDownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(iconFragment))
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-ictn > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains($"bit-icon--{BitIconName.ChevronDown.GetDisplayName()}"));
         }
         else
         {
-            var drpCaretDownChild = component.Find(".bit-drp-wrp > .bit-drp-ictn").ChildNodes;
+            var drpCaretDownChild = component.Find(".bit-drp-wrp > .bit-drp-icn").ChildNodes;
             drpCaretDownChild.MarkupMatches(iconFragment);
         }
     }
