@@ -134,17 +134,17 @@ public partial class BitLoadingButton
         });
     }
 
-    private string GetClassLoadingSize()
+    private string GetSpinnerSizeClass()
         => LoadingSpinnerSize switch
         {
-            BitSpinnerSize.XSmall => $"{RootElementClass}-xs",
-            BitSpinnerSize.Small => $"{RootElementClass}-sm",
-            BitSpinnerSize.Medium => $"{RootElementClass}-md",
-            BitSpinnerSize.Large => $"{RootElementClass}-lg",
+            BitSpinnerSize.XSmall => $"{RootElementClass}-spn-xs",
+            BitSpinnerSize.Small => $"{RootElementClass}-spn-sm",
+            BitSpinnerSize.Medium => $"{RootElementClass}-spn-md",
+            BitSpinnerSize.Large => $"{RootElementClass}-spn-lg",
             _ => $"{RootElementClass}-sm"
         };
 
-    private string GetClassLoadingLabelPosition()
+    private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {
             BitLabelPosition.Top => $"{RootElementClass}-top",

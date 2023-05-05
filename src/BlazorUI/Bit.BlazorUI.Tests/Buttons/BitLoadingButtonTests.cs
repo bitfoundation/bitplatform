@@ -165,11 +165,11 @@ public class BitLoadingButtonTests : BunitTestContext
 
         var spinnerSizeClass = spinnerSize switch
         {
-            BitSpinnerSize.XSmall => "bit-ldb-xs",
-            BitSpinnerSize.Small => "bit-ldb-sm",
-            BitSpinnerSize.Medium => "bit-ldb-md",
-            BitSpinnerSize.Large => "bit-ldb-lg",
-            _ => "bit-ldb-sm"
+            BitSpinnerSize.XSmall => "bit-ldb-spn-xs",
+            BitSpinnerSize.Small => "bit-ldb-spn-sm",
+            BitSpinnerSize.Medium => "bit-ldb-spn-md",
+            BitSpinnerSize.Large => "bit-ldb-spn-lg",
+            _ => "bit-ldb-spn-sm"
         };
 
         Assert.AreEqual(loadingLabel, bitLoadingButton.LastElementChild.TextContent);
