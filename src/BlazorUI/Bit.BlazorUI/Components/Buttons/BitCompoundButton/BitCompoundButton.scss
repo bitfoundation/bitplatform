@@ -23,22 +23,6 @@
     }
 }
 
-.bit-cmb-tcn {
-    display: block;
-    @extend .no-text-select;
-}
-
-.bit-cmb-prt {
-    display: block;
-    margin-bottom: spacing(0.625);
-}
-
-.bit-cmb-sct {
-    display: block;
-    font-weight: 400;
-    line-height: spacing(2.25);
-}
-
 .bit-cmb-pri {
     color: $color-text-secondary;
     background: $color-primary-main;
@@ -61,14 +45,30 @@
     background-color: $color-secondary-main;
 
     &:hover {
-        border-color: $color-action-border-hover;
         background-color: $color-action-hover-secondary;
+        border-color: $color-action-hover-border-secondary;
     }
 
     &:active {
-        border-color: $color-action-border-active;
         background-color: $color-action-active-secondary;
+        border-color: $color-action-active-border-secondary;
     }
+}
+
+.bit-cmb-tcn {
+    display: block;
+    @extend .no-text-select;
+}
+
+.bit-cmb-prt {
+    display: block;
+    margin-bottom: spacing(0.625);
+}
+
+.bit-cmb-sct {
+    display: block;
+    font-weight: 400;
+    line-height: spacing(2.25);
 }
 
 .bit-cmb-sm {

@@ -45,32 +45,10 @@
     padding: spacing(0.75) spacing(2.5);
 }
 
-.bit-ldb-std {
-    color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
-
-    .bit-ldb-spn {
-        border-radius: 50%;
-        border-width: spacing(0.1875);
-        border-style: $shape-border-style;
-        border-color: $color-neutrals-gray60;
-        border-top-color: $color-border-primary;
-    }
-
-    .bit-ldb-lbl {
-        color: $color-primary-main;
-    }
-
-    &:hover {
-        border-color: $color-action-border-hover;
-        background-color: $color-action-hover-secondary;
-    }
-
-    &:active {
-        border-color: $color-action-border-active;
-        background-color: $color-action-active-secondary;
-    }
+.bit-ldb-spn {
+    border-radius: 50%;
+    border-width: spacing(0.2125);
+    border-style: $shape-border-style;
 }
 
 .bit-ldb-pri {
@@ -79,25 +57,47 @@
     background-color: $color-primary-main;
 
     .bit-ldb-spn {
-        border-radius: 50%;
-        border-width: spacing(0.2125);
-        border-style: $shape-border-style;
-        border-color: $color-border-secondary;
-        border-top-color: $color-neutrals-white;
+        border-color: $color-secondary-light;
+        border-top-color: $color-primary-darker;
     }
 
     .bit-ldb-lbl {
-        color: $color-neutrals-white;
+        color: $color-secondary-main;
     }
 
     &:hover {
-        border-color: $color-action-hover-primary;
         background-color: $color-action-hover-primary;
+        border-color: $color-action-hover-border-primary;
     }
 
     &:active {
-        border-color: $color-action-active-primary;
         background-color: $color-action-active-primary;
+        border-color: $color-action-active-border-primary;
+    }
+}
+
+.bit-ldb-std {
+    color: $color-text-primary;
+    border-color: $color-border-secondary;
+    background-color: $color-secondary-main;
+
+    .bit-ldb-spn {
+        border-color: $color-secondary-darker;
+        border-top-color: $color-primary-darker;
+    }
+
+    .bit-ldb-lbl {
+        color: $color-primary-main;
+    }
+
+    &:hover {
+        background-color: $color-action-hover-secondary;
+        border-color: $color-action-hover-border-secondary;
+    }
+
+    &:active {
+        background-color: $color-action-active-secondary;
+        border-color: $color-action-active-border-secondary;
     }
 }
 

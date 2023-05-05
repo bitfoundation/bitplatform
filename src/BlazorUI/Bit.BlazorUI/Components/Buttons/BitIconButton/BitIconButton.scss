@@ -13,14 +13,14 @@
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
 
-    &:active {
-        color: $color-primary-darker;
-        background-color: $color-background-primary3;
+    &:hover {
+        color: $color-action-hover-text-primary;
+        background-color: $color-action-hover-secondary;
     }
 
-    &:hover {
-        color: $color-primary-dark;
-        background-color: $color-background-primary2;
+    &:active {
+        color: $color-action-active-text-primary;
+        background-color: $color-action-active-secondary;
     }
 
     &.bit-dis {

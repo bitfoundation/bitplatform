@@ -3,15 +3,15 @@
 :root[bit-theme="fluent"],
 :root[bit-theme="fluent-light"] {
     --bit-clr-primary-main: #0078D4;
-    --bit-clr-primary-light: #2b88d8;
-    --bit-clr-primary-lighter: #2b88d8;
-    --bit-clr-primary-dark: #106EBE;
-    --bit-clr-primary-darker: #005A9E;
+    --bit-clr-primary-light: #2B88D8;
+    --bit-clr-primary-lighter: #4192D8;
+    --bit-clr-primary-dark: #0068B9;
+    --bit-clr-primary-darker: #005FA9;
     --bit-clr-secondary-main: #FFFFFF;
-    --bit-clr-secondary-light: #DEECF9;
-    --bit-clr-secondary-lighter: #DEECF9;
-    --bit-clr-secondary-dark: #F3F2F1;
-    --bit-clr-secondary-darker: #EDEBE9;
+    --bit-clr-secondary-light: #F7F7F7;
+    --bit-clr-secondary-lighter: #F2F2F2;
+    --bit-clr-secondary-dark: #EEEEEE;
+    --bit-clr-secondary-darker: #E6E6E6;
     //texts
     --bit-clr-txt-primary: #000;
     --bit-clr-txt-primary2: #111;
@@ -30,12 +30,29 @@
     --bit-clr-bg-disabled: #F3F2F1;
     //actions
     --bit-clr-act-hover-pri: #106EBE;
+    --bit-clr-act-hover-pri2: #1066B0;
     --bit-clr-act-hover-sec: #F3F2F1;
+    --bit-clr-act-hover-sec2: #E3E2E1;
     --bit-clr-act-active-pri: #005A9E;
-    --bit-clr-act-active-pri2: #004578;
+    --bit-clr-act-active-pri2: #005494;
     --bit-clr-act-active-sec: #EDEBE9;
-    --bit-clr-act-border-hover: #323130;
-    --bit-clr-act-border-active: #323130;
+    --bit-clr-act-active-sec2: #DDDDDD;
+    --bit-clr-act-hover-txt-pri: #2B88D8;
+    --bit-clr-act-hover-txt-pri2: #4192D8;
+    --bit-clr-act-hover-txt-sec: #E1E1E1;
+    --bit-clr-act-hover-txt-sec2: #D1D1D1;
+    --bit-clr-act-active-txt-pri: #0068B9;
+    --bit-clr-act-active-txt-pri2: #005FA9;
+    --bit-clr-act-active-txt-sec: #E9E9E9;
+    --bit-clr-act-active-txt-sec2: #D9D9D9;
+    --bit-clr-act-hover-brd-pri: #323130;
+    --bit-clr-act-hover-brd-pri2: #323130;
+    --bit-clr-act-hover-brd-sec: #323130;
+    --bit-clr-act-hover-brd-sec2: #323130;
+    --bit-clr-act-active-brd-pri: #323130;
+    --bit-clr-act-active-brd-pri2: #323130;
+    --bit-clr-act-active-brd-sec: #323130;
+    --bit-clr-act-active-brd-sec2: #323130;
     //states
     --bit-clr-sta-invalid: #A4262C;
     --bit-clr-sta-invalid-hover: #750B1C;
