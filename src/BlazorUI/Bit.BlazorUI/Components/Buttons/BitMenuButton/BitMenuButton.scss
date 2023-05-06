@@ -30,12 +30,12 @@
         background-color: $color-secondary-main;
 
         &:hover {
-            border-color: $color-action-border-hover;
+            border-color: $color-action-hover-border-secondary;
             background-color: $color-action-hover-secondary;
         }
 
         &:active, &.bit-mnb-omn {
-            border-color: $color-action-border-active;
+            border-color: $color-action-active-border-secondary;
             background-color: $color-action-active-secondary;
         }
     }

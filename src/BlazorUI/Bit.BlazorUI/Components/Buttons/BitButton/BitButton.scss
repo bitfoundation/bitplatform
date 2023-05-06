@@ -22,52 +22,52 @@
     }
 }
 
-.bit-btn-std {
-    color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
-
-    &:hover {
-        border-color: $color-action-border-hover;
-        background-color: $color-action-hover-secondary;
-    }
-
-    &:active {
-        border-color: $color-action-border-active;
-        background-color: $color-action-active-secondary;
-    }
-}
-
 .bit-btn-pri {
     color: $color-text-secondary;
     border-color: $color-border-primary;
     background-color: $color-primary-main;
 
     &:hover {
-        border-color: $color-action-hover-primary;
         background-color: $color-action-hover-primary;
+        border-color: $color-action-hover-border-primary;
     }
 
     &:active {
-        border-color: $color-action-active-primary;
         background-color: $color-action-active-primary;
+        border-color: $color-action-active-border-primary;
+    }
+}
+
+.bit-btn-std {
+    color: $color-text-primary;
+    border-color: $color-border-secondary;
+    background-color: $color-secondary-main;
+
+    &:hover {
+        background-color: $color-action-hover-secondary;
+        border-color: $color-action-hover-border-secondary;
+    }
+
+    &:active {
+        background-color: $color-action-active-secondary;
+        border-color: $color-action-active-border-secondary;
     }
 }
 
 .bit-btn-sm {
-    padding: spacing(0.25) spacing(1.25);
     font-size: spacing(1.5);
     line-height: spacing(2.75);
+    padding: spacing(0.25) spacing(1.25);
 }
 
 .bit-btn-md {
-    padding: spacing(0.5) spacing(2);
     font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
     line-height: $typography-line-height-buttons;
 }
 
 .bit-btn-lg {
-    padding: spacing(0.75) spacing(2.75);
     font-size: spacing(2);
     line-height: spacing(3.75);
+    padding: spacing(0.75) spacing(2.75);
 }

@@ -31,12 +31,31 @@ $bit-color-background-disabled: var(--bit-clr-bg-disabled);
 
 //actions
 $bit-color-action-hover-primary: var(--bit-clr-act-hover-pri);
+$bit-color-action-hover-primary2: var(--bit-clr-act-hover-pri2);
 $bit-color-action-hover-secondary: var(--bit-clr-act-hover-sec);
+$bit-color-action-hover-secondary2: var(--bit-clr-act-hover-sec2);
 $bit-color-action-active-primary: var(--bit-clr-act-active-pri);
 $bit-color-action-active-primary2: var(--bit-clr-act-active-pri2);
 $bit-color-action-active-secondary: var(--bit-clr-act-active-sec);
-$bit-color-action-border-hover: var(--bit-clr-act-border-hover);
-$bit-color-action-border-active: var(--bit-clr-act-border-active);
+$bit-color-action-active-secondary2: var(--bit-clr-act-active-sec2);
+
+$bit-color-action-hover-text-primary: var(--bit-clr-act-hover-txt-pri);
+$bit-color-action-hover-text-primary2: var(--bit-clr-act-hover-txt-pri2);
+$bit-color-action-hover-text-secondary: var(--bit-clr-act-hover-txt-sec);
+$bit-color-action-hover-text-secondary2: var(--bit-clr-act-hover-txt-sec2);
+$bit-color-action-active-text-primary: var(--bit-clr-act-active-txt-pri);
+$bit-color-action-active-text-primary2: var(--bit-clr-act-active-txt-pri2);
+$bit-color-action-active-text-secondary: var(--bit-clr-act-active-txt-sec);
+$bit-color-action-active-text-secondary2: var(--bit-clr-act-active-txt-sec2);
+
+$bit-color-action-hover-border-primary: var(--bit-clr-act-hover-brd-pri);
+$bit-color-action-hover-border-primary2: var(--bit-clr-act-hover-brd-pri2);
+$bit-color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
+$bit-color-action-hover-border-secondary2: var(--bit-clr-act-hover-brd-sec2);
+$bit-color-action-active-border-primary: var(--bit-clr-act-active-brd-pri);
+$bit-color-action-active-border-primary2: var(--bit-clr-act-active-brd-pri2);
+$bit-color-action-active-border-secondary: var(--bit-clr-act-active-brd-sec);
+$bit-color-action-active-border-secondary2: var(--bit-clr-act-active-brd-sec2);
 
 //states
 $bit-color-state-invalid: var(--bit-clr-sta-invalid);

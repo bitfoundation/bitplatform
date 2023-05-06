@@ -5,12 +5,12 @@
 @import '../Styles/abstracts/_vars.scss';
 
 main {
-    display: flex;
-    justify-content: flex-start;
     width: 100%;
+    display: flex;
     min-height: 100vh;
-    padding-top: rem($HeaderHeight);
     box-sizing: border-box;
+    justify-content: flex-start;
+    padding-top: rem($HeaderHeight);
 
     @include sm {
         padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));

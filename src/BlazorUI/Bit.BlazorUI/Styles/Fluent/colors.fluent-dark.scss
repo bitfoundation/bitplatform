@@ -2,14 +2,14 @@
 :root[bit-theme="fluent-dark"] {
     --bit-clr-primary-main: #0078D4;
     --bit-clr-primary-light: #2B88D8;
-    --bit-clr-primary-lighter: #2B88D8;
-    --bit-clr-primary-dark: #106EBE;
-    --bit-clr-primary-darker: #005A9E;
+    --bit-clr-primary-lighter: #4192D8;
+    --bit-clr-primary-dark: #0068B9;
+    --bit-clr-primary-darker: #005FA9;
     --bit-clr-secondary-main: #000;
-    --bit-clr-secondary-light: #DEECF9;
-    --bit-clr-secondary-lighter: #DEECF9;
-    --bit-clr-secondary-dark: #202020;
-    --bit-clr-secondary-darker: #EDEBE9;
+    --bit-clr-secondary-light: #111;
+    --bit-clr-secondary-lighter: #121212;
+    --bit-clr-secondary-dark: #222;
+    --bit-clr-secondary-darker: #212121;
     //texts
     --bit-clr-txt-primary: #FFF;
     --bit-clr-txt-primary2: #EEE;
@@ -28,12 +28,29 @@
     --bit-clr-bg-disabled: #202020;
     //actions
     --bit-clr-act-hover-pri: #106EBE;
-    --bit-clr-act-hover-sec: #202020;
+    --bit-clr-act-hover-pri2: #1066B0;
+    --bit-clr-act-hover-sec: #111;
+    --bit-clr-act-hover-sec2: #292929;
     --bit-clr-act-active-pri: #005A9E;
     --bit-clr-act-active-pri2: #004578;
-    --bit-clr-act-active-sec: #EDEBE9;
-    --bit-clr-act-border-hover: #5A5A5A;
-    --bit-clr-act-border-active: #5A5A5A;
+    --bit-clr-act-active-sec: #191919;
+    --bit-clr-act-active-sec2: #313131;
+    --bit-clr-act-hover-txt-pri: #0068B9;
+    --bit-clr-act-hover-txt-pri2: #005FA9;
+    --bit-clr-act-hover-txt-sec: #121212;
+    --bit-clr-act-hover-txt-sec2: #212121;
+    --bit-clr-act-active-txt-pri: #2B88D8;
+    --bit-clr-act-active-txt-pri2: #4192D8;
+    --bit-clr-act-active-txt-sec: #191919;
+    --bit-clr-act-active-txt-sec2: #292929;
+    --bit-clr-act-hover-brd-pri: #5A5A5A;
+    --bit-clr-act-hover-brd-pri2: #5A5A5A;
+    --bit-clr-act-hover-brd-sec: #5A5A5A;
+    --bit-clr-act-hover-brd-sec2: #5A5A5A;
+    --bit-clr-act-active-brd-pri: #5A5A5A;
+    --bit-clr-act-active-brd-pri2: #5A5A5A;
+    --bit-clr-act-active-brd-sec: #5A5A5A;
+    --bit-clr-act-active-brd-sec2: #5A5A5A;
     //states
     --bit-clr-sta-invalid: #A4262C;
     --bit-clr-sta-invalid-hover: #750B1C;

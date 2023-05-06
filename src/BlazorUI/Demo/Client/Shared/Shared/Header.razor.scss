@@ -12,7 +12,6 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     &::before {
         inset: 0;
@@ -41,8 +40,9 @@
     box-sizing: border-box;
     padding-left: rem(20px);
     padding-right: rem(20px);
-    justify-content: space-between;
     min-height: rem($HeaderHeight);
+    justify-content: space-between;
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     @include md {
         padding-left: rem(30px);
@@ -50,8 +50,6 @@
     }
 
     @include sm {
-        border-bottom: rem(1px) solid $B5Color;
-
         .header-link {
             display: none;
         }
