@@ -34,7 +34,11 @@ public class Program
 
         builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.appsettings.json"));
 
-        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/") });
+        var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
+
+        var apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddressConfig}");
+
+        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = apiServerAddress });
         builder.Services.AddScoped<LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
