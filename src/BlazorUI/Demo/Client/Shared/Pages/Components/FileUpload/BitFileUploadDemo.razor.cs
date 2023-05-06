@@ -9,6 +9,12 @@ public partial class BitFileUploadDemo
     {
         new()
         {
+            Name = "Accept",
+            Type = "string?",
+            Description = "The value of the accept attribute of the input element.",
+        },
+        new()
+        {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "new List<string> { \"*\" }",
