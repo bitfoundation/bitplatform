@@ -376,11 +376,11 @@ Please confirm your email by clicking on the link.</value>
   <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
   </data>
-  <data name="EulaPrivacyPolicyAgreementMessage" xml:space="preserve">
+  <data name="TermsMessage" xml:space="preserve">
     <value>I agree to the</value>
   </data>
-  <data name="EulaPrivacyPolicyTitle" xml:space="preserve">
-    <value>Eula - Privacy Policy</value>
+  <data name="TermsTitle" xml:space="preserve">
+    <value>Terms</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
@@ -604,8 +604,8 @@ Please confirm your email by clicking on the link.</value>
   <data name="Validator_Property_Value_Wrong_Type" xml:space="preserve">
     <value>The value for property '{0}' must be of type '{1}'.</value>
   </data>
-  <data name="IsEulaPrivacyPolicyAccepted" xml:space="preserve">
-    <value>Do you accept EULA and privacy policy?</value>
+  <data name="IsTermsAccepted" xml:space="preserve">
+    <value>Do you accept terms?</value>
   </data>
   <data name="PhoneNumber" xml:space="preserve">
     <value>Phone number</value>
@@ -613,8 +613,8 @@ Please confirm your email by clicking on the link.</value>
   <data name="UserName" xml:space="preserve">
     <value>Username</value>
   </data>
-  <data name="YouHaveToAcceptEulaPrivacyPolicy" xml:space="preserve">
-    <value>You must agree to our EULA and privacy policy.</value>
+  <data name="YouHaveToAcceptTerms" xml:space="preserve">
+    <value>You must agree to our terms.</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
     <value>Go to today</value>
@@ -622,8 +622,8 @@ Please confirm your email by clicking on the link.</value>
   <data name="Gender" xml:space="preserve">
     <value>Gender</value>
   </data>
-  <data name="EulaPrivacyPolicy" xml:space="preserve">
-    <value>EULA - Privacy Policy</value>
+  <data name="Terms" xml:space="preserve">
+    <value>Terms</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
     <value>Are you sure you want to Sign out?</value>
