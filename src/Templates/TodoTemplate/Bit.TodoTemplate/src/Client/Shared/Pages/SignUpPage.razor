@@ -70,12 +70,12 @@
             </div>
 
             <div class="form-input-container form-input-container--no-margin">
-                <BitCheckbox Class="form-checkbox" @bind-Value="_signUpModel.EulaPrivacyPolicyAccepted">
+                <BitCheckbox Class="form-checkbox" @bind-Value="_signUpModel.TermsAccepted">
                     <LabelTemplate>
-                        <span>@Localizer[nameof(AppStrings.EulaPrivacyPolicyAgreementMessage)]&nbsp<BitLink Href="/eula-privacy-policy" Target="_blank">@Localizer[nameof(AppStrings.EulaPrivacyPolicyTitle)]</BitLink></span>
+                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="/terms" Target="_blank">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
                     </LabelTemplate>
                 </BitCheckbox>
-                <ValidationMessage For="@(() => _signUpModel.EulaPrivacyPolicyAccepted)" />
+                <ValidationMessage For="@(() => _signUpModel.TermsAccepted)" />
             </div>
 
             <BitLoadingButton IsLoading="_isLoading"

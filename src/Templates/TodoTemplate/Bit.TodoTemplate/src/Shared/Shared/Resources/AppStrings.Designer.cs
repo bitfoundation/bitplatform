@@ -503,33 +503,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to EULA - Privacy Policy.
-        /// </summary>
-        public static string EulaPrivacyPolicy {
-            get {
-                return ResourceManager.GetString("EulaPrivacyPolicy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to I agree to the.
-        /// </summary>
-        public static string EulaPrivacyPolicyAgreementMessage {
-            get {
-                return ResourceManager.GetString("EulaPrivacyPolicyAgreementMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Eula - Privacy Policy.
-        /// </summary>
-        public static string EulaPrivacyPolicyTitle {
-            get {
-                return ResourceManager.GetString("EulaPrivacyPolicyTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The {0} field only accepts files with the following extensions: {1}.
         /// </summary>
         public static string FileExtensionsAttribute_Invalid {
@@ -728,11 +701,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do you accept EULA and privacy policy?.
+        ///   Looks up a localized string similar to Do you accept terms?.
         /// </summary>
-        public static string IsEulaPrivacyPolicyAccepted {
+        public static string IsTermsAccepted {
             get {
-                return ResourceManager.GetString("IsEulaPrivacyPolicyAccepted", resourceCulture);
+                return ResourceManager.GetString("IsTermsAccepted", resourceCulture);
             }
         }
         
@@ -1259,6 +1232,33 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Terms.
+        /// </summary>
+        public static string Terms {
+            get {
+                return ResourceManager.GetString("Terms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to I agree to the.
+        /// </summary>
+        public static string TermsMessage {
+            get {
+                return ResourceManager.GetString("TermsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Terms.
+        /// </summary>
+        public static string TermsTitle {
+            get {
+                return ResourceManager.GetString("TermsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Title.
         /// </summary>
         public static string Title {
@@ -1547,11 +1547,11 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must agree to our EULA and privacy policy..
+        ///   Looks up a localized string similar to You must agree to our terms..
         /// </summary>
-        public static string YouHaveToAcceptEulaPrivacyPolicy {
+        public static string YouHaveToAcceptTerms {
             get {
-                return ResourceManager.GetString("YouHaveToAcceptEulaPrivacyPolicy", resourceCulture);
+                return ResourceManager.GetString("YouHaveToAcceptTerms", resourceCulture);
             }
         }
         
