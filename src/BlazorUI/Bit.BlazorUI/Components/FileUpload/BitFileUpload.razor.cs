@@ -28,6 +28,11 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
 
 
     /// <summary>
+    /// The value of the accept attribute of the input element.
+    /// </summary>
+    [Parameter] public string? Accept { get; set; }
+
+    /// <summary>
     /// Filters files by extension.
     /// </summary>
     [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = new List<string> { "*" };
@@ -73,11 +78,6 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     /// The message shown for failed file uploads.
     /// </summary>
     [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
-
-    /// <summary>
-    /// All selected files.
-    /// </summary>
-    public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
     /// <summary>
     /// Enables multi-file select and upload.
@@ -182,16 +182,23 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     [Parameter] public IReadOnlyDictionary<string, string> UploadRequestQueryStrings { get; set; } = new Dictionary<string, string>();
 
     /// <summary>
-    /// General upload status.
-    /// </summary>
-    public BitFileUploadStatus UploadStatus { get; set; }
-
-    /// <summary>
     /// URL of the server endpoint receiving the files.
     /// </summary>
 #pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? UploadUrl { get; set; }
 #pragma warning restore CA1056 // URI-like properties should not be strings
+
+
+
+    /// <summary>
+    /// All selected files.
+    /// </summary>
+    public IReadOnlyList<BitFileInfo>? Files { get; private set; }
+
+    /// <summary>
+    /// General upload status.
+    /// </summary>
+    public BitFileUploadStatus UploadStatus { get; set; }
 
 
 
@@ -609,6 +616,8 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
 
     private bool IsFileTypeNotAllowed(BitFileInfo file)
     {
+        if (Accept is not null) return true;
+
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
         return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
