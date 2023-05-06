@@ -616,7 +616,7 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
 
     private bool IsFileTypeNotAllowed(BitFileInfo file)
     {
-        if (Accept is not null) return true;
+        if (Accept is not null) return false;
 
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
