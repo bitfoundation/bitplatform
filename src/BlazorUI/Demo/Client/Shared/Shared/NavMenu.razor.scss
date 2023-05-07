@@ -7,7 +7,7 @@
 .nav-menu {
     left: 0;
     outline: 0;
-    z-index: 1000;
+    z-index: 1;
     display: flex;
     flex-shrink: 0;
     flex: 1 0 auto;
@@ -19,7 +19,7 @@
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
     background-color: $bit-color-background-primary;
-    border-right: rem(1px) solid $bit-color-border-secondary;
+    border-right: rem(1px) solid $bit-color-border-secondary2;
 
     @include lt-lg {
         top: 0;
