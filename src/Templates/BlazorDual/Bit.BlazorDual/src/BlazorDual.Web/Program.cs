@@ -29,7 +29,7 @@ public class Program
 
         if (Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress) is false)
         {
-            throw new InvalidOperationException("Aoi server address is invalid");
+            throw new InvalidOperationException("Api server address is invalid");
         }
 
         if (apiServerAddress.IsAbsoluteUri is false)
