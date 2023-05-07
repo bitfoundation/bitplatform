@@ -58,7 +58,7 @@
         </span>
         @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
         {
-            <button type="button" @onclick="Clear" class="bit-drp-icn bit-drp-clr">
+            <button type="button" @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
                 <i class="bit-icon bit-icon--ChromeClose"></i>
             </button>
         }
