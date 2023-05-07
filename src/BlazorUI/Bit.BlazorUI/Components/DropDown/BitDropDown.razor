@@ -58,9 +58,9 @@
         </span>
         @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
         {
-            <span @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
+            <button @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
                 <i class="bit-icon bit-icon--ChromeClose"></i>
-            </span>
+            </button>
         }
         <span class="bit-drp-icn">
             @if (CaretDownTemplate is not null)

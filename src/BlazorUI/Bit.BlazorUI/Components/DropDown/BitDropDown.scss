@@ -418,18 +418,6 @@
     }
 }
 
-.bit-drp-clr {
-    right: spacing(3.5);
-    width: spacing(3.75);
-    height: spacing(3.75);
-    display: flex;
-    justify-content: center;
-
-    &:hover {
-        background-color: $color-neutrals-gray20;
-    }
-}
-
 .bit-drp-icn {
     position: absolute;
     top: spacing(0.125);
@@ -446,6 +434,18 @@
         color: $color-neutrals-gray130;
         speak: none;
         pointer-events: none;
+    }
+}
+
+.bit-drp-clr {
+    right: spacing(3.5);
+    width: spacing(3.75);
+    height: spacing(3.75);
+    display: flex;
+    justify-content: center;
+
+    &:hover {
+        background-color: $color-neutrals-gray20;
     }
 }
 
