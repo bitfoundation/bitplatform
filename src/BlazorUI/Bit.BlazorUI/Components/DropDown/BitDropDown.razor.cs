@@ -620,7 +620,7 @@ public partial class BitDropDown
             className
                 .Append(' ')
                 .Append(RootElementClass)
-                .Append("-hval");
+                .Append("-shv");
         }
 
         if (_inputSearchHasFocus)
@@ -628,7 +628,7 @@ public partial class BitDropDown
             className
                 .Append(' ')
                 .Append(RootElementClass)
-                .Append("-foc");
+                .Append("-sfo");
         }
 
         return className.ToString();

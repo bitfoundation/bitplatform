@@ -58,11 +58,11 @@
         </span>
         @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
         {
-            <span @onclick:stopPropagation @onclick="Clear" class="bit-drp-ictn bit-drp-clr-btn">
+            <button type="button" @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
                 <i class="bit-icon bit-icon--ChromeClose"></i>
-            </span>
+            </button>
         }
-        <span class="bit-drp-ictn">
+        <span class="bit-drp-icn">
             @if (CaretDownTemplate is not null)
             {
                 @CaretDownTemplate
@@ -86,7 +86,7 @@
                 {
                     <label class="bit-drp-lbl">@Label</label>
                 }
-                <button class="bit-drp-cls-btn"
+                <button class="bit-drp-cls"
                         type="button"
                         aria-label="Close"
                         aria-describedby="Close"
@@ -101,14 +101,14 @@
         @if (ShowSearchBox)
         {
             <div class="@GetSearchBoxClasses()">
-                <div class="bit-drp-ictn" aria-hidden="true">
+                <div class="bit-drp-sic" aria-hidden="true">
                     <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
                 </div>
                 <input @ref="_searchInputElement"
                        @onfocusin="HandleSearchBoxFocusIn"
                        @onfocusout="HandleSearchBoxFocusOut"
                        @oninput="@HandleFilterChange"
-                       class="bit-drp-srch-inp"
+                       class="bit-drp-sin"
                        type="text"
                        aria-label="Search text"
                        placeholder="@SearchBoxPlaceholder"
@@ -116,8 +116,8 @@
                        value="@_searchText" />
                 @if (_searchText.HasValue())
                 {
-                    <div class="bit-drp-clr-btn-ctn">
-                        <button class="bit-drp-clr-btn"
+                    <div class="bit-drp-sbcc">
+                        <button class="bit-drp-sbc"
                                 type="button"
                                 aria-label="Clear text"
                                 aria-hidden="true"
