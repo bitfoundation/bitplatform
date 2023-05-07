@@ -32,12 +32,12 @@
             text-decoration: none;
         }
     }
+}
 
-    &.underlined {
+.bit-lnk-und {
+    text-decoration: underline !important;
+
+    &:hover, &:active, &:focus {
         text-decoration: underline;
-
-        &:hover, &:active, &:focus {
-            text-decoration: underline;
-        }
     }
 }
