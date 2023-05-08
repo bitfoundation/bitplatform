@@ -44,8 +44,13 @@
     user-select: none;
     align-items: center;
 
-    ::deep .checked-box {
+    .checked-box {
+        display: flex;
+        width: rem(32px);
+        height: rem(32px);
         border: 1px solid;
+        align-items: center;
         margin-right: rem(5px);
+        justify-content: center;
     }
 }
