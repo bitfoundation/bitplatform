@@ -1,5 +1,7 @@
 ﻿@page "/components/check-box"
 
+<PageTitle>Bit BlazorUI - CheckBox</PageTitle>
+
 <ComponentDemo ComponentName="CheckBox"
                ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
                ComponentParameters="componentParameters"
@@ -31,7 +33,7 @@
     <ComponentExampleBox Title="Indeterminate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminated" />
+                <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminate" />
                 <BitCheckbox Label="One-way indeterminate Checkbox (Fixed)" IsIndeterminate="true" />
                 <BitCheckbox Label="Disabled indeterminate checkbox" IsIndeterminate="true" IsEnabled="false" />
             </div>
@@ -54,15 +56,15 @@
                     </BitButton>
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminated_OneWay" />
-                    <BitButton OnClick="() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay" ButtonSize="BitButtonSize.Small">
-                        @(IsIndeterminated_OneWay ? "Remove" : "Make") Indeterminate
+                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminate_OneWay" />
+                    <BitButton OnClick="() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay" ButtonSize="BitButtonSize.Small">
+                        @(IsIndeterminate_OneWay ? "Remove" : "Make") Indeterminate
                     </BitButton>
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminated_TwoWay" />
-                    <BitButton OnClick="() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay" ButtonSize="BitButtonSize.Small">
-                        @(IsIndeterminated_TwoWay ? "Remove" : "Make") Indeterminate
+                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminate_TwoWay" />
+                    <BitButton OnClick="() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay" ButtonSize="BitButtonSize.Small">
+                        @(IsIndeterminate_TwoWay ? "Remove" : "Make") Indeterminate
                     </BitButton>
                 </div>
             </div>
@@ -89,27 +91,26 @@
             <div class="example-content">
                 <BitCheckbox @bind-Value="IsCheckedCustomCheckBox">
                     <div class="custom-checkbox">
-                        <BitIconButton Class="checked-box" IconName="@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)" />
+                        <div class="checked-box">
+                            <BitIcon IconName="@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)" />
+                        </div>
                         <span>
                             Customized Basic Checkbox
                         </span>
                     </div>
                 </BitCheckbox>
 
-                <BitCheckbox @bind-Value="IsCheckedCustomIndeterminateCheckBox" @bind-IsIndeterminate="IsIndeterminatedCustomCheckBox">
+                <BitCheckbox @bind-Value="IsCheckedCustomIndeterminateCheckBox" @bind-IsIndeterminate="IsIndeterminateCustomCheckBox">
                     <div class="custom-checkbox">
-                        @if (IsIndeterminatedCustomCheckBox)
-                        {
-                            <BitIconButton Class="checked-box" IconName="BitIconName.Fingerprint" />
-                        }
-                        else
-                        {
-                            <BitIconButton Class="checked-box" IconName="@(IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)" />
-                        }
+                        <div class="checked-box">
+                            <BitIcon IconName="IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)" />
+                        </div>
                         <span>
                             Customized Indeterminate checkbox
                         </span>
                     </div>
+                    &nbsp;
+                    <BitButton ButtonSize="BitButtonSize.Small" OnClick="() => IsIndeterminateCustomCheckBox = true">Make Indeterminate</BitButton>
                 </BitCheckbox>
             </div>
         </ExamplePreview>

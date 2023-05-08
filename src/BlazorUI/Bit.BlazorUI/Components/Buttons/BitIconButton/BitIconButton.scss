@@ -14,12 +14,12 @@
     font-weight: $typography-font-weight;
 
     &:hover {
-        color: $color-action-hover-text-primary;
+        color: $color-primary-dark;
         background-color: $color-action-hover-secondary;
     }
 
     &:active {
-        color: $color-action-active-text-primary;
+        color: $color-primary-darker;
         background-color: $color-action-active-secondary;
     }
 

@@ -15,18 +15,18 @@
     font-weight: $typography-font-weight;
 
     &:hover {
-        color: $color-action-hover-text-primary;
+        color: $color-text-primary2;
 
         .bit-icon {
-            color: $color-action-hover-text-primary2;
+            color: $color-primary-dark;
         }
     }
 
     &:active {
-        color: $color-action-active-text-primary;
+        color: $color-text-primary3;
 
         .bit-icon {
-            color: $color-action-active-text-primary2;
+            color: $color-primary-darker;
         }
     }
 
@@ -38,24 +38,6 @@
         .bit-icon {
             color: $color-text-disabled;
         }
-    }
-
-    &.bit-acb-sm {
-        font-size: spacing(1.5);
-        line-height: spacing(2.75);
-        padding: spacing(0.25) spacing(1.25);
-    }
-
-    &.bit-acb-md {
-        font-size: spacing(1.75);
-        padding: spacing(0.5) spacing(2);
-        line-height: $typography-line-height-buttons;
-    }
-
-    &.bit-acb-lg {
-        font-size: spacing(2);
-        line-height: spacing(3.75);
-        padding: spacing(0.75) spacing(2.75);
     }
 }
 
@@ -76,4 +58,22 @@
 
 .bit-acb-con {
     margin: 0 spacing(0.5);
+}
+
+.bit-acb-sm {
+    font-size: spacing(1.5);
+    line-height: spacing(2.75);
+    padding: spacing(0.25) spacing(1.25);
+}
+
+.bit-acb-md {
+    font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
+    line-height: $typography-line-height-buttons;
+}
+
+.bit-acb-lg {
+    font-size: spacing(2);
+    line-height: spacing(3.75);
+    padding: spacing(0.75) spacing(2.75);
 }
