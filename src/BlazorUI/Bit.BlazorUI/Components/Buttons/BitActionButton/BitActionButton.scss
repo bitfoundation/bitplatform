@@ -15,18 +15,18 @@
     font-weight: $typography-font-weight;
 
     &:hover {
-        color: $color-text-primary2;
+        color: $color-action-hover-text-primary;
 
         .bit-icon {
-            color: $color-primary-dark;
+            color: $color-action-hover-primary;
         }
     }
 
     &:active {
-        color: $color-text-primary3;
+        color: $color-action-active-text-primary;
 
         .bit-icon {
-            color: $color-primary-darker;
+            color: $color-action-active-primary;
         }
     }
 
