@@ -102,7 +102,7 @@
     transform: translate3d(0, spacing(-1.25), 0);
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     transition: opacity 100ms, transform 300ms, pointer-events 300ms;
-    box-shadow: $box-shadow-4;
+    box-shadow: $box-shadow-2;
 
     ul {
         margin: 0;
