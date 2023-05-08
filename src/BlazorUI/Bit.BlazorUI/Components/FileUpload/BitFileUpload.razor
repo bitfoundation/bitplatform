@@ -20,14 +20,14 @@
     }
 
     <input @ref="inputFileElement"
-            class="bit-upl-fi"
-            id="@_inputId"
-            type="file"
-            disabled="@(IsEnabled is false)"
-            aria-labelledby="@(Label.HasValue() ? Label : null)"
-            multiple="@IsMultiSelect"
-            accept="@(string.Join(",", AllowedExtensions))"
-            @onchange="HandleOnChange" />
+           class="bit-upl-fi"
+           id="@_inputId"
+           type="file"
+           disabled="@(IsEnabled is false)"
+           aria-labelledby="@(Label.HasValue() ? Label : null)"
+           multiple="@IsMultiSelect"
+           accept="@(Accept ?? string.Join(",", AllowedExtensions))"
+           @onchange="HandleOnChange" />
 
     @if (Files is not null)
     {

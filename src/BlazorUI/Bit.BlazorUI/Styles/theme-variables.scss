@@ -72,7 +72,9 @@ $color-state-warning-dark: var(--bit-clr-sta-warning-dark);
 
 //borders
 $color-border-primary: var(--bit-clr-brd-primary);
+$color-border-primary2: var(--bit-clr-brd-primary2);
 $color-border-secondary: var(--bit-clr-brd-secondary);
+$color-border-secondary2: var(--bit-clr-brd-secondary2);
 $color-border-disabled: var(--bit-clr-brd-disabled);
 
 //generals
@@ -111,6 +113,32 @@ $color-neutrals-gray190: var(--bit-clr-ntr-gray190);
 $color-neutrals-gray200: var(--bit-clr-ntr-gray200);
 $color-neutrals-gray210: var(--bit-clr-ntr-gray210);
 $color-neutrals-gray220: var(--bit-clr-ntr-gray220);
+
+//shadows
+$box-shadow-1: var(--bit-shd-1);
+$box-shadow-2: var(--bit-shd-2);
+$box-shadow-3: var(--bit-shd-3);
+$box-shadow-4: var(--bit-shd-4);
+$box-shadow-5: var(--bit-shd-5);
+$box-shadow-6: var(--bit-shd-6);
+$box-shadow-7: var(--bit-shd-7);
+$box-shadow-8: var(--bit-shd-8);
+$box-shadow-9: var(--bit-shd-9);
+$box-shadow-10: var(--bit-shd-10);
+$box-shadow-11: var(--bit-shd-11);
+$box-shadow-12: var(--bit-shd-12);
+$box-shadow-13: var(--bit-shd-13);
+$box-shadow-14: var(--bit-shd-14);
+$box-shadow-15: var(--bit-shd-15);
+$box-shadow-16: var(--bit-shd-16);
+$box-shadow-17: var(--bit-shd-17);
+$box-shadow-18: var(--bit-shd-18);
+$box-shadow-19: var(--bit-shd-19);
+$box-shadow-20: var(--bit-shd-20);
+$box-shadow-21: var(--bit-shd-21);
+$box-shadow-22: var(--bit-shd-22);
+$box-shadow-23: var(--bit-shd-23);
+$box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);

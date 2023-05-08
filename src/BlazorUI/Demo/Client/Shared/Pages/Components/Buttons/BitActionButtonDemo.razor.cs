@@ -158,12 +158,13 @@ public partial class BitActionButtonDemo
     private readonly string example2HTMLCode = @"
 <style>
     .custom-action-button {
-        font-size: 1rem;
-        background-color: #D7D7D7;
-        border-color: #D7D7D7;
-        justify-content: center;
+        color: #111;
         width: 14.5rem;
+        font-size: 1rem;
         margin-top: 0.625rem;
+        border-color: #D7D7D7;
+        background-color: #CCC;
+        justify-content: center;
     }
 </style>
 
@@ -205,20 +206,14 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>
+<BitLabel>Small size</BitLabel>
+<BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
 
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>
+<BitLabel>Medium size</BitLabel>
+<BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
 
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>";
+<BitLabel>Large size</BitLabel>
+<BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>";
 
     private readonly string example7HTMLCode = @"
 <style>
@@ -244,16 +239,12 @@ public partial class BitActionButtonDemo
     }
 </style>
 
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
-</div>";
+<BitLabel>Small size</BitLabel>
+<BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+    
+<BitLabel>Medium size</BitLabel>
+<BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+
+<BitLabel>Large size</BitLabel>
+<BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>";
 }
