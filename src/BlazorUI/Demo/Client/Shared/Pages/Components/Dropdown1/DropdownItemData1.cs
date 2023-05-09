@@ -1,4 +1,4 @@
-﻿public class DropDownItemData
+﻿public class DropdownItemData
 {
     public string IconName { get; set; }
 }

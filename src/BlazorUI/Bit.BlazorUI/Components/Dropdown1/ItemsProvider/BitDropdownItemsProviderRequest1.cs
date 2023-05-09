@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public struct BitDropDownItemsProviderRequest<TDropDownItem>
+public struct BitDropdownItemsProviderRequest<TDropdownItem>
 {
     public int StartIndex { get; }
 
@@ -10,7 +10,7 @@ public struct BitDropDownItemsProviderRequest<TDropDownItem>
 
     public CancellationToken CancellationToken { get; }
 
-    internal BitDropDownItemsProviderRequest(int startIndex, int count, string? search, CancellationToken cancellationToken)
+    internal BitDropdownItemsProviderRequest(int startIndex, int count, string? search, CancellationToken cancellationToken)
     {
         StartIndex = startIndex;
         Count = count;

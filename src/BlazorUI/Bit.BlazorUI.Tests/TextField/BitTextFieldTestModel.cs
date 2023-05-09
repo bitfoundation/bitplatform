@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs;
+namespace Bit.BlazorUI.Tests.TextField;
 
 public class BitTextFieldTestModel
 {

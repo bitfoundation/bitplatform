@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.DropDown;
+﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Dropdown;
 
-public class FormValidationDropDownModel
+public class FormValidationDropdownModel
 {
     [MaxLength(2, ErrorMessage = "The property {0} doesn't have more than {1} elements")]
     [MinLength(1, ErrorMessage = "The property {0} doesn't have less than {1} elements")]

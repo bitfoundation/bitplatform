@@ -43,9 +43,9 @@
                             <BitNav @bind-SelectedItem="SelectedItemNav"
                                     Items="FoodNavMenu"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
+                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
 
-                            <BitDropDown @bind-Value="SelectedItemText"
+                            <BitDropdown @bind-Value="SelectedItemText"
                                          Label="Select Item"
                                          Items="FoodMenuDropDownItems"
                                          OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
@@ -177,7 +177,7 @@
                                     IsExpandedFieldSelector="item => item.IsExpanded"
                                     ChildItemsFieldSelector="item => item.Childs"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
+                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
                             <BitDropDown @bind-Value="CustomSelectedFoodName"
                                          Label="Select Item"

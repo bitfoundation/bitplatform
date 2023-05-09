@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs;
+namespace Bit.BlazorUI.Tests.Dropdown;
 
-public class BitDropDownTestModel
+public class BitDropdownTestModel
 {
     [Required]
     public string Value { get; set; }

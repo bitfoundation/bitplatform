@@ -975,7 +975,7 @@ public partial class BitNavDemo
     private BitNavOption ToggledOption;
 
 
-    private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
     {
         new()
         {

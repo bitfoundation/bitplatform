@@ -27,9 +27,9 @@
             dropDownCallout.style.display = "none";
             dropDownOverlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
-            Bit.currentDropDownCalloutId = "";
+            Bit.currentDropdownCalloutId = "";
         } else {
-            Bit.currentDropDownCalloutId = calloutId;
+            Bit.currentDropdownCalloutId = calloutId;
             Bit.closeCurrentCalloutIfExists(calloutId, overlayId, dotnetObjReference);
             dropDownCallout.style.display = "block";
             dropDownOverlay.style.display = "block";

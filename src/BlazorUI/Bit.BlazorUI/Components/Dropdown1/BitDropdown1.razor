@@ -167,7 +167,7 @@
 
     </div>
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropDownItem item in SelectedItems)
+        @foreach (BitDropdownItem item in SelectedItems)
         {
             <option value="@item.Value" selected>@item.Text</option>
         }
@@ -175,15 +175,15 @@
 </div>
 
 @code {
-    private RenderFragment<(int? index, BitDropDownItem item)> dropDownItemTemplate => dropDownItem => __builder =>
+    private RenderFragment<(int? index, BitDropdownItem item)> dropDownItemTemplate => dropDownItem => __builder =>
     {
-        if (dropDownItem.item.ItemType == BitDropDownItemType.Header)
+        if (dropDownItem.item.ItemType == BitDropdownItemType1.Header)
         {
             <div class="bit-drp-ihdr">
                 @dropDownItem.item.Text
             </div>
         }
-        else if (dropDownItem.item.ItemType == BitDropDownItemType.Normal)
+        else if (dropDownItem.item.ItemType == BitDropdownItemType1.Normal)
         {
             @if (IsMultiSelect)
             {
@@ -234,7 +234,7 @@
                 </button>
             }
         }
-        else if (dropDownItem.item.ItemType == BitDropDownItemType.Divider)
+        else if (dropDownItem.item.ItemType == BitDropdownItemType1.Divider)
         {
             <div class="bit-drp-idiv" role="separator"></div>
         }

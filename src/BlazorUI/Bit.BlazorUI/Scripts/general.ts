@@ -8,9 +8,9 @@
 //})
 
 window.addEventListener('scroll', (e: any) => {
-    const minimumWidthForDropDownNormalOpen = 640;
-    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen && Bit.currentDropDownCalloutResponsiveModeIsEnabled) ||
-        (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
+    const minimumWidthForDropdownNormalOpen = 640;
+    if ((Bit.currentDropdownCalloutId && window.innerWidth < minimumWidthForDropdownNormalOpen && Bit.currentDropdownCalloutResponsiveModeIsEnabled) ||
+        (e.target.id && Bit.currentDropdownCalloutId === e.target.id)) return;
 
     Bit.closeCurrentCalloutIfExists("", "", null);
 }, true);

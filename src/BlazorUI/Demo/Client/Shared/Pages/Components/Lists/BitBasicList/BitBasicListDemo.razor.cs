@@ -59,7 +59,7 @@ public partial class BitBasicListDemo
         new()
         {
             Name = "VirtualizePlaceholder",
-            Type = "RenderFragment<BitDropDown>",
+            Type = "RenderFragment<PlaceholderContext>",
             DefaultValue = "",
             Description = "Optional custom template for placeholder Text.",
         },
