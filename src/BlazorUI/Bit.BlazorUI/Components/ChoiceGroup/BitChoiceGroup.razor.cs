@@ -240,7 +240,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-required" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
 
         ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
     }
@@ -465,7 +465,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         {
             cssClass.Append(' ')
                     .Append(itemRootElementClass)
-                    .Append("-checked");
+                    .Append("-chk");
         }
 
         if (ItemLabelTemplate is not null) return cssClass.ToString();
@@ -474,14 +474,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         {
             cssClass.Append(' ')
                     .Append(itemRootElementClass)
-                    .Append("-disabled");
+                    .Append("-dis");
         }
 
         if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
         {
             cssClass.Append(' ')
                     .Append(itemRootElementClass)
-                    .Append("-with-img");
+                    .Append("-img");
         }
 
         return cssClass.ToString();
@@ -489,7 +489,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     private string GetLabelClassNameItem(TItem item) =>
         (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null 
-        ? "bit-chgi-lbl-with-img" 
+        ? "bit-chgi-lbl-img" 
         : "bit-chgi-lbl";
 
     private async Task HandleClick(MouseEventArgs e)

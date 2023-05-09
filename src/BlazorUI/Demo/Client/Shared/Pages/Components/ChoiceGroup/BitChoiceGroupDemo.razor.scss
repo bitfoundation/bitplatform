@@ -2,24 +2,6 @@
 @import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 
-::deep {
-    .validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
-
-    .validation-summary {
-        border-left: rem(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
-        overflow: hidden;
-        margin-bottom: rem(10px);
-
-        .validation-errors {
-            margin: rem(5px);
-        }
-    }
-}
-
 .chg-box {
     display: flex;
     gap: rem(30px);
@@ -33,25 +15,25 @@
     }
 
     .chg-output {
-        display: flex;
-        align-items: center;
         gap: rem(5px);
-        margin-top: rem(20px);
+        display: flex;
         font-weight: 600;
+        align-items: center;
         font-size: rem(16px);
+        margin-top: rem(20px);
     }
 }
 
 .custom-label {
-    font-weight: bold;
     color: $Red20;
+    font-weight: bold;
 }
 
 .custom-option {
     display: flex;
-    align-items: center;
     gap: rem(10px);
     cursor: pointer;
+    align-items: center;
 
     .option-pointer {
         width: rem(20px);
@@ -63,9 +45,9 @@
     &:hover {
         .option-pointer {
             border-top: rem(5px) solid #C66;
-            border-bottom: rem(5px) solid #6C6;
             border-left: rem(5px) solid #66C;
             border-right: rem(5px) solid #CC6;
+            border-bottom: rem(5px) solid #6C6;
         }
     }
 
@@ -74,9 +56,27 @@
 
         .option-pointer {
             border-top: rem(10px) solid #C66;
-            border-bottom: rem(10px) solid #6C6;
             border-left: rem(10px) solid #66C;
             border-right: rem(10px) solid #CC6;
+            border-bottom: rem(10px) solid #6C6;
+        }
+    }
+}
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .validation-summary {
+        overflow: hidden;
+        margin-bottom: rem(10px);
+        background-color: $ErrorBlockRed;
+        border-left: rem(5px) solid $Red10;
+
+        .validation-errors {
+            margin: rem(5px);
         }
     }
 }
