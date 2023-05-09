@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitDropdownItemType1
+public enum BitDropdownItemType
 
 {
     /// <summary>

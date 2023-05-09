@@ -267,35 +267,35 @@ public partial class BitDropdownDemo
     {
         Categories = Enumerable.Range(1, 6).Select(c => new BitDropdownItem
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Value = c.ToString(),
             Text = $"Category {c}"
         }).ToList();
 
         Products = Enumerable.Range(1, 50).Select(p => new BitDropdownItem
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = $"Product {p}",
             Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
         }).ToList();
 
         LargeListOfCategoriesForSingleSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Value = c.ToString(),
             Text = $"Category {c}"
         }).ToList();
 
         LargeListOfCategoriesForMultiSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Value = c.ToString(),
             Text = $"Category {c}"
         }).ToList();
 
         LargeListOfCategoriesDropDirection = Enumerable.Range(1, 60).Select(c => new BitDropdownItem
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Value = c.ToString(),
             Text = $"Category {c}"
         }).ToList();
@@ -323,13 +323,13 @@ public partial class BitDropdownDemo
         {
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Fruits",
                 Value = "f"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Vegetables",
                 Value = "v"
             }
@@ -342,40 +342,40 @@ public partial class BitDropdownDemo
         {
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Fruits"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Divider,
+                ItemType = BitDropdownItemType.Divider,
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Vegetables"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             }
@@ -388,40 +388,40 @@ public partial class BitDropdownDemo
         {
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Fruits"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Divider,
+                ItemType = BitDropdownItemType.Divider,
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Vegetables"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             }
@@ -434,40 +434,40 @@ public partial class BitDropdownDemo
         {
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "الفاكهة"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "تفاحة",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "البرتقالي",
                 Value = "f-ora",
                 IsEnabled = false
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "موز",
                 Value = "f-ban",
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Divider,
+                ItemType = BitDropdownItemType.Divider,
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "خضروات"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "بروكلي",
                 Value = "v-bro",
             }
@@ -480,86 +480,86 @@ public partial class BitDropdownDemo
         {
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Options",
                 Value = "Header"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option a",
                 Value = "A",
                 Data = new { IconName = "Memo" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option b",
                 Value = "B",
                 Data = new { IconName = "Print" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option c",
                 Value = "C",
                 Data = new { IconName = "ShoppingCart" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option d",
                 Value = "D",
                 Data = new { IconName = "Train" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option e",
                 Value = "E",
                 Data = new { IconName = "Repair" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Divider
+                ItemType = BitDropdownItemType.Divider
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "More options",
                 Value = "Header2"
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option f",
                 Value = "F",
                 Data = new { IconName = "Running" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option g",
                 Value = "G",
                 Data = new { IconName = "EmojiNeutral" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option h",
                 Value = "H",
                 Data = new { IconName = "ChatInviteFriend" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option i",
                 Value = "I",
                 Data = new { IconName = "SecurityGroup" }
             },
             new()
             {
-                ItemType = BitDropdownItemType1.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Option j",
                 Value = "J",
                 Data = new { IconName = "AddGroup" }
@@ -595,7 +595,7 @@ public partial class BitDropdownDemo
                 Data = i,
                 AriaLabel = i.Name,
                 IsEnabled = true,
-                ItemType = BitDropdownItemType1.Normal
+                ItemType = BitDropdownItemType.Normal
             }).ToList();
 
             return BitDropdownItemsProviderResult.From(items, data!.TotalCount);

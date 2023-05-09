@@ -105,20 +105,20 @@ public partial class PopularComponents
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Header,
+            ItemType = BitDropdownItemType.Header,
             Text = "Fruits"
         });
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Apple",
             Value = "f-app"
         });
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Orange",
             Value = "f-ora",
             IsEnabled = false
@@ -126,25 +126,25 @@ public partial class PopularComponents
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Banana",
             Value = "f-ban",
         });
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Divider,
+            ItemType = BitDropdownItemType.Divider,
         });
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Header,
+            ItemType = BitDropdownItemType.Header,
             Text = "Vegetables"
         });
 
         items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropdownItemType1.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Broccoli",
             Value = "v-bro",
         });

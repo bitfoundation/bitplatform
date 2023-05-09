@@ -26,7 +26,7 @@ public class BitDropdownItem
     /// <summary>
     /// The type of this item, Refers to the dropdown separator
     /// </summary>
-    public BitDropdownItemType1 ItemType { get; set; } = BitDropdownItemType1.Normal;
+    public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;
 
     /// <summary>
     /// Title attribute (built in tooltip) for a given item

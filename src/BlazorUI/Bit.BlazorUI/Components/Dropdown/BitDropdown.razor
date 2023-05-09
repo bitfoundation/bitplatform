@@ -177,13 +177,13 @@
 @code {
     private RenderFragment<(int? index, BitDropdownItem item)> dropDownItemTemplate => dropDownItem => __builder =>
     {
-        if (dropDownItem.item.ItemType == BitDropdownItemType1.Header)
+        if (dropDownItem.item.ItemType == BitDropdownItemType.Header)
         {
             <div class="bit-drp-ihdr">
                 @dropDownItem.item.Text
             </div>
         }
-        else if (dropDownItem.item.ItemType == BitDropdownItemType1.Normal)
+        else if (dropDownItem.item.ItemType == BitDropdownItemType.Normal)
         {
             @if (IsMultiSelect)
             {
@@ -234,7 +234,7 @@
                 </button>
             }
         }
-        else if (dropDownItem.item.ItemType == BitDropdownItemType1.Divider)
+        else if (dropDownItem.item.ItemType == BitDropdownItemType.Divider)
         {
             <div class="bit-drp-idiv" role="separator"></div>
         }

@@ -47,7 +47,7 @@
 
                             <BitDropdown @bind-Value="SelectedItemText"
                                          Label="Select Item"
-                                         Items="FoodMenuDropDownItems"
+                                         Items="FoodMenuDropdownItems"
                                          OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                         </div>
                     </div>
@@ -179,9 +179,9 @@
                                     Mode="BitNavMode.Manual"
                                     OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
-                            <BitDropDown @bind-Value="CustomSelectedFoodName"
+                            <BitDropdown @bind-Value="CustomSelectedFoodName"
                                          Label="Select Item"
-                                         Items="FoodMenuDropDownItems"
+                                         Items="FoodMenuDropdownItems"
                                          OnSelectItem="(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                         </div>
                     </div>
@@ -414,10 +414,10 @@
                                 <BitNavOption Text="Cookie" Key="Cookie" />
                             </BitNav>
 
-                            <BitDropDown @bind-Value="SelectedOptionKey"
+                            <BitDropdown @bind-Value="SelectedOptionKey"
                                          DefaultValue="French Fries"
                                          Label="Pick one"
-                                         Items="FoodMenuDropDownItems" />
+                                         Items="FoodMenuDropdownItems" />
                         </div>
                     </div>
                 </ExamplePreview>

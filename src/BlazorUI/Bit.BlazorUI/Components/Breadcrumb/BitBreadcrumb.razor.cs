@@ -32,7 +32,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     private string _wrapperId => $"{UniqueId}-wrapper";
     private string _calloutId => $"{UniqueId}-callout";
     private string _overlayId => $"{UniqueId}-overlay";
-    private string _overflowDropDownId => $"{UniqueId}-overflow-dropdown";
+    private string _overflowDropdownId => $"{UniqueId}-overflow-dropdown";
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
 
@@ -215,7 +215,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropDownId, _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropdownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = !_isCalloutOpen;
     }
 
