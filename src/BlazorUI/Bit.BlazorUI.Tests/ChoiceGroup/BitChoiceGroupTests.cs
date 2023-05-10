@@ -96,7 +96,7 @@ public class BitChoiceGroupTests : BunitTestContext
             }
             else
             {
-                Assert.IsTrue(element.ClassList.Contains("bit-chgi-disabled"));
+                Assert.IsTrue(element.ClassList.Contains("bit-chgi-dis"));
             }
         }
     }
