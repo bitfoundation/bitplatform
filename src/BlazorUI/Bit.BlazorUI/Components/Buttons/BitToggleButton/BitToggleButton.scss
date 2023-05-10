@@ -23,6 +23,63 @@
     }
 }
 
+.bit-tgb-pri {
+    color: $color-secondary-main;
+    border-color: $color-primary-main;
+    background-color: $color-primary-main;
+
+    &:hover {
+        border-color: $color-action-hover-primary;
+        background-color: $color-action-hover-primary;
+    }
+
+    &:active {
+        border-color: $color-action-active-primary;
+        background-color: $color-action-active-primary;
+    }
+
+    &.bit-tgb-chk {
+        border-color: $color-primary-dark;
+        background-color: $color-primary-dark;
+
+        &:hover {
+            border-color: $color-action-hover-primary2;
+            background-color: $color-action-hover-primary2;
+        }
+
+        &:active {
+            border-color: $color-action-active-primary2;
+            background-color: $color-action-active-primary2;
+        }
+    }
+}
+
+.bit-tgb-std {
+    color: $color-text-primary;
+    border-color: $color-border-primary2;
+    background-color: $color-background-primary;
+
+    &:hover {
+        background-color: $color-action-hover-background-primary;
+    }
+
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
+
+    &.bit-tgb-chk {
+        background-color: $color-background-primary2;
+
+        &:hover {
+            background-color: $color-action-hover-background-primary2;
+        }
+
+        &:active {
+            background-color: $color-action-active-background-primary2;
+        }
+    }
+}
+
 .bit-tgb-con {
     display: flex;
     align-items: center;
@@ -38,59 +95,6 @@
 
 .bit-tgb-txt {
     display: block;
-}
-
-.bit-tgb-pri {
-    color: $color-text-secondary;
-    border-color: $color-border-primary;
-    background-color: $color-primary-main;
-
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
-    }
-
-    &:active {
-        background-color: $color-action-active-primary;
-    }
-
-    &.bit-tgb-chk {
-        background-color: $color-primary-dark;
-
-        &:hover {
-            background-color: $color-action-hover-primary2;
-        }
-
-        &:active {
-            background-color: $color-action-active-primary2;
-        }
-    }
-}
-
-.bit-tgb-std {
-    color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
-
-    &:hover {
-        background-color: $color-action-hover-secondary;
-    }
-
-    &:active {
-        background-color: $color-action-active-secondary;
-    }
-
-    &.bit-tgb-chk {
-        background-color: $color-secondary-dark;
-
-        &:hover {
-            background-color: $color-action-hover-secondary2;
-        }
-
-        &:active {
-            background-color: $color-action-active-secondary2;
-        }
-    }
 }
 
 .bit-tgb-sm {

@@ -32,8 +32,8 @@
 
 .bit-spl-pri {
     .bit-spl-opb, .bit-spl-chb {
-        color: $color-text-secondary;
-        border-color: $color-border-primary;
+        color: $color-secondary-main;
+        border-color: $color-primary-main;
         background-color: $color-primary-main;
 
         &:hover {
@@ -63,30 +63,28 @@
 .bit-spl-std {
     .bit-spl-opb, .bit-spl-chb {
         color: $color-text-primary;
-        border-color: $color-border-secondary;
-        background-color: $color-secondary-main;
+        border-color: $color-border-primary2;
+        background-color: $color-background-primary;
 
         &:hover {
-            background-color: $color-action-hover-secondary;
-            border-color: $color-action-hover-border-secondary;
+            background-color: $color-action-hover-background-primary;
         }
 
         &:active {
-            background-color: $color-action-active-secondary;
-            border-color: $color-action-active-border-secondary;
+            background-color: $color-action-active-background-primary;
         }
     }
 
     &.bit-spl-omn {
         .bit-spl-chb {
-            background-color: $color-action-active-secondary;
-            border-color: $color-action-active-border-secondary;
+            border-color: $color-border-primary2;
+            background-color: $color-action-active-background-primary;
         }
     }
 
     .bit-spl-spb {
         width: spacing(0.125);
-        background-color: $color-border-secondary;
+        background-color: $color-border-primary2;
     }
 }
 
@@ -190,7 +188,7 @@
     box-sizing: border-box;
     min-width: spacing(22.5);
     animation-fill-mode: both;
-    box-shadow: $box-shadow-2;
+    box-shadow: $box-shadow-4;
     animation-duration: 0.367s;
     background-color: $color-secondary-main;
     animation-name: bit-fade-show, bit-slide-down;

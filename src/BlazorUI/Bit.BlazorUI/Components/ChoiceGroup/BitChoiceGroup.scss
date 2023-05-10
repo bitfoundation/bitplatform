@@ -212,11 +212,11 @@
             width: spacing(1.25);
             height: spacing(1.25);
             transition-property: background-color;
-            background-color: $color-action-hover-secondary2;
+            background-color: $color-background-primary3;
         }
 
         &:before {
-            border-color: $color-action-hover-border-secondary;
+            border-color: $color-background-primary3;
         }
     }
 }
@@ -252,7 +252,7 @@
         box-sizing: border-box;
         background-color: $color-background-primary;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-secondary;
+        border: $shape-border-width $shape-border-style $color-border-primary2;
     }
 
     &:after {
@@ -268,11 +268,11 @@
     }
 
     &:hover {
-        border-color: $color-action-hover-border-secondary;
+        border-color: $color-action-hover-border-primary2;
 
         &:before {
             opacity: 1;
-            border-color: $color-action-hover-border-secondary;
+            border-color: $color-action-hover-border-primary2;
         }
     }
 }

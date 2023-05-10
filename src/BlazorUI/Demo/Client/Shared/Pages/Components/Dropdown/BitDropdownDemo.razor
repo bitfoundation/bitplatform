@@ -7,7 +7,7 @@
 <ComponentDemo ComponentName="Dropdown"
                ComponentParameters="componentParameters"
                ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.">
-    <ComponentExampleBox Title="BitDropdown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic Dropdown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-desc">To create a dropdown you can use a BitDropdown component.</div>
             <div>
@@ -33,26 +33,32 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Single-Select" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Controlled Dropdown" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <BitDropdown @bind-Value="ControlledValue"
-                         Label="Single-select Controlled"
-                         Items="GetDropdownItems()"
-                         Placeholder="Select an option"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Controlled Multi-Select" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
-        <ExamplePreview>
+            <div>
+                <BitDropdown @bind-Value="ControlledValue"
+                             Label="Single-select Controlled"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
+                </BitDropdown>
+            </div>
+            <div>
+                <BitLabel>Selected Value: @ControlledValue</BitLabel>
+            </div>
+            <br />
+            <div>
             <BitDropdown @bind-Values="ControlledValues"
                          Label="Multi-select controlled"
                          Items="GetDropdownItems()"
                          Placeholder="Select options"
                          IsMultiSelect="true"
                          Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
-            </BitDropdown>
+                </BitDropdown>
+            </div>
+            <div>
+                <BitLabel>Selected Value: @string.Join(",", ControlledValues)</BitLabel>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -190,7 +196,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive BitDropdown" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Responsive Dropdown" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">Using the IsResponsiveModeEnabled parameter, the drop down items will render in a side panel in small screen sizes.</div>
             <div>
@@ -204,7 +210,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dropdown with search box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="Dropdown with search-box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div>
                 <BitDropdown Label="Single-select Controlled with search box"

@@ -8,7 +8,7 @@
         .bit-chb-ctn {
             .bit-icon {
                 opacity: 1;
-                color: $color-action-hover-text-primary2;
+                color: $color-text-primary3;
             }
         }
     }
@@ -98,6 +98,7 @@
     border-style: $shape-border-style;
     border-width: $shape-border-width;
     border-radius: $shape-border-radius;
+    border-color: $color-border-primary2;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 
@@ -188,10 +189,9 @@
     }
 
     &:hover {
-
         .bit-chb-ctn {
-            border-color: $color-primary-darker;
-            background-color: $color-primary-darker;
+            border-color: $color-primary-dark;
+            background-color: $color-action-hover-primary;
 
             .bit-icon {
                 opacity: 1;

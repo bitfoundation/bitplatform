@@ -400,6 +400,12 @@ public partial class BitDropdownDemo
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
@@ -407,8 +413,8 @@ public partial class BitDropdownDemo
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
-                Text = "Banana",
-                Value = "f-ban",
+                Text = "Grape",
+                Value = "f-gra",
             },
             new()
             {
@@ -424,6 +430,18 @@ public partial class BitDropdownDemo
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Carrot",
+                Value = "v-car",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Lettuce",
+                Value = "v-let",
             }
         };
     }
@@ -489,35 +507,35 @@ public partial class BitDropdownDemo
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option a",
                 Value = "A",
-                Data = new { IconName = "Memo" }
+                Data = new DropdownItemData { IconName = "Memo" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option b",
                 Value = "B",
-                Data = new { IconName = "Print" }
+                Data = new DropdownItemData { IconName = "Print" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option c",
                 Value = "C",
-                Data = new { IconName = "ShoppingCart" }
+                Data = new DropdownItemData { IconName = "ShoppingCart" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option d",
                 Value = "D",
-                Data = new { IconName = "Train" }
+                Data = new DropdownItemData { IconName = "Train" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option e",
                 Value = "E",
-                Data = new { IconName = "Repair" }
+                Data = new DropdownItemData { IconName = "Repair" }
             },
             new()
             {
@@ -534,35 +552,35 @@ public partial class BitDropdownDemo
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option f",
                 Value = "F",
-                Data = new { IconName = "Running" }
+                Data = new DropdownItemData { IconName = "Running" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option g",
                 Value = "G",
-                Data = new { IconName = "EmojiNeutral" }
+                Data = new DropdownItemData { IconName = "EmojiNeutral" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option h",
                 Value = "H",
-                Data = new { IconName = "ChatInviteFriend" }
+                Data = new DropdownItemData { IconName = "ChatInviteFriend" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option i",
                 Value = "I",
-                Data = new { IconName = "SecurityGroup" }
+                Data = new DropdownItemData { IconName = "SecurityGroup" }
             },
             new()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Option j",
                 Value = "J",
-                Data = new { IconName = "AddGroup" }
+                Data = new DropdownItemData { IconName = "AddGroup" }
             }
         };
     }
@@ -883,35 +901,35 @@ private List<BitDropdownItem> GetCustomDropdownItems()
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option a"",
             Value = ""A"",
-            Data = new { IconName = ""Memo"" }
+            Data = new DropdownItemData { IconName = ""Memo"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option b"",
             Value = ""B"",
-            Data = new { IconName = ""Print"" }
+            Data = new DropdownItemData { IconName = ""Print"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option c"",
             Value = ""C"",
-            Data = new { IconName = ""ShoppingCart"" }
+            Data = new DropdownItemData { IconName = ""ShoppingCart"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option d"",
             Value = ""D"",
-            Data = new { IconName = ""Train"" }
+            Data = new DropdownItemData { IconName = ""Train"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option e"",
             Value = ""E"",
-            Data = new { IconName = ""Repair"" }
+            Data = new DropdownItemData { IconName = ""Repair"" }
         },
         new()
         {
@@ -928,35 +946,35 @@ private List<BitDropdownItem> GetCustomDropdownItems()
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option f"",
             Value = ""F"",
-            Data = new { IconName = ""Running"" }
+            Data = new DropdownItemData { IconName = ""Running"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option g"",
             Value = ""G"",
-            Data = new { IconName = ""EmojiNeutral"" }
+            Data = new DropdownItemData { IconName = ""EmojiNeutral"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option h"",
             Value = ""H"",
-            Data = new { IconName = ""ChatInviteFriend"" }
+            Data = new DropdownItemData { IconName = ""ChatInviteFriend"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option i"",
             Value = ""I"",
-            Data = new { IconName = ""SecurityGroup"" }
+            Data = new DropdownItemData { IconName = ""SecurityGroup"" }
         },
         new()
         {
             ItemType = BitDropdownItemType.Normal,
             Text = ""Option j"",
             Value = ""J"",
-            Data = new { IconName = ""AddGroup"" }
+            Data = new DropdownItemData { IconName = ""AddGroup"" }
         }
     };
 }";
