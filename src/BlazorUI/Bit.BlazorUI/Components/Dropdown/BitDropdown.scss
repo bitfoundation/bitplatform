@@ -1,0 +1,758 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-drp {
+    width: 100%;
+    position: relative;
+    font-family: $typography-font-family;
+
+    &.bit-inv {
+        .bit-drp-wrp {
+            &:hover,
+            &:active {
+                .bit-drp-txt-ctn {
+                    border-color: $color-state-invalid-hover;
+                }
+            }
+
+            &:focus::after {
+                border-color: $color-state-invalid-hover;
+            }
+
+            .bit-drp-txt-ctn {
+                border-color: $color-state-invalid;
+            }
+        }
+    }
+
+    &.bit-dis {
+        .bit-drp-wrp {
+            cursor: default;
+            background-color: $color-background-disabled;
+
+            .bit-drp-txt-ctn {
+                color: $color-text-disabled;
+                border-color: $color-border-disabled;
+            }
+
+            &:hover,
+            &:active {
+                .bit-drp-txt-ctn {
+                    color: $color-text-disabled;
+                    border-color: $color-border-disabled;
+                }
+            }
+
+            &:focus::after {
+                width: 0;
+                height: 0;
+                border: none;
+            }
+        }
+
+        .bit-drp-icn {
+            i:first-child {
+                color: $color-text-disabled;
+            }
+        }
+
+        .bit-drp-lbl {
+            color: $color-text-disabled;
+        }
+
+        &.bit-drp-hval {
+            .bit-drp-wrp {
+                .bit-drp-txt-ctn {
+                    color: $color-text-disabled;
+                }
+            }
+        }
+    }
+
+    &.bit-drp-hval {
+        .bit-drp-wrp {
+            .bit-drp-txt-ctn {
+                color: $color-text-primary;
+            }
+        }
+    }
+
+    &.bit-drp-rsp {
+        @media only screen and (max-width: #{639px}) {
+            .bit-drp-iwp {
+                height: 100%;
+                max-height: unset;
+                width: spacing(34);
+                box-shadow: $box-shadow-2;
+                padding: spacing(3) spacing(2.5);
+                animation-name: opacity, bit-drp-trans-x;
+            }
+
+            .bit-drp-rsp-lbl-ctn {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .bit-drp-ovl {
+                position: fixed;
+                cursor: pointer;
+                pointer-events: auto;
+                background: $color-background-transparent;
+            }
+        }
+    }
+
+    &.bit-drp-rtl {
+        direction: rtl;
+
+        .bit-drp-sb {
+            padding: spacing(0.125) spacing(1) spacing(0.125) 0;
+        }
+
+        .bit-drp-wrp {
+            .bit-drp-txt-ctn {
+                padding: 0 spacing(1) 0 spacing(3.5);
+            }
+        }
+
+        .bit-drp-icn {
+            right: unset;
+            left: spacing(1);
+        }
+
+        .bit-drp-cls {
+            margin-left: unset;
+            margin-right: auto;
+        }
+
+        &.bit-drp-rsp {
+            @media only screen and (max-width: #{639px}) {
+                .bit-drp-iwp {
+                    animation-name: fade-show, bit-drp-trans-x-reverse;
+                }
+            }
+        }
+    }
+
+    @keyframes bit-drp-trans-x {
+        0% {
+            pointer-events: none;
+            transform: translate3d(spacing(5), 0px, 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+
+    @keyframes bit-drp-trans-x-reverse {
+        0% {
+            pointer-events: none;
+            transform: translate3d(spacing(-5), 0px, 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+}
+
+.bit-drp-lbl {
+    margin: 0;
+    display: block;
+    font-weight: 600;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    color: $color-text-primary;
+}
+
+.bit-drp-txt-ctn {
+    margin: 0;
+    outline: none;
+    display: block;
+    overflow: hidden;
+    font-weight: 400;
+    height: spacing(4);
+    position: relative;
+    white-space: nowrap;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    line-height: spacing(3.75);
+    color: $color-text-primary3;
+    border-radius: spacing(0.25);
+    padding: 0 spacing(3.5) 0 spacing(1);
+    border: $shape-border-width $shape-border-style $color-border-primary2;
+}
+
+.bit-drp-icn {
+    cursor: pointer;
+    right: spacing(1);
+    position: absolute;
+    height: spacing(4);
+    top: spacing(0.125);
+    line-height: spacing(3.75);
+
+    i {
+        speak: none;
+        width: unset;
+        pointer-events: none;
+        display: inline-block;
+        font-size: spacing(1.5);
+        color: $color-text-primary3;
+    }
+}
+
+.bit-drp-wrp {
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    box-sizing: border-box;
+
+    &:hover {
+        .bit-drp-txt-ctn {
+            color: $color-action-hover-text-primary;
+            border: $shape-border-width $shape-border-style $color-action-hover-border-primary;
+        }
+
+        .bit-drp-icn i {
+            color: $color-action-hover-text-primary;
+        }
+    }
+
+    &:active {
+        .bit-drp-txt-ctn {
+            color: $color-action-active-text-primary;
+            border-color: $color-action-active-border-primary;
+        }
+
+        .bit-drp-icn {
+            i {
+                color: $color-action-active-text-primary;
+            }
+        }
+    }
+
+    &:focus {
+        .bit-drp-txt-ctn, .bit-drp-icn i {
+            color: $color-text-primary;
+        }
+    }
+
+    &:focus::after {
+        top: 0px;
+        left: 0px;
+        content: "";
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        pointer-events: none;
+        box-sizing: border-box;
+        border-radius: $shape-border-radius;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-drp-chb-wrp {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    align-items: center;
+    height: spacing(4.5);
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    line-height: spacing(2.5);
+    color: $color-text-primary;
+    background-color: transparent;
+    border: $shape-border-width $shape-border-style transparent;
+
+    &.bit-drp-sel {
+        background-color: $color-background-primary2;
+
+        &:hover {
+            background-color: $color-background-primary2;
+        }
+    }
+
+    .bit-drp-chb-ctn {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        gap: spacing(1);
+        cursor: pointer;
+        font-weight: 400;
+        user-select: none;
+        position: relative;
+        align-items: center;
+        font-size: spacing(1.75);
+    }
+
+    .bit-drp-chb {
+        display: flex;
+        overflow: hidden;
+        position: relative;
+        width: spacing(2.5);
+        align-items: center;
+        height: spacing(2.5);
+        box-sizing: border-box;
+        justify-content: center;
+        transition-duration: 200ms;
+        border-radius: spacing(0.25);
+        transition-property: background, border, border-color;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+        border: $shape-border-width $shape-border-style $color-border-primary2;
+
+        .bit-drp-chm {
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: 0.1s;
+            align-items: center;
+            justify-content: center;
+            font-size: spacing(1.375);
+            color: $color-text-primary;
+            font-family: $typography-font-family-icons;
+        }
+    }
+
+    .bit-drp-txt {
+        line-height: spacing(2.5);
+        color: $color-text-primary;
+    }
+
+    &.bit-drp-idis {
+        cursor: default;
+
+        .bit-drp-chb {
+            border-color: $color-text-disabled;
+        }
+
+        .bit-drp-txt {
+            color: $color-text-disabled;
+        }
+    }
+
+    &:hover {
+        .bit-drp-chm {
+            opacity: 1;
+            color: $color-action-hover-text-primary;
+        }
+
+        &.bit-drp-idis {
+            .bit-drp-chm {
+                opacity: 0;
+                color: $color-text-disabled;
+            }
+        }
+    }
+
+    &.bit-drp-chd {
+        .bit-drp-chb {
+            border-color: $color-primary-main;
+            background-color: $color-primary-main;
+
+            .bit-drp-chm {
+                opacity: 1;
+                color: $color-text-primary;
+            }
+        }
+
+        &:hover {
+            .bit-drp-chb {
+                border-color: $color-action-hover-primary;
+                background-color: $color-action-hover-primary;
+
+                .bit-drp-chm {
+                    color: $color-action-hover-text-primary;
+                }
+            }
+        }
+    }
+
+    &.bit-dis {
+        pointer-events: none;
+
+        .bit-drp-chb-ctn {
+            cursor: default;
+        }
+
+        .bit-drp-chb {
+            border-color: $color-neutrals-gray60;
+            background-color: $color-background-primary;
+
+            .bit-drp-chm {
+                opacity: 1;
+                color: $color-neutrals-white;
+                background-color: $color-background-primary;
+            }
+        }
+
+        .bit-drp-txt {
+            color: $color-neutrals-gray60;
+        }
+
+        &:hover {
+            .bit-drp-chb {
+                border-color: $color-neutrals-gray60;
+
+                .bit-drp-chm {
+                    opacity: 0;
+                }
+            }
+        }
+
+        &.bit-drp-chd {
+            .bit-drp-chb {
+                border-color: $color-neutrals-gray60;
+                background-color: $color-neutrals-gray60;
+
+                .bit-drp-chm {
+                    color: $color-neutrals-white;
+                    background-color: $color-neutrals-gray60;
+                    opacity: 1;
+                }
+            }
+
+            &:hover {
+                .bit-drp-chb {
+                    border-color: $color-neutrals-gray60;
+                    background-color: $color-neutrals-gray60;
+
+                    .bit-drp-chm {
+                        color: $color-neutrals-white;
+                        background-color: $color-neutrals-gray60;
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.bit-drp-sb {
+    margin: 0;
+    display: flex;
+    box-shadow: none;
+    font-weight: 400;
+    border-radius: 0;
+    height: spacing(4);
+    align-items: stretch;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    color: $color-text-primary;
+    border-style: $shape-border-style;
+    border-color: $color-border-primary2;
+    font-family: $typography-font-family;
+    border-width: 0 0 $shape-border-width;
+    background-color: $color-background-primary;
+    padding: spacing(0.125) 0 spacing(0.125) spacing(1);
+
+    &:hover {
+        border-color: $color-action-hover-border-primary2;
+
+        .bit-drp-sic {
+            i {
+                color: $color-primary-darker;
+            }
+        }
+    }
+
+    &.bit-drp-shv {
+        &:hover {
+            .bit-drp-sic {
+                width: spacing(0.5);
+                color: $color-primary-darker;
+
+                i {
+                    opacity: 0;
+                    color: $color-primary-darker;
+                }
+            }
+        }
+    }
+
+    &.bit-drp-sfo {
+        border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
+
+        .bit-drp-sic {
+            width: spacing(0.5);
+            color: $color-primary-darker;
+
+            i {
+                opacity: 0;
+                color: $color-primary-darker;
+            }
+        }
+
+        &:hover {
+            border-width: 0 0 $shape-border-width;
+            border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
+        }
+    }
+}
+
+.bit-drp-sic {
+    cursor: text;
+    display: flex;
+    flex-shrink: 0;
+    width: spacing(4);
+    text-align: center;
+    font-size: spacing(2);
+    flex-direction: column;
+    justify-content: center;
+    color: $color-general-blue;
+    transition: width 0.167s ease 0s;
+
+    i {
+        opacity: 1;
+        speak: none;
+        width: unset;
+        height: unset;
+        display: inline-block;
+        color: $color-general-blue;
+        transition: opacity 0.167s ease 0s;
+    }
+}
+
+.bit-drp-sin {
+    margin: 0;
+    border: none;
+    outline: none;
+    flex: 1 1 0px;
+    min-width: 0px;
+    overflow: hidden;
+    box-shadow: none;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    color: $color-text-primary;
+    padding: 0 0 spacing(0.0625);
+    background-color: transparent;
+}
+
+.bit-drp-sbcc {
+    padding: 0;
+    display: flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    flex-direction: row;
+    align-items: stretch;
+    flex-basis: spacing(4);
+    margin: spacing(-0.125) 0;
+
+    &:hover {
+        .bit-drp-sbc {
+            background-color: $color-background-secondary;
+
+            i {
+                color: $color-text-primary;
+            }
+        }
+    }
+}
+
+.bit-drp-sbc {
+    height: auto;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    user-select: none;
+    position: relative;
+    text-align: center;
+    outline: transparent;
+    display: inline-block;
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    color: $color-general-blue;
+    background-color: transparent;
+    font-family: $typography-font-family;
+    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+
+    span {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    i {
+        width: unset;
+        flex-shrink: 0;
+        height: spacing(2);
+        text-align: center;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.5);
+        line-height: spacing(2);
+        color: $color-text-primary2;
+    }
+}
+
+.bit-drp-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    background-color: transparent;
+    z-index: $space-overlay-zindex0;
+}
+
+.bit-drp-clr {
+    display: flex;
+    right: spacing(3.5);
+    width: spacing(3.75);
+    height: spacing(3.75);
+    justify-content: center;
+
+    &:hover {
+        background-color: $color-background-secondary2;
+    }
+}
+
+.bit-drp-iwp {
+    display: none;
+    position: fixed;
+    font-weight: 400;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    box-shadow: $box-shadow-4;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    z-index: $space-overlay-zindex1;
+    background-color: $color-background-primary;
+    animation-name: bit-fade-show, bit-slide-down;
+    border-radius: 0 0 spacing(0.25) spacing(0.25);
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.bit-drp-scr-wrp {
+    height: 100%;
+    overflow: hidden auto;
+    max-height: spacing(88.875);
+}
+
+.bit-drp-ihdr {
+    width: 100%;
+    cursor: default;
+    font-weight: 600;
+    user-select: none;
+    height: spacing(4.5);
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    font-size: spacing(1.875);
+    line-height: spacing(4.5);
+    color: $color-primary-main;
+    background: none transparent;
+}
+
+.bit-drp-itm {
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    text-align: left;
+    font-weight: 400;
+    user-select: none;
+    position: relative;
+    white-space: nowrap;
+    align-items: center;
+    height: spacing(4.5);
+    outline: transparent;
+    padding: 0 spacing(1);
+    text-decoration: none;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.875);
+    line-height: spacing(2.5);
+    background-color: transparent;
+    color: $color-text-primary;
+    border: $shape-border-width $shape-border-style transparent;
+
+    &:hover {
+        background-color: $color-action-hover-background-primary;
+    }
+}
+
+.bit-drp-itm[disabled] {
+    cursor: default;
+    color: $color-text-disabled;
+
+    &:hover {
+        background-color: transparent;
+    }
+}
+
+.bit-drp-sel {
+    background-color: $color-background-primary2;
+
+    &:hover {
+        background-color: $color-background-primary2;
+    }
+}
+
+.bit-drp-idiv {
+    width: 100%;
+    height: spacing(0.125);
+    background-color: $color-background-primary3;
+}
+
+.bit-drp-cls {
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    margin-left: auto;
+    height: spacing(4);
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    color: $color-text-primary2;
+    border-radius: spacing(0.25);
+    background-color: transparent;
+
+    span {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            margin: 0 spacing(0.5);
+        }
+    }
+
+    &:hover {
+        color: $color-action-hover-text-primary;
+        background-color: $color-action-hover-background-primary;
+    }
+
+    &:active {
+        color: $color-action-active-text-primary2;
+        background-color: $color-action-hover-background-primary2;
+    }
+}
+
+.bit-drp-rsp-lbl-ctn {
+    width: 100%;
+    display: none;
+}

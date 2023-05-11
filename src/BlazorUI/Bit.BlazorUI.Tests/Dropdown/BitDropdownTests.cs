@@ -5,36 +5,36 @@ using System.Text;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Inputs;
+namespace Bit.BlazorUI.Tests.Dropdown;
 
 [TestClass]
-public class BitDropDownTests : BunitTestContext
+public class BitDropdownTests : BunitTestContext
 {
-    private string BitDropDownValue;
-    private List<string> BitDropDownValues;
+    private string _bitDropdownValue;
+    private List<string> _bitDropdownValues;
 
     [DataTestMethod,
       DataRow(true),
       DataRow(false)
     ]
-    public void BitDropDownTest(bool isEnabled)
+    public void BitDropdownTest(bool isEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitDropDown = component.Find(".bit-drp");
+        var bitDropdown = component.Find(".bit-drp");
 
         if (isEnabled)
         {
-            Assert.IsFalse(bitDropDown.ClassList.Contains("bit-dis"));
+            Assert.IsFalse(bitDropdown.ClassList.Contains("bit-dis"));
         }
         else
         {
-            Assert.IsTrue(bitDropDown.ClassList.Contains("bit-dis"));
+            Assert.IsTrue(bitDropdown.ClassList.Contains("bit-dis"));
         }
     }
 
@@ -42,20 +42,20 @@ public class BitDropDownTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void ResponsiveDropDownShouldTakeCorrectClassNameAndRenderElements(bool isResponsiveModeEnabled)
+    public void ResponsiveDropdownShouldTakeCorrectClassNameAndRenderElements(bool isResponsiveModeEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
         });
 
-        var bitDropDown = component.Find(".bit-drp");
+        var bitDropdown = component.Find(".bit-drp");
 
         if (isResponsiveModeEnabled)
         {
-            Assert.IsTrue(bitDropDown.ClassList.Contains("bit-drp-rsp"));
+            Assert.IsTrue(bitDropdown.ClassList.Contains("bit-drp-rsp"));
 
             var lblContainer = component.Find(".bit-drp-rsp-lbl-ctn");
             Assert.IsNotNull(lblContainer);
@@ -70,11 +70,11 @@ public class BitDropDownTests : BunitTestContext
       DataRow(null),
       DataRow("BitDrop")
     ]
-    public void ResponsiveDropDownShouldRenderLabel(string labelFragment)
+    public void ResponsiveDropdownShouldRenderLabel(string labelFragment)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsResponsiveModeEnabled, true);
             parameters.Add(p => p.Label, labelFragment);
@@ -94,11 +94,11 @@ public class BitDropDownTests : BunitTestContext
       DataRow(null),
       DataRow("<div>This is labelFragment</div>"),
     ]
-    public void ResponsiveDropDownShouldRenderLabelFragment(string labelFragment)
+    public void ResponsiveDropdownShouldRenderLabelFragment(string labelFragment)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsResponsiveModeEnabled, true);
 
@@ -123,11 +123,11 @@ public class BitDropDownTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitDropDownOnClickShouldWorkCorrect(bool isEnabled)
+    public void BitDropdownOnClickShouldWorkCorrect(bool isEnabled)
     {
         var clicked = false;
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.OnClick, () => clicked = true);
@@ -143,24 +143,24 @@ public class BitDropDownTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitDropDownIsMultiSelectShouldWorkCorrect(bool isMultiSelect)
+    public void BitDropdownIsMultiSelectShouldWorkCorrect(bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
 
         var items = GetDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
 
-        var bitDropDown = component.Find(".bit-drp");
+        var bitDropdown = component.Find(".bit-drp");
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
         }
         else
         {
@@ -172,12 +172,12 @@ public class BitDropDownTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitDropDownItemsShouldRenderCorrect(bool isMultiSelect)
+    public void BitDropdownItemsShouldRenderCorrect(bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
         var items = GetDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
@@ -185,16 +185,16 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
 
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Header).Count, component.FindAll(".bit-drp-ihdr").Count);
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Divider).Count, component.FindAll(".bit-drp-idiv").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihdr").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Divider).Count, component.FindAll(".bit-drp-idiv").Count);
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
         }
         else
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropDownItemType.Normal).Count, component.FindAll(".bit-drp-itm").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-itm").Count);
         }
     }
 
@@ -202,19 +202,19 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban"),
       DataRow("f-app")
     ]
-    public void BitDropDownTextWithDefaultValueShouldInitCorrect(string defaultValue)
+    public void BitDropdownTextWithDefaultValueShouldInitCorrect(string defaultValue)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
         var textSpan = component.Find(".bit-drp-txt-ctn");
-        var expectedText = items.Find(i => i.Value == defaultValue && i.ItemType == BitDropDownItemType.Normal).Text;
+        var expectedText = items.Find(i => i.Value == defaultValue && i.ItemType == BitDropdownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
@@ -223,13 +223,13 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban"),
       DataRow("f-app,f-ban")
     ]
-    public void BitDropDownTextWithDefaultValuesShouldInitCorrect(string defaultValues)
+    public void BitDropdownTextWithDefaultValuesShouldInitCorrect(string defaultValues)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToList();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, true);
@@ -237,12 +237,12 @@ public class BitDropDownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-txt-ctn");
-        var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+        var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
         var expectedText = "";
 
         defaultSelectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
+            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
             {
                 if (expectedText.HasValue())
                 {
@@ -260,12 +260,12 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban", "f-app"),
       DataRow("f-app", null)
     ]
-    public void BitDropDownTextWithValueShouldInitCorrect(string value, string defaultValue)
+    public void BitDropdownTextWithValueShouldInitCorrect(string value, string defaultValue)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.DefaultValue, defaultValue);
@@ -273,7 +273,7 @@ public class BitDropDownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-txt-ctn");
-        var expectedText = items.Find(i => i.Value == value && i.ItemType == BitDropDownItemType.Normal).Text;
+        var expectedText = items.Find(i => i.Value == value && i.ItemType == BitDropdownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
@@ -282,12 +282,12 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban", "f-app,f-ban"),
       DataRow("f-app,f-ban", "f-ban")
     ]
-    public void BitDropDownTextWithValuesAndDefaultValuesShouldInitCorrect(string defaultValues, string values)
+    public void BitDropdownTextWithValuesAndDefaultValuesShouldInitCorrect(string defaultValues, string values)
     {
         var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToList();
         var selectedMultipleValueList = values.Split(",").ToList();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, true);
@@ -296,12 +296,12 @@ public class BitDropDownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-txt-ctn");
-        var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+        var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
         var expectedText = new StringBuilder();
 
         selectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropDownItemType.Normal)
+            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
             {
                 if (expectedText.Length > 0)
                 {
@@ -321,13 +321,13 @@ public class BitDropDownTests : BunitTestContext
       DataRow("f-ban", null, false, "Select option"),
       DataRow(null, null, false, "Select option")
     ]
-    public void BitDropDownPlaceholderShouldWorkCorrect(string value, string values, bool isMultiSelect, string placeholder)
+    public void BitDropdownPlaceholderShouldWorkCorrect(string value, string values, bool isMultiSelect, string placeholder)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
         var selectedMultipleValueList = values is not null ? values.Split(",").ToList() : new List<string>();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
@@ -343,7 +343,7 @@ public class BitDropDownTests : BunitTestContext
         {
             if (values is not null)
             {
-                var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropDownItemType.Normal);
+                var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
                 selectedItems.ForEach(item =>
                 {
                     if (expectedText.Length > 0)
@@ -378,11 +378,11 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Drop down"),
         DataRow(null)
     ]
-    public void BitDropDownLabelShouldWorkCorrect(string label)
+    public void BitDropdownLabelShouldWorkCorrect(string label)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Label, label);
         });
@@ -400,11 +400,11 @@ public class BitDropDownTests : BunitTestContext
     [DataTestMethod,
         DataRow("<div>This is labelFragment</div>")
     ]
-    public void BitDropDownLabelFragmentTest(string labelFragment)
+    public void BitDropdownLabelFragmentTest(string labelFragment)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.LabelTemplate, labelFragment);
         });
@@ -417,11 +417,11 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Drop Down"),
         DataRow(null)
     ]
-    public void BitDropDownTitleTest(string title)
+    public void BitDropdownTitleTest(string title)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Title, title);
         });
@@ -435,14 +435,14 @@ public class BitDropDownTests : BunitTestContext
         DataRow(true, "f-app"),
         DataRow(false, "f-app"),
     ]
-    public void BitDropDownNotifyOnReselectShouldWorkCorrect(bool notifyOnReselect, string defaultValue)
+    public void BitDropdownNotifyOnReselectShouldWorkCorrect(bool notifyOnReselect, string defaultValue)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var items = GetRawDropdownItems();
         var itemSelected = false;
         var isOpen = true;
 
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsOpen, isOpen);
@@ -466,18 +466,18 @@ public class BitDropDownTests : BunitTestContext
         DataRow(true, false),
         DataRow(false, false)
     ]
-    public void BitDropDownEnableItemSelectionShouldWorkCorrect(bool itemIsEnabled, bool isMultiSelect)
+    public void BitDropdownEnableItemSelectionShouldWorkCorrect(bool itemIsEnabled, bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var itemsSelected = 0;
         var isOpen = true;
 
-        var items = new List<BitDropDownItem>()
+        var items = new List<BitDropdownItem>()
         {
             new() { Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
             new() { Value = "Banana", Text = "f-ban", IsEnabled = itemIsEnabled }
         };
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsOpen, isOpen);
@@ -509,20 +509,20 @@ public class BitDropDownTests : BunitTestContext
         DataRow("f-ora"),
         DataRow("v-bro")
     ]
-    public void BitDropDownTwoWayBoundWithCustomHandlerShouldWorkCorrect(string value)
+    public void BitDropdownTwoWayBoundWithCustomHandlerShouldWorkCorrect(string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        BitDropDownValue = value;
+        _bitDropdownValue = value;
         var isOpen = true;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.Value, BitDropDownValue);
+            parameters.Add(p => p.Value, _bitDropdownValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
         });
 
@@ -531,29 +531,29 @@ public class BitDropDownTests : BunitTestContext
 
         var expectedValue = items[3].Value;
 
-        Assert.AreEqual(expectedValue, BitDropDownValue);
+        Assert.AreEqual(expectedValue, _bitDropdownValue);
     }
 
     [DataTestMethod,
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
     ]
-    public void BitDropDownMultiSelectTwoWayBoundWithCustomHandlerShouldWorkCorrect(string values)
+    public void BitDropdownMultiSelectTwoWayBoundWithCustomHandlerShouldWorkCorrect(string values)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
 
-        BitDropDownValues = values.Split(",").ToList();
-        var initialValuesCount = BitDropDownValues.Count;
+        _bitDropdownValues = values.Split(",").ToList();
+        var initialValuesCount = _bitDropdownValues.Count;
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.Values, BitDropDownValues);
+            parameters.Add(p => p.Values, _bitDropdownValues);
             parameters.Add(p => p.ValuesChanged, HandleValuesChanged);
         });
 
@@ -570,7 +570,7 @@ public class BitDropDownTests : BunitTestContext
             expectedResult = initialValuesCount + 1;
         }
 
-        Assert.AreEqual(expectedResult, BitDropDownValues.Count);
+        Assert.AreEqual(expectedResult, _bitDropdownValues.Count);
     }
 
     [DataTestMethod,
@@ -579,14 +579,14 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Banana", "f-ban"),
         DataRow("Broccoli", "v-bro")
     ]
-    public void BitDropDownTwoWayBoundWithForSelectedItem(string text, string value)
+    public void BitDropdownTwoWayBoundWithForSelectedItem(string text, string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        BitDropDownItem? selectedItem = null;
+        BitDropdownItem? selectedItem = null;
         var isOpen = true;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
@@ -610,14 +610,14 @@ public class BitDropDownTests : BunitTestContext
         DataRow("Orange", "f-ora"),
         DataRow("Orange,Apple,Banana", "f-ora,f-app,f-ban")
     ]
-    public void BitDropDownMultiSelectTwoWayBoundForSelectedItems(string text, string value)
+    public void BitDropdownMultiSelectTwoWayBoundForSelectedItems(string text, string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        List<BitDropDownItem>? selectedItems = null;
+        List<BitDropdownItem>? selectedItems = null;
         var isOpen = true;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
@@ -648,17 +648,17 @@ public class BitDropDownTests : BunitTestContext
         DataRow(null),
         DataRow("f-ora")
     ]
-    public void BitDropDownValidationFormTest(string value)
+    public void BitDropdownValidationFormTest(string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDownValidationTest>(parameters =>
+        var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, false);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.TestModel, new BitDropDownTestModel { Value = value });
+            parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
         });
 
         var isValid = value.HasValue();
@@ -692,21 +692,21 @@ public class BitDropDownTests : BunitTestContext
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
     ]
-    public void BitDropDownMultiSelectValidationFormTest(string values)
+    public void BitDropdownMultiSelectValidationFormTest(string values)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        BitDropDownValues = values.HasValue() ? values.Split(",").ToList() : null;
+        _bitDropdownValues = values.HasValue() ? values.Split(",").ToList() : null;
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDownMultiSelectValidationTest>(parameters =>
+        var component = RenderComponent<BitDropdownMultiSelectValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.TestModel, new BitDropDownMultiSelectTestModel { Values = BitDropDownValues });
+            parameters.Add(p => p.TestModel, new BitDropdownMultiSelectTestModel { Values = _bitDropdownValues });
         });
 
-        var isValid = (BitDropDownValues?.Count ?? 0) == 2;
+        var isValid = (_bitDropdownValues?.Count ?? 0) == 2;
 
         var form = component.Find("form");
         form.Submit();
@@ -740,17 +740,17 @@ public class BitDropDownTests : BunitTestContext
         DataRow(null),
         DataRow("f-ora")
     ]
-    public void BitDropDownValidationInvalidHtmlAttributeTest(string value)
+    public void BitDropdownValidationInvalidHtmlAttributeTest(string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDownValidationTest>(parameters =>
+        var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, false);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.TestModel, new BitDropDownTestModel { Value = value });
+            parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
         });
 
         var isInvalid = value.HasNoValue();
@@ -786,21 +786,21 @@ public class BitDropDownTests : BunitTestContext
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
     ]
-    public void BitDropDownMultiSelectValidationInvalidHtmlAttributeTest(string values)
+    public void BitDropdownMultiSelectValidationInvalidHtmlAttributeTest(string values)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        BitDropDownValues = values.HasValue() ? values.Split(",").ToList() : null;
+        _bitDropdownValues = values.HasValue() ? values.Split(",").ToList() : null;
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDownMultiSelectValidationTest>(parameters =>
+        var component = RenderComponent<BitDropdownMultiSelectValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.TestModel, new BitDropDownMultiSelectTestModel { Values = BitDropDownValues });
+            parameters.Add(p => p.TestModel, new BitDropdownMultiSelectTestModel { Values = _bitDropdownValues });
         });
 
-        var isInvalid = (BitDropDownValues?.Count ?? 0) != 2;
+        var isInvalid = (_bitDropdownValues?.Count ?? 0) != 2;
 
         var selectTag = component.Find("select");
         Assert.IsFalse(selectTag.HasAttribute("aria-invalid"));
@@ -838,28 +838,28 @@ public class BitDropDownTests : BunitTestContext
         DataRow(null),
         DataRow("f-ora")
     ]
-    public void BitDropDownValidationInvalidCssClassTest(string value)
+    public void BitDropdownValidationInvalidCssClassTest(string value)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDownValidationTest>(parameters =>
+        var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.TestModel, new BitDropDownTestModel { Value = value });
+            parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
         });
 
         var isInvalid = value.HasNoValue();
 
-        var bitDropDown = component.Find(".bit-drp");
+        var bitDropdown = component.Find(".bit-drp");
 
-        Assert.IsFalse(bitDropDown.ClassList.Contains("bit-inv"));
+        Assert.IsFalse(bitDropdown.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(bitDropDown.ClassList.Contains("bit-inv"), isInvalid);
+        Assert.AreEqual(bitDropdown.ClassList.Contains("bit-inv"), isInvalid);
 
         if (isInvalid)
         {
@@ -872,7 +872,7 @@ public class BitDropDownTests : BunitTestContext
             drpItems[0].Click();
         }
 
-        Assert.IsFalse(bitDropDown.ClassList.Contains("bit-inv"));
+        Assert.IsFalse(bitDropdown.ClassList.Contains("bit-inv"));
     }
 
     [DataTestMethod,
@@ -881,12 +881,12 @@ public class BitDropDownTests : BunitTestContext
         DataRow(false, null),
         DataRow(false, "Search items")
     ]
-    public void BitDropDownShowSearchBoxTest(bool showSearchBox, string searchBoxPlaceholder)
+    public void BitDropdownShowSearchBoxTest(bool showSearchBox, string searchBoxPlaceholder)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.ShowSearchBox, showSearchBox);
@@ -894,8 +894,8 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrp");
-        bitDropDown.Click();
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
 
         var searchBox = component.FindAll(".bit-drp-iwp .bit-drp-sb");
         if (showSearchBox)
@@ -919,12 +919,12 @@ public class BitDropDownTests : BunitTestContext
         DataRow(null, true),
         DataRow("app", true)
     ]
-    public void BitDropDownSearchItemTest(string search, bool isMultiSelect)
+    public void BitDropdownSearchItemTest(string search, bool isMultiSelect)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var items = GetRawDropdownItems();
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.ShowSearchBox, true);
@@ -932,8 +932,8 @@ public class BitDropDownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrp");
-        bitDropDown.Click();
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb-wrp" : ".bit-drp-itm", true);
 
@@ -973,12 +973,12 @@ public class BitDropDownTests : BunitTestContext
         DataRow(true, null, 4, true),
         DataRow(true, 3_000_000, 4, true)
     ]
-    public void BitDropDownVirtualizeTest(bool virtualize, int? itemSize, int? overscanCount, bool isMultiSelect)
+    public void BitDropdownVirtualizeTest(bool virtualize, int? itemSize, int? overscanCount, bool isMultiSelect)
     {
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
         var items = GetRawDropdownItems(500);
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Virtualize, virtualize);
@@ -996,8 +996,8 @@ public class BitDropDownTests : BunitTestContext
             }
         });
 
-        var bitDropDown = component.Find(".bit-drp-wrp");
-        bitDropDown.Click();
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb-wrp" : ".bit-drp-itm");
         var actualRenderedItemCount = drpItems.Count;
@@ -1028,9 +1028,9 @@ public class BitDropDownTests : BunitTestContext
         DataRow(BitIconName.ChevronUp),
         DataRow(null)
     ]
-    public void BitDropDownCaretDownIconNameTest(BitIconName? iconName)
+    public void BitDropdownCaretDownIconNameTest(BitIconName? iconName)
     {
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             if (iconName.HasValue)
             {
@@ -1052,9 +1052,9 @@ public class BitDropDownTests : BunitTestContext
         DataRow("<i>This is CaretDownFragment</div>"),
         DataRow(null)
     ]
-    public void BitDropDownCaretDownFragmentTest(string iconFragment)
+    public void BitDropdownCaretDownFragmentTest(string iconFragment)
     {
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             if (string.IsNullOrEmpty(iconFragment) is false)
             {
@@ -1077,9 +1077,9 @@ public class BitDropDownTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitDropDownIsRtlTest(bool isRtl)
+    public void BitDropdownIsRtlTest(bool isRtl)
     {
-        var component = RenderComponent<BitDropDown>(parameters =>
+        var component = RenderComponent<BitDropdown>(parameters =>
         {
             parameters.Add(p => p.IsRtl, isRtl);
         });
@@ -1098,95 +1098,95 @@ public class BitDropDownTests : BunitTestContext
 
     private void HandleValueChanged(string value)
     {
-        BitDropDownValue = value;
+        _bitDropdownValue = value;
     }
 
     private void HandleValuesChanged(List<string> values)
     {
-        BitDropDownValues = values;
+        _bitDropdownValues = values;
     }
 
-    private List<BitDropDownItem> GetDropdownItems()
+    private List<BitDropdownItem> GetDropdownItems()
     {
         return new()
         {
             new()
             {
-                ItemType = BitDropDownItemType.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Fruits"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             },
             new()
             {
-                ItemType = BitDropDownItemType.Divider,
+                ItemType = BitDropdownItemType.Divider,
             },
             new()
             {
-                ItemType = BitDropDownItemType.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Vegetables"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             }
         };
     }
 
-    private List<BitDropDownItem> GetRawDropdownItems()
+    private List<BitDropdownItem> GetRawDropdownItems()
     {
         return new()
         {
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro"
             }
         };
     }
 
-    private List<BitDropDownItem> GetRawDropdownItems(int count)
+    private List<BitDropdownItem> GetRawDropdownItems(int count)
     {
-        return Enumerable.Range(1, count).Select(item => new BitDropDownItem
+        return Enumerable.Range(1, count).Select(item => new BitDropdownItem
         {
-            ItemType = BitDropDownItemType.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Value = item.ToString(),
             Text = $"Item {item}"
         }).ToList();

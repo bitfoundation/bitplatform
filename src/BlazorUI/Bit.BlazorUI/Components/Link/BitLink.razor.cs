@@ -35,7 +35,7 @@ public partial class BitLink
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => HasUnderline ? "underlined" : string.Empty);
+        ClassBuilder.Register(() => HasUnderline ? $"{RootElementClass}-und" : string.Empty);
     }
 
     protected virtual async Task HandleClick(MouseEventArgs e)

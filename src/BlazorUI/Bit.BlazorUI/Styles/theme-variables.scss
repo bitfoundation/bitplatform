@@ -28,33 +28,49 @@ $color-background-secondary: var(--bit-clr-bg-secondary);
 $color-background-secondary2: var(--bit-clr-bg-secondary2);
 $color-background-secondary3: var(--bit-clr-bg-secondary3);
 $color-background-disabled: var(--bit-clr-bg-disabled);
+$color-background-transparent: var(--bit-clr-bg-transparent);
+//borders
+$color-border-primary: var(--bit-clr-brd-primary);
+$color-border-primary2: var(--bit-clr-brd-primary2);
+$color-border-secondary: var(--bit-clr-brd-secondary);
+$color-border-secondary2: var(--bit-clr-brd-secondary2);
+$color-border-disabled: var(--bit-clr-brd-disabled);
 
 //actions
 $color-action-hover-primary: var(--bit-clr-act-hover-pri);
-$color-action-hover-primary2: var(--bit-clr-act-hover-pri2);
-$color-action-hover-secondary: var(--bit-clr-act-hover-sec);
-$color-action-hover-secondary2: var(--bit-clr-act-hover-sec2);
 $color-action-active-primary: var(--bit-clr-act-active-pri);
+$color-action-hover-primary2: var(--bit-clr-act-hover-pri2);
 $color-action-active-primary2: var(--bit-clr-act-active-pri2);
+$color-action-hover-secondary: var(--bit-clr-act-hover-sec);
 $color-action-active-secondary: var(--bit-clr-act-active-sec);
+$color-action-hover-secondary2: var(--bit-clr-act-hover-sec2);
 $color-action-active-secondary2: var(--bit-clr-act-active-sec2);
-
+//actions-texts
 $color-action-hover-text-primary: var(--bit-clr-act-hover-txt-pri);
-$color-action-hover-text-primary2: var(--bit-clr-act-hover-txt-pri2);
-$color-action-hover-text-secondary: var(--bit-clr-act-hover-txt-sec);
-$color-action-hover-text-secondary2: var(--bit-clr-act-hover-txt-sec2);
 $color-action-active-text-primary: var(--bit-clr-act-active-txt-pri);
+$color-action-hover-text-primary2: var(--bit-clr-act-hover-txt-pri2);
 $color-action-active-text-primary2: var(--bit-clr-act-active-txt-pri2);
+$color-action-hover-text-secondary: var(--bit-clr-act-hover-txt-sec);
 $color-action-active-text-secondary: var(--bit-clr-act-active-txt-sec);
+$color-action-hover-text-secondary2: var(--bit-clr-act-hover-txt-sec2);
 $color-action-active-text-secondary2: var(--bit-clr-act-active-txt-sec2);
-
+//actions-backgrounds
+$color-action-hover-background-primary: var(--bit-clr-act-hover-bg-pri);
+$color-action-active-background-primary: var(--bit-clr-act-active-bg-pri);
+$color-action-hover-background-primary2: var(--bit-clr-act-hover-bg-pri2);
+$color-action-active-background-primary2: var(--bit-clr-act-active-bg-pri2);
+$color-action-hover-background-secondary: var(--bit-clr-act-hover-bg-sec);
+$color-action-active-background-secondary: var(--bit-clr-act-active-bg-sec);
+$color-action-hover-background-secondary2: var(--bit-clr-act-hover-bg-sec2);
+$color-action-active-background-secondary2: var(--bit-clr-act-active-bg-sec2);
+//actions-borders
 $color-action-hover-border-primary: var(--bit-clr-act-hover-brd-pri);
-$color-action-hover-border-primary2: var(--bit-clr-act-hover-brd-pri2);
-$color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
-$color-action-hover-border-secondary2: var(--bit-clr-act-hover-brd-sec2);
 $color-action-active-border-primary: var(--bit-clr-act-active-brd-pri);
+$color-action-hover-border-primary2: var(--bit-clr-act-hover-brd-pri2);
 $color-action-active-border-primary2: var(--bit-clr-act-active-brd-pri2);
+$color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
 $color-action-active-border-secondary: var(--bit-clr-act-active-brd-sec);
+$color-action-hover-border-secondary2: var(--bit-clr-act-hover-brd-sec2);
 $color-action-active-border-secondary2: var(--bit-clr-act-active-brd-sec2);
 
 //states
@@ -69,13 +85,6 @@ $color-state-success-bg: var(--bit-clr-sta-success-bg);
 $color-state-success-dark: var(--bit-clr-sta-success-dark);
 $color-state-warning-bg: var(--bit-clr-sta-warning-bg);
 $color-state-warning-dark: var(--bit-clr-sta-warning-dark);
-
-//borders
-$color-border-primary: var(--bit-clr-brd-primary);
-$color-border-primary2: var(--bit-clr-brd-primary2);
-$color-border-secondary: var(--bit-clr-brd-secondary);
-$color-border-secondary2: var(--bit-clr-brd-secondary2);
-$color-border-disabled: var(--bit-clr-brd-disabled);
 
 //generals
 $color-general-red: var(--bit-clr-gnr-red);

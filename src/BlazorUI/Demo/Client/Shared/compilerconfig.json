@@ -188,8 +188,8 @@
         "inputFile": "Pages/Components/Rating/BitRatingDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
-        "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
+        "outputFile": "Pages/Components/Dropdown/BitDropdownDemo.razor.css",
+        "inputFile": "Pages/Components/Dropdown/BitDropdownDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",

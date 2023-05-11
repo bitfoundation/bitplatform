@@ -26,8 +26,8 @@
 }
 
 .bit-mnb-pri {
-    color: $color-text-secondary;
-    border-color: $color-border-primary;
+    color: $color-secondary-main;
+    border-color: $color-primary-main;
     background-color: $color-primary-main;
 
     &:hover {
@@ -43,17 +43,15 @@
 
 .bit-mnb-std {
     color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
+    border-color: $color-border-primary2;
+    background-color: $color-background-primary;
 
     &:hover {
-        background-color: $color-action-hover-secondary;
-        border-color: $color-action-hover-border-secondary;
+        background-color: $color-action-hover-background-primary;
     }
 
     &:active, &.bit-mnb-omn {
-        background-color: $color-action-active-secondary;
-        border-color: $color-action-active-border-secondary;
+        background-color: $color-action-active-background-primary;
     }
 }
 
@@ -98,11 +96,11 @@
     overflow: hidden auto;
     box-sizing: border-box;
     min-width: spacing(22.5);
+    box-shadow: $box-shadow-4;
     background-color: $color-background-primary;
     transform: translate3d(0, spacing(-1.25), 0);
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     transition: opacity 100ms, transform 300ms, pointer-events 300ms;
-    box-shadow: $box-shadow-4;
 
     ul {
         margin: 0;

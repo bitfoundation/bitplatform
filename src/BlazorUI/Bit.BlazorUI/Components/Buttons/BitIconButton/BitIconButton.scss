@@ -14,13 +14,13 @@
     font-weight: $typography-font-weight;
 
     &:hover {
-        color: $color-action-hover-text-primary;
-        background-color: $color-action-hover-secondary;
+        color: $color-action-hover-primary;
+        background-color: $color-action-hover-background-primary;
     }
 
     &:active {
-        color: $color-action-active-text-primary;
-        background-color: $color-action-active-secondary;
+        color: $color-action-active-primary;
+        background-color: $color-action-active-background-primary;
     }
 
     &.bit-dis {

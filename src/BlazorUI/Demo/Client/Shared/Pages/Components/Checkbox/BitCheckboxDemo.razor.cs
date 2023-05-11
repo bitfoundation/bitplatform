@@ -126,7 +126,6 @@ public partial class BitCheckboxDemo
             Description = "Callback that is called when the Value parameter changed.",
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -134,7 +133,7 @@ public partial class BitCheckboxDemo
             Id = "box-side-enum",
             Name = "BitBoxSide",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -154,15 +153,15 @@ public partial class BitCheckboxDemo
 
 
 
-    private bool IsIndeterminated = true;
+    private bool IsIndeterminate = true;
     private bool IsChecked_OneWay;
     private bool IsChecked_TwoWay;
-    private bool IsIndeterminated_OneWay = true;
-    private bool IsIndeterminated_TwoWay = true;
+    private bool IsIndeterminate_OneWay = true;
+    private bool IsIndeterminate_TwoWay = true;
     private bool IsCheckedLabelTemplate;
     private bool IsCheckedCustomCheckBox;
     private bool IsCheckedCustomIndeterminateCheckBox;
-    private bool IsIndeterminatedCustomCheckBox = true;
+    private bool IsIndeterminateCustomCheckBox = true;
     private BitCheckboxValidationModel ValidationForm = new();
     private string SuccessMessage = string.Empty;
 
@@ -181,113 +180,51 @@ public partial class BitCheckboxDemo
 
 
     private readonly string example1HTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: column wrap;
-        gap: 0.5rem;
-        width: fit-content;
-        align-items: flex-start;
-    }
-</style>
-
-<div class=""example-content"">
-    <BitCheckbox Label=""Basic Checkbox"" />
-    <BitCheckbox Label=""One-way Checked Checkbox (Fixed)"" Value=""true"" />
-    <BitCheckbox Label=""Disable Checkbox"" IsEnabled=""false"" />
-    <BitCheckbox Label=""Disable Checked Checkbox"" IsEnabled=""false"" Value=""true"" />
-    <BitCheckbox Label=""Custom checkmark Checkbox"" CheckmarkIconName=""BitIconName.Heart"" />
-</div>";
+<BitCheckbox Label=""Basic Checkbox"" />
+<BitCheckbox Label=""One-way Checked Checkbox (Fixed)"" Value=""true"" />
+<BitCheckbox Label=""Disable Checkbox"" IsEnabled=""false"" />
+<BitCheckbox Label=""Disable Checked Checkbox"" IsEnabled=""false"" Value=""true"" />
+<BitCheckbox Label=""Custom checkmark Checkbox"" CheckmarkIconName=""BitIconName.Heart"" />";
 
     private readonly string example2TMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: column wrap;
-        gap: 0.5rem;
-        width: fit-content;
-        align-items: flex-start;
-    }
-</style>
-
-<div class=""example-content"">
-    <BitCheckbox Label=""Reversed - Basic Checkbox"" BoxSide=""@BitCheckBoxSide.End"" />
-    <BitCheckbox Label=""Reversed - One-way Checked Checkbox (Fixed)"" BoxSide=""@BitCheckBoxSide.End"" Value=""true"" />
-    <BitCheckbox Label=""Reversed - Disable Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" />
-    <BitCheckbox Label=""Reversed - Disable Checked Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"" />
-</div>";
+<BitCheckbox Label=""Reversed - Basic Checkbox"" BoxSide=""@BitCheckBoxSide.End"" />
+<BitCheckbox Label=""Reversed - One-way Checked Checkbox (Fixed)"" BoxSide=""@BitCheckBoxSide.End"" Value=""true"" />
+<BitCheckbox Label=""Reversed - Disable Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" />
+<BitCheckbox Label=""Reversed - Disable Checked Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example3HTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: column wrap;
-        gap: 0.5rem;
-        width: fit-content;
-        align-items: flex-start;
-    }
-</style>
-
-<div class=""example-content"">
-    <BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminated"" />
-    <BitCheckbox Label=""One-way indeterminate Checkbox (Fixed)"" IsIndeterminate=""true"" />
-    <BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />
-</div>";
-
+<BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminate"" />
+<BitCheckbox Label=""One-way indeterminate Checkbox (Fixed)"" IsIndeterminate=""true"" />
+<BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
     private readonly string example3CSharpCode = @"
-private bool IsIndeterminated = true;
+private bool IsIndeterminate = true;
 ";
 
     private readonly string example4HTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: column wrap;
-        gap: 0.5rem;
-        width: fit-content;
-        align-items: flex-start;
-    }
+<BitCheckbox Label=""One-way Controlled Checkbox"" Value=""IsChecked_OneWay"" />
+<BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"" ButtonSize=""BitButtonSize.Small"">
+    @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
+</BitButton>
 
-    .controlled-box {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        width: fit-content;
-    }
-</style>
+<BitCheckbox Label=""Two-way Controlled Checkbox"" @bind-Value=""IsChecked_TwoWay"" />
+<BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"" ButtonSize=""BitButtonSize.Small"">
+    @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
+</BitButton>
 
-<div class=""example-content"">
-    <div class=""controlled-box"">
-        <BitCheckbox Label=""One-way Controlled Checkbox"" Value=""IsChecked_OneWay"" />
-        <BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"" ButtonSize=""BitButtonSize.Small"">
-            @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
-        </BitButton>
-    </div>
-    <div class=""controlled-box"">
-        <BitCheckbox Label=""Two-way Controlled Checkbox"" @bind-Value=""IsChecked_TwoWay"" />
-        <BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"" ButtonSize=""BitButtonSize.Small"">
-            @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
-        </BitButton>
-    </div>
-    <div class=""controlled-box"">
-        <BitCheckbox Label=""One-way Controlled indeterminate checkbox"" IsIndeterminate=""IsIndeterminated_OneWay"" />
-        <BitButton OnClick=""() => IsIndeterminated_OneWay = !IsIndeterminated_OneWay"" ButtonSize=""BitButtonSize.Small"">
-            @(IsIndeterminated_OneWay ? ""Remove"" : ""Make"") Indeterminate
-        </BitButton>
-    </div>
-    <div class=""controlled-box"">
-        <BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminated_TwoWay"" />
-        <BitButton OnClick=""() => IsIndeterminated_TwoWay = !IsIndeterminated_TwoWay"" ButtonSize=""BitButtonSize.Small"">
-            @(IsIndeterminated_TwoWay ? ""Remove"" : ""Make"") Indeterminate
-        </BitButton>
-    </div>
-</div>";
+<BitCheckbox Label=""One-way Controlled indeterminate checkbox"" IsIndeterminate=""IsIndeterminate_OneWay"" />
+<BitButton OnClick=""() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay"" ButtonSize=""BitButtonSize.Small"">
+    @(IsIndeterminate_OneWay ? ""Remove"" : ""Make"") Indeterminate
+</BitButton>
 
+<BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminate_TwoWay"" />
+<BitButton OnClick=""() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay"" ButtonSize=""BitButtonSize.Small"">
+    @(IsIndeterminate_TwoWay ? ""Remove"" : ""Make"") Indeterminate
+</BitButton>";
     private readonly string example4CSharpCode = @"
 private bool IsChecked_OneWay;
 private bool IsChecked_TwoWay;
-private bool IsIndeterminated_OneWay = true;
-private bool IsIndeterminated_TwoWay = true;
+private bool IsIndeterminate_OneWay = true;
+private bool IsIndeterminate_TwoWay = true;
 ";
 
     private readonly string example5HTMLCode = @"
@@ -305,14 +242,6 @@ private bool IsCheckedLabelTemplate;
 
     private readonly string example6HTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: column wrap;
-        gap: 0.5rem;
-        width: fit-content;
-        align-items: flex-start;
-    }
-
     .custom-checkbox {
         display: flex;
         justify-content: center;
@@ -321,42 +250,44 @@ private bool IsCheckedLabelTemplate;
         align-items: center;
     }
 
-        .custom-checkbox .checked-box {
-            border: 1px solid;
-            margin-right: 0.3125rem;
-        }
+    .custom-checkbox .checked-box {
+        display: flex;
+        width: rem(32px);
+        height: rem(32px);
+        border: 1px solid;
+        align-items: center;
+        margin-right: rem(5px);
+        justify-content: center;
+    }
 </style>
 
-<div class=""example-content"">
-    <BitCheckbox @bind-Value=""IsCheckedCustomCheckBox"">
-        <div class=""custom-checkbox"">
-            <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
-            <span>
-                Customized Basic Checkbox
-            </span>
+<BitCheckbox @bind-Value=""IsCheckedCustomCheckBox"">
+    <div class=""custom-checkbox"">
+        <div class=""checked-box"">
+            <BitIcon IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
         </div>
-    </BitCheckbox>
+        <span>
+            Customized Basic Checkbox
+        </span>
+    </div>
+</BitCheckbox>
 
-    <BitCheckbox @bind-Value=""IsCheckedCustomIndeterminateCheckBox"" @bind-IsIndeterminate=""IsIndeterminatedCustomCheckBox"">
-        <div class=""custom-checkbox"">
-            @if (IsIndeterminatedCustomCheckBox)
-            {
-                <BitIconButton Class=""checked-box"" IconName=""BitIconName.Fingerprint"" />
-            }
-            else
-            {
-                <BitIconButton Class=""checked-box"" IconName=""@(IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
-            }
-            <span>
-                Customized Indeterminate checkbox
-            </span>
+<BitCheckbox @bind-Value=""IsCheckedCustomIndeterminateCheckBox"" @bind-IsIndeterminate=""IsIndeterminateCustomCheckBox"">
+    <div class=""custom-checkbox"">
+        <div class=""checked-box"">
+            <BitIcon IconName=""IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
         </div>
-    </BitCheckbox>
-</div>";
+        <span>
+            Customized Indeterminate checkbox
+        </span>
+    </div>
+    &nbsp;
+    <BitButton ButtonSize=""BitButtonSize.Small"" OnClick=""() => IsIndeterminateCustomCheckBox = true"">Make Indeterminate</BitButton>
+</BitCheckbox>";
     private readonly string example6CSharpCode = @"
 private bool IsCheckedCustomCheckBox;
 private bool IsCheckedCustomIndeterminateCheckBox;
-private bool IsIndeterminatedCustomCheckBox = true;
+private bool IsIndeterminateCustomCheckBox = true;
 ";
 
     private readonly string example7HTMLCode = @"
@@ -364,15 +295,15 @@ private bool IsIndeterminatedCustomCheckBox = true;
 
 <style>
     .validation-summary {
-        border-left: 0.25rem solid #d13438;
-        background-color: #FDE7E9;
         overflow: hidden;
         margin-bottom: 0.8rem;
+        background-color: #FDE7E9;
+        border-left: 0.25rem solid #d13438;
     }
 
-        .validation-summary .validation-errors {
-            margin: 0.25rem;
-        }
+    .validation-summary .validation-errors {
+        margin: 0.25rem;
+    }
 
     div.validation-message {
         color: #A4262C;
@@ -402,8 +333,7 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
     </BitMessageBar>
-}
-";
+}";
     private readonly string example7CSharpCode = @"
 private BitCheckboxValidationModel ValidationForm = new();
 private string SuccessMessage = string.Empty;
@@ -425,6 +355,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}
-";
+}";
 }

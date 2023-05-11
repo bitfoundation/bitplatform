@@ -23,34 +23,32 @@
 }
 
 .bit-btn-pri {
-    color: $color-text-secondary;
-    border-color: $color-border-primary;
+    color: $color-secondary-main;
+    border-color: $color-primary-main;
     background-color: $color-primary-main;
 
     &:hover {
+        border-color: $color-action-hover-primary;
         background-color: $color-action-hover-primary;
-        border-color: $color-action-hover-border-primary;
     }
 
     &:active {
+        border-color: $color-action-active-primary;
         background-color: $color-action-active-primary;
-        border-color: $color-action-active-border-primary;
     }
 }
 
 .bit-btn-std {
     color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
+    border-color: $color-border-primary2;
+    background-color: $color-background-primary;
 
     &:hover {
-        background-color: $color-action-hover-secondary;
-        border-color: $color-action-hover-border-secondary;
+        background-color: $color-action-hover-background-primary;
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
-        border-color: $color-action-active-border-secondary;
+        background-color: $color-action-active-background-primary;
     }
 }
 

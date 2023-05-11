@@ -975,7 +975,7 @@ public partial class BitNavDemo
     private BitNavOption ToggledOption;
 
 
-    private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
     {
         new()
         {
@@ -1178,11 +1178,11 @@ private static readonly List<BitNavItem> CarNavMenu = new()
         <BitNav @bind-SelectedItem=""SelectedItemNav""
                 Items=""FoodNavMenu""
                 Mode=""BitNavMode.Manual""
-                OnSelectItem=""(BitNavItem item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
+                OnSelectItem=""(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
 
-        <BitDropDown @bind-Value=""SelectedItemText""
+        <BitDropdown @bind-Value=""SelectedItemText""
                         Label=""Select Item""
-                        Items=""FoodMenuDropDownItems""
+                        Items=""FoodMenuDropdownItems""
                         OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />
     </div>
 ";
@@ -1236,7 +1236,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
     new() { Text = ""Cookie"" },
 };
 
-private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
 {
     new()
     {
@@ -1763,11 +1763,11 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
             IsExpandedFieldSelector=""item => item.IsExpanded""
             ChildItemsFieldSelector=""item => item.Childs""
             Mode=""BitNavMode.Manual""
-            OnSelectItem=""(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
+            OnSelectItem=""(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
 
-    <BitDropDown @bind-Value=""CustomSelectedFoodName""
+    <BitDropdown @bind-Value=""CustomSelectedFoodName""
                     Label=""Select Item""
-                    Items=""FoodMenuDropDownItems""
+                    Items=""FoodMenuDropdownItems""
                     OnSelectItem=""(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)"" />
 </div>
 ";
@@ -1829,7 +1829,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     new() { Name = ""Cookie"" },
 };
 
-private static readonly List<BitDropDownItem> FoodMenuDropDownItems = new()
+private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
 {
     new()
     {
@@ -2372,10 +2372,10 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         <BitNavOption Text=""Cookie"" Key=""Cookie"" />
     </BitNav>
 
-    <BitDropDown @bind-Value=""SelectedOptionKey""
+    <BitDropdown @bind-Value=""SelectedOptionKey""
                     DefaultValue=""French Fries""
                     Label=""Pick one""
-                    Items=""FoodMenuDropDownItems"" />
+                    Items=""FoodMenuDropdownItems"" />
 </div>
 ";
     private static string example3NavOptionCSharpCode = @"

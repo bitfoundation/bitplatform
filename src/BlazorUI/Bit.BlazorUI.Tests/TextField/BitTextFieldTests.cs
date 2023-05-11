@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Inputs;
+namespace Bit.BlazorUI.Tests.TextField;
 
 [TestClass]
 public class BitTextFieldTests : BunitTestContext
