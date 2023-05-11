@@ -59,9 +59,9 @@
                                    RemoveUrl="@RemoveUrl"
                                    Style="flex-grow:1; max-width:none;" />
                 }
-                else if (SelectedComponent.Name == "DropDown")
+                else if (SelectedComponent.Name == "Dropdown")
                 {
-                    <BitDropDown Label="Multi-select uncontrolled"
+                    <BitDropdown Label="Multi-select uncontrolled"
                                  Items="GetDropdownItems()"
                                  Placeholder="Select options"
                                  IsMultiSelect="true"
@@ -145,11 +145,11 @@
                     </code>
                 </pre>
             }
-            else if (SelectedComponent.Name == "DropDown")
+            else if (SelectedComponent.Name == "Dropdown")
             {
                 <pre class="code">
                     <code class="language-cshtml">
-&ltBitDropDown Label="Multi-select uncontrolled"
+&ltBitDropdown Label="Multi-select uncontrolled"
              Items="GetDropdownItems()"
              Placeholder="Select options"
              &#64;bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
@@ -159,52 +159,52 @@
                     <code class="language-csharp">
 &#64;code {
     private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
-    private List&ltBitDropDownItem> GetDropdownItems()
+    private List&ltBitDropdownItem> GetDropdownItems()
     {
-        List&ltBitDropDownItem> items = new();
+        List&ltBitDropdownItem> items = new();
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Header,
+            ItemType = BitDropdownItemType.Header,
             Text = "Fruits"
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Apple",
             Value = "f-app"
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Orange",
             Value = "f-ora",
             IsEnabled = false
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Banana",
             Value = "f-ban",
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Divider,
+            ItemType = BitDropdownItemType.Divider,
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Header,
+            ItemType = BitDropdownItemType.Header,
             Text = "Vegetables"
         });
 
-        items.Add(new BitDropDownItem()
+        items.Add(new BitDropdownItem()
         {
-            ItemType = BitDropDownItemType.Normal,
+            ItemType = BitDropdownItemType.Normal,
             Text = "Broccoli",
             Value = "v-bro",
         });

@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages;
 public partial class HeroSection
 {
-    private List<BitDropDownItem> _productDropDownItems = default!;
+    private List<BitDropdownItem> _productDropdownItems = default!;
     private string _selectedColor = "#0065EF";
     private bool _isToggleChecked = true;
     private bool _isToggleUnChecked = false;
@@ -9,40 +9,40 @@ public partial class HeroSection
 
     protected override Task OnInitAsync()
     {
-        _productDropDownItems = new()
+        _productDropdownItems = new()
         {
             new()
             {
-                ItemType = BitDropDownItemType.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Fruits"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Apple",
                 Value = "f-app"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
                 IsEnabled = false
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Banana",
                 Value = "f-ban",
             },
             new()
             {
-                ItemType = BitDropDownItemType.Header,
+                ItemType = BitDropdownItemType.Header,
                 Text = "Vegetables"
             },
             new()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = "Broccoli",
                 Value = "v-bro",
             }

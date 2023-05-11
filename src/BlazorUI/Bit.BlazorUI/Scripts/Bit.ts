@@ -17,9 +17,9 @@
 }
 
 class Bit {
-    static currentDropDownCalloutId = "";
+    static currentDropdownCalloutId = "";
     static currentCallout: BitCalloutComponent = new BitCalloutComponent();
-    static currentDropDownCalloutResponsiveModeIsEnabled = false;
+    static currentDropdownCalloutResponsiveModeIsEnabled = false;
 
     //static init() {
     //    Bit.currentCallout = new BitCalloutComponent();

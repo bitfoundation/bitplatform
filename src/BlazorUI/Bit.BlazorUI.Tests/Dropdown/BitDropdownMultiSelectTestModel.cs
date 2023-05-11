@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Inputs;
+namespace Bit.BlazorUI.Tests.Dropdown;
 
-public class BitDropDownMultiSelectTestModel
+public class BitDropdownMultiSelectTestModel
 {
     [Required]
     [MaxLength(2)]

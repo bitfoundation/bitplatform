@@ -1,6 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitDropDownItem
+public class BitDropdownItem
+
 {
     /// <summary>
     /// Text to render for this item
@@ -25,7 +26,7 @@ public class BitDropDownItem
     /// <summary>
     /// The type of this item, Refers to the dropdown separator
     /// </summary>
-    public BitDropDownItemType ItemType { get; set; } = BitDropDownItemType.Normal;
+    public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;
 
     /// <summary>
     /// Title attribute (built in tooltip) for a given item

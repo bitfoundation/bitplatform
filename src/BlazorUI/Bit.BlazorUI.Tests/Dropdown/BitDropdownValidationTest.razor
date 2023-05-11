@@ -1,7 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitDropDown IsEnabled="IsEnabled"
+    <BitDropdown IsEnabled="IsEnabled"
                  OnClick="HandleClick"
                  IsMultiSelect="IsMultiSelect"
                  @bind-IsOpen="IsOpen"
@@ -19,7 +19,7 @@
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
-    </BitDropDown>
+    </BitDropdown>
 
 </EditForm>
 
@@ -28,8 +28,8 @@
     [Parameter] public bool IsEnabled { get; set; }
     [Parameter] public bool IsRequired { get; set; }
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public List<BitDropDownItem> Items { get; set; } = new List<BitDropDownItem>();
-    [Parameter] public BitDropDownTestModel TestModel { get; set; }
+    [Parameter] public List<BitDropdownItem> Items { get; set; } = new List<BitDropdownItem>();
+    [Parameter] public BitDropdownTestModel TestModel { get; set; }
     [Parameter] public List<string> DefaultValues { get; set; } = new List<string>();
     [Parameter] public string DefaultValue { get; set; }
     [Parameter] public string Placeholder { get; set; }
@@ -37,7 +37,7 @@
     [Parameter] public string Title { get; set; }
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-    [Parameter] public EventCallback<BitDropDownItem> OnSelectItem { get; set; }
+    [Parameter] public EventCallback<BitDropdownItem> OnSelectItem { get; set; }
     [Parameter] public bool NotifyOnReselect { get; set; } = false;
     [Parameter] public RenderFragment LabelTemplate { get; set; }
 
@@ -51,7 +51,7 @@
         Counter++;
     }
 
-    public void HandleSelectItem(BitDropDownItem item)
+    public void HandleSelectItem(BitDropdownItem item)
     {
         SelectItemCounter++;
     }
