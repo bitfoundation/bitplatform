@@ -20,11 +20,11 @@ public partial class BitDropdown
     private List<BitDropdownItem> selectedItems = new();
 
     private string? _text;
-    private string? _dropDownId;
+    private string? _dropdownId;
     private string? _dropdownLabelId;
-    private string? _dropDownOptionId;
-    private string? _dropDownCalloutId;
-    private string? _dropDownOverlayId;
+    private string? _dropdownOptionId;
+    private string? _dropdownCalloutId;
+    private string? _dropdownOverlayId;
     private bool _isValuesChanged;
     private bool _inputSearchHasFocus;
     private string? _searchText;
@@ -345,11 +345,11 @@ public partial class BitDropdown
 
     protected override void OnInitialized()
     {
-        _dropDownId = $"Dropdown{UniqueId}";
-        _dropDownOptionId = $"{_dropDownId}-option";
-        _dropdownLabelId = Label.HasValue() ? $"{_dropDownId}-label" : string.Empty;
-        _dropDownOverlayId = $"{_dropDownId}-overlay";
-        _dropDownCalloutId = $"{_dropDownId}-list";
+        _dropdownId = $"Dropdown{UniqueId}";
+        _dropdownOptionId = $"{_dropdownId}-option";
+        _dropdownLabelId = Label.HasValue() ? $"{_dropdownId}-label" : string.Empty;
+        _dropdownOverlayId = $"{_dropdownId}-overlay";
+        _dropdownCalloutId = $"{_dropdownId}-list";
 
         if (ItemsProvider is null && Items is null)
         {
@@ -634,7 +634,7 @@ public partial class BitDropdown
         return className.ToString();
     }
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_dropDownId}-label {_dropDownId}-option" : $"{_dropDownId}-option";
+    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_dropdownId}-label {_dropdownId}-option" : $"{_dropdownId}-option";
 
     private int? GetItemPosInSet(BitDropdownItem item) => Items is null ? null : Items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).IndexOf(item) + 1;
 
@@ -720,7 +720,7 @@ public partial class BitDropdown
     private async Task ToggleCallout()
     {
         await _js.InvokeVoidAsync("BitDropdown.toggleDropdownCallout",
-            _dotnetObj, UniqueId, _dropDownId, _dropDownCalloutId, _dropDownOverlayId, _scrollWrapperElement,
+            _dotnetObj, UniqueId, _dropdownId, _dropdownCalloutId, _dropdownOverlayId, _scrollWrapperElement,
             DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
     }
 

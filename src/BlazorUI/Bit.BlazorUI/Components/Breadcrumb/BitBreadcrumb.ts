@@ -1,79 +1,75 @@
 ﻿class BitBreadcrumb {
     static toggleOverflowCallout(
         dotnetObjReference: DotNetObject,
-        dropDownWrapperId: string,
-        dropDownId: string,
+        dropdownWrapperId: string,
+        dropdownId: string,
         calloutId: string,
         overlayId: string,
         isCalloutOpen: boolean) {
 
-        const dropDownWrapper = document.getElementById(dropDownWrapperId);
-        if (dropDownWrapper == null)
-            return;
+        const dropdownWrapper = document.getElementById(dropdownWrapperId);
+        if (dropdownWrapper == null) return;
 
-        const dropDown = document.getElementById(dropDownId);
-        if (dropDown == null)
-            return;
+        const dropdown = document.getElementById(dropdownId);
+        if (dropdown == null) return;
 
-        const dropDownCallout = document.getElementById(calloutId);
-        if (dropDownCallout == null)
-            return;
+        const dropdownCallout = document.getElementById(calloutId);
+        if (dropdownCallout == null) return;
 
-        const dropDownOverlay = document.getElementById(overlayId);
-        if (dropDownOverlay == null)
-            return;
+        const dropdownOverlay = document.getElementById(overlayId);
+        if (dropdownOverlay == null) return;
 
         if (isCalloutOpen) {
-            dropDownCallout.style.display = "none";
-            dropDownOverlay.style.display = "none";
+            dropdownCallout.style.display = "none";
+            dropdownOverlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
             Bit.currentDropdownCalloutId = "";
         } else {
             Bit.currentDropdownCalloutId = calloutId;
             Bit.closeCurrentCalloutIfExists(calloutId, overlayId, dotnetObjReference);
-            dropDownCallout.style.display = "block";
-            dropDownOverlay.style.display = "block";
+            dropdownCallout.style.display = "block";
+            dropdownOverlay.style.display = "block";
 
-            const dropDownWrapperWidth = dropDownWrapper.offsetWidth;
-            const dropDownWrapperX = dropDownWrapper.getBoundingClientRect().x;
-            const dropDownX = dropDown.getBoundingClientRect().x;
+            const dropdownWrapperWidth = dropdownWrapper.offsetWidth;
+            const dropdownWrapperX = dropdownWrapper.getBoundingClientRect().x;
+            const dropdownX = dropdown.getBoundingClientRect().x;
 
-            const maxWidth = dropDownWrapperWidth + dropDownWrapperX - dropDownX;
+            const maxWidth = dropdownWrapperWidth + dropdownWrapperX - dropdownX;
             const minWidth = 150;
-            dropDownCallout.style.maxWidth = `${Math.max(maxWidth, minWidth)}px`;
+            dropdownCallout.style.maxWidth = `${Math.max(maxWidth, minWidth)}px`;
 
-            const dropDownCalloutHeight = dropDownCallout.offsetHeight;
-            const dropDownCalloutWidth = dropDownCallout.offsetWidth;
-            const dropDownTop = dropDown.getBoundingClientRect().y;
-            const dropDownHeight = dropDown.offsetHeight;
-            const dropDownWidth = dropDown.offsetWidth;
-            const dropDownY = dropDown.getBoundingClientRect().y;
-            const dropDownBottom = window.innerHeight - (dropDownHeight + dropDownY);
-            const dropDownRight = window.innerWidth - (dropDownWidth + dropDownX);
+            const dropdownCalloutHeight = dropdownCallout.offsetHeight;
+            const dropdownCalloutWidth = dropdownCallout.offsetWidth;
+            const dropdownTop = dropdown.getBoundingClientRect().y;
+            const dropdownHeight = dropdown.offsetHeight;
+            const dropdownWidth = dropdown.offsetWidth;
+            const dropdownY = dropdown.getBoundingClientRect().y;
+            const dropdownBottom = window.innerHeight - (dropdownHeight + dropdownY);
+            const dropdownRight = window.innerWidth - (dropdownWidth + dropdownX);
 
-            if (dropDownBottom >= dropDownCalloutHeight) {
-                dropDownCallout.style.top = dropDownY + dropDownHeight + 1 + "px";
-                dropDownCallout.style.left = dropDownX + "px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.bottom = "unset";
+            if (dropdownBottom >= dropdownCalloutHeight) {
+                dropdownCallout.style.top = dropdownY + dropdownHeight + 1 + "px";
+                dropdownCallout.style.left = dropdownX + "px";
+                dropdownCallout.style.right = "unset";
+                dropdownCallout.style.bottom = "unset";
             }
-            else if (dropDownTop >= dropDownCalloutHeight) {
-                dropDownCallout.style.bottom = dropDownBottom + dropDownHeight + 1 + "px";
-                dropDownCallout.style.left = dropDownX + "px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.top = "unset";
+            else if (dropdownTop >= dropdownCalloutHeight) {
+                dropdownCallout.style.bottom = dropdownBottom + dropdownHeight + 1 + "px";
+                dropdownCallout.style.left = dropdownX + "px";
+                dropdownCallout.style.right = "unset";
+                dropdownCallout.style.top = "unset";
             }
-            else if (dropDownRight >= dropDownCalloutWidth) {
-                dropDownCallout.style.left = dropDownX + dropDownWidth + 1 + "px";
-                dropDownCallout.style.bottom = "2px";
-                dropDownCallout.style.right = "unset";
-                dropDownCallout.style.top = "unset";
+            else if (dropdownRight >= dropdownCalloutWidth) {
+                dropdownCallout.style.left = dropdownX + dropdownWidth + 1 + "px";
+                dropdownCallout.style.bottom = "2px";
+                dropdownCallout.style.right = "unset";
+                dropdownCallout.style.top = "unset";
             }
             else {
-                dropDownCallout.style.left = dropDownX - dropDownCalloutWidth - 1 + "px";
-                dropDownCallout.style.bottom = "2px";
-                dropDownCallout.style.top = "unset";
-                dropDownCallout.style.right = "unset";
+                dropdownCallout.style.left = dropdownX - dropdownCalloutWidth - 1 + "px";
+                dropdownCallout.style.bottom = "2px";
+                dropdownCallout.style.top = "unset";
+                dropdownCallout.style.right = "unset";
             }
         }
     }

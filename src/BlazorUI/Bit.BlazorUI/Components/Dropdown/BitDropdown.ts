@@ -34,21 +34,21 @@
             dropdownCallout.style.display = "block";
             dropdownOverlay.style.display = "block";
 
-            let dropDownWrapperWidth = dropdownWrapper.offsetWidth;
-            if (isResponsiveModeEnabled && dropDownWrapperWidth < 320 && window.innerWidth < 640)
-                dropDownWrapperWidth = window.innerWidth > 320 ? 320 : window.innerWidth;
+            let dropdownWrapperWidth = dropdownWrapper.offsetWidth;
+            if (isResponsiveModeEnabled && dropdownWrapperWidth < 320 && window.innerWidth < 640)
+                dropdownWrapperWidth = window.innerWidth > 320 ? 320 : window.innerWidth;
 
-            dropdownCallout.style.width = dropDownWrapperWidth + 'px';
+            dropdownCallout.style.width = dropdownWrapperWidth + 'px';
 
-            const dropDownCalloutHeight = dropdownCallout.offsetHeight;
-            const dropDownCalloutWidth = dropdownCallout.offsetWidth;
-            const dropDownHeight = dropdown.offsetHeight;
-            const dropDownTop = dropdown.getBoundingClientRect().y;
-            const dropDownWrapperHeight = dropdownWrapper.offsetHeight;
-            const dropDownWrapperX = dropdownWrapper.getBoundingClientRect().x;
-            const dropDownWrapperY = dropdownWrapper.getBoundingClientRect().y;
-            const dropDownWrapperBottom = window.innerHeight - (dropDownWrapperHeight + dropDownWrapperY);
-            const dropDownWrapperRight = window.innerWidth - (dropDownWrapperWidth + dropDownWrapperX);
+            const dropdownCalloutHeight = dropdownCallout.offsetHeight;
+            const dropdownCalloutWidth = dropdownCallout.offsetWidth;
+            const dropdownHeight = dropdown.offsetHeight;
+            const dropdownTop = dropdown.getBoundingClientRect().y;
+            const dropdownWrapperHeight = dropdownWrapper.offsetHeight;
+            const dropdownWrapperX = dropdownWrapper.getBoundingClientRect().x;
+            const dropdownWrapperY = dropdownWrapper.getBoundingClientRect().y;
+            const dropdownWrapperBottom = window.innerHeight - (dropdownWrapperHeight + dropdownWrapperY);
+            const dropdownWrapperRight = window.innerWidth - (dropdownWrapperWidth + dropdownWrapperX);
             const minimumWidthForDropdownNormalOpen = 640;
 
             //clear last style
@@ -74,31 +74,31 @@
                     dropdownCallout.style.right = "0";
                 }
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
-                dropdownCallout.style.left = dropDownWrapperX + "px";
+                dropdownCallout.style.left = dropdownWrapperX + "px";
 
-                if (dropDownCalloutHeight <= dropDownWrapperBottom || dropDownWrapperBottom >= dropDownTop) {
-                    dropdownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
-                    dropdownCallout.style.maxHeight = (dropDownWrapperBottom - 10) + "px";
+                if (dropdownCalloutHeight <= dropdownWrapperBottom || dropdownWrapperBottom >= dropdownTop) {
+                    dropdownCallout.style.top = dropdownWrapperY + dropdownWrapperHeight + 1 + "px";
+                    dropdownCallout.style.maxHeight = (dropdownWrapperBottom - 10) + "px";
                 }
                 else {
-                    dropdownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
-                    dropdownCallout.style.maxHeight = (dropDownTop - 10) + "px";
+                    dropdownCallout.style.bottom = dropdownWrapperBottom + dropdownHeight + 1 + "px";
+                    dropdownCallout.style.maxHeight = (dropdownTop - 10) + "px";
                 }
             } else {
-                if (dropDownWrapperBottom >= dropDownCalloutHeight) {
-                    dropdownCallout.style.top = dropDownWrapperY + dropDownWrapperHeight + 1 + "px";
-                    dropdownCallout.style.left = dropDownWrapperX + "px";
-                    dropdownCallout.style.maxHeight = (dropDownWrapperBottom - 10) + "px";
-                } else if (dropDownTop >= dropDownCalloutHeight) {
-                    dropdownCallout.style.bottom = dropDownWrapperBottom + dropDownHeight + 1 + "px";
-                    dropdownCallout.style.left = dropDownWrapperX + "px";
-                    dropdownCallout.style.maxHeight = (dropDownTop - 10) + "px";
-                } else if (dropDownWrapperRight >= dropDownCalloutWidth) {
-                    dropdownCallout.style.left = dropDownWrapperX + dropDownWrapperWidth + 1 + "px";
+                if (dropdownWrapperBottom >= dropdownCalloutHeight) {
+                    dropdownCallout.style.top = dropdownWrapperY + dropdownWrapperHeight + 1 + "px";
+                    dropdownCallout.style.left = dropdownWrapperX + "px";
+                    dropdownCallout.style.maxHeight = (dropdownWrapperBottom - 10) + "px";
+                } else if (dropdownTop >= dropdownCalloutHeight) {
+                    dropdownCallout.style.bottom = dropdownWrapperBottom + dropdownHeight + 1 + "px";
+                    dropdownCallout.style.left = dropdownWrapperX + "px";
+                    dropdownCallout.style.maxHeight = (dropdownTop - 10) + "px";
+                } else if (dropdownWrapperRight >= dropdownCalloutWidth) {
+                    dropdownCallout.style.left = dropdownWrapperX + dropdownWrapperWidth + 1 + "px";
                     dropdownCallout.style.bottom = "2px";
                     dropdownCallout.style.maxHeight = (window.innerHeight - 10) + "px";
                 } else {
-                    dropdownCallout.style.left = dropDownWrapperX - dropDownCalloutWidth - 1 + "px";
+                    dropdownCallout.style.left = dropdownWrapperX - dropdownCalloutWidth - 1 + "px";
                     dropdownCallout.style.bottom = "2px";
                     dropdownCallout.style.maxHeight = (window.innerHeight - 10) + "px";
                 }
