@@ -17,7 +17,7 @@
     margin-bottom: rem(28px);
     background-clip: padding-box;
     background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-background-primary3;
+    border: rem(1px) solid $bit-color-border-primary2;
 }
 
 .table-view {
@@ -26,7 +26,6 @@
     border-spacing: 0;
     box-sizing: border-box;
     margin-bottom: rem(40px);
-    background-color: $bit-color-background-primary2;
 
     @include lt-xl {
         border-radius: rem(8px);
@@ -42,7 +41,7 @@
 .tdata-row {
     width: 100%;
     display: flex;
-    border-bottom: rem(1px) solid $bit-color-background-primary3;
+    border-bottom: rem(1px) solid $bit-color-border-secondary2;
 
     &:last-child {
         border: none;

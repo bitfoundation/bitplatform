@@ -87,7 +87,6 @@ public partial class BitRatingDemo
             Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -95,7 +94,7 @@ public partial class BitRatingDemo
             Id = "rating-size-enum",
             Name = "BitRatingSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -132,7 +131,7 @@ public partial class BitRatingDemo
 
     private double RatingControlledValue1 = 0;
     private double RatingControlledValue2 = 3;
-    private double RatingControlledValue3;
+    private double RatingControlledValue3 = 2;
 
     public BitRatingDemoFormModel ValidationModel = new();
     public string SuccessMessage;
@@ -153,113 +152,84 @@ public partial class BitRatingDemo
 
 
     private readonly string example1HTMLCode = @"
-<div>
-    <BitLabel>Basic:</BitLabel>
-    <BitRating @bind-Value=""RatingBasicValue"" />
-    <span>Rate: @RatingBasicValue</span>
-</div>
-<div>
-    <BitLabel>Disabled:</BitLabel>
-    <BitRating IsEnabled=""false"" @bind-Value=""RatingDisabledValue"" />
-    <span>Rate: @RatingDisabledValue</span>
-</div>
-<div>
-    <BitLabel>Readonly:</BitLabel>
-    <BitRating IsReadOnly=""true"" @bind-Value=""RatingReadonlyValue"" />
-    <span>Rate: @RatingReadonlyValue</span>
-</div>
-";
+<BitLabel>Basic:</BitLabel>
+<BitRating @bind-Value=""RatingBasicValue"" />
+<span>Rate: @RatingBasicValue</span>
+    
+<BitLabel>Disabled:</BitLabel>
+<BitRating IsEnabled=""false"" @bind-Value=""RatingDisabledValue"" />
+<span>Rate: @RatingDisabledValue</span>
+
+<BitLabel>Readonly:</BitLabel>
+<BitRating IsReadOnly=""true"" @bind-Value=""RatingReadonlyValue"" />
+<span>Rate: @RatingReadonlyValue</span>";
     private readonly string example1CSharpCode = @"
 private double RatingBasicValue;
 private double RatingDisabledValue = 2;
-private double RatingReadonlyValue = 3.5;
-";
+private double RatingReadonlyValue = 3.5;";
 
     private readonly string example2HTMLCode = @"
-<div>
-    <BitLabel>Max is 6</BitLabel>
-    <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
-    <span>Rate: @RatingMaxValue1</span>
-</div>
-<div>
-    <BitLabel>Max is 10</BitLabel>
-    <BitRating Max=""10"" @bind-Value=""RatingMaxValue2"" />
-    <span>Rate: @RatingMaxValue2</span>
-</div>
-<div style=""width: 200px;"">
-    <BitLabel>Max is 100</BitLabel>
-    <BitRating Max=""100"" @bind-Value=""RatingMaxValue3"" />
-    <span>Rate: @RatingMaxValue3</span>
-</div>
-";
+<BitLabel>Max is 6</BitLabel>
+<BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
+<span>Rate: @RatingMaxValue1</span>
+    
+<BitLabel>Max is 10</BitLabel>
+<BitRating Max=""10"" @bind-Value=""RatingMaxValue2"" />
+<span>Rate: @RatingMaxValue2</span>
+
+<BitLabel>Max is 100</BitLabel>
+<BitRating Max=""100"" @bind-Value=""RatingMaxValue3"" />
+<span>Rate: @RatingMaxValue3</span>";
     private readonly string example2CSharpCode = @"
 private double RatingMaxValue1 = 2.5;
 private double RatingMaxValue2 = 5;
-private double RatingMaxValue3 = 15;
-";
+private double RatingMaxValue3 = 15;";
 
     private readonly string example3HTMLCode = @"
-<div>
-    <BitLabel>Heart:</BitLabel>
-    <BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
-    <span>Rate: @RatingCustomIconValue1</span>
-</div>
-<div>
-    <BitLabel>Checkbox:</BitLabel>
-    <BitRating Icon=""BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
-    <span>Rate: @RatingCustomIconValue2</span>
-</div>
-<div>
-    <BitLabel>Like:</BitLabel>
-    <BitRating Icon=""BitIconName.LikeSolid"" UnselectedIcon=""BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
-    <span>Rate: @RatingCustomIconValue3</span>
-</div>
-";
+<BitLabel>Heart:</BitLabel>
+<BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
+<span>Rate: @RatingCustomIconValue1</span>
+    
+<BitLabel>Checkbox:</BitLabel>
+<BitRating Icon=""BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
+<span>Rate: @RatingCustomIconValue2</span>
+
+<BitLabel>Like:</BitLabel>
+<BitRating Icon=""BitIconName.LikeSolid"" UnselectedIcon=""BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
+<span>Rate: @RatingCustomIconValue3</span>";
     private readonly string example3CSharpCode = @"
 private double RatingCustomIconValue1 = 1.5;
 private double RatingCustomIconValue2 = 2;
-private double RatingCustomIconValue3 = 3;
-";
+private double RatingCustomIconValue3 = 3;";
 
     private readonly string example4HTMLCode = @"
-<div>
-    <BitLabel>Small:</BitLabel>
-    <BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
-    <span>Rate: @RatingSmallValue</span>
-</div>
-<div>
-    <BitLabel>Large:</BitLabel>
-    <BitRating Size=""BitRatingSize.Large"" @bind-Value=""RatingLargeValue"" />
-    <span>Rate: @RatingLargeValue</span>
-</div>
-";
+<BitLabel>Small:</BitLabel>
+<BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
+<span>Rate: @RatingSmallValue</span>
+
+<BitLabel>Large:</BitLabel>
+<BitRating Size=""BitRatingSize.Large"" @bind-Value=""RatingLargeValue"" />
+<span>Rate: @RatingLargeValue</span>";
     private readonly string example4CSharpCode = @"
 private double RatingSmallValue = 3;
-private double RatingLargeValue = 3;
-";
+private double RatingLargeValue = 3;";
 
     private readonly string example5HTMLCode = @"
-<div>
-    <BitLabel>One-way:</BitLabel>
-    <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
-    <BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Label=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
-</div>
-<div>
-    <BitLabel>Two-way:</BitLabel>
-    <BitRating Max=""6"" @bind-Value=""RatingControlledValue2"" />
-    <BitSpinButton Step=""0.1"" @bind-Value=""RatingControlledValue2"" />
-</div>
-<div>
-    <BitLabel>OnChange:</BitLabel>
-    <BitRating DefaultValue=""2"" OnChange=""(v) => RatingControlledValue3 = v"" />
-    <span>Rate: @RatingControlledValue3</span>
-</div>
-";
+<BitLabel>One-way:</BitLabel>
+<BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
+<BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Label=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
+
+<BitLabel>Two-way:</BitLabel>
+<BitRating Max=""6"" @bind-Value=""RatingControlledValue2"" />
+<BitSpinButton Step=""0.1"" @bind-Value=""RatingControlledValue2"" />
+
+<BitLabel>OnChange:</BitLabel>
+<BitRating DefaultValue=""2"" OnChange=""(v) => RatingControlledValue3 = v"" />
+<span>Rate: @RatingControlledValue3</span>";
     private readonly string example5CSharpCode = @"
 private double RatingControlledValue1 = 0;
 private double RatingControlledValue2 = 3;
-private double RatingControlledValue3;
-";
+private double RatingControlledValue3;";
 
     private readonly string example6HTMLCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -283,8 +253,7 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
     </BitMessageBar>
-}
-";
+}";
     private readonly string example6CSharpCode = @"
 public class BitRatingDemoFormModel
 {
@@ -307,6 +276,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}
-";
+}";
 }
