@@ -31,7 +31,7 @@ public class BitRatingTests : BunitTestContext
         Assert.IsTrue(bitRating.HasAttribute("role"));
         Assert.AreEqual("radiogroup", bitRating.GetAttribute("role"));
 
-        var button = component.Find(".button");
+        var button = component.Find(".bit-rtg-btn");
 
         Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
     }
@@ -47,10 +47,10 @@ public class BitRatingTests : BunitTestContext
 
         var bitRating = component.Find(".bit-rtg");
 
-        Assert.IsTrue(bitRating.ClassList.Contains("readonly"));
+        Assert.IsTrue(bitRating.ClassList.Contains("bit-rtg-rdl"));
         Assert.IsTrue(bitRating.HasAttribute("aria-readonly"));
 
-        var buttons = component.FindAll(".button");
+        var buttons = component.FindAll(".bit-rtg-btn");
 
         foreach (var button in buttons)
         {
@@ -71,7 +71,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.Max, max);
         });
 
-        var button = component.FindAll(".button");
+        var button = component.FindAll(".bit-rtg-btn");
 
         Assert.AreEqual(max, button.Count);
     }
@@ -84,7 +84,7 @@ public class BitRatingTests : BunitTestContext
         {
             parameters.Add(p => p.AriaLabelFormat, ariaLabelFormat);
         });
-        var span = component.Find(".aria-label");
+        var span = component.Find(".bit-rtg-alb");
         Assert.AreEqual(string.Format(ariaLabelFormat, 1, 5), span.TextContent);
     }
 
@@ -101,7 +101,7 @@ public class BitRatingTests : BunitTestContext
         });
         var bitRating = component.Find(".bit-rtg");
 
-        var sizeClass = size == BitRatingSize.Large ? "large" : "small";
+        var sizeClass = size == BitRatingSize.Large ? "bit-rtg-lg" : "bit-rtg-sm";
 
         Assert.IsTrue(bitRating.ClassList.Contains(sizeClass));
     }
@@ -118,7 +118,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.AllowZeroStars, allowZeroStars);
         });
 
-        var firstButton = component.Find(".button");
+        var firstButton = component.Find(".bit-rtg-btn");
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
         Assert.AreEqual(allowZeroStars is false, bool.Parse(firstButton.GetAttribute("aria-checked")));
@@ -136,8 +136,8 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.UnselectedIcon, unselectedIcon);
         });
 
-        var ratingIcon = component.Find(".button i");
-        var ratingUnselectedIcon = component.Find(".button:nth-child(2) i");
+        var ratingIcon = component.Find(".bit-rtg-btn i");
+        var ratingUnselectedIcon = component.Find(".bit-rtg-btn:nth-child(2) i");
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
         Assert.IsTrue(ratingIcon.ClassList.Contains($"bit-icon--{icon}"));
@@ -161,7 +161,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.IsReadOnly, isReadonly);
         });
 
-        var bitRatingButtons = component.FindAll(".button");
+        var bitRatingButtons = component.FindAll(".bit-rtg-btn");
 
         if (clickedIndex <= 0)
         {
@@ -242,7 +242,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.Max, max);
         });
 
-        var buttons = component.FindAll(".button i:nth-child(2)");
+        var buttons = component.FindAll(".bit-rtg-btn i:nth-child(2)");
 
         var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}"));
         var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}"));
