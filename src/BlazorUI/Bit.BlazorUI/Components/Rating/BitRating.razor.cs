@@ -93,11 +93,9 @@ public partial class BitRating
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsReadOnly ? "readonly" : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => Size == BitRatingSize.Large ? "large" : "small");
-
-        ClassBuilder.Register(() => ValueInvalid is true ? "invalid" : string.Empty);
+        ClassBuilder.Register(() => Size == BitRatingSize.Large ? $"{RootElementClass}-lg" : $"{RootElementClass}-sm");
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
