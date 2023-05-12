@@ -4,14 +4,17 @@
     width: fit-content;
     font-family: $typography-font-family;
 
-    &:hover {
-        .bit-chb-ctn {
-            .bit-icon {
-                opacity: 1;
-                color: $color-text-primary3;
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-ctn {
+                .bit-icon {
+                    opacity: 1;
+                    color: $color-text-primary3;
+                }
             }
         }
     }
+
 
     &.bit-inv {
         .bit-chb-ctn {

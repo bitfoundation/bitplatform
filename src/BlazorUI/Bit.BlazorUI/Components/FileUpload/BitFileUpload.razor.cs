@@ -169,7 +169,7 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     /// <summary>
     /// The message shown for successful file uploads.
     /// </summary>
-    [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload successful";
+    [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload succeed";
 
     /// <summary>
     /// Custom http headers for upload request.
