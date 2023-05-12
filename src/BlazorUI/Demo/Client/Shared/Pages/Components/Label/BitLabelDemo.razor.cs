@@ -35,7 +35,7 @@ public partial class BitLabelDemo
 <BitLabel>I'm a Label</BitLabel>
 <BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>
 <BitLabel IsRequired=""true"">I'm a required Label</BitLabel>
-<BitLabel For=""labels-container__input"">A Label for An Input</BitLabel>
-<input type=""text"" name=""labels-container__input"" id=""labels-container__input"" />
+<BitLabel For=""label-input"">A Label for An Input</BitLabel>
+<input type=""text"" name=""label-input"" id=""label-input"" />
 ";
 }
