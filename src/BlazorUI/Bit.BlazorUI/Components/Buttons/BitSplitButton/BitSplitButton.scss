@@ -188,7 +188,7 @@
     box-sizing: border-box;
     min-width: spacing(22.5);
     animation-fill-mode: both;
-    box-shadow: $box-shadow-4;
+    box-shadow: $shadow-callout;
     animation-duration: 0.367s;
     background-color: $color-secondary-main;
     animation-name: bit-fade-show, bit-slide-down;

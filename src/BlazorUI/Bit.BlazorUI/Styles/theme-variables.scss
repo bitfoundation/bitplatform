@@ -29,6 +29,7 @@ $color-background-secondary2: var(--bit-clr-bg-secondary2);
 $color-background-secondary3: var(--bit-clr-bg-secondary3);
 $color-background-disabled: var(--bit-clr-bg-disabled);
 $color-background-transparent: var(--bit-clr-bg-transparent);
+
 //borders
 $color-border-primary: var(--bit-clr-brd-primary);
 $color-border-primary2: var(--bit-clr-brd-primary2);
@@ -126,6 +127,8 @@ $color-neutrals-gray200: var(--bit-clr-ntr-gray200);
 $color-neutrals-gray210: var(--bit-clr-ntr-gray210);
 $color-neutrals-gray220: var(--bit-clr-ntr-gray220);
 
+//shadows-callout
+$shadow-callout: var(--bit-shd-clo);
 //shadows
 $box-shadow-1: var(--bit-shd-1);
 $box-shadow-2: var(--bit-shd-2);
