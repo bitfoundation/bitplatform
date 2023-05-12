@@ -82,7 +82,7 @@
                 height: 100%;
                 max-height: unset;
                 width: spacing(34);
-                box-shadow: $box-shadow-2;
+                box-shadow: $shadow-callout;
                 padding: spacing(3) spacing(2.5);
                 animation-name: opacity, bit-drp-trans-x;
             }
@@ -339,16 +339,18 @@
         }
     }
 
-    &:hover {
-        .bit-drp-chm {
-            opacity: 1;
-            color: $color-action-hover-text-primary;
-        }
-
-        &.bit-drp-idis {
+    @media (hover: hover) {
+        &:hover {
             .bit-drp-chm {
-                opacity: 0;
-                color: $color-text-disabled;
+                opacity: 1;
+                color: $color-action-hover-text-primary;
+            }
+
+            &.bit-drp-idis {
+                .bit-drp-chm {
+                    opacity: 0;
+                    color: $color-text-disabled;
+                }
             }
         }
     }
@@ -631,7 +633,7 @@
     overflow: hidden;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    box-shadow: $box-shadow-4;
+    box-shadow: $shadow-callout;
     animation-fill-mode: both;
     animation-duration: 0.367s;
     z-index: $space-overlay-zindex1;
