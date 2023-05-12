@@ -15,7 +15,7 @@
     --bit-clr-txt-primary2: #CCC;
     --bit-clr-txt-primary3: #AAA;
     --bit-clr-txt-secondary: #000;
-    --bit-clr-txt-secondary2: #252525;
+    --bit-clr-txt-secondary2: #222;
     --bit-clr-txt-secondary3: #444;
     --bit-clr-txt-disabled: #666;
     //backgrounds
@@ -67,20 +67,23 @@
     --bit-clr-act-active-brd-pri2: #C9C9C9;
     --bit-clr-act-hover-brd-sec: #111;
     --bit-clr-act-active-brd-sec: #191919;
-    --bit-clr-act-hover-brd-sec2: #222;
-    --bit-clr-act-active-brd-sec2: #292929;
+    --bit-clr-act-hover-brd-sec2: #393939;
+    --bit-clr-act-active-brd-sec2: #333;
     //states
     --bit-clr-sta-invalid: #A4262C;
     --bit-clr-sta-invalid-hover: #750B1C;
     --bit-clr-sta-error: #A4262C;
     --bit-clr-sta-error-bg: #FDE7E9;
     --bit-clr-sta-error-dark: #A80000;
-    --bit-clr-sta-severe-warning-bg: #FED9CC;
-    --bit-clr-sta-severe-warning-dark: #D83B01;
+    --bit-clr-sta-success: #00CC00;
     --bit-clr-sta-success-bg: #DFF6DD;
     --bit-clr-sta-success-dark: #107C10;
+    --bit-clr-sta-warning: #FFBB77;
     --bit-clr-sta-warning-bg: #FFF4CE;
     --bit-clr-sta-warning-dark: #8A6B00;
+    --bit-clr-sta-severe-warning: #FF7600;
+    --bit-clr-sta-severe-warning-bg: #FED9CC;
+    --bit-clr-sta-severe-warning-dark: #D83B01;
     //generals
     --bit-clr-gnr-red: #A4262C;
     --bit-clr-gnr-darkred: #750B1C;

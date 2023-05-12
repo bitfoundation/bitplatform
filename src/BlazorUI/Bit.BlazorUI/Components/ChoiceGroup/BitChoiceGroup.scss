@@ -186,7 +186,7 @@
         box-sizing: border-box;
         background-color: $color-background-primary;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-secondary;
+        border: $shape-border-width $shape-border-style $color-border-primary2;
     }
 
     &:after {
@@ -201,22 +201,24 @@
         transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
-    &:hover {
-        .bit-chgi-txt {
-            color: $color-action-hover-text-primary;
-        }
+    @media (hover: hover) {
+        &:hover {
+            .bit-chgi-txt {
+                color: $color-action-hover-text-primary;
+            }
 
-        &:after {
-            top: spacing(0.625);
-            left: spacing(0.625);
-            width: spacing(1.25);
-            height: spacing(1.25);
-            transition-property: background-color;
-            background-color: $color-background-primary3;
-        }
+            &:before {
+                border-color: $color-action-hover-border-primary2;
+            }
 
-        &:before {
-            border-color: $color-background-primary3;
+            &:after {
+                top: spacing(0.625);
+                left: spacing(0.625);
+                width: spacing(1.25);
+                height: spacing(1.25);
+                transition-property: background-color;
+                background-color: $color-action-hover-background-secondary2;
+            }
         }
     }
 }
