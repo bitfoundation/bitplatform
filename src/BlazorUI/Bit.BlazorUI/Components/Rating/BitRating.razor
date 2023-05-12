@@ -1,42 +1,41 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<double>
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      aria-label="@AriaLabel"
      aria-readonly="@IsReadOnly"
-     role=@(IsReadOnly is false ? "radiogroup" : null)>
+     role=@(IsReadOnly ? "radiogroup" : null)>
 
-    @for (int item = 1; item <= Max; item++) 
+    @for (int item = 1; item <= Max; item++)
     {
         var index = item;
         var percentage = GetPercentage(index);
 
-        <button type="button"
+        <button @onclick="() => HandleOnClick(index)"
+                type="button"
                 role="radio"
-                class="button"
+                class="bit-rtg-btn"
                 aria-hidden="@IsReadOnly"
                 aria-checked="@(index == CurrentValue)"
                 data-is-current="@(index == CurrentValue)"
                 disabled=@(IsEnabled is false || IsReadOnly)
-                tabindex=@(index == CurrentValue ? "0" : "-1" )
-            @onclick="() => HandleOnClick(index)">
+                tabindex=@(index == CurrentValue ? "0" : "-1")>
 
-            @if (AriaLabelFormat.HasValue()) 
+            @if (AriaLabelFormat.HasValue())
             {
-                <span class="aria-label">
-                    @(string.Format(AriaLabelFormat!, index, Max))
+                <span class="bit-rtg-alb">
+                    @string.Format(AriaLabelFormat!, index, Max)
                 </span>
             }
 
-            <div class="icon">
+            <div class="bit-rtg-ict">
                 <i aria-hidden="true"
-                   class="@($"bit-icon bit-icon--{(percentage == 100 ? Icon : UnselectedIcon).GetName()} icon-back")">
+                   class="@($"bit-icon bit-icon--{(percentage == 100 ? Icon : UnselectedIcon).GetName()} bit-rtg-iem")">
                 </i>
                 <i aria-hidden="true"
-                   class="@($"bit-icon bit-icon--{(percentage > 0 ? Icon : UnselectedIcon).GetName()} icon-front")"
+                   class="@($"bit-icon bit-icon--{(percentage > 0 ? Icon : UnselectedIcon).GetName()} bit-rtg-ifl")"
                    Style=@($"width:{percentage}%;")>
                 </i>
             </div>
@@ -45,8 +44,8 @@
 
     <input @attributes="InputHtmlAttributes"
            type="number"
-           min="@(AllowZeroStars ? 0 : 1)"
            max="@Max"
+           min="@(AllowZeroStars ? 0 : 1)"
            value="@CurrentValueAsString"
            class="bit-input-hidden" />
 </div>
