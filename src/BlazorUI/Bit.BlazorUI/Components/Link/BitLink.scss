@@ -1,19 +1,19 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-lnk {
-    font-family: $typography-font-family;
-    font-size: inherit;
-    font-weight: inherit;
-    color: $color-primary-main;
-    outline: none;
-    text-decoration: none;
     margin: 0;
     padding: 0;
-    background-color: transparent;
+    outline: none;
     cursor: pointer;
+    font-size: inherit;
+    font-weight: inherit;
+    text-decoration: none;
+    color: $color-primary-main;
+    background-color: transparent;
+    font-family: $typography-font-family;
 
     &:hover, &:active, &:focus {
-        color: $color-action-active-primary2;
+        color: $color-action-hover-primary;
     }
 
     &:active, &:hover {
@@ -21,11 +21,11 @@
     }
 
     &.bit-dis {
-        color: $color-neutrals-gray90;
         cursor: default;
+        color: $color-text-disabled;
 
         &:hover, &:active, &:focus {
-            color: $color-neutrals-gray90;
+            color: $color-text-disabled;
         }
 
         &:hover, &:active {

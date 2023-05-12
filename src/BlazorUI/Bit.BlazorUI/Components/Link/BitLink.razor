@@ -7,19 +7,15 @@
     {
         if (Href.StartsWith("#"))
         {
-            <a @ref="RootElement"
-               @attributes="HtmlAttributes"
+            <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
                style="@StyleBuilder.Value"
-               class="@ClassBuilder.Value"
-               @onclick="ScrollIntoView"
-               @onclick:preventDefault>
+               class="@ClassBuilder.Value">
                 @ChildContent
             </a>
         }
         else
         {
-            <a @ref="RootElement"
-               @attributes="HtmlAttributes"
+            <a @ref="RootElement" @attributes="HtmlAttributes"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value"
                href="@Href"
@@ -30,8 +26,7 @@
     }
     else
     {
-        <a @ref="RootElement"
-           @attributes="HtmlAttributes"
+        <a @ref="RootElement" @attributes="HtmlAttributes"
            style="@StyleBuilder.Value"
            class="@ClassBuilder.Value">
             @ChildContent
@@ -40,14 +35,12 @@
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="button"
             aria-disabled="@(IsEnabled is false)"
-            disabled="@(IsEnabled is false)"
-            @onclick="HandleClick">
+            disabled="@(IsEnabled is false)">
         @ChildContent
     </button>
 }
