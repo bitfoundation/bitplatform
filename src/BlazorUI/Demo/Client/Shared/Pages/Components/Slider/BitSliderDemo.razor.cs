@@ -163,36 +163,35 @@ public partial class BitSliderDemo
 
     private readonly string example1HTMLCode = @"
 <BitSlider Label=""Basic"" />
-<br />
+
 <BitSlider Label=""Snapping Slider""
            Min=""0""
            Max=""50""
            Step=""10""
            DefaultValue=""20"" />
-<br />
+
 <BitSlider Label=""Disabled""
            Min=""50""
            Max=""500""
            Step=""50""
            DefaultValue=""300""
            IsEnabled=""false"" />
-<br />
+
 <BitSlider Label=""Controlled""
            Max=""10""
            @bind-Value=""sliderHorizontalValue"" />
 <BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 2"">Reset Value</BitButton>
-<br />
-<br />
+
 <BitSlider Label=""Formatted value""
            Max=""100""
            DefaultValue=""31""
            ValueFormat=""P00"" />
-<br />
+
 <BitSlider Label=""Formatted Value""
            Max=""1000""
            DefaultValue=""319""
            ValueFormat=""P01"" />
-<br />
+
 <BitSlider Label=""Origin From Zero""
            Min=""-5""
            Max=""5""
@@ -203,38 +202,32 @@ public partial class BitSliderDemo
 private double? sliderHorizontalValue = 2;";
 
     private readonly string example2HTMLCode = @"
-<style>
-    .flex-container {
-        display: flex;
-        gap: 2rem;
-    }
-</style>
+<BitSlider Label=""Basic""
+           Min=""1""
+           Max=""5""
+           Step=""1""
+           DefaultValue=""2""
+           IsVertical=""true"" />
 
-<div class=""flex-container"">
-    <BitSlider Label=""Basic""
-                Min=""1""
-                Max=""5""
-                Step=""1""
-                DefaultValue=""2""
-                IsVertical=""true"" />
-    <BitSlider Label=""Disabled""
-                Min=""50""
-                Max=""500""
-                Step=""50""
-                DefaultValue=""300""
-                IsVertical=""true""
-                IsEnabled=""false"" />
-    <BitSlider Label=""Formatted value""
-                Max=""100"" ValueFormat=""P00""
-                IsVertical=""true"" />
-    <BitSlider Label=""Origin From Zero""
-                Min=""-5""
-                Max=""15""
-                Step=""1""
-                DefaultValue=""5""
-                IsVertical=""true""
-                IsOriginFromZero=""true"" />
-</div>";
+<BitSlider Label=""Disabled""
+           Min=""50""
+           Max=""500""
+           Step=""50""
+           DefaultValue=""300""
+           IsVertical=""true""
+           IsEnabled=""false"" />
+
+<BitSlider Label=""Formatted value""
+           Max=""100"" ValueFormat=""P00""
+           IsVertical=""true"" />
+
+<BitSlider Label=""Origin From Zero""
+           Min=""-5""
+           Max=""15""
+           Step=""1""
+           DefaultValue=""5""
+           IsVertical=""true""
+           IsOriginFromZero=""true"" />";
 
     private readonly string example3HTMLCode = @"
 <BitSlider Label=""Basic""
@@ -243,7 +236,7 @@ private double? sliderHorizontalValue = 2;";
            DefaultLowerValue=""2""
            DefaultUpperValue=""8""
            IsRanged=""true"" />
-<br />
+
 <BitSlider Label=""Disabled""
            Min=""50""
            Max=""500""
@@ -252,22 +245,21 @@ private double? sliderHorizontalValue = 2;";
            DefaultUpperValue=""300""
            IsRanged=""true""
            IsEnabled=""false"" />
-<br />
+
 <BitSlider Label=""Controlled example""
            Max=""10""
            @bind-LowerValue=""sliderRangedLowerValue""
            @bind-UpperValue=""sliderRangedUpperValue""
            IsRanged=""true"" />
 <BitButton Class=""bit-btn-slider"" OnClick=""ResetBitSliderRangedValues"">Reset Value</BitButton>
-<br />
-<br />
+
 <BitSlider Label=""Formatted value""
            Max=""100""
            ValueFormat=""P00""
            IsRanged=""true""
            DefaultLowerValue=""20""
            DefaultUpperValue=""70"" />
-<br />
+
 <BitSlider Label=""Origin from zero""
            Min=""-5""
            Max=""5""
@@ -285,45 +277,46 @@ private void ResetBitSliderRangedValues()
 }";
 
     private readonly string example4HTMLCode = @"
-<div class=""flex-container"">
-    <BitSlider Style=""height:250px""
-               Label=""Basic""
-               Min=""1""
-               Max=""5""
-               Step=""1""
-               DefaultUpperValue=""2""
-               DefaultLowerValue=""1""
-               IsRanged=""true""
-               IsVertical=""true"" />
-    <BitSlider Style=""height:250px""
-               Label=""Disabled""
-               Min=""50""
-               Max=""500""
-               Step=""50""
-               DefaultUpperValue=""100""
-               DefaultLowerValue=""300""
-               IsRanged=""true""
-               IsVertical=""true""
-               IsEnabled=""false"" />
-    <BitSlider Style=""height:250px""
-               Label=""Formatted value""
-               Max=""100""
-               ValueFormat=""P00""
-               DefaultUpperValue=""30""
-               DefaultLowerValue=""60""
-               IsRanged=""true""
-               IsVertical=""true"" />
-    <BitSlider Style=""height:250px""
-               Label=""Origin From Zero""
-               Min=""-5""
-               Max=""15""
-               Step=""1""
-               DefaultUpperValue=""7""
-               DefaultLowerValue=""3""
-               IsRanged=""true""
-               IsVertical=""true""
-               IsOriginFromZero=""true"" />
-</div>";
+<BitSlider Style=""height:250px""
+           Label=""Basic""
+           Min=""1""
+           Max=""5""
+           Step=""1""
+           DefaultUpperValue=""2""
+           DefaultLowerValue=""1""
+           IsRanged=""true""
+           IsVertical=""true"" />
+
+<BitSlider Style=""height:250px""
+           Label=""Disabled""
+           Min=""50""
+           Max=""500""
+           Step=""50""
+           DefaultUpperValue=""100""
+           DefaultLowerValue=""300""
+           IsRanged=""true""
+           IsVertical=""true""
+           IsEnabled=""false"" />
+
+<BitSlider Style=""height:250px""
+           Label=""Formatted value""
+           Max=""100""
+           ValueFormat=""P00""
+           DefaultUpperValue=""30""
+           DefaultLowerValue=""60""
+           IsRanged=""true""
+           IsVertical=""true"" />
+
+<BitSlider Style=""height:250px""
+           Label=""Origin From Zero""
+           Min=""-5""
+           Max=""15""
+           Step=""1""
+           DefaultUpperValue=""7""
+           DefaultLowerValue=""3""
+           IsRanged=""true""
+           IsVertical=""true""
+           IsOriginFromZero=""true"" />";
 
     private readonly string example5HTMLCode = @"
 <BitSlider Max=""10""

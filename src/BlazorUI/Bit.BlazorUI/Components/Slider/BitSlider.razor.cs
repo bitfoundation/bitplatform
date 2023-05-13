@@ -229,9 +229,9 @@ public partial class BitSlider
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
+        ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => $"{(IsRanged ? "ranged-" : null)}{(IsVertical ? "vertical" : "horizontal")}");
+        ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
     }
 
     protected override void OnInitialized()
