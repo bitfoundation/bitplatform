@@ -11,6 +11,7 @@
                     <BitLabel>Basic</BitLabel>
                     <BitSearchBox Placeholder="Search" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitSearchBox Placeholder="Search" IsEnabled="false" />
@@ -27,6 +28,7 @@
                     <BitLabel>Basic Underlined SearchBox</BitLabel>
                     <BitSearchBox Placeholder="Search" IsUnderlined="true" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>Disabled Underlined SearchBox</BitLabel>
                     <BitSearchBox Placeholder="Search" IsUnderlined="true" IsEnabled="false" />
@@ -42,10 +44,12 @@
                     <BitLabel>SearchBox with fixed icon</BitLabel>
                     <BitSearchBox Placeholder="Search" FixedIcon="true" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>SearchBox without icon animation</BitLabel>
                     <BitSearchBox Placeholder="Search" DisableAnimation="true" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>SearchBox with custom icon</BitLabel>
                     <BitSearchBox Placeholder="Search" IconName="BitIconName.Filter" />
@@ -62,11 +66,13 @@
                     <BitSearchBox Placeholder="Search" @bind-Value="TwoWaySearchValue" />
                     <BitTextField Placeholder="Search Value" Style="margin-top: 5px;" @bind-Value="TwoWaySearchValue" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>OnChange</BitLabel>
                     <BitSearchBox Placeholder="Search" OnChange="(s) => OnChangeSearchValue = s" OnClear="() => OnChangeSearchValue = string.Empty" />
                     <span>Search Value: @OnChangeSearchValue</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>OnSearch (Search by Enter)</BitLabel>
                     <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" />

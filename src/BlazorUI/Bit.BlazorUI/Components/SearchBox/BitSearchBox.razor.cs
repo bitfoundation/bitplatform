@@ -121,13 +121,13 @@ public partial class BitSearchBox
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{(FixedIcon ? "fixed-icon-" : string.Empty)}has-value" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
 
-        ClassBuilder.Register(() => DisableAnimation ? "no-animation" : string.Empty);
+        ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-nan" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "underlined" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => InputHasFocus ? $"{(FixedIcon ? "fixed-icon-" : string.Empty)}focused" : string.Empty);
+        ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()

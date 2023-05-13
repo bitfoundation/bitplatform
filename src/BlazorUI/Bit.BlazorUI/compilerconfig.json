@@ -1,4 +1,5 @@
-﻿[
+﻿
+[
     {
         "outputFile": "wwwroot/styles/bit.blazorui.min.css",
         "inputFile": "Styles/bit.blazorui.scss",

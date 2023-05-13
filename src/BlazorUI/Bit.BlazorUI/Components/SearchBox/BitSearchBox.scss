@@ -1,198 +1,56 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-srb {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
-    height: spacing(4);
-    box-shadow: none;
-    border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-    border-radius: $shape-border-radius;
     margin: 0;
-    padding: spacing(0.125) 0 spacing(0.125) spacing(0.5);
+    display: flex;
+    box-shadow: none;
+    font-weight: 400;
+    height: spacing(4);
+    align-items: stretch;
+    flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    font-weight: 400;
-    color: $color-neutrals-gray160;
+    color: $color-text-primary2;
+    border-radius: $shape-border-radius;
     font-family: $typography-font-family;
     background-color: $color-background-primary;
+    padding: spacing(0.125) 0 spacing(0.125) spacing(0.5);
+    border: $shape-border-width $shape-border-style $color-border-primary2;
 
     &:hover {
-        border-color: $color-neutrals-gray160;
+        border-color: $color-action-hover-border-primary;
 
-        .icon-container {
+        .bit-srb-ict {
             i {
-                color: $color-primary-darker;
-            }
-        }
-    }
-
-    .icon-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-shrink: 0;
-        width: spacing(4);
-        font-size: spacing(2);
-        text-align: center;
-        color: $color-primary-main;
-        cursor: text;
-        transition: width 0.167s ease 0s;
-
-        i {
-            display: inline-block;
-            width: unset;
-            height: unset;
-            color: $color-primary-main;
-            speak: none;
-            opacity: 1;
-            transition: opacity 0.167s ease 0s;
-        }
-    }
-
-    .input {
-        flex: 1 1 0;
-        min-width: 0;
-        box-shadow: none;
-        border: none;
-        outline: none;
-        margin: 0;
-        padding: 0 0 spacing(0.0625);
-        box-sizing: border-box;
-        font-weight: inherit;
-        font-family: inherit;
-        font-size: inherit;
-        color: $color-neutrals-gray160;
-        text-overflow: ellipsis;
-        background-color: transparent;
-        overflow: hidden;
-    }
-
-    .clear-btn-container {
-        display: flex;
-        flex-direction: row;
-        align-items: stretch;
-        flex-basis: spacing(4);
-        flex-shrink: 0;
-        padding: 0;
-        margin: spacing(-0.125) 0;
-        cursor: pointer;
-
-        &:hover {
-            .clear-btn {
-                background-color: $color-neutrals-gray20;
-
-                i {
-                    color: $color-neutrals-gray160;
-                }
-            }
-        }
-    }
-
-    .clear-btn {
-        position: relative;
-        display: inline-block;
-        width: spacing(4);
-        height: auto;
-        padding: 0 spacing(0.5);
-        border-radius: 0 spacing(0.125) spacing(0.125) 0;
-        outline: transparent;
-        border: none;
-        box-sizing: border-box;
-        font-size: spacing(1.75);
-        font-weight: 400;
-        font-family: $typography-font-family;
-        text-decoration: none;
-        text-align: center;
-        color: $color-primary-main;
-        cursor: pointer;
-        background-color: transparent;
-        user-select: none;
-
-        span {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-
-        i {
-            flex-shrink: 0;
-            width: unset;
-            height: spacing(2);
-            margin: 0 spacing(0.5);
-            font-size: spacing(1.5);
-            line-height: spacing(2);
-            text-align: center;
-            color: $color-neutrals-gray130;
-        }
-    }
-
-    &.focused {
-        border: spacing(0.25) $shape-border-style $color-primary-main;
-
-        .icon-container {
-            width: spacing(0.5);
-            color: $color-primary-darker;
-
-            i {
-                color: $color-primary-darker;
-                opacity: 0;
-            }
-        }
-
-        &:hover {
-            border: spacing(0.25) $shape-border-style $color-primary-main;
-        }
-    }
-
-    &.underlined {
-        padding: spacing(0.125) 0 spacing(0.125) spacing(1);
-        border-radius: 0;
-        border-width: 0 0 spacing(0.125);
-
-        &:hover {
-            border-top-width: 0;
-            border-left-width: 0;
-            border-right-width: 0;
-        }
-
-        &.focused {
-            border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
-
-            &:hover {
-                border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
+                color: $color-action-hover-primary;
             }
         }
     }
 
     &.bit-dis {
-        color: $color-neutrals-gray160;
-        background-color: $color-neutrals-gray20;
-        border-color: $color-neutrals-gray20;
-        pointer-events: none;
         cursor: default;
+        pointer-events: none;
+        color: $color-text-disabled;
+        border-color: $color-border-disabled;
+        background-color: $color-background-disabled;
 
-        .icon-container {
-            color: $color-neutrals-gray90;
-
+        .bit-srb-ict {
             i {
-                color: $color-neutrals-gray90;
+                color: $color-text-disabled;
             }
         }
 
         &:hover {
-            border-color: $color-neutrals-gray20;
+            border-color: $color-border-disabled;
 
-            .icon-container {
+            .bit-srb-ict {
                 i {
-                    color: $color-neutrals-gray90;
+                    color: $color-text-disabled;
                 }
             }
         }
 
-        &.underlined {
+        &.bit-srb-und {
             background-color: transparent;
         }
     }
@@ -200,7 +58,7 @@
     &.bit-inv {
         border-color: $color-state-invalid;
 
-        .icon-container {
+        .bit-srb-ict {
             i {
                 color: $color-state-invalid;
             }
@@ -209,15 +67,15 @@
         &:hover {
             border-color: $color-state-invalid-hover;
 
-            .icon-container {
+            .bit-srb-ict {
                 i {
                     color: $color-state-invalid-hover;
                 }
             }
         }
 
-        &.underlined {
-            &.focused {
+        &.bit-srb-und {
+            &.bit-srb-foc {
                 border-color: $color-state-invalid;
 
                 &:hover {
@@ -226,70 +84,204 @@
             }
         }
     }
+}
 
-    &.has-value {
-        &:hover {
-            .icon-container {
-                width: spacing(0.5);
-                color: $color-primary-darker;
+.bit-srb-ict {
+    cursor: text;
+    display: flex;
+    flex-shrink: 0;
+    width: spacing(4);
+    text-align: center;
+    font-size: spacing(2);
+    flex-direction: column;
+    justify-content: center;
+    color: $color-primary-main;
+    transition: width 0.167s ease 0s;
 
-                i {
-                    color: $color-primary-darker;
-                    opacity: 0;
-                }
+    i {
+        opacity: 1;
+        speak: none;
+        width: unset;
+        height: unset;
+        display: inline-block;
+        color: $color-primary-main;
+        transition: opacity 0.167s ease 0s;
+    }
+}
+
+.bit-srb-inp {
+    margin: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    border: none;
+    outline: none;
+    overflow: hidden;
+    box-shadow: none;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    padding: 0 0 spacing(0.0625);
+    background-color: transparent;
+    color: $color-text-primary2;
+}
+
+.bit-srb-cbc {
+    padding: 0;
+    display: flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    flex-direction: row;
+    align-items: stretch;
+    flex-basis: spacing(4);
+    margin: spacing(-0.125) 0;
+
+    &:hover {
+        .bit-srb-cbt {
+            background-color: $color-action-hover-background-primary;
+
+            i {
+                color: $color-action-hover-text-primary2;
             }
         }
     }
+}
 
-    &.fixed-icon-has-value {
-        &:hover {
-            .icon-container {
-                width: spacing(4);
-                color: $color-primary-darker;
+.bit-srb-cbt {
+    height: auto;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    user-select: none;
+    position: relative;
+    text-align: center;
+    outline: transparent;
+    text-decoration: none;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    background-color: transparent;
+    font-family: $typography-font-family;
+    border-radius: 0 spacing(0.125) spacing(0.125) 0;
 
-                i {
-                    color: $color-primary-darker;
-                    opacity: 1;
-                }
-            }
+    span {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    i {
+        width: unset;
+        flex-shrink: 0;
+        height: spacing(2);
+        text-align: center;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.5);
+        line-height: spacing(2);
+        color: $color-text-primary3;
+    }
+}
+
+.bit-srb-foc {
+    border: spacing(0.25) $shape-border-style $color-primary-main;
+
+    .bit-srb-ict {
+        width: spacing(0.5);
+
+        i {
+            opacity: 0;
+            color: $color-primary-darker;
         }
     }
 
-    &.fixed-icon-focused {
-        border: spacing(0.25) $shape-border-style $color-primary-main;
+    &:hover {
+        border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+    }
+}
 
-        .icon-container {
+.bit-srb-und {
+    border-radius: 0;
+    border-width: 0 0 spacing(0.125);
+    padding: spacing(0.125) 0 spacing(0.125) spacing(1);
+
+    &:hover {
+        border-top-width: 0;
+        border-left-width: 0;
+        border-right-width: 0;
+    }
+
+    &.bit-srb-foc {
+        border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
+
+        &:hover {
+            border-bottom: spacing(0.25) $shape-border-style $color-action-hover-primary;
+        }
+    }
+}
+
+.bit-srb-hvl {
+    &:hover {
+        .bit-srb-ict {
+            width: spacing(0.5);
+
+            i {
+                opacity: 0;
+                color: $color-action-hover-primary;
+            }
+        }
+    }
+}
+
+.bit-srb-fic-hvl {
+    &:hover {
+        .bit-srb-ict {
             width: spacing(4);
-            color: $color-primary-main;
 
             i {
-                color: $color-primary-main;
                 opacity: 1;
-            }
-        }
-
-        &:hover {
-            border: spacing(0.25) $shape-border-style $color-primary-main;
-
-            .icon-container {
-                width: spacing(4);
-                color: $color-primary-darker;
-
-                i {
-                    color: $color-primary-darker;
-                    opacity: 1;
-                }
+                color: $color-action-hover-primary;
             }
         }
     }
+}
 
-    &.no-animation {
-        .icon-container {
-            transition: none;
+.bit-srb-fic-foc {
+    border: spacing(0.25) $shape-border-style $color-primary-main;
+
+    .bit-srb-ict {
+        width: spacing(4);
+
+        i {
+            opacity: 1;
+            color: $color-primary-main;
+        }
+    }
+
+    &:hover {
+        border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+
+        .bit-srb-ict {
+            width: spacing(4);
 
             i {
-                transition: none;
+                opacity: 1;
+                color: $color-action-hover-primary;
             }
+        }
+    }
+}
+
+.bit-srb-nan {
+    .bit-srb-ict {
+        transition: none;
+
+        i {
+            transition: none;
         }
     }
 }
