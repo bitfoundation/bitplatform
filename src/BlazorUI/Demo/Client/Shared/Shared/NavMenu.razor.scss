@@ -75,16 +75,6 @@
     }
 }
 
-::deep .nav-menu-search-box {
-    width: 100%;
-    height: rem(40px);
-
-    input::-webkit-input-placeholder {
-        font-weight: 500;
-        font-size: rem(14px);
-    }
-}
-
 ::deep .side-nav {
     padding-left: rem(1px);
     
@@ -96,22 +86,5 @@
         .expand {
             transform: rotate(0deg);
         }
-    }
-
-    .item-container {
-        box-sizing: border-box;
-
-        &.selected {
-            .item .item-txt {
-                color: $B2Color;
-                font-weight: unset;
-                
-            }
-        }
-    }
-
-    .item .item-txt {
-        color: #323130;
-        line-height: rem(26px);
     }
 }

@@ -1,15 +1,14 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="icon-container" aria-hidden="true">
-        <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+    <div class="bit-srb-ict" aria-hidden="true">
+        <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true" />
     </div>
-    <input @attributes="InputHtmlAttributes"
-           class="input"
+    <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
+           class="bit-srb-inp"
            id="@_inputId"
            type="text"
            aria-label="@AriaLabel"
@@ -17,23 +16,18 @@
            placeholder="@Placeholder"
            role="searchbox"
            value="@CurrentValue"
-           autocomplete="@Autocomplete"
-           @ref="_inputRef"
-           @onkeydown="@((k) => HandleOnKeyDown(k))"
-           @onfocusin="HandleInputFocusIn"
-           @onfocusout="HandleInputFocusOut"
-           @oninput="@HandleOnChange" />
+           autocomplete="@Autocomplete" />
     @if (CurrentValue.HasValue())
     {
-        <div class="clear-btn-container">
-            <button class="clear-btn"
-                type="button"
-                aria-label="Clear text"
-                aria-hidden="true"
-                disabled="@(CurrentValue.HasNoValue())"
-                @onclick="HandleOnClear">
+        <div class="bit-srb-cbc">
+            <button @onclick="HandleOnClear"
+                    class="bit-srb-cbt"
+                    type="button"
+                    aria-label="Clear text"
+                    aria-hidden="true"
+                    disabled="@(CurrentValue.HasNoValue())">
                 <span>
-                    <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
+                    <i class="bit-icon bit-icon--Clear" aria-hidden="true" />
                 </span>
             </button>
         </div>
