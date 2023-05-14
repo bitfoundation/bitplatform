@@ -7,11 +7,13 @@
         <ExamplePreview>
             <BitSlider Label="Basic" />
             <br />
+            <br />
             <BitSlider Label="Snapping Slider"
                        Min="0"
                        Max="50"
                        Step="10"
                        DefaultValue="20" />
+            <br />
             <br />
             <BitSlider Label="Disabled"
                        Min="50"
@@ -20,10 +22,12 @@
                        DefaultValue="300"
                        IsEnabled="false" />
             <br />
-            <BitSlider Label="Controlled"
-                       Max="10"
-            @bind-Value="sliderHorizontalValue" />
+            <br />
+            <BitSlider @bind-Value="sliderHorizontalValue"
+                       Label="Controlled"
+                       Max="10" />
             <BitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 2">Reset Value</BitButton>
+            <br />
             <br />
             <br />
             <BitSlider Label="Formatted value"
@@ -31,10 +35,12 @@
                        DefaultValue="31"
                        ValueFormat="P00" />
             <br />
+            <br />
             <BitSlider Label="Formatted Value"
                        Max="1000"
                        DefaultValue="319"
                        ValueFormat="P01" />
+            <br />
             <br />
             <BitSlider Label="Origin From Zero"
                        Min="-5"
@@ -47,13 +53,14 @@
 
     <ComponentExampleBox Title="Vertical Sliders" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="flex-container">
+            <div class="flex-container" style="height:300px">
                 <BitSlider Label="Basic"
                            Min="1"
                            Max="5"
                            Step="1"
                            DefaultValue="2"
                            IsVertical="true" />
+
                 <BitSlider Label="Disabled"
                            Min="50"
                            Max="500"
@@ -61,9 +68,11 @@
                            DefaultValue="300"
                            IsVertical="true"
                            IsEnabled="false" />
+
                 <BitSlider Label="Formatted value"
                            Max="100" ValueFormat="P00"
                            IsVertical="true" />
+
                 <BitSlider Label="Origin From Zero"
                            Min="-5"
                            Max="15"
@@ -84,6 +93,7 @@
                        DefaultUpperValue="8"
                        IsRanged="true" />
             <br />
+            <br />
             <BitSlider Label="Disabled"
                        Min="50"
                        Max="500"
@@ -93,12 +103,13 @@
                        IsRanged="true"
                        IsEnabled="false" />
             <br />
-            <BitSlider Label="Controlled example"
+            <br />
+            <BitSlider @bind-LowerValue="sliderRangedLowerValue" @bind-UpperValue="sliderRangedUpperValue"
+                       Label="Controlled example"
                        Max="10"
-            @bind-LowerValue="sliderRangedLowerValue"
-            @bind-UpperValue="sliderRangedUpperValue"
                        IsRanged="true" />
             <BitButton Class="bit-btn-slider" OnClick="ResetBitSliderRangedValues">Reset Value</BitButton>
+            <br />
             <br />
             <br />
             <BitSlider Label="Formatted value"
@@ -107,6 +118,7 @@
                        IsRanged="true"
                        DefaultLowerValue="20"
                        DefaultUpperValue="70" />
+            <br />
             <br />
             <BitSlider Label="Origin from zero"
                        Min="-5"
@@ -130,6 +142,7 @@
                            DefaultLowerValue="1"
                            IsRanged="true"
                            IsVertical="true" />
+
                 <BitSlider Style="height:250px"
                            Label="Disabled"
                            Min="50"
@@ -140,6 +153,7 @@
                            IsRanged="true"
                            IsVertical="true"
                            IsEnabled="false" />
+
                 <BitSlider Style="height:250px"
                            Label="Formatted value"
                            Max="100"
@@ -148,6 +162,7 @@
                            DefaultLowerValue="60"
                            IsRanged="true"
                            IsVertical="true" />
+
                 <BitSlider Style="height:250px"
                            Label="Origin From Zero"
                            Min="-5"

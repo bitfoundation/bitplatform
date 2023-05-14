@@ -1,13 +1,12 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="@HtmlAttributes"
+<div @ref="RootElement" @attributes="@HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
     {
-        <label class="label" @ref="_labelRef">@Label</label>
+        <label class="bit-sld-lbl" @ref="_labelRef">@Label</label>
     }
 
     @if (IsRanged)
@@ -15,36 +14,35 @@
         @if (ShowValue && IsVertical)
         {
             <label @ref="_valueLabelRef"
-                   class="value-label"
+                   class="bit-sld-vlb"
                    for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
         }
 
         <div @ref="_containerRef"
-             class="container"
+             class="bit-sld-cnt"
              style="@(IsVertical ? _styleContainer : null)">
             @if (ShowValue && IsVertical is false)
             {
-                <label class="value-label">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label class="bit-sld-vlb">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
-            <div id="@_sliderBoxId"
-                 class="box"
+            <div @attributes="@SliderBoxHtmlAttributes"
                  style="@_styleProgress"
-                 @attributes="@SliderBoxHtmlAttributes">
+                 id="@_sliderBoxId"
+                 class="bit-sld-box">
                 @if (IsOriginFromZero)
                 {
-                    <span class="zero-tick" style="left: calc(50% - 1px);"></span>
+                    <span class="bit-sld-ztk" style="left: calc(50% - 1px);"></span>
                 }
 
-                <input id="@_minInputId"
+                <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
+                       id="@_minInputId"
                        type="range"
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@_firstInputValue"
-                       @oninput="@(args => HandleOnRangeInput(args, true))"
-                       disabled=@(!IsEnabled)
+                       disabled=@(IsEnabled is false)
                        role="slider"
                        tabindex="@GetTabIndex"
                        data-is-focusable="@(IsEnabled is false)"
@@ -54,14 +52,13 @@
                        aria-valuemax="@Max"
                        aria-valuetext="@GetAriaValueText(_firstInputValue.GetValueOrDefault())"
                        aria-valuenow="@_firstInputValue" />
-                <input id="@_maxInputId"
+                <input @bind-value="@_secondInputValue" @oninput="@(args => HandleOnRangeInput(args, false))"
+                       id="@_maxInputId"
                        type="range"
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       @bind-value="@_secondInputValue"
-                       @oninput="@(args => HandleOnRangeInput(args, false))"
-                       disabled=@(!IsEnabled)
+                       disabled=@(IsEnabled is false)
                        role="slider"
                        tabindex="@GetTabIndex"
                        data-is-focusable="@(IsEnabled is false)"
@@ -74,41 +71,39 @@
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label class="value-label">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label class="bit-sld-vlb">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label class="value-label">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label class="bit-sld-vlb">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
     {
-        <div @ref="_containerRef"
-             class="container">
+        <div @ref="_containerRef" class="bit-sld-cnt">
             @if (IsOriginFromZero)
             {
-                <span class="zero-tick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+                <span class="bit-sld-ztk" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
             }
 
-            <input type="range"
+            <input @bind-value="@Value" @oninput="@HandleOnInput"
+                   type="range"
                    min="@Min"
                    max="@Max"
                    step="@Step"
-                   @bind-value="@Value"
-                   @oninput="@HandleOnInput"
                    style="@_styleProgress"
                    disabled=@(IsEnabled is false) />
 
             @if (ShowValue && IsVertical is false)
             {
-                <label class="value-label">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label class="bit-sld-vlb">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label class="value-label">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label class="bit-sld-vlb">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>
