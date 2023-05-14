@@ -189,7 +189,6 @@ public partial class BitSpinButtonDemo
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -197,7 +196,7 @@ public partial class BitSpinButtonDemo
             Id = "labelPosition-enum",
             Name = "BitSpinButtonLabelPosition",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -252,104 +251,79 @@ public partial class BitSpinButtonDemo
 
 
     private readonly string example1HTMLCode = @"
-<div class=""example-box"">
-    <BitSpinButton Label=""Basic"" />
-    <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
-    <BitSpinButton Label=""Label & Icon"" IconName=""BitIconName.Lightbulb"" />
-    <BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
-</div>
-";
+<BitSpinButton Label=""Basic"" />
+
+<BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
+
+<BitSpinButton Label=""Label & Icon"" IconName=""BitIconName.Lightbulb"" />
+
+<BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
 
     private readonly string example2HTMLCode = @"
-<div class=""example-box"">
-    <BitSpinButton>
-        <LabelTemplate>
-            <label style=""color: green;"">This is custom Label</label>
-            <BitIcon IconName=""BitIconName.Filter"" />
-        </LabelTemplate>
-    </BitSpinButton>
-</div>
-";
+<BitSpinButton>
+    <LabelTemplate>
+        <label style=""color: green;"">This is custom Label</label>
+        <BitIcon IconName=""BitIconName.Filter"" />
+    </LabelTemplate>
+</BitSpinButton>";
 
     private readonly string example3HTMLCode = @"
-<div class=""example-box"">
-    <BitSpinButton Label=""Like and Dislike""
-                    IncrementButtonIconName=""BitIconName.LikeSolid""
-                    DecrementButtonIconName=""BitIconName.DislikeSolid"" />
-</div>
-";
+<BitSpinButton Label=""Like and Dislike""
+               IncrementButtonIconName=""BitIconName.LikeSolid""
+               DecrementButtonIconName=""BitIconName.DislikeSolid"" />";
 
     private readonly string example4HTMLCode = @"
-<div class=""example-box"">
-    <BitSpinButton Label=""Min: -10, Max: 10""
-                    Min=""-10""
-                    Max=""10"" />
+<BitSpinButton Label=""Min: -10, Max: 10""
+               Min=""-10""
+               Max=""10"" />
 
-    <BitSpinButton Label=""Min: -20, Max: 20, Step: 2""
-                    Min=""-20""
-                    Max=""20""
-                    Step=""2"" />
+<BitSpinButton Label=""Min: -20, Max: 20, Step: 2""
+               Min=""-20""
+               Max=""20""
+               Step=""2"" />
 
-    <BitSpinButton Label=""Min: -1, Max: 1, Step: 0.1""
-                    Min=""-1""
-                    Max=""1""
-                    Step=""0.1"" />
-</div>
-";
+<BitSpinButton Label=""Min: -1, Max: 1, Step: 0.1""
+               Min=""-1""
+               Max=""1""
+               Step=""0.1"" />";
 
     private readonly string example5HTMLCode = @"
-<div class=""example-box"">
-    <BitSpinButton Label=""Height""
-                    IconName=""BitIconName.AutoHeight""
-                    DefaultValue=""150""
-                    Suffix="" cm"" />
+<BitSpinButton Label=""Height""
+               IconName=""BitIconName.AutoHeight""
+               DefaultValue=""150""
+               Suffix="" cm"" />
 
-    <BitSpinButton Label=""Weight""
-                    IconName=""BitIconName.Weights""
-                    DefaultValue=""50""
-                    Step=""0.5""
-                    Suffix="" kg"" />
-</div>
-";
+<BitSpinButton Label=""Weight""
+               IconName=""BitIconName.Weights""
+               DefaultValue=""50""
+               Step=""0.5""
+               Suffix="" kg"" />";
 
     private readonly string example6HTMLCode = @"
-<div class=""example-box"">
-    <div>
-        <BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
-        <BitRating @bind-Value=""OneWayValue"" />
-    </div>
+<BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
+<BitRating @bind-Value=""OneWayValue"" />
 
-    <div>
-        <BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
-        <BitRating @bind-Value=""TwoWayValue"" />
-    </div>
-</div>
-";
+<BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
+<BitRating @bind-Value=""TwoWayValue"" />";
     private readonly string example6CSharpCode = @"
 private double OneWayValue = 3;
-private double TwoWayValue = 5;
-";
+private double TwoWayValue = 5;";
 
     private readonly string example7HTMLCode = @"
-<div class=""column"">
-    <BitSpinButton @bind-Value=""IncrementEventValue""
-                    Label=""OnIncrement / OnDecrement""
-                    Step=""0.1""
-                    OnIncrement=""() => OnIncrementCounter++""
-                    OnDecrement=""() => OnDecrementCounter++"" />
-    <span>OnIncrement Counter: @OnIncrementCounter</span>
-    <span>OnDecrement Counter: @OnDecrementCounter</span>
-</div>
+<BitSpinButton @bind-Value=""IncrementEventValue""
+               Label=""OnIncrement / OnDecrement""
+               Step=""0.1""
+               OnIncrement=""() => OnIncrementCounter++""
+               OnDecrement=""() => OnDecrementCounter++"" />
+<span>OnIncrement Counter: @OnIncrementCounter</span>
+<span>OnDecrement Counter: @OnDecrementCounter</span>
 
-<div class=""column"">
-    <BitSpinButton @bind-Value=""OnChangeEventBindedValue""
-                    Label=""OnChange""
-                    Step=""0.1"" 
-                    OnChange=""HandleOnChangeEvent""/>
-    <span>OnChange Clicked Counter: @OnChangeClickedCounter</span>
-    <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
-</div>
-";
+<BitSpinButton @bind-Value=""OnChangeEventBindedValue""
+               Label=""OnChange""
+               Step=""0.1"" 
+               OnChange=""HandleOnChangeEvent""/>
+<span>OnChange Clicked Counter: @OnChangeClickedCounter</span>
+<span>OnChange Returned Value: @OnChangeEventReturnedValue</span>";
     private readonly string example7CSharpCode = @"
 private double IncrementEventValue;
 private int OnIncrementCounter;
@@ -363,37 +337,33 @@ private void HandleOnChangeEvent(double value)
     OnChangeEventReturnedValue = value;
 
     OnChangeClickedCounter++;
-}
-";
+}";
 
     private readonly string example8HTMLCode = @"
-<div class=""example-box"">
-    @if (string.IsNullOrEmpty(SuccessMessage))
-    {
-        <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
 
-            <DataAnnotationsValidator />
+        <DataAnnotationsValidator />
 
-            <div class=""validation-summary"">
-                <ValidationSummary />
-            </div>
+        <div class=""validation-summary"">
+            <ValidationSummary />
+        </div>
 
-            <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
-            <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
+        <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
+        <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
 
-            <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
-                Submit
-            </BitButton>
-        </EditForm>
-    }
-    else
-    {
-        <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-            @SuccessMessage
-        </BitMessageBar>
-    }
-</div>
-";
+        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        @SuccessMessage
+    </BitMessageBar>
+}";
     private readonly string example8CSharpCode = @"
 public class BitSpinButtonValidationModel
 {
@@ -416,6 +386,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}
-";
+}";
 }
