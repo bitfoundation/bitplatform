@@ -3,8 +3,12 @@ namespace TodoTemplate.Client.App;
 
 public partial class MainPage
 {
-    public MainPage()
+    private readonly IExceptionHandler _exceptionHandler;
+
+    public MainPage(IExceptionHandler exceptionHandler)
     {
+        _exceptionHandler = exceptionHandler;
+
         InitializeComponent();
 
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
@@ -48,9 +52,9 @@ public partial class MainPage
             settings.AreBrowserAcceleratorKeysEnabled = false;
 #endif
         }
-        catch (Exception)
+        catch (Exception exp)
         {
-            throw;
+            _exceptionHandler.Handle(exp);
         }
     }
 }

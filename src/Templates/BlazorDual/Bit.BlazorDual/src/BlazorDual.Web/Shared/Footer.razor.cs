@@ -27,6 +27,6 @@ public partial class Footer
         NavigationManager.ForceReload();
     }
 
-    private static List<BitDropDownItem> GetCultures() =>
-        CultureInfoManager.SupportedCultures.Select(sc => new BitDropDownItem { Value = sc.code, Text = sc.name }).ToList();
+    private static List<BitDropdownItem> GetCultures() =>
+        CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem { Value = sc.code, Text = sc.name }).ToList();
 }
