@@ -36,15 +36,15 @@
                         <BitPivotItem Key="@nameof(AppStrings.Completed)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Completed)]" />
                     </BitPivot>
                     <div class="sort-drp-container">
-                        <BitDropDown Class="sort-todo-drp"
+                        <BitDropdown Class="sort-todo-drp"
                                      Items="_sortItems"
                                      OnSelectItem="SortTodoItems"
                                      DefaultValue="@_sortItems[0].Value"
                                      IsResponsiveModeEnabled="true">
-                            <CaretDownFragment>
+                            <CaretDownTemplate>
                                 <BitActionButton IconName="BitIconName.Sort" Style="height:unset"/>
-                            </CaretDownFragment>
-                        </BitDropDown>
+                            </CaretDownTemplate>
+                        </BitDropdown>
                     </div>
                 </div>
 

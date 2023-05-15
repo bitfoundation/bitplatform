@@ -27,7 +27,7 @@
             </div>
 
             <div class="form-input-container">
-                <BitDropDown @bind-Value="_selectedCategoyId"
+                <BitDropdown @bind-Value="_selectedCategoyId"
                              IsMultiSelect="false"
                              Items="_allCategoryList"
                              OnSelectItem="(item => _product.CategoryId = int.Parse(item.Value))"

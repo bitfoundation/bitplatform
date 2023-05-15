@@ -1049,10 +1049,10 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("<i>This is CaretDownFragment</div>"),
+        DataRow("<i>This is CaretDownTemplate</div>"),
         DataRow(null)
     ]
-    public void BitDropdownCaretDownFragmentTest(string iconFragment)
+    public void BitDropdownCaretDownTemplateTest(string iconFragment)
     {
         var component = RenderComponent<BitDropdown>(parameters =>
         {

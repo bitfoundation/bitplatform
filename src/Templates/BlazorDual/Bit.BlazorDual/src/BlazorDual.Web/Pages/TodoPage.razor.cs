@@ -14,7 +14,7 @@ public partial class TodoPage
     private string _newTodoTitle = string.Empty;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IEnumerable<TodoItemDto> _viewTodoItems = default!;
-    private List<BitDropDownItem> _sortItems = new();
+    private List<BitDropdownItem> _sortItems = new();
 
     protected override async Task OnInitAsync()
     {
@@ -23,8 +23,8 @@ public partial class TodoPage
 
         _sortItems = new()
         {
-            new BitDropDownItem { Text = Localizer[nameof(AppStrings.Alphabetical)], Value = nameof(AppStrings.Alphabetical) },
-            new BitDropDownItem { Text = Localizer[nameof(AppStrings.Date)], Value = nameof(AppStrings.Date) }
+            new BitDropdownItem { Text = Localizer[nameof(AppStrings.Alphabetical)], Value = nameof(AppStrings.Alphabetical) },
+            new BitDropdownItem { Text = Localizer[nameof(AppStrings.Date)], Value = nameof(AppStrings.Date) }
         };
 
         await LoadTodoItems();
@@ -98,7 +98,7 @@ public partial class TodoPage
         _underEditTodoItemTitle = todoItem.Title;
     }
 
-    private void SortTodoItems(BitDropDownItem sort)
+    private void SortTodoItems(BitDropdownItem sort)
     {
         _selectedSort = sort.Value;
 

@@ -185,19 +185,19 @@ public partial class Header : IDisposable
 
     private async Task OpenSignOutModal()
     {
-        ToggleHeaderDropDown();
+        ToggleHeaderDropdown();
         await JsRuntime.SetBodyOverflow(true);
         _isSignOutModalOpen = true;
     }
 
-    private void ToggleHeaderDropDown()
+    private void ToggleHeaderDropdown()
     {
         _isHeaderDrpDownOpen = !_isHeaderDrpDownOpen;
     }
 
     private void OpenEditProfilePage()
     {
-        ToggleHeaderDropDown();
+        ToggleHeaderDropdown();
         NavigationManager.NavigateTo("/edit-profile");
     }
 
