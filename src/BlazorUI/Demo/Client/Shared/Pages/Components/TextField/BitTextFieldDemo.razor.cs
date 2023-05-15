@@ -271,7 +271,6 @@ public partial class BitTextFieldDemo
             Description = "CSS class of the BitTextField's Description.",
         },
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -279,7 +278,7 @@ public partial class BitTextFieldDemo
             Id = "text-field-type-enum",
             Name = "BitTextFieldType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -353,41 +352,49 @@ public partial class BitTextFieldDemo
 
     private readonly string example1HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsEnabled=""false"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""Description"" Description=""This is Description"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""IsRequired"" IsRequired=""true"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />
-";
+
+<BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />";
 
     private readonly string example2HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" IsUnderlined=""true"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
-";
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
     private readonly string example3HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""Required No Border"" HasBorder=""false"" IsRequired=""true"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />
-";
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />";
 
     private readonly string example4HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
+
 <BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />
-";
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />";
 
     private readonly string example5HTMLCode = @"
 <BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""BitIconName.EditMail"" />
-<BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""BitIconName.Calendar"" />
-";
+
+<BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""BitIconName.Calendar"" />";
 
     private readonly string example6HTMLCode = @"
 <BitTextField Label=""With Prefix"" Prefix=""https://"" />
+
 <BitTextField Label=""With Suffix"" Suffix="".com"" />
+
 <BitTextField Label=""With Prefix and Suffix"" Prefix=""https://"" Suffix="".com"" />
-<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />
-";
+
+<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />";
 
     private readonly string example7HTMLCode = @"
 <BitTextField Placeholder=""Enter a text..."">
@@ -412,52 +419,39 @@ public partial class BitTextFieldDemo
     <SuffixTemplate>
         <span style=""color: coral; margin: 0 5px;"">Suffix</span>
     </SuffixTemplate>
-</BitTextField>
-";
+</BitTextField>";
 
     private readonly string example8HTMLCode = @"
 <BitTextField Placeholder=""Enter a password..."" Label=""Password"" Type=""BitTextFieldType.Password"" />
-<BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />
-";
+
+<BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
 
     private readonly string example9HTMLCode = @"
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""One-way"" Value=""@OneWayValue"" />
-    <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""OneWayValue"" />
-</div>
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Two-way"" @bind-Value=""TwoWayValue"" />
-    <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""TwoWayValue"" />
-</div>
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""OnChange"" OnChange=""(v) => OnChangeValue = v"" />
-    <span>Value: @OnChangeValue</span>
-</div>
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Readonly"" @bind-Value=""ReadOnlyValue"" IsReadonly=""true"" />
-</div>
-";
+<BitTextField Placeholder=""Enter a text..."" Label=""One-way"" Value=""@OneWayValue"" />
+<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""OneWayValue"" />
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Two-way"" @bind-Value=""TwoWayValue"" />
+<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""TwoWayValue"" />
+
+<BitTextField Placeholder=""Enter a text..."" Label=""OnChange"" OnChange=""(v) => OnChangeValue = v"" />
+<span>Value: @OnChangeValue</span>
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Readonly"" @bind-Value=""ReadOnlyValue"" IsReadonly=""true"" />";
     private readonly string example9CSharpCode = @"
 private string OneWayValue;
 private string TwoWayValue;
 private string OnChangeValue;
-private string ReadOnlyValue = ""this is readonly value"";
-";
+private string ReadOnlyValue = ""this is readonly value"";";
 
     private readonly string example10HTMLCode = @"
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
-    <pre class=""trimmed-box"">[@TrimmedValue]</pre>
-</div>
-<div>
-    <BitTextField Placeholder=""Enter a text..."" Label=""Not Trimmed"" @bind-Value=""NotTrimmedValue"" />
-    <pre class=""trimmed-box"">[@NotTrimmedValue]</pre>
-</div>
-";
+<BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
+<pre class=""trimmed-box"">[@TrimmedValue]</pre>
+
+<BitTextField Placeholder=""Enter a text..."" Label=""Not Trimmed"" @bind-Value=""NotTrimmedValue"" />
+<pre class=""trimmed-box"">[@NotTrimmedValue]</pre>";
     private readonly string example10CSharpCode = @"
 private string TrimmedValue;
-private string NotTrimmedValue;
-";
+private string NotTrimmedValue;";
 
     private readonly string example11HTMLCode = @"
 <style>
@@ -476,16 +470,11 @@ private string NotTrimmedValue;
     }
 </style>
 
-<div class=""custom-wrapper"">
-    <BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelStyle"" LabelStyle=""color:green"" />
-    <BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelClass"" LabelClass=""custom-label"" />
-</div>
+<BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelStyle"" LabelStyle=""color:green"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelClass"" LabelClass=""custom-label"" />
 
-<div class=""custom-wrapper"">
-    <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputStyle"" InputStyle=""color:red"" />
-    <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputClass"" InputClass=""custom-input"" />
-</div>
-";
+<BitTextField Placeholder=""Enter a text..."" Label=""Custom InputStyle"" InputStyle=""color:red"" />
+<BitTextField Placeholder=""Enter a text..."" Label=""Custom InputClass"" InputClass=""custom-input"" />";
 
     private readonly string example12HTMLCode = @"
 <style>
@@ -548,8 +537,7 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         The form is valid to submit successfully.
     </BitMessageBar>
-}
-";
+}";
     private readonly string example12CSharpCode = @"
 public class ValidationTextFieldModel
 {
@@ -587,6 +575,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
-}
-";
+}";
 }

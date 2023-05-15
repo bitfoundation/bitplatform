@@ -8,9 +8,13 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Disabled" IsEnabled="false" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Description" Description="This is Description" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="IsRequired" IsRequired="true" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="MaxLength: 5" MaxLength="5" />
             </div>
         </ExamplePreview>
@@ -20,7 +24,9 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic" IsUnderlined="true" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Required" IsUnderlined="true" IsRequired="true" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Disabled" IsUnderlined="true" IsEnabled="false" />
             </div>
         </ExamplePreview>
@@ -30,7 +36,9 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic No Border" HasBorder="false" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Required No Border" HasBorder="false" IsRequired="true" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Disabled No Border" HasBorder="false" IsEnabled="false" />
             </div>
         </ExamplePreview>
@@ -40,7 +48,9 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Resizable (By default)" IsMultiline="true" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Unresizable (Fixed)" IsMultiline="true" IsResizable="false" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Row count (10)" IsMultiline="true" Rows="10" />
             </div>
         </ExamplePreview>
@@ -50,6 +60,7 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter an email..." Label="Email Icon" IconName="BitIconName.EditMail" />
+                <br />
                 <BitTextField Placeholder="Enter a date..." Label="Calendar Icon" IconName="BitIconName.Calendar" />
             </div>
         </ExamplePreview>
@@ -59,8 +70,11 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Label="With Prefix" Prefix="https://" />
+                <br />
                 <BitTextField Label="With Suffix" Suffix=".com" />
+                <br />
                 <BitTextField Label="With Prefix and Suffix" Prefix="https://" Suffix=".com" />
+                <br />
                 <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IsEnabled="false" />
             </div>
         </ExamplePreview>
@@ -74,19 +88,19 @@
                         <label style="color: coral;">This is custom Label</label>
                     </LabelTemplate>
                 </BitTextField>
-
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Description">
                     <DescriptionTemplate>
                         <span style="color: coral;">Description</span>
                     </DescriptionTemplate>
                 </BitTextField>
-
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Prefix">
                     <PrefixTemplate>
                         <span style="color: coral; margin: 0 5px;">Prefix</span>
                     </PrefixTemplate>
                 </BitTextField>
-
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Suffix">
                     <SuffixTemplate>
                         <span style="color: coral; margin: 0 5px;">Suffix</span>
@@ -100,6 +114,7 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a password..." Label="Password" Type="BitTextFieldType.Password" />
+                <br />
                 <BitTextField Placeholder="Enter a password..." Label="Can Reveal Password" Type="BitTextFieldType.Password" CanRevealPassword="true" />
             </div>
         </ExamplePreview>
@@ -112,14 +127,17 @@
                     <BitTextField Placeholder="Enter a text..." Label="One-way" Value="@OneWayValue" />
                     <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="OneWayValue" />
                 </div>
+                <br />
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="Two-way" @bind-Value="TwoWayValue" />
                     <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="TwoWayValue" />
                 </div>
+                <br />
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="OnChange" OnChange="(v) => OnChangeValue = v" />
                     <span>Value: @OnChangeValue</span>
                 </div>
+                <br />
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="Readonly" @bind-Value="ReadOnlyValue" IsReadonly="true" />
                 </div>
@@ -135,6 +153,7 @@
                     <BitTextField Placeholder="Enter a text..." Label="Trimmed" IsTrimmed="true" @bind-Value="TrimmedValue" />
                     <pre class="trimmed-box">[@TrimmedValue]</pre>
                 </div>
+                <br />
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="Not Trimmed" @bind-Value="NotTrimmedValue" />
                     <pre class="trimmed-box">[@NotTrimmedValue]</pre>
@@ -147,10 +166,13 @@
         <ExamplePreview>
             <div class="custom-wrapper">
                 <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Custom LabelClass" LabelClass="custom-label" />
             </div>
+            <br />
             <div class="custom-wrapper">
                 <BitTextField Placeholder="Enter a text..." Label="Custom InputStyle" InputStyle="color:red" />
+                <br />
                 <BitTextField Placeholder="Enter a text..." Label="Custom InputClass" InputClass="custom-input" />
             </div>
         </ExamplePreview>
@@ -166,26 +188,32 @@
                         <div class="validation-summary">
                             <ValidationSummary />
                         </div>
+                        <br />
                         <div class="form-item">
                             <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />
                             <ValidationMessage For="() => validationTextFieldModel.Text" />
                         </div>
+                        <br />
                         <div class="form-item">
                             <BitTextField Label="Numeric validation" @bind-Value="validationTextFieldModel.NumericText" />
                             <ValidationMessage For="() => validationTextFieldModel.NumericText" />
                         </div>
+                        <br />
                         <div class="form-item">
                             <BitTextField Label="Character validation" @bind-Value="validationTextFieldModel.CharacterText" />
                             <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
                         </div>
+                        <br />
                         <div class="form-item">
                             <BitTextField Label="Email format validation" @bind-Value="validationTextFieldModel.EmailText" />
                             <ValidationMessage For="() => validationTextFieldModel.EmailText" />
                         </div>
+                        <br />
                         <div class="form-item">
                             <BitTextField Label="Length character validation (Min: 3, Max: 5)" MaxLength="5" @bind-Value="validationTextFieldModel.RangeText" />
                             <ValidationMessage For="() => validationTextFieldModel.RangeText" />
                         </div>
+                        <br />
                         <BitButton ButtonType="BitButtonType.Submit">
                             Submit
                         </BitButton>
