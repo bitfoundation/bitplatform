@@ -12,19 +12,19 @@
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
                                      Label="Basic" />
-
+                <br />
                 <BitNumericTextField @bind-Value="DisabledValue"
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
                                      Label="Disabled"
                                      IsEnabled="false" />
-
+                <br />
                 <BitNumericTextField @bind-Value="LabelAndIconValue"
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
                                      Label="Label & Icon"
                                      IconName="BitIconName.Lightbulb" />
-
+                <br />
                 <BitNumericTextField @bind-Value="LabelLeftValue"
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
@@ -55,7 +55,7 @@
                                      Step="@(1)"
                                      Label="Increment & Decrement"
                                      ShowArrows="true" />
-
+                <br />
                 <BitNumericTextField @bind-Value="SpinArrowWithIconValue"
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
@@ -76,14 +76,14 @@
                                      Label="Min: -10, Max: 10, Step: 1"
                                      Min="-10"
                                      Max="10" />
-
+                <br />
                 <BitNumericTextField @bind-Value="MinMaxValue2"
                                      Placeholder="Enter a number..."
                                      Step="@(2)"
                                      Label="Min: -20, Max: 20, Step: 2"
                                      Min="-20"
                                      Max="20" />
-
+                <br />
                 <BitNumericTextField @bind-Value="MinMaxValue3"
                                      Placeholder="Enter a number..."
                                      Step="@(0.1M)"
@@ -104,7 +104,7 @@
                                      IconName="BitIconName.AutoHeight"
                                      DefaultValue="150"
                                      Suffix=" cm" />
-
+                <br />
                 <BitNumericTextField @bind-Value="SuffixValue2"
                                      Placeholder="Enter a number..."
                                      Step="@(0.5M)"
@@ -126,6 +126,7 @@
                                          Label="One-way" />
                     <BitRating @bind-Value="OneWayValue" />
                 </div>
+                <br />
                 <div>
                     <BitNumericTextField @bind-Value="TwoWayValue"
                                          Placeholder="Enter a number..."
@@ -152,7 +153,7 @@
                     <span>OnDecrement Counter: @OnDecrementCounter</span>
                     <span>Returned Value: @ArrowsEventReturnedValue</span>
                 </div>
-
+                <br />
                 <div class="column">
                     <BitNumericTextField @bind-Value="OnChangeEventBindedValue"
                                          Placeholder="Enter a number..."
