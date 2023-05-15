@@ -201,14 +201,13 @@ public partial class BitNumericTextFieldDemo
             Description = "The message format used for invalid values entered in the input.",
         },
     };
-
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
             Id = "Bit-NumericTextField-ChangeValue",
             Title = "BitNumericTextFieldChangeValue",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
                new()
                {
@@ -228,7 +227,6 @@ public partial class BitNumericTextFieldDemo
             }
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -236,7 +234,7 @@ public partial class BitNumericTextFieldDemo
             Id = "labelPosition-enum",
             Name = "BitNumericTextFieldLabelPosition",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -345,14 +343,12 @@ public partial class BitNumericTextFieldDemo
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
                      Label=""Label Left""
-                     LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />
-";
+                     LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
     private readonly string example1CSharpCode = @"
 private int BasicValue;
 private int DisabledValue;
 private int LabelAndIconValue;
-private int LabelLeftValue;
-";
+private int LabelLeftValue;";
 
     private readonly string example2HTMLCode = @"
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
@@ -360,11 +356,9 @@ private int LabelLeftValue;
         <label style=""color: green;"">This is custom Label</label>
         <BitIcon IconName=""BitIconName.Filter"" />
     </LabelTemplate>
-</BitNumericTextField>
-";
+</BitNumericTextField>";
     private readonly string example2CSharpCode = @"
-private int LabelTemplateValue;
-";
+private int LabelTemplateValue;";
 
     private readonly string example3HTMLCode = @"
 <BitNumericTextField @bind-Value=""SpinArrowValue""
@@ -379,12 +373,10 @@ private int LabelTemplateValue;
                      Label=""Increment & Decrement Icon""
                      ShowArrows=""true""
                      IncrementIconName=""BitIconName.LikeSolid""
-                     DecrementIconName=""BitIconName.DislikeSolid"" />
-";
+                     DecrementIconName=""BitIconName.DislikeSolid"" />";
     private readonly string example3CSharpCode = @"
 private int SpinArrowValue;
-private int SpinArrowWithIconValue;
-";
+private int SpinArrowWithIconValue;";
 
     private readonly string example4HTMLCode = @"
 <BitNumericTextField @bind-Value=""MinMaxValue1""
@@ -406,13 +398,11 @@ private int SpinArrowWithIconValue;
                      Step=""@(0.1M)""
                      Label=""Min: -1, Max: 1, Step: 0.1""
                      Min=""-1""
-                     Max=""1"" />
-";
+                     Max=""1"" />";
     private readonly string example4CSharpCode = @"
 private int MinMaxValue1;
 private int MinMaxValue2;
-private decimal MinMaxValue3;
-";
+private decimal MinMaxValue3;";
 
     private readonly string example5HTMLCode = @"
 <BitNumericTextField @bind-Value=""SuffixValue1""
@@ -429,58 +419,47 @@ private decimal MinMaxValue3;
                      Label=""Weight""
                      IconName=""BitIconName.Weights""
                      DefaultValue=""50""
-                     Suffix="" kg"" />
-";
+                     Suffix="" kg"" />";
     private readonly string example5CSharpCode = @"
 private int SuffixValue1;
-private decimal SuffixValue2;
-";
+private decimal SuffixValue2;";
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitNumericTextField Value=""OneWayValue""
-                         Placeholder=""Enter a number...""
-                         Step=""@(1)""
-                         Label=""One-way"" />
-    <BitRating @bind-Value=""OneWayValue"" />
-</div>
-<div>
-    <BitNumericTextField @bind-Value=""TwoWayValue""
-                         Placeholder=""Enter a number...""
-                         Step=""@(0.5)""
-                         Label=""Two-way"" />
-    <BitRating @bind-Value=""TwoWayValue"" />
-</div>
-";
+<BitNumericTextField Value=""OneWayValue""
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""One-way"" />
+<BitRating @bind-Value=""OneWayValue"" />
+    
+<BitNumericTextField @bind-Value=""TwoWayValue""
+                     Placeholder=""Enter a number...""
+                     Step=""@(0.5)""
+                     Label=""Two-way"" />
+<BitRating @bind-Value=""TwoWayValue"" />";
     private readonly string example6CSharpCode = @"
 private double OneWayValue;
 private double TwoWayValue;
 ";
 
     private readonly string example7HTMLCode = @"
-<div class=""column"">
-    <BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
-                         Placeholder=""Enter a number...""
-                         Step=""@(0.1)""
-                         Label=""OnIncrement / OnDecrement""
-                         ShowArrows=""true""
-                         OnIncrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)""
-                         OnDecrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)"" />
-    <span>OnIncrement Counter: @OnIncrementCounter</span>
-    <span>OnDecrement Counter: @OnDecrementCounter</span>
-    <span>Returned Value: @ArrowsEventReturnedValue</span>
-</div>
+<BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
+                     Placeholder=""Enter a number...""
+                     Step=""@(0.1)""
+                     Label=""OnIncrement / OnDecrement""
+                     ShowArrows=""true""
+                     OnIncrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)""
+                     OnDecrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)"" />
+<span>OnIncrement Counter: @OnIncrementCounter</span>
+<span>OnDecrement Counter: @OnDecrementCounter</span>
+<span>Returned Value: @ArrowsEventReturnedValue</span>
 
-<div class=""column"">
-    <BitNumericTextField @bind-Value=""OnChangeEventBindedValue""
-                         Placeholder=""Enter a number...""
-                         Step=""@(0.1)""
-                         Label=""OnChange""
-                         OnChange=""(double v) => HandleOnChangeEvent(v)"" />
-    <span>OnChange Counter: @OnChangeCounter</span>
-    <span>Returned Value: @OnChangeEventReturnedValue</span>
-</div>
-";
+<BitNumericTextField @bind-Value=""OnChangeEventBindedValue""
+                     Placeholder=""Enter a number...""
+                     Step=""@(0.1)""
+                     Label=""OnChange""
+                     OnChange=""(double v) => HandleOnChangeEvent(v)"" />
+<span>OnChange Counter: @OnChangeCounter</span>
+<span>Returned Value: @OnChangeEventReturnedValue</span>";
     private readonly string example7CSharpCode = @"
 private double ArrowsEventBindedValue;
 private double ArrowsEventReturnedValue;
@@ -510,8 +489,7 @@ private void HandleOnChangeEvent(double value)
     OnChangeEventReturnedValue = value;
 
     OnChangeCounter++;
-}
-";
+}";
 
     private readonly string example8HTMLCode = @"
 <style>
@@ -557,8 +535,7 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
     </BitMessageBar>
-}
-";
+}";
     private readonly string example8CSharpCode = @"
 public class BitNumericTextFieldValidationModel
 {
@@ -581,6 +558,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}
-";
+}";
 }
