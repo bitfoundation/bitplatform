@@ -1,8 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
@@ -11,18 +10,18 @@
     {
         int index = i;
 
-        <input class="bit-otp-inp"
+        <input @ref="_inputRefs[index]"
+               @onpaste="HandleOnPaste"
+               @onfocusin="HandleOnFocusIn"
+               @onfocusout="HandleOnFocusOut"
+               @onfocus="(e) => HandleOnFocus(e, index)"
+               @oninput="(e) => HandleOnInput(e, index)"
+               @onkeydown="(e) => HandleOnKeyDown(e, index)"
+               class="bit-otp-inp"
                type="@_inputType"
                inputmode="@_inputMode"
                value="@_inputValue[index]"
                disabled="@(IsEnabled is false)"
-               autocomplete="@BitAutoCompleteValue.OneTimeCode"
-               @ref="_inputRefs[index]" 
-               @onfocusin="HandleOnFocusIn"
-               @onfocusout="HandleOnFocusOut"
-               @onfocus="(e) => HandleOnFocus(e, index)"
-               @onkeydown="(e) => HandleOnKeyDown(e, index)"
-               @oninput="(e) => HandleOnInput(e, index)"
-               @onpaste="HandleOnPaste" />
+               autocomplete="@BitAutoCompleteValue.OneTimeCode" />
     }
 </div>
