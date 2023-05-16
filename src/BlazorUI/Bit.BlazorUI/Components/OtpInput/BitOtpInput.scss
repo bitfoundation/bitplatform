@@ -1,19 +1,20 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-otp {
-    font-family: $typography-font-family;
-    font-weight: 400;
-    font-size: spacing(1.75);
-    box-sizing: border-box;
-    display: flex;
     margin: 0;
     padding: 0;
+    display: flex;
     box-shadow: none;
+    font-weight: 400;
     position: relative;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $typography-font-family;
 
     &.bit-dis {
         .bit-otp-inp {
-            background-color: $color-neutrals-gray30;
+            border-color: $color-border-disabled;
+            background-color: $color-background-disabled;
         }
     }
 
@@ -27,17 +28,17 @@
 
 .bit-otp-inp {
     display: flex;
-    justify-content: center;
+    cursor: pointer;
+    text-align: center;
     align-items: center;
     width: spacing(3.75);
     height: spacing(3.75);
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-    background-color: $color-background-primary;
-    cursor: pointer;
-    text-align: center;
+    justify-content: center;
     -moz-appearance: textfield; // Firefox
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
 
     &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
         -webkit-appearance: none
@@ -62,8 +63,8 @@
 }
 
 .bit-otp-rtl {
-    flex-direction: row-reverse;
     justify-content: flex-end;
+    flex-direction: row-reverse;
 
     .bit-otp-inp {
         margin-left: spacing(1.25);
