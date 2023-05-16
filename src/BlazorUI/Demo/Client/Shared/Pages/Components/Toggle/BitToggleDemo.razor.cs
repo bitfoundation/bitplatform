@@ -88,52 +88,41 @@ public partial class BitToggleDemo
 
 
     private readonly string example1HTMLCode = @"
-<div class=""example-box"">
-    <BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
-    <BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />
-    <BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
-    <BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
-    <BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />
-</div>
-";
+<BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
+
+<BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />
+
+<BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
+
+<BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
+
+<BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />";
     private readonly string example1CSharpCode = @"
 private bool BasicValue;
 private bool DisabledValue;
 private bool OnTextValue;
 private bool InLineLabelValue;
-private bool DefaultTextValue;
-";
+private bool DefaultTextValue;";
 
     private readonly string example2HTMLCode = @"
-<div class=""example-box"">
-    <BitToggle @bind-Value=""LabelTemplateValue"">
-        <LabelTemplate>
-            <span style=""color: green;"">This is custom Label</span>
-            <BitIcon IconName=""BitIconName.Filter"" />
-        </LabelTemplate>
-    </BitToggle>
-</div>
-";
+<BitToggle @bind-Value=""LabelTemplateValue"">
+    <LabelTemplate>
+        <span style=""color: green;"">This is custom Label</span>
+        <BitIcon IconName=""BitIconName.Filter"" />
+    </LabelTemplate>
+</BitToggle>";
     private readonly string example2CSharpCode = @"
-private bool LabelTemplateValue;
-";
+private bool LabelTemplateValue;";
 
     private readonly string example3HTMLCode = @"
-<div class=""example-box"">
-    <div>
-        <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
-        <BitToggleButton @bind-IsChecked=""OneWayValue"" Label=""@(OneWayValue ? ""Off"" : ""On"")"" />
-    </div>
-    <div>
-        <BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
-        <BitToggleButton @bind-IsChecked=""TwoWayValue"" Label=""@(TwoWayValue ? ""Off"" : ""On"")"" />
-    </div>
-</div>
-";
+<BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
+<BitToggleButton @bind-IsChecked=""OneWayValue"" Label=""@(OneWayValue ? ""Off"" : ""On"")"" />
+
+<BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
+<BitToggleButton @bind-IsChecked=""TwoWayValue"" Label=""@(TwoWayValue ? ""Off"" : ""On"")"" />";
     private readonly string example3CSharpCode = @"
 private bool OneWayValue;
-private bool TwoWayValue;
-";
+private bool TwoWayValue;";
 
     private readonly string example4HTMLCode = @"
 <style>
@@ -178,8 +167,7 @@ else
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
         @SuccessMessage
     </BitMessageBar>
-}
-";
+}";
     private readonly string example4CSharpCode = @"
 public class BitToggleValidationModel
 {
@@ -201,6 +189,5 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     SuccessMessage = string.Empty;
-}
-";
+}";
 }
