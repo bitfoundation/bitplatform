@@ -9,9 +9,13 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle Label="Basic" @bind-Value="BasicValue" />
+                <br />
                 <BitToggle Label="Disabled" @bind-Value="DisabledValue" IsEnabled="false" />
+                <br />
                 <BitToggle Label="OnText And OffText" @bind-Value="OnTextValue" OnText="On" OffText="Off" />
+                <br />
                 <BitToggle Label="Inline Label" @bind-Value="InLineLabelValue" IsInlineLabel="true" />
+                <br />
                 <BitToggle @bind-Value="DefaultTextValue" DefaultText="Default Text" />
             </div>
         </ExamplePreview>
@@ -33,11 +37,12 @@
     <ComponentExampleBox Title="BitToggle Binding" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
-                <div>
+                <div style="display:flex; align-items:flex-end">
                     <BitToggle Value="OneWayValue" Label="One-way" OnText="Off" OffText="On" />
                     <BitToggleButton @bind-IsChecked="OneWayValue" Label="@(OneWayValue ? "Off" : "On")" />
                 </div>
-                <div>
+                <br />
+                <div style="display:flex; align-items:flex-end">
                     <BitToggle @bind-Value="TwoWayValue" Label="Two-way" OnText="Off" OffText="On" />
                     <BitToggleButton @bind-IsChecked="TwoWayValue" Label="@(TwoWayValue ? "Off" : "On")" />
                 </div>

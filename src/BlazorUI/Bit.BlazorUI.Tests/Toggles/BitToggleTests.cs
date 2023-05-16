@@ -22,10 +22,23 @@ public class BitToggleTests : BunitTestContext
 
         var bitToggle = com.Find(".bit-tgl");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var isCheckedClass = value ? "checked" : "unchecked";
+        if (isEnabled)
+        {
+            Assert.IsFalse(bitToggle.ClassList.Contains("bit-dis"));
+        }
+        else
+        {
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-dis"));
+        }
 
-        Assert.IsTrue(bitToggle.ClassList.Contains($"{isEnabledClass}-{isCheckedClass}"));
+        if (value)
+        {
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-chk"));
+        }
+        else
+        {
+            Assert.IsFalse(bitToggle.ClassList.Contains("bit-tgl-chk"));
+        }
     }
 
     [DataTestMethod,
@@ -50,7 +63,7 @@ public class BitToggleTests : BunitTestContext
 
         if (onText.HasNoValue() || offText.HasNoValue())
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains("noonoff"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-noo"));
         }
     }
 
@@ -68,7 +81,7 @@ public class BitToggleTests : BunitTestContext
 
         if (isInlineLabel)
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains("inline"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-inl"));
         }
     }
 
@@ -80,7 +93,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitToggleButton = com.Find(".bit-tgl button");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
     }
 
@@ -103,7 +116,6 @@ public class BitToggleTests : BunitTestContext
         });
 
         var bitToggleButton = com.Find("button");
-
 
         var labelId = bitToggleButton.Id.Replace("Button", "Label");
 
@@ -141,7 +153,11 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
     }
 
-    [DataTestMethod, DataRow("Switch")]
+    [DataTestMethod,
+        DataRow(null),
+        DataRow("Foo"),
+        DataRow("Bar")
+        ]
     public void BitToggleRoleTest(string role)
     {
         var com = RenderComponent<BitToggle>(parameters =>
@@ -150,7 +166,7 @@ public class BitToggleTests : BunitTestContext
         });
 
         var bitToggleButton = com.Find("button");
-        Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
+        Assert.AreEqual(bitToggleButton.GetAttribute("role"), role ?? "switch");
     }
 
     [DataTestMethod, DataRow("This is label")]
