@@ -162,7 +162,10 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.Role, role);
+            if (role is not null)
+            {
+                parameters.Add(p => p.Role, role);
+            }
         });
 
         var bitToggleButton = com.Find("button");
