@@ -73,12 +73,6 @@
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &.bit-dtp-edt-inp {
-        input {
-            cursor: default;
-        }
-    }
-
     input {
         margin: 0;
         outline: 0;
@@ -105,9 +99,11 @@
         padding-left: spacing(1);
         color: $color-text-primary3;
     }
+}
 
+.bit-dtp-edt-inp {
     input {
-        cursor: pointer;
+        cursor: default;
     }
 }
 
@@ -235,6 +231,25 @@
     }
 }
 
+.bit-dtp-wd-lbl {
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    position: relative;
+    text-align: center;
+    width: spacing(3.5);
+    height: spacing(3.5);
+    font-size: spacing(1.5);
+    line-height: spacing(3.5);
+    animation-fill-mode: both;
+    animation-duration: 0.267s;
+    color: $color-text-primary2;
+    animation-name: bit-fade-in;
+    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+}
+
 .bit-dtp-dc {
     margin: 0;
     padding: 0;
@@ -327,25 +342,6 @@
     border-right: $shape-border-width $shape-border-style $color-border-secondary2;
 }
 
-.bit-dtp-wd-lbl {
-    margin: 0;
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    font-weight: 400;
-    position: relative;
-    text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    font-size: spacing(1.5);
-    line-height: spacing(3.5);
-    animation-fill-mode: both;
-    animation-duration: 0.267s;
-    color: $color-text-primary2;
-    animation-name: bit-fade-in;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-}
-
 .bit-dtp-pkr-hdr {
     width: 100%;
     position: relative;
@@ -409,8 +405,8 @@
     font-size: spacing(1.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
-    background-color: transparent;
     color: $color-text-primary2;
+    background-color: transparent;
     border-radius: $shape-border-radius;
 
     &:hover {
@@ -447,8 +443,8 @@
     min-width: spacing(3.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
-    background-color: transparent;
     color: $color-text-primary2;
+    background-color: transparent;
     border-radius: $shape-border-radius;
 
     &:hover {
@@ -522,23 +518,23 @@
 }
 
 .bit-dtp-crtm {
-    color: $color-text-secondary;
+    color: $color-secondary-main;
     background-color: $color-primary-main;
 
     &:hover {
-        color: $color-action-hover-text-secondary;
+        color: $color-action-hover-secondary;
         background-color: $color-action-hover-primary;
     }
 }
 
 .bit-dtp-selm {
     font-weight: 600;
-    color: $color-text-primary2;
-    background-color: $color-primary-lighter;
+    color: $color-secondary-higher;
+    background-color: $color-primary-higher;
 
     &:hover {
-        color: $color-action-hover-text-primary2;
-        background-color: $color-action-hover-primary2;
+        color: $color-secondary-high;
+        background-color: $color-primary-high;
     }
 }
 
@@ -610,7 +606,7 @@
     &:hover {
         cursor: pointer;
         background-color: transparent;
-        color: $color-action-hover-text-primary;
+        color: $color-action-hover-primary;
     }
 
     &:disabled {

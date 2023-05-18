@@ -169,11 +169,11 @@
 
     &:hover {
         .bit-chb-ctn {
-            border-color: $color-primary-darker;
+            border-color: $color-primary-lower;
             background-color: $color-background-primary;
 
             .bit-icon {
-                background-color: $color-primary-darker;
+                background-color: $color-primary-lower;
             }
         }
     }
@@ -192,12 +192,12 @@
 
     &:hover {
         .bit-chb-ctn {
-            border-color: $color-primary-dark;
+            border-color: $color-primary-low;
             background-color: $color-action-hover-primary;
 
             .bit-icon {
                 opacity: 1;
-                color: $color-secondary-darker;
+                color: $color-secondary-lower;
             }
         }
     }

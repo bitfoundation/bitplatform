@@ -3,7 +3,7 @@
 $BgDefult: $color-text-secondary3;
 $BgTrack: $color-text-primary3;
 $BgHover: $color-general-lightblue;
-$BgTrackHover: $color-primary-dark;
+$BgTrackHover: $color-primary-low;
 
 .bit-sld {
     font-family: $typography-font-family;
@@ -111,7 +111,7 @@ $BgTrackHover: $color-primary-dark;
     }
 
     input:hover .bit-sld-ztk {
-        background-color: $color-secondary-light;
+        background-color: $color-secondary-high;
     }
 
     input::-webkit-slider-thumb:hover,
