@@ -50,15 +50,3 @@
     color: gray;
     font-size: 8px;
 }
-
-.date-picker-wrapper {
-    ::deep .bit-dtp {
-        &.bit-dtp-fluent {
-            .day-picker-wrapper {
-                .week-day-label {
-                    width: 44px;
-                }
-            }
-        }
-    }
-}
