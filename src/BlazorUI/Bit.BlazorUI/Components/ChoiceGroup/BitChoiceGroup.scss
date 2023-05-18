@@ -364,12 +364,12 @@
         @media (hover: hover) {
             &:hover {
                 &:before {
-                    border-color: $color-primary-darker;
+                    border-color: $color-primary-lower;
                 }
 
                 &:after {
-                    background-color: $color-primary-darker;
-                    border: spacing(0.625) $shape-border-style $color-primary-darker;
+                    background-color: $color-primary-lower;
+                    border: spacing(0.625) $shape-border-style $color-primary-lower;
                 }
             }
         }
@@ -395,16 +395,16 @@
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-primary-darker;
+                border-color: $color-primary-lower;
 
                 &:before {
                     opacity: 1;
-                    border-color: $color-primary-darker;
+                    border-color: $color-primary-lower;
                 }
 
                 &:after {
-                    border-color: $color-primary-darker;
-                    background-color: $color-primary-darker;
+                    border-color: $color-primary-lower;
+                    background-color: $color-primary-lower;
                 }
             }
         }

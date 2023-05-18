@@ -462,7 +462,7 @@
 
         .bit-drp-sic {
             i {
-                color: $color-primary-darker;
+                color: $color-primary-lower;
             }
         }
     }
@@ -471,11 +471,11 @@
         &:hover {
             .bit-drp-sic {
                 width: spacing(0.5);
-                color: $color-primary-darker;
+                color: $color-primary-lower;
 
                 i {
                     opacity: 0;
-                    color: $color-primary-darker;
+                    color: $color-primary-lower;
                 }
             }
         }
@@ -486,11 +486,11 @@
 
         .bit-drp-sic {
             width: spacing(0.5);
-            color: $color-primary-darker;
+            color: $color-primary-lower;
 
             i {
                 opacity: 0;
-                color: $color-primary-darker;
+                color: $color-primary-lower;
             }
         }
 
