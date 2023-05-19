@@ -168,7 +168,6 @@ public partial class BitPersonaDemo
             Description = "Optional Custom template for the image overlay.",
         }
     };
-    
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -413,13 +412,6 @@ public partial class BitPersonaDemo
         },
     };
 
-
-
-    public bool IsDetailsShown { get; set; } = true;
-
-    private int _actionClickCount = 0;
-
-    private int _imageClickCount = 0;
 
 
     private static readonly string example1HtmlCode = @"
