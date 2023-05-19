@@ -85,7 +85,6 @@ public partial class BitCarouselDemo
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -93,7 +92,7 @@ public partial class BitCarouselDemo
             Id = "direction-enum",
             Name = "BitDirection",
             Description = "Describes the render direction",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -122,6 +121,7 @@ public partial class BitCarouselDemo
         font-size: 0.75rem;
         color: #D7D7D7;
     }
+
     .image {
         width: 100%;
         height: 100%;
@@ -153,6 +153,7 @@ public partial class BitCarouselDemo
         width: 100%;
         height: 100%;
     }
+
     .text-title {
         position: absolute;
         bottom: 3.4375rem;
@@ -201,6 +202,7 @@ public partial class BitCarouselDemo
         width: 100%;
         height: 100%;
     }
+
     .text-title {
         position: absolute;
         bottom: 3.4375rem;
@@ -253,6 +255,7 @@ public partial class BitCarouselDemo
         width: 100%;
         height: 100%;
     }
+
     .text-title {
         position: absolute;
         bottom: 3.4375rem;
@@ -281,7 +284,7 @@ public partial class BitCarouselDemo
         justify-content: space-around;
     }
 
-    ::deep .goto-button {
+    .goto-button {
         margin-right: rem(10px);
     }
 </style>
@@ -314,6 +317,7 @@ public partial class BitCarouselDemo
         </BitCarouselItem>
     </BitCarousel>
 </div>
+
 <div class=""buttons-container"">
     <div>
         <BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
@@ -349,6 +353,7 @@ private void GoTo()
         width: 100%;
         height: 100%;
     }
+
     .text-title {
         position: absolute;
         bottom: 3.4375rem;
@@ -377,7 +382,7 @@ private void GoTo()
         justify-content: space-around;
     }
 
-    ::deep .goto-button {
+    .goto-button {
         margin-right: rem(10px);
     }
 </style>
@@ -411,14 +416,14 @@ private void GoTo()
 
     private readonly string example6HTMLCode = @"
 <style>
-    ::deep .item {
+    .item {
         text-align: center;
         color: black;
         border: 1px solid blue;
         background-color: lightblue;
     }
 
-    ::deep .item div {
+    .item div {
         transform: translate(0, 80%);
     }
 </style>
@@ -439,14 +444,14 @@ private void GoTo()
 
     private readonly string example7HTMLCode = @"
 <style>
-    ::deep .item {
+    .item {
         text-align: center;
         color: black;
         border: 1px solid blue;
         background-color: lightblue;
     }
 
-    ::deep .item div {
+    .item div {
         transform: translate(0, 80%);
     }
 </style>
