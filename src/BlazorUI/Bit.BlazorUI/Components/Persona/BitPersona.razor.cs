@@ -163,6 +163,19 @@ public partial class BitPersona
     [Parameter] public RenderFragment? ImageOverlayFragment { get; set; }
 
 
+    protected override string RootElementClass => "bit-prs";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => Size.HasValue() ? $"{RootElementClass}-{Size}" : string.Empty);
+
+        ClassBuilder.Register(() => OnImageClick.HasDelegate ? $"{RootElementClass}-img-act" : string.Empty);
+
+        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None
+                                        ? $"{RootElementClass}-{Presence.ToString().ToLowerInvariant()}"
+                                        : string.Empty);
+    }
+
     protected override Task OnParametersSetAsync()
     {
         if (CoinSize != -1)
@@ -181,17 +194,6 @@ public partial class BitPersona
         _internalInitials = ImageInitials ?? GetInitials();
 
         return base.OnParametersSetAsync();
-    }
-
-    protected override string RootElementClass => "bit-prs";
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => Size.HasValue() ? $"size-{Size}" : string.Empty);
-
-        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "img-act" : string.Empty);
-
-        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None ? Presence.ToString() : string.Empty);
     }
 
     private string DetermineIcon()

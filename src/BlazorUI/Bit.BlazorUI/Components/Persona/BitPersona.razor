@@ -1,25 +1,24 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
-    <div role="presentation" class="coin">
+    <div role="presentation" class="bit-prs-coin">
         @if (Size != BitPersonaSize.Size20)
         {
             string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
 
-            <div class="image-area" style="width:@dimension;height:@dimension">
+            <div class="bit-prs-ima" style="width:@dimension; height:@dimension">
 
-                <div class="img-container" @onclick="HandleImageClick">
+                <div class="bit-prs-imc" @onclick="HandleImageClick">
                     @if (ImageUrl is not null)
                     {
 
                         @if (OnImageClick.HasDelegate)
                         {
-                            <div class="img-overlay">
+                            <div class="bit-prs-imo">
                                 @if (ImageOverlayFragment is not null)
                                 {
                                     @ImageOverlayFragment
@@ -33,7 +32,7 @@
 
                         @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
                         {
-                            <div class="initials">
+                            <div class="bit-prs-ini">
                                 @_internalInitials
                             </div>
                         }
@@ -42,7 +41,7 @@
                         {
                             <img src="@ImageUrl"
                                  style="display:@(_isLoaded ? "unset": "none")"
-                                 class="img"
+                                 class="bit-prs-img"
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension" @onerror="HandleOnError" @onload="HandleOnLoad" />
@@ -64,7 +63,7 @@
                     }
                     else
                     {
-                        <button @onclick="HandleActionClick" class="action-button" title="Edit image">
+                        <button @onclick="HandleActionClick" class="bit-prs-abt" title="Edit image">
                             <span class="icon-container">
                                 <i class="bit-icon bit-icon--@ActionIconName.GetName()"></i>
                             </span>
@@ -73,7 +72,7 @@
                 }
                 else if (Presence != BitPersonaPresenceStatus.None)
                 {
-                    <div title=@PresenceTitle class="presence">
+                    <div title=@PresenceTitle class="bit-prs-pre">
                         <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation"></i>
                     </div>
                 }
@@ -83,7 +82,7 @@
         {
             if (Presence != BitPersonaPresenceStatus.None)
             {
-                <div title=@PresenceTitle class="presence" style="@_presenceStyle">
+                <div title=@PresenceTitle class="bit-prs-pre" style="@_presenceStyle">
                     @if (_renderIcon)
                     {
                         <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation" style="@_iconStyle"></i>
@@ -99,17 +98,17 @@
 
     @if (HidePersonaDetails is false)
     {
-        <div class="details">
-            <div dir="auto" class="primary-text">
+        <div class="bit-prs-det">
+            <div dir="auto" class="bit-prs-ptx">
                 @Text
             </div>
-            <div dir="auto" class="secondary-text">
+            <div dir="auto" class="bit-prs-stx">
                 @SecondaryText
             </div>
-            <div dir="auto" class="tertiary-text">
+            <div dir="auto" class="bit-prs-ttx">
                 @TertiaryText
             </div>
-            <div dir="auto" class="optional-text">
+            <div dir="auto" class="bit-prs-otx">
                 @OptionalText
             </div>
         </div>
