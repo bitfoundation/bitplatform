@@ -1,11 +1,10 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<TimeSpan?>
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
+     class="@ClassBuilder.Value">
 
     @if (LabelTemplate is not null)
     {
@@ -23,23 +22,23 @@
     <div class="bit-tpc-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-tpc-fld-grp @(AllowTextInput ? "bit-tpc-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
-                   id="@_textFieldId"
-                   disabled=@(IsEnabled is false)
-                   role="combobox"
-                   readonly=@(AllowTextInput is false)
-                   type="text"
-                   value="@CurrentValueAsString"
-                   placeholder="@Placeholder"
-                   tabindex="@TabIndex"
-                   aria-label="@AriaLabel"
-                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
-                   aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-haspopup="dialog"
-                   aria-controls="@(IsOpen ? _calloutId : null)"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
-                   @onfocus="@HandleOnFocus"
-                   @oninput="@HandleOnChange" />
+                   type="text"
+                   role="combobox"
+                   id="@_textFieldId"
+                   tabindex="@TabIndex"
+                   aria-haspopup="dialog"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   value="@CurrentValueAsString"
+                   disabled=@(IsEnabled is false)
+                   readonly=@(AllowTextInput is false)
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-controls="@(IsOpen ? _calloutId : null)" 
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)" />
 
             @if (IconTemplate is not null)
             {

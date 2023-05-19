@@ -196,12 +196,32 @@ public partial class BitTimePicker
     /// </summary>
     [Parameter] public bool AutoClose { get; set; }
 
-    protected override string RootElementClass => "bit-tpc";
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         IsOpen = false;
+    }
+
+    public async Task OpenCallout()
+    {
+        await HandleOnClick();
+    }
+
+
+
+    protected override string RootElementClass => "bit-tpc";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
+
+        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+
+        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
+
+        ClassBuilder.Register(() => _focusClass);
     }
 
     protected override void OnInitialized()
@@ -223,17 +243,6 @@ public partial class BitTimePicker
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
-    }
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
-
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
-
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
-
-        ClassBuilder.Register(() => _focusClass);
     }
 
     private async Task HandleOnFocusIn()
@@ -441,11 +450,6 @@ public partial class BitTimePicker
     }
 
     private bool IsAm() => _hour.GetValueOrDefault() >= 00 && _hour < 12; // am is 00:00 to 11:59 
-
-    public async Task OpenCallout()
-    {
-        await HandleOnClick();
-    }
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)

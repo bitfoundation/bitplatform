@@ -209,7 +209,7 @@ public partial class BitTimePickerDemo
             Id = "component-visibility-enum",
             Name = "BitComponentVisibility",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -236,7 +236,7 @@ public partial class BitTimePickerDemo
             Id = "icon-location-enum",
             Name = "BitIconLocation",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -257,7 +257,7 @@ public partial class BitTimePickerDemo
             Id = "edit-mode-enum",
             Name = "BitTimePickerEditMode",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -357,7 +357,6 @@ public partial class BitTimePickerDemo
         @successMessage
     </BitMessageBar>
 }";
-
     private readonly string example5CSharpCode = @"
 public class FormValidationDatePickerModel
 {
@@ -402,7 +401,6 @@ private void HandleInvalidSubmit()
         Custom label <BitIconButton IconName=""BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitTimePicker>";
-
     private readonly string example8CSharpCode = @"
 private BitTimePicker timePicker;
 
@@ -417,7 +415,6 @@ private async Task OpenCallout()
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
 <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>";
-
     private readonly string example9CSharpCode = @"
 private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 
@@ -453,7 +450,6 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
         <ValidationSummary />
     </div>
 </EditForm>";
-
     private readonly string example12CSharpCode = @"
 public class FormValidationDatePickerModel
 {
