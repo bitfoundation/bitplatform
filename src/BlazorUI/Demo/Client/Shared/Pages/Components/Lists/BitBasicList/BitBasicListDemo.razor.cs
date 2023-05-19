@@ -349,7 +349,7 @@ public partial class AppJsonContext : JsonSerializerContext { }";
         }
         else
         {
-            <div @key=""catOrProd.CategoryId"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;background-color:lightgray"">
+            <div @key=""catOrProd.CategoryId"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;background-color:#777"">
                 <div>@catOrProd.Name</div>
             </div>
         }
