@@ -32,8 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
         <Content Remove="bundleconfig.json" />
         <None Include="bundleconfig.json" />
         
