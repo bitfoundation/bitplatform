@@ -69,23 +69,30 @@ public partial class _BitNavChild<TItem> where TItem : class
         if (Nav.SelectedItem == Item)
         {
             classes.Add("bit-nav-sel");
-            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Class ?? string.Empty);
+            if (Nav.ClassStyles?.SelectedItemContainer?.Class is not null)
+            {
+                classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Class!);
+            }
         }
 
-        classes.Add(Nav.ClassStyles?.ItemContainer?.Class ?? string.Empty);
+        if (Nav.ClassStyles?.ItemContainer?.Class is not null)
+        {
+            classes.Add(Nav.ClassStyles?.ItemContainer?.Class!);
+        }
 
         return string.Join(" ", classes);
     }
     private string GetItemContainerStyles()
     {
-        var classes = new List<string>
+        var classes = new List<string>();
+        if (Nav.ClassStyles?.ItemContainer?.Style is not null)
         {
-            Nav.ClassStyles?.ItemContainer?.Style ?? string.Empty
-        };
+            classes.Add(Nav.ClassStyles?.ItemContainer?.Style!);
+        }
 
-        if (Nav.SelectedItem == Item)
+        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItemContainer?.Style is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Style ?? string.Empty);
+            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Style!);
         }
 
         return string.Join(" ", classes);
@@ -93,28 +100,30 @@ public partial class _BitNavChild<TItem> where TItem : class
 
     private string GetItemClasses()
     {
-        var classes = new List<string>
+        var classes = new List<string>();
+        if (Nav.ClassStyles?.Item?.Class is not null)
         {
-            Nav.ClassStyles?.Item?.Class ?? string.Empty
-        };
+            classes.Add(Nav.ClassStyles?.Item?.Class!);
+        }
 
-        if (Nav.SelectedItem == Item)
+        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItem?.Class is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItem?.Class ?? string.Empty);
+            classes.Add(Nav.ClassStyles?.SelectedItem?.Class!);
         }
 
         return string.Join(" ", classes);
     }
     private string GetItemStyles()
     {
-        var classes = new List<string>
+        var classes = new List<string>();
+        if (Nav.ClassStyles?.Item?.Style is not null)
         {
-            Nav.ClassStyles?.Item?.Style??string.Empty
-        };
+            classes.Add(Nav.ClassStyles?.Item?.Style!);
+        }
 
-        if (Nav.SelectedItem == Item)
+        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItem?.Style is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItem?.Style ?? string.Empty);
+            classes.Add(Nav.ClassStyles?.SelectedItem?.Style!);
         }
 
         return string.Join(" ", classes);

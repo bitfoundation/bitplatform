@@ -74,17 +74,3 @@
         width: rem(6px);
     }
 }
-
-::deep .side-nav {
-    padding-left: rem(1px);
-    
-    .chevron-btn {
-        i {
-            transform: rotate( -90deg);
-        }
-
-        .expand {
-            transform: rotate(0deg);
-        }
-    }
-}
