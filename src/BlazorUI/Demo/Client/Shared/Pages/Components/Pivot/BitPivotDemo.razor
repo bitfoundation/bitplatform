@@ -463,3 +463,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private string SelectedKey = "Foo";
+    private BitPivotItem SelectedPivotItem;
+    private string OverridePivotSelectedKey = "1";
+    private BitComponentVisibility PivotItemVisibility;
+    private bool PivotEnabled = true;
+    private bool PivotItemEnabled = true;
+
+    private void TogglePivotItemVisibility()
+    {
+        PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
+    }
+}
