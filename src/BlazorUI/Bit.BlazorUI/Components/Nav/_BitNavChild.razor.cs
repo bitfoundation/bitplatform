@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
@@ -49,72 +50,74 @@ public partial class _BitNavChild<TItem> where TItem : class
     {
         if (Nav is null) return;
 
-        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Any() is false) return;
+        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
 
-        Nav.SetItemExpanded(Item, !Nav.GetItemExpanded(Item));
+        Nav.SetItemExpanded(Item, Nav.GetItemExpanded(Item) is false);
 
         await Nav.OnItemToggle.InvokeAsync(Item);
     }
 
     private string GetItemContainerClasses()
     {
-        var sb = new StringBuilder();
+        var classes = new List<string>();
 
         if (Nav.GetIsEnabled(Item) is false)
         {
-            sb.Append("disabled ");
+            classes.Add("bit-nav-dis");
         }
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append("selected ")
-              .Append(Nav.ClassStyles?.SelectedItemContainer?.Class)
-              .Append(' ');
+            classes.Add("bit-nav-sel");
+            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Class ?? string.Empty);
         }
 
-        sb.Append(Nav.ClassStyles?.ItemContainer?.Class);
+        classes.Add(Nav.ClassStyles?.ItemContainer?.Class ?? string.Empty);
 
-        return sb.ToString();
+        return string.Join(" ", classes);
     }
     private string GetItemContainerStyles()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.ItemContainer?.Style);
+        var classes = new List<string>
+        {
+            Nav.ClassStyles?.ItemContainer?.Style ?? string.Empty
+        };
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
+            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Style ?? string.Empty);
         }
 
-        return sb.ToString();
+        return string.Join(" ", classes);
     }
 
     private string GetItemClasses()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.Item?.Class);
+        var classes = new List<string>
+        {
+            Nav.ClassStyles?.Item?.Class ?? string.Empty
+        };
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItem?.Class);
+            classes.Add(Nav.ClassStyles?.SelectedItem?.Class ?? string.Empty);
         }
 
-        return sb.ToString();
+        return string.Join(" ", classes);
     }
     private string GetItemStyles()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.Item?.Style);
+        var classes = new List<string>
+        {
+            Nav.ClassStyles?.Item?.Style??string.Empty
+        };
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItem?.Style);
+            classes.Add(Nav.ClassStyles?.SelectedItem?.Style ?? string.Empty);
         }
 
-        return sb.ToString();
+        return string.Join(" ", classes);
     }
 
 

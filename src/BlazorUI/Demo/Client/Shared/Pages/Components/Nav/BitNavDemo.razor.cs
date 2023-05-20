@@ -644,415 +644,8 @@ public partial class BitNavDemo
 
 
 
-    // Basic
-    private static readonly List<BitNavItem> BitPlatformNavMenu = new()
-    {
-        new()
-        {
-            Text = "Bit Platform",
-            ChildItems = new()
-            {
-                new() { Text = "Home", Url = "https://bitplatform.dev/" },
-                new()
-                {
-                    Text = "Products & Services",
-                    ChildItems = new()
-                    {
-                        new()
-                        {
-                            Text = "Project Templates",
-                            ChildItems = new()
-                            {
-                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
-                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
-                            }
-                        },
-                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                    }
-                },
-                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
-            },
-        },
-        new()
-        {
-            Text = "Community",
-            ChildItems = new()
-            {
-                new() { Text = "LinkedIn", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
-                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "GitHub repo", Url = "https://github.com/bitfoundation/bitplatform" },
-            }
-        },
-        new() { Text = "Iconography", Url = "/icons" },
-    };
-    // Grouped
-    private static readonly List<BitNavItem> CarNavMenu = new()
-    {
-        new()
-        {
-            Text = "Mercedes-Benz",
-            ExpandAriaLabel = "Mercedes-Benz Expanded",
-            CollapseAriaLabel = "Mercedes-Benz Collapsed",
-            Title = "Mercedes-Benz Car Models",
-            IsExpanded = true,
-            ChildItems = new()
-            {
-                new()
-                {
-                    Text = "SUVs",
-                    ChildItems = new()
-                    {
-                        new() { Text = "GLA", Url = "https://www.mbusa.com/en/vehicles/class/gla/suv", Target = "_blank" },
-                        new() { Text = "GLB", Url = "https://www.mbusa.com/en/vehicles/class/glb/suv", Target = "_blank" },
-                        new() { Text = "GLC", Url = "https://www.mbusa.com/en/vehicles/class/glc/suv", Target = "_blank" },
-                    }
-                },
-                new()
-                {
-                    Text = "Sedans & Wagons",
-                    ChildItems = new()
-                    {
-                        new() { Text = "A Class", Url = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", Target = "_blank" },
-                        new() { Text = "C Class", Url = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", Target = "_blank" },
-                        new() { Text = "E Class", Url = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", Target = "_blank" },
-                    }
-                },
-                new()
-                {
-                    Text = "Coupes",
-                    ChildItems = new()
-                    {
-                        new() { Text = "CLA Coupe", Url = "https://www.mbusa.com/en/vehicles/class/cla/coupe", Target = "_blank" },
-                        new() { Text = "C Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", Target = "_blank" },
-                        new() { Text = "E Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", Target = "_blank" },
-                    }
-                },
-            }
-        },
-        new()
-        {
-            Text = "Tesla",
-            ExpandAriaLabel = "Tesla Expanded",
-            CollapseAriaLabel= "Tesla Collapsed",
-            Title = "Tesla Car Models",
-            ChildItems = new List<BitNavItem>
-            {
-                new() { Text = "Model S", Url = "https://www.tesla.com/models", Target = "_blank" },
-                new() { Text = "Model X", Url = "https://www.tesla.com/modelx", Target = "_blank" },
-                new() { Text = "Model Y", Url = "https://www.tesla.com/modely", Target = "_blank" },
-            }
-        },
-    };
-    // Manual
-    private static readonly List<BitNavItem> FoodNavMenu = new()
-    {
-        new()
-        {
-            Text = "Fast-Food",
-            IconName = BitIconName.HeartBroken,
-            IsExpanded = true,
-            ChildItems = new()
-            {
-                new()
-                {
-                    Text = "Burgers",
-                    ChildItems = new()
-                    {
-                        new() { Text = "Beef Burger" },
-                        new() { Text = "Veggie Burger" },
-                        new() { Text = "Bison Burger" },
-                        new() { Text = "Wild Salmon Burger" },
-                    }
-                },
-                new()
-                {
-                    Text = "Pizzas",
-                    ChildItems = new()
-                    {
-                        new() { Text = "Cheese Pizza" },
-                        new() { Text = "Veggie Pizza" },
-                        new() { Text = "Pepperoni Pizza" },
-                        new() { Text = "Meat Pizza" },
-                    }
-                },
-                new() { Text    = "French Fries" },
-            }
-        },
-        new()
-        {
-            Text = "Fruits",
-            IconName = BitIconName.Health,
-            ChildItems = new()
-            {
-                new() { Text = "Apple" },
-                new() { Text = "Orange" },
-                new() { Text = "Banana" },
-            }
-        },
-        new() { Text = "Ice Cream" },
-        new() { Text = "Cookie" },
-    };
-
-    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
-    private BitNavItem? SelectedItemNav = FoodNavMenu[0].ChildItems[2];
-    private string? SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
-
-    private BitNavItem ClickedItem;
-    private BitNavItem SelectedItem;
-    private BitNavItem ToggledItem;
-
-
-    // Basic
-    private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
-    {
-        new()
-        {
-            Text = "Bit Platform",
-            Links = new()
-            {
-                new() { Text = "Home", Url = "https://bitplatform.dev/" },
-                new()
-                {
-                    Text = "Products & Services",
-                    Links = new()
-                    {
-                        new()
-                        {
-                            Text = "Project Templates",
-                            Links = new()
-                            {
-                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
-                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
-                            }
-                        },
-                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                    }
-                },
-                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
-            },
-        },
-        new()
-        {
-            Text = "Community",
-            Links = new()
-            {
-                new() { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
-                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
-            }
-        },
-        new() { Text = "Iconography", Url = "/icons" },
-    };
-    // Grouped
-    private static readonly List<CarMenu> CustomCarNavMenu = new()
-    {
-        new()
-        {
-            Name = "Mercedes-Benz",
-            ExpandedAriaLabel = "Mercedes-Benz Expanded",
-            CollapsedAriaLabel = "Mercedes-Benz Collapsed",
-            Tooltip = "Mercedes-Benz Car Models",
-            IsExpandedParent = true,
-            Links = new()
-            {
-                new()
-                {
-                    Name = "SUVs",
-                    Links = new()
-                    {
-                        new() { Name = "GLA", PageUrl = "https://www.mbusa.com/en/vehicles/class/gla/suv", UrlTarget = "_blank" },
-                        new() { Name = "GLB", PageUrl = "https://www.mbusa.com/en/vehicles/class/glb/suv", UrlTarget = "_blank" },
-                        new() { Name = "GLC", PageUrl = "https://www.mbusa.com/en/vehicles/class/glc/suv", UrlTarget = "_blank" },
-                    }
-                },
-                new()
-                {
-                    Name = "Sedans & Wagons",
-                    Links = new()
-                    {
-                        new() { Name = "A Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", UrlTarget = "_blank" },
-                        new() { Name = "C Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", UrlTarget = "_blank" },
-                        new() { Name = "E Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", UrlTarget = "_blank" },
-                    }
-                },
-                new()
-                {
-                    Name = "Coupes",
-                    Links = new()
-                    {
-                        new() { Name = "CLA Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/cla/coupe", UrlTarget = "_blank" },
-                        new() { Name = "C Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", UrlTarget = "_blank" },
-                        new() { Name = "E Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", UrlTarget = "_blank" },
-                    }
-                },
-            }
-        },
-        new()
-        {
-            Name = "Tesla",
-            ExpandedAriaLabel = "Tesla Expanded",
-            CollapsedAriaLabel = "Tesla Collapsed",
-            Tooltip = "Tesla Car Models",
-            Links = new()
-            {
-                new() { Name = "Model S", PageUrl = "https://www.tesla.com/models", UrlTarget = "_blank" },
-                new() { Name = "Model X", PageUrl = "https://www.tesla.com/modelx", UrlTarget = "_blank" },
-                new() { Name = "Model Y", PageUrl = "https://www.tesla.com/modely", UrlTarget = "_blank" },
-            }
-        },
-    };
-    // Manual
-    private static readonly List<FoodMenu> CustomFoodNavMenu = new()
-    {
-        new()
-        {
-            Name = "Fast-Food",
-            Icon = BitIconName.HeartBroken,
-            IsExpanded = true,
-            Childs = new()
-            {
-                new()
-                {
-                    Name = "Burgers",
-                    Childs = new()
-                    {
-                        new() { Name = "Beef Burger" },
-                        new() { Name = "Veggie Burger" },
-                        new() { Name = "Bison Burger" },
-                        new() { Name = "Wild Salmon Burger" },
-                    }
-                },
-                new()
-                {
-                    Name = "Pizzas",
-                    Childs = new()
-                    {
-                        new() { Name = "Cheese Pizza" },
-                        new() { Name = "Veggie Pizza" },
-                        new() { Name = "Pepperoni Pizza" },
-                        new() { Name = "Meat Pizza" },
-                    }
-                },
-                new() { Name = "French Fries" },
-            }
-        },
-        new()
-        {
-            Name = "Fruits",
-            Icon = BitIconName.Health,
-            Childs = new()
-            {
-                new() { Name = "Apple" },
-                new() { Name = "Orange" },
-                new() { Name = "Banana" },
-            }
-        },
-        new() { Name = "Ice Cream" },
-        new() { Name = "Cookie" },
-    };
-
-    private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
-    private FoodMenu? CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
-    private string? CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
-
-    private FoodMenu CustomClickedItem;
-    private FoodMenu CustomSelectedItem;
-    private FoodMenu CustomToggledItem;
-
-
-    private string SelectedOptionKey;
-
-    private BitNavOption ClickedOption;
-    private BitNavOption SelectedOption;
-    private BitNavOption ToggledOption;
-
-
-    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
-    {
-        new()
-        {
-            Text = "Beef Burger",
-            Value = "Beef Burger",
-        },
-        new()
-        {
-            Text = "Veggie Burger",
-            Value = "Veggie Burger",
-        },
-        new()
-        {
-            Text = "Bison Burger",
-            Value = "Bison Burger",
-        },
-        new()
-        {
-            Text = "Wild Salmon Burger",
-            Value = "Wild Salmon Burger",
-        },
-        new()
-        {
-            Text = "Cheese Pizza",
-            Value = "Cheese Pizza",
-        },
-        new()
-        {
-            Text = "Veggie Pizza",
-            Value = "Veggie Pizza",
-        },
-        new()
-        {
-            Text = "Pepperoni Pizza",
-            Value = "Pepperoni Pizza",
-        },
-        new()
-        {
-            Text = "Meat Pizza",
-            Value = "Meat Pizza",
-        },
-        new()
-        {
-            Text = "French Fries",
-            Value = "French Fries",
-        },
-        new()
-        {
-            Text = "Apple",
-            Value = "Apple",
-        },
-        new()
-        {
-            Text = "Orange",
-            Value = "Orange",
-        },
-        new()
-        {
-            Text = "Banana",
-            Value = "Banana",
-        },
-        new()
-        {
-            Text = "Ice Cream",
-            Value = "Ice Cream",
-        },
-        new()
-        {
-            Text = "Cookie",
-            Value = "Cookie",
-        },
-    };
-
-
     private static string example1NavItemHTMLCode = @"
-<BitNav Items=""BitPlatformNavMenu"" />
-";
+<BitNav Items=""BitPlatformNavMenu"" />";
     private static string example1NavItemCSharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
@@ -1097,12 +690,10 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         }
     },
     new() { Text = ""Iconography"", Url = ""/icons"" },
-};
-";
+};";
 
     private static string example2NavItemHTMLCode = @"
-<BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />
-";
+<BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />";
     private static string example2NavItemCSharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu = new()
 {
@@ -1160,32 +751,24 @@ private static readonly List<BitNavItem> CarNavMenu = new()
             new() { Text = ""Model Y"", Url = ""https://www.tesla.com/modely"", Target = ""_blank"" },
         }
     },
-};
-";
+};";
 
     private static string example3NavItemHTMLCode = @"
-<div class=""example-box"">
-    <div>
-        <BitLabel>Basic</BitLabel>
-        <BitNav Items=""FoodNavMenu""
-                DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
-                Mode=""BitNavMode.Manual"" />
-    </div>
+<BitLabel>Basic</BitLabel>
+<BitNav Items=""FoodNavMenu""
+        DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
+        Mode=""BitNavMode.Manual"" />
 
-    <div class=""margin-top"">
-        <BitLabel>Two-Way Bind</BitLabel>
+<BitLabel>Two-Way Bind</BitLabel>
+<BitNav @bind-SelectedItem=""SelectedItemNav""
+        Items=""FoodNavMenu""
+        Mode=""BitNavMode.Manual""
+        OnSelectItem=""(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
 
-        <BitNav @bind-SelectedItem=""SelectedItemNav""
-                Items=""FoodNavMenu""
-                Mode=""BitNavMode.Manual""
-                OnSelectItem=""(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text).Text"" />
-
-        <BitDropdown @bind-Value=""SelectedItemText""
-                        Label=""Select Item""
-                        Items=""FoodMenuDropdownItems""
-                        OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />
-    </div>
-";
+<BitDropdown @bind-Value=""SelectedItemText""
+                Label=""Select Item""
+                Items=""FoodMenuDropdownItems""
+                OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />";
     private static string example3NavItemCSharpCode = @"
 private static readonly List<BitNavItem> FoodNavMenu = new()
 {
@@ -1312,8 +895,7 @@ private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
 
 private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
 private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
-private string SelectedItemText = FoodNavMenu[0].Items[2].Text;
-";
+private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 
     private static string example4NavItemHTMLCode = @"
 <style>
@@ -1333,34 +915,29 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;
     }
 </style>
 
-<div>
-    <BitLabel>Header Template (in Grouped mode)</BitLabel>
-    <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"">
-        <HeaderTemplate Context=""item"">
-            <div class=""nav-custom-header"">
-                <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
-                <span>@item.Text</span>
-            </div>
-        </HeaderTemplate>
-    </BitNav>
-</div>
+<BitLabel>Header Template (in Grouped mode)</BitLabel>
+<BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"">
+    <HeaderTemplate Context=""item"">
+        <div class=""nav-custom-header"">
+            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <span>@item.Text</span>
+        </div>
+    </HeaderTemplate>
+</BitNav>
 
-<div class=""margin-top"">
-    <BitLabel>Item Template</BitLabel>
-    <BitNav Items=""FoodNavMenu"" Mode=""BitNavMode.Manual"">
-        <ItemTemplate Context=""item"">
-            <div class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
-                <BitCheckbox IsEnabled=""@(item.IsEnabled)"" />
-                @if (item.IconName.HasValue)
-                {
-                    <BitIcon IconName=""@item.IconName.Value"" />
-                }
-                <span>@item.Text</span>
-            </div>
-        </ItemTemplate>
-    </BitNav>
-</div>
-";
+<BitLabel>Item Template</BitLabel>
+<BitNav Items=""FoodNavMenu"" Mode=""BitNavMode.Manual"">
+    <ItemTemplate Context=""item"">
+        <div class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
+            <BitCheckbox IsEnabled=""@(item.IsEnabled)"" />
+            @if (item.IconName.HasValue)
+            {
+                <BitIcon IconName=""@item.IconName.Value"" />
+            }
+            <span>@item.Text</span>
+        </div>
+    </ItemTemplate>
+</BitNav>";
     private static string example4NavItemCSharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu = new()
 {
@@ -1467,8 +1044,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
     },
     new() { Text = ""Ice Cream"" },
     new() { Text = ""Cookie"" },
-};
-";
+};";
 
     private static string example5NavItemHTMLCode = @"
 <BitNav Items=""FoodNavMenu""
@@ -1478,12 +1054,9 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
         OnSelectItem=""(BitNavItem item) => SelectedItem = item""
         OnItemToggle=""(BitNavItem item) => ToggledItem = item"" />
 
-<div class=""flex"">
-    <span>Clicked Item: @ClickedItem?.Text</span>
-    <span>Selected Item: @SelectedItem?.Text</span>
-    <span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Text} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
-</div>
-";
+<span>Clicked Item: @ClickedItem?.Text</span>
+<span>Selected Item: @SelectedItem?.Text</span>
+<span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Text} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
     private static string example5NavItemCSharpCode = @"
 private static readonly List<BitNavItem> FoodNavMenu = new()
 {
@@ -1536,16 +1109,13 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
 
 private BitNavItem ClickedItem;
 private BitNavItem SelectedItem;
-private BitNavItem ToggledItem;
-";
+private BitNavItem ToggledItem;";
 
     private static string example6NavItemHTMLCode = @"
-<div class=""example-box"">
-    <BitNav Items=""BitPlatformNavMenu""
-            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
-                                    ToggleButton = new() { Style=""color:cyan"" },
-                                    Item = new() { Style=""color:red"" } })"" />
-</div>";
+<BitNav Items=""BitPlatformNavMenu""
+        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                ToggleButton = new() { Style=""color:cyan"" },
+                                Item = new() { Style=""color:red"" } })"" />";
     private static string example6NavItemCSharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
@@ -1590,8 +1160,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         }
     },
     new() { Text = ""Iconography"", Url = ""/icons"" },
-};
-";
+};";
 
 
 
@@ -1600,8 +1169,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         TextField=""@nameof(BitPlatformMenu.Text)""
         UrlField=""@nameof(BitPlatformMenu.Url)""
         IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
-        ChildItemsField=""@nameof(BitPlatformMenu.Links)"" />
-";
+        ChildItemsField=""@nameof(BitPlatformMenu.Links)"" />";
     private static string example1CustomItemCSharpCode = @"
 public class BitPlatformMenu
 {
@@ -1654,8 +1222,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         }
     },
     new() { Text = ""Iconography"", Url = ""/icons"" },
-};
-";
+};";
 
     private static string example2CustomItemHTMLCode = @"
 <BitNav Items=""CustomCarNavMenu""
@@ -1667,8 +1234,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
         ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
         ChildItemsField=""@nameof(CarMenu.Links)""
-        RenderType=""BitNavRenderType.Grouped"" />
-";
+        RenderType=""BitNavRenderType.Grouped"" />";
     private static string example2CustomItemCSharpCode = @"
 public class CarMenu
 {
@@ -1738,39 +1304,32 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
             new() { Name = ""Model Y"", PageUrl = ""https://www.tesla.com/modely"", UrlTarget = ""_blank"" },
         }
     },
-};
-";
+};";
 
     private static string example3CustomItemHTMLCode = @"
-<div>
-    <BitLabel>Basic</BitLabel>
-    <BitNav Items=""CustomFoodNavMenu""
-            TextFieldSelector=""item => item.Name""
-            IconNameFieldSelector=""item => item.Icon""
-            IsExpandedFieldSelector=""item => item.IsExpanded""
-            ChildItemsFieldSelector=""item => item.Childs""
-            DefaultSelectedItem=""CustomFoodNavMenu[0].Childs[2]""
-            Mode=""BitNavMode.Manual"" />
-</div>
+<BitLabel>Basic</BitLabel>
+<BitNav Items=""CustomFoodNavMenu""
+        TextFieldSelector=""item => item.Name""
+        IconNameFieldSelector=""item => item.Icon""
+        IsExpandedFieldSelector=""item => item.IsExpanded""
+        ChildItemsFieldSelector=""item => item.Childs""
+        DefaultSelectedItem=""CustomFoodNavMenu[0].Childs[2]""
+        Mode=""BitNavMode.Manual"" />
 
-<div class=""margin-top"">
-    <BitLabel>Two-Way Bind</BitLabel>
+<BitLabel>Two-Way Bind</BitLabel>
+<BitNav @bind-SelectedItem=""CustomSelectedFood""
+        Items=""CustomFoodNavMenu""
+        TextFieldSelector=""item => item.Name""
+        IconNameFieldSelector=""item => item.Icon""
+        IsExpandedFieldSelector=""item => item.IsExpanded""
+        ChildItemsFieldSelector=""item => item.Childs""
+        Mode=""BitNavMode.Manual""
+        OnSelectItem=""(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
 
-    <BitNav @bind-SelectedItem=""CustomSelectedFood""
-            Items=""CustomFoodNavMenu""
-            TextFieldSelector=""item => item.Name""
-            IconNameFieldSelector=""item => item.Icon""
-            IsExpandedFieldSelector=""item => item.IsExpanded""
-            ChildItemsFieldSelector=""item => item.Childs""
-            Mode=""BitNavMode.Manual""
-            OnSelectItem=""(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name).Text"" />
-
-    <BitDropdown @bind-Value=""CustomSelectedFoodName""
-                    Label=""Select Item""
-                    Items=""FoodMenuDropdownItems""
-                    OnSelectItem=""(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)"" />
-</div>
-";
+<BitDropdown @bind-Value=""CustomSelectedFoodName""
+             Label=""Select Item""
+             Items=""FoodMenuDropdownItems""
+             OnSelectItem=""(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)"" />";
     private static string example3CustomItemCSharpCode = @"
 public class FoodMenu
 {
@@ -1905,8 +1464,7 @@ private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
 
 private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
 private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
-private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
-";
+private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
 
     private static string example4CustomItemHTMLCode = @"
 <style>
@@ -1926,47 +1484,42 @@ private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
     }
 </style>
 
-<div>
-    <BitLabel>Header Template (in Grouped mode)</BitLabel>
-    <BitNav Items=""CustomCarNavMenu""
-            TextField=""@nameof(CarMenu.Name)""
-            UrlField=""@nameof(CarMenu.PageUrl)""
-            TargetField=""@nameof(CarMenu.UrlTarget)""
-            TitleField=""@nameof(CarMenu.Tooltip)""
-            IsExpandedField=""@nameof(CarMenu.IsExpandedParent)""
-            CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
-            ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
-            ChildItemsField=""@nameof(CarMenu.Links)""
-            RenderType=""BitNavRenderType.Grouped"">
+<BitLabel>Header Template (in Grouped mode)</BitLabel>
+<BitNav Items=""CustomCarNavMenu""
+        TextField=""@nameof(CarMenu.Name)""
+        UrlField=""@nameof(CarMenu.PageUrl)""
+        TargetField=""@nameof(CarMenu.UrlTarget)""
+        TitleField=""@nameof(CarMenu.Tooltip)""
+        IsExpandedField=""@nameof(CarMenu.IsExpandedParent)""
+        CollapseAriaLabelField=""@nameof(CarMenu.CollapsedAriaLabel)""
+        ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
+        ChildItemsField=""@nameof(CarMenu.Links)""
+        RenderType=""BitNavRenderType.Grouped"">
 
-        <HeaderTemplate Context=""item"">
-            <div class=""nav-custom-header"">
-                <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
-                <span>@item.Name</span>
-            </div>
-        </HeaderTemplate>
-    </BitNav>
-</div>
+    <HeaderTemplate Context=""item"">
+        <div class=""nav-custom-header"">
+            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <span>@item.Name</span>
+        </div>
+    </HeaderTemplate>
+</BitNav>
 
-<div class=""margin-top"">
-    <BitLabel>Item Template</BitLabel>
-    <BitNav Items=""CustomFoodNavMenu""
-            TextFieldSelector=""item => item.Name""
-            IconNameFieldSelector=""item => item.Icon""
-            IsExpandedFieldSelector=""item => item.IsExpanded""
-            ChildItemsFieldSelector=""item => item.Childs""
-            Mode=""BitNavMode.Manual"">
+<BitLabel>Item Template</BitLabel>
+<BitNav Items=""CustomFoodNavMenu""
+        TextFieldSelector=""item => item.Name""
+        IconNameFieldSelector=""item => item.Icon""
+        IsExpandedFieldSelector=""item => item.IsExpanded""
+        ChildItemsFieldSelector=""item => item.Childs""
+        Mode=""BitNavMode.Manual"">
 
-        <ItemTemplate Context=""item"">
-            <div class=""nav-custom-item"">
-                <BitCheckbox />
-                <BitIcon IconName=""@item.Icon"" />
-                <span>@item.Name</span>
-            </div>
-        </ItemTemplate>
-    </BitNav>
-</div>
-";
+    <ItemTemplate Context=""item"">
+        <div class=""nav-custom-item"">
+            <BitCheckbox />
+            <BitIcon IconName=""@item.Icon"" />
+            <span>@item.Name</span>
+        </div>
+    </ItemTemplate>
+</BitNav>";
     private static string example4CustomItemCSharpCode = @"
 public class CarMenu
 {
@@ -2093,8 +1646,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     },
     new() { Name = ""Ice Cream"" },
     new() { Name = ""Cookie"" },
-};
-";
+};";
 
     private static string example5CustomItemHTMLCode = @"
 <BitNav Items=""CustomFoodNavMenu""
@@ -2108,12 +1660,9 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
         OnSelectItem=""(FoodMenu item) => CustomSelectedItem = item""
         OnItemToggle=""(FoodMenu item) => CustomToggledItem = item"" />
 
-<div class=""flex"">
-    <span>Clicked Item: @CustomClickedItem?.Name</span>
-    <span>Selected Item: @CustomSelectedItem?.Name</span>
-    <span>Toggled Item: @(CustomToggledItem is null ? ""N/A"" : $""{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
-</div>
-";
+<span>Clicked Item: @CustomClickedItem?.Name</span>
+<span>Selected Item: @CustomSelectedItem?.Name</span>
+<span>Toggled Item: @(CustomToggledItem is null ? ""N/A"" : $""{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
     private static string example5CustomItemCSharpCode = @"
 public class FoodMenu
 {
@@ -2174,20 +1723,17 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
 
 private FoodMenu CustomClickedItem;
 private FoodMenu CustomSelectedItem;
-private FoodMenu CustomToggledItem;
-";
+private FoodMenu CustomToggledItem;";
 
     private static string example6CustomItemHTMLCode = @"
-<div class=""example-box"">
-    <BitNav Items=""CustomBitPlatformNavMenu""
-            TextField=""@nameof(BitPlatformMenu.Text)""
-            UrlField=""@nameof(BitPlatformMenu.Url)""
-            IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
-            ChildItemsField=""@nameof(BitPlatformMenu.Links)""
-            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
-                                    ToggleButton = new() { Style=""color:cyan"" },
-                                    Item = new() { Style=""color:red"" } })"" />
-</div>";
+<BitNav Items=""CustomBitPlatformNavMenu""
+        TextField=""@nameof(BitPlatformMenu.Text)""
+        UrlField=""@nameof(BitPlatformMenu.Url)""
+        IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
+        ChildItemsField=""@nameof(BitPlatformMenu.Links)""
+        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                ToggleButton = new() { Style=""color:cyan"" },
+                                Item = new() { Style=""color:red"" } })"" />";
     private static string example6CustomItemCSharpCode = @"
 public class BitPlatformMenu
 {
@@ -2240,8 +1786,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         }
     },
     new() { Text = ""Iconography"", Url = ""/icons"" },
-};
-";
+};";
 
 
 
@@ -2274,8 +1819,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     </BitNavOption>
 
     <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
-</BitNav>
-";
+</BitNav>";
 
     private static string example2NavOptionHTMLCode = @"
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
@@ -2308,170 +1852,14 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         <BitNavOption Text=""Model X"" Url=""https://www.tesla.com/modelx"" Target=""_blank"" />
         <BitNavOption Text=""Model Y"" Url=""https://www.tesla.com/modely"" Target=""_blank"" />
     </BitNavOption>
-</BitNav>
-";
+</BitNav>";
 
     private static string example3NavOptionHTMLCode = @"
-<div>
-    <BitLabel>Basic</BitLabel>
-    <BitNav TItem=""BitNavOption""
-            Mode=""BitNavMode.Manual"">
-        <BitNavOption Text=""Fast-Foods""
-                        IconName=""BitIconName.HeartBroken"">
-            <BitNavOption Text=""Burgers"">
-                <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
-                <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
-                <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
-                <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
-            </BitNavOption>
-            <BitNavOption Text=""Pizzas"">
-                <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
-                <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
-                <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
-                <BitNavOption Text=""Meat Pizza"" Key=""Meat Pizza"" />
-            </BitNavOption>
-            <BitNavOption Text=""French Fries"" Key=""French Fries"" />
-        </BitNavOption>
-        <BitNavOption Text=""Fruits"">
-            <BitNavOption Text=""Aplle"" Key=""Aplle"" />
-            <BitNavOption Text=""Orange"" Key=""Orange"" />
-            <BitNavOption Text=""Benana"" Key=""Benana"" />
-        </BitNavOption>
-        <BitNavOption Text=""Ice Cream"" Key=""Ice Cream"" />
-        <BitNavOption Text=""Cookie"" Key=""Cookie"" />
-    </BitNav>
-</div>
-
-<div class=""margin-top"">
-    <BitLabel>Two-Way Bind</BitLabel>
-    <BitNav TItem=""BitNavOption""
-            Mode=""BitNavMode.Manual"">
-        <BitNavOption Text=""Fast-Foods""
-                        IconName=""BitIconName.HeartBroken""
-                        IsExpanded=""true"">
-            <BitNavOption Text=""Burgers"">
-                <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
-                <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
-                <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
-                <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
-            </BitNavOption>
-            <BitNavOption Text=""Pizzas"">
-                <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
-                <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
-                <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
-                <BitNavOption Text=""Meat Pizza"" Key=""Meat Pizza"" />
-            </BitNavOption>
-            <BitNavOption Text=""French Fries"" Key=""French Fries"" />
-        </BitNavOption>
-        <BitNavOption Text=""Fruits"">
-            <BitNavOption Text=""Aplle"" Key=""Aplle"" />
-            <BitNavOption Text=""Orange"" Key=""Orange"" />
-            <BitNavOption Text=""Benana"" Key=""Benana"" />
-        </BitNavOption>
-        <BitNavOption Text=""Ice Cream"" Key=""Ice Cream"" />
-        <BitNavOption Text=""Cookie"" Key=""Cookie"" />
-    </BitNav>
-
-    <BitDropdown @bind-Value=""SelectedOptionKey""
-                    DefaultValue=""French Fries""
-                    Label=""Pick one""
-                    Items=""FoodMenuDropdownItems"" />
-</div>
-";
-    private static string example3NavOptionCSharpCode = @"
-private string SelectedOptionKey;
-";
-
-    private static string example4NavOptionHTMLCode = @"
-<div>
-    <BitLabel>Header Template (in Grouped mode)</BitLabel>
-    <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
-        <HeaderTemplate Context=""item"">
-            <div class=""nav-custom-header"">
-                <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
-                <span>@item.Text</span>
-            </div>
-        </HeaderTemplate>
-        <ChildContent>
-            <BitNavOption Text=""Mercedes-Benz""
-                            ExpandAriaLabel=""Mercedes-Benz Expanded""
-                            CollapseAriaLabel=""Mercedes-Benz Collapsed""
-                            Title=""Mercedes-Benz Car Models""
-                            IsExpanded=""true"">
-                <BitNavOption Text=""SUVs"">
-                    <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
-                    <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
-                    <BitNavOption Text=""GLC"" Url=""https://www.mbusa.com/en/vehicles/class/glc/suv"" Target=""_blank"" />
-                </BitNavOption>
-                <BitNavOption Text=""Sedans & Wagons"">
-                    <BitNavOption Text=""A Class"" Url=""https://www.mbusa.com/en/vehicles/class/a-class/sedan"" Target=""_blank"" />
-                    <BitNavOption Text=""C Class"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/sedan"" Target=""_blank"" />
-                    <BitNavOption Text=""E Class"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/sedan"" Target=""_blank"" />
-                </BitNavOption>
-                <BitNavOption Text=""Coupes"">
-                    <BitNavOption Text=""CLA Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/cla/coupe"" Target=""_blank"" />
-                    <BitNavOption Text=""C Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/coupe"" Target=""_blank"" />
-                    <BitNavOption Text=""E Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/coupe"" Target=""_blank"" />
-                </BitNavOption>
-            </BitNavOption>
-            <BitNavOption Text=""Tesla""
-                            ExpandAriaLabel=""Tesla Expanded""
-                            CollapseAriaLabel=""Tesla Collapsed""
-                            Title=""Tesla Car Models"">
-                <BitNavOption Text=""Model S"" Url=""https://www.tesla.com/models"" Target=""_blank"" />
-                <BitNavOption Text=""Model X"" Url=""https://www.tesla.com/modelx"" Target=""_blank"" />
-                <BitNavOption Text=""Model Y"" Url=""https://www.tesla.com/modely"" Target=""_blank"" />
-            </BitNavOption>
-        </ChildContent>
-    </BitNav>
-</div>
-
-<div class=""margin-top"">
-    <BitLabel>Option Template</BitLabel>
-    <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
-        <ItemTemplate Context=""option"">
-            <div class=""nav-custom-item"">
-                <BitCheckbox IsEnabled=""@(option.IsEnabled)"" />
-                <span>@option.Text</span>
-            </div>
-        </ItemTemplate>
-        <ChildContent>
-            <BitNavOption Text=""Fast-Foods""
-                            IsExpanded=""true"">
-                <BitNavOption Text=""Burgers"">
-                    <BitNavOption Text=""Beef Burger"" />
-                    <BitNavOption Text=""Veggie Burger"" />
-                    <BitNavOption Text=""Bison Burger"" />
-                    <BitNavOption Text=""Wild Salmon Burger"" />
-                </BitNavOption>
-                <BitNavOption Text=""Pizzas"">
-                    <BitNavOption Text=""Cheese Pizza"" />
-                    <BitNavOption Text=""Veggie Pizza"" />
-                    <BitNavOption Text=""Pepperoni Pizza"" />
-                    <BitNavOption Text=""Meat Pizza"" />
-                </BitNavOption>
-                <BitNavOption Text=""French Fries"" />
-            </BitNavOption>
-            <BitNavOption Text=""Fruits"">
-                <BitNavOption Text=""Aplle"" />
-                <BitNavOption Text=""Orange"" />
-                <BitNavOption Text=""Benana"" />
-            </BitNavOption>
-            <BitNavOption Text=""Ice Cream"" />
-            <BitNavOption Text=""Cookie"" />
-        </ChildContent>
-    </BitNav>
-</div>
-";
-
-    private static string example5NavOptionHTMLCode = @"
-<BitNav Mode=""BitNavMode.Manual""
-        OnItemClick=""(BitNavOption option) => ClickedOption = option""
-        OnSelectItem=""(BitNavOption option) => SelectedOption = option""
-        OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
+<BitLabel>Basic</BitLabel>
+<BitNav TItem=""BitNavOption""
+        Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast-Foods""
-                    IconName=""BitIconName.HeartBroken""
-                    IsExpanded=""true"">
+                  IconName=""BitIconName.HeartBroken"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
@@ -2495,51 +1883,189 @@ private string SelectedOptionKey;
     <BitNavOption Text=""Cookie"" Key=""Cookie"" />
 </BitNav>
 
-<div class=""flex"">
-    <span>Clicked Option: @ClickedOption?.Text</span>
-    <span>Selected Option: @SelectedOption?.Text</span>
-    <span>Toggled Option: @(ToggledOption is null ? ""N/A"" : $""{ToggledOption.Text} ({(ToggledOption.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>
-</div>
-";
+<BitLabel>Two-Way Bind</BitLabel>
+<BitNav TItem=""BitNavOption""
+        Mode=""BitNavMode.Manual"">
+    <BitNavOption Text=""Fast-Foods""
+                  IconName=""BitIconName.HeartBroken""
+                  IsExpanded=""true"">
+        <BitNavOption Text=""Burgers"">
+            <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
+            <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
+            <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
+            <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
+        </BitNavOption>
+        <BitNavOption Text=""Pizzas"">
+            <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
+            <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
+            <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
+            <BitNavOption Text=""Meat Pizza"" Key=""Meat Pizza"" />
+        </BitNavOption>
+        <BitNavOption Text=""French Fries"" Key=""French Fries"" />
+    </BitNavOption>
+    <BitNavOption Text=""Fruits"">
+        <BitNavOption Text=""Aplle"" Key=""Aplle"" />
+        <BitNavOption Text=""Orange"" Key=""Orange"" />
+        <BitNavOption Text=""Benana"" Key=""Benana"" />
+    </BitNavOption>
+    <BitNavOption Text=""Ice Cream"" Key=""Ice Cream"" />
+    <BitNavOption Text=""Cookie"" Key=""Cookie"" />
+</BitNav>
+
+<BitDropdown @bind-Value=""SelectedOptionKey""
+             DefaultValue=""French Fries""
+             Label=""Pick one""
+             Items=""FoodMenuDropdownItems"" />";
+    private static string example3NavOptionCSharpCode = @"
+private string SelectedOptionKey;";
+
+    private static string example4NavOptionHTMLCode = @"
+<BitLabel>Header Template (in Grouped mode)</BitLabel>
+<BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
+    <HeaderTemplate Context=""item"">
+        <div class=""nav-custom-header"">
+            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <span>@item.Text</span>
+        </div>
+    </HeaderTemplate>
+    <ChildContent>
+        <BitNavOption Text=""Mercedes-Benz""
+                      ExpandAriaLabel=""Mercedes-Benz Expanded""
+                      CollapseAriaLabel=""Mercedes-Benz Collapsed""
+                      Title=""Mercedes-Benz Car Models""
+                      IsExpanded=""true"">
+            <BitNavOption Text=""SUVs"">
+                <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
+                <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
+                <BitNavOption Text=""GLC"" Url=""https://www.mbusa.com/en/vehicles/class/glc/suv"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""Sedans & Wagons"">
+                <BitNavOption Text=""A Class"" Url=""https://www.mbusa.com/en/vehicles/class/a-class/sedan"" Target=""_blank"" />
+                <BitNavOption Text=""C Class"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/sedan"" Target=""_blank"" />
+                <BitNavOption Text=""E Class"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/sedan"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""Coupes"">
+                <BitNavOption Text=""CLA Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/cla/coupe"" Target=""_blank"" />
+                <BitNavOption Text=""C Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/coupe"" Target=""_blank"" />
+                <BitNavOption Text=""E Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/coupe"" Target=""_blank"" />
+            </BitNavOption>
+        </BitNavOption>
+        <BitNavOption Text=""Tesla""
+                      ExpandAriaLabel=""Tesla Expanded""
+                      CollapseAriaLabel=""Tesla Collapsed""
+                      Title=""Tesla Car Models"">
+            <BitNavOption Text=""Model S"" Url=""https://www.tesla.com/models"" Target=""_blank"" />
+            <BitNavOption Text=""Model X"" Url=""https://www.tesla.com/modelx"" Target=""_blank"" />
+            <BitNavOption Text=""Model Y"" Url=""https://www.tesla.com/modely"" Target=""_blank"" />
+        </BitNavOption>
+    </ChildContent>
+</BitNav>
+
+<BitLabel>Option Template</BitLabel>
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
+    <ItemTemplate Context=""option"">
+        <div class=""nav-custom-item"">
+            <BitCheckbox IsEnabled=""@(option.IsEnabled)"" />
+            <span>@option.Text</span>
+        </div>
+    </ItemTemplate>
+    <ChildContent>
+        <BitNavOption Text=""Fast-Foods""
+                      IsExpanded=""true"">
+            <BitNavOption Text=""Burgers"">
+                <BitNavOption Text=""Beef Burger"" />
+                <BitNavOption Text=""Veggie Burger"" />
+                <BitNavOption Text=""Bison Burger"" />
+                <BitNavOption Text=""Wild Salmon Burger"" />
+            </BitNavOption>
+            <BitNavOption Text=""Pizzas"">
+                <BitNavOption Text=""Cheese Pizza"" />
+                <BitNavOption Text=""Veggie Pizza"" />
+                <BitNavOption Text=""Pepperoni Pizza"" />
+                <BitNavOption Text=""Meat Pizza"" />
+            </BitNavOption>
+            <BitNavOption Text=""French Fries"" />
+        </BitNavOption>
+        <BitNavOption Text=""Fruits"">
+            <BitNavOption Text=""Aplle"" />
+            <BitNavOption Text=""Orange"" />
+            <BitNavOption Text=""Benana"" />
+        </BitNavOption>
+        <BitNavOption Text=""Ice Cream"" />
+        <BitNavOption Text=""Cookie"" />
+    </ChildContent>
+</BitNav>";
+
+    private static string example5NavOptionHTMLCode = @"
+<BitNav Mode=""BitNavMode.Manual""
+        OnItemClick=""(BitNavOption option) => ClickedOption = option""
+        OnSelectItem=""(BitNavOption option) => SelectedOption = option""
+        OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
+    <BitNavOption Text=""Fast-Foods""
+                  IconName=""BitIconName.HeartBroken""
+                  IsExpanded=""true"">
+        <BitNavOption Text=""Burgers"">
+            <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
+            <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
+            <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
+            <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
+        </BitNavOption>
+        <BitNavOption Text=""Pizzas"">
+            <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
+            <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
+            <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
+            <BitNavOption Text=""Meat Pizza"" Key=""Meat Pizza"" />
+        </BitNavOption>
+        <BitNavOption Text=""French Fries"" Key=""French Fries"" />
+    </BitNavOption>
+    <BitNavOption Text=""Fruits"">
+        <BitNavOption Text=""Aplle"" Key=""Aplle"" />
+        <BitNavOption Text=""Orange"" Key=""Orange"" />
+        <BitNavOption Text=""Benana"" Key=""Benana"" />
+    </BitNavOption>
+    <BitNavOption Text=""Ice Cream"" Key=""Ice Cream"" />
+    <BitNavOption Text=""Cookie"" Key=""Cookie"" />
+</BitNav>
+
+<span>Clicked Option: @ClickedOption?.Text</span>
+<span>Selected Option: @SelectedOption?.Text</span>
+<span>Toggled Option: @(ToggledOption is null ? ""N/A"" : $""{ToggledOption.Text} ({(ToggledOption.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
     private static string example5NavOptionCSharpCode = @"
 private BitNavOption ClickedOption;
 private BitNavOption SelectedOption;
-private BitNavOption ToggledOption;
-";
+private BitNavOption ToggledOption;";
 
     private static string example6NavOptionHTMLCode = @"
-<div class=""example-box"">
-    <BitNav TItem=""BitNavOption""
-            ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
-                                    ToggleButton = new() { Style=""color:cyan"" },
-                                    Item = new() { Style=""color:red"" } })"">
-        <BitNavOption Text=""Bit Platform""
-                        ExpandAriaLabel=""Bit Platform Expanded""
-                        CollapseAriaLabel=""Bit Platform Collapsed"">
-            <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-            <BitNavOption Text=""Products & Services"">
-                <BitNavOption Text=""Project Templates"">
-                    <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/todo-template/overview"" Target=""_blank"" />
-                    <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/admin-panel/overview"" Target=""_blank"" />
-                </BitNavOption>
-                <BitNavOption Text=""BlazorUI"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-                <BitNavOption Text=""Cloud hosting solutions"" IsEnabled=""false"" />
-                <BitNavOption Text=""Bit academy"" IsEnabled=""false"" />
+<BitNav TItem=""BitNavOption""
+        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green;margin:2px"" },
+                                ToggleButton = new() { Style=""color:cyan"" },
+                                Item = new() { Style=""color:red"" } })"">
+    <BitNavOption Text=""Bit Platform""
+                  ExpandAriaLabel=""Bit Platform Expanded""
+                  CollapseAriaLabel=""Bit Platform Collapsed"">
+        <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""Project Templates"">
+                <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/todo-template/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/admin-panel/overview"" Target=""_blank"" />
             </BitNavOption>
-            <BitNavOption Text=""Pricing"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
-            <BitNavOption Text=""About"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
-            <BitNavOption Text=""Contact us"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+            <BitNavOption Text=""BlazorUI"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IsEnabled=""false"" />
+            <BitNavOption Text=""Bit academy"" IsEnabled=""false"" />
         </BitNavOption>
+        <BitNavOption Text=""Pricing"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""About"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
 
-        <BitNavOption Text=""Community""
-                        ExpandAriaLabel=""Community Expanded""
-                        CollapseAriaLabel=""Community Collapsed"">
-            <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq/about"" Target=""_blank"" />
-            <BitNavOption Text=""Twitter"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
-            <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
-        </BitNavOption>
+    <BitNavOption Text=""Community""
+                  ExpandAriaLabel=""Community Expanded""
+                  CollapseAriaLabel=""Community Collapsed"">
+        <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq/about"" Target=""_blank"" />
+        <BitNavOption Text=""Twitter"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+    </BitNavOption>
 
-        <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
-    </BitNav>
-</div>";
+    <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
+</BitNav>";
 }

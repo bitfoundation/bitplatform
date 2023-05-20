@@ -5,52 +5,52 @@
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
         <button @onclick="ToggleItem"
-                class="group-chevron-btn"
-                type="button"
                 tabindex="0"
-                aria-label="@(Nav.GetIsEnabled(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))"
-                aria-expanded="@(Nav.GetItemExpanded(Item) ? "true" : "false")">
+                type="button"
+                class="bit-nav-gcb"
+                aria-expanded="@(Nav.GetItemExpanded(Item) ? "true" : "false")"
+                aria-label="@(Nav.GetIsEnabled(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))">
             @if (Nav.HeaderTemplate is not null)
             {
                 @Nav.HeaderTemplate(Item)
             }
             else
             {
-                <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "expand" : "")" aria-hidden="true"></i>
-                <span class="group-header">@Nav.GetText(Item)</span>
+                <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true"></i>
+                <span class="bit-nav-ghd">@Nav.GetText(Item)</span>
             }
         </button>
     }
     else
     {
-        <div style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;@GetItemContainerStyles()"
-             class="item-container @GetItemContainerClasses()"
-             name="@Nav.GetText(Item)">
+        <div name="@Nav.GetText(Item)"
+             class="bit-nav-ict @GetItemContainerClasses()"
+             style="padding: 0 10px 0 @(Nav.GetChildItems(Item).Any() ? (Depth * 14) : (Depth * 14) + 30)px;@GetItemContainerStyles()">
 
             @if (Nav.GetChildItems(Item).Any())
             {
                 <button @onclick="ToggleItem"
-                        style="@Nav.ClassStyles?.ToggleButton?.Style"
-                        class="chevron-btn @Nav.ClassStyles?.ToggleButton?.Class"
                         type="button"
                         tabindex="0"
-                        aria-label="@(Nav.GetItemExpanded(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))"
-                        aria-expanded="@(Nav.GetItemExpanded(Item) ? "true" : "false")">
-                    <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "expand" : "")" aria-hidden="true"></i>
+                        style="@Nav.ClassStyles?.ToggleButton?.Style"
+                        class="bit-nav-cbt @Nav.ClassStyles?.ToggleButton?.Class"
+                        aria-expanded="@(Nav.GetItemExpanded(Item) ? "true" : "false")"
+                        aria-label="@(Nav.GetItemExpanded(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))">
+                    <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true"></i>
                 </button>
             }
 
             @if (Nav.GetUrl(Item).HasValue() || Nav.GetForceAnchor(Item))
             {
                 <a @onclick="HandleOnClick"
-                   href="@(Nav.GetIsEnabled(Item) ? Nav.GetUrl(Item) : null)"
-                   target="@Nav.GetTarget(Item)"
-                   style="@GetItemStyles()"
-                   class="item @GetItemClasses()"
                    tabindex="-1"
-                   title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
-                   disabled="@(Nav.GetIsEnabled(Item) is false)"
+                   style="@GetItemStyles()"
+                   target="@Nav.GetTarget(Item)"
                    aria-label="@Nav.GetAriaLabel(Item)"
+                   class="bit-nav-itm @GetItemClasses()"
+                   disabled="@(Nav.GetIsEnabled(Item) is false)"
+                   href="@(Nav.GetIsEnabled(Item) ? Nav.GetUrl(Item) : null)"
+                   title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
                    aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                    rel="@(Nav.GetUrl(Item).HasValue() && Nav.GetTarget(Item).HasValue() && IsRelativeUrl(Nav.GetUrl(Item)!) is false ? "noopener noreferrer" : null)">
 
@@ -62,7 +62,7 @@
                     {
                         @if (Nav.GetIconName(Item).HasValue)
                         {
-                            <i class=@($"bit-icon bit-icon--{Nav.GetIconName(Item).GetName()} item-icon") aria-hidden="true"></i>
+                            <i class="bit-nav-iic bit-icon bit-icon--@(Nav.GetIconName(Item).GetName())" aria-hidden="true"></i>
                         }
                         <span>@Nav.GetText(Item)</span>
                     }
@@ -71,14 +71,14 @@
             else
             {
                 <button @onclick="HandleOnClick"
-                        style="@GetItemStyles()"
-                        class="item @GetItemClasses()"
-                        title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
-                        disabled="@(Nav.GetIsEnabled(Item) is false)"
-                        aria-label="@Nav.GetAriaLabel(Item)"
-                        aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
+                        type="button"
                         tabindex="-1"
-                        type="button">
+                        style="@GetItemStyles()"
+                        aria-label="@Nav.GetAriaLabel(Item)"
+                        class="bit-nav-itm @GetItemClasses()"
+                        disabled="@(Nav.GetIsEnabled(Item) is false)"
+                        title="@(Nav.GetTitle(Item) is not null ? Nav.GetTitle(Item) : Nav.GetText(Item))"
+                        aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)">
 
                     @if (Nav.ItemTemplate is not null)
                     {
@@ -88,7 +88,7 @@
                     {
                         @if (Nav.GetIconName(Item).HasValue)
                         {
-                            <i class=@($"bit-icon bit-icon--{Nav.GetIconName(Item).GetName()} item-icon") aria-hidden="true"></i>
+                            <i class="bit-nav-iic bit-icon bit-icon--@(Nav.GetIconName(Item).GetName())" aria-hidden="true"></i>
                         }
                         <span>@Nav.GetText(Item)</span>
                     }
