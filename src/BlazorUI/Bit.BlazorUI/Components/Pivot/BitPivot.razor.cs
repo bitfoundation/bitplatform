@@ -119,26 +119,26 @@ public partial class BitPivot
     {
         ClassBuilder.Register(() => LinkSize switch
         {
-            BitPivotLinkSize.Large => "large",
-            BitPivotLinkSize.Normal => "normal",
+            BitPivotLinkSize.Large => "bit-pvt-large",
+            BitPivotLinkSize.Normal => "bit-pvt-normal",
             _ => string.Empty
         }).Register(() => LinkFormat switch
         {
-            BitPivotLinkFormat.Links => "links",
-            BitPivotLinkFormat.Tabs => "tabs",
+            BitPivotLinkFormat.Links => "bit-pvt-links",
+            BitPivotLinkFormat.Tabs => "bit-pvt-tabs",
             _ => string.Empty
         }).Register(() => OverflowBehavior switch
         {
-            BitPivotOverflowBehavior.Menu => "menu",
-            BitPivotOverflowBehavior.Scroll => "scroll",
-            BitPivotOverflowBehavior.None => "none",
+            BitPivotOverflowBehavior.Menu => "bit-pvt-menu",
+            BitPivotOverflowBehavior.Scroll => "bit-pvt-scroll",
+            BitPivotOverflowBehavior.None => "bit-pvt-none",
             _ => string.Empty
         }).Register(() => Position switch
         {
-            BitPivotPosition.Top => "position-top",
-            BitPivotPosition.Bottom => "position-bottom",
-            BitPivotPosition.Left => "position-left",
-            BitPivotPosition.Right => "position-right",
+            BitPivotPosition.Top => "bit-pvt-top",
+            BitPivotPosition.Bottom => "bit-pvt-bottom",
+            BitPivotPosition.Left => "bit-pvt-left",
+            BitPivotPosition.Right => "bit-pvt-right",
             _ => string.Empty
         });
     }
