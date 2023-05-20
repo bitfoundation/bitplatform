@@ -13,21 +13,6 @@
                 </BitMessageBar>
             </div>
             <div class="example-box">
-                <BitMessageBar MessageBarType="@BitMessageBarType.Error">
-                    Error MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-                </BitMessageBar>
-            </div>
-            <div class="example-box">
-                <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
-                    Blocked MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-                </BitMessageBar>
-            </div>
-            <div class="example-box">
-                <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
-                    SevereWarning MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-                </BitMessageBar>
-            </div>
-            <div class="example-box">
                 <BitMessageBar MessageBarType="@BitMessageBarType.Success">
                     Success MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
                 </BitMessageBar>
@@ -37,6 +22,21 @@
                     Warning MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
                 </BitMessageBar>
             </div>
+            <div class="example-box">
+                <BitMessageBar MessageBarType="@BitMessageBarType.SevereWarning">
+                    SevereWarning MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
+                </BitMessageBar>
+            </div>
+            <div class="example-box">
+                <BitMessageBar MessageBarType="@BitMessageBarType.Error">
+                    Error MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
+                </BitMessageBar>
+            </div>
+            <div class="example-box">
+                <BitMessageBar MessageBarType="@BitMessageBarType.Blocked">
+                    Blocked MessageBar. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
+                </BitMessageBar>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -44,17 +44,47 @@
         <ExamplePreview>
             <div class="example-desc">There are multiple options to customize.</div>
             <div class="example-box">
-                @if (IsMessageBarHidden1 is false)
+                @if (IsInfoMessageBarHidden is false)
                 {
-                    <BitMessageBar MessageBarType="@BitMessageBarType.Info" OnDismiss="HideMessageBar1">
+                    <BitMessageBar MessageBarType="@BitMessageBarType.Info" OnDismiss="() => IsInfoMessageBarHidden = true">
                         Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
                     </BitMessageBar>
                 }
             </div>
             <div class="example-box">
-                @if (IsMessageBarHidden2 is false)
+                <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false">
+                    <Actions>
+                        <div style="display:flex;align-items:center">
+                            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">Yes</BitButton>
+                            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">No</BitButton>
+                        </div>
+                    </Actions>
+                    <ChildContent>
+                        MessageBar with single line and action buttons.MessageBar with single line and action buttons.
+                    </ChildContent>
+                </BitMessageBar>
+            </div>
+            <div class="example-box">
+                @if (IsWarningMessageBarHidden is false)
                 {
-                    <BitMessageBar MessageBarType="@BitMessageBarType.Error" OnDismiss="HideMessageBar2" Truncated="true" IsMultiline="false">
+                    <BitMessageBar MessageBarType="@BitMessageBarType.Warning" OnDismiss="() => IsWarningMessageBarHidden = true">
+                        <ChildContent>
+                            MessageBar defaults to multiline.
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                        </ChildContent>
+                        <Actions>
+                            <div style="width:100%;text-align:right">
+                                <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">Yes</BitButton>
+                                <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">No</BitButton>
+                            </div>
+                        </Actions>
+                    </BitMessageBar>
+                }
+            </div>
+            <div class="example-box">
+                @if (IsErrorMessageBarHidden is false)
+                {
+                    <BitMessageBar MessageBarType="@BitMessageBarType.Error" Truncated="true" IsMultiline="false" OnDismiss="() => IsErrorMessageBarHidden = true">
                         single line, with dismiss button and truncated text.
                         Truncation is not available if you use action buttons or multiline and should be used sparingly.
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
@@ -74,39 +104,22 @@
                     </ChildContent>
                 </BitMessageBar>
             </div>
-            <div class="example-box">
-                <BitMessageBar MessageBarType="@BitMessageBarType.Success" IsMultiline="false">
-                    <Actions>
-                        <div style="display:flex;align-items:center">
-                            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">Yes</BitButton>
-                            <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">No</BitButton>
-                        </div>
-                    </Actions>
-                    <ChildContent>
-                        MessageBar with single line and action buttons.MessageBar with single line and action buttons.
-                    </ChildContent>
-                </BitMessageBar>
-            </div>
-            <div class="example-box">
-                @if (IsMessageBarHidden3 is false)
-                {
-                    <BitMessageBar MessageBarType="@BitMessageBarType.Warning" OnDismiss="HideMessageBar3">
-                        <ChildContent>
-                            MessageBar defaults to multiline.
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-                        </ChildContent>
-                        <Actions>
-                            <div style="width:100%;text-align:right">
-                                <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">Yes</BitButton>
-                                <BitButton ButtonStyle="BitButtonStyle.Standard" Style="padding:0">No</BitButton>
-                            </div>
-                        </Actions>
-                    </BitMessageBar>
-                }
-            </div>
             <div>
                 <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="Reset">Reset</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private bool IsInfoMessageBarHidden = false;
+    private bool IsWarningMessageBarHidden = false;
+    private bool IsErrorMessageBarHidden = false;
+
+    private void Reset()
+    {
+        IsInfoMessageBarHidden = false;
+        IsErrorMessageBarHidden = false;
+        IsWarningMessageBarHidden = false;
+    }
+}

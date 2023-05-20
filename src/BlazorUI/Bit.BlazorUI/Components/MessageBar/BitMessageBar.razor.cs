@@ -91,12 +91,13 @@ public partial class BitMessageBar
                                     ? string.Empty
                                     : MessageBarType switch
                                     {
-                                        BitMessageBarType.Info => "info",
-                                        BitMessageBarType.Warning => "warning",
-                                        BitMessageBarType.Error => "error",
-                                        BitMessageBarType.Blocked => "blocked",
-                                        BitMessageBarType.SevereWarning => "severe-warning",
-                                        _ => "success"
+                                        BitMessageBarType.Info => $"{RootElementClass}-info",
+                                        BitMessageBarType.Success => $"{RootElementClass}-success",
+                                        BitMessageBarType.Warning => $"{RootElementClass}-warning",
+                                        BitMessageBarType.SevereWarning => $"{RootElementClass}-severe-warning",
+                                        BitMessageBarType.Error => $"{RootElementClass}-error",
+                                        BitMessageBarType.Blocked => $"{RootElementClass}-blocked",
+                                        _ => $"{RootElementClass}-info"
                                     });
     }
 

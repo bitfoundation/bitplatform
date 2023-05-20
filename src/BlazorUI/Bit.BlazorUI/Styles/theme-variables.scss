@@ -77,18 +77,21 @@ $color-action-active-border-secondary2: var(--bit-clr-act-active-brd-sec2);
 //states
 $color-state-invalid: var(--bit-clr-sta-invalid);
 $color-state-invalid-hover: var(--bit-clr-sta-invalid-hover);
-$color-state-error: var(--bit-clr-sta-error);
-$color-state-error-bg: var(--bit-clr-sta-error-bg);
-$color-state-error-dark: var(--bit-clr-sta-error-dark);
+$color-state-info: var(--bit-clr-sta-info);
+$color-state-info2: var(--bit-clr-sta-info2);
+$color-state-info-bg: var(--bit-clr-sta-info-bg);
 $color-state-success: var(--bit-clr-sta-success);
+$color-state-success2: var(--bit-clr-sta-success2);
 $color-state-success-bg: var(--bit-clr-sta-success-bg);
-$color-state-success-dark: var(--bit-clr-sta-success-dark);
 $color-state-warning: var(--bit-clr-sta-warning);
+$color-state-warning2: var(--bit-clr-sta-warning2);
 $color-state-warning-bg: var(--bit-clr-sta-warning-bg);
-$color-state-warning-dark: var(--bit-clr-sta-warning-dark);
 $color-state-severe-warning: var(--bit-clr-sta-severe-warning);
+$color-state-severe-warning2: var(--bit-clr-sta-severe-warning2);
 $color-state-severe-warning-bg: var(--bit-clr-sta-severe-warning-bg);
-$color-state-severe-warning-dark: var(--bit-clr-sta-severe-warning-dark);
+$color-state-error: var(--bit-clr-sta-error);
+$color-state-error2: var(--bit-clr-sta-error2);
+$color-state-error-bg: var(--bit-clr-sta-error-bg);
 
 //generals
 $color-general-red: var(--bit-clr-gnr-red);

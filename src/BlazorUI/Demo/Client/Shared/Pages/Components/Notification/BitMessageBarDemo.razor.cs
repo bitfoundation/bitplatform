@@ -88,7 +88,7 @@ public partial class BitMessageBarDemo
             Id = "messageBarType-enum",
             Name = "BitMessageBarType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -132,149 +132,89 @@ public partial class BitMessageBarDemo
 
 
 
-    private bool IsMessageBarHidden1 = false;
-    private bool IsMessageBarHidden2 = false;
-    private bool IsMessageBarHidden3 = false;
-
-    private void HideMessageBar1()
-    {
-        IsMessageBarHidden1 = true;
-    }
-
-    private void HideMessageBar2()
-    {
-        IsMessageBarHidden2 = true;
-    }
-
-    private void HideMessageBar3()
-    {
-        IsMessageBarHidden3 = true;
-    }
-
-    private void Reset()
-    {
-        IsMessageBarHidden1 = false;
-        IsMessageBarHidden2 = false;
-        IsMessageBarHidden3 = false;
-    }
-
-
     private readonly string example1HTMLCode = @"
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
-        Info (default) MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Error"">
-        Error MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
-        Blocked MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.SevereWarning"">
-        SevereWarning MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Success"">
-        Success MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Warning"">
-        Warning MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-    </BitMessageBar>
-</div>";
+<BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
+    Info (default) MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.Success"">
+    Success MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.Warning"">
+    Warning MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.SevereWarning"">
+    SevereWarning MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.Error"">
+    Error MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
+    Blocked MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
+</BitMessageBar>";
 
     private readonly string example2HTMLCode = @"
-<style>
-    .example-box {
-        margin-bottom: 10px;
-    }
-</style>
-<div class=""example-box"">
-    @if (IsMessageBarHidden1 is false)
-    {
-        <BitMessageBar MessageBarType=""@BitMessageBarType.Info"" OnDismiss=""HideMessageBar1"">
-            Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
-        </BitMessageBar>
-    }
-</div>
-<div class=""example-box"">
-    @if (IsMessageBarHidden2 is false)
-    {
-        <BitMessageBar MessageBarType=""@BitMessageBarType.Error"" OnDismiss=""HideMessageBar2"" Truncated=""true"" IsMultiline=""false"">
-            single line, with dismiss button and truncated text.
-            Truncation is not available if you use action buttons or multiline and should be used sparingly.
+@if (IsInfoMessageBarHidden is false)
+{
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Info"" OnDismiss=""() => IsInfoMessageBarHidden = true"">
+        Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
+    </BitMessageBar>
+}
+
+<BitMessageBar MessageBarType=""@BitMessageBarType.Success"" IsMultiline=""false"">
+    <Actions>
+        <div style=""display:flex;align-items:center"">
+            <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">Yes</BitButton>
+            <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">No</BitButton>
+        </div>
+    </Actions>
+    <ChildContent>
+        MessageBar with single line and action buttons.MessageBar with single line and action buttons.
+    </ChildContent>
+</BitMessageBar>
+
+@if (IsWarningMessageBarHidden is false)
+{
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Warning"" OnDismiss=""() => IsWarningMessageBarHidden = true"">
+        <ChildContent>
+            MessageBar defaults to multiline.
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-        </BitMessageBar>
-    }
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
+        </ChildContent>
         <Actions>
             <div style=""width:100%;text-align:right"">
-                <BitButton ButtonStyle=""BitButtonStyle.Standard"">Yes</BitButton>
-                <BitButton ButtonStyle=""BitButtonStyle.Standard"">No</BitButton>
-            </div>
-        </Actions>
-        <ChildContent>
-            MessageBar with action buttons which defaults to multiline.
-        </ChildContent>
-    </BitMessageBar>
-</div>
-<div class=""example-box"">
-    <BitMessageBar MessageBarType=""@BitMessageBarType.Success"" IsMultiline=""false"">
-        <Actions>
-            <div style=""display:flex;align-items:center"">
                 <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">Yes</BitButton>
                 <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">No</BitButton>
             </div>
         </Actions>
-        <ChildContent>
-            MessageBar with single line and action buttons.MessageBar with single line and action buttons.
-        </ChildContent>
     </BitMessageBar>
-</div>
-<div class=""example-box"">
-    @if (IsMessageBarHidden3 is false)
-    {
-        <BitMessageBar MessageBarType=""@BitMessageBarType.Warning"" OnDismiss=""HideMessageBar3"">
-            <ChildContent>
-                MessageBar defaults to multiline.
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-            </ChildContent>
-            <Actions>
-                <div style=""width:100%;text-align:right"">
-                    <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">Yes</BitButton>
-                    <BitButton ButtonStyle=""BitButtonStyle.Standard"" Style=""padding:0"">No</BitButton>
-                </div>
-            </Actions>
-        </BitMessageBar>
-    }
-</div>";
+}
+
+@if (IsErrorMessageBarHidden is false)
+{
+    <BitMessageBar MessageBarType=""@BitMessageBarType.Error"" Truncated=""true"" IsMultiline=""false"" OnDismiss=""() => IsErrorMessageBarHidden = true"">
+        single line, with dismiss button and truncated text.
+        Truncation is not available if you use action buttons or multiline and should be used sparingly.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+    </BitMessageBar>
+}
+ 
+<BitMessageBar MessageBarType=""@BitMessageBarType.Blocked"">
+    <Actions>
+        <div style=""width:100%;text-align:right"">
+            <BitButton ButtonStyle=""BitButtonStyle.Standard"">Yes</BitButton>
+            <BitButton ButtonStyle=""BitButtonStyle.Standard"">No</BitButton>
+        </div>
+    </Actions>
+    <ChildContent>
+        MessageBar with action buttons which defaults to multiline.
+    </ChildContent>
+</BitMessageBar>";
     private readonly string example2CSharpCode = @"
-private bool IsMessageBarHidden1 = false;
-private bool IsMessageBarHidden2 = false;
-private bool IsMessageBarHidden3 = false;
-
-private void HideMessageBar1()
-{
-    IsMessageBarHidden1 = true;
-}
-
-private void HideMessageBar2()
-{
-    IsMessageBarHidden2 = true;
-}
-
-private void HideMessageBar3()
-{
-    IsMessageBarHidden3 = true;
-}";
+private bool IsInfoMessageBarHidden = false;
+private bool IsWarningMessageBarHidden = false;
+private bool IsErrorMessageBarHidden = false;";
 }
