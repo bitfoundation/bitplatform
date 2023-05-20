@@ -260,50 +260,46 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     private string GetClasses(TItem item)
     {
-        StringBuilder itemClasses = new();
-
-        itemClasses.Append("item");
+        var classes = new List<string>();
 
         if (GetItemClass(item).HasValue())
         {
-            itemClasses.Append(' ')
-                       .Append(GetItemClass(item)!);
+            classes.Add(GetItemClass(item)!);
         }
 
         if (GetIsSelected(item))
         {
-            itemClasses.Append(" selected-item");
+            classes.Add("bit-brc-sel");
         }
 
         if (GetIsSelected(item) && SelectedItemClass.HasValue())
         {
-            itemClasses.Append(' ')
-                       .Append(SelectedItemClass!);
+            classes.Add(SelectedItemClass!);
         }
 
         if (GetIsEnabled(item) is false)
         {
-            itemClasses.Append(" disabled-item");
+            classes.Add("bit-brc-disi");
         }
 
-        return itemClasses.ToString();
+        return string.Join(" ", classes);
     }
 
     private string GetStyles(TItem item)
     {
-        StringBuilder itemStyles = new();
+        var styles = new List<string>();
 
         if (GetItemStyle(item).HasValue())
         {
-            itemStyles.Append(GetItemStyle(item));
+            styles.Add(GetItemStyle(item)!);
         }
 
         if (GetIsSelected(item) && SelectedItemStyle.HasValue())
         {
-            itemStyles.Append(SelectedItemStyle);
+            styles.Add(SelectedItemStyle!);
         }
 
-        return itemStyles.ToString();
+        return string.Join(" ", styles);
     }
 
     private string? GetItemHref(TItem item)
