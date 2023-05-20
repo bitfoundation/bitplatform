@@ -26,17 +26,18 @@ public class BitMessageBarTests : BunitTestContext
 
         var messageBarTypeClass = messageBarType switch
         {
-            BitMessageBarType.Info => "info",
-            BitMessageBarType.Warning => "warning",
-            BitMessageBarType.Error => "error",
-            BitMessageBarType.Blocked => "blocked",
-            BitMessageBarType.SevereWarning => "severe-warning",
-            _ => "success"
+            BitMessageBarType.Info => "bit-msb-info",
+            BitMessageBarType.Success => "bit-msb-success",
+            BitMessageBarType.Warning => "bit-msb-warning",
+            BitMessageBarType.SevereWarning => "bit-msb-severe-warning",
+            BitMessageBarType.Error => "bit-msb-error",
+            BitMessageBarType.Blocked => "bit-msb-blocked",
+            _ => "bit-msb-info"
         };
 
         Assert.IsTrue(bitMessageBar.ClassList.Contains(messageBarTypeClass));
 
-        var icon = component.Find(".icon > i");
+        var icon = component.Find(".bit-msb-ict > i");
 
         Dictionary<BitMessageBarType, BitIconName> IconMap = new()
         {
@@ -62,7 +63,7 @@ public class BitMessageBarTests : BunitTestContext
             parameters.Add(p => p.MessageBarIconName, iconName);
         });
 
-        var icon = component.Find(".icon > i");
+        var icon = component.Find(".bit-msb-ict > i");
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
     }
 
@@ -82,12 +83,12 @@ public class BitMessageBarTests : BunitTestContext
 
         var bitMessageBar = component.Find(".bit-msb > div");
 
-        var messageBarMultilineType = isMultiline ? "multiline" : "singleline";
+        var messageBarMultilineType = isMultiline ? "bit-msb-mul" : "bit-msb-sin";
         Assert.IsTrue(bitMessageBar.ClassList.Contains(messageBarMultilineType));
 
         if (isMultiline is false && truncated)
         {
-            var truncateButton = component.Find(".truncate > button");
+            var truncateButton = component.Find(".bit-msb-trn > button");
 
             Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
 
@@ -110,7 +111,7 @@ public class BitMessageBarTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => currentCount++);
         });
 
-        var dismissButton = component.Find(".dismiss > button");
+        var dismissButton = component.Find(".bit-msb-dim > button");
 
         dismissButton.Click();
 
@@ -129,7 +130,7 @@ public class BitMessageBarTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        var icon = component.Find(".dismiss button span i");
+        var icon = component.Find(".bit-msb-dim button span i");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
     }
@@ -147,7 +148,7 @@ public class BitMessageBarTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        var dismissButton = component.Find(".dismiss button");
+        var dismissButton = component.Find(".bit-msb-dim button");
 
         Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
         Assert.AreEqual(ariaLabel, dismissButton.GetAttribute("aria-label"));
@@ -168,7 +169,7 @@ public class BitMessageBarTests : BunitTestContext
             parameters.Add(p => p.OverflowButtonAriaLabel, ariaLabel);
         });
 
-        var dismissButton = component.Find(".truncate button");
+        var dismissButton = component.Find(".bit-msb-trn button");
 
         Assert.IsTrue(dismissButton.HasAttribute("aria-label"));
         Assert.AreEqual(ariaLabel, dismissButton.GetAttribute("aria-label"));
@@ -184,7 +185,7 @@ public class BitMessageBarTests : BunitTestContext
             parameter.Add(p => p.Actions, actions);
         });
 
-        var actionsTemplate = component.Find(".actions").ChildNodes;
+        var actionsTemplate = component.Find(".bit-msb-act").ChildNodes;
         actionsTemplate.MarkupMatches(actions);
     }
 
@@ -211,7 +212,7 @@ public class BitMessageBarTests : BunitTestContext
             parameter.Add(p => p.MessageBarType, type);
         });
 
-        var textEl = component.Find(".text");
+        var textEl = component.Find(".bit-msb-txt");
         var expectedRole = role is not null ? role : BitMessageBarTests.GetRole(type);
 
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
