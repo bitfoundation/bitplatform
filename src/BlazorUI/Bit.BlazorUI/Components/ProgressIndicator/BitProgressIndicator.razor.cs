@@ -66,7 +66,7 @@ public partial class BitProgressIndicator
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : "indeterminate");
+        ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : $"{RootElementClass}-ind");
     }
 
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);

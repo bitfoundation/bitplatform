@@ -73,43 +73,17 @@ public partial class BitProgressIndicatorDemo
 
 
 
-    private int CompletedPercent;
-    private string Description = "Push button to start!";
-
-    private async Task StartProgress()
-    {
-        CompletedPercent = 0;
-
-        while (CompletedPercent <= 100)
-        {
-            if (CompletedPercent == 100)
-            {
-                Description = $"Completed !";
-                break;
-            }
-            else
-            {
-                CompletedPercent++;
-                Description = $"{CompletedPercent}%";
-            }
-
-            StateHasChanged();
-            await Task.Delay(100);
-        }
-    }
-
-
     private readonly string example1HTMLCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""@Description""
                       PercentComplete=""@CompletedPercent""
                       BarHeight=""50"" />
-<div>
-    <BitButton OnClick=""@StartProgress"">Start Progress</BitButton>
-</div>";
+
+<BitButton OnClick=""StartProgress"">Start Progress</BitButton>";
     private readonly string example1CSharpCode = @"
 private int CompletedPercent;
 private string Description = ""Push button to start!"";
+
 private async Task StartProgress()
 {
     CompletedPercent = 0;
@@ -134,6 +108,5 @@ private async Task StartProgress()
     private readonly string example2HTMLCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""Example description"" 
-                      BarHeight=""20"" />
-";
+                      BarHeight=""20"" />";
 }
