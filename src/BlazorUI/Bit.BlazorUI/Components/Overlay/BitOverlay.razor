@@ -2,10 +2,10 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
      @onclick="CloseOverlay"
+     @attributes="HtmlAttributes"
+     aria-label="@AriaLabel"
      class="@ClassBuilder.Value"
-     style="@StyleBuilder.Value"
-     aria-label="@AriaLabel">
+     style="@StyleBuilder.Value">
     @ChildContent
 </div>
