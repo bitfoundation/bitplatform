@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Demo.Client.Shared.Models;
 using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Notification;
+namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.MessageBar;
 
 public partial class BitMessageBarDemo
 {
