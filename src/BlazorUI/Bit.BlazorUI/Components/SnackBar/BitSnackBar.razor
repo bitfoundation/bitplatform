@@ -1,15 +1,16 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="@HtmlAttributes"
+<div @ref="RootElement"
+     @attributes="@HtmlAttributes"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
 
     @foreach (var item in _items)
     {
-        <div class="item @BitSnackBar.GetItemClasses(item)">
-            <div class="header">
-                <button class="close-btn" @onclick="() => Dismiss(item)">
+        <div class="bit-snb-itm @GetItemClasses(item)">
+            <div class="bit-snb-hdr">
+                <button class="bit-snb-cbt" @onclick="() => Dismiss(item)">
                     <i class="bit-icon close-icon bit-icon--@(DismissIconName is not null ? DismissIconName.GetName() : "ChromeClose")"></i>
                 </button>
 
@@ -19,7 +20,7 @@
                 }
                 else if (item.Title.HasValue())
                 {
-                    <label class="title-txt" title="@item.Title">
+                    <label class="bit-snb-ttl" title="@item.Title">
                         @item.Title
                     </label>
                 }
@@ -31,14 +32,14 @@
             }
             else if (item.Body.HasValue())
             {
-                <span class="body-txt">
+                <span class="bit-snb-bdy">
                     @item.Body
                 </span>
             }
 
             @if (AutoDismiss)
             {
-                <span class="progress-bar" style="animation-duration: @($"{AutoDismissTime.TotalSeconds}s");"></span>
+                <span class="bit-snb-pbr" style="animation-duration: @($"{AutoDismissTime.TotalSeconds}s");"></span>
             }
         </div>
     }

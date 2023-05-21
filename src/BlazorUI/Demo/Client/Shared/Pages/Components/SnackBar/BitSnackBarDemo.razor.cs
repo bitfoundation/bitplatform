@@ -62,7 +62,7 @@ public partial class BitSnackBarDemo
         {
             Id = "snackbar-position-enum",
             Name = "BitSnackBarPosition",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -100,7 +100,7 @@ public partial class BitSnackBarDemo
         {
             Id = "SnackBar-type-enum",
             Name = "BitSnackBarType",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -138,81 +138,40 @@ public partial class BitSnackBarDemo
 
 
 
-    private BitSnackBar BasicSnackBarRef = new();
-    private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
-    private BitSnackBarPosition BasicSnackBarPosition = BitSnackBarPosition.BottomRight;
-    private string BasicSnackBarTitle = string.Empty;
-    private string? BasicSnackBarBody;
-    private bool BasicSnackBarAutoDismiss = true;
-    private int BasicSnackBarDismissSeconds = 3;
-
-    private async Task OpenBasicSnackBar()
-    {
-        await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
-    }
-
-
-    private BitSnackBar DismissIconName = new();
-    private BitSnackBar TitleTemplate = new();
-    private BitSnackBar BodyTemplate = new();
-
-    private string? BodyTemplateAnswer;
-
-    private async Task OpenDismissIconName()
-    {
-        await DismissIconName.Success("This is title", "This is body");
-    }
-    private async Task OpenTitleTemplate()
-    {
-        await TitleTemplate.Warning("This is title", "This is body");
-    }
-    private async Task OpenBodyTemplate()
-    {
-        await BodyTemplate.Error("This is title", "This is body");
-    }
-
-
     private readonly string example1HTMLCode = @"
-<style>
-    .example-box {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 20px;
-    }
-</style>
+<BitSnackBar @ref=""BasicSnackBarRef""
+                Position=""@BasicSnackBarPosition""
+                AutoDismiss=""@BasicSnackBarAutoDismiss""
+                AutoDismissTime=""TimeSpan.FromSeconds(BasicSnackBarDismissSeconds)"" />
 
-<div class=""example-box"">
-    <BitSnackBar @ref=""BasicSnackBarRef""
-                    Position=""@BasicSnackBarPosition""
-                    AutoDismiss=""@BasicSnackBarAutoDismiss""
-                    AutoDismissTime=""TimeSpan.FromSeconds(BasicSnackBarDismissSeconds)"" />
+<BitChoiceGroup @bind-Value=""BasicSnackBarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackBarType>"" TValue=""BitSnackBarType"">
+    <BitChoiceGroupOption Text=""Info"" Value=""BitSnackBarType.Info"" />
+    <BitChoiceGroupOption Text=""Success"" Value=""BitSnackBarType.Success"" />
+    <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.Warning"" />
+    <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.SevereWarning"" />
+    <BitChoiceGroupOption Text=""Error"" Value=""BitSnackBarType.Error"" />
+</BitChoiceGroup>
 
-    <BitChoiceGroup @bind-Value=""BasicSnackBarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackBarType>"" TValue=""BitSnackBarType"">
-        <BitChoiceGroupOption Text=""Info"" Value=""BitSnackBarType.Info"" />
-        <BitChoiceGroupOption Text=""Success"" Value=""BitSnackBarType.Success"" />
-        <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.Warning"" />
-        <BitChoiceGroupOption Text=""Error"" Value=""BitSnackBarType.Error"" />
-        <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.SevereWarning"" />
-    </BitChoiceGroup>
-    <BitChoiceGroup @bind-Value=""BasicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-        <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackBarPosition.TopLeft"" />
-        <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-        <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackBarPosition.TopRight"" />
-        <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitSnackBarPosition.BottomLeft"" />
-        <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-        <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
-    </BitChoiceGroup>
-    <div>
-        <BitTextField @bind-Value=""BasicSnackBarTitle"" Label=""Title"" />
-        <BitTextField @bind-Value=""BasicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" />
-    </div>
-    <div>
-        <BitToggle @bind-Value=""BasicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
-        <BitNumericTextField @bind-Value=""BasicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
-    </div>
+<BitChoiceGroup @bind-Value=""BasicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
+    <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackBarPosition.TopLeft"" />
+    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
+    <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackBarPosition.TopRight"" />
+    <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitSnackBarPosition.BottomLeft"" />
+    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
+    <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
+</BitChoiceGroup>
+
+<div>
+    <BitTextField @bind-Value=""BasicSnackBarTitle"" Label=""Title"" />
+    <BitTextField @bind-Value=""BasicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" />
 </div>
-<BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackBar"">Show</BitButton>
-";
+
+<div>
+    <BitToggle @bind-Value=""BasicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
+    <BitNumericTextField @bind-Value=""BasicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
+</div>
+
+<BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackBar"">Show</BitButton>";
     private readonly string example1CSharpCode = @"
 private BitSnackBar BasicSnackBarRef = new();
 private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
@@ -221,60 +180,42 @@ private string BasicSnackBarTitle = string.Empty;
 private string? BasicSnackBarBody;
 private bool BasicSnackBarAutoDismiss = true;
 private int BasicSnackBarDismissSeconds = 3;
+
 private async Task OpenBasicSnackBar()
 {
     await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
-}
-";
+}";
 
     private readonly string example2HTMLCode = @"
-<style>
-    .example-box {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 20px;
-    }
-</style>
+<BitSnackBar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
+<BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 
-<div class=""example-box"">
-    <div>
-        <BitSnackBar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
-        <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
-    </div>
+<BitSnackBar @ref=""TitleTemplate"" AutoDismiss=""false"">
+    <TitleTemplate Context=""title"">
+        <div style=""display: flex; flex-direction: row; gap: 10px;"">
+            <span>@title</span>
+            <BitProgressIndicator BarHeight=""20"" Style=""width: 40px;"" />
+        </div>
+    </TitleTemplate>
+</BitSnackBar>
+<BitButton OnClick=""OpenTitleTemplate"">Title Template</BitButton>
 
-    <div>
-        <BitSnackBar @ref=""TitleTemplate"" AutoDismiss=""false"">
-            <TitleTemplate Context=""title"">
-                <div style=""display: flex; flex-direction: row; gap: 10px;"">
-                    <span>@title</span>
-                    <BitProgressIndicator BarHeight=""20"" Style=""width: 40px;"" />
-                </div>
-            </TitleTemplate>
-        </BitSnackBar>
-        <BitButton OnClick=""OpenTitleTemplate"">Title Template</BitButton>
-    </div>
-
-    <div>
-        <BitSnackBar @ref=""BodyTemplate"" AutoDismiss=""false"">
-            <BodyTemplate Context=""body"">
-                <div style=""display: flex; flex-flow: column nowrap; gap: 5px;"">
-                    <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
-                    <div style=""display: flex; gap: 10px;"">
-                        <BitButton OnClick=""@(() => BodyTemplateAnswer = ""Yes"")"">Yes</BitButton>
-                        <BitButton OnClick=""@(() => BodyTemplateAnswer = ""No"")"">No</BitButton>
-                    </div>
-                    <span>Answer: @BodyTemplateAnswer</span>
-                </div>
-            </BodyTemplate>
-        </BitSnackBar>
-        <BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>
-    </div>
-</div>
-";
+<BitSnackBar @ref=""BodyTemplate"" AutoDismiss=""false"">
+    <BodyTemplate Context=""body"">
+        <div style=""display: flex; flex-flow: column nowrap; gap: 5px;"">
+            <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
+            <div style=""display: flex; gap: 10px;"">
+                <BitButton OnClick=""@(() => BodyTemplateAnswer = ""Yes"")"">Yes</BitButton>
+                <BitButton OnClick=""@(() => BodyTemplateAnswer = ""No"")"">No</BitButton>
+            </div>
+            <span>Answer: @BodyTemplateAnswer</span>
+        </div>
+    </BodyTemplate>
+</BitSnackBar>
+<BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>";
     private readonly string example2CSharpCode = @"
 private BitSnackBar DismissIconName = new();
 private BitSnackBar TitleTemplate = new();
 private BitSnackBar BodyTemplate = new();
-private string? BodyTemplateAnswer;
-";
+private string? BodyTemplateAnswer;";
 }

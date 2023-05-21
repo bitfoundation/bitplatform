@@ -2,132 +2,10 @@
 
 .bit-snb {
     display: flex;
-    flex-flow: column nowrap;
-    gap: spacing(1.25);
     position: fixed;
+    gap: spacing(1.25);
+    flex-flow: column nowrap;
     z-index: $space-overlay-zindex0;
-
-    .item {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: space-between;
-        position: relative;
-        width: spacing(27.5);
-        min-height: spacing(8.75);
-        padding: spacing(1.25);
-        color: black;
-        border-radius: spacing(0.375);
-
-        &.info {
-            background-color: $color-neutrals-gray20;
-
-            .progress-bar {
-                background-color: $color-neutrals-gray80;
-            }
-        }
-
-        &.warning {
-            background-color: $color-state-warning-bg;
-
-            .progress-bar {
-                background-color: $color-state-warning2;
-            }
-        }
-
-        &.success {
-            background-color: $color-state-success-bg;
-
-            .progress-bar {
-                background-color: $color-state-success2;
-            }
-        }
-
-        &.error {
-            background-color: $color-state-error-bg;
-
-            .progress-bar {
-                background-color: $color-state-error2;
-            }
-        }
-
-        &.severe-warning {
-            background-color: $color-state-severe-warning-bg;
-
-            .progress-bar {
-                background-color: $color-state-severe-warning2;
-            }
-        }
-
-        .header {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: space-between;
-            gap: spacing(1.25);
-
-            .title-txt {
-                font-size: spacing(2);
-                font-weight: 500;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-            }
-
-            .close-btn {
-                background-color: inherit;
-                cursor: pointer;
-                border-radius: spacing(0.375);
-            }
-        }
-
-        .body-txt {
-            font-size: spacing(1.5);
-        }
-
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: spacing(0.625);
-            width: 100%;
-            animation-name: bit-snackbar-progress-animation;
-        }
-    }
-
-
-
-    &.top-left {
-        top: spacing(6.25);
-        left: spacing(6.25);
-    }
-
-    &.top-center {
-        top: spacing(6.25);
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    &.top-right {
-        top: spacing(6.25);
-        right: spacing(6.25);
-    }
-
-    &.bottom-left {
-        bottom: spacing(6.25);
-        left: spacing(6.25);
-    }
-
-
-    &.bottom-center {
-        bottom: spacing(6.25);
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    &.bottom-right {
-        bottom: spacing(6.25);
-        right: spacing(6.25);
-    }
-
 
     @keyframes bit-snackbar-progress-animation {
         from {
@@ -138,4 +16,122 @@
             width: 100%;
         }
     }
+}
+
+.bit-snb-itm {
+    display: flex;
+    position: relative;
+    width: spacing(27.5);
+    padding: spacing(1.25);
+    flex-flow: column nowrap;
+    min-height: spacing(8.75);
+    color: $color-text-primary2;
+    border-radius: spacing(0.375);
+    justify-content: space-between;
+}
+
+.bit-snb-pbr {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    height: spacing(0.625);
+    animation-name: bit-snackbar-progress-animation;
+}
+
+.bit-snb-bdy {
+    font-size: spacing(1.5);
+}
+
+.bit-snb-hdr {
+    display: flex;
+    gap: spacing(1.25);
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+.bit-snb-ttl {
+    overflow: hidden;
+    font-weight: 500;
+    white-space: nowrap;
+    font-size: spacing(2);
+    text-overflow: ellipsis;
+}
+
+.bit-snb-cbt {
+    cursor: pointer;
+    background-color: inherit;
+    border-radius: spacing(0.375);
+}
+
+.bit-snb-info {
+    background-color: $color-state-info-bg;
+
+    .bit-snb-pbr {
+        background-color: $color-state-info2;
+    }
+}
+
+.bit-snb-success {
+    background-color: $color-state-success-bg;
+
+    .bit-snb-pbr {
+        background-color: $color-state-success2;
+    }
+}
+
+.bit-snb-warning {
+    background-color: $color-state-warning-bg;
+
+    .bit-snb-pbr {
+        background-color: $color-state-warning2;
+    }
+}
+
+.bit-snb-severe-warning {
+    background-color: $color-state-severe-warning-bg;
+
+    .bit-snb-pbr {
+        background-color: $color-state-severe-warning2;
+    }
+}
+
+.bit-snb-error {
+    background-color: $color-state-error-bg;
+
+    .bit-snb-pbr {
+        background-color: $color-state-error2;
+    }
+}
+
+.bit-snb-tlf {
+    top: spacing(1);
+    left: spacing(1);
+}
+
+.bit-snb-tcn {
+    left: 50%;
+    top: spacing(1);
+    transform: translateX(-50%);
+}
+
+.bit-snb-trt {
+    top: spacing(1);
+    right: spacing(1);
+}
+
+.bit-snb-blf {
+    left: spacing(1);
+    bottom: spacing(1);
+}
+
+.bit-snb-bcn {
+    left: 50%;
+    bottom: spacing(1);
+    transform: translateX(-50%);
+}
+
+.bit-snb-brt {
+    right: spacing(1);
+    bottom: spacing(1);
 }
