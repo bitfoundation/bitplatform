@@ -112,8 +112,8 @@
     "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss"
   },
   {
-    "outputFile": "Pages/Components/Lists/BitBasicList/BitBasicListDemo.razor.css",
-    "inputFile": "Pages/Components/Lists/BitBasicList/BitBasicListDemo.razor.scss"
+    "outputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.css",
+    "inputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.scss"
   },
   {
     "outputFile": "Pages/Components/Loading/BitLoadingDemo.razor.css",

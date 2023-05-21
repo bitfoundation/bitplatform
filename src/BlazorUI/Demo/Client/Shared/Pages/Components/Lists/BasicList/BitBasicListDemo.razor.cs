@@ -1,6 +1,6 @@
 ﻿using Bit.BlazorUI.Demo.Client.Shared.Pages.Components.ComponentDemoBase;
 
-namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Lists.BitBasicList;
+namespace Bit.BlazorUI.Demo.Client.Shared.Pages.Components.Lists.BasicList;
 
 public partial class BitBasicListDemo
 {
