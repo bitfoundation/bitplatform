@@ -17,7 +17,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.BarHeight, barHeight);
         });
 
-        var piWrapper = component.Find(".wrapper");
+        var piWrapper = component.Find(".bit-pin-wrp");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {barHeight}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
@@ -34,7 +34,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = $"width: {percentComplete}%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
@@ -51,7 +51,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 100%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
@@ -68,7 +68,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.PercentComplete, percentComplete);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 0%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
@@ -87,7 +87,7 @@ public class BitProgressIndicatorTests : BunitTestContext
         });
 
         var pin = component.Find(".bit-pin");
-        Assert.AreEqual(percentComplete is null, pin.ClassList.Contains("indeterminate"));
+        Assert.AreEqual(percentComplete is null, pin.ClassList.Contains("bit-pin-ind"));
     }
 
     [DataTestMethod,
@@ -101,15 +101,15 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         if (string.IsNullOrEmpty(label))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".label"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pin-lbl"));
             Assert.IsNull(piBar.GetAttribute("aria-labelledby"));
         }
         else
         {
-            var piLabel = component.Find(".label");
+            var piLabel = component.Find(".bit-pin-lbl");
             Assert.AreEqual(label, piLabel.TextContent);
             Assert.IsNotNull(piBar.GetAttribute("aria-labelledby"));
         }
@@ -126,15 +126,15 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.Description, description);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         if (string.IsNullOrEmpty(description))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".description"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pin-des"));
             Assert.IsNull(piBar.GetAttribute("aria-describedby"));
         }
         else
         {
-            var piDescription = component.Find(".description");
+            var piDescription = component.Find(".bit-pin-des");
             Assert.AreEqual(description, piDescription.TextContent);
             Assert.IsNotNull(piBar.GetAttribute("aria-describedby"));
         }
@@ -151,7 +151,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.AriaValueText, txt);
         });
 
-        var piBar = component.Find(".bar");
+        var piBar = component.Find(".bit-pin-bar");
         if (string.IsNullOrEmpty(txt))
         {
             Assert.IsNull(piBar.GetAttribute("aria-valuetext"));
@@ -170,7 +170,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.IsProgressHidden, true);
         });
 
-        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".wrapper"));
+        Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pin-wrp"));
     }
 
     [DataTestMethod,
@@ -183,7 +183,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component.Find(".label").ChildNodes;
+        var labelChildNodes = component.Find(".bit-pin-lbl").ChildNodes;
         labelChildNodes.MarkupMatches(labelTemplate);
     }
 
@@ -197,7 +197,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });
 
-        var descriptionChildNodes = component.Find(".description").ChildNodes;
+        var descriptionChildNodes = component.Find(".bit-pin-des").ChildNodes;
         descriptionChildNodes.MarkupMatches(descriptionTemplate);
     }
 }

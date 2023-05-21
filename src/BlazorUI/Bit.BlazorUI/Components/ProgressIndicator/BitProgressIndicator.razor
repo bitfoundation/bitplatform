@@ -6,13 +6,13 @@
      class="@ClassBuilder.Value">
     @if (LabelTemplate is not null)
     {
-        <div class="label" id="@LabelId">
+        <div class="bit-pin-lbl" id="@LabelId">
             @LabelTemplate
         </div>
     }
     else if (Label.HasValue())
     {
-        <div class="label" id="@LabelId">
+        <div class="bit-pin-lbl" id="@LabelId">
             @Label
         </div>
     }
@@ -25,17 +25,17 @@
         }
         else
         {
-            <div class="wrapper" style="@($"height: {BarHeight}px;")">
-                <div class="track"></div>
-                <div class="bar"
-                     style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")"
+            <div class="bit-pin-wrp" style="@($"height: {BarHeight}px;")">
+                <div class="bit-pin-trc"></div>
+                <div class="bit-pin-bar"
                      role="progressbar"
-                     aria-describedby="@DescriptionId"
                      aria-labelledby="@LabelId"
+                     aria-valuetext="@AriaValueText"
+                     aria-describedby="@DescriptionId"
                      aria-valuemin="@(PercentComplete is not null ? 0 : null)"
                      aria-valuemax="@(PercentComplete is not null ? 100 : null)"
                      aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
-                     aria-valuetext="@AriaValueText">
+                     style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")">
                 </div>
             </div>
         }
@@ -43,13 +43,13 @@
 
     @if (DescriptionTemplate is not null)
     {
-        <div class="description" id="@DescriptionId">
+        <div class="bit-pin-des" id="@DescriptionId">
             @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div class="description" id="@DescriptionId">
+        <div class="bit-pin-des" id="@DescriptionId">
             @Description
         </div>
     }
