@@ -28,19 +28,19 @@ public partial class BitSpinner
     {
         ClassBuilder.Register(() => Size switch
         {
-            BitSpinnerSize.XSmall => "x-small",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Large => "large",
+            BitSpinnerSize.XSmall => $"{RootElementClass}-xs",
+            BitSpinnerSize.Small => $"{RootElementClass}-sm",
+            BitSpinnerSize.Medium => $"{RootElementClass}-md",
+            BitSpinnerSize.Large => $"{RootElementClass}-lg",
             _ => string.Empty
         });
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "top",
-            BitLabelPosition.Left => "left",
-            BitLabelPosition.Right => "right",
-            BitLabelPosition.Bottom => "bottom",
+            BitLabelPosition.Top => $"{RootElementClass}-top",
+            BitLabelPosition.Left => $"{RootElementClass}-lft",
+            BitLabelPosition.Right => $"{RootElementClass}-rgt",
+            BitLabelPosition.Bottom => $"{RootElementClass}-btm",
             _ => string.Empty
         });
     }
