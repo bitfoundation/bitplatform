@@ -257,3 +257,22 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private bool IsOpen = false;
+    private bool IsOpen1 = false;
+    private bool IsOpen2 = false;
+    private bool IsOpen3 = false;
+    private bool IsOpen4 = false;
+    private bool IsOpenInPosition = false;
+    private BitModalPosition position;
+    private bool IsDraggable = false;
+    private bool IsOpen5 = false;
+    private bool IsOpen6 = false;
+
+    private void OpenModalInPosition(BitModalPosition positionValue)
+    {
+        IsOpenInPosition = true;
+        position = positionValue;
+    }
+}
