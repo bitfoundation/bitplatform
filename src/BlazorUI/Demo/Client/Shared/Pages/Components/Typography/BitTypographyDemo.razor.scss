@@ -5,7 +5,6 @@
 .example-box {
     display: flex;
     gap: rem(15px);
-    flex-flow: column nowrap;
     width: fit-content;
-    color: $Black;
+    flex-flow: column nowrap;
 }
