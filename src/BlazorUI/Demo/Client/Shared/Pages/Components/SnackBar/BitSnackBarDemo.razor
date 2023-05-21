@@ -16,8 +16,8 @@
                     <BitChoiceGroupOption Text="Info" Value="BitSnackBarType.Info" />
                     <BitChoiceGroupOption Text="Success" Value="BitSnackBarType.Success" />
                     <BitChoiceGroupOption Text="Warning" Value="BitSnackBarType.Warning" />
-                    <BitChoiceGroupOption Text="Error" Value="BitSnackBarType.Error" />
                     <BitChoiceGroupOption Text="SevereWarning" Value="BitSnackBarType.SevereWarning" />
+                    <BitChoiceGroupOption Text="Error" Value="BitSnackBarType.Error" />
                 </BitChoiceGroup>
                 <BitChoiceGroup @bind-Value="BasicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
                     <BitChoiceGroupOption Text="TopLeft" Value="BitSnackBarPosition.TopLeft" />
@@ -43,7 +43,7 @@
     <ComponentExampleBox Title="Customized" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-desc">
-                SnackBar can be customized in various ways, such as changing the dismiss icon by the DismissIconName parameter, 
+                SnackBar can be customized in various ways, such as changing the dismiss icon by the DismissIconName parameter,
                 TitleTemplate parameter as a RenderFragment in Title container and BodyTemplate as a RenderFragment in Body(Content) container.
             </div>
             <div class="example-box">
@@ -83,3 +83,38 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private BitSnackBar BasicSnackBarRef = new();
+    private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
+    private BitSnackBarPosition BasicSnackBarPosition = BitSnackBarPosition.BottomRight;
+    private string BasicSnackBarTitle = string.Empty;
+    private string? BasicSnackBarBody;
+    private bool BasicSnackBarAutoDismiss = true;
+    private int BasicSnackBarDismissSeconds = 3;
+
+    private async Task OpenBasicSnackBar()
+    {
+        await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
+    }
+
+
+    private BitSnackBar DismissIconName = new();
+    private BitSnackBar TitleTemplate = new();
+    private BitSnackBar BodyTemplate = new();
+
+    private string? BodyTemplateAnswer;
+
+    private async Task OpenDismissIconName()
+    {
+        await DismissIconName.Success("This is title", "This is body");
+    }
+    private async Task OpenTitleTemplate()
+    {
+        await TitleTemplate.Warning("This is title", "This is body");
+    }
+    private async Task OpenBodyTemplate()
+    {
+        await BodyTemplate.Error("This is title", "This is body");
+    }
+}
