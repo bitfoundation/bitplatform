@@ -15,9 +15,11 @@
             background: $color-background-disabled;
             border: $shape-border-width $shape-border-style $color-border-disabled;
 
-            &:hover {
-                .bit-tgl-sta {
-                    background-color: $color-background-primary3;
+            @media (hover: hover) {
+                &:hover {
+                    .bit-tgl-sta {
+                        background-color: $color-background-primary3;
+                    }
                 }
             }
         }
@@ -52,8 +54,10 @@
             .bit-tgl-btn {
                 background-color: $color-state-invalid;
 
-                &:hover {
-                    background-color: $color-state-invalid-hover;
+                @media (hover: hover) {
+                    &:hover {
+                        background-color: $color-state-invalid-hover;
+                    }
                 }
             }
 
@@ -99,11 +103,13 @@
     background: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &:hover {
-        border-color: $color-action-hover-border-primary2;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary2;
 
-        .bit-tgl-sta {
-            background-color: $color-action-hover-background-secondary2;
+            .bit-tgl-sta {
+                background-color: $color-action-hover-background-secondary2;
+            }
         }
     }
 }
@@ -133,12 +139,14 @@
         background: $color-primary-main;
         border: $shape-border-width $shape-border-style transparent;
 
-        &:hover {
-            border-color: transparent;
-            background-color: $color-action-hover-primary;
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
+                background-color: $color-action-hover-primary;
 
-            .bit-tgl-sta {
-                background-color: $color-action-hover-background-primary;
+                .bit-tgl-sta {
+                    background-color: $color-action-hover-background-primary;
+                }
             }
         }
     }

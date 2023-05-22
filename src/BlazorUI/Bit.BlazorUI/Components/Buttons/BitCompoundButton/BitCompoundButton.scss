@@ -28,9 +28,11 @@
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
+        }
     }
 
     &:active {
@@ -44,8 +46,10 @@
     border-color: $color-border-primary2;
     background-color: $color-background-primary;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
     &:active {
@@ -55,7 +59,6 @@
 
 .bit-cmb-tcn {
     display: block;
-    @extend .no-text-select;
 }
 
 .bit-cmb-prt {

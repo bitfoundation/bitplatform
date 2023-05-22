@@ -13,9 +13,11 @@
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
 
-    &:hover {
-        color: $color-action-hover-primary;
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-primary;
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
     &:active {

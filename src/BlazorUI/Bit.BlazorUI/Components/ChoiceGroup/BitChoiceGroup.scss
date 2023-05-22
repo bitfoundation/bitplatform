@@ -30,18 +30,20 @@
                 background-color: $color-state-invalid;
             }
 
-            &:hover {
-                .bit-chgi-txt {
-                    color: $color-state-invalid-hover;
-                }
+            @media (hover: hover) {
+                &:hover {
+                    .bit-chgi-txt {
+                        color: $color-state-invalid-hover;
+                    }
 
-                &:before {
-                    border-color: $color-state-invalid-hover;
-                }
+                    &:before {
+                        border-color: $color-state-invalid-hover;
+                    }
 
-                &:after {
-                    border-color: $color-state-invalid-hover;
-                    background-color: $color-state-invalid-hover;
+                    &:after {
+                        border-color: $color-state-invalid-hover;
+                        background-color: $color-state-invalid-hover;
+                    }
                 }
             }
         }
@@ -59,17 +61,19 @@
                 background-color: $color-state-invalid;
             }
 
-            &:hover {
-                border-color: $color-state-invalid;
+            @media (hover: hover) {
+                &:hover {
+                    border-color: $color-state-invalid;
 
-                &:before {
-                    opacity: 1;
-                    border-color: $color-state-invalid-hover;
-                }
+                    &:before {
+                        opacity: 1;
+                        border-color: $color-state-invalid-hover;
+                    }
 
-                &:after {
-                    border-color: $color-state-invalid-hover;
-                    background-color: $color-state-invalid-hover;
+                    &:after {
+                        border-color: $color-state-invalid-hover;
+                        background-color: $color-state-invalid-hover;
+                    }
                 }
             }
         }
@@ -88,9 +92,11 @@
                 right: 0;
             }
 
-            &:hover {
-                &:after {
-                    right: spacing(0.625);
+            @media (hover: hover) {
+                &:hover {
+                    &:after {
+                        right: spacing(0.625);
+                    }
                 }
             }
 
@@ -269,12 +275,14 @@
         transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
-    &:hover {
-        border-color: $color-action-hover-border-primary2;
-
-        &:before {
-            opacity: 1;
+    @media (hover: hover) {
+        &:hover {
             border-color: $color-action-hover-border-primary2;
+
+            &:before {
+                opacity: 1;
+                border-color: $color-action-hover-border-primary2;
+            }
         }
     }
 }
@@ -429,13 +437,15 @@
             color: $color-text-disabled;
         }
 
-        &:hover {
-            .bit-chgi-txt {
-                color: $color-border-disabled;
-            }
+        @media (hover: hover) {
+            &:hover {
+                .bit-chgi-txt {
+                    color: $color-border-disabled;
+                }
 
-            &:before, &:after {
-                border-color: $color-border-disabled;
+                &:before, &:after {
+                    border-color: $color-border-disabled;
+                }
             }
         }
     }
@@ -449,12 +459,14 @@
             border-color: $color-border-disabled;
         }
 
-        &:hover {
-            border-color: transparent;
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
 
-            &:before, &:after {
-                opacity: 0;
-                border-color: $color-border-disabled;
+                &:before, &:after {
+                    opacity: 0;
+                    border-color: $color-border-disabled;
+                }
             }
         }
     }
@@ -474,9 +486,11 @@
                 border: spacing(0.625) $shape-border-style $color-border-disabled;
             }
 
-            &:hover {
-                &:before {
-                    opacity: 1;
+            @media (hover: hover) {
+                &:hover {
+                    &:before {
+                        opacity: 1;
+                    }
                 }
             }
         }

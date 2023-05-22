@@ -11,8 +11,10 @@
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
 
-        &:hover {
-            border-color: $color-border-disabled;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-border-disabled;
+            }
         }
 
         &:active {
@@ -41,8 +43,10 @@
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &:hover {
-        border-color: $color-action-hover-border-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+        }
     }
 
     &:active {
@@ -72,8 +76,10 @@
     color: $color-text-primary2;
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &:hover {
-        border-color: $color-action-hover-border-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+        }
     }
 
     .bit-upl-us {
@@ -172,9 +178,11 @@
     align-items: center;
     justify-content: center;
 
-    &:hover {
-        i {
-            color: $color-primary-main;
+    @media (hover: hover) {
+        &:hover {
+            i {
+                color: $color-primary-main;
+            }
         }
     }
 }

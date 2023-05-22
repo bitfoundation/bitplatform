@@ -152,8 +152,10 @@
     color: $color-primary-main;
     background-color: transparent;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary2;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary2;
+        }
     }
 
     span {

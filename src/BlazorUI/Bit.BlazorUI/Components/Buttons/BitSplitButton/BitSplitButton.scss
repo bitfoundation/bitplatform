@@ -31,14 +31,17 @@
 }
 
 .bit-spl-pri {
-    .bit-spl-opb, .bit-spl-chb {
+    .bit-spl-opb,
+    .bit-spl-chb {
         color: $color-secondary-main;
         border-color: $color-primary-main;
         background-color: $color-primary-main;
 
-        &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-action-hover-primary;
+                background-color: $color-action-hover-primary;
+            }
         }
 
         &:active {
@@ -55,19 +58,22 @@
     }
 
     .bit-spl-spb {
-        width: spacing(0.125);
+        width: spacing(0.0625);
         background-color: $color-border-secondary;
     }
 }
 
 .bit-spl-std {
-    .bit-spl-opb, .bit-spl-chb {
+    .bit-spl-opb,
+    .bit-spl-chb {
         color: $color-text-primary;
         border-color: $color-border-primary2;
         background-color: $color-background-primary;
 
-        &:hover {
-            background-color: $color-action-hover-background-primary;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary;
+            }
         }
 
         &:active {
@@ -83,7 +89,7 @@
     }
 
     .bit-spl-spb {
-        width: spacing(0.125);
+        width: spacing(0.0625);
         background-color: $color-border-primary2;
     }
 }
@@ -139,7 +145,8 @@
     display: flex;
 }
 
-.bit-spl-opb, .bit-spl-chb {
+.bit-spl-opb,
+.bit-spl-chb {
     cursor: pointer;
     user-select: none;
     text-align: center;
@@ -201,6 +208,14 @@
         width: 100%;
         overflow: hidden;
         list-style-type: none;
+    }
+
+    button {
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary;
+            }
+        }
     }
 }
 
