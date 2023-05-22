@@ -57,6 +57,7 @@ public partial class BitOverlayDemo
     private bool DisabledScrollerIsVisible;
 
 
+
     private readonly string example1HTMLCode = @"
 <style>
     .overlay {
@@ -67,20 +68,20 @@ public partial class BitOverlayDemo
     }
 
     .content {
-        display: flex;
-        flex-flow: column nowrap;
         width: 85%;
         height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-radius: 3px;
+        display: flex;
         padding: 15px;
+        overflow: auto;
+        border-radius: 3px;
+        background-color: white;
+        flex-flow: column nowrap;
     }
 </style>
 
 <BitButton OnClick=""() => BasicIsVisible = true"">Show Overlay</BitButton>
-<BitOverlay @bind-IsVisible=""BasicIsVisible""
-            Class=""overlay"">
+
+<BitOverlay @bind-IsVisible=""BasicIsVisible"" Class=""overlay"">
     <div class=""content"">
         <h3>Lorem Ipsum</h3>
         <p>
@@ -90,11 +91,9 @@ public partial class BitOverlayDemo
             turpis. In hac habitasse platea dictumst.
         </p>
     </div>
-</BitOverlay>
-";
+</BitOverlay>";
     private readonly string example1CSharpCode = @"
-private bool BasicIsVisible;
-";
+private bool BasicIsVisible;";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -106,26 +105,25 @@ private bool BasicIsVisible;
     }
 
     .content {
-        display: flex;
-        flex-flow: column nowrap;
         width: 85%;
         height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-radius: 3px;
+        display: flex;
         padding: 15px;
+        overflow: auto;
+        border-radius: 3px;
+        background-color: white;
+        flex-flow: column nowrap;
     }
 
     .close-button {
-        position: absolute;
         right: 10px;
+        position: absolute;
     }
 </style>
 
 <BitButton OnClick=""() => AutoCloseIsVisible = true"">Show Overlay</BitButton>
-<BitOverlay @bind-IsVisible=""AutoCloseIsVisible""
-            Class=""overlay""
-            AutoClose=""false"">
+
+<BitOverlay @bind-IsVisible=""AutoCloseIsVisible"" Class=""overlay"" AutoClose=""false"">
     <div class=""content"">
         <BitButton Class=""close-button"" OnClick=""() => AutoCloseIsVisible = false"">Close Overlay</BitButton>
         <h3>Lorem Ipsum</h3>
@@ -136,11 +134,9 @@ private bool BasicIsVisible;
             turpis. In hac habitasse platea dictumst.
         </p>
     </div>
-</BitOverlay>
-";
+</BitOverlay>";
     private readonly string example2CSharpCode = @"
-private bool AutoCloseIsVisible;
-";
+private bool AutoCloseIsVisible;";
 
     private readonly string example3HTMLCode = @"
 <style>
@@ -152,45 +148,41 @@ private bool AutoCloseIsVisible;
     }
 
     .content {
-        display: flex;
-        flex-flow: column nowrap;
         width: 85%;
         height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-radius: 3px;
+        display: flex;
         padding: 15px;
+        overflow: auto;
+        border-radius: 3px;
+        background-color: white;
+        flex-flow: column nowrap;
     }
 
     .container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
         height: 480px;
+        display: flex;
+        position: relative;
+        align-items: center;
         border: 2px solid blue;
-        background-color: #eee;
+        justify-content: center;
     }
 </style>
 
-<div class=""overlay-box"">
-    <BitButton Class=""show-overlay-btn"" OnClick=""() => AbsoluteIsVisible = true"">Show Overlay</BitButton>
-    <BitOverlay @bind-IsVisible=""AbsoluteIsVisible""
-                Class=""overlay""
-                AbsolutePosition=""true"">
-        <div class=""content"">
-            <h3>Lorem Ipsum</h3>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst.
-            </p>
-        </div>
-    </BitOverlay>
-    <h3>This is Container</h3>
-</div>
-";
+<BitButton Class=""show-overlay-btn"" OnClick=""() => AbsoluteIsVisible = true"">Show Overlay</BitButton>
+<BitOverlay @bind-IsVisible=""AbsoluteIsVisible""
+            Class=""overlay""
+            AbsolutePosition=""true"">
+    <div class=""content"">
+        <h3>Lorem Ipsum</h3>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst.
+        </p>
+    </div>
+</BitOverlay>
+<h3>This is Container</h3>";
     private readonly string example3CSharpCode = @"
 private bool AbsoluteIsVisible;
 ";
@@ -205,21 +197,20 @@ private bool AbsoluteIsVisible;
     }
 
     .content {
-        display: flex;
-        flex-flow: column nowrap;
         width: 85%;
         height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-radius: 3px;
+        display: flex;
         padding: 15px;
+        overflow: auto;
+        border-radius: 3px;
+        background-color: white;
+        flex-flow: column nowrap;
     }
 </style>
 
 <BitButton OnClick=""() => AutoToggleIsVisible = true"">Show Overlay</BitButton>
-<BitOverlay @bind-IsVisible=""AutoToggleIsVisible""
-            Class=""overlay""
-            AutoToggleScroll=""false"">
+
+<BitOverlay @bind-IsVisible=""AutoToggleIsVisible"" Class=""overlay"" AutoToggleScroll=""false"">
     <div class=""content"">
         <h3>Lorem Ipsum</h3>
         <p>
@@ -229,11 +220,9 @@ private bool AbsoluteIsVisible;
             turpis. In hac habitasse platea dictumst.
         </p>
     </div>
-</BitOverlay>
-";
+</BitOverlay>";
     private readonly string example4CSharpCode = @"
-private bool AutoToggleIsVisible;
-";
+private bool AutoToggleIsVisible;";
 
     private readonly string example5HTMLCode = @"
 <style>
@@ -245,39 +234,30 @@ private bool AutoToggleIsVisible;
     }
 
     .content {
-        display: flex;
-        flex-flow: column nowrap;
         width: 85%;
         height: 250px;
-        overflow: auto;
-        background-color: white;
-        border-radius: 3px;
+        display: flex;
         padding: 15px;
+        overflow: auto;
+        border-radius: 3px;
+        background-color: white;
+        flex-flow: column nowrap;
     }
 
     .scroller {
-        margin-top: 15px;
-        align-items: center;
-        position: relative;
         height: 480px;
-        border: 2px solid green;
-        background-color: #eee;
-        border-radius: 3px;
         padding: 15px;
         overflow: auto;
-    }
-
-    .btn-container {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 1rem;
+        margin-top: 15px;
+        position: relative;
+        border-radius: 3px;
+        align-items: center;
+        border: 2px solid green;
     }
 </style>
 
-<div class=""btn-container"">
-    <BitButton OnClick=""() => EnabledScrollerIsVisible = true"">Show with Enabled scrolling</BitButton>
-    <BitButton OnClick=""() => DisabledScrollerIsVisible = true"">Show with Disabled scrolling</BitButton>
-</div>
+<BitButton OnClick=""() => EnabledScrollerIsVisible = true"">Show with Enabled scrolling</BitButton>
+<BitButton OnClick=""() => DisabledScrollerIsVisible = true"">Show with Disabled scrolling</BitButton>
 
 <div class=""scroller"">
     <BitOverlay @bind-IsVisible=""EnabledScrollerIsVisible""
@@ -344,10 +324,8 @@ private bool AutoToggleIsVisible;
         consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
         a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
     </p>
-</div>
-";
+</div>";
     private readonly string example5CSharpCode = @"
 private bool EnabledScrollerIsVisible;
-private bool DisabledScrollerIsVisible;
-";
+private bool DisabledScrollerIsVisible;";
 }

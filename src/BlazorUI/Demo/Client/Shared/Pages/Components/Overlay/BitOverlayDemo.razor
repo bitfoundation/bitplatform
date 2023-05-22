@@ -9,8 +9,7 @@
         <ExamplePreview>
             <div>
                 <BitButton OnClick="() => BasicIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="BasicIsVisible"
-                            Class="overlay">
+                <BitOverlay @bind-IsVisible="BasicIsVisible" Class="overlay">
                     <div class="content">
                         <h3>Lorem Ipsum</h3>
                         <p>
@@ -29,9 +28,7 @@
         <ExamplePreview>
             <div>
                 <BitButton OnClick="() => AutoCloseIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AutoCloseIsVisible"
-                            Class="overlay"
-                            AutoClose="false">
+                <BitOverlay @bind-IsVisible="AutoCloseIsVisible" Class="overlay" AutoClose="false">
                     <div class="content">
                         <BitButton Class="close-button" OnClick="() => AutoCloseIsVisible = false">Close Overlay</BitButton>
                         <h3>Lorem Ipsum</h3>
