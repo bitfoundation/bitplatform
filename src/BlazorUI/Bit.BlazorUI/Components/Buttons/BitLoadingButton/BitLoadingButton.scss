@@ -22,6 +22,16 @@
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
+
+    @keyframes bit-ldb-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-ldb-pri {
@@ -30,7 +40,7 @@
     background-color: $color-primary-main;
 
     .bit-ldb-spn {
-        border-color: $color-secondary-low;
+        border-color: $color-secondary-high;
         border-top-color: $color-primary-lower;
     }
 
@@ -38,9 +48,11 @@
         color: $color-secondary-main;
     }
 
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
+        }
     }
 
     &:active {
@@ -55,16 +67,18 @@
     background-color: $color-background-primary;
 
     .bit-ldb-spn {
-        border-color: $color-border-primary2;
-        border-top-color: $color-primary-lower;
+        border-color: $color-secondary-lower;
+        border-top-color: $color-primary-main;
     }
 
     .bit-ldb-lbl {
         color: $color-text-primary2;
     }
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
     &:active {
@@ -97,9 +111,6 @@
     border-radius: 50%;
     border-width: spacing(0.2125);
     border-style: $shape-border-style;
-}
-
-.bit-ldb-spn {
     animation: bit-ldb-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
@@ -147,43 +158,33 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
+}
 
-    &.bit-ldb-spn-lg {
-        .bit-ldb-spn {
-            width: spacing(3.5);
-            height: spacing(3.5);
-        }
-    }
-
-    &.bit-ldb-spn-md {
-        .bit-ldb-spn {
-            width: spacing(2.5);
-            height: spacing(2.5);
-        }
-    }
-
-    &.bit-ldb-spn-sm {
-
-        .bit-ldb-spn {
-            width: spacing(2);
-            height: spacing(2);
-        }
-    }
-
-    &.bit-ldb-spn-xs {
-        .bit-ldb-spn {
-            width: spacing(1.5);
-            height: spacing(1.5);
-        }
+.bit-ldb-spn-lg {
+    .bit-ldb-spn {
+        width: spacing(3.5);
+        height: spacing(3.5);
     }
 }
 
-@keyframes bit-ldb-spinner-animation {
-    0% {
-        transform: rotate(0deg);
+.bit-ldb-spn-md {
+    .bit-ldb-spn {
+        width: spacing(2.5);
+        height: spacing(2.5);
     }
+}
 
-    100% {
-        transform: rotate(360deg);
+.bit-ldb-spn-sm {
+
+    .bit-ldb-spn {
+        width: spacing(2);
+        height: spacing(2);
+    }
+}
+
+.bit-ldb-spn-xs {
+    .bit-ldb-spn {
+        width: spacing(1.5);
+        height: spacing(1.5);
     }
 }

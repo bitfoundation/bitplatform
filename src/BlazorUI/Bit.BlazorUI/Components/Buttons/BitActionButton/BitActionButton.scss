@@ -14,11 +14,13 @@
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
 
-    &:hover {
-        color: $color-primary-main;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-primary-main;
 
-        .bit-icon {
-            color: $color-action-hover-primary;
+            .bit-icon {
+                color: $color-action-hover-primary;
+            }
         }
     }
 

@@ -30,12 +30,15 @@
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-primary;
+            background-color: $color-action-hover-primary;
+        }
     }
 
-    &:active, &.bit-mnb-omn {
+    &:active,
+    &.bit-mnb-omn {
         border-color: $color-action-active-primary;
         background-color: $color-action-active-primary;
     }
@@ -46,11 +49,14 @@
     border-color: $color-border-primary2;
     background-color: $color-background-primary;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
-    &:active, &.bit-mnb-omn {
+    &:active,
+    &.bit-mnb-omn {
         background-color: $color-action-active-background-primary;
     }
 }
@@ -163,13 +169,17 @@
             color: $color-text-disabled;
         }
 
-        &:hover {
-            background-color: transparent;
+        @media (hover: hover) {
+            &:hover {
+                background-color: transparent;
+            }
         }
     }
 
-    &:hover {
-        background-color: $color-action-hover-secondary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-secondary;
+        }
     }
 
     &:active {

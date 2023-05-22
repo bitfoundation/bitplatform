@@ -139,9 +139,11 @@
     color: $color-text-primary2;
     border-radius: $shape-border-radius;
 
-    &:hover {
-        color: $color-action-hover-text-primary2;
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-text-primary2;
+            background-color: $color-action-hover-background-primary;
+        }
     }
 }
 

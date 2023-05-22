@@ -263,8 +263,10 @@
     color: $color-text-primary2;
     border-radius: $shape-border-radius;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 }
 
@@ -352,8 +354,10 @@
     button.bit-dtp-pkr-tit {
         cursor: pointer;
 
-        &:hover {
-            background-color: $color-action-hover-background-primary2;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary2;
+            }
         }
     }
 }
@@ -409,8 +413,10 @@
     background-color: transparent;
     border-radius: $shape-border-radius;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
     i {
@@ -447,8 +453,10 @@
     background-color: transparent;
     border-radius: $shape-border-radius;
 
-    &:hover {
-        background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
     }
 
     span {
@@ -501,8 +509,10 @@
         background-color: transparent;
         border-radius: $shape-border-radius;
 
-        &:hover {
-            background-color: $color-action-hover-background-primary;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary;
+            }
         }
 
         &:disabled {
@@ -521,9 +531,11 @@
     color: $color-secondary-main;
     background-color: $color-primary-main;
 
-    &:hover {
-        color: $color-action-hover-secondary;
-        background-color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-secondary;
+            background-color: $color-action-hover-primary;
+        }
     }
 }
 
@@ -532,9 +544,11 @@
     color: $color-secondary-higher;
     background-color: $color-primary-higher;
 
-    &:hover {
-        color: $color-secondary-high;
-        background-color: $color-primary-high;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-secondary-high;
+            background-color: $color-primary-high;
+        }
     }
 }
 
@@ -603,10 +617,12 @@
     background-color: transparent;
     margin: spacing(0.375) spacing(0.5) 0 0;
 
-    &:hover {
-        cursor: pointer;
-        background-color: transparent;
-        color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            cursor: pointer;
+            background-color: transparent;
+            color: $color-action-hover-primary;
+        }
     }
 
     &:disabled {

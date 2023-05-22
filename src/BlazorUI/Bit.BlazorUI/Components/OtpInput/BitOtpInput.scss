@@ -40,7 +40,8 @@
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
+    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
 

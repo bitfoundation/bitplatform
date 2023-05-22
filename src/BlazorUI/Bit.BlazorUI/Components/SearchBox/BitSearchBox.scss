@@ -17,12 +17,14 @@
     padding: spacing(0.125) 0 spacing(0.125) spacing(0.5);
     border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    &:hover {
-        border-color: $color-action-hover-border-primary;
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
 
-        .bit-srb-ict {
-            i {
-                color: $color-action-hover-primary;
+            .bit-srb-ict {
+                i {
+                    color: $color-action-hover-primary;
+                }
             }
         }
     }
@@ -40,12 +42,14 @@
             }
         }
 
-        &:hover {
-            border-color: $color-border-disabled;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-border-disabled;
 
-            .bit-srb-ict {
-                i {
-                    color: $color-text-disabled;
+                .bit-srb-ict {
+                    i {
+                        color: $color-text-disabled;
+                    }
                 }
             }
         }
@@ -64,12 +68,14 @@
             }
         }
 
-        &:hover {
-            border-color: $color-state-invalid-hover;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-state-invalid-hover;
 
-            .bit-srb-ict {
-                i {
-                    color: $color-state-invalid-hover;
+                .bit-srb-ict {
+                    i {
+                        color: $color-state-invalid-hover;
+                    }
                 }
             }
         }
@@ -78,8 +84,10 @@
             &.bit-srb-foc {
                 border-color: $color-state-invalid;
 
-                &:hover {
-                    border-color: $color-state-invalid;
+                @media (hover: hover) {
+                    &:hover {
+                        border-color: $color-state-invalid;
+                    }
                 }
             }
         }
@@ -137,12 +145,14 @@
     flex-basis: spacing(4);
     margin: spacing(-0.125) 0;
 
-    &:hover {
-        .bit-srb-cbt {
-            background-color: $color-action-hover-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            .bit-srb-cbt {
+                background-color: $color-action-hover-background-primary;
 
-            i {
-                color: $color-action-hover-text-primary2;
+                i {
+                    color: $color-action-hover-text-primary2;
+                }
             }
         }
     }
@@ -199,8 +209,10 @@
         }
     }
 
-    &:hover {
-        border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+        }
     }
 }
 
@@ -209,42 +221,50 @@
     border-width: 0 0 spacing(0.125);
     padding: spacing(0.125) 0 spacing(0.125) spacing(1);
 
-    &:hover {
-        border-top-width: 0;
-        border-left-width: 0;
-        border-right-width: 0;
+    @media (hover: hover) {
+        &:hover {
+            border-top-width: 0;
+            border-left-width: 0;
+            border-right-width: 0;
+        }
     }
 
     &.bit-srb-foc {
         border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
 
-        &:hover {
-            border-bottom: spacing(0.25) $shape-border-style $color-action-hover-primary;
+        @media (hover: hover) {
+            &:hover {
+                border-bottom: spacing(0.25) $shape-border-style $color-action-hover-primary;
+            }
         }
     }
 }
 
 .bit-srb-hvl {
-    &:hover {
-        .bit-srb-ict {
-            width: spacing(0.5);
+    @media (hover: hover) {
+        &:hover {
+            .bit-srb-ict {
+                width: spacing(0.5);
 
-            i {
-                opacity: 0;
-                color: $color-action-hover-primary;
+                i {
+                    opacity: 0;
+                    color: $color-action-hover-primary;
+                }
             }
         }
     }
 }
 
 .bit-srb-fic-hvl {
-    &:hover {
-        .bit-srb-ict {
-            width: spacing(4);
+    @media (hover: hover) {
+        &:hover {
+            .bit-srb-ict {
+                width: spacing(4);
 
-            i {
-                opacity: 1;
-                color: $color-action-hover-primary;
+                i {
+                    opacity: 1;
+                    color: $color-action-hover-primary;
+                }
             }
         }
     }
@@ -262,15 +282,17 @@
         }
     }
 
-    &:hover {
-        border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            border: spacing(0.25) $shape-border-style $color-action-hover-primary;
 
-        .bit-srb-ict {
-            width: spacing(4);
+            .bit-srb-ict {
+                width: spacing(4);
 
-            i {
-                opacity: 1;
-                color: $color-action-hover-primary;
+                i {
+                    opacity: 1;
+                    color: $color-action-hover-primary;
+                }
             }
         }
     }

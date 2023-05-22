@@ -12,11 +12,14 @@
     background-color: transparent;
     font-family: $typography-font-family;
 
-    &:hover, &:active, &:focus {
+    &:hover,
+    &:active,
+    &:focus {
         color: $color-action-hover-primary;
     }
 
-    &:active, &:hover {
+    &:hover,
+    &:active {
         text-decoration: underline;
     }
 
@@ -24,20 +27,25 @@
         cursor: default;
         color: $color-text-disabled;
 
-        &:hover, &:active, &:focus {
+        &:hover,
+        &:active,
+        &:focus {
             color: $color-text-disabled;
         }
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
             text-decoration: none;
         }
     }
+}
 
-    &.bit-lnk-und {
+.bit-lnk-und {
+    text-decoration: underline;
+
+    &:hover,
+    &:active,
+    &:focus {
         text-decoration: underline;
-
-        &:hover, &:active, &:focus {
-            text-decoration: underline;
-        }
     }
 }

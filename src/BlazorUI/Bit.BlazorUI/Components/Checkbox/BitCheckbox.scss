@@ -25,10 +25,12 @@
                 background-color: $color-state-invalid;
             }
 
-            &:hover {
-                .bit-chb-ctn {
-                    border-color: $color-state-invalid-hover;
-                    background-color: $color-state-invalid-hover;
+            @media (hover: hover) {
+                &:hover {
+                    .bit-chb-ctn {
+                        border-color: $color-state-invalid-hover;
+                        background-color: $color-state-invalid-hover;
+                    }
                 }
             }
         }
@@ -40,12 +42,14 @@
                 }
             }
 
-            &:hover {
-                .bit-chb-ctn {
-                    border-color: $color-state-invalid-hover;
+            @media (hover: hover) {
+                &:hover {
+                    .bit-chb-ctn {
+                        border-color: $color-state-invalid-hover;
 
-                    .bit-icon {
-                        background-color: $color-state-invalid-hover;
+                        .bit-icon {
+                            background-color: $color-state-invalid-hover;
+                        }
                     }
                 }
             }
@@ -167,13 +171,15 @@
         }
     }
 
-    &:hover {
-        .bit-chb-ctn {
-            border-color: $color-primary-lower;
-            background-color: $color-background-primary;
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-ctn {
+                border-color: $color-primary-lower;
+                background-color: $color-background-primary;
 
-            .bit-icon {
-                background-color: $color-primary-lower;
+                .bit-icon {
+                    background-color: $color-primary-lower;
+                }
             }
         }
     }
@@ -190,14 +196,16 @@
         }
     }
 
-    &:hover {
-        .bit-chb-ctn {
-            border-color: $color-primary-low;
-            background-color: $color-action-hover-primary;
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-ctn {
+                border-color: $color-primary-low;
+                background-color: $color-action-hover-primary;
 
-            .bit-icon {
-                opacity: 1;
-                color: $color-secondary-lower;
+                .bit-icon {
+                    opacity: 1;
+                    color: $color-secondary-lower;
+                }
             }
         }
     }

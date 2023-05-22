@@ -83,8 +83,10 @@
     display: inline-block;
     color: $color-text-primary;
 
-    &:hover {
-        color: $color-primary-main;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-primary-main;
+        }
     }
 }
 
@@ -101,7 +103,9 @@
     vertical-align: middle;
     color: $color-text-primary;
 
-    &:hover {
-        color: $color-primary-main;
+    @media (hover: hover) {
+        &:hover {
+            color: $color-primary-main;
+        }
     }
 }

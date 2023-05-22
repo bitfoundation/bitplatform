@@ -40,7 +40,7 @@ public partial class BitIconDemo
 
 
 
-    private BitIconName _iconName = BitIconName.Accept;
+    private BitIconName iconName = BitIconName.Accept;
 
 
     private readonly string example1HTMLCode = @"
@@ -65,6 +65,8 @@ public partial class BitIconDemo
 <BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
 
     private readonly string example4HTMLCode = @"
-<BitIcon IconName=""_iconName"" AriaLabel=""accept"" Class=""icon-class"" />
-<BitToggleButton IconName=""_iconName"" OnChange=""() => _iconName = _iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
+< BitIcon IconName=""iconName"" AriaLabel=""accept"" Class=""icon-class"" />
+<BitToggleButton IconName=""iconName"" OnChange=""() => iconName = iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
+    private readonly string example4CSharpCode = @"
+private BitIconName iconName = BitIconName.Accept;";
 }

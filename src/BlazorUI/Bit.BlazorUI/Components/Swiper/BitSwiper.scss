@@ -43,11 +43,13 @@
     color: $color-text-secondary2;
     transition: opacity .15s ease;
 
-    &:hover {
-        outline: 0;
-        opacity: .9;
-        text-decoration: none;
-        color: $color-action-hover-text-secondary2;
+    @media (hover: hover) {
+        &:hover {
+            outline: 0;
+            opacity: .9;
+            text-decoration: none;
+            color: $color-action-hover-text-secondary2;
+        }
     }
 }
 

@@ -12,14 +12,15 @@
     overflow-wrap: break-word;
     font-family: $typography-font-family;
 
-
     &.bit-dis {
         color: $color-text-disabled;
     }
 }
 
-.bit-lbl-req::after {
-    content: "*";
-    color: $color-general-red;
-    margin-left: spacing(0.625);
+.bit-lbl-req {
+    &::after {
+        content: "*";
+        color: $color-general-red;
+        margin-left: spacing(0.625);
+    }
 }
