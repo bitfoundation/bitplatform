@@ -64,8 +64,8 @@
         "inputFile": "Pages/GettingStartedPage.razor.scss"
     },
     {
-        "outputFile": "Pages/IconsPage.razor.css",
-        "inputFile": "Pages/IconsPage.razor.scss"
+        "outputFile": "Pages/IconographyPage.razor.css",
+        "inputFile": "Pages/IconographyPage.razor.scss"
     },
     {
         "outputFile": "Pages/OverviewPage.razor.css",

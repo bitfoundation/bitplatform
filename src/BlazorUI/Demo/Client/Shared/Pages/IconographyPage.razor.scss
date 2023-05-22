@@ -31,11 +31,12 @@
 
     &::-webkit-scrollbar {
         width: rem(6.5px);
+        height: rem(6.5px);
     }
 
     &::-webkit-scrollbar-thumb {
         border-radius: rem(8px);
-        border: rem(4px) solid #c8c6c4;
+        background-color: $bit-color-background-secondary3;
     }
 }
 
@@ -67,11 +68,13 @@
     height: rem(144px);
 }
 
-::deep .iconography-search-box {
-    max-width: rem(300px);
-    margin-bottom: rem(50px);
-}
+::deep {
+    .bit-icon--iconography {
+        font-size: 2.25rem !important;
+    }
 
-::deep .bit-icon--iconography {
-    font-size: 2.25rem !important;
+    .iconography-search-box {
+        max-width: rem(300px);
+        margin-bottom: rem(50px);
+    }
 }

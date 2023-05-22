@@ -1438,7 +1438,7 @@ public enum BitIconName
     KaizalaLogo,
     TaskLogo,
     ProtectionCenterLogo32,
-    GallatinLogo,
+    //GallatinLogo,
     Globe2,
     Guitar,
     Breakfast,

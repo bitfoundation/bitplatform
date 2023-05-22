@@ -32,7 +32,7 @@ public partial class BitIconDemo
             Name = "IconName",
             Type = "BitIconName",
             LinkType = LinkType.Link,
-            Href = "/icons",
+            Href = "/iconography",
             DefaultValue = "",
             Description = "The icon name for the icon shown in the button"
         }

@@ -111,7 +111,7 @@ public partial class NavMenu
                 new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
             },
         },
-        new BitNavItem { Text = "Icons", Url = "/icons" },
+        new BitNavItem { Text = "Iconography", Url = "/iconography" },
     };
 
     private List<BitNavItem> filteredNavLinks;

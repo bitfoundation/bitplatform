@@ -1,18 +1,18 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Shared.Pages;
 
-public partial class IconsPage
+public partial class IconographyPage
 {
-    private List<string> allIcons;
-    private List<string> filteredIcons;
+    private List<string> allIcons = default!;
+    private List<string> filteredIcons = default!;
     private string searchText = string.Empty;
 
     protected override void OnInitialized()
     {
         allIcons = Enum.GetValues(typeof(BitIconName))
-            .Cast<BitIconName>()
-            .Select(i => i.GetName())
-            .Where(n => n is not null)
-            .ToList();
+                        .Cast<BitIconName>()
+                        .Select(i => i.GetName()!)
+                        .Where(n => n is not null)
+                        .ToList();
         HandleClear();
         base.OnInitialized();
     }
