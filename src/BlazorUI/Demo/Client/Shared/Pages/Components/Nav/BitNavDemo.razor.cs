@@ -689,7 +689,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new() { Text = ""Iconography"", Url = ""/icons"" },
+    new() { Text = ""Iconography"", Url = ""/iconography"" },
 };";
 
     private static string example2NavItemHTMLCode = @"
@@ -1159,7 +1159,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new() { Text = ""Iconography"", Url = ""/icons"" },
+    new() { Text = ""Iconography"", Url = ""/iconography"" },
 };";
 
 
@@ -1221,7 +1221,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new() { Text = ""Iconography"", Url = ""/icons"" },
+    new() { Text = ""Iconography"", Url = ""/iconography"" },
 };";
 
     private static string example2CustomItemHTMLCode = @"
@@ -1785,7 +1785,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
     },
-    new() { Text = ""Iconography"", Url = ""/icons"" },
+    new() { Text = ""Iconography"", Url = ""/iconography"" },
 };";
 
 
@@ -1818,7 +1818,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
 
-    <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
+    <BitNavOption Text=""Iconography"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
     private static string example2NavOptionHTMLCode = @"
@@ -2066,6 +2066,6 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
 
-    <BitNavOption Text=""Iconography"" Url=""/icons"" Target=""_blank"" />
+    <BitNavOption Text=""Iconography"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 }
