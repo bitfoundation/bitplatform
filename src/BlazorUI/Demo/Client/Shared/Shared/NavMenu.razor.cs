@@ -57,7 +57,6 @@ public partial class NavMenu
             ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "BasicList", Url = "/components/basic-list" },
-                new BitNavItem { Text = "DataGrid", Url = "/components/data-grid" },
                 new BitNavItem { Text = "Carousel", Url = "/components/carousel" },
                 new BitNavItem { Text = "Swiper", Url = "/components/swiper" },
                 new BitNavItem { Text = "Persona (AvatarView)", Url = "/components/persona" }
@@ -110,6 +109,14 @@ public partial class NavMenu
                 new BitNavItem { Text = "Icon", Url = "/components/icon" },
                 new BitNavItem { Text = "Overlay", Url = "/components/overlay" },
             },
+        },
+        new BitNavItem
+        {
+            Text = "Extras",
+            ChildItems = new List<BitNavItem>
+            {
+                new BitNavItem { Text = "DataGrid", Url = "/components/data-grid" },
+            }
         },
         new BitNavItem { Text = "Iconography", Url = "/iconography" },
     };
