@@ -4,14 +4,11 @@ public partial class ComponentExampleBox
 {
     private bool showCode;
 
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-
-    [Parameter] public string Title { get; set; }
-    [Parameter] public string ExampleId { get; set; }
-    [Parameter] public string HTMLSourceCode { get; set; }
-    [Parameter] public string CSharpSourceCode { get; set; }
-    [Parameter] public RenderFragment ExamplePreview { get; set; }
+    [Parameter] public string Title { get; set; } = default!;
+    [Parameter] public string ExampleId { get; set; } = default!;
+    [Parameter] public string HTMLSourceCode { get; set; } = default!;
+    [Parameter] public string CSharpSourceCode { get; set; } = default!;
+    [Parameter] public RenderFragment ExamplePreview { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

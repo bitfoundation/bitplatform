@@ -80,6 +80,11 @@
     color: $B2Color;
 }
 
+.header-right-section {
+    gap: 1rem;
+    display: flex;
+}
+
 .github-btn {
     cursor: pointer;
     width: rem(34px);

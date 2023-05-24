@@ -8,7 +8,7 @@
             @foreach (var com in Components)
             {
                 <button @onclick="(() => SelectComponent(com))"
-                        class="component-row @(com.Name == SelectedComponent.Name ? "component-row--active" : null) @BitCss.Text.Primary">
+                        class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Text.Primary">
                     <div class="component-icon">
                         <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                     </div>
@@ -24,7 +24,7 @@
             @foreach (var com in Components)
             {
                 <BitCarouselItem Style="width: 100%">
-                    <button class="component-row @(com.Name == SelectedComponent.Name ? "component-row--active" : null)" @onclick="(() => SelectComponent(com))">
+                    <button class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)" @onclick="(() => SelectComponent(com))">
                         <div class="component-icon">
                             <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                         </div>
@@ -42,15 +42,15 @@
     <div class="content-container">
         <div class="example-preview">
             <div class="component-container">
-                @if (SelectedComponent.Name == "ColorPicker")
+                @if (SelectedComponent?.Name == "ColorPicker")
                 {
                     <BitColorPicker ShowPreview="true" @bind-Alpha="@Alpha" @bind-Color="@ColorRgb" />
                 }
-                else if (SelectedComponent.Name == "DatePicker")
+                else if (SelectedComponent?.Name == "DatePicker")
                 {
                     <BitDatePicker Style="width: 300px" ShowWeekNumbers="true" />
                 }
-                else if (SelectedComponent.Name == "FileUpload")
+                else if (SelectedComponent?.Name == "FileUpload")
                 {
                     <BitFileUpload IsMultiSelect="true"
                                    Label="Select files"
@@ -59,7 +59,7 @@
                                    RemoveUrl="@RemoveUrl"
                                    Style="flex-grow:1; max-width:none;" />
                 }
-                else if (SelectedComponent.Name == "Dropdown")
+                else if (SelectedComponent?.Name == "Dropdown")
                 {
                     <BitDropdown Label="Multi-select uncontrolled"
                                  Items="GetDropdownItems()"
@@ -67,7 +67,7 @@
                                  IsMultiSelect="true"
                                  Style="width: 290px; margin-bottom: 20px;" />
                 }
-                else if (SelectedComponent.Name == "Nav (TreeList)")
+                else if (SelectedComponent?.Name == "Nav (TreeList)")
                 {
                     <BitNav Style="width: 208px;
                                    height: 350px;
@@ -81,7 +81,7 @@
             </div>
         </div>
         <div class="example-code">
-            @if (SelectedComponent.Name == "ColorPicker")
+            @if (SelectedComponent?.Name == "ColorPicker")
             {
                 <pre class="code">
                     <code class="language-cshtml">
@@ -97,7 +97,7 @@
                     </code>
                 </pre>
             }
-            else if (SelectedComponent.Name == "DatePicker")
+            else if (SelectedComponent?.Name == "DatePicker")
             {
                 <pre class="code">
                     <code class="language-cshtml">
@@ -105,7 +105,7 @@
                     </code>
                 </pre>
             }
-            else if (SelectedComponent.Name == "FileUpload")
+            else if (SelectedComponent?.Name == "FileUpload")
             {
                 <pre class="code">
                     <code class="language-cshtml">
@@ -123,7 +123,7 @@
                     </code>
                 </pre>
             }
-            else if (SelectedComponent.Name == "Dropdown")
+            else if (SelectedComponent?.Name == "Dropdown")
             {
                 <pre class="code">
                     <code class="language-cshtml">
@@ -193,7 +193,7 @@
                     </code>
                 </pre>
             }
-            else if (SelectedComponent.Name == "Nav (TreeList)")
+            else if (SelectedComponent?.Name == "Nav (TreeList)")
             {
                 <pre class="code">
                     <code class="language-cshtml">

@@ -91,7 +91,8 @@ public partial class BitToggle
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValue = !CurrentValue;
 

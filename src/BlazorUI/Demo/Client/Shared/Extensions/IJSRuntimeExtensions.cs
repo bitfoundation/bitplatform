@@ -15,5 +15,10 @@ public static class IJSRuntimeExtensions
     {
         await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
     }
+
+    public static async Task ToggleBitTheme(this IJSRuntime jsRuntime, bool isDark)
+    {
+        await jsRuntime.InvokeVoidAsync("toggleBitTheme", isDark);
+    }
 }
 

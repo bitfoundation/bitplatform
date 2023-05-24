@@ -277,7 +277,7 @@ public partial class BitFileUploadDemo
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"FileUpload/RemoveFile";
 
-    [Inject] public IConfiguration Configuration { get; set; }
+    [Inject] public IConfiguration Configuration { get; set; } = default!;
 
 
     private readonly string example1HtmlCode = @"
