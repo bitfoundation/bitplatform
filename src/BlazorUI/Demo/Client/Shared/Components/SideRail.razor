@@ -5,7 +5,7 @@
         @foreach (var item in Items)
         {
             <li>
-                <BitLink Class="@(activeItem == item.Id ? "active" : string.Empty)" 
+                <BitLink Class="@(activeItemId == item.Id ? "active" : string.Empty)" 
                          OnClick="@(() => ScrollToItem(item))">@item.Title
                 </BitLink>
             </li>

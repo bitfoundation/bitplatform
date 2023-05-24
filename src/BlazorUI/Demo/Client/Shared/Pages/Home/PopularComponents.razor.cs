@@ -4,42 +4,39 @@ namespace Bit.BlazorUI.Demo.Client.Shared.Pages;
 
 public partial class PopularComponents
 {
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-    [Inject] public IConfiguration Configuration { get; set; }
-
-    private IQueryable<Country> allCountries;
+    private IQueryable<Country>? allCountries;
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
     private string typicalSampleNameFilter = string.Empty;
 
-    public IQueryable<Country> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+    public IQueryable<Country>? FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
-    private List<PopularComponent> Components = new List<PopularComponent>
+    private List<PopularComponent> Components = new()
     {
-        new PopularComponent()
+        new()
         {
             Name = "ColorPicker",
             Description = "The ColorPicker component is used to browse through and select colors.",
             Url = "/components/color-picker"
         },
-        new PopularComponent()
+        new()
         {
             Name = "DatePicker",
             Description = "The DatePicker component offers a drop-down control that’s optimized for picking a single date from a calendar view.",
             Url = "/components/date-picker"
         },
-        new PopularComponent()
+        new()
         {
             Name = "FileUpload",
             Description = "The FileUpload component wraps the HTML file input element(s) and uploads them to a given URL.",
             Url = "/components/file-upload"
         },
-        new PopularComponent()
+        new()
         {
             Name = "Dropdown",
             Description = "The Dropdown component is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button.",
             Url = "/components/dropdown"
         },
-        new PopularComponent()
+        new()
         {
             Name = "Nav (TreeList)",
             Description = "The Nav (TreeList) component provides links to the main areas of an app or site.",
@@ -47,7 +44,7 @@ public partial class PopularComponents
         }
     };
 
-    private PopularComponent SelectedComponent;
+    private PopularComponent? SelectedComponent;
     private string ColorRgb = "rgb(0,101,239)";
     private double Alpha = 1;
     string UploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
@@ -235,9 +232,9 @@ public partial class PopularComponents
 
 public class Country
 {
-    public string Code { get; set; }
-    public string Name { get; set; }
-    public Medals Medals { get; set; }
+    public string? Code { get; set; }
+    public string? Name { get; set; }
+    public Medals? Medals { get; set; }
 }
 
 public class Medals

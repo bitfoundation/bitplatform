@@ -5,41 +5,39 @@ namespace Bit.BlazorUI.Demo.Client.Shared;
 
 public partial class Header
 {
-    private string CurrentUrl = string.Empty;
-    private bool IsHeaderMenuOpen;
+    private string _currentUrl = string.Empty;
+    private bool _isHeaderMenuOpen;
+    private bool _isDarkMode;
 
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public NavManuService NavManuService { get; set; }
-    [Inject] public IJSRuntime JsRuntime { get; set; }
-    [Inject] private IExceptionHandler exceptionHandler { get; set; } = default!;
+    [Inject] private NavManuService _menuService { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         NavigationManager.LocationChanged += OnLocationChanged;
 
         await base.OnInitAsync();
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         StateHasChanged();
     }
 
     private async Task ToggleNavMenu()
     {
-        IsHeaderMenuOpen = false;
-        await NavManuService.ToggleMenu();
+        _isHeaderMenuOpen = false;
+        await _menuService.ToggleMenu();
     }
 
     private string GetActiveRouteName()
     {
-        if (CurrentUrl.Contains("components"))
+        if (_currentUrl.Contains("components"))
         {
             return "Docs";
         }
-        else return CurrentUrl switch
+        else return _currentUrl switch
         {
             "/" => "Home",
             _ => "Docs",
@@ -50,17 +48,23 @@ public partial class Header
     {
         try
         {
-            IsHeaderMenuOpen = !IsHeaderMenuOpen;
+            _isHeaderMenuOpen = !_isHeaderMenuOpen;
 
-            await JsRuntime.ToggleBodyOverflow(IsHeaderMenuOpen);
+            await JSRuntime.ToggleBodyOverflow(_isHeaderMenuOpen);
         }
         catch (Exception ex)
         {
-            exceptionHandler.Handle(ex);
+            ExceptionHandler.Handle(ex);
         }
         finally
         {
             StateHasChanged();
         }
+    }
+
+    private async Task ToggleTheme(bool value)
+    {
+        _isDarkMode = !_isDarkMode;
+        await JSRuntime.ToggleBitTheme(_isDarkMode);
     }
 }
