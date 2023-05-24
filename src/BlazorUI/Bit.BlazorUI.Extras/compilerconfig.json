@@ -1,0 +1,9 @@
+﻿[
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.extras.min.css",
+        "inputFile": "Styles/bit.blazorui.extras.scss",
+        "options": {
+            "relativeUrls": false
+        }
+    }
+]

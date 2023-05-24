@@ -44,12 +44,6 @@ public partial class PopularComponents
             Name = "Nav (TreeList)",
             Description = "The Nav (TreeList) component provides links to the main areas of an app or site.",
             Url = "/components/nav"
-        },
-        new PopularComponent()
-        {
-            Name = "DataGrid",
-            Description = "BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical.",
-            Url = "/components/data-grid"
         }
     };
 

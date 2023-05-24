@@ -1,7 +1,8 @@
-﻿@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/bit-css-variables.scss';
+@import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/bit-css-variables.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .main-container {
     display: flex;
@@ -192,7 +193,7 @@
     border-radius: rem(4px);
     align-items: flex-start;
     justify-content: flex-start;
-    box-shadow: rgba(61, 71, 82, 0.25) 0px 4px 20px;
+    box-shadow: $bit-shadow-callout;
     background-color: $bit-color-background-primary2;
     border: rem(1px) solid $bit-color-background-primary3;
 }
