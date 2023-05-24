@@ -48,7 +48,6 @@ public partial class NavMenu
                 new BitNavItem { Text = "DatePicker", Url = "/components/date-picker" },
                 new BitNavItem { Text = "DateRangePicker", Url = "/components/date-range-picker" },
                 new BitNavItem { Text = "TimePicker", Url = "/components/time-picker" },
-                new BitNavItem { Text = "Chart", Url = "/components/chart" }
             }
         },
         new BitNavItem
@@ -116,6 +115,7 @@ public partial class NavMenu
             ChildItems = new List<BitNavItem>
             {
                 new BitNavItem { Text = "DataGrid", Url = "/components/data-grid" },
+                new BitNavItem { Text = "Chart", Url = "/components/chart" }
             }
         },
         new BitNavItem { Text = "Iconography", Url = "/iconography" },
