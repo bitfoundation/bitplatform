@@ -88,7 +88,6 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
         static string ValOrNull(int? value) => value.HasValue ? value.Value.ToString() : "null";
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public override bool Equals(object obj) => obj is BitChartClipping clipping && Equals(clipping);
     public bool Equals(BitChartClipping other)
     {
@@ -105,7 +104,6 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
 
     public static bool operator ==(BitChartClipping left, BitChartClipping right) => left.Equals(right);
     public static bool operator !=(BitChartClipping left, BitChartClipping right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
 
 internal class ClippingJsonConverter : JsonConverter<BitChartClipping>

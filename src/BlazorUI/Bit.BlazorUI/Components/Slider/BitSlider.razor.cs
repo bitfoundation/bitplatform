@@ -173,9 +173,7 @@ public partial class BitSlider
     /// <summary>
     /// Additional parameter for the Slider box
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The difference between the two adjacent values of the Slider

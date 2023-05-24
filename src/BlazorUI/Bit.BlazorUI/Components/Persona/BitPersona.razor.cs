@@ -49,7 +49,6 @@ public partial class BitPersona
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter]
-#pragma warning disable CA1056 // URI-like properties should not be strings
     public string? ImageUrl
     {
         get => imageUrl;
@@ -61,7 +60,6 @@ public partial class BitPersona
             _hasError = false;
         }
     }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.

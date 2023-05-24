@@ -38,12 +38,10 @@ public readonly struct BitChartBubblePoint : IEquatable<BitChartBubblePoint>
         Radius = radius;
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public override bool Equals(object obj) => obj is BitChartBubblePoint point && Equals(point);
     public bool Equals(BitChartBubblePoint other) => X == other.X && Y == other.Y && Radius == other.Radius;
     public override int GetHashCode() => HashCode.Combine(X, Y, Radius);
 
     public static bool operator ==(BitChartBubblePoint left, BitChartBubblePoint right) => left.Equals(right);
     public static bool operator !=(BitChartBubblePoint left, BitChartBubblePoint right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

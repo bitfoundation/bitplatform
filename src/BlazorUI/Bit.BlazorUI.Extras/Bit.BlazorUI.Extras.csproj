@@ -4,9 +4,10 @@
 
     <PropertyGroup>
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
-        <IsTrimmable>false</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
+        <IsTrimmable>false</IsTrimmable>
+        <WarningLevel>0</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>

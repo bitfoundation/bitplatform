@@ -65,10 +65,10 @@ jobs:
         include-prerelease: true
 
     - name: Restore
-      run: dotnet restore src/Bit-CI.sln
+      run: dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
 
     - name: MSBuild
-      run: dotnet msbuild src/Bit-CI.sln -m:1
+      run: dotnet msbuild src/Bit-CI.sln -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
