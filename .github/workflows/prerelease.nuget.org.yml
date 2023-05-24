@@ -39,16 +39,7 @@ jobs:
       run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
-      
-    - name: dotnet restore BlazorUI.Charts
-      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
-    - name: dotnet msbuild BlazorUI.Charts (1)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild BlazorUI.Charts (2)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet pack BlazorUI.Charts
-      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
-      
+
     - name: dotnet restore BlazorUI.Extras
       run: dotnet restore src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj
     - name: dotnet msbuild BlazorUI.Extras (1)

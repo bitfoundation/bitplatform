@@ -31,7 +31,7 @@ class BitChartJsInterop {
                 } else {
                     const script = document.createElement('script');
                     //script.src = 'https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js';
-                    script.src = '_content/Bit.BlazorUI.Charts/chart.js/Chart.min.2.9.4.js';
+                    script.src = '_content/Bit.BlazorUI.Extras/chart.js/Chart.min.2.9.4.js';
                     script.onload = e => resolve();
                     script.onerror = err => reject(err);
                     document.body.appendChild(script);
