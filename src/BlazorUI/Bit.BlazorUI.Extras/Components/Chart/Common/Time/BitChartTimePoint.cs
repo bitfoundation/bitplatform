@@ -30,12 +30,10 @@ public readonly struct BitChartTimePoint : IEquatable<BitChartTimePoint>
         Y = y;
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public override bool Equals(object obj) => obj is BitChartTimePoint point && Equals(point);
     public bool Equals(BitChartTimePoint other) => Time == other.Time && Y == other.Y;
     public override int GetHashCode() => HashCode.Combine(Time, Y);
 
     public static bool operator ==(BitChartTimePoint left, BitChartTimePoint right) => left.Equals(right);
     public static bool operator !=(BitChartTimePoint left, BitChartTimePoint right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

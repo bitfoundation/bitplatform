@@ -111,10 +111,8 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <returns>The <see cref="string"/> representation of the underlying object.</returns>
     public override string ToString() => Value.ToString();
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static bool operator ==(BitChartObjectEnum left, BitChartObjectEnum right) =>
         EqualityComparer<object>.Default.Equals(left?.Value, right?.Value);
 
     public static bool operator !=(BitChartObjectEnum left, BitChartObjectEnum right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

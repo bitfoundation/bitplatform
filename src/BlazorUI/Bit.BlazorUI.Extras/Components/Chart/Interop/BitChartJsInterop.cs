@@ -119,8 +119,6 @@ internal static class BitChartJsInterop
         // Get back an ExpandoObject dynamic with the clean config - having an ExpandoObject allows us to add/replace members regardless of type
         ExpandoObject cleanChartConfig = JsonConvert.DeserializeObject<ExpandoObject>(cleanChartConfigStr, new ExpandoObjectConverter());
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
         // Restore any .net refs that need to be passed intact
         // TODO Find a way to do this dynamically. Maybe with attributes or something like that?
         dynamic dynamicChartConfig = (dynamic)chartConfig;
@@ -195,7 +193,5 @@ internal static class BitChartJsInterop
                 }
             }
         }
-
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

@@ -36,12 +36,10 @@ public readonly struct BitChartFloatingBarPoint : IEquatable<BitChartFloatingBar
         End = end;
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public override bool Equals(object obj) => obj is BitChartFloatingBarPoint point && Equals(point);
     public bool Equals(BitChartFloatingBarPoint other) => Start == other.Start && End == other.End;
     public override int GetHashCode() => HashCode.Combine(Start, End);
 
     public static bool operator ==(BitChartFloatingBarPoint left, BitChartFloatingBarPoint right) => left.Equals(right);
     public static bool operator !=(BitChartFloatingBarPoint left, BitChartFloatingBarPoint right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

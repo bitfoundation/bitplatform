@@ -157,9 +157,7 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     /// <summary>
     /// URL of the server endpoint removing the files.
     /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? RemoveUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
     /// Show/Hide after upload remove button.
@@ -184,9 +182,7 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     /// <summary>
     /// URL of the server endpoint receiving the files.
     /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? UploadUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
 
 
@@ -554,7 +550,6 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
     {
         if (Files is null) return;
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             if (index < 0)
@@ -576,7 +571,6 @@ public partial class BitFileUpload : IDisposable, IAsyncDisposable
             Files[index].Message = ex.ToString();
             await UpdateStatus(BitFileUploadStatus.RemoveFailed, index);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private async Task RemoveOneFile(int index)

@@ -48,12 +48,10 @@ public class BitChartChartData
     /// </summary>
     public IList<IBitChartDataset> Datasets { get; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     [Obsolete("json.net", true)]
     public bool ShouldSerializeLabels() => Labels?.Count > 0;
     [Obsolete("json.net", true)]
     public bool ShouldSerializeXLabels() => XLabels?.Count > 0;
     [Obsolete("json.net", true)]
     public bool ShouldSerializeYLabels() => YLabels?.Count > 0;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

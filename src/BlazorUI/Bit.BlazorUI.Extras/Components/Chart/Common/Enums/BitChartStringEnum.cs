@@ -82,7 +82,6 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <returns>The underlying <see cref="string"/> value.</returns>
     public override string ToString() => _value;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static bool operator ==(BitChartStringEnum left, BitChartStringEnum right) =>
         left?._value == right?._value;
 
@@ -90,5 +89,4 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
         left?._value != right?._value;
 
     public static explicit operator string(BitChartStringEnum stringEnum) => stringEnum._value;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

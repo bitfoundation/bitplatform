@@ -9,7 +9,6 @@
 /// </summary>
 public sealed class BitChartEasing : BitChartStringEnum
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static BitChartEasing Linear => new BitChartEasing("linear");
     public static BitChartEasing EaseInQuad => new BitChartEasing("easeInQuad");
     public static BitChartEasing EaseOutQuad => new BitChartEasing("easeOutQuad");
@@ -41,7 +40,6 @@ public sealed class BitChartEasing : BitChartStringEnum
     public static BitChartEasing EaseInBounce => new BitChartEasing("easeInBounce");
     public static BitChartEasing EaseOutBounce => new BitChartEasing("easeOutBounce");
     public static BitChartEasing EaseInOutBounce => new BitChartEasing("easeInOutBounce");
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
     private BitChartEasing(string stringRep) : base(stringRep) { }
 }

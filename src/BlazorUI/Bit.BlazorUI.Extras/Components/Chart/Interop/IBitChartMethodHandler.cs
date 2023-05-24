@@ -1,7 +1,5 @@
 ﻿namespace Bit.BlazorUI;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 /// <summary>
 /// Represents a type that's able to handle method calls coming from JavaScript.
 /// </summary>
@@ -11,8 +9,6 @@ public interface IBitChartMethodHandler<T> : IBitChartMethodHandler
     where T : Delegate
 {
 }
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
 /// <summary>
 /// Represents a type that's able to handle method calls coming from JavaScript.

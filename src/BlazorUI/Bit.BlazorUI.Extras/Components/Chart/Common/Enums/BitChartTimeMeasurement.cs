@@ -5,7 +5,6 @@
 /// </summary>
 public sealed class BitChartTimeMeasurement : BitChartStringEnum
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static BitChartTimeMeasurement Millisecond => new BitChartTimeMeasurement("millisecond");
     public static BitChartTimeMeasurement Second => new BitChartTimeMeasurement("second");
     public static BitChartTimeMeasurement Minute => new BitChartTimeMeasurement("minute");
@@ -15,7 +14,6 @@ public sealed class BitChartTimeMeasurement : BitChartStringEnum
     public static BitChartTimeMeasurement Month => new BitChartTimeMeasurement("month");
     public static BitChartTimeMeasurement Quarter => new BitChartTimeMeasurement("quarter");
     public static BitChartTimeMeasurement Year => new BitChartTimeMeasurement("year");
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
     private BitChartTimeMeasurement(string stringRep) : base(stringRep) { }
 }

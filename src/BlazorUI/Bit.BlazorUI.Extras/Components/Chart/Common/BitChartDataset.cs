@@ -73,10 +73,8 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     /// <returns>The hash code for this <see cref="BitChartDataset{T}"/>.</returns>
     public override int GetHashCode() => HashCode.Combine(Items, Id);
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static bool operator ==(BitChartDataset<T> left, BitChartDataset<T> right) =>
             EqualityComparer<BitChartDataset<T>>.Default.Equals(left, right);
 
     public static bool operator !=(BitChartDataset<T> left, BitChartDataset<T> right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

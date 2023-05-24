@@ -26,9 +26,7 @@ public partial class BitDateRangePicker
     private bool _isMonthPickerOverlayOnTop;
     private bool _showMonthPicker = true;
     private bool _showMonthPickerAsOverlayInternal;
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
-#pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
     private int _currentMonth;
     private int _currentYear;
     private int _displayYear;
