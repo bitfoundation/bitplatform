@@ -10,6 +10,13 @@
             @ComponentDescription
         </BitTypography>
     </section>
+    @if (Notes.HasValue())
+    {
+        <section id="notes-section" class="demo-section">
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Notes</BitTypography>
+         @Notes
+     </section>
+    }
     <section id="usage-section" class="demo-section">
         <BitTypography Variant="BitTypographyVariant.H4" Gutter>Usage</BitTypography>
         @ChildContent
