@@ -11,8 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.16" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.5" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
