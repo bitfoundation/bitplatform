@@ -80,6 +80,7 @@
 .right-section {
     gap: 1rem;
     display: flex;
+    align-items: center;
 }
 
 .github-btn {
@@ -98,6 +99,19 @@
     .menu-btn {
         @include gt-md {
             display: none;
+        }
+    }
+
+    .toggle-theme-btn {
+        padding: 0;
+        height: 35px;
+        min-width: 35px;
+        border-radius: 50%;
+    }
+
+    .fix-light-icon {
+        span {
+            padding: 3px 0px 0 1px;
         }
     }
 }
