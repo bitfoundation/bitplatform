@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.3" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.5" />
         <PackageReference Condition=" '$(TargetFramework)' != 'net7.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.32" />
-        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
         <PackageReference Condition=" '$(TargetFramework)' != 'net7.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.32" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />

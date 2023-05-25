@@ -1,4 +1,4 @@
-﻿using Hangfire.Redis;
+﻿using Hangfire.Redis.StackExchange;
 using StackExchange.Redis;
 
 namespace Bit.Hangfire.Implementations
