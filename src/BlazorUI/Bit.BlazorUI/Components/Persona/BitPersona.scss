@@ -602,19 +602,19 @@
 
 .bit-prs-online {
     .bit-prs-pre {
-        background-color: $color-general-green;
+        background-color: $color-state-success;
     }
 }
 
 .bit-prs-away {
     .bit-prs-pre {
-        background-color: $color-general-orange;
+        background-color: $color-state-warning;
     }
 }
 
 .bit-prs-blocked {
     .bit-prs-pre {
-        background-color: $color-general-red2;
+        background-color: $color-state-error;
 
         &::before {
             top: 0;
@@ -625,20 +625,20 @@
             position: absolute;
             border-radius: 50%;
             box-sizing: border-box;
-            border: spacing(0.25) $shape-border-style $color-general-red2;
+            border: spacing(0.25) $shape-border-style $color-state-error;
         }
     }
 }
 
 .bit-prs-busy {
     .bit-prs-pre {
-        background-color: $color-general-red2;
+        background-color: $color-state-error;
     }
 }
 
 .bit-prs-dnd {
     .bit-prs-pre {
-        background-color: $color-general-red3;
+        background-color: $color-state-error2;
     }
 }
 

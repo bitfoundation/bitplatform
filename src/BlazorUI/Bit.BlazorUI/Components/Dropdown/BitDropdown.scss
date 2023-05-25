@@ -531,7 +531,7 @@
     font-size: spacing(2);
     flex-direction: column;
     justify-content: center;
-    color: $color-general-blue;
+    color: $color-primary-main;
     transition: width 0.167s ease 0s;
 
     i {
@@ -540,7 +540,7 @@
         width: unset;
         height: unset;
         display: inline-block;
-        color: $color-general-blue;
+        color: $color-primary-main;
         transition: opacity 0.167s ease 0s;
     }
 }
@@ -601,7 +601,7 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     font-size: spacing(1.75);
-    color: $color-general-blue;
+    color: $color-primary-main;
     background-color: transparent;
     font-family: $typography-font-family;
     border-radius: 0 spacing(0.125) spacing(0.125) 0;
