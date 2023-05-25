@@ -1,5 +1,7 @@
 ﻿@page "/components/progress-indicator"
 
+<PageTitle>Bit BlazorUI - ProgressIndicator</PageTitle>
+
 <ComponentDemo ComponentName="ProgressIndicator"
                ComponentDescription="BitProgressIndicators are used to show the completion status of an operation lasting more than 2 seconds.
 If the state of progress cannot be determined, use a Spinner instead.
@@ -17,7 +19,7 @@ Bars moving backwards reduce confidence in the service."
                                   PercentComplete="@CompletedPercent"
                                   BarHeight="50" />
             <div>
-                <BitButton OnClick="@StartProgress">Start Progress</BitButton>
+                <BitButton OnClick="StartProgress">Start Progress</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -30,3 +32,30 @@ Bars moving backwards reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private int CompletedPercent;
+    private string Description = "Push button to start!";
+
+    private async Task StartProgress()
+    {
+        CompletedPercent = 0;
+
+        while (CompletedPercent <= 100)
+        {
+            if (CompletedPercent == 100)
+            {
+                Description = $"Completed !";
+                break;
+            }
+            else
+            {
+                CompletedPercent++;
+                Description = $"{CompletedPercent}%";
+            }
+
+            StateHasChanged();
+            await Task.Delay(100);
+        }
+    }
+}

@@ -9,6 +9,12 @@ public partial class BitFileUploadDemo
     {
         new()
         {
+            Name = "Accept",
+            Type = "string?",
+            Description = "The value of the accept attribute of the input element.",
+        },
+        new()
+        {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "new List<string> { \"*\" }",
@@ -27,6 +33,13 @@ public partial class BitFileUploadDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Automatically starts the upload file(s) process immediately after selecting the file(s)."
+        },
+        new()
+        {
+            Name = "ChunkedUploadEnabled",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Enables or disables the chunked upload feature."
         },
         new()
         {
@@ -188,16 +201,8 @@ public partial class BitFileUploadDemo
             Type = "string",
             DefaultValue = "",
             Description = "URL of the server endpoint receiving the files."
-        },
-        new()
-        {
-            Name = "EnableChunkedUpload",
-            Type = "bool",
-            DefaultValue = "",
-            Description = "Enables or disables the chunked upload feature."
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -205,7 +210,7 @@ public partial class BitFileUploadDemo
             Id = "uploadstatus-enum",
             Name = "BitFileUploadStatus",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -272,14 +277,11 @@ public partial class BitFileUploadDemo
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"FileUpload/RemoveFile";
 
-    [Inject] public IConfiguration Configuration { get; set; }
+    [Inject] public IConfiguration Configuration { get; set; } = default!;
 
 
     private readonly string example1HtmlCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" />";
     private readonly string example1CSharpCode = @"
 private string UploadUrl = $""/Upload"";
 ";
@@ -288,9 +290,7 @@ private string UploadUrl = $""/Upload"";
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+               UploadUrl=""@UploadUrl"" />";
     private readonly string example2CSharpCode = @"
 private string UploadUrl = $""/Upload"";
 private string RemoveUrl = $""/Remove"";
@@ -301,36 +301,28 @@ private string RemoveUrl = $""/Remove"";
                AutoUploadEnabled=""true""
                MaxSize=""1024 * 1024 * 100""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+               UploadUrl=""@UploadUrl"" />";
 
     private readonly string example4HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""false""
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+               UploadUrl=""@UploadUrl"" />";
 
     private readonly string example5HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
-            Label=""Select or drag and drop files""
-            UploadUrl=""@UploadUrl""
-            RemoveUrl=""@RemoveUrl""
-            ShowRemoveButton=""true"">
-</BitFileUpload>
-";
+               Label=""Select or drag and drop files""
+               UploadUrl=""@UploadUrl""
+               RemoveUrl=""@RemoveUrl""
+               ShowRemoveButton=""true"" />";
 
     private readonly string example6HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
                Label=""Select or drag and drop files""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+               UploadUrl=""@UploadUrl"" />";
 
     private readonly string example7HtmlCode = @"
 <BitFileUpload IsMultiSelect=""true""
@@ -340,14 +332,10 @@ private string RemoveUrl = $""/Remove"";
                UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
                RemoveUrl=""@RemoveUrl""
                RemoveRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header2"", ""value2"" } })""
-               RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })"">
-</BitFileUpload>
-";
+               RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })"" />";
 
     private readonly string example8HtmlCode = @"
 <BitFileUpload Label=""Select or drag and drop files""
-               EnableChunkedUpload=""false""
-               UploadUrl=""@UploadUrl"">
-</BitFileUpload>
-";
+               ChunkedUploadEnabled=""false""
+               UploadUrl=""@UploadUrl"" />";
 }

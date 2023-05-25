@@ -1,670 +1,14 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-dtrp {
-    position: relative;
     margin: 0;
     padding: 0;
     box-shadow: none;
+    font-weight: 400;
+    position: relative;
     box-sizing: border-box;
     font-size: spacing(2.25);
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
     font-family: $typography-font-family;
-
-    .bit-dtrp-lbl {
-        display: block;
-        padding: spacing(0.625) 0;
-        margin: 0;
-        box-shadow: none;
-        box-sizing: border-box;
-        font-size: spacing(1.75);
-        font-weight: 600;
-        color: $color-neutrals-gray160;
-        overflow-wrap: break-word;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    .bit-dtrp-wrp {
-        position: relative;
-
-        .bit-dtrp-fld-grp {
-            .bit-icon {
-                cursor: pointer;
-                color: $color-neutrals-gray130;
-                padding-left: spacing(1);
-                padding-right: 0;
-            }
-
-            input {
-                cursor: pointer;
-            }
-        }
-    }
-
-    .bit-dtrp-fld-grp {
-        position: relative;
-        display: flex;
-        flex-flow: row nowrap;
-        align-items: center;
-        gap: spacing(1);
-        height: spacing(4);
-        margin: 0;
-        padding: 0 spacing(1);
-        box-shadow: none;
-        border-radius: $shape-border-radius;
-        border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-        box-sizing: border-box;
-        background-color: $color-background-primary;
-        cursor: pointer;
-
-        input {
-            width: 100%;
-            min-width: 0;
-            height: 100%;
-            border: none;
-            border-radius: 0;
-            outline: 0;
-            padding: 0;
-            margin: 0;
-            box-shadow: none;
-            box-sizing: border-box;
-            background: none transparent;
-            font-size: spacing(1.75);
-            font-weight: 400;
-            color: $color-neutrals-gray160;
-            text-overflow: ellipsis;
-            font-family: $typography-font-family;
-            -webkit-font-smoothing: antialiased;
-            cursor: pointer;
-        }
-
-        &.bit-dtrp-edt-inp {
-            input {
-                cursor: default;
-            }
-        }
-    }
-
-    &.bit-dtrp-lfic {
-        .bit-dtrp-fld-grp {
-            flex-direction: row-reverse;
-
-            .bit-icon {
-                padding-left: 0;
-                padding-right: spacing(1);
-            }
-        }
-    }
-
-    &.bit-dtrp-foc {
-        .bit-dtrp-fld-grp::after {
-            position: absolute;
-            inset: spacing(-0.125);
-            border: spacing(0.25) $shape-border-style $color-border-primary;
-            border-radius: $shape-border-radius;
-            content: "";
-            pointer-events: none;
-        }
-    }
-
-    .bit-dtrp-cal {
-        position: fixed;
-        top: spacing(4.25);
-        z-index: $space-overlay-zindex1;
-        display: none;
-        border-radius: $shape-border-radius;
-        box-shadow: rgba(0,0,0,0.13) 0px spacing(0.375) spacing(0.875) 0, rgba(0,0,0,0.11) 0 spacing(0.125) spacing(0.25) 0;
-        outline: transparent;
-        box-sizing: border-box;
-        font-size: spacing(1.75);
-        font-weight: 400;
-        font-family: $typography-font-family;
-        -webkit-font-smoothing: antialiased;
-
-        &.bit-dtrp-rsp {
-            @media only screen and (max-width: 600px) {
-                .bit-dtrp-dwp {
-                    flex-grow: 1;
-
-                    th, td {
-                        width: calc(100%/7);
-                        margin: auto;
-                        font-size: spacing(2);
-
-                        .bit-dtrp-dbtn {
-                            width: 100%;
-                            font-size: spacing(2);
-
-                            span {
-                                width: 100%;
-                                height: spacing(6);
-                            }
-                        }
-
-                        &.bit-dtrp-dc-tdy {
-                            border-radius: unset;
-
-                            &::after {
-                                border-radius: unset;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    .bit-dtrp-mcal {
-        position: relative;
-        border-radius: $shape-border-radius;
-        outline: none;
-        background-color: $color-background-primary;
-        overflow: hidden auto;
-    }
-
-    .bit-dtrp-grp {
-        display: flex;
-        box-shadow: none;
-        outline: none;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        animation-name: bit-fade-in, bit-slide-down;
-        animation-duration: 167ms;
-        animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-        animation-fill-mode: both;
-
-        .bit-dtrp-sd {
-            position: absolute;
-            width: spacing(0.125);
-            height: 0;
-            border: 0;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-    }
-
-    .bit-dtrp-dwp {
-        display: flex;
-        flex-flow: column nowrap;
-        min-width: spacing(24.5);
-        margin: 0;
-        padding: spacing(1.5);
-        box-shadow: none;
-        box-sizing: content-box;
-
-        table {
-            position: relative;
-            text-align: center;
-            border-collapse: collapse;
-            border-spacing: 0;
-            table-layout: fixed;
-            font-size: inherit;
-            margin-top: spacing(0.5);
-            margin-bottom: spacing(1.25);
-        }
-
-        .bit-dtrp-wd-lbl {
-            position: relative;
-            width: spacing(3.5);
-            height: spacing(3.5);
-            margin: 0;
-            padding: 0;
-            border: none;
-            font-weight: 400;
-            font-size: spacing(1.5);
-            line-height: spacing(3.5);
-            text-align: center;
-            color: $color-neutrals-gray160;
-            cursor: pointer;
-            animation-name: bit-fade-in;
-            animation-duration: 0.267s;
-            animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-            animation-fill-mode: both;
-        }
-
-        tr {
-            width: 100%;
-            display: flex;
-            flex-flow: row nowrap;
-        }
-
-        .bit-dtrp-dc {
-            position: relative;
-            border-radius: $shape-border-radius;
-            border: none;
-            margin: 0;
-            padding: 0;
-            font-size: spacing(1.5);
-            font-weight: 400;
-            line-height: spacing(3.5);
-            text-align: center;
-            color: $color-neutrals-gray160;
-            cursor: pointer;
-
-            &:hover {
-                background-color: $color-neutrals-gray30;
-            }
-        }
-
-        .bit-dtrp-dbtn {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            padding: 0;
-            border-radius: $shape-border-radius;
-            outline: transparent;
-            border: none;
-            box-sizing: border-box;
-            line-height: spacing(3);
-            font-size: spacing(1.5);
-            font-weight: inherit;
-            color: inherit;
-            background-color: transparent;
-            overflow: visible;
-            cursor: pointer;
-
-            &:disabled {
-                pointer-events: none;
-                background-color: transparent;
-                color: $color-neutrals-gray60;
-            }
-
-            span {
-                display: inline-flex;
-                justify-content: center;
-                align-items: center;
-                width: spacing(3.5);
-                height: spacing(3.5);
-            }
-        }
-
-        .bit-dtrp-dc-ots-m {
-            .bit-dtrp-dbtn {
-                color: $color-neutrals-gray110;
-                font-weight: 400;
-            }
-        }
-
-        .bit-dtrp-dc-tdy {
-            border-radius: 50%;
-            font-weight: 600;
-            background-color: $color-neutrals-gray30;
-
-            &::after {
-                content: "";
-                position: absolute;
-                inset: 0;
-                border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-                border-radius: 50%;
-            }
-        }
-
-        .bit-dtrp-dc-sel-st {
-            background-color: $color-primary-main;
-            color: $color-neutrals-white;
-            border-radius: spacing(1) 0 0 spacing(1);
-
-            &:hover {
-                background-color: $color-primary-main;
-                color: $color-neutrals-white;
-            }
-        }
-
-        .bit-dtrp-dc-sel-en {
-            background-color: $color-primary-main;
-            color: $color-neutrals-white;
-            border-radius: 0 spacing(1) spacing(1) 0;
-
-            &:hover {
-                background-color: $color-primary-main;
-                color: $color-neutrals-white;
-            }
-        }
-
-        .bit-dtrp-dc-sel-st-en {
-            border-radius: spacing(1);
-        }
-
-        .bit-dtrp-dc-btw-sel {
-            background-color: $color-general-lightblue;
-            border-radius: 0;
-
-            &:hover {
-                background-color: $color-general-lightblue;
-            }
-        }
-
-        .bit-dtrp-wnumc {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: spacing(3.5);
-            height: spacing(3.5);
-            margin: 0;
-            padding: spacing(0.375) 0 0 0;
-            border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
-            box-sizing: border-box;
-            font-weight: 400;
-            font-size: spacing(1.5);
-            color: $color-neutrals-gray130;
-            background-color: $color-neutrals-gray10;
-        }
-    }
-
-    .bit-dtrp-pkr-hdr {
-        position: relative;
-        display: inline-flex;
-        width: 100%;
-        height: spacing(3.5);
-        line-height: spacing(5.5);
-
-        .bit-dtrp-pkr-tit {
-            position: relative;
-            display: inline-block;
-            align-items: center;
-            flex-grow: 1;
-            padding: 0 spacing(0.5) 0 spacing(1.25);
-            margin: 0;
-            outline: transparent;
-            border: none;
-            border-radius: $shape-border-radius;
-            font-size: spacing(1.75);
-            font-weight: 600;
-            line-height: spacing(3.5);
-            white-space: nowrap;
-            text-align: left;
-            text-overflow: ellipsis;
-            color: $color-neutrals-gray160;
-            background-color: transparent;
-            overflow: hidden;
-            cursor: text;
-            animation-name: bit-fade-show;
-            animation-duration: 0.267s;
-            animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
-            animation-fill-mode: both;
-        }
-
-        button.bit-dtrp-pkr-tit {
-            cursor: pointer;
-
-            &:hover {
-                background-color: $color-neutrals-gray30;
-            }
-        }
-
-        .bit-dtrp-nav-btn-ctn {
-            display: flex;
-            align-items: center;
-            align-self: flex-end;
-        }
-
-        .bit-dtrp-nav-btn {
-            position: relative;
-            display: block;
-            width: spacing(3.5);
-            height: spacing(3.5);
-            min-width: spacing(3.5);
-            min-height: spacing(3.5);
-            padding: 0;
-            border-radius: $shape-border-radius;
-            border: none;
-            outline: transparent;
-            font-size: spacing(1.5);
-            line-height: spacing(3.5);
-            text-align: center;
-            color: $color-neutrals-gray160;
-            background-color: transparent;
-            overflow: visible;
-            cursor: pointer;
-
-            &:hover {
-                background-color: $color-neutrals-gray30;
-            }
-
-            &:disabled {
-                pointer-events: none;
-                background-color: transparent;
-
-                i {
-                    color: $color-neutrals-gray60;
-                }
-            }
-
-            i {
-                display: inline-block;
-                speak: none;
-                -webkit-font-smoothing: antialiased;
-            }
-        }
-
-        .bit-dtrp-hdr-ibtn {
-            position: relative;
-            display: block;
-            width: spacing(3.5);
-            height: spacing(3.5);
-            min-width: spacing(3.5);
-            min-height: spacing(3.5);
-            padding: 0;
-            border-radius: $shape-border-radius;
-            border: none;
-            outline: transparent;
-            font-size: spacing(1.5);
-            line-height: spacing(3.5);
-            text-align: center;
-            color: $color-neutrals-gray160;
-            background-color: transparent;
-            overflow: visible;
-            cursor: pointer;
-
-            &:hover {
-                background-color: $color-neutrals-gray30;
-            }
-
-            span {
-                i {
-                    font-size: spacing(1.5);
-                }
-            }
-        }
-    }
-
-    .bit-dtrp-div {
-        top: 0;
-        border-right: $shape-border-width $shape-border-style $color-neutrals-gray30;
-    }
-
-    .bit-dtrp-mwp {
-        display: flex;
-        flex-flow: column nowrap;
-        box-shadow: none;
-        margin: 0;
-        padding: spacing(1.5);
-        box-sizing: content-box;
-        width: spacing(26);
-        overflow: hidden;
-
-        .bit-dtrp-gctn {
-            margin-top: spacing(0.5);
-            margin-bottom: spacing(1.5);
-        }
-
-        .bit-dtrp-btn-row {
-            display: flex;
-            justify-content: space-evenly;
-            margin-bottom: spacing(2);
-
-            button {
-                position: relative;
-                width: spacing(7);
-                max-width: spacing(7);
-                padding: 0 spacing(1.25);
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                outline: transparent;
-                border: none;
-                border-radius: $shape-border-radius;
-                font-size: spacing(1.5);
-                line-height: spacing(5);
-                color: $color-neutrals-gray160;
-                background-color: transparent;
-                cursor: pointer;
-
-                &:hover {
-                    background-color: $color-neutrals-gray30;
-                }
-
-                &:disabled {
-                    pointer-events: none;
-                    background-color: transparent;
-                    color: $color-neutrals-gray60;
-                }
-            }
-
-            &:last-child {
-                margin: 0;
-            }
-
-            .bit-dtrp-crtm {
-                color: $color-neutrals-white;
-                background-color: $color-primary-main;
-
-                &:hover {
-                    color: $color-neutrals-gray160;
-                    background-color: $color-primary-main;
-                }
-            }
-
-            .bit-dtrp-selm {
-                color: $color-neutrals-gray160;
-                background-color: $color-general-lightblue;
-                font-weight: 600;
-
-                &:hover {
-                    color: $color-neutrals-gray160;
-                    background-color: $color-general-lightblue;
-                }
-            }
-        }
-    }
-
-    .bit-dtrp-tgrp {
-        display: flex;
-        padding-bottom: spacing(0.5);
-        justify-content: center;
-        align-items: center;
-        gap: spacing(2);
-
-        .bit-dtrp-twp {
-            border-radius: $shape-border-radius;
-            border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-            background-color: $color-background-primary;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            &:focus {
-                outline: none;
-                border: spacing(0.25) $shape-border-style $color-primary-main;
-            }
-        }
-
-        .bit-dtrp-tdiv {
-            display: block;
-        }
-
-        .bit-dtrp-tinp {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: spacing(3.75);
-            height: spacing(3.75);
-            box-sizing: border-box;
-            background-color: $color-background-primary;
-            cursor: pointer;
-            text-align: center;
-            -moz-appearance: textfield; // Firefox
-            border: none;
-
-            &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { // Chrome, Safari, Edge, Opera
-                -webkit-appearance: none
-            }
-
-            &:focus {
-                outline: none;
-                border: none;
-            }
-        }
-    }
-
-    .bit-dtrp-gtd-btn {
-        position: relative;
-        bottom: spacing(-1.5);
-        align-self: flex-end;
-        height: spacing(3.75);
-        padding: 0 spacing(0.5);
-        margin: spacing(0.375) spacing(0.5) 0 0;
-        border: none;
-        outline: transparent;
-        box-sizing: content-box;
-        font-size: spacing(1.5);
-        line-height: spacing(3.75);
-        color: $color-neutrals-gray160;
-        background-color: transparent;
-        overflow: visible;
-
-        &:hover {
-            color: $color-primary-main;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        &:disabled {
-            color: $color-neutrals-gray60;
-            pointer-events: none;
-        }
-    }
-
-    .bit-dtrp-ovl {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: $space-overlay-zindex0;
-        display: none;
-        width: 100%;
-        height: 100%;
-        background-color: transparent;
-    }
-
-    &.bit-dtrp-und {
-        .bit-dtrp-wrp {
-            display: flex;
-            width: 100%;
-            border-bottom: $shape-border-width $shape-border-style $color-neutrals-gray20;
-        }
-
-        .bit-dtrp-fld-grp {
-            border: none;
-            flex: 1 1 0px;
-            text-align: left;
-        }
-
-        &.bit-dis {
-            .bit-dtrp-wrp {
-                border-bottom-color: $color-border-disabled;
-            }
-        }
-
-        &.bit-dtrp-foc {
-            .bit-dtrp-fld-grp::after {
-                border: none;
-                border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
-                border-radius: 0;
-            }
-        }
-    }
 
     &.bit-dis {
         .bit-dtrp-lbl {
@@ -672,53 +16,21 @@
         }
 
         .bit-dtrp-fld-grp {
-            border: $shape-border-width $shape-border-style $color-border-disabled;
-            color: $color-text-disabled;
             cursor: default;
-            background: none $color-neutrals-gray20;
             pointer-events: none;
+            color: $color-text-disabled;
+            background: none $color-background-disabled;
+            border: $shape-border-width $shape-border-style $color-border-disabled;
 
             .bit-icon {
-                color: $color-text-disabled;
                 cursor: default;
+                color: $color-text-disabled;
             }
 
             input {
-                color: $color-text-disabled;
-                background: none $color-neutrals-gray20;
                 cursor: default;
-            }
-        }
-    }
-
-    &.bit-dtrp-no-brd {
-        .bit-dtrp-fld-grp {
-            border: none;
-        }
-    }
-
-    &.bit-dtrp-rtl {
-        .bit-dtrp-grp {
-            direction: rtl;
-        }
-
-        .bit-dtrp-wnumc {
-            border-left: $shape-border-width $shape-border-style $color-neutrals-gray30;
-            border-right: none;
-        }
-
-        .bit-dtrp-pkr-tit {
-            padding: 0 spacing(1.25) 0 spacing(0.5);
-            text-align: right;
-        }
-
-        .bit-dtrp-dwp {
-            .bit-dtrp-dc-sel-st {
-                border-radius: 0 spacing(1) spacing(1) 0;
-            }
-
-            .bit-dtrp-dc-sel-en {
-                border-radius: spacing(1) 0 0 spacing(1);
+                color: $color-text-disabled;
+                background: none $color-background-disabled;
             }
         }
     }
@@ -726,6 +38,706 @@
     &.bit-inv {
         .bit-dtrp-fld-grp {
             border-color: $color-state-invalid;
+        }
+    }
+}
+
+.bit-dtrp-lbl {
+    margin: 0;
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $color-text-primary2;
+}
+
+.bit-dtrp-wrp {
+    position: relative;
+}
+
+.bit-dtrp-fld-grp {
+    margin: 0;
+    display: flex;
+    gap: spacing(1);
+    cursor: pointer;
+    box-shadow: none;
+    height: spacing(4);
+    position: relative;
+    align-items: center;
+    padding: 0 spacing(1);
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
+
+    input {
+        margin: 0;
+        outline: 0;
+        padding: 0;
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        border: none;
+        cursor: pointer;
+        box-shadow: none;
+        font-weight: 400;
+        border-radius: 0;
+        box-sizing: border-box;
+        text-overflow: ellipsis;
+        font-size: spacing(1.75);
+        background: none transparent;
+        color: $color-text-primary2;
+        font-family: $typography-font-family;
+    }
+
+    .bit-icon {
+        cursor: pointer;
+        padding-right: 0;
+        padding-left: spacing(1);
+        color: $color-text-primary3;
+    }
+}
+
+.bit-dtrp-edt-inp {
+    input {
+        cursor: default;
+    }
+}
+
+.bit-dtrp-lfic {
+    .bit-dtrp-fld-grp {
+        flex-direction: row-reverse;
+
+        .bit-icon {
+            padding-left: 0;
+            padding-right: spacing(1);
+        }
+    }
+}
+
+.bit-dtrp-foc {
+    .bit-dtrp-fld-grp::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        inset: spacing(-0.125);
+        border-radius: $shape-border-radius;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-dtrp-cal {
+    display: none;
+    position: fixed;
+    font-weight: 400;
+    top: spacing(4.25);
+    outline: transparent;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    box-shadow: $shadow-callout;
+    z-index: $space-overlay-zindex1;
+    border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+}
+
+.bit-dtrp-rsp {
+    @media only screen and (max-width: 600px) {
+        .bit-dtrp-dwp {
+            flex-grow: 1;
+
+            th, td {
+                margin: auto;
+                width: calc(100%/7);
+                font-size: spacing(2);
+
+                .bit-dtrp-dbtn {
+                    width: 100%;
+                    font-size: spacing(2);
+
+                    span {
+                        width: 100%;
+                        height: spacing(6);
+                    }
+                }
+
+                &.bit-dtrp-dc-tdy {
+                    border-radius: unset;
+
+                    &::after {
+                        border-radius: unset;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.bit-dtrp-mcal {
+    outline: none;
+    position: relative;
+    overflow: hidden auto;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+}
+
+.bit-dtrp-grp {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    outline: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    animation-duration: 167ms;
+    animation-fill-mode: both;
+    animation-name: bit-fade-in, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.bit-dtrp-sd {
+    height: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    width: spacing(0.125);
+}
+
+.bit-dtrp-dwp {
+    margin: 0;
+    display: flex;
+    box-shadow: none;
+    padding: spacing(1.5);
+    box-sizing: content-box;
+    flex-flow: column nowrap;
+    min-width: spacing(24.5);
+
+    table {
+        position: relative;
+        text-align: center;
+        border-collapse: collapse;
+        border-spacing: 0;
+        table-layout: fixed;
+        font-size: inherit;
+        margin-top: spacing(0.5);
+        margin-bottom: spacing(1.25);
+    }
+
+    tr {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+    }
+}
+
+.bit-dtrp-wd-lbl {
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    position: relative;
+    text-align: center;
+    width: spacing(3.5);
+    height: spacing(3.5);
+    font-size: spacing(1.5);
+    line-height: spacing(3.5);
+    animation-fill-mode: both;
+    animation-duration: 0.267s;
+    color: $color-text-primary2;
+    animation-name: bit-fade-in;
+    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+}
+
+.bit-dtrp-dc {
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    position: relative;
+    text-align: center;
+    font-size: spacing(1.5);
+    line-height: spacing(3.5);
+    color: $color-text-primary;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+}
+
+.bit-dtrp-dbtn {
+    padding: 0;
+    z-index: 1;
+    border: none;
+    display: flex;
+    color: inherit;
+    cursor: pointer;
+    overflow: visible;
+    position: relative;
+    outline: transparent;
+    font-weight: inherit;
+    box-sizing: border-box;
+    line-height: spacing(3);
+    font-size: spacing(1.5);
+    background-color: transparent;
+    border-radius: $shape-border-radius;
+
+    &:disabled {
+        pointer-events: none;
+        color: $color-text-disabled;
+        background-color: transparent;
+    }
+
+    span {
+        width: spacing(3.5);
+        align-items: center;
+        display: inline-flex;
+        height: spacing(3.5);
+        justify-content: center;
+    }
+}
+
+.bit-dtrp-dc-ots-m {
+    .bit-dtrp-dbtn {
+        font-weight: 400;
+        color: $color-text-primary3;
+    }
+}
+
+.bit-dtrp-dc-tdy {
+    font-weight: 600;
+    border-radius: 50%;
+    background-color: $color-background-primary2;
+
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        border: $shape-border-width $shape-border-style $color-border-primary2;
+    }
+}
+
+.bit-dtrp-dc-sel-st {
+    color: $color-secondary-main;
+    background-color: $color-primary-main;
+    border-radius: spacing(1) 0 0 spacing(1);
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-secondary;
+            background-color: $color-action-hover-primary;
+        }
+    }
+}
+
+.bit-dtrp-dc-sel-en {
+    color: $color-secondary-main;
+    background-color: $color-primary-main;
+    border-radius: 0 spacing(1) spacing(1) 0;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-secondary;
+            background-color: $color-action-hover-primary;
+        }
+    }
+}
+
+.bit-dtrp-dc-sel-st-en {
+    border-radius: spacing(1);
+}
+
+.bit-dtrp-dc-btw-sel {
+    border-radius: 0;
+    background-color: $color-primary-higher;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-primary-high;
+        }
+    }
+}
+
+.bit-dtrp-wnumc {
+    margin: 0;
+    display: flex;
+    font-weight: 400;
+    align-items: center;
+    width: spacing(3.5);
+    height: spacing(3.5);
+    box-sizing: border-box;
+    font-size: spacing(1.5);
+    justify-content: center;
+    padding: spacing(0.375) 0 0 0;
+    color: $color-text-primary2;
+    background-color: $color-background-primary2;
+    border-right: $shape-border-width $shape-border-style $color-border-secondary2;
+}
+
+.bit-dtrp-pkr-hdr {
+    width: 100%;
+    position: relative;
+    display: inline-flex;
+    height: spacing(3.5);
+    line-height: spacing(5.5);
+
+    button.bit-dtrp-pkr-tit {
+        cursor: pointer;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary2;
+            }
+        }
+    }
+}
+
+.bit-dtrp-pkr-tit {
+    margin: 0;
+    border: none;
+    cursor: text;
+    flex-grow: 1;
+    text-align: left;
+    overflow: hidden;
+    font-weight: 600;
+    position: relative;
+    align-items: center;
+    white-space: nowrap;
+    outline: transparent;
+    display: inline-block;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    line-height: spacing(3.5);
+    animation-fill-mode: both;
+    animation-duration: 0.267s;
+    color: $color-text-primary2;
+    animation-name: bit-fade-show;
+    background-color: transparent;
+    border-radius: $shape-border-radius;
+    padding: 0 spacing(0.5) 0 spacing(1.25);
+    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+}
+
+.bit-dtrp-nav-btn-ctn {
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+}
+
+.bit-dtrp-nav-btn {
+    padding: 0;
+    border: none;
+    display: block;
+    cursor: pointer;
+    overflow: visible;
+    position: relative;
+    text-align: center;
+    width: spacing(3.5);
+    height: spacing(3.5);
+    outline: transparent;
+    font-size: spacing(1.5);
+    min-width: spacing(3.5);
+    min-height: spacing(3.5);
+    line-height: spacing(3.5);
+    color: $color-text-primary2;
+    background-color: transparent;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+
+    i {
+        speak: none;
+        display: inline-block;
+    }
+
+    &:disabled {
+        pointer-events: none;
+        background-color: transparent;
+
+        i {
+            color: $color-text-disabled;
+        }
+    }
+}
+
+.bit-dtrp-hdr-ibtn {
+    padding: 0;
+    border: none;
+    display: block;
+    cursor: pointer;
+    overflow: visible;
+    position: relative;
+    text-align: center;
+    width: spacing(3.5);
+    height: spacing(3.5);
+    outline: transparent;
+    min-width: spacing(3.5);
+    font-size: spacing(1.5);
+    min-height: spacing(3.5);
+    line-height: spacing(3.5);
+    color: $color-text-primary2;
+    background-color: transparent;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+
+    span {
+        i {
+            font-size: spacing(1.5);
+        }
+    }
+}
+
+.bit-dtrp-div {
+    top: 0;
+    border-right: $shape-border-width $shape-border-style $color-border-secondary2;
+}
+
+.bit-dtrp-mwp {
+    margin: 0;
+    display: flex;
+    overflow: hidden;
+    box-shadow: none;
+    width: spacing(26);
+    padding: spacing(1.5);
+    box-sizing: content-box;
+    flex-flow: column nowrap;
+}
+
+.bit-dtrp-gctn {
+    margin-top: spacing(0.5);
+    margin-bottom: spacing(1.5);
+}
+
+.bit-dtrp-btn-row {
+    display: flex;
+    margin-bottom: spacing(2);
+    justify-content: space-evenly;
+
+    button {
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        width: spacing(7);
+        position: relative;
+        white-space: nowrap;
+        outline: transparent;
+        max-width: spacing(7);
+        font-size: spacing(1.5);
+        line-height: spacing(5);
+        text-overflow: ellipsis;
+        padding: 0 spacing(1.25);
+        color: $color-text-primary2;
+        background-color: transparent;
+        border-radius: $shape-border-radius;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-background-primary;
+            }
+        }
+
+        &:disabled {
+            pointer-events: none;
+            color: $color-text-disabled;
+            background-color: transparent;
+        }
+    }
+
+    &:last-child {
+        margin: 0;
+    }
+}
+
+.bit-dtrp-crtm {
+    color: $color-secondary-main;
+    background-color: $color-primary-main;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-secondary;
+            background-color: $color-action-hover-primary;
+        }
+    }
+}
+
+.bit-dtrp-selm {
+    font-weight: 600;
+    color: $color-secondary-higher;
+    background-color: $color-primary-higher;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-secondary-high;
+            background-color: $color-primary-high;
+        }
+    }
+}
+
+.bit-dtrp-tgrp {
+    display: flex;
+    gap: spacing(2);
+    align-items: center;
+    justify-content: center;
+    padding-bottom: spacing(0.5);
+}
+
+.bit-dtrp-twp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
+
+    &:focus {
+        outline: none;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-dtrp-tdiv {
+    display: block;
+}
+
+.bit-dtrp-tinp {
+    border: none;
+    display: flex;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    box-sizing: border-box;
+    justify-content: center;
+    -moz-appearance: textfield; // Firefox
+    background-color: $color-background-primary;
+
+    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none
+    }
+
+    &:focus {
+        border: none;
+        outline: none;
+    }
+}
+
+.bit-dtrp-gtd-btn {
+    border: none;
+    overflow: visible;
+    position: relative;
+    outline: transparent;
+    align-self: flex-end;
+    bottom: spacing(-1.5);
+    height: spacing(3.75);
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.5);
+    box-sizing: content-box;
+    line-height: spacing(3.75);
+    color: $color-text-primary2;
+    background-color: transparent;
+    margin: spacing(0.375) spacing(0.5) 0 0;
+
+    @media (hover: hover) {
+        &:hover {
+            cursor: pointer;
+            background-color: transparent;
+            color: $color-action-hover-primary;
+        }
+    }
+
+    &:disabled {
+        pointer-events: none;
+        color: $color-text-disabled;
+    }
+}
+
+.bit-dtrp-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    background-color: transparent;
+    z-index: $space-overlay-zindex0;
+}
+
+.bit-dtrp-und {
+    .bit-dtrp-wrp {
+        width: 100%;
+        display: flex;
+        border-bottom: $shape-border-width $shape-border-style $color-border-secondary2;
+    }
+
+    .bit-dtrp-fld-grp {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
+
+    &.bit-dis {
+        .bit-dtrp-wrp {
+            border-bottom-color: $color-border-disabled;
+        }
+    }
+
+    &.bit-dtrp-foc {
+        .bit-dtrp-fld-grp::after {
+            border: none;
+            border-radius: 0;
+            border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
+        }
+    }
+}
+
+.bit-dtrp-no-brd {
+    .bit-dtrp-fld-grp {
+        border: none;
+    }
+}
+
+.bit-dtrp-rtl {
+    .bit-dtrp-grp {
+        direction: rtl;
+    }
+
+    .bit-dtrp-wnumc {
+        border-right: none;
+        border-left: $shape-border-width $shape-border-style $color-border-secondary2;
+    }
+
+    .bit-dtrp-pkr-tit {
+        text-align: right;
+        padding: 0 spacing(1.25) 0 spacing(0.5);
+    }
+
+    .bit-dtrp-dwp {
+        .bit-dtrp-dc-sel-st {
+            border-radius: 0 spacing(1) spacing(1) 0;
+        }
+
+        .bit-dtrp-dc-sel-en {
+            border-radius: spacing(1) 0 0 spacing(1);
         }
     }
 }

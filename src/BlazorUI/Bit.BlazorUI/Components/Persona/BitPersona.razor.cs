@@ -49,7 +49,6 @@ public partial class BitPersona
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter]
-#pragma warning disable CA1056 // URI-like properties should not be strings
     public string? ImageUrl
     {
         get => imageUrl;
@@ -61,7 +60,6 @@ public partial class BitPersona
             _hasError = false;
         }
     }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -163,6 +161,19 @@ public partial class BitPersona
     [Parameter] public RenderFragment? ImageOverlayFragment { get; set; }
 
 
+    protected override string RootElementClass => "bit-prs";
+
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => Size.HasValue() ? $"{RootElementClass}-{Size}" : string.Empty);
+
+        ClassBuilder.Register(() => OnImageClick.HasDelegate ? $"{RootElementClass}-img-act" : string.Empty);
+
+        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None
+                                        ? $"{RootElementClass}-{Presence.ToString().ToLowerInvariant()}"
+                                        : string.Empty);
+    }
+
     protected override Task OnParametersSetAsync()
     {
         if (CoinSize != -1)
@@ -181,17 +192,6 @@ public partial class BitPersona
         _internalInitials = ImageInitials ?? GetInitials();
 
         return base.OnParametersSetAsync();
-    }
-
-    protected override string RootElementClass => "bit-prs";
-
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => Size.HasValue() ? $"size-{Size}" : string.Empty);
-
-        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "img-act" : string.Empty);
-
-        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None ? Presence.ToString() : string.Empty);
     }
 
     private string DetermineIcon()

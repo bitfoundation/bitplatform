@@ -1277,6 +1277,15 @@ namespace Bit.BlazorUI.Demo.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Terms.
+        /// </summary>
+        public static string TermsTitle {
+            get {
+                return ResourceManager.GetString("TermsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Title.
         /// </summary>
         public static string Title {

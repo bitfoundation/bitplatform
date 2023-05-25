@@ -1,0 +1,80 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+
+.page-container {
+    width: 100%;
+}
+
+.page-section {
+    width: 100%;
+    padding: rem(28px);
+    position: relative;
+    box-sizing: border-box;
+    border-radius: rem(4px);
+    margin-bottom: rem(28px);
+    background-clip: padding-box;
+    background-color: $bit-color-background-primary2;
+    border: rem(1px) solid $bit-color-background-primary3;
+}
+
+.icon-list {
+    width: 100%;
+    height: rem(369px);
+    display: flex;
+    overflow: auto;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    &::-webkit-scrollbar {
+        width: rem(6.5px);
+        height: rem(6.5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem(8px);
+        background-color: $bit-color-background-secondary3;
+    }
+}
+
+.icon-box {
+    cursor: help;
+    display: flex;
+    width: rem(80px);
+    margin: rem(10px);
+    overflow: visible;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    .icon-name {
+        opacity: 0;
+        font-size: rem(11px);
+        margin-top: rem(8px);
+    }
+
+    &:hover {
+        .icon-name {
+            opacity: 1;
+        }
+    }
+}
+
+.empty-list {
+    width: 100%;
+    height: rem(144px);
+}
+
+::deep {
+    .bit-icon--iconography {
+        font-size: 2.25rem !important;
+    }
+
+    .iconography-search-box {
+        max-width: rem(300px);
+        margin-bottom: rem(50px);
+    }
+}

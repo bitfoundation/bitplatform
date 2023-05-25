@@ -151,15 +151,15 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
 
-        var labelPositionClass = labelPosition == BitSpinButtonLabelPosition.Left ? "left" : "top";
+        var labelPositionClass = labelPosition == BitSpinButtonLabelPosition.Left ? "lf" : "tp";
 
         var spinButton = component.Find(".bit-spb");
-        Assert.IsTrue(spinButton.ClassList.Contains($"label-{labelPositionClass}"));
+        Assert.IsTrue(spinButton.ClassList.Contains($"bit-spb-l{labelPositionClass}"));
     }
 
     [DataTestMethod,
         DataRow("dir", "ltr"),
-        DataRow("type", "number")
+        DataRow("foo", "bar")
     ]
     public void BitSpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
     {
@@ -188,7 +188,7 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
         });
 
-        var spbWrapper = component.Find(".wrapper");
+        var spbWrapper = component.Find(".bit-spb-wrp");
 
         if (string.IsNullOrEmpty(title) is false)
         {

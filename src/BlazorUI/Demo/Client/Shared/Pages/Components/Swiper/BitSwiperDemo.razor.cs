@@ -64,7 +64,6 @@ public partial class BitSwiperDemo
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         }
     };
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -72,7 +71,7 @@ public partial class BitSwiperDemo
             Id = "direction-enum",
             Name = "BitDirection",
             Description = "Describes the render direction",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -98,6 +97,7 @@ public partial class BitSwiperDemo
         width: 250px;
         height: 100%;
     }
+
     .number {
         position: absolute;
         top: 0.75rem;
@@ -105,6 +105,7 @@ public partial class BitSwiperDemo
         font-size: 0.75rem;
         color: #D7D7D7;
     }
+
     .image {
         width: 100%;
         height: 100%;
@@ -248,6 +249,7 @@ public partial class BitSwiperDemo
         width: 250px;
         height: 100%;
     }
+
     .number {
         position: absolute;
         top: 0.75rem;
@@ -255,6 +257,7 @@ public partial class BitSwiperDemo
         font-size: 0.75rem;
         color: #D7D7D7;
     }
+
     .image {
         width: 100%;
         height: 100%;

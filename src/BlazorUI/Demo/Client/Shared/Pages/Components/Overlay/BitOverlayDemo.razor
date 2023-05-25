@@ -1,5 +1,7 @@
 ﻿@page "/components/overlay"
 
+<PageTitle>Bit BlazorUI - Overlay</PageTitle>
+
 <ComponentDemo ComponentName="Overlay"
                ComponentDescription="The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to the user of a state change within the application and can be used for creating loaders, dialogs and more."
                ComponentParameters="componentParameters">
@@ -7,8 +9,7 @@
         <ExamplePreview>
             <div>
                 <BitButton OnClick="() => BasicIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="BasicIsVisible"
-                            Class="overlay">
+                <BitOverlay @bind-IsVisible="BasicIsVisible" Class="overlay">
                     <div class="content">
                         <h3>Lorem Ipsum</h3>
                         <p>
@@ -27,9 +28,7 @@
         <ExamplePreview>
             <div>
                 <BitButton OnClick="() => AutoCloseIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AutoCloseIsVisible"
-                            Class="overlay"
-                            AutoClose="false">
+                <BitOverlay @bind-IsVisible="AutoCloseIsVisible" Class="overlay" AutoClose="false">
                     <div class="content">
                         <BitButton Class="close-button" OnClick="() => AutoCloseIsVisible = false">Close Overlay</BitButton>
                         <h3>Lorem Ipsum</h3>

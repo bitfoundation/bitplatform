@@ -94,16 +94,14 @@ public partial class BitSnackBar
     {
         ClassBuilder.Register(() => Position switch
         {
-            BitSnackBarPosition.TopLeft => "top-left",
-            BitSnackBarPosition.TopCenter => "top-center",
-            BitSnackBarPosition.TopRight => "top-right",
-            BitSnackBarPosition.BottomLeft => "bottom-left",
-            BitSnackBarPosition.BottomCenter => "bottom-center",
-            BitSnackBarPosition.BottomRight => "bottom-right",
+            BitSnackBarPosition.TopLeft => $"{RootElementClass}-tlf",
+            BitSnackBarPosition.TopCenter => $"{RootElementClass}-tcn",
+            BitSnackBarPosition.TopRight => $"{RootElementClass}-trt",
+            BitSnackBarPosition.BottomLeft => $"{RootElementClass}-blf",
+            BitSnackBarPosition.BottomCenter => $"{RootElementClass}-bcn",
+            BitSnackBarPosition.BottomRight => $"{RootElementClass}-brt",
             _ => string.Empty
         });
-
-        base.RegisterComponentClasses();
     }
 
 
@@ -117,13 +115,13 @@ public partial class BitSnackBar
         InvokeAsync(StateHasChanged);
     }
 
-    private static string GetItemClasses(BitSnackBarItem item) => item.Type switch
+    private string GetItemClasses(BitSnackBarItem item) => item.Type switch
     {
-        BitSnackBarType.Info => "info",
-        BitSnackBarType.Warning => "warning",
-        BitSnackBarType.Success => "success",
-        BitSnackBarType.Error => "error",
-        BitSnackBarType.SevereWarning => "severe-warning",
+        BitSnackBarType.Info => $"{RootElementClass}-info",
+        BitSnackBarType.Warning => $"{RootElementClass}-warning",
+        BitSnackBarType.Success => $"{RootElementClass}-success",
+        BitSnackBarType.Error => $"{RootElementClass}-error",
+        BitSnackBarType.SevereWarning => $"{RootElementClass}-severe-warning",
         _ => string.Empty
     };
 }

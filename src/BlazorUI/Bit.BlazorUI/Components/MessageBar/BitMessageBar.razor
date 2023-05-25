@@ -1,35 +1,32 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     role="@RootElementRole"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     aria-describedby="@AriaDescribedby"
-     role="@RootElementRole">
+     aria-describedby="@AriaDescribedby">
 
     @if (IsMultiline)
     {
-        <div class="multiline">
-            <div class="content">
-                <div class="icon" aria-hidden="true">
+        <div class="bit-msb-mul">
+            <div class="bit-msb-con">
+                <div class="bit-msb-ict" aria-hidden="true">
                     <i class="bit-icon bit-icon--@messageBarIcon.GetName()"></i>
                 </div>
 
-                <div class="text"
+                <div class="bit-msb-txt"
                      id="@LabelId"
-                     role="@(Role is not null ? Role : GetTextRole())"
-                     aria-live="@GetAnnouncementPriority()">
-                    <span class="innertext">
-                        <span>
-                            @ChildContent
-                        </span>
+                     aria-live="@GetAnnouncementPriority()"
+                     role="@(Role is not null ? Role : GetTextRole())">
+                    <span class="bit-msb-itx">
+                        <span>@ChildContent</span>
                     </span>
                 </div>
 
                 @if (HasDismiss)
                 {
-                    <div class="dismiss">
+                    <div class="bit-msb-dim">
                         <button @onclick="OnDismiss"
                                 type="button"
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
@@ -44,39 +41,37 @@
 
             @if (Actions is not null)
             {
-                <div class="actions">@Actions</div>
+                <div class="bit-msb-act">@Actions</div>
             }
         </div>
     }
     else
     {
-        <div class="singleline">
-            <div class="content">
-                <div class="icon" aria-hidden="true">
+        <div class="bit-msb-sin">
+            <div class="bit-msb-con">
+                <div class="bit-msb-ict" aria-hidden="true">
                     <i class="bit-icon bit-icon--@messageBarIcon"></i>
                 </div>
-                <div class="text @(ExpandSingleLine ? "open": string.Empty)"
-                     id="@LabelId"
+                <div id="@LabelId"
+                     aria-live="@GetAnnouncementPriority()"
                      role="@(Role is not null ? Role : GetTextRole())"
-                     aria-live="@GetAnnouncementPriority()">
-                    <span class="innertext">
-                        <span>
-                            @ChildContent
-                        </span>
+                     class="bit-msb-txt @(ExpandSingleLine ? "bit-msb-opn": string.Empty)">
+                    <span class="bit-msb-itx">
+                        <span>@ChildContent</span>
                     </span>
                 </div>
 
                 @if (Actions is not null)
                 {
-                    <div class="actions">@Actions</div>
+                    <div class="bit-msb-act">@Actions</div>
                 }
                 else if (Truncated)
                 {
-                    <div class="truncate">
+                    <div class="bit-msb-trn">
                         <button @onclick="ToggleExpandSingleLine"
                                 type="button"
-                                aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)"
-                                aria-expanded="@(ExpandSingleLine ? "true" : "false")">
+                                aria-expanded="@(ExpandSingleLine ? "true" : "false")"
+                                aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)">
                             <i class="bit-icon bit-icon--@((ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName())" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -84,7 +79,7 @@
 
                 @if (HasDismiss)
                 {
-                    <div class="dismiss">
+                    <div class="bit-msb-dim">
                         <button @onclick="OnDismiss"
                                 type="button"
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"

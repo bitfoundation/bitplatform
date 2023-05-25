@@ -1,32 +1,34 @@
 ﻿@namespace Bit.BlazorUI.Demo.Client.Shared
 @inherits AppComponentBase
 
-<footer class="footer">
-    <section class="footer-section">
-        <div class="footer-col">
-            <div class="bit-logo"></div>
-            <div class="footer-desc">A platform that simplifies the development process for freelancers and software companies through its clean project templates and easy-to-use one-click build and deployment feature.</div>
+<footer>
+    <section>
+        <div class="column">
+            <div class="bit-logo" />
+            <BitTypography Variant="BitTypographyVariant.Body2">
+                A platform that simplifies the development process for freelancers and software companies through its clean project templates and easy-to-use one-click build and deployment feature.
+            </BitTypography>
         </div>
 
-        <div class="grid-container">
-            <div class="footer-col">
-                <div class="col-title">Explore</div>
-                <a class="footer-link" target="_blank" href="/overview">Docs</a>
-                <a class="footer-link" target="_blank" href="/icons">Iconography</a>
+        <div class="links-container">
+            <div class="column">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Explore</BitTypography>
+                <BitLink Href="overview" Target="_blank">Docs</BitLink>
+                <BitLink Href="iconography" Target="_blank">Iconography</BitLink>
             </div>
 
-            <div class="footer-col">
-                <div class="col-title">Quick links</div>
-                <a class="footer-link" target="_blank" href="https://github.com/bitfoundation/bitplatform">Github Repo</a>
-                <a class="footer-link" target="_blank" href="https://github.com/bitfoundation">Github Org</a>
-                <a class="footer-link" target="_blank" href="https://github.com/bitfoundation/bitplatform/issues">Issues</a>
+            <div class="column">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Quick links</BitTypography>
+                <BitLink Href="https://github.com/bitfoundation" Target="_blank">Github Org</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Github Repo</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/issues" Target="_blank">Github Issues</BitLink>
             </div>
 
             <button class="go-to-top" onclick="goToTop()">Go to top</button>
         </div>
     </section>
 
-    <section class="footer-section">
+    <section>
         <div class="address-info">
             <a class="address" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
             <div class="country">Netherlands</div>

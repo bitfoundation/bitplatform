@@ -1,5 +1,7 @@
 ﻿@page "/components/menu-button"
 
+<PageTitle>Bit BlazorUI - MenuButton</PageTitle>
+
 <ComponentDemo ComponentName="MenuButton"
                ComponentDescription="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
                ComponentParameters="componentParameters"
@@ -10,13 +12,13 @@
             <ComponentExampleBox Title="BitMenuButton" HTMLSourceCode="@example1BitMenuButtonItemHTMLCode" CSharpSourceCode="@example1BitMenuButtonItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard"
-                                       ButtonStyle="BitButtonStyle.Standard"
+                        <BitMenuButton Text="Primary"
+                                       ButtonStyle="BitButtonStyle.Primary"
                                        Items="basicMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
 
-                        <BitMenuButton Text="Primary"
-                                       ButtonStyle="BitButtonStyle.Primary"
+                        <BitMenuButton Text="Standard"
+                                       ButtonStyle="BitButtonStyle.Standard"
                                        Items="basicMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
 
@@ -36,15 +38,15 @@
             <ComponentExampleBox Title="BitMenuButton with IconName" HTMLSourceCode="@example2BitMenuButtonItemHTMLCode" CSharpSourceCode="@example2BitMenuButtonItemCSharpCode" ExampleId="example2">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
-                                       IconName="BitIconName.Add"
-                                       ButtonStyle="BitButtonStyle.Standard"
-                                       Items="basicMenuButton"
-                                       OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
-
                         <BitMenuButton Text="Primary Button"
                                        IconName="BitIconName.Edit"
                                        ButtonStyle="BitButtonStyle.Primary"
+                                       Items="basicMenuButton"
+                                       OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
+
+                        <BitMenuButton Text="Standard Button"
+                                       IconName="BitIconName.Add"
+                                       ButtonStyle="BitButtonStyle.Standard"
                                        Items="basicMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
                     </div>
@@ -76,16 +78,6 @@
                     <div class="example-content">
                         <BitMenuButton Items="basicMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example4SelectedItem = item.Key"
-                                       ButtonStyle="BitButtonStyle.Standard">
-                            <HeaderTemplate>
-                                <div style="font-weight: bold; color: #d13438;">
-                                    Custom Header!
-                                </div>
-                            </HeaderTemplate>
-                        </BitMenuButton>
-
-                        <BitMenuButton Items="basicMenuButton"
-                                       OnItemClick="(BitMenuButtonItem item) => example4SelectedItem = item.Key"
                                        ButtonStyle="BitButtonStyle.Primary">
                             <HeaderTemplate>
                                 <BitIcon IconName="BitIconName.Warning" />
@@ -93,6 +85,16 @@
                                     Custom Header!
                                 </div>
                                 <BitIcon IconName="BitIconName.Warning" />
+                            </HeaderTemplate>
+                        </BitMenuButton>
+
+                        <BitMenuButton Items="basicMenuButton"
+                                       OnItemClick="(BitMenuButtonItem item) => example4SelectedItem = item.Key"
+                                       ButtonStyle="BitButtonStyle.Standard">
+                            <HeaderTemplate>
+                                <div style="font-weight: bold; color: #d13438;">
+                                    Custom Header!
+                                </div>
                             </HeaderTemplate>
                         </BitMenuButton>
                     </div>
@@ -104,11 +106,11 @@
                 <ExamplePreview>
                     <div class="example-desc">You can customize the button item.</div>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
+                        <BitMenuButton Text="Primary Button"
                                        IconName="BitIconName.Edit"
                                        Items="itemTemplateMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key"
-                                       ButtonStyle="BitButtonStyle.Standard">
+                                       ButtonStyle="BitButtonStyle.Primary">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">
                                     <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -118,11 +120,11 @@
                             </ItemTemplate>
                         </BitMenuButton>
 
-                        <BitMenuButton Text="Primary Button"
+                        <BitMenuButton Text="Standard Button"
                                        IconName="BitIconName.Edit"
                                        Items="itemTemplateMenuButton"
                                        OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key"
-                                       ButtonStyle="BitButtonStyle.Primary">
+                                       ButtonStyle="BitButtonStyle.Standard">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">
                                     <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -202,16 +204,16 @@
             <ComponentExampleBox Title="BitMenuButton" HTMLSourceCode="@example1CustomItemHTMLCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard"
-                                       ButtonStyle="BitButtonStyle.Standard"
+                        <BitMenuButton Text="Primary"
+                                       ButtonStyle="BitButtonStyle.Primary"
                                        Items="basicMenuButtonWithCustomType"
                                        TextField="@nameof(MenuActionItem.Name)"
                                        KeyField="@nameof(MenuActionItem.Id)"
                                        IconNameField="@nameof(MenuActionItem.Icon)"
                                        OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
 
-                        <BitMenuButton Text="Primary"
-                                       ButtonStyle="BitButtonStyle.Primary"
+                        <BitMenuButton Text="Standard"
+                                       ButtonStyle="BitButtonStyle.Standard"
                                        Items="basicMenuButtonWithCustomType"
                                        TextField="@nameof(MenuActionItem.Name)"
                                        KeyField="@nameof(MenuActionItem.Id)"
@@ -240,15 +242,6 @@
             <ComponentExampleBox Title="BitMenuButton with IconName" HTMLSourceCode="@example2CustomItemHTMLCode" CSharpSourceCode="@example2CustomItemCSharpCode" ExampleId="example2">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
-                                       IconName="BitIconName.Add"
-                                       ButtonStyle="BitButtonStyle.Standard"
-                                       Items="basicMenuButtonWithCustomType"
-                                       TextField="@nameof(MenuActionItem.Name)"
-                                       KeyField="@nameof(MenuActionItem.Id)"
-                                       IconNameField="@nameof(MenuActionItem.Icon)"
-                                       OnItemClick="(MenuActionItem item) => example2SelectedItem = item.Id" />
-
                         <BitMenuButton Text="Primary Button"
                                        IconName="BitIconName.Edit"
                                        ButtonStyle="BitButtonStyle.Primary"
@@ -256,6 +249,15 @@
                                        TextFieldSelector="item => item.Name"
                                        KeyFieldSelector="item => item.Id"
                                        IconNameFieldSelector="item => item.Icon"
+                                       OnItemClick="(MenuActionItem item) => example2SelectedItem = item.Id" />
+
+                        <BitMenuButton Text="Standard Button"
+                                       IconName="BitIconName.Add"
+                                       ButtonStyle="BitButtonStyle.Standard"
+                                       Items="basicMenuButtonWithCustomType"
+                                       TextField="@nameof(MenuActionItem.Name)"
+                                       KeyField="@nameof(MenuActionItem.Id)"
+                                       IconNameField="@nameof(MenuActionItem.Icon)"
                                        OnItemClick="(MenuActionItem item) => example2SelectedItem = item.Id" />
                     </div>
                     <div class="clicked-item">Clicked Item: @example2SelectedItem</div>
@@ -291,19 +293,6 @@
                     <div class="example-desc">You can customize the button header content.</div>
                     <div class="example-content">
                         <BitMenuButton Items="basicMenuButtonWithCustomType"
-                                       TextField="@nameof(MenuActionItem.Name)"
-                                       KeyField="@nameof(MenuActionItem.Id)"
-                                       IconNameField="@nameof(MenuActionItem.Icon)"
-                                       OnItemClick="(MenuActionItem item) => example4SelectedItem = item.Id"
-                                       ButtonStyle="BitButtonStyle.Standard">
-                            <HeaderTemplate>
-                                <div style="font-weight: bold; color: #d13438;">
-                                    Custom Header!
-                                </div>
-                            </HeaderTemplate>
-                        </BitMenuButton>
-
-                        <BitMenuButton Items="basicMenuButtonWithCustomType"
                                        TextFieldSelector="item => item.Name"
                                        KeyFieldSelector="item => item.Id"
                                        IconNameFieldSelector="item => item.Icon"
@@ -317,6 +306,19 @@
                                 <BitIcon IconName="BitIconName.Warning" />
                             </HeaderTemplate>
                         </BitMenuButton>
+
+                        <BitMenuButton Items="basicMenuButtonWithCustomType"
+                                       TextField="@nameof(MenuActionItem.Name)"
+                                       KeyField="@nameof(MenuActionItem.Id)"
+                                       IconNameField="@nameof(MenuActionItem.Icon)"
+                                       OnItemClick="(MenuActionItem item) => example4SelectedItem = item.Id"
+                                       ButtonStyle="BitButtonStyle.Standard">
+                            <HeaderTemplate>
+                                <div style="font-weight: bold; color: #d13438;">
+                                    Custom Header!
+                                </div>
+                            </HeaderTemplate>
+                        </BitMenuButton>
                     </div>
                     <div class="clicked-item">Clicked Item: @example4SelectedItem</div>
                 </ExamplePreview>
@@ -326,14 +328,14 @@
                 <ExamplePreview>
                     <div class="example-desc">You can customize the button item.</div>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
+                        <BitMenuButton Text="Primary Button"
                                        IconName="BitIconName.Edit"
                                        Items="itemTemplateMenuButtonWithCustomType"
-                                       TextField="@nameof(MenuActionItem.Name)"
-                                       KeyField="@nameof(MenuActionItem.Id)"
-                                       IconNameField="@nameof(MenuActionItem.Icon)"
+                                       TextFieldSelector="item => item.Name"
+                                       KeyFieldSelector="item => item.Id"
+                                       IconNameFieldSelector="item => item.Icon"
                                        OnItemClick="(MenuActionItem item) => example5SelectedItem = item.Id"
-                                       ButtonStyle="BitButtonStyle.Standard">
+                                       ButtonStyle="BitButtonStyle.Primary">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">
                                     <span style="color: @(item.Id == "add-key" ? "green" : item.Id == "edit-key" ? "yellow" : "red");">
@@ -343,14 +345,14 @@
                             </ItemTemplate>
                         </BitMenuButton>
 
-                        <BitMenuButton Text="Primary Button"
+                        <BitMenuButton Text="Standard Button"
                                        IconName="BitIconName.Edit"
                                        Items="itemTemplateMenuButtonWithCustomType"
-                                       TextFieldSelector="item => item.Name"
-                                       KeyFieldSelector="item => item.Id"
-                                       IconNameFieldSelector="item => item.Icon"
+                                       TextField="@nameof(MenuActionItem.Name)"
+                                       KeyField="@nameof(MenuActionItem.Id)"
+                                       IconNameField="@nameof(MenuActionItem.Icon)"
                                        OnItemClick="(MenuActionItem item) => example5SelectedItem = item.Id"
-                                       ButtonStyle="BitButtonStyle.Primary">
+                                       ButtonStyle="BitButtonStyle.Standard">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">
                                     <span style="color: @(item.Id == "add-key" ? "green" : item.Id == "edit-key" ? "yellow" : "red");">
@@ -448,16 +450,16 @@
             <ComponentExampleBox Title="BitMenuButton" HTMLSourceCode="@example1BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example1BitMenuButtonOptionCSharpCode" ExampleId="example1">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard"
-                                       ButtonStyle="BitButtonStyle.Standard"
+                        <BitMenuButton Text="Primary"
+                                       ButtonStyle="BitButtonStyle.Primary"
                                        OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
                             <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
                         </BitMenuButton>
 
-                        <BitMenuButton Text="Primary"
-                                       ButtonStyle="BitButtonStyle.Primary"
+                        <BitMenuButton Text="Standard"
+                                       ButtonStyle="BitButtonStyle.Standard"
                                        OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
                             <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
@@ -486,18 +488,18 @@
             <ComponentExampleBox Title="BitMenuButton with IconName" HTMLSourceCode="@example2BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example2BitMenuButtonOptionCSharpCode" ExampleId="example2">
                 <ExamplePreview>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
-                                       IconName="BitIconName.Add"
-                                       ButtonStyle="BitButtonStyle.Standard"
+                        <BitMenuButton Text="Primary Button"
+                                       IconName="BitIconName.Edit"
+                                       ButtonStyle="BitButtonStyle.Primary"
                                        OnItemClick="(BitMenuButtonOption item) => example2SelectedItem = item.Key">
                             <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
                         </BitMenuButton>
 
-                        <BitMenuButton Text="Primary Button"
-                                       IconName="BitIconName.Edit"
-                                       ButtonStyle="BitButtonStyle.Primary"
+                        <BitMenuButton Text="Standard Button"
+                                       IconName="BitIconName.Add"
+                                       ButtonStyle="BitButtonStyle.Standard"
                                        OnItemClick="(BitMenuButtonOption item) => example2SelectedItem = item.Key">
                             <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
                             <BitMenuButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
@@ -536,12 +538,14 @@
                 <ExamplePreview>
                     <div class="example-desc">You can customize the button header content.</div>
                     <div class="example-content">
-                        <BitMenuButton ButtonStyle="BitButtonStyle.Standard"
+                        <BitMenuButton ButtonStyle="BitButtonStyle.Primary"
                                        OnItemClick="(BitMenuButtonOption item) => example4SelectedItem = item.Key">
                             <HeaderTemplate>
-                                <div style="font-weight: bold; color: #d13438;">
+                                <BitIcon IconName="BitIconName.Warning" />
+                                <div style="font-weight: 600; color: white;">
                                     Custom Header!
                                 </div>
+                                <BitIcon IconName="BitIconName.Warning" />
                             </HeaderTemplate>
                             <ChildContent>
                                 <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
@@ -551,14 +555,12 @@
                             </ChildContent>
                         </BitMenuButton>
 
-                        <BitMenuButton ButtonStyle="BitButtonStyle.Primary"
+                        <BitMenuButton ButtonStyle="BitButtonStyle.Standard"
                                        OnItemClick="(BitMenuButtonOption item) => example4SelectedItem = item.Key">
                             <HeaderTemplate>
-                                <BitIcon IconName="BitIconName.Warning" />
-                                <div style="font-weight: 600; color: white;">
+                                <div style="font-weight: bold; color: #d13438;">
                                     Custom Header!
                                 </div>
-                                <BitIcon IconName="BitIconName.Warning" />
                             </HeaderTemplate>
                             <ChildContent>
                                 <BitMenuButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
@@ -576,9 +578,9 @@
                 <ExamplePreview>
                     <div class="example-desc">You can customize the button item.</div>
                     <div class="example-content">
-                        <BitMenuButton Text="Standard Button"
-                                       ButtonStyle="BitButtonStyle.Standard"
-                                       IconName="BitIconName.Add"
+                        <BitMenuButton Text="Primary Button"
+                                       ButtonStyle="BitButtonStyle.Primary"
+                                       IconName="BitIconName.Edit"
                                        OnItemClick="(BitMenuButtonOption item) => example5SelectedItem = item.Key">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">
@@ -594,9 +596,9 @@
                             </ChildContent>
                         </BitMenuButton>
 
-                        <BitMenuButton Text="Primary Button"
-                                       ButtonStyle="BitButtonStyle.Primary"
-                                       IconName="BitIconName.Edit"
+                        <BitMenuButton Text="Standard Button"
+                                       ButtonStyle="BitButtonStyle.Standard"
+                                       IconName="BitIconName.Add"
                                        OnItemClick="(BitMenuButtonOption item) => example5SelectedItem = item.Key">
                             <ItemTemplate Context="item">
                                 <div class="item-template-box">

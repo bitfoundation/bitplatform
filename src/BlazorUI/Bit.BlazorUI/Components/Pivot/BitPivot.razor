@@ -2,22 +2,24 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
+     role="toolbar"
      aria-label="@AriaLabel"
-     role="toolbar">
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
     <CascadingValue Value="this" IsFixed="true">
-        <div class="header-container" role="tablist">
+        <div class="bit-pvt-hct" role="tablist">
             @ChildContent
         </div>
     </CascadingValue>
 
-    @if (HeadersOnly is false) {
-        <div class="content-container@((_selectedItem?.IsEnabled??false) ? "" : " disabled")"
-             style="@GetSelectedItemStyle()"
-             role="tabpanel"
+    @if (HeadersOnly is false)
+    {
+        <div role="tabpanel"
              aria-hidden="false"
-             aria-labelledby="@GetAriaLabelledby">
+             style="@GetSelectedItemStyle()"
+             aria-labelledby="@GetAriaLabelledby"
+             class="bit-pvt-cct@((_selectedItem?.IsEnabled??false) ? "" : " disabled")">
             @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
         </div>
     }

@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Buttons;
@@ -22,7 +23,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitButton = com.Find(".bit-cmpb");
+        var bitButton = com.Find(".bit-cmb");
 
         if (isEnabled)
         {
@@ -53,7 +54,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
-        var bitButton = com.Find(".bit-cmpb");
+        var bitButton = com.Find(".bit-cmb");
 
         var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
@@ -73,7 +74,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.IsTrue(bitCompoundButton.GetAttribute("aria-describedby").Contains(ariaDescription));
     }
@@ -86,7 +87,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.IsTrue(bitCompoundButton.GetAttribute("aria-label").Contains(ariaLabel));
     }
@@ -99,7 +100,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
-        var bitCompoundButton = com.Find(".bit-cmpb");
+        var bitCompoundButton = com.Find(".bit-cmb");
 
         Assert.AreEqual(bitCompoundButton.HasAttribute("aria-hidden"), expectedResult);
     }
@@ -117,7 +118,7 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
         var tagName = bitCompoundButton.TagName;
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
@@ -127,26 +128,58 @@ public class BitCompoundButtonTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitButtonStyle.Primary),
         DataRow(BitButtonStyle.Standard),
+        DataRow(null),
     ]
-    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle buttonStyle)
+    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle? buttonStyle)
     {
         var component = RenderComponent<BitCompoundButton>(parameters =>
         {
-            parameters.Add(p => p.ButtonStyle, buttonStyle);
+            if (buttonStyle.HasValue)
+            {
+                parameters.Add(p => p.ButtonStyle, buttonStyle.Value);
+            }
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
 
-        if (buttonStyle == BitButtonStyle.Primary)
+        if (buttonStyle == BitButtonStyle.Standard)
         {
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("primary"));
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("standard"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
         }
         else
         {
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("primary"));
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("standard"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
         }
+    }
+
+    [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
+    ]
+    public void BitCompoundButtonSizeTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitCompoundButton>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
+        });
+
+        var bitCompoundButton = com.Find(".bit-cmb");
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "bit-cmb-sm",
+            BitButtonSize.Medium or null => "bit-cmb-md",
+            BitButtonSize.Large => "bit-cmb-lg",
+            _ => throw new NotSupportedException()
+        };
+
+        Assert.IsTrue(bitCompoundButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,
@@ -161,9 +194,15 @@ public class BitCompoundButtonTests : BunitTestContext
             parameters.Add(p => p.ButtonType, buttonType);
         });
 
-        var bitCompoundButton = component.Find(".bit-cmpb");
+        var bitCompoundButton = component.Find(".bit-cmb");
 
-        var buttonTypeName = buttonType == BitButtonType.Button ? "button" : buttonType == BitButtonType.Submit ? "submit" : "reset";
+        var buttonTypeName = buttonType switch
+        {
+            BitButtonType.Button => "button",
+            BitButtonType.Submit => "submit",
+            BitButtonType.Reset => "reset",
+            _ => throw new NotSupportedException(),
+        };
         Assert.AreEqual(bitCompoundButton.GetAttribute("type"), buttonTypeName);
     }
 }

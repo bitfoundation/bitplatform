@@ -82,6 +82,8 @@ public partial class BitCarousel : IDisposable
     /// </summary>
     [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
 
+
+
     public async Task GoPrev()
     {
         await Prev();
@@ -98,6 +100,7 @@ public partial class BitCarousel : IDisposable
     }
 
 
+
     internal void RegisterItem(BitCarouselItem item)
     {
         item.Index = AllItems.Count;
@@ -111,6 +114,7 @@ public partial class BitCarousel : IDisposable
     {
         AllItems.Remove(carouselItem);
     }
+
 
 
     protected override string RootElementClass => "bit-csl";

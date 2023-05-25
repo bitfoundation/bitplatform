@@ -1,0 +1,12 @@
+﻿@import "../../../../Styles/bit-css-variables.scss";
+
+.list-item {
+    width: 20%;
+    height: 143px;
+    margin: 10px 10px;
+    padding: 16px 20px;
+    align-items: center;
+    display: inline-grid;
+    justify-content: center;
+    background-color: $bit-color-background-primary2;
+}

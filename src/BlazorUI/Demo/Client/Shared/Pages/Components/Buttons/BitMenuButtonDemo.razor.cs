@@ -159,7 +159,7 @@ public partial class BitMenuButtonDemo
             Id = "menu-button-items",
             Title = "BitMenuButtonItem",
             Description = "BitMenuButtonItem is default type for item.",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
                new()
                {
@@ -193,7 +193,7 @@ public partial class BitMenuButtonDemo
             Id = "menu-button-options",
             Title = "BitMenuButtonOption",
             Description = "BitMenuButtonOption is a child component for BitMenuButton.",
-            Parameters = new List<ComponentParameter>()
+            Parameters = new()
             {
                new()
                {
@@ -231,7 +231,7 @@ public partial class BitMenuButtonDemo
             Id = "button-size-enum",
             Name = "BitButtonSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -258,7 +258,7 @@ public partial class BitMenuButtonDemo
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -279,7 +279,7 @@ public partial class BitMenuButtonDemo
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -313,19 +313,19 @@ public partial class BitMenuButtonDemo
 
     private List<BitMenuButtonItem> basicMenuButton = new()
     {
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item A",
             Key = "A",
             IconName = BitIconName.Emoji
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item B",
             Key = "B",
             IconName = BitIconName.Emoji
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item C",
             Key = "C",
@@ -334,20 +334,20 @@ public partial class BitMenuButtonDemo
     };
     private List<BitMenuButtonItem> disabledItemMenuButton = new()
     {
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item A",
             Key = "A",
             IconName = BitIconName.Emoji
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item B",
             Key = "B",
             IconName = BitIconName.Emoji,
             IsEnabled = false
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Item C",
             Key = "C",
@@ -356,19 +356,19 @@ public partial class BitMenuButtonDemo
     };
     private List<BitMenuButtonItem> itemTemplateMenuButton = new()
     {
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Add",
             Key = "add-key",
             IconName = BitIconName.Add
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Edit",
             Key = "edit-key",
             IconName = BitIconName.Edit
         },
-        new BitMenuButtonItem()
+        new()
         {
             Text = "Delete",
             Key = "delete-key",
@@ -378,19 +378,19 @@ public partial class BitMenuButtonDemo
 
     private List<MenuActionItem> basicMenuButtonWithCustomType = new()
     {
-        new MenuActionItem()
+        new()
         {
             Name = "Item A",
             Id = "A",
             Icon = BitIconName.Emoji
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Item B",
             Id = "B",
             Icon = BitIconName.Emoji
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Item C",
             Id = "C",
@@ -399,20 +399,20 @@ public partial class BitMenuButtonDemo
     };
     private List<MenuActionItem> disabledItemMenuButtonWithCustomType = new()
     {
-        new MenuActionItem()
+        new()
         {
             Name = "Item A",
             Id = "A",
             Icon = BitIconName.Emoji
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Item B",
             Id = "B",
             Icon = BitIconName.Emoji,
             IsEnabled = false
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Item C",
             Id = "C",
@@ -421,19 +421,19 @@ public partial class BitMenuButtonDemo
     };
     private List<MenuActionItem> itemTemplateMenuButtonWithCustomType = new()
     {
-        new MenuActionItem()
+        new()
         {
             Name = "Add",
             Id = "add-key",
             Icon = BitIconName.Add
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Edit",
             Id = "edit-key",
             Icon = BitIconName.Edit
         },
-        new MenuActionItem()
+        new()
         {
             Name = "Delete",
             Id = "delete-key",
@@ -451,143 +451,92 @@ public partial class BitMenuButtonDemo
     }
 
     private readonly string example1BitMenuButtonItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary""
+               ButtonStyle=""BitButtonStyle.Primary""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard""
+               ButtonStyle=""BitButtonStyle.Standard""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+<BitMenuButton Text=""Disabled""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key""
+               IsEnabled=""false"" />
 
-    <BitMenuButton Text=""Primary""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+<BitMenuButton Text=""Item Disabled""
+               Items=""disabledItemMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
 
-    <BitMenuButton Text=""Disabled""
-                   Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key""
-                   IsEnabled=""false"" />
-
-    <BitMenuButton Text=""Item Disabled""
-                   Items=""disabledItemMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
-";
+<div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1CustomItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary""
+               ButtonStyle=""BitButtonStyle.Primary""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard""
+               ButtonStyle=""BitButtonStyle.Standard""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+<BitMenuButton Text=""Disabled""
+               Items=""basicMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id""
+               IsEnabled=""false"" />
 
-    <BitMenuButton Text=""Primary""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+<BitMenuButton Text=""Item Disabled""
+               Items=""disabledItemMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
-    <BitMenuButton Text=""Disabled""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id""
-                   IsEnabled=""false"" />
-
-    <BitMenuButton Text=""Item Disabled""
-                   Items=""disabledItemMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
-";
+<div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1BitMenuButtonOptionHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary""
+               ButtonStyle=""BitButtonStyle.Primary""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard""
+               ButtonStyle=""BitButtonStyle.Standard""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
+<BitMenuButton Text=""Disabled""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key""
+               IsEnabled=""false"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-    <BitMenuButton Text=""Primary""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
+<BitMenuButton Text=""Item Disabled""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" IsEnabled=""false"" />
+</BitMenuButton>
 
-    <BitMenuButton Text=""Disabled""
-                   OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key""
-                   IsEnabled=""false"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
-
-    <BitMenuButton Text=""Item Disabled""
-                   OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" IsEnabled=""false"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" IsEnabled=""false"" />
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example1SelectedItem</div>
-";
+<div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1BitMenuButtonItemCSharpCode = @"
 private string example1SelectedItem;
 
@@ -697,110 +646,59 @@ private string example1SelectedItem;
 ";
 
     private readonly string example2BitMenuButtonItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary Button""
+               IconName=""BitIconName.Edit""
+               ButtonStyle=""BitButtonStyle.Primary""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example2SelectedItem = item.Key"" />
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard Button""
+               IconName=""BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example2SelectedItem = item.Key"" />
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                    IconName=""BitIconName.Add""
-                    ButtonStyle=""BitButtonStyle.Standard""
-                    Items=""basicMenuButton""
-                    OnItemClick=""(BitMenuButtonItem item) => example2SelectedItem = item.Key"" />
-
-    <BitMenuButton Text=""Primary Button""
-                    IconName=""BitIconName.Edit""
-                    ButtonStyle=""BitButtonStyle.Primary""
-                    Items=""basicMenuButton""
-                    OnItemClick=""(BitMenuButtonItem item) => example2SelectedItem = item.Key"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
-";
+<div>Clicked Item: @example2SelectedItem</div>";
     private readonly string example2CustomItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary Button""
+               IconName=""BitIconName.Edit""
+               ButtonStyle=""BitButtonStyle.Primary""
+               Items=""basicMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard Button""
+               IconName=""BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                   IconName=""BitIconName.Add""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
-
-    <BitMenuButton Text=""Primary Button""
-                   IconName=""BitIconName.Edit""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
-";
+<div>Clicked Item: @example2SelectedItem</div>";
     private readonly string example2BitMenuButtonOptionHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Text=""Primary Button""
+               IconName=""BitIconName.Edit""
+               ButtonStyle=""BitButtonStyle.Primary""
+               OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-</style>
+<BitMenuButton Text=""Standard Button""
+               IconName=""BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                   IconName=""BitIconName.Add""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
-
-    <BitMenuButton Text=""Primary Button""
-                   IconName=""BitIconName.Edit""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example2SelectedItem</div>
-";
+<div>Clicked Item: @example2SelectedItem</div>";
     private readonly string example2BitMenuButtonItemCSharpCode = @"
 private string example2SelectedItem;
 
@@ -865,103 +763,91 @@ private string example2SelectedItem;
 
     private readonly string example3BitMenuButtonItemHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
+    .custom-menu-btn {
+        height: 2.5rem;
+        width: 10.5rem;
+        border-color: black;
+        background-color: #515151;
     }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
+    .custom-menu-btn:hover {
+        border-color: black;
+        background-color: #403f3f;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Styled Button""
-                   Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example3SelectedItem = item.Key""
-                   Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
+<BitMenuButton Text=""Styled Button""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example3SelectedItem = item.Key""
+               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
 
-    <BitMenuButton Text=""Classed Button""
-                   Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example3SelectedItem = item.Key""
-                   Class=""custom-menu-btn"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
-";
+<BitMenuButton Text=""Classed Button""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example3SelectedItem = item.Key""
+               Class=""custom-menu-btn"" />
+
+<div>Clicked Item: @example3SelectedItem</div>";
     private readonly string example3CustomItemHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
+    .custom-menu-btn {
+        height: 2.5rem;
+        width: 10.5rem;
+        border-color: black;
+        background-color: #515151;
     }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
+    .custom-menu-btn:hover {
+        border-color: black;
+        background-color: #403f3f;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Styled Button""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id""
-                   Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
+<BitMenuButton Text=""Styled Button""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id""
+               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
 
-    <BitMenuButton Text=""Classed Button""
-                   Items=""basicMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id""
-                   Class=""custom-menu-btn"" />
-</div>
-<div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
-";
+<BitMenuButton Text=""Classed Button""
+               Items=""basicMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id""
+               Class=""custom-menu-btn"" />
+
+<div>Clicked Item: @example3SelectedItem</div>";
     private readonly string example3BitMenuButtonOptionHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
+    .custom-menu-btn {
+        height: 2.5rem;
+        width: 10.5rem;
+        border-color: black;
+        background-color: #515151;
     }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
+    .custom-menu-btn:hover {
+        border-color: black;
+        background-color: #403f3f;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Styled Button""
-                   OnItemClick=""(BitMenuButtonOption item) => example3SelectedItem = item.Key""
-                   Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
+<BitMenuButton Text=""Styled Button""
+               OnItemClick=""(BitMenuButtonOption item) => example3SelectedItem = item.Key""
+               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
 
-    <BitMenuButton Text=""Classed Button""
-                   OnItemClick=""(BitMenuButtonOption item) => example3SelectedItem = item.Key""
-                   Class=""custom-menu-btn"">
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example3SelectedItem</div>
-";
+<BitMenuButton Text=""Classed Button""
+               OnItemClick=""(BitMenuButtonOption item) => example3SelectedItem = item.Key""
+               Class=""custom-menu-btn"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<div>Clicked Item: @example3SelectedItem</div>";
     private readonly string example3BitMenuButtonItemCSharpCode = @"
 private string example3SelectedItem;
 
@@ -1025,186 +911,93 @@ private string example3SelectedItem;
 ";
 
     private readonly string example4BitMenuButtonItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example4SelectedItem = item.Key""
+               ButtonStyle=""BitButtonStyle.Primary"">
+    <HeaderTemplate>
+        <BitIcon IconName=""BitIconName.Warning"" />
+        <div style=""font-weight: 600; color: white;"">
+            Custom Header!
+        </div>
+        <BitIcon IconName=""BitIconName.Warning"" />
+    </HeaderTemplate>
+</BitMenuButton>
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
+<BitMenuButton Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example4SelectedItem = item.Key""
+               ButtonStyle=""BitButtonStyle.Standard"">
+    <HeaderTemplate>
+        <div style=""font-weight: bold; color: #d13438;"">
+            Custom Header!
+        </div>
+    </HeaderTemplate>
+</BitMenuButton>
 
-    .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
-
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
-        }
-    }
-</style>
-
-<div class=""example-content"">
-    <BitMenuButton Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example4SelectedItem = item.Key""
-                   ButtonStyle=""BitButtonStyle.Standard"">
-        <HeaderTemplate>
-            <div style=""font-weight: bold; color: #d13438;"">
-                Custom Header!
-            </div>
-        </HeaderTemplate>
-    </BitMenuButton>
-
-    <BitMenuButton Items=""basicMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example4SelectedItem = item.Key""
-                   ButtonStyle=""BitButtonStyle.Primary"">
-        <HeaderTemplate>
-            <BitIcon IconName=""BitIconName.Warning"" />
-            <div style=""font-weight: 600; color: white;"">
-                Custom Header!
-            </div>
-            <BitIcon IconName=""BitIconName.Warning"" />
-        </HeaderTemplate>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
-";
+<div>Clicked Item: @example4SelectedItem</div>";
     private readonly string example4CustomItemHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton Items=""basicMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
+               ButtonStyle=""BitButtonStyle.Primary"">
+    <HeaderTemplate>
+        <BitIcon IconName=""BitIconName.Warning"" />
+        <div style=""font-weight: 600; color: white;"">
+            Custom Header!
+        </div>
+        <BitIcon IconName=""BitIconName.Warning"" />
+    </HeaderTemplate>
+</BitMenuButton>
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
+<BitMenuButton Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
+               ButtonStyle=""BitButtonStyle.Standard"">
+    <HeaderTemplate>
+        <div style=""font-weight: bold; color: #d13438;"">
+            Custom Header!
+        </div>
+    </HeaderTemplate>
+</BitMenuButton>
 
-    .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
-
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
-        }
-    }
-</style>
-
-<div class=""example-content"">
-    <BitMenuButton Items=""basicMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
-                   ButtonStyle=""BitButtonStyle.Standard"">
-        <HeaderTemplate>
-            <div style=""font-weight: bold; color: #d13438;"">
-                Custom Header!
-            </div>
-        </HeaderTemplate>
-    </BitMenuButton>
-
-    <BitMenuButton Items=""basicMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
-                   ButtonStyle=""BitButtonStyle.Primary"">
-        <HeaderTemplate>
-            <BitIcon IconName=""BitIconName.Warning"" />
-            <div style=""font-weight: 600; color: white;"">
-                Custom Header!
-            </div>
-            <BitIcon IconName=""BitIconName.Warning"" />
-        </HeaderTemplate>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
-";
+<div>Clicked Item: @example4SelectedItem</div>";
     private readonly string example4BitMenuButtonOptionHTMLCode = @"
-<style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
+<BitMenuButton ButtonStyle=""BitButtonStyle.Primary""
+               OnItemClick=""(BitMenuButtonOption item) => example4SelectedItem = item.Key"">
+    <HeaderTemplate>
+        <BitIcon IconName=""BitIconName.Warning"" />
+        <div style=""font-weight: 600; color: white;"">
+            Custom Header!
+        </div>
+        <BitIcon IconName=""BitIconName.Warning"" />
+    </HeaderTemplate>
+    <ChildContent>
+        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""BitIconName.Emoji"" />
+    </ChildContent>
+</BitMenuButton>
 
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
+<BitMenuButton ButtonStyle=""BitButtonStyle.Standard""
+               OnItemClick=""(BitMenuButtonOption item) => example4SelectedItem = item.Key"">
+    <HeaderTemplate>
+        <div style=""font-weight: bold; color: #d13438;"">
+            Custom Header!
+        </div>
+    </HeaderTemplate>
+    <ChildContent>
+        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+        <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""BitIconName.Emoji"" />
+    </ChildContent>
+</BitMenuButton>
 
-    .custom-menu-btn {
-        &.primary {
-            height: 2.5rem;
-            width: 10.5rem;
-            background-color: #515151;
-            border-color: black;
-
-            &:hover {
-                background-color: #403f3f;
-                border-color: black;
-            }
-        }
-    }
-</style>
-
-<div class=""example-content"">
-    <BitMenuButton ButtonStyle=""BitButtonStyle.Standard""
-                   OnItemClick=""(BitMenuButtonOption item) => example4SelectedItem = item.Key"">
-        <HeaderTemplate>
-            <div style=""font-weight: bold; color: #d13438;"">
-                Custom Header!
-            </div>
-        </HeaderTemplate>
-        <ChildContent>
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-            <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""BitIconName.Emoji"" />
-        </ChildContent>
-    </BitMenuButton>
-
-    <BitMenuButton ButtonStyle=""BitButtonStyle.Primary""
-                   OnItemClick=""(BitMenuButtonOption item) => example4SelectedItem = item.Key"">
-        <HeaderTemplate>
-            <BitIcon IconName=""BitIconName.Warning"" />
-            <div style=""font-weight: 600; color: white;"">
-                Custom Header!
-            </div>
-            <BitIcon IconName=""BitIconName.Warning"" />
-        </HeaderTemplate>
-        <ChildContent>
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-            <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""BitIconName.Emoji"" />
-        </ChildContent>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example4SelectedItem</div>
-";
+<div>Clicked Item: @example4SelectedItem</div>";
     private readonly string example4BitMenuButtonItemCSharpCode = @"
 private string example4SelectedItem;
 
@@ -1269,174 +1062,129 @@ private string example4SelectedItem;
 
     private readonly string example5BitMenuButtonItemHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-
     .item-template-box {
         display: flex;
         width: 100%;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                   IconName=""BitIconName.Edit""
-                   Items=""itemTemplateMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
-                   ButtonStyle=""BitButtonStyle.Standard"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Text (@item.Key)
-                </span>
-            </div>
-        </ItemTemplate>
-    </BitMenuButton>
+<BitMenuButton Text=""Primary Button""
+               IconName=""BitIconName.Edit""
+               Items=""itemTemplateMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
+               ButtonStyle=""BitButtonStyle.Primary"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.Key)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitMenuButton>
 
-    <BitMenuButton Text=""Primary Button""
-                   IconName=""BitIconName.Edit""
-                   Items=""itemTemplateMenuButton""
-                   OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
-                   ButtonStyle=""BitButtonStyle.Primary"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Text (@item.Key)
-                </span>
-            </div>
-        </ItemTemplate>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
-";
+<BitMenuButton Text=""Standard Button""
+               IconName=""BitIconName.Edit""
+               Items=""itemTemplateMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
+               ButtonStyle=""BitButtonStyle.Standard"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.Key)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitMenuButton>
+
+<div>Clicked Item: @example5SelectedItem</div>";
     private readonly string example5CustomItemHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-
     .item-template-box {
         display: flex;
         width: 100%;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                   IconName=""BitIconName.Edit""
-                   Items=""itemTemplateMenuButtonWithCustomType""
-                   TextField=""@nameof(MenuActionItem.Name)""
-                   KeyField=""@nameof(MenuActionItem.Id)""
-                   IconNameField=""@nameof(MenuActionItem.Icon)""
-                   OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
-                   ButtonStyle=""BitButtonStyle.Standard"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Name (@item.Id)
-                </span>
-            </div>
-        </ItemTemplate>
-    </BitMenuButton>
+<BitMenuButton Text=""Primary Button""
+               IconName=""BitIconName.Edit""
+               Items=""itemTemplateMenuButtonWithCustomType""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
+               ButtonStyle=""BitButtonStyle.Primary"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Name (@item.Id)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitMenuButton>
 
-    <BitMenuButton Text=""Primary Button""
-                   IconName=""BitIconName.Edit""
-                   Items=""itemTemplateMenuButtonWithCustomType""
-                   TextFieldSelector=""item => item.Name""
-                   KeyFieldSelector=""item => item.Id""
-                   IconNameFieldSelector=""item => item.Icon""
-                   OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
-                   ButtonStyle=""BitButtonStyle.Primary"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Name (@item.Id)
-                </span>
-            </div>
-        </ItemTemplate>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
-";
+<BitMenuButton Text=""Standard Button""
+               IconName=""BitIconName.Edit""
+               Items=""itemTemplateMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
+               ButtonStyle=""BitButtonStyle.Standard"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Name (@item.Id)
+            </span>
+        </div>
+    </ItemTemplate>
+</BitMenuButton>
+
+<div>Clicked Item: @example5SelectedItem</div>";
     private readonly string example5BitMenuButtonOptionHTMLCode = @"
 <style>
-    .example-content {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 30px;
-    }
-
-    .clicked-item {
-        margin-top: 0.5rem;
-        font-weight: 600;
-    }
-
     .item-template-box {
         display: flex;
         width: 100%;
     }
 </style>
 
-<div class=""example-content"">
-    <BitMenuButton Text=""Standard Button""
-                   ButtonStyle=""BitButtonStyle.Standard""
-                   IconName=""BitIconName.Add""
-                   OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Text (@item.Key)
-                </span>
-            </div>
-        </ItemTemplate>
-        <ChildContent>
-            <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
-            <BitMenuButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
-            <BitMenuButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
-        </ChildContent>
-    </BitMenuButton>
+<BitMenuButton Text=""Primary Button""
+               ButtonStyle=""BitButtonStyle.Primary""
+               IconName=""BitIconName.Edit""
+               OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.Key)
+            </span>
+        </div>
+    </ItemTemplate>
+    <ChildContent>
+        <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
+        <BitMenuButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
+        <BitMenuButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
+    </ChildContent>
+</BitMenuButton>
 
-    <BitMenuButton Text=""Primary Button""
-                   ButtonStyle=""BitButtonStyle.Primary""
-                   IconName=""BitIconName.Edit""
-                   OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
-        <ItemTemplate Context=""item"">
-            <div class=""item-template-box"">
-                <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                    @item.Text (@item.Key)
-                </span>
-            </div>
-        </ItemTemplate>
-        <ChildContent>
-            <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
-            <BitMenuButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
-            <BitMenuButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
-        </ChildContent>
-    </BitMenuButton>
-</div>
-<div class=""clicked-item"">Clicked Item: @example5SelectedItem</div>
-";
+<BitMenuButton Text=""Standard Button""
+               ButtonStyle=""BitButtonStyle.Standard""
+               IconName=""BitIconName.Add""
+               OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-template-box"">
+            <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
+                @item.Text (@item.Key)
+            </span>
+        </div>
+    </ItemTemplate>
+    <ChildContent>
+        <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""BitIconName.Add"" />
+        <BitMenuButtonOption Text=""Edit"" Key=""edit-key"" IconName=""BitIconName.Edit"" />
+        <BitMenuButtonOption Text=""Delete"" Key=""delete-key"" IconName=""BitIconName.Delete"" />
+    </ChildContent>
+</BitMenuButton>
+
+<div>Clicked Item: @example5SelectedItem</div>";
     private readonly string example5BitMenuButtonItemCSharpCode = @"
 private string example5SelectedItem;
 
@@ -1500,99 +1248,77 @@ private string example5SelectedItem;
 ";
 
     private readonly string example6BitMenuButtonItemHTMLCode = @"
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Small""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Medium""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Large""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-</div>
-";
-    private readonly string example6CustomItemHTMLCode = @"
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Small""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Small""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Medium""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Large""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-</div>
-";
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Medium""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Large""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />";
+    private readonly string example6CustomItemHTMLCode = @"
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Small""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Medium""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Large""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />";
     private readonly string example6BitMenuButtonOptionHTMLCode = @"
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Small""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Medium""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       ButtonSize=""BitButtonSize.Large""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-</div>
-";
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Small""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Medium""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               ButtonSize=""BitButtonSize.Large""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>";
     private readonly string example6BitMenuButtonItemCSharpCode = @"
 private string example1SelectedItem;
 
@@ -1658,192 +1384,153 @@ private string example1SelectedItem;
     private readonly string example7BitMenuButtonItemHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-sm""
-                       ButtonSize=""BitButtonSize.Small""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-md""
-                       ButtonSize=""BitButtonSize.Medium""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-lg""
-                       ButtonSize=""BitButtonSize.Large""
-                       Items=""basicMenuButton""
-                       OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
-    </div>
-</div>
-";
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-sm""
+               ButtonSize=""BitButtonSize.Small""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-md""
+               ButtonSize=""BitButtonSize.Medium""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-lg""
+               ButtonSize=""BitButtonSize.Large""
+               Items=""basicMenuButton""
+               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />";
     private readonly string example7CustomItemHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-sm""
-                       ButtonSize=""BitButtonSize.Small""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-md""
-                       ButtonSize=""BitButtonSize.Medium""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-lg""
-                       ButtonSize=""BitButtonSize.Large""
-                       Items=""basicMenuButtonWithCustomType""
-                       TextField=""@nameof(MenuActionItem.Name)""
-                       KeyField=""@nameof(MenuActionItem.Id)""
-                       IconNameField=""@nameof(MenuActionItem.Icon)""
-                       OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-    </div>
-</div>
-";
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-sm""
+               ButtonSize=""BitButtonSize.Small""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-md""
+               ButtonSize=""BitButtonSize.Medium""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-lg""
+               ButtonSize=""BitButtonSize.Large""
+               Items=""basicMenuButtonWithCustomType""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />";
     private readonly string example7BitMenuButtonOptionHTMLCode = @"
 <style>
     .custom-btn-sm {
-        &.small {
-            padding: 4px 8px;
-            font-size: 8px;
-            line-height: 1.5;
-            border-radius: 3px;
-        }
+        padding: 4px 8px;
+        font-size: 8px;
+        line-height: 1.5;
+        border-radius: 3px;
     }
 
     .custom-btn-md {
-        &.medium {
-            padding: 12px 24px;
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-        }
+        padding: 12px 24px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 4px;
     }
 
     .custom-btn-lg {
-        &.large {
-            padding: 20px 32px;
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-        }
+        padding: 20px 32px;
+        font-size: 32px;
+        line-height: 1.33;
+        border-radius: 6px;
     }
 </style>
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-sm""
-                       ButtonSize=""BitButtonSize.Small""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-md""
-                       ButtonSize=""BitButtonSize.Medium""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitMenuButton Text=""Button""
-                       Class=""custom-btn-lg""
-                       ButtonSize=""BitButtonSize.Large""
-                       OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-            <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
-            <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
-        </BitMenuButton>
-    </div>
-</div>
-";
+<BitLabel>Small size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-sm""
+               ButtonSize=""BitButtonSize.Small""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitLabel>Medium size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-md""
+               ButtonSize=""BitButtonSize.Medium""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitLabel>Large size</BitLabel>
+<BitMenuButton Text=""Button""
+               Class=""custom-btn-lg""
+               ButtonSize=""BitButtonSize.Large""
+               OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""BitIconName.Emoji2"" />
+</BitMenuButton>";
     private readonly string example7BitMenuButtonItemCSharpCode = @"
 private string example1SelectedItem;
 

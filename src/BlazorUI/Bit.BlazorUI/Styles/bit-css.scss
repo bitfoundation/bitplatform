@@ -1,0 +1,83 @@
+﻿@import "theme-variables.scss";
+
+// color
+.bit-css-color-primary-main {
+    color: $color-primary-main;
+}
+.bit-css-color-primary-light {
+    color: $color-primary-high;
+}
+.bit-css-color-primary-lighter {
+    color: $color-primary-higher;
+}
+.bit-css-color-primary-dark {
+    color: $color-primary-low;
+}
+.bit-css-color-primary-darker {
+    color: $color-primary-lower;
+}
+
+.bit-css-color-secondary-main {
+    color: $color-secondary-main;
+}
+.bit-css-color-secondary-light {
+    color: $color-secondary-high;
+}
+.bit-css-color-secondary-lighter {
+    color: $color-secondary-higher;
+}
+.bit-css-color-secondary-dark {
+    color: $color-secondary-low;
+}
+.bit-css-color-secondary-darker {
+    color: $color-secondary-lower;
+}
+
+// txt
+.bit-css-txt-primary {
+    color: $color-text-primary;
+}
+.bit-css-txt-primary2 {
+    color: $color-text-primary2;
+}
+.bit-css-txt-primary3 {
+    color: $color-text-primary3;
+}
+.bit-css-txt-secondary {
+    color: $color-text-secondary;
+}
+.bit-css-txt-secondary2 {
+    color: $color-text-secondary2;
+}
+.bit-css-txt-secondary3 {
+    color: $color-text-secondary3;
+}
+.bit-css-txt-disabled {
+    color: $color-text-disabled;
+}
+
+
+// bgcolor
+.bit-css-bgcolor-primary {
+    background-color: $color-background-primary;
+}
+
+.bit-css-bgcolor-primary2 {
+    background-color: $color-background-primary2;
+}
+
+.bit-css-bgcolor-primary3 {
+    background-color: $color-background-primary3;
+}
+
+.bit-css-bgcolor-secondary {
+    background-color: $color-background-secondary;
+}
+
+.bit-css-bgcolor-secondary2 {
+    background-color: $color-background-secondary2;
+}
+
+.bit-css-bgcolor-secondary3 {
+    background-color: $color-background-secondary3;
+}

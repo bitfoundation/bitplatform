@@ -11,7 +11,7 @@ public class BitToggleButtonTests : BunitTestContext
        DataRow(true, false, "Button label", BitIconName.Volume1, "title"),
        DataRow(false, true, "Button label", BitIconName.Volume2, "title"),
        DataRow(false, false, "Button label", BitIconName.Volume3, "title")
-   ]
+    ]
     public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, BitIconName? iconName, string title)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
@@ -23,9 +23,9 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
-        var bitIconTag = component.Find(".bit-tglb > span > i");
-        var bitLabelTag = component.Find(".bit-tglb > span > span");
+        var bitToggleButton = component.Find(".bit-tgb");
+        var bitIconTag = component.Find(".bit-tgb > span > i");
+        var bitLabelTag = component.Find(".bit-tgb > span > span");
 
         if (isEnabled)
         {
@@ -56,7 +56,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
+        var bitToggleButton = component.Find(".bit-tgb");
 
         bitToggleButton.Click();
 
@@ -71,18 +71,19 @@ public class BitToggleButtonTests : BunitTestContext
     ]
     public void BitToggleButtonShouldChangeIsCheckedParameterAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
     {
+        bool isCheckedBindingValue = isChecked;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
+        var bitToggleButton = component.Find(".bit-tgb");
 
         bitToggleButton.Click();
 
-        //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(isEnabled ? !isChecked : isChecked, component.Instance.IsChecked);
+        Assert.AreEqual(isEnabled ? !isChecked : isChecked, component.Instance.IsChecked);
+        Assert.AreEqual(isEnabled ? !isChecked : isChecked, isCheckedBindingValue);
     }
 
     [DataTestMethod,
@@ -91,20 +92,21 @@ public class BitToggleButtonTests : BunitTestContext
         DataRow(false, true),
         DataRow(false, false)
     ]
-    public void BitToggleButtonShouldAddRomveCheckedClassAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
+    public void BitToggleButtonShouldAddRemoveCheckedClassAfterClickWhenIsEnable(bool isEnabled, bool isChecked)
     {
+        bool isCheckedBindingValue = isChecked;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
+        var bitToggleButton = component.Find(".bit-tgb");
 
         bitToggleButton.Click();
 
-        //TODO: bypassed - BUnit 2-way bound parameters issue
-        //Assert.AreEqual(isEnabled ? !isChecked : isChecked, bitToggleButton.ClassList.Contains("bit-tglb-checked"));
+        Assert.AreEqual(isEnabled ? !isChecked : isChecked, bitToggleButton.ClassList.Contains("bit-tgb-chk"));
+        Assert.AreEqual(isEnabled ? !isChecked : isChecked, isCheckedBindingValue);
     }
 
     [DataTestMethod,
@@ -121,7 +123,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
-        var bitButton = component.Find(".bit-tglb");
+        var bitButton = component.Find(".bit-tgb");
         var hasTabindexAttr = bitButton.HasAttribute("tabindex");
 
         Assert.AreEqual(!isEnabled && !allowDisabledFocus, hasTabindexAttr);
@@ -140,7 +142,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaDescription, ariaDescription);
         });
 
-        var bitButton = component.Find(".bit-tglb");
+        var bitButton = component.Find(".bit-tgb");
 
         Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
 
@@ -155,7 +157,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitButton = component.Find(".bit-tglb");
+        var bitButton = component.Find(".bit-tgb");
 
         Assert.IsTrue(bitButton.HasAttribute("aria-label"));
 
@@ -174,9 +176,9 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, ariaHidden);
         });
 
-        var bitButton = component.Find(".bit-tglb");
+        var bitButton = component.Find(".bit-tgb");
 
-        Assert.AreEqual(ariaHidden ? true : false, bitButton.HasAttribute("aria-hidden"));
+        Assert.AreEqual(ariaHidden, bitButton.HasAttribute("aria-hidden"));
     }
 
     [DataTestMethod,
@@ -192,7 +194,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
+        var bitToggleButton = component.Find(".bit-tgb");
         var tagName = bitToggleButton.TagName;
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
@@ -214,17 +216,46 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OnChange, (e) => isCheckedAfterOnChange = e);
         });
 
-        var bitToggleButton = component.Find(".bit-tglb");
+        var bitToggleButton = component.Find(".bit-tgb");
 
         bitToggleButton.Click();
 
         if (defaultIsChecked is null)
         {
-            Assert.AreEqual(isCheckedAfterOnChange, true);
+            Assert.IsTrue(isCheckedAfterOnChange);
         }
         else
         {
             Assert.AreNotEqual(defaultIsChecked, isCheckedAfterOnChange);
         }
+    }
+
+    [DataTestMethod,
+        DataRow(BitButtonSize.Small),
+        DataRow(BitButtonSize.Medium),
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
+    ]
+    public void BitToggleButtonSizeTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitToggleButton>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
+        });
+
+        var sizeClass = size switch
+        {
+            BitButtonSize.Small => "bit-tgb-sm",
+            BitButtonSize.Medium => "bit-tgb-md",
+            BitButtonSize.Large => "bit-tgb-lg",
+            _ => "bit-tgb-md",
+        };
+
+        var bitToggleButton = com.Find(".bit-tgb");
+
+        Assert.IsTrue(bitToggleButton.ClassList.Contains(sizeClass));
     }
 }

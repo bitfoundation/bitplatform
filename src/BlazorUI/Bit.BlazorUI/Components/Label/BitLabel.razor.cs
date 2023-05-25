@@ -33,6 +33,6 @@ public partial class BitLabel
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsRequired ? "required" : string.Empty);
+        ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
     }
 }

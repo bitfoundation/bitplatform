@@ -66,8 +66,8 @@ public partial class BitOverlay
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? "visible" : "");
-        ClassBuilder.Register(() => AbsolutePosition ? "absolute" : "");
+        ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
+        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");
 
         StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
     }

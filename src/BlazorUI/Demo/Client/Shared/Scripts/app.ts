@@ -35,3 +35,8 @@ function highlightSnippet() {
 function goToTop() {
     window.scrollTo({ top: 0 });
 }
+
+function toggleBitTheme(isDark: boolean) {
+    console.log('isDark:', isDark)
+    document.documentElement.setAttribute('bit-theme', isDark ? 'dark' : 'light');
+}

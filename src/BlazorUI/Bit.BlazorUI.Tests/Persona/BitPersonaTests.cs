@@ -43,10 +43,10 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OptionalText, optionalText);
         });
 
-        var primaryEl = component.Find(".primary-text");
-        var secondaryEl = component.Find(".secondary-text");
-        var tertiaryTextEl = component.Find(".tertiary-text");
-        var optionalTextEl = component.Find(".optional-text");
+        var primaryEl = component.Find(".bit-prs-ptx");
+        var secondaryEl = component.Find(".bit-prs-stx");
+        var tertiaryTextEl = component.Find(".bit-prs-ttx");
+        var optionalTextEl = component.Find(".bit-prs-otx");
 
         Assert.AreEqual(text, primaryEl.TextContent.HasValue() ? primaryEl.TextContent : null);
         Assert.AreEqual(secondaryText, secondaryEl.TextContent.HasValue() ? secondaryEl.TextContent : null);
@@ -86,7 +86,7 @@ public class BitPersonaTests : BunitTestContext
             _ => "presence_unknown",
         };
 
-        var personaStatus = component.Find(".presence > i");
+        var personaStatus = component.Find(".bit-prs-pre > i");
 
         Assert.AreEqual($"bit-icon bit-icon--{presenceStatusClassName}", personaStatus.GetAttribute("class"));
     }
@@ -109,7 +109,7 @@ public class BitPersonaTests : BunitTestContext
         });
 
         var persona = component.Find(".bit-prs");
-        var personaSizeClass = $"size-{size}";
+        var personaSizeClass = $"bit-prs-{size}";
 
         Assert.IsTrue(persona.ClassList.Contains(personaSizeClass));
     }
@@ -127,7 +127,7 @@ public class BitPersonaTests : BunitTestContext
 
         if (imageUrl.HasValue())
         {
-            var personaImage = component.Find(".img");
+            var personaImage = component.Find(".bit-prs-img");
             var imageSrc = personaImage.GetAttribute("src");
 
             Assert.AreEqual(imageUrl, imageSrc);
@@ -151,7 +151,7 @@ public class BitPersonaTests : BunitTestContext
                 parameters.Add(p => p.Presence, presenceStatus);
             });
 
-        var presenceTitleClassName = component.Find(".presence");
+        var presenceTitleClassName = component.Find(".bit-prs-pre");
         var title = presenceTitleClassName.GetAttribute("title");
 
         Assert.AreEqual(presenceTitle, title);

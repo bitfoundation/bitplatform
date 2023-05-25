@@ -20,7 +20,7 @@ public class BitNumericTextFieldGeneralTests : BunitTestContext
             parameters.Add(p => p.Placeholder, placeholder);
         });
 
-        var numericTextFieldPlaceholder = component.Find(".input");
+        var numericTextFieldPlaceholder = component.Find(".bit-ntf-inp");
 
         Assert.IsTrue(numericTextFieldPlaceholder.HasAttribute("placeholder"));
         Assert.AreEqual(numericTextFieldPlaceholder.GetAttribute("placeholder"), placeholder);

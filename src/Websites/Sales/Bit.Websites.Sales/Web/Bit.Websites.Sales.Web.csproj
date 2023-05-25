@@ -26,14 +26,14 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="4.9.9" />
-        <PackageReference Include="Bit.Bup" Version="4.9.9" />
-        <PackageReference Include="Bit.Bswup" Version="4.9.9" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.9">
+        <PackageReference Include="Bit.BlazorUI" Version="4.9.10" />
+        <PackageReference Include="Bit.Bup" Version="4.9.10" />
+        <PackageReference Include="Bit.Bswup" Version="4.9.10" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="4.9.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="4.9.9">
+        <PackageReference Include="Bit.SourceGenerators" Version="4.9.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -41,10 +41,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.2.23153.2" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.2.23153.2" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.2.23153.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.2">
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.4.23259.5" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.4.23259.5" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.4.23259.5" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

@@ -1,5 +1,7 @@
 ﻿@page "/components/file-upload"
 
+<PageTitle>Bit BlazorUI - FileUpload</PageTitle>
+
 <ComponentDemo ComponentName="FileUpload"
                ComponentDescription="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by specifying the URL they have been uploaded. Moreover, it provides several other options including single or multiple or automatic file uploading. By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be. Additionally, by specifying file extensions, the files can be restricted to certain types."
                ComponentParameters="componentParameters"
@@ -8,9 +10,7 @@
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
-                <BitFileUpload Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl">
-                </BitFileUpload>
+                <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -22,8 +22,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl">
-                </BitFileUpload>
+                               UploadUrl="@ChunkedUploadUrl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -36,8 +35,7 @@
                                AutoUploadEnabled="true"
                                MaxSize="1024 * 1024 * 100"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl">
-                </BitFileUpload>
+                               UploadUrl="@ChunkedUploadUrl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -50,8 +48,7 @@
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl">
-                </BitFileUpload>
+                               UploadUrl="@ChunkedUploadUrl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -64,8 +61,7 @@
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
-                               ShowRemoveButton="true">
-                </BitFileUpload>
+                               ShowRemoveButton="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -78,8 +74,7 @@
                                AutoUploadEnabled="true"
                                OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl">
-                </BitFileUpload>
+                               UploadUrl="@ChunkedUploadUrl" />
             </div>
             <div class="example-desc">@onAllUploadsCompleteText</div>
         </ExamplePreview>
@@ -96,8 +91,7 @@
                                UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
                                RemoveUrl="@RemoveUrl"
                                RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })"
-                               RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })">
-                </BitFileUpload>
+                               RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -107,9 +101,8 @@
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
-                               EnableChunkedUpload="false"
-                               UploadUrl="@NonChunkedUploadUrl">
-                </BitFileUpload>
+                               ChunkedUploadEnabled="false"
+                               UploadUrl="@NonChunkedUploadUrl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

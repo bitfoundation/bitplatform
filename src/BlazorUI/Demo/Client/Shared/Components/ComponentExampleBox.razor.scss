@@ -1,34 +1,27 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .box {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
     width: 100%;
+    display: flex;
     max-width: 100%;
     margin-bottom: rem(36px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
 }
 
 .box-header {
-    position: relative;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: flex-end;
     width: 100%;
-    box-sizing: border-box;
-    border-bottom: rem(1px) solid #a19f9d;
+    display: flex;
+    position: relative;
+    flex-flow: row nowrap;
+    align-items: flex-end;
     margin-top: rem(64px);
-}
-
-.header-title {
-    font-weight: 600;
-    font-size: rem(20px);
-    color: #1a2027;
-    word-break: break-word;
-    white-space: break-spaces;
+    box-sizing: border-box;
+    justify-content: space-between;
+    border-bottom: rem(1px) solid $bit-color-border-secondary2;
 }
 
 .header-btn-group {
@@ -38,15 +31,12 @@
 }
 
 .box-content {
-    position: relative;
     width: 100%;
+    overflow: auto;
+    position: relative;
     min-height: rem(70px);
     box-sizing: border-box;
-    background-color: $White;
-    color: $Gray1;
-    font-size: rem(16px);
     line-height: rem(24px);
-    overflow: auto;
 
     /*pre {
         margin: 0;
@@ -75,16 +65,14 @@
 }
 
 ::deep .com-example-box-header-btn {
-    min-height: rem(40px);
     height: 100%;
-    background-color: transparent;
-    color: #2E2E2E !important;
-    border-radius: rem(4px) rem(4px) 0 0;
-    border: rem(1px) solid #a19f9d !important;
+    min-height: rem(40px);
     border-bottom: none !important;
+    border-radius: rem(4px) rem(4px) 0 0;
+    border: rem(1px) solid $bit-color-border-secondary2;
 
-    &:hover {
-        background-color: #f3f2f1;
+    &:first-child {
+        min-width: rem(130px);
     }
 
     .content-container {

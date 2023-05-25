@@ -17,27 +17,27 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitColorPickerMustRespectUiChange(bool visibility)
+    public void BitColorPickerMustRespectUiChange(bool show)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.ShowAlphaSlider, visibility);
-            parameters.Add(p => p.ShowPreview, visibility);
+            parameters.Add(p => p.ShowPreview, show);
+            parameters.Add(p => p.ShowAlphaSlider, show);
             parameters.Add(p => p.Color, "rgb(255,255,255)");
         });
 
-        if (visibility)
+        if (show)
         {
-            var slider = com.Find(".alpha-slider");
+            var slider = com.Find(".bit-clp-asd");
             Assert.IsNotNull(slider);
 
-            var previewBox = com.Find(".preview-box");
+            var previewBox = com.Find(".bit-clp-pre");
             Assert.IsNotNull(previewBox);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".alpha-slider"));
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".preview-box"));
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-asd"));
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-pre"));
         }
     }
 

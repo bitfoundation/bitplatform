@@ -1,192 +1,174 @@
 ﻿@import "../../Styles/functions.scss";
 
-@mixin getStyle($enabled: true, $checked: true) {
-    label {
-        @if $enabled {
-            color: $color-neutrals-gray160;
+.bit-tgl {
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-tgl-lbl {
+            color: $color-text-disabled;
         }
-        @else {
-            color: $color-neutrals-gray90;
-        }
-    }
 
-    .container {
-        button {
-            @if $enabled {
-                @if $checked {
-                    border: $shape-border-width $shape-border-style transparent;
-                    cursor: pointer;
-                    background: $color-primary-main;
-                    justify-content: flex-end;
+        .bit-tgl-btn {
+            cursor: default;
+            background: $color-background-disabled;
+            border: $shape-border-width $shape-border-style $color-border-disabled;
 
-                    .state {
-                        background-color: $color-background-primary;
-                    }
-
-                    &:hover {
-                        background-color: $color-primary-darker;
-                        border-color: transparent;
-                    }
-                }
-                @else {
-                    border: $shape-border-width $shape-border-style $color-neutrals-gray130;
-                    cursor: pointer;
-                    background: $color-neutrals-white;
-
-                    .state {
-                        background-color: $color-neutrals-gray130;
-                    }
-
-                    &:hover {
-                        border-color: $color-neutrals-gray160;
-
-                        .state {
-                            background-color: $color-neutrals-gray160;
-                        }
+            @media (hover: hover) {
+                &:hover {
+                    .bit-tgl-sta {
+                        background-color: $color-background-primary3;
                     }
                 }
             }
-            @else {
-                @if $checked {
-                    border: $shape-border-width $shape-border-style transparent;
-                    cursor: default;
-                    background: $color-neutrals-gray60;
-                    justify-content: flex-end;
+        }
 
-                    .state {
-                        background-color: $color-neutrals-gray20;
+        .bit-tgl-sta {
+            background-color: $color-background-primary3;
+        }
+
+        &.bit-tgl-chk {
+            .bit-tgl-btn {
+                justify-content: flex-end;
+                background: $color-background-disabled;
+                border: $shape-border-width $shape-border-style transparent;
+            }
+
+            .bit-tgl-sta {
+                background-color: $color-background-disabled;
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-tgl-btn {
+            border-color: $color-state-invalid;
+        }
+
+        .bit-tgl-stx {
+            color: $color-state-invalid;
+        }
+
+        &.bit-tgl-chk {
+            .bit-tgl-btn {
+                background-color: $color-state-invalid;
+
+                @media (hover: hover) {
+                    &:hover {
+                        background-color: $color-state-invalid-hover;
                     }
                 }
-                @else {
-                    border: $shape-border-width $shape-border-style $color-neutrals-gray60;
-                    cursor: default;
-                    background: $color-neutrals-white;
+            }
 
-                    .state {
-                        background-color: $color-neutrals-gray60;
-                    }
-                }
+            .bit-tgl-stx {
+                color: $color-state-invalid;
             }
         }
     }
 }
 
-.bit-tgl {
-    font-family: $typography-font-family;
-    font-size: inherit;
-    font-weight: inherit;
+.bit-tgl-lbl {
+    margin: 0;
+    box-shadow: none;
+    font-weight: 600;
+    display: inline-block;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $color-text-primary;
+}
 
-    label {
-        font-size: spacing(1.75);
-        font-weight: 600;
-        box-sizing: border-box;
-        box-shadow: none;
-        margin: 0;
+.bit-tgl-cnt {
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.bit-tgl-btn {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    position: relative;
+    align-items: center;
+    outline: transparent;
+    height: spacing(2.5);
+    min-width: spacing(5);
+    box-sizing: border-box;
+    font-size: spacing(2.5);
+    padding: 0 spacing(0.375);
+    border-radius: spacing(1.25);
+    transition: all 0.1s ease 0s;
+    background: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary2;
+
+            .bit-tgl-sta {
+                background-color: $color-action-hover-background-secondary2;
+            }
+        }
+    }
+}
+
+.bit-tgl-sta {
+    display: block;
+    border-radius: 50%;
+    width: spacing(1.5);
+    height: spacing(1.5);
+    box-sizing: border-box;
+    transition: all 0.1s ease 0s;
+    background-color: $color-background-secondary3;
+    border: spacing(0.75) $shape-border-style transparent;
+}
+
+.bit-tgl-stx {
+    padding: 0;
+    font-weight: 400;
+    user-select: none;
+    margin: 0 spacing(1);
+}
+
+.bit-tgl-chk {
+    .bit-tgl-btn {
+        cursor: pointer;
+        justify-content: flex-end;
+        background: $color-primary-main;
+        border: $shape-border-width $shape-border-style transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
+                background-color: $color-action-hover-primary;
+
+                .bit-tgl-sta {
+                    background-color: $color-action-hover-background-primary;
+                }
+            }
+        }
+    }
+
+    .bit-tgl-sta {
+        background-color: $color-background-primary;
+    }
+}
+
+.bit-tgl-inl {
+    display: flex;
+    align-items: center;
+
+    .bit-tgl-lbl {
+        margin: 0 spacing(2) 0 0;
+    }
+}
+
+.bit-tgl-noo {
+    .bit-tgl-stx {
+        order: 1;
+        margin: 0 spacing(2);
         display: inline-block;
-        padding: spacing(0.625) 0;
-        overflow-wrap: break-word;
-    }
-
-    .container {
-        display: flex;
-        position: relative;
-        align-items: center;
-
-        button {
-            outline: transparent;
-            position: relative;
-            font-size: spacing(2.5);
-            box-sizing: border-box;
-            width: spacing(5);
-            min-width: spacing(5);
-            height: spacing(2.5);
-            border-radius: spacing(1.25);
-            transition: all 0.1s ease 0s;
-            display: flex;
-            align-items: center;
-            padding: 0 spacing(0.375);
-
-            .state {
-                display: block;
-                width: spacing(1.5);
-                height: spacing(1.5);
-                border-radius: 50%;
-                transition: all 0.1s ease 0s;
-                border: spacing(0.75) $shape-border-style transparent;
-                box-sizing: border-box;
-            }
-        }
-
-        .state-text {
-            padding: 0;
-            margin: 0 spacing(1);
-            font-weight: 400;
-            user-select: none;
-        }
-    }
-
-    &.enabled-checked {
-        @include getStyle();
-    }
-
-    &.enabled-unchecked {
-        @include getStyle($enabled:true, $checked:false);
-    }
-
-    &.disabled-checked {
-        @include getStyle($enabled:false, $checked:true);
-    }
-
-    &.disabled-unchecked {
-        @include getStyle($enabled:false, $checked:false);
-    }
-
-    &.inline {
-        display: flex;
-        align-items: center;
-
-        label {
-            margin: 0 spacing(2) 0 0;
-        }
-    }
-
-    &.noonoff {
-        .container {
-            .state-text {
-                display: inline-block;
-                margin: 0 spacing(2);
-                order: 1;
-            }
-        }
-    }
-
-    &.invalid {
-        &.enabled-unchecked {
-            .container {
-                button {
-                    border-color: $color-state-invalid;
-                }
-
-                .state-text {
-                    color: $color-state-invalid;
-                }
-            }
-        }
-
-        &.enabled-checked {
-            .container {
-                button {
-                    background-color: $color-state-invalid;
-
-                    &:hover {
-                        background-color: $color-state-invalid-hover;
-                    }
-                }
-
-                .state-text {
-                    color: $color-state-invalid;
-                }
-            }
-        }
     }
 }

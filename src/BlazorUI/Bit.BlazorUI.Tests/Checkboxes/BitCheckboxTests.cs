@@ -39,7 +39,7 @@ public class BitCheckboxTests : BunitTestContext
             Assert.IsTrue(checkBox.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("checked"));
+        Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("bit-chb-ckd"));
         chbCheckbox.Click();
         Assert.AreEqual(isEnabled, clicked);
         Assert.AreEqual(isEnabled, changed);
@@ -60,11 +60,11 @@ public class BitCheckboxTests : BunitTestContext
 
         if (boxSide is BitCheckBoxSide.End)
         {
-            Assert.IsTrue(checkBox.ClassList.Contains("side-end"));
+            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-se"));
         }
         else
         {
-            Assert.IsFalse(checkBox.ClassList.Contains("side-end"));
+            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-se"));
         }
     }
 
@@ -72,7 +72,7 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void IndeterminatedBitCheckboxShouldHaveCorrectClassNameIfIsEnabled(bool isEnabled)
+    public void IndeterminateBitCheckboxShouldHaveCorrectClassNameIfIsEnabled(bool isEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -88,7 +88,7 @@ public class BitCheckboxTests : BunitTestContext
 
         if (isEnabled)
         {
-            Assert.IsTrue(!chb.ClassList.Contains("bit-chb-indeterminate-fluent"));
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-ind"));
         }
     }
 
@@ -264,7 +264,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
         });
 
-        var icon = component.Find(".checkbox i.bit-icon");
+        var icon = component.Find(".bit-chb-ctn i.bit-icon");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName.GetName()}"));
     }
@@ -280,7 +280,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
         });
 
-        var icon = component.Find(".checkbox i.bit-icon");
+        var icon = component.Find(".bit-chb-ctn i.bit-icon");
 
         if (ariaLabel is not null)
         {

@@ -1,33 +1,34 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
-    <div class="header @(IsExpanded ? "expanded" : "collapsed")"
-         role="button"
-         tabindex="@(IsEnabled ? 0 : -1)"
-         aria-expanded="@IsExpanded"
-         @onclick="HandleOnClick">
+
+    <button @onclick="HandleOnClick"
+            role="button"
+            class="bit-acd-hdr"
+            aria-expanded="@IsExpanded"
+            tabindex="@(IsEnabled ? 0 : -1)">
         @if (HeaderTemplate is not null)
         {
             @HeaderTemplate(IsExpanded)
         }
         else
         {
-            <div class="title-description-wrapper">
-                <div class="title">@Title</div>
-                <div class="description">@Description</div>
+            <div class="bit-acd-wrp">
+                <div class="bit-acd-ttl">@Title</div>
+                <div class="bit-acd-des">@Description</div>
             </div>
-            <i class="header-icon bit-icon bit-icon--ChevronDown"></i>
+            <i class="bit-icon bit-icon--ChevronDown bit-acd-hic@(IsExpanded ? " bit-acd-hex" : "")"></i>
         }
-    </div>
+    </button>
+
     <div>
-        <div class="content @(IsExpanded ? "expanded" : "collapsed")"
-             role="region"
-             tabindex="@(IsEnabled ? 0 : -1)">
+        <div role="region"
+             tabindex="@(IsEnabled ? 0 : -1)"
+             class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco")">
             @ChildContent
         </div>
     </div>

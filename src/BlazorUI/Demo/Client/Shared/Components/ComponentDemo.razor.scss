@@ -1,32 +1,31 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .component-demo-container {
     width: 100%;
 }
 
 .demo-section {
-    position: relative;
     width: 100%;
-    padding: rem(28px);
-    margin-bottom: rem(28px);
-    border-radius: rem(4px);
-    border: rem(1px) solid #E0E3E7;
-    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.13), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.11);
-    box-sizing: border-box;
-    background-clip: padding-box;
-    background-color: $White;
     overflow: hidden;
+    position: relative;
+    padding: rem(28px);
+    box-sizing: border-box;
+    border-radius: rem(4px);
+    margin-bottom: rem(28px);
+    background-clip: padding-box;
+    background-color: $bit-color-background-primary;
+    border: rem(1px) solid $bit-color-border-primary2;
 }
 
 .table-view {
     width: 100%;
-    margin-bottom: rem(40px);
-    box-sizing: border-box;
-    background-color: $White;
     overflow: hidden;
     border-spacing: 0;
+    box-sizing: border-box;
+    margin-bottom: rem(40px);
 
     @include lt-xl {
         border-radius: rem(8px);
@@ -34,15 +33,15 @@
 }
 
 .th-row {
-    display: flex;
     width: 100%;
+    display: flex;
     min-height: rem(42px);
 }
 
 .tdata-row {
-    display: flex;
     width: 100%;
-    border-bottom: rem(1px) solid #edebe9;
+    display: flex;
+    border-bottom: rem(1px) solid $bit-color-border-secondary2;
 
     &:last-child {
         border: none;
@@ -51,18 +50,17 @@
 
 .th-cell {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
     min-height: 100%;
-    padding: rem(5px) rem(16px) rem(5px) rem(16px);
-    box-sizing: border-box;
-    font-size: rem(14px);
     font-weight: 600;
     text-align: left;
     overflow: hidden;
+    align-items: center;
+    font-size: rem(14px);
+    box-sizing: border-box;
     text-overflow: ellipsis;
-    color: #323130;
+    justify-content: flex-start;
     background-color: transparent;
+    padding: rem(5px) rem(16px) rem(5px) rem(16px);
 
     &:last-child {
         border: none;
@@ -71,19 +69,17 @@
 
 .td-cell {
     display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: rem(16px);
-    box-sizing: border-box;
-    font-size: rem(11px);
     text-align: left;
-    color: $Gray1;
+    overflow: hidden;
+    padding: rem(16px);
     text-overflow: clip;
     white-space: normal;
-    overflow: hidden;
+    font-size: rem(11px);
+    box-sizing: border-box;
     word-break: break-word;
-    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
-
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
     &:last-child {
         border: none;
@@ -128,7 +124,6 @@
 ::deep .param-table-link {
     a {
         cursor: pointer;
-        color: $B2Color;
         font-size: rem(11px);
         line-height: rem(24px);
     }

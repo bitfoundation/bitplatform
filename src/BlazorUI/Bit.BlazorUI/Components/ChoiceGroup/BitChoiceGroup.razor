@@ -18,7 +18,7 @@
 
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
         
-        <label class="bit-chg-label" id="@_labelId" disabled="@(IsEnabled is false)">
+        <label class="bit-chg-lbl" id="@_labelId" disabled="@(IsEnabled is false)">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -29,7 +29,7 @@
             }
         </label>
 
-        <div class="bit-chg-field-group @LayoutFlow?.GetDisplayName()">
+        <div class="bit-chg-cnt @LayoutFlow?.GetDisplayName()">
             @foreach (var item in _items)
             {
                 <div class="@GetDivClassNameItem(item)">
@@ -63,8 +63,8 @@
                                 {
                                     @if (GetImageSrc(item).HasValue())
                                     {
-                                        <div class="bit-chgi-img-field">
-                                            <div class="bit-chgi-img-wrapper">
+                                        <div class="bit-chgi-img-cnt">
+                                            <div class="bit-chgi-img-wrp">
                                                 <div class="bit-chgi-img" style="@($"width:{GetImageSize(item).Width}px; height:{GetImageSize(item).Height}px;")">
                                                     <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrc(item) : GetImageSrc(item))" alt="@GetImageAlt(item)">
                                                 </div>
@@ -73,15 +73,15 @@
                                     }
                                     @if (GetIconName(item).HasValue)
                                     {
-                                        <div class="bit-chgi-icon-field">
-                                            <div class="bit-chgi-icon-wrapper">
+                                        <div class="bit-chgi-ico-cnt">
+                                            <div class="bit-chgi-ico-wrp">
                                                 <i aria-hidden="true" class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
                                             </div>
                                         </div>
                                     }
                                     @if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
                                     {
-                                        <div class="bit-chgi-txt-wrapper">
+                                        <div class="bit-chgi-wrp">
                                             <span class="bit-chgi-txt">
                                                 @GetText(item)
                                             </span>

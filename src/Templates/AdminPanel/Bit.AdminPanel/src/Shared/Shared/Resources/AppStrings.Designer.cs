@@ -1763,6 +1763,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Terms.
+        /// </summary>
+        public static string TermsTitle {
+            get {
+                return ResourceManager.GetString("TermsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to To Do item could not be found.
         /// </summary>
         public static string ToDoItemCouldNotBeFound {

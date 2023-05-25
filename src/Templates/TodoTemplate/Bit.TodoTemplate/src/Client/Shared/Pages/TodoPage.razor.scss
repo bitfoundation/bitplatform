@@ -13,7 +13,7 @@
     box-sizing: border-box;
 
     @include lg {
-        padding: rem(48px) rem(16px) rem(48px) rem(48px);
+        padding: rem(48px) rem(16px);
     }
 
     @include md {

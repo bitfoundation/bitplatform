@@ -57,17 +57,13 @@ public partial class BitColorPickerDemo
 
 
     private readonly string example1HTMLCode = @"
-<div class=""example"">
-    <BitLabel>Rgb</BitLabel>
-    <BitColorPicker @bind-Color=""BasicRgbColor"" />
-    <span>Color: @BasicRgbColor</span>
-</div>
-<div class=""example"">
-    <BitLabel>Hex</BitLabel>
-    <BitColorPicker @bind-Color=""BasicHexColor"" />
-    <span>Color: @BasicHexColor</span>
-</div>
-";
+<BitLabel>Rgb</BitLabel>
+<BitColorPicker @bind-Color=""BasicRgbColor"" />
+<span>Color: @BasicRgbColor</span>
+
+<BitLabel>Hex</BitLabel>
+<BitColorPicker @bind-Color=""BasicHexColor"" />
+<span>Color: @BasicHexColor</span>";
     private readonly string example1CSharpCode = @"
 private string BasicRgbColor = ""rgb(255,255,255)"";
 private string BasicHexColor = ""#FFFFFF"";
@@ -76,21 +72,18 @@ private string BasicHexColor = ""#FFFFFF"";
     private readonly string example2HTMLCode = @"
 <BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
 <span>Color: @AlphaRgbColor</span>
-<span>Alpha: @Alpha</span>
-";
+<span>Alpha: @Alpha</span>";
     private readonly string example2CSharpCode = @"
 private string AlphaRgbColor = ""rgb(255,255,255)"";
 private double Alpha = 1;
 ";
 
     private readonly string example3HTMLCode = @"
-<BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />
-";
+<BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />";
 
     private readonly string example4HTMLCode = @"
 <BitColorPicker @bind-Color=""TwoWayColor"" ShowPreview=""true"" />
-<BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />
-";
+<BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />";
     private readonly string example4CSharpCode = @"
 private string TwoWayColor = ""#FFFFFF"";
 ";
@@ -98,8 +91,7 @@ private string TwoWayColor = ""#FFFFFF"";
     private readonly string example5HTMLCode = @"
 <BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
 <span>Color (Hex): @ColorValue?.Color</span>
-<span>Alpha: @ColorValue?.Alpha</span>
-";
+<span>Alpha: @ColorValue?.Alpha</span>";
     private readonly string example5CSharpCode = @"
 private BitColorValue ColorValue;
 ";
@@ -110,8 +102,7 @@ private BitColorValue ColorValue;
 <span>Hex: @ColorPicker?.Hex</span>
 <span>Rgb: @ColorPicker?.Rgb</span>
 <span>Rgba: @ColorPicker?.Rgba</span>
-<span>Hsv: @ColorPicker?.Hsv</span>
-";
+<span>Hsv: @ColorPicker?.Hsv</span>";
     private readonly string example6CSharpCode = @"
 private string BoundColor = ""#FFFFFF"";
 private BitColorPicker ColorPicker;
@@ -125,13 +116,9 @@ private BitColorPicker ColorPicker;
     }
 </style>
 
-<div>
-    <BitLabel>Class</BitLabel>
-    <BitColorPicker ShowAlphaSlider=""true"" Class=""custom-color-picker"" />
-</div>
-<div>
-    <BitLabel>Style</BitLabel>
-    <BitColorPicker ShowAlphaSlider=""true"" Style=""width: 250px; height: 150px;"" />
-</div>
-";
+<BitLabel>Class</BitLabel>
+<BitColorPicker ShowAlphaSlider=""true"" Class=""custom-color-picker"" />
+
+<BitLabel>Style</BitLabel>
+<BitColorPicker ShowAlphaSlider=""true"" Style=""width: 250px; height: 150px;"" />";
 }

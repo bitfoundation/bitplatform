@@ -1,5 +1,7 @@
 ﻿@page "/components/modal"
 
+<PageTitle>Bit BlazorUI - Modal</PageTitle>
+
 <ComponentDemo ComponentName="Modal"
                ComponentDescription="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a modal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
                ComponentParameters="componentParameters"
@@ -255,3 +257,22 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private bool IsOpen = false;
+    private bool IsOpen1 = false;
+    private bool IsOpen2 = false;
+    private bool IsOpen3 = false;
+    private bool IsOpen4 = false;
+    private bool IsOpenInPosition = false;
+    private BitModalPosition position;
+    private bool IsDraggable = false;
+    private bool IsOpen5 = false;
+    private bool IsOpen6 = false;
+
+    private void OpenModalInPosition(BitModalPosition positionValue)
+    {
+        IsOpenInPosition = true;
+        position = positionValue;
+    }
+}

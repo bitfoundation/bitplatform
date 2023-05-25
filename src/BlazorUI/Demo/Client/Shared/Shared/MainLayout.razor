@@ -3,7 +3,7 @@
 
 <Header />
 
-<main class="bit-bg-primary @(CurrentUrl == "/" || CurrentUrl == "/icons" ? "full-page" : "")">
+<main class="@(CurrentUrl == "/" ? "full-page" : "")  @BitCss.BgColor.Primary">
     @if (CurrentUrl != "/")
     {
         <NavMenu />

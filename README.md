@@ -13,17 +13,17 @@ Out-of-the-box, Bit Platform offers simple configurations for Android, iOS, Wind
 
 The following websites are developed by Bit Platform and published in Blazor Web Assembly:
 
-* [Bit Components web site](https://components.bitplatform.dev/)
-* [Bit Components mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/bitcomponents/distribution_groups/testers)
+* [Bit Blazor UI Demo web site](https://components.bitplatform.dev/)
+* [Bit Blazor UI Demo mobile app](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo)
 
 * [Bit Platform web site](https://bitplatform.dev/)
 
 * [Todo SSR enabled web app](https://todo.bitplatform.dev/)
 * [Todo PWA](https://todo-app.bitplatform.dev/)
-* [Todo mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/todo/distribution_groups/testers)
+* [Todo mobile app](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template)
 
 * [Admin panel multilingual web app](https://adminpanel.bitplatform.dev/)
-* [Admin panel multilingual mobile app](https://install.appcenter.ms/orgs/bitfoundation/apps/adminpanel/distribution_groups/testers)
+* [Admin panel multilingual mobile app](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template)
 
 Keep in mind that if a web app is only fast in the Blazor Server mode but slow in Blazor Web Assembly mode, it will also be slow in Blazor Hybrid mode (Android, iOS, macOS, and Windows apps) and Blazor Electron (Windows, macOS and Linux apps)
 

@@ -9,7 +9,7 @@
             <BitBreadcrumb Items="_currentBreadcrumbItems" Class="header-breadcrumb" />
         </div>
 
-        <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropDown>
+        <div class="header-content-container" style="cursor: pointer" @onclick=@ToggleHeaderDropdown>
             <BitPersona ImageUrl="@_profileImageUrl"
                         Size=@BitPersonaSize.Size32
                         Text="@(string.IsNullOrWhiteSpace(_user.FullName) ? _user.UserName : _user.FullName)"

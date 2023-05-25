@@ -94,72 +94,52 @@ public partial class BitSearchBoxDemo
 
 
     private readonly string example1HTMLCode = @"
-<div>
-    <BitLabel>Basic</BitLabel>
-    <BitSearchBox Placeholder=""Search"" />
-</div>
-<div>
-    <BitLabel>Disabled</BitLabel>
-    <BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />
-</div>
-";
+<BitLabel>Basic</BitLabel>
+<BitSearchBox Placeholder=""Search"" />
+    
+<BitLabel>Disabled</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />";
 
     private readonly string example2HTMLCode = @"
-<div>
-    <BitLabel>Basic Underlined SearchBox</BitLabel>
-    <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
-</div>
-<div>
-    <BitLabel>Disabled Underlined SearchBox</BitLabel>
-    <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />
-</div>
-";
+<BitLabel>Basic Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
+
+<BitLabel>Disabled Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
     private readonly string example3HTMLCode = @"
-<div>
-    <BitLabel>SearchBox with fixed icon</BitLabel>
-    <BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
-</div>
-<div>
-    <BitLabel>SearchBox without icon animation</BitLabel>
-    <BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
-</div>
-<div>
-    <BitLabel>SearchBox with custom icon</BitLabel>
-    <BitSearchBox Placeholder=""Search"" IconName=""BitIconName.Filter"" />
-</div>
-";
+<BitLabel>SearchBox with fixed icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
+
+<BitLabel>SearchBox without icon animation</BitLabel>
+<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
+
+<BitLabel>SearchBox with custom icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" IconName=""BitIconName.Filter"" />";
 
     private readonly string example4HTMLCode = @"
-<div>
-    <BitLabel>Two-way Bind</BitLabel>
-    <BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
-    <BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
-</div>
-<div>
-    <BitLabel>OnChange</BitLabel>
-    <BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" />
-    <span>Search Value: @OnChangeSearchValue</span>
-</div>
-<div>
-    <BitLabel>OnSearch (Serach by Enter)</BitLabel>
-    <BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
-    <span>Search Value: @OnSearchValue</span>
-</div>
-";
+<BitLabel>Two-way Bind</BitLabel>
+<BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
+
+<BitLabel>OnChange</BitLabel>
+<BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" />
+<span>Search Value: @OnChangeSearchValue</span>
+
+<BitLabel>OnSearch (Serach by Enter)</BitLabel>
+<BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
+<span>Search Value: @OnSearchValue</span>";
     private readonly string example4CSharpCode = @"
 private string TwoWaySearchValue;
 private string OnChangeSearchValue;
-private string OnSearchValue;
-";
+private string OnSearchValue;";
 
     private readonly string example5HTMLCode = @"
 <EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
     <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
-</EditForm>
-";
+</EditForm>";
     private readonly string example5CSharpCode = @"
 public class ValidationSearchBoxModel
 {
@@ -167,6 +147,5 @@ public class ValidationSearchBoxModel
     public string Text { get; set; }
 }
 
-private ValidationSearchBoxModel ValidationSearchBoxModel = new();
-";
+private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
 }

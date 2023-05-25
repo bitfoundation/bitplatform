@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "outputFile": "Components/ComponentDemo.razor.css",
         "inputFile": "Components/ComponentDemo.razor.scss"
@@ -6,10 +6,6 @@
     {
         "outputFile": "Components/ComponentExampleBox.razor.css",
         "inputFile": "Components/ComponentExampleBox.razor.scss"
-    },
-    {
-        "outputFile": "Components/PopularComponents.razor.css",
-        "inputFile": "Components/PopularComponents.razor.scss"
     },
     {
         "outputFile": "Components/SideRail.razor.css",
@@ -42,6 +38,38 @@
     {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/HeroSection.razor.css",
+        "inputFile": "Pages/Home/HeroSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/PopularComponents.razor.css",
+        "inputFile": "Pages/Home/PopularComponents.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/BenefitsSection.razor.css",
+        "inputFile": "Pages/Home/BenefitsSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/Home/ComponentsSection.razor.css",
+        "inputFile": "Pages/Home/ComponentsSection.razor.scss"
+    },
+    {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/IconographyPage.razor.css",
+        "inputFile": "Pages/IconographyPage.razor.scss"
+    },
+    {
+        "outputFile": "Pages/OverviewPage.razor.css",
+        "inputFile": "Pages/OverviewPage.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
@@ -84,8 +112,8 @@
         "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/Lists/BitBasicList/BitBasicListDemo.razor.css",
-        "inputFile": "Pages/Components/Lists/BitBasicList/BitBasicListDemo.razor.scss"
+        "outputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.css",
+        "inputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Loading/BitLoadingDemo.razor.css",
@@ -96,8 +124,8 @@
         "inputFile": "Pages/Components/Modal/BitModalDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.css",
-        "inputFile": "Pages/Components/Notification/BitMessageBarDemo.razor.scss"
+        "outputFile": "Pages/Components/MessageBar/BitMessageBarDemo.razor.css",
+        "inputFile": "Pages/Components/MessageBar/BitMessageBarDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Nav/BitNavDemo.razor.css",
@@ -132,18 +160,6 @@
         "inputFile": "Pages/Components/Toggle/BitToggleDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/GettingStartedPage.razor.css",
-        "inputFile": "Pages/GettingStartedPage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss"
-    },
-    {
-        "outputFile": "Pages/IconsPage.razor.css",
-        "inputFile": "Pages/IconsPage.razor.scss"
-    },
-    {
         "outputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.css",
         "inputFile": "Pages/Components/TextField/BitTextFieldDemo.razor.scss"
     },
@@ -172,8 +188,8 @@
         "inputFile": "Pages/Components/Rating/BitRatingDemo.razor.scss"
     },
     {
-        "outputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.css",
-        "inputFile": "Pages/Components/DropDown/BitDropDownDemo.razor.scss"
+        "outputFile": "Pages/Components/Dropdown/BitDropdownDemo.razor.css",
+        "inputFile": "Pages/Components/Dropdown/BitDropdownDemo.razor.scss"
     },
     {
         "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
@@ -182,10 +198,6 @@
     {
         "outputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.scss"
-    },
-    {
-        "outputFile": "Pages/OverviewPage.razor.css",
-        "inputFile": "Pages/OverviewPage.razor.scss"
     },
     {
         "outputFile": "Pages/Components/NumericTextField/BitNumericTextFieldDemo.razor.css",
@@ -218,5 +230,9 @@
     {
         "outputFile": "Pages/Components/Typography/BitTypographyDemo.razor.css",
         "inputFile": "Pages/Components/Typography/BitTypographyDemo.razor.scss"
+    },
+    {
+        "outputFile": "Pages/TermsPage.razor.css",
+        "inputFile": "Pages/TermsPage.razor.scss"
     }
 ]

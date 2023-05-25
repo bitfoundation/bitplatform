@@ -1,5 +1,7 @@
 ﻿@page "/components/rating"
 
+<PageTitle>Bit BlazorUI - Rating</PageTitle>
+
 <ComponentDemo ComponentName="Rating"
                ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
                ComponentParameters="componentParameters"
@@ -12,11 +14,13 @@
                     <BitRating @bind-Value="RatingBasicValue" />
                     <span>Rate: @RatingBasicValue</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Disabled:</BitLabel>
                     <BitRating IsEnabled="false" @bind-Value="RatingDisabledValue" />
                     <span>Rate: @RatingDisabledValue</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Readonly:</BitLabel>
                     <BitRating IsReadOnly="true" @bind-Value="RatingReadonlyValue" />
@@ -32,17 +36,19 @@
                 <div>
                     <BitLabel>Max is 6</BitLabel>
                     <BitRating Max="6" @bind-Value="RatingMaxValue1" />
-                    <span>Rate: @RatingMaxValue1</span>
+                    <span>Value: @RatingMaxValue1</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Max is 10</BitLabel>
                     <BitRating Max="10" @bind-Value="RatingMaxValue2" />
-                    <span>Rate: @RatingMaxValue2</span>
+                    <span>Value: @RatingMaxValue2</span>
                 </div>
+                <br />
                 <div style="width: 200px;">
                     <BitLabel>Max is 100</BitLabel>
                     <BitRating Max="100" @bind-Value="RatingMaxValue3" />
-                    <span>Rate: @RatingMaxValue3</span>
+                    <span>Value: @RatingMaxValue3</span>
                 </div>
             </div>
         </ExamplePreview>
@@ -54,17 +60,19 @@
                 <div>
                     <BitLabel>Heart:</BitLabel>
                     <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
-                    <span>Rate: @RatingCustomIconValue1</span>
+                    <span>Value: @RatingCustomIconValue1</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Checkbox:</BitLabel>
                     <BitRating Icon="BitIconName.CheckboxCompositeReversed" UnselectedIcon="BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
-                    <span>Rate: @RatingCustomIconValue2</span>
+                    <span>Value: @RatingCustomIconValue2</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Like:</BitLabel>
                     <BitRating Icon="BitIconName.LikeSolid" UnselectedIcon="BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
-                    <span>Rate: @RatingCustomIconValue3</span>
+                    <span>Value: @RatingCustomIconValue3</span>
                 </div>
             </div>
         </ExamplePreview>
@@ -76,12 +84,13 @@
                 <div>
                     <BitLabel>Small:</BitLabel>
                     <BitRating Size="BitRatingSize.Small" @bind-Value="RatingSmallValue" />
-                    <span>Rate: @RatingSmallValue</span>
+                    <span>Value: @RatingSmallValue</span>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Large:</BitLabel>
                     <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" />
-                    <span>Rate: @RatingLargeValue</span>
+                    <span>Value: @RatingLargeValue</span>
                 </div>
             </div>
         </ExamplePreview>
@@ -94,17 +103,19 @@
                 <div>
                     <BitLabel>One-way:</BitLabel>
                     <BitRating AllowZeroStars="true" Value="RatingControlledValue1" />
-                    <BitToggleButton OnChange="(v) =>  RatingControlledValue1 = v ? 5 : 0" Label="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
+                    <BitToggleButton OnChange="v =>  RatingControlledValue1 = v ? 5 : 0" Label="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>Two-way:</BitLabel>
                     <BitRating Max="6" @bind-Value="RatingControlledValue2" />
                     <BitSpinButton Step="0.1" @bind-Value="RatingControlledValue2" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>OnChange:</BitLabel>
                     <BitRating DefaultValue="2" OnChange="(v) => RatingControlledValue3 = v" />
-                    <span>Rate: @RatingControlledValue3</span>
+                    <span>Changed Value: @RatingControlledValue3</span>
                 </div>
             </div>
         </ExamplePreview>

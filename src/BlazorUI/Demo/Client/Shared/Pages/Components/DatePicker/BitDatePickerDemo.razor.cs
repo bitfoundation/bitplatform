@@ -292,7 +292,7 @@ public partial class BitDatePickerDemo
             Id = "component-visibility-enum",
             Name = "BitComponentVisibility",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -319,7 +319,7 @@ public partial class BitDatePickerDemo
             Id = "icon-location-enum",
             Name = "BitIconLocation",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -513,9 +513,9 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 
     private readonly string example13HTMLCode = @"
 <style>
-.weekend-cell {
-    color: red;
-}
+    .weekend-cell {
+        color: red;
+    }
 </style>
 
 <BitDatePicker Style=""max-width: 350px""
@@ -530,47 +530,35 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 
     private readonly string example14HTMLCode = @"
 <style>
-.custom-day-cell {
-    position: relative;
-    width: 44px !important;
-    height: 44px !important;
-}
-
-.discount-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    width: fit-content !important;
-    height: 16px !important;
-    border-radius: 2px;
-    padding: 0 4px;
-    background-color: red;
-    color: white;
-    font-size: 8px;
-}
-
-.year-suffix {
-    position: absolute;
-    bottom: 10px;
-    right: -12px;
-    height: 12px;
-    color: gray;
-    font-size: 8px;
-}
-
-.date-picker-wrapper {
-    ::deep .bit-dtp {
-        &.bit-dtp-fluent {
-            .day-picker-wrapper {
-                .week-day-label {
-                    width: 44px;
-                }
-            }
-        }
+    .custom-day-cell {
+        position: relative;
+        width: 44px !important;
+        height: 44px !important;
     }
-}
+
+    .discount-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: inline-flex;
+        align-items: center;
+        width: fit-content !important;
+        height: 16px !important;
+        border-radius: 2px;
+        padding: 0 4px;
+        background-color: red;
+        color: white;
+        font-size: 8px;
+    }
+
+    .year-suffix {
+        position: absolute;
+        bottom: 10px;
+        right: -12px;
+        height: 12px;
+        color: gray;
+        font-size: 8px;
+    }
 </style>
 
 <div class=""date-picker-wrapper"">

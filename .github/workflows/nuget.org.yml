@@ -40,61 +40,61 @@ jobs:
         include-prerelease: true
 
     - name: dotnet restore BlazorUI
-      run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild BlazorUI (1)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild BlazorUI (2)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
       
-    - name: dotnet restore BlazorUI.Charts
-      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
-    - name: dotnet msbuild BlazorUI.Charts (1)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild BlazorUI.Charts (2)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet pack BlazorUI.Charts
-      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
+    - name: dotnet restore BlazorUI.Extras
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Extras (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Extras (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Extras
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
       
     - name: dotnet restore Bswup
-      run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj
+      run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Bswup (1)
-      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Bswup (2)
-      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
     - name: dotnet restore Bup
-      run: dotnet restore src/Bup/Bit.Bup/Bit.Bup.csproj
+      run: dotnet restore src/Bup/Bit.Bup/Bit.Bup.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Bup (1)
-      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Bup (2)
-      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Bup
       run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
       
     - name: dotnet restore Butil
-      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
+      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Butil (1)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Butil (2)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Butil
       run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
             
     - name: dotnet restore CodeAnalyzers
-      run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj
+      run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild CodeAnalyzers
-      run: dotnet msbuild src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+      run: dotnet msbuild src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
       
     - name: dotnet restore SourceGenerators
-      run: dotnet restore src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj
+      run: dotnet restore src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild SourceGenerators
-      run: dotnet msbuild src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+      run: dotnet msbuild src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack SourceGenerators
       run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
 

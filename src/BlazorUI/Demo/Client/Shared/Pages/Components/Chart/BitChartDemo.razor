@@ -1,7 +1,10 @@
 ﻿@page "/components/chart"
 
-<ComponentDemo ComponentName="BitChart"
+<PageTitle>Bit BlazorUI - Chart</PageTitle>
+
+<ComponentDemo ComponentName="Chart"
                ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+               Notes="You need to install the `Bit.BlazorUI.Extras` nuget package in order to use this component."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="Bar Chart" CSharpSourceCode="@example1CSharpCode" HTMLSourceCode="@example1HTMLCode" ExampleId="Example1">
         <ExamplePreview>
@@ -88,23 +91,23 @@
 @code {
     private const int InitalCount = 5;
 
-    private BitChartBarConfig _barChartConfigExample;
-    private BitChart _barChartExample1;
+    private BitChartBarConfig _barChartConfigExample = default!;
+    private BitChart _barChartExample1 = default!;
 
-    private BitChartBarConfig _horizontalBarChartConfigExample;
-    private BitChart _horizontalBarChartExample;
+    private BitChartBarConfig _horizontalBarChartConfigExample = default!;
+    private BitChart _horizontalBarChartExample = default!;
 
-    private BitChartBarConfig _stackedBarChartConfigExample;
-    private BitChart _stackedBarChartExample;
+    private BitChartBarConfig _stackedBarChartConfigExample = default!;
+    private BitChart _stackedBarChartExample = default!;
 
-    private BitChartLineConfig _lineChartConfigExample;
-    private BitChart _lineChartExample;
+    private BitChartLineConfig _lineChartConfigExample = default!;
+    private BitChart _lineChartExample = default!;
 
-    private BitChartPieConfig _pieChartConfigExample;
-    private BitChart _pieChartExample;
+    private BitChartPieConfig _pieChartConfigExample = default!;
+    private BitChart _pieChartExample = default!;
 
-    private BitChartPieConfig _doughnutChartConfigExample;
-    private BitChart _doughnutChartExample;
+    private BitChartPieConfig _doughnutChartConfigExample = default!;
+    private BitChart _doughnutChartExample = default!;
 
     protected override void OnInitialized()
     {

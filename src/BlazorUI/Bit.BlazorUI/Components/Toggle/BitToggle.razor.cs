@@ -60,16 +60,11 @@ public partial class BitToggle
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() =>
-        {
-            var isCheckedClass = Value ? "checked" : "unchecked";
-            var isEnabledClass = IsEnabled ? "enabled" : "disabled";
-            return $"{isEnabledClass}-{isCheckedClass}";
-        });
+        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk" : string.Empty);
 
-        ClassBuilder.Register(() => IsInlineLabel ? "inline" : string.Empty);
+        ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
 
-        ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue() ? "noonoff" : string.Empty);
+        ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue() ? $"{RootElementClass}-noo" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -96,7 +91,8 @@ public partial class BitToggle
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValue = !CurrentValue;
 

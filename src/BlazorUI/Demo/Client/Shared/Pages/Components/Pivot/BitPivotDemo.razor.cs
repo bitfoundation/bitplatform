@@ -192,19 +192,6 @@ public partial class BitPivotDemo
 
 
 
-    private string SelectedKey = "Foo";
-    private BitPivotItem SelectedPivotItem;
-    private string OverridePivotSelectedKey = "1";
-    private BitComponentVisibility PivotItemVisibility;
-    private bool PivotEnabled = true;
-    private bool PivotItemEnabled = true;
-
-    private void TogglePivotItemVisibility()
-    {
-        PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
-    }
-
-
     private readonly string example1HtmlCode = @"
 <BitPivot>
     <BitPivotItem HeaderText=""File"">
@@ -354,6 +341,7 @@ public partial class BitPivotDemo
         </div>
     </BitPivotItem>
 </BitPivot>
+
 <div style=""margin-top:50px;display:flex;gap:10px"">
     <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")"" ButtonStyle=""BitButtonStyle.Standard""
                 OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) - 1).ToString())"">
@@ -390,6 +378,7 @@ private string OverridePivotSelectedKey = ""1"";";
         <div>Hello I am Biz</div>
     }
 </div>
+
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
             DefaultSelectedKey=""Foo""
             LinkSize=""@BitPivotLinkSize.Large""
@@ -407,6 +396,7 @@ private string SelectedKey = ""Foo"";";
 <div style=""margin-bottom:25px"">
     Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
 </div>
+
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"" OnLinkClick=""@(item => SelectedPivotItem = item)"">
     <BitPivotItem HeaderText=""Foo"">
         <div style=""margin-top:10px"">
@@ -463,12 +453,13 @@ private BitPivotItem SelectedPivotItem;";
         </div>
     </BitPivotItem>
 </BitPivot>
+
 <div style=""margin-top:50px"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisobility"">Hide/Show Biz</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisibility"">Hide/Show Biz</BitButton>
 </div>";
     private readonly string example9CSharpCode = @"
 private BitComponentVisibility PivotItemVisibility;
-private void TogglePivotItemVisobility()
+private void TogglePivotItemVisibility()
 {
     PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
 }";
@@ -520,14 +511,14 @@ private void TogglePivotItemVisobility()
 
     private readonly string example11HtmlCode = @"
 <style>
-.subtitle {
-    padding: 20px 0 10px 0;
-}
+    .subtitle {
+        padding: 20px 0 10px 0;
+    }
 
-.box {
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-}
+    .box {
+        border: 1px solid #ccc;
+        padding: 5px 10px;
+    }
 </style>
 
 <div class=""subtitle"">Pivot Position: <strong>Top</strong></div>
@@ -553,7 +544,7 @@ private void TogglePivotItemVisobility()
         </BitPivotItem>
     </BitPivot>
 </div>
-<br />
+
 <div class=""subtitle"">Pivot Position: <strong>Bottom</strong></div>
 <div class=""box"">
     <BitPivot Position=""BitPivotPosition.Bottom"" Style=""height:200px"">
@@ -577,7 +568,7 @@ private void TogglePivotItemVisobility()
         </BitPivotItem>
     </BitPivot>
 </div>
-<br />
+
 <div class=""subtitle"">Pivot Position: <strong>Left</strong></div>
 <div class=""box"">
     <BitPivot Position=""BitPivotPosition.Left"">
@@ -601,7 +592,7 @@ private void TogglePivotItemVisobility()
         </BitPivotItem>
     </BitPivot>
 </div>
-<br />
+
 <div class=""subtitle"">Pivot Position: <strong>Right</strong></div>
 <div class=""box"">
     <BitPivot Position=""BitPivotPosition.Right"">

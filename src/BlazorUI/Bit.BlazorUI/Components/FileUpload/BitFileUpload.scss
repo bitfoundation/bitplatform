@@ -1,196 +1,188 @@
 ﻿@import "../../Styles/functions.scss";
 
-@mixin getLiBaseStyle($class) {
-    $color: $color-neutrals-gray120;
-    border: $shape-border-width $shape-border-style $color;
-
-    @if $class=="uploaded" {
-        $color: $color-state-success-dark;
-    }
-
-    @if $class=="paused" {
-        $color: $color-primary-main;
-    }
-
-    @if $class=="failed" {
-        $color: $color-state-invalid;
-    }
-
-    &:hover {
-        color: $color;
-    }
-
-    .upload-status {
-        width: 100%;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: $color;
-        overflow: hidden;
-    }
-}
-
 .bit-upl {
     display: flex;
     flex-flow: column nowrap;
     max-width: spacing(43.75);
     font-family: $typography-font-family;
-    -webkit-font-smoothing: antialiased;
 
-    .file-input {
-        display: none;
-    }
+    &.bit-dis {
+        color: $color-text-disabled;
+        border-color: $color-border-disabled;
+        background-color: $color-background-disabled;
 
-    .label {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: spacing(4.375);
-        padding: spacing(2);
-        border: $shape-border-width $shape-border-style $color-neutrals-gray60;
-        border-radius: spacing(0.5);
-        outline: 0;
-        font-size: spacing(2);
-        font-weight: 300;
-        color: $color-neutrals-gray160;
-        background-color: $color-background-primary;
-        cursor: pointer;
-        user-select: none;
-
-        &:hover {
-            border-color: $color-neutrals-gray180;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-border-disabled;
+            }
         }
 
         &:active {
-            background-color: $color-neutrals-gray20;
-        }
-
-        i {
-            padding-right: spacing(0.625);
+            background-color: $color-background-disabled;
         }
     }
+}
 
-    .file-list {
-        padding: 0;
-        margin: 0;
-    }
+.bit-upl-fi {
+    display: none;
+}
 
-    .in-progress {
-        @include getLiBaseStyle($class: "in-progress");
-    }
+.bit-upl-lbl {
+    outline: 0;
+    display: flex;
+    cursor: pointer;
+    font-weight: 300;
+    user-select: none;
+    padding: spacing(2);
+    align-items: center;
+    font-size: spacing(2);
+    height: spacing(4.375);
+    justify-content: center;
+    border-radius: spacing(0.5);
+    color: $color-text-primary2;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
 
-    .uploaded {
-        @include getLiBaseStyle($class: "uploaded");
-    }
-
-    .failed {
-        @include getLiBaseStyle($class: "failed");
-    }
-
-    .paused {
-        @include getLiBaseStyle($class: "paused");
-    }
-
-    .file-item {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: spacing(0.625);
-        margin-top: spacing(0.375);
-        font-size: spacing(1.75);
-        font-weight: 100;
-        overflow: hidden;
-    }
-
-    .file-info-container {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: flex-start;
-        width: calc(100% - #{40px});
-        height: 100%;
-        padding: spacing(1) spacing(2);
-        box-sizing: border-box;
-        cursor: default;
-
-        .file-name-container {
-            display: flex;
-            width: 100%;
-
-            i {
-                padding-top: spacing(1);
-            }
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
         }
     }
 
-    .file-name {
-        width: calc(100% - #{32px});
-        height: 100%;
-        padding-top: spacing(1);
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
+
+    i {
+        padding-right: spacing(0.625);
+    }
+}
+
+.bit-upl-fl {
+    padding: 0;
+    margin: 0;
+}
+
+.bit-upl-itm {
+    display: flex;
+    overflow: hidden;
+    font-weight: 100;
+    align-items: center;
+    flex-flow: row nowrap;
+    font-size: spacing(1.75);
+    margin-top: spacing(0.375);
+    border-radius: spacing(0.625);
+    justify-content: space-between;
+    color: $color-text-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary2;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+        }
+    }
+
+    .bit-upl-us {
+        width: 100%;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+}
 
-    .file-size-container {
-        display: flex;
-        width: 100%;
+.bit-upl-ip {
+}
+
+.bit-upl-uld {
+    .bit-upl-us {
+        color: $color-state-success;
     }
+}
 
-    .file-size {
+.bit-upl-fld {
+    .bit-upl-us {
+        color: $color-state-invalid;
+    }
+}
+
+.bit-upl-psd {
+    .bit-upl-us {
+        color: $color-primary-main;
+    }
+}
+
+.bit-upl-fic {
+    height: 100%;
+    display: flex;
+    cursor: default;
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: center;
+    flex-flow: column nowrap;
+    width: calc(100% - #{40px});
+    padding: spacing(1) spacing(2);
+}
+
+.bit-upl-fnc {
+    width: 100%;
+    display: flex;
+
+    i {
         padding-top: spacing(1);
-        margin-right: spacing(1);
     }
+}
 
-    .upload-percent {
-        padding-top: spacing(1);
-    }
+.bit-upl-fn {
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-top: spacing(1);
+    text-overflow: ellipsis;
+    width: calc(100% - #{32px});
+}
 
-    .progress-bar-container {
-        width: 100%;
-        height: spacing(0.25);
-        padding-top: spacing(1);
-        padding-bottom: spacing(1);
-        padding-left: spacing(0.25);
-        overflow: hidden;
+.bit-upl-fsc {
+    width: 100%;
+    display: flex;
+}
 
-        .progress-bar {
-            height: spacing(0.25);
-            background-color: $color-primary-main;
-            transition: width 0.15s linear 0s;
-        }
-    }
+.bit-upl-fs {
+    padding-top: spacing(1);
+    margin-right: spacing(1);
+}
 
-    .upload-status-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: spacing(4);
-        height: 100%;
-        cursor: pointer;
+.bit-upl-pct {
+    padding-top: spacing(1);
+}
 
+.bit-upl-pbc {
+    width: 100%;
+    overflow: hidden;
+    height: spacing(0.25);
+    padding-top: spacing(1);
+    padding-bottom: spacing(1);
+    padding-left: spacing(0.25);
+}
+
+.bit-upl-pbr {
+    height: spacing(0.25);
+    transition: width 0.15s linear 0s;
+    background-color: $color-primary-main;
+}
+
+.bit-upl-usi {
+    height: 100%;
+    display: flex;
+    cursor: pointer;
+    width: spacing(4);
+    align-items: center;
+    justify-content: center;
+
+    @media (hover: hover) {
         &:hover {
             i {
                 color: $color-primary-main;
             }
-        }
-    }
-
-    .file-format {
-        margin-right: spacing(0.625);
-    }
-
-    &.bit-dis {
-        border-color: $color-neutrals-gray60;
-        color: $color-neutrals-gray120;
-        background-color: $color-neutrals-gray20;
-
-        &:hover {
-            border-color: $color-neutrals-gray60;
-        }
-
-        &:active {
-            background-color: $color-neutrals-gray20;
         }
     }
 }

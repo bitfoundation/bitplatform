@@ -1,5 +1,7 @@
 ﻿@page "/components/otp-input"
 
+<PageTitle>Bit BlazorUI - OtpInput</PageTitle>
+
 <ComponentDemo ComponentName="OtpInput"
                ComponentDescription="The OTP input is used for MFA procedure of authenticating users by a one-time password."
                ComponentParameters="componentParameters"
@@ -12,6 +14,7 @@
                     <BitOtpInput Length="4" @bind-Value="basicOtpInput" />
                     <div>Output: [@basicOtpInput]</div>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Disabled</BitLabel>
                     <BitOtpInput Length="6" IsEnabled="false" />
@@ -38,11 +41,13 @@
                     <BitOtpInput Length="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
                     <div>Output: [@textOtpInput]</div>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Number</BitLabel>
                     <BitOtpInput Length="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
                     <div>Output: [@numberOtpInput]</div>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Password</BitLabel>
                     <BitOtpInput Length="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
@@ -61,18 +66,21 @@
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.LeftToRight" @bind-Value="leftToRightOtpInput" />
                     <div>Output: [@leftToRightOtpInput]</div>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Right to left</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.RightToLeft" @bind-Value="rightToLeftOtpInput" />
                     <div>Output: [@rightToLeftOtpInput]</div>
                 </div>
             </div>
+            <br />
             <div class="example-box row">
                 <div>
                     <BitLabel>Top to bottom</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.TopToBottom" @bind-Value="topToBottomOtpInput" />
                     <div>Output: [@topToBottomOtpInput]</div>
                 </div>
+                <br />
                 <div>
                     <BitLabel>Bottom to top</BitLabel>
                     <BitOtpInput Length="4" Direction="BitOtpInputDirection.BottomToTop" @bind-Value="BottomToTopOtpInput" />
@@ -90,11 +98,13 @@
                     <BitOtpInput Length="4" Value="@oneWayBindOtpInput" />
                     <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayBindOtpInput" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>Two-way</BitLabel>
                     <BitOtpInput Length="4" @bind-Value="twoWayBindOtpInput" />
                     <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayBindOtpInput" />
                 </div>
+                <br />
                 <div>
                     <BitLabel>OnChange</BitLabel>
                     <BitOtpInput Length="4" OnChange="(value) => onChangeBindOtpInput = value" />

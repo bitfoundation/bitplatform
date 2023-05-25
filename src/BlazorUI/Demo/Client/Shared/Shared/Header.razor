@@ -1,35 +1,39 @@
 ﻿@namespace Bit.BlazorUI.Demo.Client.Shared
-
 @inherits AppComponentBase
 
-<header class="main-header @(CurrentUrl == "/" ? "main-header--full-page" : null)">
+<header class="main-header @(_currentUrl == "/" ? "main-header--full-page" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (CurrentUrl != "/")
+            @if (_currentUrl != "/")
             {
                 <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="/" aria-label="Homepage"></a>
-            <a class="header-link @(CurrentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
-            <a class="header-link @(CurrentUrl != "/" ? "header-link--active" : "")" href="/overview">Docs</a>
+            <a class="header-link @(_currentUrl == "/" ? "header-link--active" : "")" href="/">Home</a>
+            <a class="header-link @(_currentUrl != "/" ? "header-link--active" : "")" href="/overview">Docs</a>
         </div>
-        <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
+        <div class="header-right-section">
+            <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
+            <BitToggleButton OnChange="ToggleTheme" Style="min-width:35px;min-height:35px;padding:0"
+                             IconName="@(_isDarkMode ? BitIconName.Sunny : BitIconName.ClearNight)"
+                             Title="@(_isDarkMode ? "Turn on light" : "Turn off light")" />
+        </div>
     </div>
 
     <div class="header-second-row">
         <BitActionButton Class="header-action-button"
-                         IconName=@(IsHeaderMenuOpen ? BitIconName.ChevronDown : BitIconName.ChevronUp)
+                         IconName=@(_isHeaderMenuOpen ? BitIconName.ChevronDown : BitIconName.ChevronUp)
                          OnClick=ToggleHeaderMenu>
             @GetActiveRouteName()
         </BitActionButton>
     </div>
 </header>
 
-@if (IsHeaderMenuOpen)
+@if (_isHeaderMenuOpen)
 {
     <nav class="header-nav">
         <BitIconButton Class="header-nav-close-btn" IconName=BitIconName.Cancel OnClick=ToggleHeaderMenu />
-        <a class="header-nav-link @(CurrentUrl == "/" ? "header-nav-link--active" : "")" href="/" @onclick=ToggleHeaderMenu>Home</a>
-        <a class="header-nav-link @(CurrentUrl != "/" ? "header-nav-link--active" : "")" href="/overview" @onclick=ToggleHeaderMenu>Docs</a>
+        <a class="header-nav-link @(_currentUrl == "/" ? "header-nav-link--active" : "")" href="/" @onclick=ToggleHeaderMenu>Home</a>
+        <a class="header-nav-link @(_currentUrl != "/" ? "header-nav-link--active" : "")" href="/overview" @onclick=ToggleHeaderMenu>Docs</a>
     </nav>
 }

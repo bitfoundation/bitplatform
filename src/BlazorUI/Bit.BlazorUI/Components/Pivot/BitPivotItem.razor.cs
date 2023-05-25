@@ -65,11 +65,11 @@ public partial class BitPivotItem : IDisposable
     [CascadingParameter] private BitPivot? Parent { get; set; }
 
 
-    protected override string RootElementClass => "bit-pvi";
+    protected override string RootElementClass => "bit-pvti";
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsSelected ? "selected" : string.Empty);
+        ClassBuilder.Register(() => IsSelected ? "bit-pvti-sel" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

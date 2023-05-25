@@ -52,8 +52,8 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.ShowArrows, arrows);
         });
 
-        var arrowButtonHolder = component.FindAll(".arrows");
-        var arrowButtons = component.FindAll(".arrows button");
+        var arrowButtonHolder = component.FindAll(".bit-ntf-act");
+        var arrowButtons = component.FindAll(".bit-ntf-act button");
 
         if (arrows)
         {
@@ -210,16 +210,16 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
 
-        var labelPositionClass = labelPosition == BitNumericTextFieldLabelPosition.Left ? "left" : "top";
+        var labelPositionClass = labelPosition == BitNumericTextFieldLabelPosition.Left ? "lf" : "tp";
 
         var numericTextFieldButton = component.Find(".bit-ntf");
 
-        Assert.IsTrue(numericTextFieldButton.ClassList.Contains($"label-{labelPositionClass}"));
+        Assert.IsTrue(numericTextFieldButton.ClassList.Contains($"bit-ntf-l{labelPositionClass}"));
     }
 
     [DataTestMethod,
          DataRow("dir", "ltr"),
-         DataRow("type", "number")
+         DataRow("foo", "bar")
     ]
     public void BitNumericTextFieldInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
     {
@@ -249,7 +249,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
         });
 
-        var ntfWrapper = component.Find(".wrapper");
+        var ntfWrapper = component.Find(".bit-ntf-wrp");
 
         if (string.IsNullOrEmpty(title) is false)
         {
@@ -314,7 +314,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.OnIncrement, () => onIncrementEventCounter++);
         });
 
-        var increaseButton = component.Find("button.arrow-up");
+        var increaseButton = component.Find("button.bit-ntf-aup");
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
@@ -337,7 +337,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.OnDecrement, () => onDecrementEventCounter--);
         });
 
-        var decreaseButton = component.Find("button.arrow-down");
+        var decreaseButton = component.Find("button.bit-ntf-adn");
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
@@ -488,7 +488,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.Find("button.arrow-up");
+        var incrementButton = component.Find("button.bit-ntf-aup");
         incrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = (ulong)defaultValue + (ulong)step <= (ulong)max
@@ -545,7 +545,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var decrementButton = component.Find("button.arrow-down");
+        var decrementButton = component.Find("button.bit-ntf-adn");
         decrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min ? defaultValue - step : defaultValue; ;
@@ -710,7 +710,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
             parameters.Add(p => p.ShowArrows, true);
         });
 
-        var incrementButton = component.Find("button.arrow-up");
+        var incrementButton = component.Find("button.bit-ntf-aup");
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
@@ -749,7 +749,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.Find("button.arrow-up");
+        var incrementButton = component.Find("button.bit-ntf-aup");
         var initialIncrementCount = timeout / 400;
         var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = (ulong)defaultValue + (ulong)step * (ulong)(initialIncrementCount + continuousIncrementCount);
@@ -775,7 +775,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var incrementButton = component.Find("button.arrow-up");
+        var incrementButton = component.Find("button.bit-ntf-aup");
         var initialDecrementCount = timeout / 400;
         var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
         var expectedResult = (ulong)defaultValue - (ulong)step * (ulong)(initialDecrementCount + continuousDecrementCount);
@@ -887,12 +887,12 @@ public class BitNumericTextFieldULongTests : BunitTestContext
 
         var NumericTextField = component.Find(".bit-ntf");
 
-        Assert.IsFalse(NumericTextField.ClassList.Contains("invalid"));
+        Assert.IsFalse(NumericTextField.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(isInvalid, NumericTextField.ClassList.Contains("invalid"));
+        Assert.AreEqual(isInvalid, NumericTextField.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
 
@@ -907,7 +907,7 @@ public class BitNumericTextFieldULongTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(!isInvalid, NumericTextField.ClassList.Contains("invalid"));
+        Assert.AreEqual(!isInvalid, NumericTextField.ClassList.Contains("bit-inv"));
     }
 
     private ulong? Normalize(ulong? value, int precision) =>

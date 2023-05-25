@@ -297,9 +297,9 @@ jobs:
       workingDirectory: 'src'
 
   - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+    displayName: 'Use .NET sdk 5.x for DartSassBuilder'
     inputs:
-      version: 6.x
+      version: 5.x
 
   - task: FileTransform@1
     displayName: Update appsettings.json

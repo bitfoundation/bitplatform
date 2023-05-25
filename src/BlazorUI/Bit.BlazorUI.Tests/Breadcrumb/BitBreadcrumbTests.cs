@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -38,7 +37,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
 
         if (maxDisplayedItems > 0)
         {
@@ -68,7 +67,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
         var overflowItem = breadcrumbElements[(int)overflowIndex];
 
         Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);

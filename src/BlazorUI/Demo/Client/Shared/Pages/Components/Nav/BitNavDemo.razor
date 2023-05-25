@@ -1,5 +1,7 @@
 ﻿@page "/components/nav"
 
+<PageTitle>Bit BlazorUI - Nav</PageTitle>
+
 <ComponentDemo ComponentName="Nav"
                ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
                ComponentParameters="componentParameters"
@@ -43,11 +45,11 @@
                             <BitNav @bind-SelectedItem="SelectedItemNav"
                                     Items="FoodNavMenu"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
+                                    OnSelectItem="(BitNavItem item) => SelectedItemText = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Text)?.Text" />
 
-                            <BitDropDown @bind-Value="SelectedItemText"
+                            <BitDropdown @bind-Value="SelectedItemText"
                                          Label="Select Item"
-                                         Items="FoodMenuDropDownItems"
+                                         Items="FoodMenuDropdownItems"
                                          OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                         </div>
                     </div>
@@ -177,11 +179,11 @@
                                     IsExpandedFieldSelector="item => item.IsExpanded"
                                     ChildItemsFieldSelector="item => item.Childs"
                                     Mode="BitNavMode.Manual"
-                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropDownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
+                                    OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
-                            <BitDropDown @bind-Value="CustomSelectedFoodName"
+                            <BitDropdown @bind-Value="CustomSelectedFoodName"
                                          Label="Select Item"
-                                         Items="FoodMenuDropDownItems"
+                                         Items="FoodMenuDropdownItems"
                                          OnSelectItem="(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                         </div>
                     </div>
@@ -305,7 +307,7 @@
                                 <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                             </BitNavOption>
 
-                            <BitNavOption Text="Iconography" Url="/icons" Target="_blank" />
+                            <BitNavOption Text="Iconography" Url="/iconography" Target="_blank" />
                         </BitNav>
                     </div>
                 </ExamplePreview>
@@ -414,10 +416,10 @@
                                 <BitNavOption Text="Cookie" Key="Cookie" />
                             </BitNav>
 
-                            <BitDropDown @bind-Value="SelectedOptionKey"
+                            <BitDropdown @bind-Value="SelectedOptionKey"
                                          DefaultValue="French Fries"
                                          Label="Pick one"
-                                         Items="FoodMenuDropDownItems" />
+                                         Items="FoodMenuDropdownItems" />
                         </div>
                     </div>
                 </ExamplePreview>
@@ -584,7 +586,7 @@
                                 <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                             </BitNavOption>
 
-                            <BitNavOption Text="Iconography" Url="/icons" Target="_blank" />
+                            <BitNavOption Text="Iconography" Url="/iconography" Target="_blank" />
                         </BitNav>
                     </div>
                 </ExamplePreview>
@@ -592,3 +594,411 @@
         </BitPivotItem>
     </BitPivot>
 </ComponentDemo>
+
+@code {
+    // Basic
+    private static readonly List<BitNavItem> BitPlatformNavMenu = new()
+    {
+        new()
+        {
+            Text = "Bit Platform",
+            ChildItems = new()
+            {
+                new() { Text = "Home", Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    ChildItems = new()
+                    {
+                        new()
+                        {
+                            Text = "Project Templates",
+                            ChildItems = new()
+                            {
+                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
+                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
+                            }
+                        },
+                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    }
+                },
+                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new()
+        {
+            Text = "Community",
+            ChildItems = new()
+            {
+                new() { Text = "LinkedIn", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
+                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "GitHub repo", Url = "https://github.com/bitfoundation/bitplatform" },
+            }
+        },
+        new() { Text = "Iconography", Url = "/iconography" },
+    };
+    // Grouped
+    private static readonly List<BitNavItem> CarNavMenu = new()
+    {
+        new()
+        {
+            Text = "Mercedes-Benz",
+            ExpandAriaLabel = "Mercedes-Benz Expanded",
+            CollapseAriaLabel = "Mercedes-Benz Collapsed",
+            Title = "Mercedes-Benz Car Models",
+            IsExpanded = true,
+            ChildItems = new()
+            {
+                new()
+                {
+                    Text = "SUVs",
+                    ChildItems = new()
+                    {
+                        new() { Text = "GLA", Url = "https://www.mbusa.com/en/vehicles/class/gla/suv", Target = "_blank" },
+                        new() { Text = "GLB", Url = "https://www.mbusa.com/en/vehicles/class/glb/suv", Target = "_blank" },
+                        new() { Text = "GLC", Url = "https://www.mbusa.com/en/vehicles/class/glc/suv", Target = "_blank" },
+                    }
+                },
+                new()
+                {
+                    Text = "Sedans & Wagons",
+                    ChildItems = new()
+                    {
+                        new() { Text = "A Class", Url = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", Target = "_blank" },
+                        new() { Text = "C Class", Url = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", Target = "_blank" },
+                        new() { Text = "E Class", Url = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", Target = "_blank" },
+                    }
+                },
+                new()
+                {
+                    Text = "Coupes",
+                    ChildItems = new()
+                    {
+                        new() { Text = "CLA Coupe", Url = "https://www.mbusa.com/en/vehicles/class/cla/coupe", Target = "_blank" },
+                        new() { Text = "C Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", Target = "_blank" },
+                        new() { Text = "E Class Coupe", Url = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", Target = "_blank" },
+                    }
+                },
+            }
+        },
+        new()
+        {
+            Text = "Tesla",
+            ExpandAriaLabel = "Tesla Expanded",
+            CollapseAriaLabel= "Tesla Collapsed",
+            Title = "Tesla Car Models",
+            ChildItems = new List<BitNavItem>
+            {
+                new() { Text = "Model S", Url = "https://www.tesla.com/models", Target = "_blank" },
+                new() { Text = "Model X", Url = "https://www.tesla.com/modelx", Target = "_blank" },
+                new() { Text = "Model Y", Url = "https://www.tesla.com/modely", Target = "_blank" },
+            }
+        },
+    };
+    // Manual
+    private static readonly List<BitNavItem> FoodNavMenu = new()
+    {
+        new()
+        {
+            Text = "Fast-Food",
+            IconName = BitIconName.HeartBroken,
+            IsExpanded = true,
+            ChildItems = new()
+            {
+                new()
+                {
+                    Text = "Burgers",
+                    ChildItems = new()
+                    {
+                        new() { Text = "Beef Burger" },
+                        new() { Text = "Veggie Burger" },
+                        new() { Text = "Bison Burger" },
+                        new() { Text = "Wild Salmon Burger" },
+                    }
+                },
+                new()
+                {
+                    Text = "Pizzas",
+                    ChildItems = new()
+                    {
+                        new() { Text = "Cheese Pizza" },
+                        new() { Text = "Veggie Pizza" },
+                        new() { Text = "Pepperoni Pizza" },
+                        new() { Text = "Meat Pizza" },
+                    }
+                },
+                new() { Text    = "French Fries" },
+            }
+        },
+        new()
+        {
+            Text = "Fruits",
+            IconName = BitIconName.Health,
+            ChildItems = new()
+            {
+                new() { Text = "Apple" },
+                new() { Text = "Orange" },
+                new() { Text = "Banana" },
+            }
+        },
+        new() { Text = "Ice Cream" },
+        new() { Text = "Cookie" },
+    };
+
+    private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
+    private BitNavItem? SelectedItemNav = FoodNavMenu[0].ChildItems[2];
+    private string? SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
+
+    private BitNavItem ClickedItem;
+    private BitNavItem SelectedItem;
+    private BitNavItem ToggledItem;
+
+
+    // Basic
+    private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
+    {
+        new()
+        {
+            Text = "Bit Platform",
+            Links = new()
+            {
+                new() { Text = "Home", Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    Links = new()
+                    {
+                        new()
+                        {
+                            Text = "Project Templates",
+                            Links = new()
+                            {
+                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
+                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
+                            }
+                        },
+                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    }
+                },
+                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new()
+        {
+            Text = "Community",
+            Links = new()
+            {
+                new() { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq/about/" },
+                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
+            }
+        },
+        new() { Text = "Iconography", Url = "/iconography" },
+    };
+    // Grouped
+    private static readonly List<CarMenu> CustomCarNavMenu = new()
+    {
+        new()
+        {
+            Name = "Mercedes-Benz",
+            ExpandedAriaLabel = "Mercedes-Benz Expanded",
+            CollapsedAriaLabel = "Mercedes-Benz Collapsed",
+            Tooltip = "Mercedes-Benz Car Models",
+            IsExpandedParent = true,
+            Links = new()
+            {
+                new()
+                {
+                    Name = "SUVs",
+                    Links = new()
+                    {
+                        new() { Name = "GLA", PageUrl = "https://www.mbusa.com/en/vehicles/class/gla/suv", UrlTarget = "_blank" },
+                        new() { Name = "GLB", PageUrl = "https://www.mbusa.com/en/vehicles/class/glb/suv", UrlTarget = "_blank" },
+                        new() { Name = "GLC", PageUrl = "https://www.mbusa.com/en/vehicles/class/glc/suv", UrlTarget = "_blank" },
+                    }
+                },
+                new()
+                {
+                    Name = "Sedans & Wagons",
+                    Links = new()
+                    {
+                        new() { Name = "A Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/a-class/sedan", UrlTarget = "_blank" },
+                        new() { Name = "C Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/sedan", UrlTarget = "_blank" },
+                        new() { Name = "E Class", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/sedan", UrlTarget = "_blank" },
+                    }
+                },
+                new()
+                {
+                    Name = "Coupes",
+                    Links = new()
+                    {
+                        new() { Name = "CLA Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/cla/coupe", UrlTarget = "_blank" },
+                        new() { Name = "C Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/c-class/coupe", UrlTarget = "_blank" },
+                        new() { Name = "E Class Coupe", PageUrl = "https://www.mbusa.com/en/vehicles/class/e-class/coupe", UrlTarget = "_blank" },
+                    }
+                },
+            }
+        },
+        new()
+        {
+            Name = "Tesla",
+            ExpandedAriaLabel = "Tesla Expanded",
+            CollapsedAriaLabel = "Tesla Collapsed",
+            Tooltip = "Tesla Car Models",
+            Links = new()
+            {
+                new() { Name = "Model S", PageUrl = "https://www.tesla.com/models", UrlTarget = "_blank" },
+                new() { Name = "Model X", PageUrl = "https://www.tesla.com/modelx", UrlTarget = "_blank" },
+                new() { Name = "Model Y", PageUrl = "https://www.tesla.com/modely", UrlTarget = "_blank" },
+            }
+        },
+    };
+    // Manual
+    private static readonly List<FoodMenu> CustomFoodNavMenu = new()
+    {
+        new()
+        {
+            Name = "Fast-Food",
+            Icon = BitIconName.HeartBroken,
+            IsExpanded = true,
+            Childs = new()
+            {
+                new()
+                {
+                    Name = "Burgers",
+                    Childs = new()
+                    {
+                        new() { Name = "Beef Burger" },
+                        new() { Name = "Veggie Burger" },
+                        new() { Name = "Bison Burger" },
+                        new() { Name = "Wild Salmon Burger" },
+                    }
+                },
+                new()
+                {
+                    Name = "Pizzas",
+                    Childs = new()
+                    {
+                        new() { Name = "Cheese Pizza" },
+                        new() { Name = "Veggie Pizza" },
+                        new() { Name = "Pepperoni Pizza" },
+                        new() { Name = "Meat Pizza" },
+                    }
+                },
+                new() { Name = "French Fries" },
+            }
+        },
+        new()
+        {
+            Name = "Fruits",
+            Icon = BitIconName.Health,
+            Childs = new()
+            {
+                new() { Name = "Apple" },
+                new() { Name = "Orange" },
+                new() { Name = "Banana" },
+            }
+        },
+        new() { Name = "Ice Cream" },
+        new() { Name = "Cookie" },
+    };
+
+    private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
+    private FoodMenu? CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
+    private string? CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
+
+    private FoodMenu CustomClickedItem;
+    private FoodMenu CustomSelectedItem;
+    private FoodMenu CustomToggledItem;
+
+
+    private string SelectedOptionKey;
+
+    private BitNavOption ClickedOption;
+    private BitNavOption SelectedOption;
+    private BitNavOption ToggledOption;
+
+
+    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
+    {
+        new()
+        {
+            Text = "Beef Burger",
+            Value = "Beef Burger",
+        },
+        new()
+        {
+            Text = "Veggie Burger",
+            Value = "Veggie Burger",
+        },
+        new()
+        {
+            Text = "Bison Burger",
+            Value = "Bison Burger",
+        },
+        new()
+        {
+            Text = "Wild Salmon Burger",
+            Value = "Wild Salmon Burger",
+        },
+        new()
+        {
+            Text = "Cheese Pizza",
+            Value = "Cheese Pizza",
+        },
+        new()
+        {
+            Text = "Veggie Pizza",
+            Value = "Veggie Pizza",
+        },
+        new()
+        {
+            Text = "Pepperoni Pizza",
+            Value = "Pepperoni Pizza",
+        },
+        new()
+        {
+            Text = "Meat Pizza",
+            Value = "Meat Pizza",
+        },
+        new()
+        {
+            Text = "French Fries",
+            Value = "French Fries",
+        },
+        new()
+        {
+            Text = "Apple",
+            Value = "Apple",
+        },
+        new()
+        {
+            Text = "Orange",
+            Value = "Orange",
+        },
+        new()
+        {
+            Text = "Banana",
+            Value = "Banana",
+        },
+        new()
+        {
+            Text = "Ice Cream",
+            Value = "Ice Cream",
+        },
+        new()
+        {
+            Text = "Cookie",
+            Value = "Cookie",
+        },
+    };
+
+}

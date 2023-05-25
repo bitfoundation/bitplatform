@@ -50,7 +50,7 @@ public partial class BitSpinnerDemo
             Id = "spinnerAriaLive-enum",
             Name = "BitSpinnerAriaLive",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -77,7 +77,7 @@ public partial class BitSpinnerDemo
             Id = "spinnerLabelPosition-enum",
             Name = "BitLabelPosition",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -110,7 +110,7 @@ public partial class BitSpinnerDemo
             Id = "spinnerSize-enum",
             Name = "BitSpinnerSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
+            Items = new()
             {
                 new()
                 {
@@ -142,12 +142,14 @@ public partial class BitSpinnerDemo
 
 
 
-    private readonly string example1HTMLCode = @"<BitSpinner Size=""BitSpinnerSize.XSmall"" />
+    private readonly string example1HTMLCode = @"
+<BitSpinner Size=""BitSpinnerSize.XSmall"" />
 <BitSpinner Size=""BitSpinnerSize.Small"" />
 <BitSpinner Size=""BitSpinnerSize.Medium"" />
 <BitSpinner Size=""BitSpinnerSize.Large"" />";
 
-    private readonly string example2HTMLCode = @"<BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
+    private readonly string example2HTMLCode = @"
+<BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Left"" Label=""Wait, wait..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Right"" Label=""Nope, still loading..."" />";

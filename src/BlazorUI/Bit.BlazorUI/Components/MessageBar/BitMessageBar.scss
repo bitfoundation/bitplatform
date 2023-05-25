@@ -4,151 +4,154 @@
     width: 100%;
     display: flex;
     font-weight: 400;
+    min-height: spacing(4);
     font-size: spacing(1.5);
     font-family: $typography-font-family;
-    min-height: spacing(4);
+}
 
-    .multiline, .singleline {
-        width: 100%;
-    }
+.bit-msb-mul,
+.bit-msb-sin {
+    width: 100%;
+}
 
-    .content {
-        display: flex;
-        width: 100%;
-        line-height: normal;
-    }
+.bit-msb-con {
+    width: 100%;
+    display: flex;
+    line-height: normal;
+}
 
-    .icon {
-        font-size: spacing(2);
-        min-width: spacing(2);
-        min-height: spacing(2);
-        display: flex;
-        flex-shrink: 0;
-        margin: spacing(1) 0 spacing(1) spacing(1.5);
+.bit-msb-ict {
+    display: flex;
+    flex-shrink: 0;
+    font-size: spacing(2);
+    min-width: spacing(2);
+    min-height: spacing(2);
+    margin: spacing(1) 0 spacing(1) spacing(1.5);
+}
 
-        .bit-icon {
-            color: $color-neutrals-gray130;
-        }
-    }
+.bit-msb-txt {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $color-text-primary2;
+}
 
-    .text {
+.bit-msb-opn {
+    white-space: normal;
+}
+
+.bit-msb-itx {
+    min-width: 0;
+    flex-grow: 1;
+    display: flex;
+    font-weight: 400;
+    margin: spacing(1);
+    flex-direction: column;
+    font-size: spacing(1.5);
+    line-height: spacing(2);
+
+    span {
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
-        flex: 1;
     }
+}
 
-    .open {
-        white-space: normal;
-    }
+.bit-msb-act {
+    display: flex;
+    justify-content: flex-end;
+}
 
-    .innertext {
-        min-width: 0;
-        display: flex;
-        flex-grow: 1;
-        margin: spacing(1);
-        font-size: spacing(1.5);
+.bit-msb-trn,
+.bit-msb-dim {
+    button {
+        border: none;
+        flex-shrink: 0;
+        cursor: pointer;
         font-weight: 400;
-        flex-direction: column;
-        line-height: spacing(2);
+        width: spacing(4);
+        user-select: none;
+        height: spacing(4);
+        position: relative;
+        text-align: center;
+        outline: transparent;
+        display: inline-block;
+        text-decoration: none;
+        box-sizing: border-box;
+        font-size: spacing(1.75);
+        border-radius: spacing(0.25);
+        background-color: transparent;
+        padding: spacing(1) spacing(1.5);
 
         span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-
-    .actions {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .truncate, .dismiss {
-        button {
-            outline: transparent;
-            position: relative;
-            font-size: spacing(1.75);
-            font-weight: 400;
-            box-sizing: border-box;
-            border: none;
-            display: inline-block;
-            text-decoration: none;
-            text-align: center;
-            cursor: pointer;
-            padding: spacing(1) spacing(1.5);
-            border-radius: spacing(0.25);
-            width: spacing(4);
-            height: spacing(4);
-            background-color: transparent;
-            flex-shrink: 0;
-            user-select: none;
-
-            span {
-                display: flex;
-                height: 100%;
-                flex-wrap: nowrap;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .bit-icon {
-                font-size: spacing(1.25);
-                height: spacing(1.25);
-                line-height: spacing(1.25);
-                vertical-align: middle;
-            }
-        }
-    }
-
-    .multiline {
-        .actions {
+            height: 100%;
             display: flex;
-            flex-direction: row-reverse;
+            flex-wrap: nowrap;
             align-items: center;
-            margin: 0 spacing(1.5) spacing(1) spacing(1);
+            justify-content: center;
         }
 
-        .text {
-            span {
-                white-space: normal;
-            }
-        }
-    }
-
-    &.info {
-        color: $color-neutrals-gray160;
-        background-color: $color-neutrals-gray20;
-    }
-
-    &.error, &.blocked {
-        background-color: $color-state-error-bg;
-
-        .icon .bit-icon {
-            color: $color-state-error-dark;
+        .bit-icon {
+            height: spacing(1.25);
+            vertical-align: middle;
+            font-size: spacing(1.25);
+            line-height: spacing(1.25);
         }
     }
+}
 
-    &.severe-warning {
-        background-color: $color-state-severe-warning-bg;
-
-        .icon .bit-icon {
-            color: $color-state-severe-warning-dark;
-        }
+.bit-msb-mul {
+    .bit-msb-act {
+        display: flex;
+        align-items: center;
+        flex-direction: row-reverse;
+        margin: 0 spacing(1.5) spacing(1) spacing(1);
     }
 
-    &.success {
-        background-color: $color-state-success-bg;
-
-        .icon .bit-icon {
-            color: $color-state-success-dark;
+    .bit-msb-txt {
+        span {
+            white-space: normal;
         }
     }
+}
 
-    &.warning {
-        background-color: $color-state-warning-bg;
+.bit-msb-info {
+    background-color: $color-state-info-bg;
 
-        .icon .bit-icon {
-            color: $color-state-warning-dark;
-        }
+    .bit-msb-ict .bit-icon {
+        color: $color-state-info2;
+    }
+}
+
+.bit-msb-success {
+    background-color: $color-state-success-bg;
+
+    .bit-msb-ict .bit-icon {
+        color: $color-state-success2;
+    }
+}
+
+.bit-msb-warning {
+    background-color: $color-state-warning-bg;
+
+    .bit-msb-ict .bit-icon {
+        color: $color-state-warning2;
+    }
+}
+
+.bit-msb-severe-warning {
+    background-color: $color-state-severe-warning-bg;
+
+    .bit-msb-ict .bit-icon {
+        color: $color-state-severe-warning2;
+    }
+}
+
+.bit-msb-error,
+.bit-msb-blocked {
+    background-color: $color-state-error-bg;
+
+    .bit-msb-ict .bit-icon {
+        color: $color-state-error2;
     }
 }

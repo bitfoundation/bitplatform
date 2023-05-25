@@ -1,18 +1,20 @@
 ﻿@page "/components/persona"
 
-<ComponentDemo ComponentName="BitPersona"
+<PageTitle>Bit BlazorUI - Persona</PageTitle>
+
+<ComponentDemo ComponentName="Persona"
                ComponentDescription="A Bitpersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status.The Bitpersona control is used in the PeoplePicker and Facepile controls."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Persona in various sizes" HTMLSourceCode="@example1HtmlCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitCheckbox @bind-Value="IsDetailsShown"
+            <BitCheckbox @bind-Value="_isDetailsShown"
                          Label="Include BitPersona details" />
             <div class="title">Size 24 Persona</div>
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.None
                         Size=@BitPersonaSize.Size24
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="secondry-text"></BitPersona>
 
@@ -20,7 +22,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Busy
                         Size=@BitPersonaSize.Size32
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="secondry-text"></BitPersona>
 
@@ -28,7 +30,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Away
                         Size=@BitPersonaSize.Size40
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -36,7 +38,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Blocked
                         Size=@BitPersonaSize.Size48
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -44,7 +46,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Online
                         Size=@BitPersonaSize.Size56
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"></BitPersona>
 
@@ -52,7 +54,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Busy
                         Size=@BitPersonaSize.Size72
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"></BitPersona>
@@ -61,7 +63,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.Offline
                         Size=@BitPersonaSize.Size100
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -71,7 +73,7 @@
             <BitPersona ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"
                         Presence=@BitPersonaPresenceStatus.DND
                         Size=@BitPersonaSize.Size120
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -88,7 +90,7 @@
                         Size=@BitPersonaSize.Size120
                         OnActionClick="() => _actionClickCount++"
                         ActionIconName="BitIconName.Edit"
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -105,7 +107,7 @@
                         Presence=@BitPersonaPresenceStatus.Online
                         Size=@BitPersonaSize.Size120
                         OnImageClick="() => _imageClickCount++"
-                        HidePersonaDetails="!IsDetailsShown"
+                        HidePersonaDetails="!_isDetailsShown"
                         Text="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
@@ -127,3 +129,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+
+    private bool _isDetailsShown { get; set; } = true;
+
+    private int _actionClickCount = 0;
+
+    private int _imageClickCount = 0;
+}

@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml;
+using System.Reflection.Emit;
 
 namespace Bit.BlazorUI;
 
@@ -184,7 +185,7 @@ public partial class BitSpinButton
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => LabelPosition == BitSpinButtonLabelPosition.Left ? "label-left" : "label-top");
+        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
     }
 
     protected override Task OnInitializedAsync()

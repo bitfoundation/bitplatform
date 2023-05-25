@@ -39,16 +39,16 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" bit-theme="light">
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-okaidia.min.css" />
-    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="@shoudAddAspAppendVersion">
+    <link rel="stylesheet" href="/prism-1.28.0/prism-okaidia.min.css" />
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     @if (isElectron)
     {
         <style>
@@ -56,8 +56,8 @@
                 -webkit-user-drag: none;
                 -webkit-user-select: none;
                 overscroll-behavior: none;
-                -webkit-tap-highlight-color: transparent;
                 -webkit-font-smoothing: antialiased;
+                -webkit-tap-highlight-color: transparent;
             }
         </style>
     }
@@ -75,9 +75,10 @@
         }
     </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
-<body>
+<body class="@BitCss.BgColor.Primary @BitCss.Text.Primary">
     <div id="app-container">
         @if (isDefaultDeploymentType)
         {
@@ -88,11 +89,11 @@
 
     @if (isStatic is false)
     {
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js" data-manual></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-csharp.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-cshtml.min.js"></script>
+        <script src="/prism-1.28.0/prism.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="/prism-1.28.0/prism-csharp.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="/prism-1.28.0/prism-cshtml.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-        <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js" asp-append-version="true"></script>
+        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         <script src="_content/Bit.BlazorUI.Demo.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
         @if (isBlazorServer)

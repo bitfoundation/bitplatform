@@ -17,7 +17,7 @@ public class BitLoadingButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitLoadingButton = com.Find(".bit-lbtn");
+        var bitLoadingButton = com.Find(".bit-ldb");
 
         if (isEnabled)
         {
@@ -32,24 +32,28 @@ public class BitLoadingButtonTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitButtonSize.Small),
         DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large)
+        DataRow(BitButtonSize.Large),
+        DataRow(null)
     ]
-    public void BitLoadingButtonSizeTest(BitButtonSize size)
+    public void BitLoadingButtonSizeTest(BitButtonSize? size)
     {
         var com = RenderComponent<BitLoadingButton>(parameters =>
         {
-            parameters.Add(p => p.ButtonSize, size);
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.ButtonSize, size.Value);
+            }
         });
 
         var sizeClass = size switch
         {
-            BitButtonSize.Small => "small",
-            BitButtonSize.Medium => "medium",
-            BitButtonSize.Large => "large",
-            _ => "NotSet",
+            BitButtonSize.Small => "bit-ldb-sm",
+            BitButtonSize.Medium => "bit-ldb-md",
+            BitButtonSize.Large => "bit-ldb-lg",
+            _ => "bit-ldb-md",
         };
 
-        var bitLoadingButton = com.Find(".bit-lbtn");
+        var bitLoadingButton = com.Find(".bit-ldb");
 
         Assert.IsTrue(bitLoadingButton.ClassList.Contains(sizeClass));
     }
@@ -71,9 +75,9 @@ public class BitLoadingButtonTests : BunitTestContext
             parameters.Add(p => p.ButtonType, type);
         });
 
-        var styleClass = style is BitButtonStyle.Standard ? "standard" : "primary";
+        var styleClass = style is BitButtonStyle.Standard ? "bit-ldb-std" : "bit-ldb-pri";
 
-        var bitLoadingButton = com.Find(".bit-lbtn");
+        var bitLoadingButton = com.Find(".bit-ldb");
 
         Assert.IsTrue(bitLoadingButton.ClassList.Contains(styleClass));
 
@@ -86,23 +90,23 @@ public class BitLoadingButtonTests : BunitTestContext
     ]
     public void BitLoadingButtonContentTest(bool isLoading)
     {
-        string TextContent = "Hi";
+        const string textContent = "Hi";
 
         var com = RenderComponent<BitLoadingButton>(parameters =>
         {
-            parameters.Add(p => p.ChildContent, TextContent);
+            parameters.Add(p => p.ChildContent, textContent);
             parameters.Add(p => p.IsLoading, isLoading);
         });
 
-        var bitLoadingButton = com.Find(".bit-lbtn");
+        var bitLoadingButton = com.Find(".bit-ldb");
 
         if (isLoading)
         {
-            Assert.IsTrue(bitLoadingButton.FirstElementChild.ClassList.Contains("loading"));
+            Assert.IsTrue(bitLoadingButton.FirstElementChild.ClassList.Contains("bit-ldb-ldg"));
         }
         else
         {
-            Assert.AreEqual(bitLoadingButton.TextContent, TextContent);
+            Assert.AreEqual(textContent, bitLoadingButton.TextContent);
         }
     }
 
@@ -126,42 +130,51 @@ public class BitLoadingButtonTests : BunitTestContext
         DataRow(BitLabelPosition.Left, BitSpinnerSize.Small),
         DataRow(BitLabelPosition.Left, BitSpinnerSize.Medium),
         DataRow(BitLabelPosition.Left, BitSpinnerSize.Large),
+
+        DataRow(null, null),
     ]
-    public void BitLoadingButtonLoaderTest(BitLabelPosition labelPosition, BitSpinnerSize spinnerSize)
+    public void BitLoadingButtonLoaderTest(BitLabelPosition? labelPosition, BitSpinnerSize? spinnerSize)
     {
-        string loadingLabel = "I'm Loading Label";
+        const string loadingLabel = "I'm Loading Label";
 
         var com = RenderComponent<BitLoadingButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
             parameters.Add(p => p.LoadingLabel, loadingLabel);
-            parameters.Add(p => p.LoadingLabelPosition, labelPosition);
-            parameters.Add(p => p.LoadingSpinnerSize, spinnerSize);
+            if (labelPosition.HasValue)
+            {
+                parameters.Add(p => p.LoadingLabelPosition, labelPosition.Value);
+            }
+
+            if (spinnerSize.HasValue)
+            {
+                parameters.Add(p => p.LoadingSpinnerSize, spinnerSize.Value);
+            }
         });
 
-        var bitLoadingButton = com.Find(".bit-lbtn");
+        var bitLoadingButton = com.Find(".bit-ldb");
 
         var labelPositionClass = labelPosition switch
         {
-            BitLabelPosition.Top => "top",
-            BitLabelPosition.Right => "right",
-            BitLabelPosition.Bottom => "bottom",
-            BitLabelPosition.Left => "left",
-            _ => string.Empty
+            BitLabelPosition.Top => "bit-ldb-top",
+            BitLabelPosition.Right => "bit-ldb-right",
+            BitLabelPosition.Bottom => "bit-ldb-bottom",
+            BitLabelPosition.Left => "bit-ldb-left",
+            _ => "bit-ldb-right"
         };
 
         var spinnerSizeClass = spinnerSize switch
         {
-            BitSpinnerSize.XSmall => "xSmall",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Large => "large",
-            _ => string.Empty
+            BitSpinnerSize.XSmall => "bit-ldb-spn-xs",
+            BitSpinnerSize.Small => "bit-ldb-spn-sm",
+            BitSpinnerSize.Medium => "bit-ldb-spn-md",
+            BitSpinnerSize.Large => "bit-ldb-spn-lg",
+            _ => "bit-ldb-spn-sm"
         };
 
-        Assert.AreEqual(bitLoadingButton.LastElementChild.TextContent, loadingLabel);
+        Assert.AreEqual(loadingLabel, bitLoadingButton.LastElementChild.TextContent);
 
-        Assert.IsTrue(bitLoadingButton.FirstElementChild.ClassList.Contains("loading"));
+        Assert.IsTrue(bitLoadingButton.FirstElementChild.ClassList.Contains("bit-ldb-ldg"));
 
         Assert.IsTrue(bitLoadingButton.FirstElementChild.ClassList.Contains(labelPositionClass));
 

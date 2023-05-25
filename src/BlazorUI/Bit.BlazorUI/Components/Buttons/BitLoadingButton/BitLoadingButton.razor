@@ -20,11 +20,11 @@
         }
         else
         {
-            <div class="loading @GetClassLoadingLabelPosition() @GetClassLoadingSize() @GetClassLoadingStyle()">
-                <div class="spinner"></div>
+            <div class="bit-ldb-ldg @GetLabelPositionClass() @GetSpinnerSizeClass()">
+                <div class="bit-ldb-spn"></div>
                 @if (LoadingLabel.HasValue())
                 {
-                    <div class="label">
+                    <div class="bit-ldb-lbl">
                         @LoadingLabel
                     </div>
                 }

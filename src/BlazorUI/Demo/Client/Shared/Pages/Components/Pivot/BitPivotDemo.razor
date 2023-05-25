@@ -1,5 +1,7 @@
 ﻿@page "/components/pivot"
 
+<PageTitle>Bit BlazorUI - Pivot</PageTitle>
+
 <ComponentDemo ComponentName="Pivot"
                ComponentDescription="The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content. Tapping on a pivot item header navigates to that header's section content. Tabs are a visual variant of Pivot that use a combination of icons and textor just icons to articulate section content."
                ComponentParameters="componentParameters"
@@ -463,3 +465,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private string SelectedKey = "Foo";
+    private BitPivotItem SelectedPivotItem;
+    private string OverridePivotSelectedKey = "1";
+    private BitComponentVisibility PivotItemVisibility;
+    private bool PivotEnabled = true;
+    private bool PivotItemEnabled = true;
+
+    private void TogglePivotItemVisibility()
+    {
+        PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
+    }
+}

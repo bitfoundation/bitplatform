@@ -227,21 +227,21 @@ public partial class BitIconButtonDemo
         gap: 0.5rem;
     }
     
-    .custom-btn-sm.small {
+    .custom-btn-sm {
         padding: 4px 8px;
         font-size: 8px;
         line-height: 1.5;
         border-radius: 3px;
     }
     
-    .custom-btn-md.medium {
+    .custom-btn-md {
         padding: 12px 24px;
         font-size: 16px;
         line-height: 1.4;
         border-radius: 4px;
     }
     
-    .custom-btn-lg.large {
+    .custom-btn-lg {
         padding: 20px 32px;
         font-size: 32px;
         line-height: 1.33;

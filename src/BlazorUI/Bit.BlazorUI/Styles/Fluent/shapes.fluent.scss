@@ -1,4 +1,9 @@
-﻿:root {
+﻿:root,
+:root[bit-theme="light"],
+:root[bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root[bit-theme="dark"],
+:root[bit-theme="fluent-dark"] {
     //spacing
     --bit-spa-scaling-factor: 0.5rem;
     --bit-spa-ovr-zindex0: 1000;

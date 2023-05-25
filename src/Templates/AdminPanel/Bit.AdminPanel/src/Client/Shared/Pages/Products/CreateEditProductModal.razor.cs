@@ -9,7 +9,7 @@ public partial class CreateEditProductModal
     private bool _isLoading;
     private bool _isSaving;
     private ProductDto _product = new();
-    private List<BitDropDownItem> _allCategoryList = new();
+    private List<BitDropdownItem> _allCategoryList = new();
     private string _selectedCategoyId = string.Empty;
 
     [Parameter] public EventCallback OnSave { get; set; }
@@ -43,9 +43,9 @@ public partial class CreateEditProductModal
                                         async () => await HttpClient.GetFromJsonAsync("Category/Get",
                                             AppJsonContext.Default.ListCategoryDto)) ?? new();
 
-            _allCategoryList = categoryList.Select(c => new BitDropDownItem()
+            _allCategoryList = categoryList.Select(c => new BitDropdownItem()
             {
-                ItemType = BitDropDownItemType.Normal,
+                ItemType = BitDropdownItemType.Normal,
                 Text = c.Name ?? string.Empty,
                 Value = c.Id.ToString()
             }).ToList();

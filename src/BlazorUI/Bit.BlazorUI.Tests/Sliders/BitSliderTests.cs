@@ -25,7 +25,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "vertical" : "horizontal"));
+        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "bit-sld-vrt" : "bit-sld-hrz"));
     }
 
     [DataTestMethod,
@@ -41,7 +41,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"ranged-{(vertical ? "vertical" : "horizontal")}"));
+        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-sld-rgd-{(vertical ? "vrt" : "hrz")}"));
     }
 
     [DataTestMethod,
@@ -81,7 +81,7 @@ public class BitSliderTests : BunitTestContext
 
         var bitSlider = com.Find(".bit-sld");
 
-        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("ranged-horizontal"));
+        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("bit-sld-rgd-hrz"));
         Assert.AreEqual(ranged ? 2 : 1, bitSlider.GetElementsByTagName("input").Length);
     }
 
@@ -102,7 +102,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         var expectedValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
         Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), label.TextContent);
@@ -125,7 +125,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         var expectedValue = upperValue.HasValue ? upperValue : defaultUpperValue;
 
@@ -147,7 +147,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsRanged, true);
         });
 
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -166,7 +166,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(2, labels.Count);
         Assert.AreEqual(defaultUpperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
@@ -188,7 +188,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(2, labels.Count);
         Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), labels[0].TextContent);
@@ -208,7 +208,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -227,7 +227,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -245,7 +245,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -264,7 +264,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -331,7 +331,7 @@ public class BitSliderTests : BunitTestContext
 
         // Find all labels with title css class
         // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
-        var labelElements = com.FindAll(".label");
+        var labelElements = com.FindAll(".bit-sld-lbl");
         var labelElement = labelElements.SingleOrDefault();
 
         if (label.HasValue())
@@ -359,7 +359,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowValue, showValue);
         });
 
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         if (showValue)
         {
@@ -386,7 +386,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsOriginFromZero, originFromZero);
         });
 
-        var spans = com.FindAll(".zero-tick");
+        var spans = com.FindAll(".bit-sld-ztk");
 
         Assert.AreEqual(originFromZero ? 1 : 0, spans.Count);
     }
@@ -406,7 +406,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, valueFormat);
         });
 
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(ranged ? 2 : 1, labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()));
     }

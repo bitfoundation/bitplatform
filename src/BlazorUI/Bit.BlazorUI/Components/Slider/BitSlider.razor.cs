@@ -173,9 +173,7 @@ public partial class BitSlider
     /// <summary>
     /// Additional parameter for the Slider box
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The difference between the two adjacent values of the Slider
@@ -229,9 +227,9 @@ public partial class BitSlider
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
+        ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => $"{(IsRanged ? "ranged-" : null)}{(IsVertical ? "vertical" : "horizontal")}");
+        ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
     }
 
     protected override void OnInitialized()

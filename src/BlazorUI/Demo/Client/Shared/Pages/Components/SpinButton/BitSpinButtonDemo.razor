@@ -1,5 +1,7 @@
 ﻿@page "/components/spin-button"
 
+<PageTitle>Bit BlazorUI - SpinButton</PageTitle>
+
 <ComponentDemo ComponentName="SpinButton"
                ComponentDescription="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
                ComponentParameters="componentParameters"
@@ -8,8 +10,11 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Basic" />
+                <br />
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
+                <br />
                 <BitSpinButton Label="Label & Icon" IconName="BitIconName.Lightbulb" />
+                <br />
                 <BitSpinButton Label="Left Label" IconName="BitIconName.Lightbulb" LabelPosition="BitSpinButtonLabelPosition.Left" />
             </div>
         </ExamplePreview>
@@ -41,19 +46,11 @@
     <ComponentExampleBox Title="Min & Max & Step" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Min: -10, Max: 10"
-                               Min="-10"
-                               Max="10" />
-
-                <BitSpinButton Label="Min: -20, Max: 20, Step: 2"
-                               Min="-20"
-                               Max="20"
-                               Step="2" />
-
-                <BitSpinButton Label="Min: -1, Max: 1, Step: 0.1"
-                               Min="-1"
-                               Max="1"
-                               Step="0.1" />
+                <BitSpinButton Label="Min: -10, Max: 10" Min="-10" Max="10" />
+                <br />
+                <BitSpinButton Label="Min: -20, Max: 20, Step: 2" Min="-20" Max="20" Step="2" />
+                <br />
+                <BitSpinButton Label="Min: -1, Max: 1, Step: 0.1" Min="-1" Max="1" Step="0.1" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -63,15 +60,15 @@
             <div class="example-desc">This SpinButton includes a suffix in the value.</div>
             <div class="example-box">
                 <BitSpinButton Label="Height"
-                               IconName="BitIconName.AutoHeight"
+                               Suffix=" cm"
                                DefaultValue="150"
-                               Suffix=" cm" />
-
+                               IconName="BitIconName.AutoHeight" />
+                <br />
                 <BitSpinButton Label="Weight"
-                               IconName="BitIconName.Weights"
-                               DefaultValue="50"
                                Step="0.5"
-                               Suffix=" kg" />
+                               Suffix=" kg"
+                               DefaultValue="50"
+                               IconName="BitIconName.Weights" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -83,7 +80,7 @@
                     <BitSpinButton Label="One-way" Value="OneWayValue" />
                     <BitRating @bind-Value="OneWayValue" />
                 </div>
-
+                <br />
                 <div>
                     <BitSpinButton Label="Two-way" Step="0.5" @bind-Value="TwoWayValue" />
                     <BitRating @bind-Value="TwoWayValue" />
@@ -104,12 +101,12 @@
                     <span>OnIncrement Counter: @OnIncrementCounter</span>
                     <span>OnDecrement Counter: @OnDecrementCounter</span>
                 </div>
-
+                <br />
                 <div class="column">
                     <BitSpinButton @bind-Value="OnChangeEventBindedValue"
                                    Label="OnChange"
-                                   Step="0.1" 
-                                   OnChange="HandleOnChangeEvent"/>
+                                   Step="0.1"
+                                   OnChange="HandleOnChangeEvent" />
                     <span>OnChange Clicked Counter: @OnChangeClickedCounter</span>
                     <span>OnChange Returned Value: @OnChangeEventReturnedValue</span>
                 </div>

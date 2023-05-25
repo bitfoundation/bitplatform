@@ -1,4 +1,6 @@
 ﻿//-:cnd:noEmit
+using TodoTemplate.Client.App;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
@@ -16,6 +18,8 @@ public static class IServiceCollectionExtensions
 #elif Windows
         services.AddClientWindowsServices();
 #endif
+
+        services.AddTransient<MainPage>();
 
         return services;
     }
