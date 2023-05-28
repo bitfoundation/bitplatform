@@ -54,8 +54,14 @@
         <style>
             * {
                 -webkit-user-drag: none;
-                -webkit-user-select: none;
                 overscroll-behavior: none;
+            }
+
+            *:not(input), *:focus:not(input) {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
             }
         </style>
     }
