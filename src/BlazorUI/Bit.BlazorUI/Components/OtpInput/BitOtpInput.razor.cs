@@ -95,7 +95,7 @@ public partial class BitOtpInput
     {
         if (CurrentValue is not null && CurrentValue != string.Join(string.Empty, _inputValue))
         {
-            SetInputValue(CurrentValue);
+            SetInputsValue(CurrentValue);
         }
 
         await base.OnParametersSetAsync();
@@ -150,7 +150,6 @@ public partial class BitOtpInput
         var newValue = e.Value!.ToString()!;
 
         _inputValue[index] = string.Empty;
-        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
@@ -166,15 +165,24 @@ public partial class BitOtpInput
             }
             else
             {
-                _inputValue[index] = diff;
-                int nextIndex = index + 1;
-                if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
+                if (diff.Length > 1)
+                {
+                    SetInputsValue(diff);
+                }
+                else
+                {
+                    _inputValue[index] = diff;
+                    int nextIndex = index + 1;
+                    if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
+                }
             }
         }
         else
         {
             _inputValue[index] = null;
         }
+
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         CurrentValue = string.Join(string.Empty, _inputValue);
 
@@ -273,7 +281,7 @@ public partial class BitOtpInput
     {
         if (IsEnabled is false) return;
 
-        await _js.SelectText(_inputRefs[index]);
+        //await _js.SelectText(_inputRefs[index]);
     }
 
     [JSInvokable]
@@ -284,14 +292,14 @@ public partial class BitOtpInput
         if (pastedValue.HasNoValue()) return;
         if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
-        SetInputValue(pastedValue);
+        SetInputsValue(pastedValue);
 
         CurrentValue = string.Join("", _inputValue);
 
         await OnChange.InvokeAsync(CurrentValue);
     }
 
-    private void SetInputValue(string value)
+    private void SetInputsValue(string value)
     {
         var chars = value.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
 

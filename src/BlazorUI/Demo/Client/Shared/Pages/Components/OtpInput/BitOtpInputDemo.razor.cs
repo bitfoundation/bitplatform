@@ -75,6 +75,7 @@ public partial class BitOtpInputDemo
             Description = "Callback for when the OtpInput value change.",
         },
     };
+    
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -137,38 +138,6 @@ public partial class BitOtpInputDemo
         }
     };
 
-    
-
-    private string basicOtpInput;
-    private string autoFocusOtpInput;
-    private string textOtpInput;
-    private string numberOtpInput;
-    private string passwordOtpInput;
-    private string leftToRightOtpInput;
-    private string rightToLeftOtpInput;
-    private string topToBottomOtpInput;
-    private string BottomToTopOtpInput;
-    private string oneWayBindOtpInput;
-    private string twoWayBindOtpInput;
-    private string onChangeBindOtpInput;
-
-    private ValidationOtpInputModel validationOtpInputModel = new();
-    public bool formIsValidSubmit;
-    private async Task HandleValidSubmit()
-    {
-        formIsValidSubmit = true;
-
-        await Task.Delay(3000);
-
-        formIsValidSubmit = false;
-
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        formIsValidSubmit = false;
-    }
 
 
     private static readonly string example1HtmlCode = @"
@@ -177,7 +146,7 @@ public partial class BitOtpInputDemo
 <div>Output: [@basicOtpInput]</div>
 
 <BitLabel>Disabled OtpInput</BitLabel>
-<BitOtpInput Length=""6"" IsEnabled=""false"" />";
+<BitOtpInput Length=""4"" IsEnabled=""false"" />";
 
     private static readonly string example2HtmlCode = @"
 <BitOtpInput Length=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
