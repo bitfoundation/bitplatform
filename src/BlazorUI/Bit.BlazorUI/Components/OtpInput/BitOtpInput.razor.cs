@@ -150,6 +150,7 @@ public partial class BitOtpInput
         var newValue = e.Value!.ToString()!;
 
         _inputValue[index] = string.Empty;
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
@@ -182,7 +183,6 @@ public partial class BitOtpInput
             _inputValue[index] = null;
         }
 
-        await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         CurrentValue = string.Join(string.Empty, _inputValue);
 
