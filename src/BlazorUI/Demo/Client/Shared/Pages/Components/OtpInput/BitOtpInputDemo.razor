@@ -17,7 +17,7 @@
                 <br />
                 <div>
                     <BitLabel>Disabled</BitLabel>
-                    <BitOtpInput Length="6" IsEnabled="false" />
+                    <BitOtpInput Length="4" IsEnabled="false" />
                 </div>
             </div>
         </ExamplePreview>
@@ -146,3 +146,36 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private string? basicOtpInput;
+    private string? autoFocusOtpInput;
+    private string? textOtpInput;
+    private string? numberOtpInput;
+    private string? passwordOtpInput;
+    private string? leftToRightOtpInput;
+    private string? rightToLeftOtpInput;
+    private string? topToBottomOtpInput;
+    private string? BottomToTopOtpInput;
+    private string? oneWayBindOtpInput;
+    private string? twoWayBindOtpInput;
+    private string? onChangeBindOtpInput;
+
+    private ValidationOtpInputModel validationOtpInputModel = new();
+    public bool formIsValidSubmit;
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(3000);
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+}
