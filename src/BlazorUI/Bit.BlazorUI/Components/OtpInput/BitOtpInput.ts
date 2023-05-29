@@ -1,7 +1,7 @@
 ﻿class BitOtpInput {
     static setupOtpInput(dotnetReference: DotNetObject, otpInput: HTMLInputElement) {
 
-        otpInput.addEventListener('focusin', (e: any) => {
+        otpInput.addEventListener('focus', (e: any) => {
             e.target?.select();
         });
 

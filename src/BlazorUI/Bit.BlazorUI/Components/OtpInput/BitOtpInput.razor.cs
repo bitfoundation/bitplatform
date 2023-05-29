@@ -147,7 +147,7 @@ public partial class BitOtpInput
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
         var oldValue = _inputValue[index];
-        var newValue = e.Value!.ToString()!;
+        var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
 
         _inputValue[index] = string.Empty;
         await Task.Delay(1); // waiting for input default behavior before setting a new value.
@@ -182,7 +182,6 @@ public partial class BitOtpInput
         {
             _inputValue[index] = null;
         }
-
 
         CurrentValue = string.Join(string.Empty, _inputValue);
 
@@ -277,12 +276,7 @@ public partial class BitOtpInput
         await OnPaste.InvokeAsync(e);
     }
 
-    private async Task HandleOnFocus(FocusEventArgs e, int index)
-    {
-        if (IsEnabled is false) return;
 
-        //await _js.SelectText(_inputRefs[index]);
-    }
 
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
@@ -294,14 +288,14 @@ public partial class BitOtpInput
 
         SetInputsValue(pastedValue);
 
-        CurrentValue = string.Join("", _inputValue);
+        CurrentValue = string.Join(string.Empty, _inputValue);
 
         await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SetInputsValue(string value)
     {
-        var chars = value.Replace(" ", "", StringComparison.Ordinal).ToCharArray();
+        var chars = value.Replace(" ", string.Empty, StringComparison.Ordinal).ToCharArray();
 
         for (int i = 0; i < Length; i++)
         {
@@ -311,11 +305,15 @@ public partial class BitOtpInput
 
     private static string DiffValues(string oldValue, string newValue)
     {
-        if (newValue.Length == 1) return newValue;
-        if (newValue.Length < oldValue.Length) return newValue;
+        var oldLength = oldValue.Length;
+        var newLength = newValue.Length;
 
-        if (newValue[..^1] == oldValue) return newValue[^1].ToString();
-        if (newValue[1..] == oldValue) return newValue[0].ToString();
+        if (newLength == 1) return newValue;
+        if (newLength < oldLength) return newValue;
+
+        if (newValue.Substring(0, oldLength) == oldValue) return newValue.Substring(oldLength, newLength - oldLength);
+
+        if (newValue.Substring(newLength - oldLength, oldLength) == oldValue) return newValue.Substring(0, newLength - oldLength);
 
         return newValue;
     }
