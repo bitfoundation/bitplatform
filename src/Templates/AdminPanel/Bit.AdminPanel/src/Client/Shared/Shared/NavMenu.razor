@@ -9,11 +9,16 @@
 <section class="nav-menu @(IsMenuOpen ? null : "nav-menu--closed")">
     <div class="menu-content">
         <div class="menu-top-row"></div>
-        <BitNav Class="nav-menu"
-                Items="_navItems"
+        <BitNav Items="_navItems"
+                Class="bit-nav-menu"
                 AriaLabel="NavMenu"
                 DefaultSelectedItem="_navItems[0]"
-                OnItemClick="(BitNavItem item) => HandleOnItemClick(item)">
+                OnItemClick="(BitNavItem item) => HandleOnItemClick(item)"
+                ClassStyles="@(new() { ToggleButton = new() { Class="toggle-button" },
+                                       ItemContainer = new() { Class="item-container" },
+                                       Item = new() { Class="item" },
+                                       SelectedItemContainer = new() { Class="selected-item-container" },
+                                       SelectedItem = new() { Class="selected-item" } })">
         </BitNav>
     </div>
     <a class=" menu-banner" href="https://todo.bitplatform.dev" target="_blank"></a>

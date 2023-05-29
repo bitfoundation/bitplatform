@@ -235,12 +235,9 @@ _book
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 
-/src/BlazorUI/Bit.BlazorUI.Charts/**/*.css
-/src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/**/*.css.gz
-/src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/scripts/*.js
-
 /src/BlazorUI/Bit.BlazorUI.Extras/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
 
 /src/Bup/Bit.Bup/wwwroot/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.css

@@ -9,9 +9,15 @@
     <style>
         * {
             -webkit-user-drag: none;
-            -webkit-user-select: none;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        *:not(input) {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         html, body, #app-container {
@@ -146,7 +152,7 @@
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
-    <script src="_content/Bit.BlazorUI.Charts/scripts/bit.blazorui.charts.min.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js"></script>
     <script src="_content/AdminPanel.Client.Shared/scripts/app.js"></script>
     <script>
         window.addEventListener('contextmenu', (event) => event.preventDefault());

@@ -1,35 +1,35 @@
-﻿@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .nav-menu {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
     top: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    flex: 1 0 auto;
-    width: rem($NavMenuWidth);
-    max-width: rem($NavMenuWidth);
-    height: 100vh;
+    left: 0;
     outline: 0;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    flex: 1 0 auto;
+    flex-shrink: 0;
+    position: fixed;
     box-shadow: none;
-    background-color: $Blue1;
     overflow-y: auto;
-    padding-bottom: rem(24px);
+    align-items: center;
     box-sizing: border-box;
+    flex-direction: column;
+    background-color: $Blue1;
+    width: rem($NavMenuWidth);
+    padding-bottom: rem(24px);
+    max-width: rem($NavMenuWidth);
+    justify-content: space-between;
 
     @include lt-lg {
-        height: 100vh;
-        position: fixed;
-        z-index: 1200;
         top: 0;
         inset: 0;
+        height: 100vh;
+        z-index: 1200;
+        position: fixed;
     }
 }
 
@@ -42,13 +42,13 @@
 }
 
 .menu-shadow {
-    position: fixed;
-    left: 0;
     top: 0;
-    z-index: 1101;
-    display: none;
+    left: 0;
     width: 100%;
     height: 100vh;
+    z-index: 1101;
+    display: none;
+    position: fixed;
     background-color: rgba(0, 0, 0, 0.5);
 
     @include lt-lg {
@@ -63,69 +63,50 @@
 .menu-top-row {
     width: 100%;
     height: rem($HeaderHeight);
-    border-bottom: rem(1px) solid $Blue2;
-    background-image: url('images/bit-white-logo.svg');
-    background-position: top rem(16px) left rem(16px);
     background-repeat: no-repeat;
+    border-bottom: rem(1px) solid $Blue2;
     background-size: rem(30px) rem(20px);
+    background-position: top rem(16px) left rem(16px);
+    background-image: url('images/bit-white-logo.svg');
 }
 
 .menu-banner {
     width: rem(190px);
     height: rem(296px);
-    border-radius: rem(6px);
-    background-image: url('images/menu-banner.webp');
-    background-position: center;
     background-size: cover;
+    border-radius: rem(6px);
+    background-position: center;
     background-repeat: no-repeat;
+    background-image: url('images/menu-banner.webp');
 }
 
-::deep .nav-menu {
+::deep .bit-nav-menu {
     width: 100%;
     padding-top: rem(24px);
 
+    .toggle-button {
+        color: $ThemeLightColor;
+    }
+
     .item-container {
-        button {
-            color: $ThemeLightColor;
-        }
-
         &:hover {
-            background-color: $Blue1;
-            color: $Gray10;
-        }
-
-        &.selected {
             background-color: $Blue2;
-            font-weight: 600;
-            font-size: rem(14px);
-            line-height: rem(20px);
-            color: $ThemeLightColor;
-
-            &::after {
-                border-color: $ThemeLighterAltColor;
-            }
-
-            &:hover {
-                background-color: $Blue2;
-                color: $Gray10;
-            }
-
-            .item {
-                i, span {
-                    color: $ThemeLightColor;
-                }
-            }
         }
+    }
 
-        .item {
-            font-weight: 400;
-            font-size: rem(14px);
-            line-height: rem(20px);
+    .item {
+        color: $ThemeLightColor;
+
+        i, span {
             color: $ThemeLightColor;
-
-            i, span {
-                color: $ThemeLightColor;
-            }
         }
+    }
+
+    .selected-item-container {
+        background-color: $Blue2;
+    }
+
+    .selected-item {
+        background-color: $Blue2;
     }
 }

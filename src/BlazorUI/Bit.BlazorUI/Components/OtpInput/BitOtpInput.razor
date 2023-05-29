@@ -14,14 +14,16 @@
                @onpaste="HandleOnPaste"
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
-               @onfocus="(e) => HandleOnFocus(e, index)"
                @oninput="(e) => HandleOnInput(e, index)"
                @onkeydown="(e) => HandleOnKeyDown(e, index)"
-               class="bit-otp-inp"
                type="@_inputType"
+               class="bit-otp-inp"
                inputmode="@_inputMode"
                value="@_inputValue[index]"
                disabled="@(IsEnabled is false)"
+               spellcheck="false"
+               autocorrect="off"
+               autocapitalize="none"
                autocomplete="@BitAutoCompleteValue.OneTimeCode" />
     }
 </div>

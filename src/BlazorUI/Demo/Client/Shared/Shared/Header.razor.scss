@@ -4,7 +4,7 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
-.main-header {
+.header {
     top: 0;
     z-index: 2;
     width: 100%;
@@ -15,13 +15,13 @@
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 }
 
-.main-header--full-page {
+.header--full-page {
     .header-main-container {
         max-width: rem(1200px);
     }
 }
 
-.header-main-container {
+.container {
     width: 100%;
     display: flex;
     margin-left: auto;
@@ -34,26 +34,19 @@
     min-height: rem($HeaderHeight);
     justify-content: space-between;
 
-    @include md {
-        padding-left: rem(30px);
-        padding-right: rem(30px);
-    }
-
-    @include sm {
-        .header-link {
-            display: none;
-        }
+    @include lt-lg {
+        padding: 0 rem(10px);
     }
 }
 
-.header-content-container {
+.content {
     height: 100%;
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
 }
 
-.header-logo {
+.logo {
     cursor: pointer;
     width: rem(50px);
     height: rem(50px);
@@ -62,9 +55,13 @@
     background-position: center;
     background-repeat: no-repeat;
     background-image: url('images/bit-logo.svg');
+
+    @include lt-lg {
+        margin: 0 rem(10px);
+    }
 }
 
-.header-link {
+.link {
     height: 100%;
     cursor: pointer;
     line-height: 1.5;
@@ -76,19 +73,20 @@
     color: $bit-color-text-primary3;
 }
 
-.header-link--active {
+.link--active {
     color: $B2Color;
 }
 
-.header-right-section {
+.right-section {
     gap: 1rem;
     display: flex;
+    align-items: center;
 }
 
 .github-btn {
     cursor: pointer;
-    width: rem(34px);
-    height: rem(34px);
+    width: rem(40px);
+    height: rem(40px);
     border-radius: 50%;
     margin-left: rem(10px);
     background-size: cover;
@@ -97,98 +95,23 @@
     background-image: url('images/github-icon.webp');
 }
 
-.header-second-row {
-    width: 100%;
-    display: none;
-    align-items: center;
-    padding: 0 rem(16px);
-    flex-flow: row nowrap;
-    box-sizing: border-box;
-    justify-content: flex-start;
-    height: rem($HeaderSecondRowHeight);
-
-    @include sm {
-        display: flex;
-    }
-}
-
-.header-nav {
-    left: 0;
-    width: 100%;
-    display: flex;
-    z-index: 9999;
-    position: fixed;
-    padding: rem(20px);
-    box-sizing: border-box;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    backdrop-filter: blur(20px);
-    justify-content: flex-start;
-    -webkit-backdrop-filter: blur(20px);
-    background-color: rgba(255, 255, 255, 0.85);
-    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
-    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
-}
-
-.header-nav-link {
-    line-height: 1.5;
-    padding: rem(8px) 0;
-    font-size: rem(16px);
-    text-decoration: none;
-    margin-bottom: rem(16px);
-    color: $bit-color-text-primary3;
-}
-
-.header-nav-link--active {
-    color: $B2Color;
-}
-
-::deep .header-nav-close-btn {
-    top: rem(10px);
-    color: $B2Color;
-    right: rem(10px);
-    width: rem(44px);
-    height: rem(44px);
-    position: absolute;
-}
-
-::deep .header-action-button {
-    &.bit-acb {
-        padding: 0;
-        flex-grow: 1;
-        font-weight: 600;
-        line-height: 1.5;
-        color: $Gray1;
-        font-size: rem(15px);
-
-        span {
-            i {
-                font-size: rem(12px);
-                color: $Gray1;
-            }
+::deep {
+    .menu-btn {
+        @include gt-md {
+            display: none;
         }
     }
-}
 
-::deep .header-menu-btn {
-    border-radius: 50%;
-    min-width: rem(30px);
-    max-width: rem(30px);
-    min-height: rem(30px);
-    max-height: rem(30px);
-    margin-right: rem(16px);
-    background-color: $B2Color;
-
-    .bit-icon {
-        color: $White;
-        font-size: rem(12px);
+    .toggle-theme-btn {
+        padding: 0;
+        height: 35px;
+        min-width: 35px;
+        border-radius: 50%;
     }
 
-    &:hover {
-        background-color: $B2Color;
-    }
-
-    @include gt-md {
-        display: none;
+    .fix-light-icon {
+        span {
+            padding: 3px 0px 0 1px;
+        }
     }
 }
