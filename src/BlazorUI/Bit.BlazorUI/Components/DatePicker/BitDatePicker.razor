@@ -21,10 +21,10 @@
     <div class="bit-dtp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-dtp-fld-grp @(AllowTextInput ? "bit-dtp-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
-                   @onfocus="@HandleOnFocus"
-                   @oninput="@HandleOnChange"
-                   @onfocusin="@HandleOnFocusIn"
-                   @onfocusout="@HandleOnFocusOut"
+            @onfocus="@HandleOnFocus"
+            @oninput="@HandleOnChange"
+            @onfocusin="@HandleOnFocusIn"
+            @onfocusout="@HandleOnFocusOut"
                    type="text"
                    role="combobox"
                    id="@_textFieldId"
@@ -36,7 +36,7 @@
                    disabled=@(IsEnabled is false)
                    readonly=@(AllowTextInput is false)
                    aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-controls="@(IsOpen ? _calloutId : null)" 
+                   aria-controls="@(IsOpen ? _calloutId : null)"
                    aria-labelledby="@(Label.HasValue() ? _labelId : null)" />
 
             @if (IconTemplate is not null)
@@ -193,9 +193,9 @@
                             <div class="bit-dtp-time-grp">
                                 <div class="bit-dtp-time-wrp">
                                     <input @ref="_inputTimeHourRef"
-                                           @bind="@_timeHour"
-                                           @bind:event="oninput"
-                                           @onfocus="HandleOnTimeHourFocus"
+                                    @bind="@_timeHour"
+                                    @bind:event="oninput"
+                                    @onfocus="HandleOnTimeHourFocus"
                                            min="0"
                                            max="23"
                                            type="number"
@@ -204,11 +204,11 @@
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                     <span class="bit-dtp-tdiv">:</span>
                                     <input @ref="_inputTimeMinuteRef"
-                                           @bind="@_timeMinute"
-                                           @bind:event="oninput"
-                                           @onfocus="HandleOnTimeMinuteFocus"
+                                    @bind="@_timeMinute"
+                                    @bind:event="oninput"
+                                    @onfocus="HandleOnTimeMinuteFocus"
                                            min="0"
-                                           max="59" 
+                                           max="59"
                                            type="number"
                                            inputmode="numeric"
                                            class="bit-dtp-tinp"
@@ -272,7 +272,7 @@
                                                     title="@monthName"
                                                     aria-readonly="true"
                                                     aria-label="@monthName"
-                                                    class=@GetMonthCellClassName(monthIndex)
+                                                    class="bit-dtp-rbtn @GetMonthCellClassName(monthIndex)"
                                                     disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
                                                     tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
                                                     aria-disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
@@ -331,6 +331,7 @@
                                             <button @onclick="() => SelectYear(year)"
                                                     type="button"
                                                     role="gridcell"
+                                                    class="bit-dtp-rbtn"
                                                     aria-readonly="true"
                                                     disabled="@IsYearOutOfMinAndMaxDate(year)"
                                                     tabindex="@(IsYearSelected(year) ? 0 : -1)"
