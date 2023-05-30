@@ -21,10 +21,10 @@
     <div class="bit-dtp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-dtp-fld-grp @(AllowTextInput ? "bit-dtp-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
-            @onfocus="@HandleOnFocus"
-            @oninput="@HandleOnChange"
-            @onfocusin="@HandleOnFocusIn"
-            @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
                    type="text"
                    role="combobox"
                    id="@_textFieldId"
@@ -193,9 +193,9 @@
                             <div class="bit-dtp-time-grp">
                                 <div class="bit-dtp-time-wrp">
                                     <input @ref="_inputTimeHourRef"
-                                    @bind="@_timeHour"
-                                    @bind:event="oninput"
-                                    @onfocus="HandleOnTimeHourFocus"
+                                           @bind="@_timeHour"
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnTimeHourFocus"
                                            min="0"
                                            max="23"
                                            type="number"
@@ -204,9 +204,9 @@
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                     <span class="bit-dtp-tdiv">:</span>
                                     <input @ref="_inputTimeMinuteRef"
-                                    @bind="@_timeMinute"
-                                    @bind:event="oninput"
-                                    @onfocus="HandleOnTimeMinuteFocus"
+                                           @bind="@_timeMinute"
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnTimeMinuteFocus"
                                            min="0"
                                            max="59"
                                            type="number"
