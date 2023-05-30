@@ -183,39 +183,37 @@
                 </DayCellTemplate>
             </BitDatePicker>
             <br />
-            <div class="date-picker-wrapper">
-                <BitDatePicker Label="Custom year, month, and day cells"
-                               Style="max-width: 350px"
-                               AriaLabel="Select a date"
-                               Placeholder="Select a date...">
-                    <DayCellTemplate>
-                        <span class="custom-day-cell">
-                            @context.Day
+            <BitDatePicker Label="Custom year, month, and day cells"
+                           Style="max-width: 350px"
+                           AriaLabel="Select a date"
+                           Placeholder="Select a date...">
+                <DayCellTemplate>
+                    <span class="custom-day-cell">
+                        @context.Day
 
-                            @if (context.Day % 5 is 0)
-                            {
-                                <span class="discount-badge">off</span>
-                            }
-                        </span>
-                    </DayCellTemplate>
-                    <MonthCellTemplate>
-                        <span>
-                            @this.Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+                        @if (context.Day % 5 is 0)
+                        {
+                            <span class="discount-badge">off</span>
+                        }
+                    </span>
+                </DayCellTemplate>
+                <MonthCellTemplate>
+                    <span>
+                        @this.Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
 
-                            @if (context.Month == 1)
-                            {
-                                <span class="discount-badge">Xmas</span>
-                            }
-                        </span>
-                    </MonthCellTemplate>
-                    <YearCellTemplate>
-                        <span style="position: relative">
-                            @context
-                            <span class="year-suffix">AC</span>
-                        </span>
-                    </YearCellTemplate>
-                </BitDatePicker>
-            </div>
+                        @if (context.Month == 1)
+                        {
+                            <span class="discount-badge">Xmas</span>
+                        }
+                    </span>
+                </MonthCellTemplate>
+                <YearCellTemplate>
+                    <span style="position: relative">
+                        @context
+                        <span class="year-suffix">AC</span>
+                    </span>
+                </YearCellTemplate>
+            </BitDatePicker>
             <br />
             <BitDatePicker Label="Icon template"
                            Style="max-width: 350px"
