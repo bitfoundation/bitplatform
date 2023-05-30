@@ -234,14 +234,16 @@ private bool AutoToggleIsVisible;";
     }
 
     .content {
-        width: 85%;
-        height: 250px;
+        width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-height: 288px;
         border-radius: 3px;
+        position: relative;
         background-color: white;
         flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
     }
 
     .scroller {

@@ -4,15 +4,15 @@
 .content {
     width: 87%;
     display: flex;
-    overflow: scroll;
+    overflow: auto;
     position: relative;
     padding: rem(15px);
     max-width: rem(960px);
     max-height: rem(288px);
     border-radius: rem(3px);
     flex-flow: column nowrap;
+    border: dodgerblue solid rem(1.6px);
     background-color: $bit-color-background-primary;
-    border: $bit-color-primary-main solid rem(1.6px);
 }
 
 .scroller {
