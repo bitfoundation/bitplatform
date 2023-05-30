@@ -34,13 +34,3 @@
     color: gray;
     font-size: 8px;
 }
-
-.date-range-picker-wrapper {
-    ::deep .bit-dtrp {
-        .day-picker-wrapper {
-            .week-day-label {
-                width: 44px;
-            }
-        }
-    }
-}

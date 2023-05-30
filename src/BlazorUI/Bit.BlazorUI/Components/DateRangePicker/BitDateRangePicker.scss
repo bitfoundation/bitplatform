@@ -146,31 +146,33 @@
 
 .bit-dtrp-rsp {
     @media only screen and (max-width: 600px) {
-        .bit-dtrp-dwp {
+        .bit-dtrp-dwp, 
+        .bit-dtrp-mwp {
             flex-grow: 1;
+        }
 
-            th, td {
-                margin: auto;
-                width: calc(100%/7);
-                font-size: spacing(2);
+        th, td {
+            margin: auto;
+            width: calc(100%/7);
+            font-size: spacing(2);
+        }
 
-                .bit-dtrp-dbtn {
-                    width: 100%;
-                    font-size: spacing(2);
+        .bit-dtrp-dbtn,
+        .bit-dtrp-rbtn {
+            width: 100%;
+            font-size: spacing(2);
 
-                    span {
-                        width: 100%;
-                        height: spacing(6);
-                    }
-                }
+            span {
+                width: 100%;
+                height: spacing(6);
+            }
+        }
 
-                &.bit-dtrp-dc-tdy {
-                    border-radius: unset;
+        &.bit-dtrp-dc-tdy {
+            border-radius: unset;
 
-                    &::after {
-                        border-radius: unset;
-                    }
-                }
+            &::after {
+                border-radius: unset;
             }
         }
     }
@@ -531,38 +533,38 @@
     margin-bottom: spacing(2);
     justify-content: space-evenly;
 
-    button {
-        border: none;
-        cursor: pointer;
-        overflow: hidden;
-        width: spacing(7);
-        position: relative;
-        white-space: nowrap;
-        outline: transparent;
-        max-width: spacing(7);
-        font-size: spacing(1.5);
-        line-height: spacing(5);
-        text-overflow: ellipsis;
-        padding: 0 spacing(1.25);
-        color: $color-text-primary2;
-        background-color: transparent;
-        border-radius: $shape-border-radius;
+    &:last-child {
+        margin: 0;
+    }
+}
 
-        @media (hover: hover) {
-            &:hover {
-                background-color: $color-action-hover-background-primary;
-            }
-        }
+.bit-dtrp-rbtn {
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    width: spacing(7);
+    position: relative;
+    white-space: nowrap;
+    outline: transparent;
+    max-width: spacing(7);
+    font-size: spacing(1.5);
+    line-height: spacing(5);
+    text-overflow: ellipsis;
+    padding: 0 spacing(1.25);
+    color: $color-text-primary2;
+    background-color: transparent;
+    border-radius: $shape-border-radius;
 
-        &:disabled {
-            pointer-events: none;
-            color: $color-text-disabled;
-            background-color: transparent;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
         }
     }
 
-    &:last-child {
-        margin: 0;
+    &:disabled {
+        pointer-events: none;
+        color: $color-text-disabled;
+        background-color: transparent;
     }
 }
 
@@ -580,13 +582,12 @@
 
 .bit-dtrp-selm {
     font-weight: 600;
-    color: $color-secondary-higher;
-    background-color: $color-primary-higher;
+    color: $color-secondary-main;
+    background-color: $color-primary-main;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-secondary-high;
-            background-color: $color-primary-high;
+            background-color: $color-action-hover-primary;
         }
     }
 }
