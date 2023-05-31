@@ -326,7 +326,7 @@
             align-items: center;
             justify-content: center;
             font-size: spacing(1.375);
-            color: $color-text-primary;
+            color: $color-secondary-main;
             font-family: $typography-font-family-icons;
         }
     }
@@ -352,7 +352,7 @@
         &:hover {
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-action-hover-text-primary;
+                color: $color-text-primary3;
             }
 
             &.bit-drp-idis {
@@ -371,7 +371,7 @@
 
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-text-primary;
+                color: $color-secondary-main;
             }
         }
 
@@ -382,7 +382,7 @@
                     background-color: $color-action-hover-primary;
 
                     .bit-drp-chm {
-                        color: $color-action-hover-text-primary;
+                        color: $color-secondary-lower;
                     }
                 }
             }
