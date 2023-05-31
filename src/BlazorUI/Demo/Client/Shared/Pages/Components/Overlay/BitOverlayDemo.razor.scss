@@ -2,14 +2,16 @@
 @import "../../../Styles/abstracts/_functions.scss";
 
 .content {
-    width: 85%;
+    width: 87%;
     display: flex;
-    height: rem(250px);
+    overflow: auto;
     position: relative;
     padding: rem(15px);
     max-width: rem(960px);
+    max-height: rem(288px);
     border-radius: rem(3px);
     flex-flow: column nowrap;
+    border: dodgerblue solid rem(1.6px);
     background-color: $bit-color-background-primary;
 }
 
