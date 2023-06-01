@@ -18,34 +18,24 @@
         }
 
         *:not(input) {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         html, body, #app-container {
-            -webkit-font-smoothing: antialiased;
             height: 100%;
             width: 100%;
             margin: 0;
             padding: 0;
-            color: #323130;
-            font-size: 1rem;
-            line-height: 1.5;
-            letter-spacing: 0;
-            font-weight: 400;
-            scroll-margin-top: calc(56px + 32px);
-            background-color: #fff;
+            -webkit-font-smoothing: antialiased;
         }
 
         .lds-wrapper {
-            position: absolute;
             top: 50%;
             left: 50%;
+            position: absolute;
             transform: translate(-50%, -50%);
         }
-
 
         .lds-grid {
             display: inline-block;
@@ -117,7 +107,6 @@
                     animation-delay: -1.6s;
                 }
 
-
         @keyframes lds-grid {
             0%, 100% {
                 opacity: 1;
@@ -130,7 +119,7 @@
     </style>
 </head>
 
-<body>
+<body class="bit-css-bgcolor-primary bit-css-txt-primary">
 
     <div class="status-bar-safe-area"></div>
 

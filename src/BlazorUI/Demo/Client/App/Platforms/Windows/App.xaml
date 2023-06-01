@@ -6,11 +6,11 @@
     <maui:MauiWinUIApplication.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="WindowCaptionForeground">#0D2960</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackground">#F2F2F2</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackground">#ffffff</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">#0D2960</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">#F2F2F2</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">#ffffff</SolidColorBrush>
             <Style TargetType="WebView2">
-                <Setter Property="DefaultBackgroundColor" Value="#0D2960" />
+                <Setter Property="DefaultBackgroundColor" Value="#ffffff" />
             </Style>
         </ResourceDictionary>
     </maui:MauiWinUIApplication.Resources>
