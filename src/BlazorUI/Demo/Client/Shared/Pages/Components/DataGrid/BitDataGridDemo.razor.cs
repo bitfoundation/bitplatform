@@ -347,9 +347,9 @@ public partial class BitDataGridDemo
     private readonly string example1HTMLCode = @"
 <style scoped>
     .grid {
+        width: 100%;
         display: inline-flex;
         flex-direction: column;
-        width: 100%;
         border: 1px solid #e9eaed;
     }
 
@@ -393,6 +393,7 @@ public partial class BitDataGridDemo
     }
 
     .grid ::deep .bitdatagrid-paginator {
+        margin-top: 0;
         padding: 0.5rem;
     }
 
@@ -414,6 +415,10 @@ public partial class BitDataGridDemo
 
                 .grid ::deep .bitdatagrid-paginator nav button:not([disabled]):hover {
                     background-color: #d0d1d5;
+                }
+
+                .grid ::deep .bitdatagrid-paginator nav button[disabled] {
+                    color: #a19f9d;
                 }
 
     .grid ::deep table {

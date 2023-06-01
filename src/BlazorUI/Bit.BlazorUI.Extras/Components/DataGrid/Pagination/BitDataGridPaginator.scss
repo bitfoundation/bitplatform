@@ -1,12 +1,14 @@
 .bitdatagrid-paginator {
     display: flex;
-    border-top: 1px solid #ccc;
+    flex-wrap:wrap;
     margin-top: 0.5rem;
     padding: 0.25rem 0;
     align-items: center;
+    border-top: 1px solid #ccc;
 
     .pagination-text {
         margin: 0 0.5rem;
+        text-align: center;
     }
 
     nav {
