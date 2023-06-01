@@ -418,7 +418,9 @@ private void HandleInvalidSubmit()
                AllowTextInput=true
                HighlightSelectedMonth=true
                Label=""Start date""
-               AriaLabel=""Select a date"" />";
+               DateFormat=""dd/MM/yyyy""
+               AriaLabel=""Select a date""
+               Placeholder=""Enter a date (DD/MM/YYYY)"" />";
 
     private readonly string example6HTMLCode = @"
 <BitDatePicker Style=""max-width: 350px""
