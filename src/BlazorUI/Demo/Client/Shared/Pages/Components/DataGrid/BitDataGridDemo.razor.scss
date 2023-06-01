@@ -1,4 +1,6 @@
-﻿.grid1 {
+﻿@import '../../../Styles/bit-css-variables.scss';
+
+.grid1 {
     width: 100%;
     display: inline-flex;
     flex-direction: column;
@@ -65,15 +67,15 @@
         }
 
         .bitdatagrid-paginator nav button[disabled] {
-            color: var(--bit-clr-txt-disabled);
+            color: $bit-color-text-disabled;
         }
 
         .bitdatagrid-paginator nav button:not([disabled]) {
-            background-color: var(--bit-clr-secondary-higher);
+            background-color: $bit-color-secondary-higher;
         }
 
         .bitdatagrid-paginator nav button:not([disabled]):hover {
-            background-color: var(--bit-clr-act-hover-bg-pri2);
+            background-color: $bit-color-action-hover-primary2;
         }
 
         table {
@@ -185,7 +187,7 @@
         top: 0;
         z-index: 1;
         position: sticky;
-        background-color: var(--bit-clr-secondary-higher);
+        background-color: $bit-color-secondary-higher;
     }
 
     ::deep tr {
