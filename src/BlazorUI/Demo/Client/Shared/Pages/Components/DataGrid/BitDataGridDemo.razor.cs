@@ -347,42 +347,42 @@ public partial class BitDataGridDemo
     private readonly string example1HTMLCode = @"
 <style scoped>
     .grid {
+        width: 100%;
         display: inline-flex;
         flex-direction: column;
-        width: 100%;
         border: 1px solid #e9eaed;
     }
 
-        .grid .flag {
-            width: 32px;
-            height: 16px;
-            vertical-align: middle;
-        }
+    .grid .flag {
+        width: 32px;
+        height: 16px;
+        vertical-align: middle;
+    }
 
     .grid-container {
         overflow: auto;
     }
 
-    .grid ::deep .column--large {
+    .grid .column--large {
         width: 220px;
     }
 
-    .grid ::deep th:nth-child(1) .col-options-button {
+    .grid th:nth-child(1) .col-options-button {
         background-image: none;
         cursor: pointer;
     }
 
-        .grid ::deep th:nth-child(1) .col-options-button:before {
-            display: inline-block;
-            font-family: ""Fabric MDL2 Assets"";
-            font-style: normal;
-            font-weight: normal;
-            content: ""\e721"";
-            position: relative;
-            top: 2px;
-        }
+    .grid th:nth-child(1) .col-options-button:before {
+        display: inline-block;
+        font-family: ""Fabric MDL2 Assets"";
+        font-style: normal;
+        font-weight: normal;
+        content: ""\e721"";
+        position: relative;
+        top: 2px;
+    }
 
-    .grid ::deep th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
+    .grid th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
         display: inline-block;
         font-family: ""Fabric MDL2 Assets"";
         font-style: normal;
@@ -392,31 +392,36 @@ public partial class BitDataGridDemo
         top: -2px;
     }
 
-    .grid ::deep .bitdatagrid-paginator {
+    .grid .bitdatagrid-paginator {
+        margin-top: 0;
         padding: 0.5rem;
     }
 
-        .grid ::deep .bitdatagrid-paginator .pagination-text {
-            padding-top: 3px;
-        }
+    .grid .bitdatagrid-paginator .pagination-text {
+        padding-top: 3px;
+    }
 
-        .grid ::deep .bitdatagrid-paginator nav button {
-            border-radius: 0.25rem;
-        }
+    .grid .bitdatagrid-paginator nav button {
+        border-radius: 0.25rem;
+    }
 
-            .grid ::deep .bitdatagrid-paginator nav button:before {
-                vertical-align: middle;
-            }
+    .grid .bitdatagrid-paginator nav button:before {
+        vertical-align: middle;
+    }
 
-            .grid ::deep .bitdatagrid-paginator nav button:not([disabled]) {
-                background-color: #eee;
-            }
+    .grid .bitdatagrid-paginator nav button:not([disabled]) {
+        background-color: #eee;
+    }
 
-                .grid ::deep .bitdatagrid-paginator nav button:not([disabled]):hover {
-                    background-color: #d0d1d5;
-                }
+    .grid .bitdatagrid-paginator nav button:not([disabled]):hover {
+        background-color: #d0d1d5;
+    }
 
-    .grid ::deep table {
+    .grid .bitdatagrid-paginator nav button[disabled] {
+        color: #a19f9d;
+    }
+
+    .grid table {
         position: relative;
         min-width: 100%;
         border-collapse: separate;
@@ -424,29 +429,29 @@ public partial class BitDataGridDemo
         text-indent: initial;
     }
 
-    .grid ::deep thead th:not(:last-child) {
+    .grid thead th:not(:last-child) {
         border-right: 1px solid #e9eaed;
     }
 
-    .grid ::deep thead .col-width-draghandle {
+    .grid thead .col-width-draghandle {
         cursor: col-resize;
         width: 3px;
     }
 
-        .grid ::deep thead .col-width-draghandle:active {
-            background: unset;
-        }
+    .grid thead .col-width-draghandle:active {
+        background: unset;
+    }
 
-        .grid ::deep thead .col-width-draghandle :after {
-            left: 3px;
-            border-left: unset;
-        }
+    .grid thead .col-width-draghandle :after {
+        left: 3px;
+        border-left: unset;
+    }
 
-        .grid ::deep thead .col-width-draghandle:hover {
-            background: unset;
-        }
+    .grid thead .col-width-draghandle:hover {
+        background: unset;
+    }
 
-    .grid ::deep th {
+    .grid th {
         background-color: #f4f5f9;
         padding: 0.5rem;
         display: table-cell;
@@ -455,23 +460,23 @@ public partial class BitDataGridDemo
         border-bottom: 1px solid #e9eaed;
     }
 
-    .grid ::deep tr {
+    .grid tr {
         height: 41px;
     }
 
-        .grid ::deep tr:nth-child(even) {
-            background: #f4f5f9;
-        }
+    .grid tr:nth-child(even) {
+        background: #f4f5f9;
+    }
 
-        .grid ::deep tr:nth-child(odd) {
-            background: #FFF;
-        }
+    .grid tr:nth-child(odd) {
+        background: #FFF;
+    }
 
-        .grid ::deep tr:last-child > td {
-            border-bottom: none;
-        }
+    .grid tr:last-child > td {
+        border-bottom: none;
+    }
 
-    .grid ::deep td {
+    .grid td {
         border-bottom: 1px solid #e9eaed;
         color: #4f4f50;
         overflow: hidden;
@@ -480,31 +485,31 @@ public partial class BitDataGridDemo
         padding: 0.25rem 0.5rem;
     }
 
-        .grid ::deep td:not(:last-child) {
-            border-right: 1px solid #e9eaed;
-        }
+    .grid td:not(:last-child) {
+        border-right: 1px solid #e9eaed;
+    }
 
-    .grid ::deep .sort-indicator {
+    .grid .sort-indicator {
         margin-left: auto;
     }
 
-    .grid ::deep .col-width-draghandle:after {
+    .grid .col-width-draghandle:after {
         border-left: unset;
     }
 
-    .grid ::deep .col-title-text {
+    .grid .col-title-text {
         color: #262526;
     }
 
-    .grid ::deep .col-header-content {
+    .grid .col-header-content {
         padding-right: 0px;
     }
 
-    .grid ::deep button.col-title:active, .grid ::deep .col-options-button:active {
+    .grid button.col-title:active, .grid .col-options-button:active {
         background-color: unset;
     }
 
-    .grid ::deep button.col-title:hover, .grid ::deep .col-options-button:hover {
+    .grid button.col-title:hover, .grid .col-options-button:hover {
         background-color: unset;
     }
 </style>
@@ -580,29 +585,29 @@ public class MedalsModel
         overflow-y: auto;
     }
 
-        .grid ::deep table {
-            min-width: 100%;
-        }
+    .grid table {
+        min-width: 100%;
+    }
 
-        .grid ::deep thead {
-            position: sticky;
-            top: 0;
-            background-color: #d8d8d8;
-            outline: 1px solid gray;
-            z-index: 1;
-        }
+    .grid thead {
+        position: sticky;
+        top: 0;
+        background-color: #d8d8d8;
+        outline: 1px solid gray;
+        z-index: 1;
+    }
 
-        .grid ::deep tr {
-            height: 30px;
-            border-bottom: 0.5px solid silver;
-        }
+    .grid tr {
+        height: 30px;
+        border-bottom: 0.5px solid silver;
+    }
 
-        .grid ::deep tbody td {
-            white-space: nowrap;
-            overflow: hidden;
-            max-width: 0;
-            text-overflow: ellipsis;
-        }
+    .grid tbody td {
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 0;
+        text-overflow: ellipsis;
+    }
 </style>
 
 <div class=""grid"">
@@ -818,29 +823,29 @@ public class Openfda
         overflow-y: auto;
     }
 
-        .grid ::deep table {
-            min-width: 100%;
-        }
+    .grid table {
+        min-width: 100%;
+    }
 
-        .grid ::deep thead {
-            position: sticky;
-            top: 0;
-            background-color: #d8d8d8;
-            outline: 1px solid gray;
-            z-index: 1;
-        }
+    .grid thead {
+        position: sticky;
+        top: 0;
+        background-color: #d8d8d8;
+        outline: 1px solid gray;
+        z-index: 1;
+    }
 
-        .grid ::deep tr {
-            height: 30px;
-            border-bottom: 0.5px solid silver;
-        }
+    .grid tr {
+        height: 30px;
+        border-bottom: 0.5px solid silver;
+    }
 
-        .grid ::deep tbody td {
-            white-space: nowrap;
-            overflow: hidden;
-            max-width: 0;
-            text-overflow: ellipsis;
-        }
+    .grid tbody td {
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 0;
+        text-overflow: ellipsis;
+    }
 </style>
 
 <div class=""grid"">

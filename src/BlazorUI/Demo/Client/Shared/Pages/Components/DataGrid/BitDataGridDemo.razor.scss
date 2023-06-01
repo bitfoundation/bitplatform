@@ -1,7 +1,9 @@
-﻿.grid1 {
+﻿@import '../../../Styles/bit-css-variables.scss';
+
+.grid1 {
+    width: 100%;
     display: inline-flex;
     flex-direction: column;
-    width: 100%;
     border: 1px solid #e9eaed;
 
     .grid1-container {
@@ -27,8 +29,9 @@
                 font-family: 'Fabric MDL2 Assets';
                 font-style: normal;
                 font-weight: normal;
-                content: "\E721";
                 position: relative;
+                content: "\E721";
+                color: #7A7A7C;
                 top: 2px;
             }
         }
@@ -39,13 +42,15 @@
                 font-family: 'Fabric MDL2 Assets';
                 font-style: normal;
                 font-weight: normal;
-                content: "\21C5";
                 position: relative;
+                content: "\21C5";
+                color: #7A7A7C;
                 top: -2px;
             }
         }
 
         .bitdatagrid-paginator {
+            margin-top: 0;
             padding: 0.5rem;
         }
 
@@ -61,12 +66,16 @@
             vertical-align: middle;
         }
 
+        .bitdatagrid-paginator nav button[disabled] {
+            color: $bit-color-text-disabled;
+        }
+
         .bitdatagrid-paginator nav button:not([disabled]) {
-            background-color: #eee;
+            background-color: $bit-color-secondary-higher;
         }
 
         .bitdatagrid-paginator nav button:not([disabled]):hover {
-            background-color: #d0d1d5;
+            background-color: $bit-color-action-hover-primary2;
         }
 
         table {
@@ -140,6 +149,7 @@
         }
 
         .sort-indicator {
+            color: #7A7A7C;
             margin-left: auto;
         }
 
@@ -174,10 +184,10 @@
     }
 
     ::deep thead {
-        position: sticky;
         top: 0;
-        background-color: #eee;
         z-index: 1;
+        position: sticky;
+        background-color: $bit-color-secondary-higher;
     }
 
     ::deep tr {
