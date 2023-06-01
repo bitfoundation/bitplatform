@@ -32,6 +32,7 @@
     white-space: nowrap;
     align-items: center;
     box-sizing: border-box;
+    -webkit-user-select: text;
     justify-content: flex-start;
     background-color: $bit-color-background-primary3;
     border-left: rem(3px) solid $bit-color-background-secondary3;
