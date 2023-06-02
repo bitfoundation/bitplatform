@@ -205,7 +205,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, showCloseButton);
         });
 
-        var closeBtnElms = component.FindAll(".bit-dtrp-hdr-ibtn");
+        var closeBtnElms = component.FindAll(".bit-dtrp-cbtn");
 
         if (showCloseButton)
         {
