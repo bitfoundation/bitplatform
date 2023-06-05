@@ -16,7 +16,7 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-primary-main;
+            color: $color-action-hover-primary;
 
             .bit-icon {
                 color: $color-action-hover-primary;
@@ -25,7 +25,7 @@
     }
 
     &:active {
-        color: $color-primary-low;
+        color: $color-action-active-primary;
 
         .bit-icon {
             color: $color-action-active-primary;

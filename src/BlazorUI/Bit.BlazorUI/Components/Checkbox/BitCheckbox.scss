@@ -174,11 +174,11 @@
     @media (hover: hover) {
         &:hover {
             .bit-chb-ctn {
-                border-color: $color-primary-lower;
+                border-color: $color-action-hover-primary;
                 background-color: $color-background-primary;
 
                 .bit-icon {
-                    background-color: $color-primary-lower;
+                    background-color: $color-action-hover-primary;
                 }
             }
         }
@@ -199,12 +199,12 @@
     @media (hover: hover) {
         &:hover {
             .bit-chb-ctn {
-                border-color: $color-primary-low;
+                border-color: $color-action-hover-primary;
                 background-color: $color-action-hover-primary;
 
                 .bit-icon {
                     opacity: 1;
-                    color: $color-secondary-lower;
+                    color: $color-action-hover-secondary;
                 }
             }
         }

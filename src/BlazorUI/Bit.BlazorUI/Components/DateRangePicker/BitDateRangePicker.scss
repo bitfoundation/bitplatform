@@ -360,11 +360,12 @@
 
 .bit-dtrp-dc-btw-sel {
     border-radius: 0;
-    background-color: $color-primary-higher;
+    color: $color-secondary-main;
+    background-color: $color-primary-light;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-primary-high;
+            background-color: $color-action-hover-primary;
         }
     }
 }

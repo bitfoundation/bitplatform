@@ -372,12 +372,12 @@
         @media (hover: hover) {
             &:hover {
                 &:before {
-                    border-color: $color-primary-lower;
+                    border-color: $color-action-hover-primary;
                 }
 
                 &:after {
-                    background-color: $color-primary-lower;
-                    border: spacing(0.625) $shape-border-style $color-primary-lower;
+                    border-color: $color-action-hover-primary;
+                    background-color: $color-action-hover-primary;
                 }
             }
         }
@@ -387,13 +387,13 @@
         border-color: $color-primary-main;
 
         &:before {
-            border-color: $color-primary-main;
             opacity: 1;
+            border-color: $color-primary-main;
         }
 
         &:after {
-            top: spacing(1);
             left: auto;
+            top: spacing(1);
             right: spacing(1);
             width: spacing(1.25);
             height: spacing(1.25);
@@ -403,16 +403,16 @@
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-primary-lower;
+                border-color: $color-action-hover-primary;
 
                 &:before {
                     opacity: 1;
-                    border-color: $color-primary-lower;
+                    border-color: $color-action-hover-primary;
                 }
 
                 &:after {
-                    border-color: $color-primary-lower;
-                    background-color: $color-primary-lower;
+                    border-color: $color-action-hover-primary;
+                    background-color: $color-action-hover-primary;
                 }
             }
         }

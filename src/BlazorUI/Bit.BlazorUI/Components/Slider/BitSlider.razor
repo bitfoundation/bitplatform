@@ -31,10 +31,6 @@
                  style="@_styleProgress"
                  id="@_sliderBoxId"
                  class="bit-sld-box">
-                @if (IsOriginFromZero)
-                {
-                    <span class="bit-sld-ztk" style="left: calc(50% - 1px);"></span>
-                }
 
                 <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
                        id="@_minInputId"
@@ -68,6 +64,11 @@
                        aria-valuemax="@Max"
                        aria-valuetext="@GetAriaValueText(_secondInputValue.GetValueOrDefault())"
                        aria-valuenow="@_secondInputValue" />
+
+                @if (IsOriginFromZero)
+                {
+                    <span class="bit-sld-ztk" style="left: calc(50% - 1px);"></span>
+                }
             </div>
             @if (ShowValue && IsVertical is false)
             {
@@ -83,11 +84,6 @@
     else
     {
         <div @ref="_containerRef" class="bit-sld-cnt">
-            @if (IsOriginFromZero)
-            {
-                <span class="bit-sld-ztk" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
-            }
-
             <input @bind-value="@Value" @oninput="@HandleOnInput"
                    type="range"
                    min="@Min"
@@ -95,6 +91,11 @@
                    step="@Step"
                    style="@_styleProgress"
                    disabled=@(IsEnabled is false) />
+
+            @if (IsOriginFromZero)
+            {
+                <span class="bit-sld-ztk" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+            }
 
             @if (ShowValue && IsVertical is false)
             {
