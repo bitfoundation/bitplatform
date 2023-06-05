@@ -119,6 +119,7 @@ public partial class NavMenu
             }
         },
         new() { Text = "Iconography", Url = "/iconography" },
+        new() { Text = "Theming", Url = "/theming" },
     };
 
     private List<BitNavItem> filteredNavLinks = default!;
