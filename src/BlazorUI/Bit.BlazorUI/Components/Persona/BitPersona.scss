@@ -54,12 +54,12 @@
     animation-duration: 0.367s;
     perspective: spacing(0.125);
     margin-right: spacing(1.25);
-    background-color: $color-primary-low;
+    background-color: $color-primary-main;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
 .bit-prs-ini {
-    //background-color: $color-primary-low;
+    //background-color: $color-primary-main;
 }
 
 .bit-prs-imo {
@@ -181,7 +181,7 @@
                     justify-content: center;
                     transition: all 0.1s linear;
                     color: $color-text-secondary;
-                    background-color: $color-primary-low;
+                    background-color: $color-primary-main;
                 }
             }
         }

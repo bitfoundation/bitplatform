@@ -1,17 +1,14 @@
 ﻿:root[bit-theme="dark"],
 :root[bit-theme="fluent-dark"] {
     color-scheme: dark;
-    //main
+    //main--primary
     --bit-clr-primary-main: #0078D4;
-    --bit-clr-primary-high: #0068B9;
-    --bit-clr-primary-higher: #005599;
-    --bit-clr-primary-low: #0090FF;
-    --bit-clr-primary-lower: #94CBF7;
+    --bit-clr-primary-dark: #004578;
+    --bit-clr-primary-light: #C7E0F4;
+    //main--secondary
     --bit-clr-secondary-main: #000;
-    --bit-clr-secondary-high: #444;
-    --bit-clr-secondary-higher: #555;
-    --bit-clr-secondary-low: #222;
-    --bit-clr-secondary-lower: #333;
+    --bit-clr-secondary-dark: #000;
+    --bit-clr-secondary-light: #333;
     //texts
     --bit-clr-txt-primary: #FFF;
     --bit-clr-txt-primary2: #EEE;

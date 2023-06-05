@@ -3,17 +3,14 @@
 :root[bit-theme="fluent"],
 :root[bit-theme="fluent-light"] {
     color-scheme: light;
-    //main
+    //main--primary
     --bit-clr-primary-main: #0078D4;
-    --bit-clr-primary-high: #0090FF;
-    --bit-clr-primary-higher: #94CBF7;
-    --bit-clr-primary-low: #0068B9;
-    --bit-clr-primary-lower: #005599;
+    --bit-clr-primary-dark: #004578;
+    --bit-clr-primary-light: #C7E0F4;
+    //main--secondary
     --bit-clr-secondary-main: #FFF;
-    --bit-clr-secondary-high: #DDD;
-    --bit-clr-secondary-higher: #EEE;
-    --bit-clr-secondary-low: #CCC;
-    --bit-clr-secondary-lower: #BBB;
+    --bit-clr-secondary-dark: #BBB;
+    --bit-clr-secondary-light: #FFF;
     //texts
     --bit-clr-txt-primary: #000;
     --bit-clr-txt-primary2: #222;
