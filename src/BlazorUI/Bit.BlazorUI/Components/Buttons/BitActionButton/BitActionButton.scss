@@ -8,8 +8,8 @@
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
-    color: $color-text-primary;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
@@ -35,10 +35,10 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         .bit-icon {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 }

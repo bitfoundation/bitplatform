@@ -13,7 +13,7 @@
         }
 
         .bit-rtg-iem, .bit-rtg-ifl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 
@@ -81,7 +81,7 @@
     font-style: normal;
     font-weight: normal;
     display: inline-block;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 
     @media (hover: hover) {
         &:hover {
@@ -101,7 +101,7 @@
     font-weight: normal;
     display: inline-block;
     vertical-align: middle;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 
     @media (hover: hover) {
         &:hover {

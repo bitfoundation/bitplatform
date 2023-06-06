@@ -7,13 +7,13 @@
         .content-container {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-pvti {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-pvti-sel::before {
@@ -37,7 +37,7 @@
     position: relative;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-pvt-top {
@@ -159,8 +159,8 @@
     box-sizing: border-box;
     margin-right: spacing(1);
     line-height: spacing(5.5);
-    color: $color-text-primary2;
     background-color: transparent;
+    color: $color-foreground-primary;
 
     > span {
         height: 100%;
@@ -181,7 +181,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         &.bit-pvti-sel::before {
             background-color: $color-border-disabled;
@@ -203,10 +203,10 @@
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    line-height: spacing(5.5);
     margin-right: spacing(1);
-    color: $color-text-primary2;
+    line-height: spacing(5.5);
     background-color: transparent;
+    color: $color-foreground-primary;
 
     &:before {
         bottom: 0;

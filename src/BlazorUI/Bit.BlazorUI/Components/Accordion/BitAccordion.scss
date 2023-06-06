@@ -8,18 +8,18 @@
     box-sizing: border-box;
     font-size: spacing(1.75);
     flex-flow: column nowrap;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-secondary2;
 
     &.bit-dis {
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         background-color: $color-background-disabled;
 
         .bit-acd-ttl,
         .bit-acd-des {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 }
@@ -59,7 +59,7 @@
 }
 
 .bit-acd-des {
-    color: $color-text-primary3;
+    color: $color-foreground-secondary;
 }
 
 .bit-acd-con {

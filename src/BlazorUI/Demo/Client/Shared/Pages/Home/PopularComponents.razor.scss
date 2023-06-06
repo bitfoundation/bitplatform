@@ -99,22 +99,22 @@
 
     .component-name {
         margin: 0;
-        font-size: rem(14px);
         line-height: 1.5;
-        letter-spacing: 0;
-        color: $bit-color-text-primary;
         font-weight: 700;
+        letter-spacing: 0;
+        font-size: rem(14px);
+        color: $bit-color-foreground-primary;
     }
 
     .component-desc {
-        margin-top: rem(5px);
-        margin-bottom: rem(5px);
-        font-size: rem(14px);
         line-height: 1.5;
-        letter-spacing: 0;
-        font-weight: 400;
-        color: $bit-color-text-primary3;
         text-align: left;
+        font-weight: 400;
+        letter-spacing: 0;
+        margin-top: rem(5px);
+        font-size: rem(14px);
+        margin-bottom: rem(5px);
+        color: $bit-color-foreground-secondary;
     }
 
     .component-link {

@@ -67,11 +67,11 @@
         }
 
         .bitdatagrid-paginator nav button[disabled] {
-            color: $bit-color-text-disabled;
+            color: $bit-color-foreground-disabled;
         }
 
         .bitdatagrid-paginator nav button:not([disabled]) {
-            background-color: $bit-color-secondary-higher;
+            background-color: $bit-color-secondary-dark;
         }
 
         .bitdatagrid-paginator nav button:not([disabled]):hover {
@@ -187,7 +187,7 @@
         top: 0;
         z-index: 1;
         position: sticky;
-        background-color: $bit-color-secondary-higher;
+        background-color: $bit-color-secondary-dark;
     }
 
     ::deep tr {
