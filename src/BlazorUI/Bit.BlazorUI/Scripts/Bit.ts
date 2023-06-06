@@ -117,6 +117,10 @@ class Bit {
         observer.observe(element);
     }
 
+    static changeTheme(themeName: string) {
+        document.documentElement.setAttribute('bit-theme', themeName);
+    }
+
     // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
     private static guidTemplate = '10000000-1000-4000-8000-100000000000';
     static uuidv4(): string {
