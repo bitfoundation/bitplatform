@@ -54,7 +54,7 @@
     inset: 0;
     z-index: 12;
     position: fixed;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: $bit-color-background-overlay;
 }
 
 .search-box-container {

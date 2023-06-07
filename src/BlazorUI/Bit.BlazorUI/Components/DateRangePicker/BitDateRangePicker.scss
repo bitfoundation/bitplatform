@@ -317,7 +317,7 @@
 .bit-dtrp-dc-tdy {
     font-weight: 600;
     border-radius: 50%;
-    background-color: $color-background-primary2;
+    background-color: $color-background-secondary;
 
     &::after {
         inset: 0;
@@ -382,7 +382,7 @@
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-primary;
-    background-color: $color-background-primary2;
+    background-color: $color-background-secondary;
     border-right: $shape-border-width $shape-border-style $color-border-secondary2;
 }
 

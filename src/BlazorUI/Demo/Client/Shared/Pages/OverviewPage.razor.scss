@@ -14,9 +14,7 @@
     box-sizing: border-box;
     border-radius: rem(4px);
     margin-bottom: rem(28px);
-    background-clip: padding-box;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-shadow-callout;
 }
 
 .card-container {
@@ -47,8 +45,7 @@
     justify-content: center;
     flex-flow: column nowrap;
     color: $bit-color-foreground-primary;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-shadow-callout;
 
     @include lg {
         width: calc((100% / 3) - 8px);
