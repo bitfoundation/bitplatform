@@ -12,24 +12,24 @@
 
     &.bit-dis {
         .bit-dtp-lbl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-dtp-fld-grp {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
             background: none $color-background-disabled;
             border: $shape-border-width $shape-border-style $color-border-disabled;
 
             .bit-icon {
                 cursor: default;
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
             }
 
             input {
                 cursor: default;
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
                 background: none $color-background-disabled;
             }
         }
@@ -51,7 +51,7 @@
     padding: spacing(0.5) 0;
     font-size: spacing(1.75);
     overflow-wrap: break-word;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-dtp-wrp {
@@ -89,7 +89,7 @@
         text-overflow: ellipsis;
         font-size: spacing(1.75);
         background: none transparent;
-        color: $color-text-primary2;
+        color: $color-foreground-primary;
         font-family: $typography-font-family;
     }
 
@@ -97,7 +97,7 @@
         cursor: pointer;
         padding-right: 0;
         padding-left: spacing(1);
-        color: $color-text-primary3;
+        color: $color-foreground-secondary;
     }
 }
 
@@ -247,8 +247,8 @@
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: 0.267s;
-    color: $color-text-primary2;
     animation-name: bit-fade-in;
+    color: $color-foreground-primary;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -262,7 +262,7 @@
     text-align: center;
     font-size: spacing(1.5);
     line-height: spacing(3.5);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
     @media (hover: hover) {
@@ -290,7 +290,7 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         background-color: transparent;
     }
 
@@ -306,7 +306,7 @@
 .bit-dtp-dc-ots-m {
     .bit-dtp-dbtn {
         font-weight: 400;
-        color: $color-text-primary3;
+        color: $color-foreground-secondary;
     }
 }
 
@@ -346,8 +346,8 @@
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
-    color: $color-text-primary3;
     padding: spacing(0.375) 0 0 0;
+    color: $color-foreground-secondary;
     background-color: $color-background-primary2;
     border-right: $shape-border-width $shape-border-style $color-border-secondary2;
 }
@@ -388,9 +388,9 @@
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: 0.267s;
-    color: $color-text-primary2;
     animation-name: bit-fade-show;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
     padding: 0 spacing(0.5) 0 spacing(1.25);
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
@@ -417,8 +417,8 @@
     font-size: spacing(1.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
-    color: $color-text-primary2;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
     @media (hover: hover) {
@@ -437,7 +437,7 @@
         background-color: transparent;
 
         i {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 }
@@ -457,8 +457,8 @@
     min-width: spacing(3.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
-    color: $color-text-primary2;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
     @media (hover: hover) {
@@ -518,8 +518,8 @@
     line-height: spacing(5);
     text-overflow: ellipsis;
     padding: 0 spacing(1.25);
-    color: $color-text-primary;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
     @media (hover: hover) {
@@ -530,7 +530,7 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         background-color: transparent;
     }
 }
@@ -620,8 +620,8 @@
     font-size: spacing(1.5);
     box-sizing: content-box;
     line-height: spacing(3.75);
-    color: $color-text-primary2;
     background-color: transparent;
+    color: $color-foreground-primary;
     margin: spacing(0.375) spacing(0.5) 0 0;
 
     @media (hover: hover) {
@@ -634,7 +634,7 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
     }
 }
 

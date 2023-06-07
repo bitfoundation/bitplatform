@@ -14,10 +14,10 @@
         </div>
         <div class="right-section">
             <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
-            <BitToggleButton ButtonSize="BitButtonSize.Large"
-                             OnChange="ToggleTheme" Class="@($"toggle-theme-btn{(_isDarkMode ? " fix-light-icon" : "")}")"
-                             IconName="@(_isDarkMode ? BitIconName.Sunny : BitIconName.ClearNight)"
-                             Title="@(_isDarkMode ? "Turn on light" : "Turn off light")" />
+            <BitIconButton OnClick="ToggleTheme"
+                           Class="@($"toggle-theme-btn{(_isDarkMode ? " fix-light-icon" : "")}")"
+                           IconName="@(_isDarkMode ? BitIconName.Sunny : BitIconName.ClearNight)"
+                           Title="@(_isDarkMode ? "Turn on light" : "Turn off light")" />
         </div>
     </div>
 </header>

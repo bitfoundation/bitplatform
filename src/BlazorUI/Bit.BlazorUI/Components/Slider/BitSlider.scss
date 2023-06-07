@@ -1,9 +1,9 @@
 ﻿@import "../../Styles/functions.scss";
 
-$BgDefult: $color-text-secondary3;
-$BgTrack: $color-text-primary3;
+$BgDefult: $color-secondary-dark;
 $BgHover: $color-general-lightblue;
 $BgTrackHover: $color-primary-main;
+$BgTrack: $color-foreground-secondary;
 
 .bit-sld {
     font-family: $typography-font-family;
@@ -168,7 +168,7 @@ $BgTrackHover: $color-primary-main;
 
         .bit-sld-lbl,
         .bit-sld-vlb {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-sld-ztk {
@@ -384,7 +384,7 @@ $BgTrackHover: $color-primary-main;
     box-sizing: border-box;
     font-size: spacing(1.75);
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-sld-cnt {
@@ -405,7 +405,7 @@ $BgTrackHover: $color-primary-main;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-sld-ztk {

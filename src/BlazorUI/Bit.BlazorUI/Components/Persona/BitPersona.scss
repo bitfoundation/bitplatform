@@ -10,12 +10,12 @@
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
 
     &.bit-dis {
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         background-color: $color-background-disabled;
     }
 }
@@ -101,28 +101,28 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-stx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-ttx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-otx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-abt {
@@ -179,8 +179,8 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    color: $color-primary-text;
                     transition: all 0.1s linear;
-                    color: $color-text-secondary;
                     background-color: $color-primary-main;
                 }
             }
