@@ -24,7 +24,7 @@
     text-overflow: ellipsis;
     padding-top: spacing(0.5);
     line-height: spacing(2.5);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-pin-wrp {
@@ -51,7 +51,7 @@
 .bit-pin-des {
     font-size: spacing(1.5);
     line-height: spacing(2.25);
-    color: $color-text-primary3;
+    color: $color-foreground-secondary;
 }
 
 

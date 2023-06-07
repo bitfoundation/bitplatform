@@ -25,7 +25,7 @@
         top: 0;
         inset: 0;
         height: 100vh;
-        z-index: 10003;
+        z-index: 13;
         position: fixed;
     }
 
@@ -52,7 +52,7 @@
 
 .nav-menu-overlay {
     inset: 0;
-    z-index: 10002;
+    z-index: 12;
     position: fixed;
     background-color: rgba(0, 0, 0, 0.5);
 }

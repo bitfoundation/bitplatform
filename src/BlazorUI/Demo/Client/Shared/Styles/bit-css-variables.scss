@@ -1,24 +1,18 @@
 /*-------- Colors --------*/
 $bit-color-primary-main: var(--bit-clr-primary-main);
-$bit-color-primary-high: var(--bit-clr-primary-high);
-$bit-color-primary-higher: var(--bit-clr-primary-higher);
-$bit-color-primary-low: var(--bit-clr-primary-low);
-$bit-color-primary-lower: var(--bit-clr-primary-lower);
+$bit-color-primary-dark: var(--bit-clr-primary-dark);
+$bit-color-primary-light: var(--bit-clr-primary-light);
+$bit-color-primary-text: var(--bit-clr-primary-text);
 
 $bit-color-secondary-main: var(--bit-clr-secondary-main);
-$bit-color-secondary-high: var(--bit-clr-secondary-high);
-$bit-color-secondary-higher: var(--bit-clr-secondary-higher);
-$bit-color-secondary-low: var(--bit-clr-secondary-low);
-$bit-color-secondary-lower: var(--bit-clr-secondary-lower);
+$bit-color-secondary-dark: var(--bit-clr-secondary-dark);
+$bit-color-secondary-light: var(--bit-clr-secondary-light);
+$bit-color-secondary-text: var(--bit-clr-secondary-text);
 
-//texts
-$bit-color-text-primary: var(--bit-clr-txt-primary);
-$bit-color-text-primary2: var(--bit-clr-txt-primary2);
-$bit-color-text-primary3: var(--bit-clr-txt-primary3);
-$bit-color-text-secondary: var(--bit-clr-txt-secondary);
-$bit-color-text-secondary2: var(--bit-clr-txt-secondary2);
-$bit-color-text-secondary3: var(--bit-clr-txt-secondary3);
-$bit-color-text-disabled: var(--bit-clr-txt-disabled);
+//foreground
+$bit-color-foreground-primary: var(--bit-clr-fg-primary);
+$bit-color-foreground-secondary: var(--bit-clr-fg-secondary);
+$bit-color-foreground-disabled: var(--bit-clr-fg-disabled);
 
 //backgrounds
 $bit-color-background-primary: var(--bit-clr-bg-primary);

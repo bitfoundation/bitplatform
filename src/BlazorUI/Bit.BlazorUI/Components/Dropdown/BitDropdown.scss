@@ -32,14 +32,14 @@
             background-color: $color-background-disabled;
 
             .bit-drp-txt-ctn {
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
                 border-color: $color-border-disabled;
             }
 
             &:hover,
             &:active {
                 .bit-drp-txt-ctn {
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                     border-color: $color-border-disabled;
                 }
             }
@@ -55,18 +55,18 @@
 
         .bit-drp-icn {
             i:first-child {
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
             }
         }
 
         .bit-drp-lbl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         &.bit-drp-hval {
             .bit-drp-wrp {
                 .bit-drp-txt-ctn {
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                 }
             }
         }
@@ -100,7 +100,7 @@
 .bit-drp-hval {
     .bit-drp-wrp {
         .bit-drp-txt-ctn {
-            color: $color-text-primary;
+            color: $color-foreground-primary;
         }
     }
 }
@@ -169,7 +169,7 @@
     box-sizing: border-box;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-drp-txt-ctn {
@@ -185,8 +185,8 @@
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     line-height: spacing(3.75);
-    color: $color-text-primary3;
     border-radius: spacing(0.25);
+    color: $color-foreground-secondary;
     padding: 0 spacing(3.5) 0 spacing(1);
     border: $shape-border-width $shape-border-style $color-border-primary2;
 }
@@ -205,7 +205,7 @@
         pointer-events: none;
         display: inline-block;
         font-size: spacing(1.5);
-        color: $color-text-primary3;
+        color: $color-foreground-secondary;
     }
 }
 
@@ -245,7 +245,7 @@
     &:focus {
         .bit-drp-txt-ctn,
         .bit-drp-icn i {
-            color: $color-text-primary;
+            color: $color-foreground-primary;
         }
 
         &::after {
@@ -275,7 +275,7 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     line-height: spacing(2.5);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     background-color: transparent;
     border: $shape-border-width $shape-border-style transparent;
 
@@ -333,18 +333,18 @@
 
     .bit-drp-txt {
         line-height: spacing(2.5);
-        color: $color-text-primary;
+        color: $color-foreground-primary;
     }
 
     &.bit-drp-idis {
         cursor: default;
 
         .bit-drp-chb {
-            border-color: $color-text-disabled;
+            border-color: $color-foreground-disabled;
         }
 
         .bit-drp-txt {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 
@@ -352,13 +352,13 @@
         &:hover {
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-text-primary3;
+                color: $color-foreground-secondary;
             }
 
             &.bit-drp-idis {
                 .bit-drp-chm {
                     opacity: 0;
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                 }
             }
         }
@@ -382,7 +382,7 @@
                     background-color: $color-action-hover-primary;
 
                     .bit-drp-chm {
-                        color: $color-secondary-lower;
+                        color: $color-action-hover-secondary;
                     }
                 }
             }
@@ -464,7 +464,7 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     border-style: $shape-border-style;
     border-color: $color-border-primary2;
     font-family: $typography-font-family;
@@ -478,7 +478,7 @@
 
             .bit-drp-sic {
                 i {
-                    color: $color-primary-lower;
+                    color: $color-action-hover-primary;
                 }
             }
         }
@@ -489,11 +489,11 @@
             &:hover {
                 .bit-drp-sic {
                     width: spacing(0.5);
-                    color: $color-primary-lower;
+                    color: $color-action-hover-primary;
 
                     i {
                         opacity: 0;
-                        color: $color-primary-lower;
+                        color: $color-action-hover-primary;
                     }
                 }
             }
@@ -505,11 +505,9 @@
 
         .bit-drp-sic {
             width: spacing(0.5);
-            color: $color-primary-lower;
 
             i {
                 opacity: 0;
-                color: $color-primary-lower;
             }
         }
 
@@ -558,9 +556,9 @@
     font-family: inherit;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    color: $color-text-primary;
     padding: 0 0 spacing(0.0625);
     background-color: transparent;
+    color: $color-foreground-primary;
 }
 
 .bit-drp-sbcc {
@@ -579,7 +577,7 @@
                 background-color: $color-background-secondary;
 
                 i {
-                    color: $color-text-primary;
+                    color: $color-foreground-primary;
                 }
             }
         }
@@ -622,7 +620,7 @@
         margin: 0 spacing(0.5);
         font-size: spacing(1.5);
         line-height: spacing(2);
-        color: $color-text-primary2;
+        color: $color-foreground-primary;
     }
 }
 
@@ -708,7 +706,7 @@
     font-size: spacing(1.875);
     line-height: spacing(2.5);
     background-color: transparent;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     border: $shape-border-width $shape-border-style transparent;
 
     @media (hover: hover) {
@@ -720,7 +718,7 @@
 
 .bit-drp-itm[disabled] {
     cursor: default;
-    color: $color-text-disabled;
+    color: $color-foreground-disabled;
 
     @media (hover: hover) {
         &:hover {
@@ -758,9 +756,9 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     font-size: spacing(1.75);
-    color: $color-text-primary2;
     border-radius: spacing(0.25);
     background-color: transparent;
+    color: $color-foreground-primary;
 
     span {
         height: 100%;

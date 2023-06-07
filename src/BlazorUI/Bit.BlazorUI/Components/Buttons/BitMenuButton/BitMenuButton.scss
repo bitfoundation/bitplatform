@@ -19,14 +19,14 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
 }
 
 .bit-mnb-pri {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
@@ -45,9 +45,9 @@
 }
 
 .bit-mnb-std {
-    color: $color-text-primary;
+    color: $color-secondary-text;
     border-color: $color-border-primary2;
-    background-color: $color-background-primary;
+    background-color: $color-secondary-main;
 
     @media (hover: hover) {
         &:hover {
@@ -154,8 +154,8 @@
     padding: spacing(1);
     align-items: center;
     line-height: inherit;
-    color: $color-text-primary;
     background-color: transparent;
+    color: $color-foreground-primary;
 
     .bit-icon {
         color: $color-primary-main;
@@ -163,10 +163,10 @@
 
     &.bit-dis {
         cursor: default;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         .bit-icon {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         @media (hover: hover) {

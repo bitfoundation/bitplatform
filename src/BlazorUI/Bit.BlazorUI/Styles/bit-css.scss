@@ -4,56 +4,43 @@
 .bit-css-color-primary-main {
     color: $color-primary-main;
 }
-.bit-css-color-primary-light {
-    color: $color-primary-high;
-}
-.bit-css-color-primary-lighter {
-    color: $color-primary-higher;
-}
 .bit-css-color-primary-dark {
-    color: $color-primary-low;
+    color: $color-primary-dark;
 }
-.bit-css-color-primary-darker {
-    color: $color-primary-lower;
+.bit-css-color-primary-light {
+    color: $color-primary-light;
+}
+.bit-css-color-primary-text {
+    color: $color-primary-text;
 }
 
 .bit-css-color-secondary-main {
     color: $color-secondary-main;
 }
-.bit-css-color-secondary-light {
-    color: $color-secondary-high;
-}
-.bit-css-color-secondary-lighter {
-    color: $color-secondary-higher;
-}
 .bit-css-color-secondary-dark {
-    color: $color-secondary-low;
+    color: $color-secondary-dark;
 }
-.bit-css-color-secondary-darker {
-    color: $color-secondary-lower;
+.bit-css-color-secondary-light {
+    color: $color-secondary-light;
+}
+.bit-css-color-secondary-text {
+    color: $color-secondary-text;
+}
+
+//foreground
+.bit-css-fg-primary {
+    color: $color-foreground-primary;
+}
+.bit-css-fg-secondary {
+    color: $color-foreground-secondary;
+}
+.bit-css-fg-disabled {
+    color: $color-foreground-disabled;
 }
 
 // txt
-.bit-css-txt-primary {
-    color: $color-text-primary;
-}
-.bit-css-txt-primary2 {
-    color: $color-text-primary2;
-}
-.bit-css-txt-primary3 {
-    color: $color-text-primary3;
-}
-.bit-css-txt-secondary {
-    color: $color-text-secondary;
-}
-.bit-css-txt-secondary2 {
-    color: $color-text-secondary2;
-}
-.bit-css-txt-secondary3 {
-    color: $color-text-secondary3;
-}
 .bit-css-txt-disabled {
-    color: $color-text-disabled;
+    color: $color-foreground-disabled;
 }
 
 

@@ -17,29 +17,29 @@
         align-items: center;
         font-size: spacing(2);
         justify-content: center;
-        color: $color-text-primary;
+        color: $color-foreground-primary;
     }
 
     &.bit-dis {
         .bit-txt-lbl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-txt-fgp {
             border: none;
             cursor: default;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
             background: $color-background-disabled;
             border: $shape-border-width $shape-border-style $color-border-disabled;
         }
 
         .bit-txt-inp {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-txt-pre,
         .bit-txt-suf {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         &.bit-txt-und {
@@ -94,7 +94,7 @@
     line-height: spacing(2.5);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-txt-fgp {
@@ -131,8 +131,8 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
-    color: $color-text-primary;
     background: none transparent;
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
 
     &[type="password"]::-ms-reveal,
@@ -173,7 +173,7 @@
 .bit-txt-des {
     span {
         font-size: spacing(1.25);
-        color: $color-text-primary2;
+        color: $color-foreground-primary;
     }
 }
 
@@ -186,7 +186,7 @@
     white-space: nowrap;
     padding: 0 spacing(1.25);
     min-height: spacing(3.75);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
     background: $color-background-primary2;
 
     span {

@@ -7,7 +7,7 @@
 .header {
     top: 0;
     width: 100%;
-    z-index: 10001;
+    z-index: 11;
     position: fixed;
     backdrop-filter: blur(20px);
     box-shadow: $bit-box-shadow-1;
@@ -70,7 +70,7 @@
     font-size: rem(16px);
     text-decoration: none;
     box-sizing: border-box;
-    color: $bit-color-text-primary3;
+    color: $bit-color-foreground-secondary;
 }
 
 .link--active {
@@ -107,6 +107,8 @@
         height: 35px;
         min-width: 35px;
         border-radius: 50%;
+        color: $bit-color-primary-text;
+        background-color: $bit-color-primary-main;
     }
 
     .fix-light-icon {

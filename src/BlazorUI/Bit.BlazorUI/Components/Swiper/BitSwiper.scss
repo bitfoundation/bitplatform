@@ -40,8 +40,8 @@
     align-items: center;
     font-size: spacing(3);
     justify-content: center;
-    color: $color-text-secondary2;
     transition: opacity .15s ease;
+    color: $color-foreground-primary;
 
     @media (hover: hover) {
         &:hover {

@@ -25,9 +25,9 @@
     padding: spacing(1.25);
     flex-flow: column nowrap;
     min-height: spacing(8.75);
-    color: $color-text-primary2;
     border-radius: spacing(0.375);
     justify-content: space-between;
+    color: $color-foreground-primary;
 }
 
 .bit-snb-pbr {

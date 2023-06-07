@@ -62,7 +62,7 @@ public partial class Header
         }
     }
 
-    private async Task ToggleTheme(bool value)
+    private async Task ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
         await JSRuntime.ToggleBitTheme(_isDarkMode);

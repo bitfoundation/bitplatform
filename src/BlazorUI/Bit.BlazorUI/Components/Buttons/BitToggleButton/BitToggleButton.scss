@@ -17,14 +17,14 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
 }
 
 .bit-tgb-pri {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
@@ -41,8 +41,8 @@
     }
 
     &.bit-tgb-chk {
-        border-color: $color-primary-low;
-        background-color: $color-primary-low;
+        border-color: $color-primary-dark;
+        background-color: $color-primary-dark;
 
         @media (hover: hover) {
             &:hover {
@@ -59,9 +59,9 @@
 }
 
 .bit-tgb-std {
-    color: $color-text-primary;
+    color: $color-secondary-text;
     border-color: $color-border-primary2;
-    background-color: $color-background-primary;
+    background-color: $color-secondary-main;
 
     @media (hover: hover) {
         &:hover {

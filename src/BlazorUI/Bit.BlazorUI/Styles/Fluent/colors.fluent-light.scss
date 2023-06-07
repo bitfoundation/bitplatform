@@ -3,25 +3,20 @@
 :root[bit-theme="fluent"],
 :root[bit-theme="fluent-light"] {
     color-scheme: light;
-    //main
+    //main--primary
     --bit-clr-primary-main: #0078D4;
-    --bit-clr-primary-high: #0090FF;
-    --bit-clr-primary-higher: #94CBF7;
-    --bit-clr-primary-low: #0068B9;
-    --bit-clr-primary-lower: #005599;
+    --bit-clr-primary-dark: #004578;
+    --bit-clr-primary-light: #C7E0F4;
+    --bit-clr-primary-text: #FFF;
+    //main--secondary
     --bit-clr-secondary-main: #FFF;
-    --bit-clr-secondary-high: #DDD;
-    --bit-clr-secondary-higher: #EEE;
-    --bit-clr-secondary-low: #CCC;
-    --bit-clr-secondary-lower: #BBB;
-    //texts
-    --bit-clr-txt-primary: #000;
-    --bit-clr-txt-primary2: #222;
-    --bit-clr-txt-primary3: #444;
-    --bit-clr-txt-secondary: #FFF;
-    --bit-clr-txt-secondary2: #EEE;
-    --bit-clr-txt-secondary3: #BBB;
-    --bit-clr-txt-disabled: #A19F9D;
+    --bit-clr-secondary-dark: #BBB;
+    --bit-clr-secondary-light: #FFF;
+    --bit-clr-secondary-text: #000;
+    //foreground
+    --bit-clr-fg-primary: #1A1A1A;
+    --bit-clr-fg-secondary: #333;
+    --bit-clr-fg-disabled: #AAA;
     //backgrounds
     --bit-clr-bg-primary: #FFF;
     --bit-clr-bg-primary2: #EEE;
