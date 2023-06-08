@@ -103,8 +103,8 @@
     transition-duration: 200ms;
     border-style: $shape-border-style;
     border-width: $shape-border-width;
+    border-color: $color-border-primary;
     border-radius: $shape-border-radius;
-    border-color: $color-border-primary2;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 

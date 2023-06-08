@@ -41,7 +41,7 @@
     border-radius: spacing(0.5);
     color: $color-foreground-primary;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {
@@ -74,7 +74,7 @@
     border-radius: spacing(0.625);
     justify-content: space-between;
     color: $color-foreground-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {

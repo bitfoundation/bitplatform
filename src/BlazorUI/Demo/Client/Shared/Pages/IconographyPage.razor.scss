@@ -13,10 +13,15 @@
     padding: rem(28px);
     position: relative;
     box-sizing: border-box;
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     margin-bottom: rem(28px);
     background-clip: padding-box;
     box-shadow: $bit-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+::deep .title {
+    margin-bottom: rem(50px);
 }
 
 .icon-list {

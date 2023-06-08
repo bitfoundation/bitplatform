@@ -11,7 +11,7 @@
     color: $color-foreground-primary;
     font-family: $typography-font-family;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-secondary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     &.bit-dis {
         color: $color-foreground-disabled;

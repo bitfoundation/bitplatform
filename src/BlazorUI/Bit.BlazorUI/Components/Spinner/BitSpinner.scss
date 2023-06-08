@@ -19,8 +19,10 @@
     border-radius: 50%;
     animation: bit-spn-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
-    border: spacing(0.1875) $shape-border-style $color-border-secondary2;
-    border-top: spacing(0.1875) $shape-border-style $color-primary-main;
+    border-width: spacing(0.1875);
+    border-style: $shape-border-style;
+    border-color: $color-border-secondary;
+    border-top-color: $color-primary-main;
 }
 
 .bit-spn-lbl {

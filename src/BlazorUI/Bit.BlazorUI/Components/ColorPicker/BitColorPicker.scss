@@ -20,7 +20,7 @@
     box-sizing: border-box;
     margin-bottom: spacing(1);
     border-radius: spacing(0.25);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
 .bit-clp-des {
@@ -83,7 +83,7 @@
     margin-bottom: spacing(1);
     forced-color-adjust: none;
     border-radius: spacing(0.25);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
 .bit-clp-hsd {
@@ -126,5 +126,5 @@
     width: spacing(6);
     height: spacing(6);
     margin-left: spacing(1);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 }

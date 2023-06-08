@@ -19,7 +19,6 @@
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
     background-color: $bit-color-background-primary;
-    border-right: rem(1px) solid $bit-color-border-secondary2;
 
     @include lt-lg {
         top: 0;

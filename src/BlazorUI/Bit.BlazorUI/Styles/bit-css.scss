@@ -38,7 +38,6 @@
     color: $color-foreground-disabled;
 }
 
-
 //background
 .bit-css-bg-primary {
     background-color: $color-background-primary;
@@ -50,4 +49,17 @@
 
 .bit-css-bg-disabled {
     background-color: $color-background-disabled;
+}
+
+//border
+.bit-css-brd-primary {
+    border-color: $color-border-primary;
+}
+
+.bit-css-brd-secondary {
+    border-color: $color-border-secondary;
+}
+
+.bit-css-brd-disabled {
+    border-color: $color-border-disabled;
 }

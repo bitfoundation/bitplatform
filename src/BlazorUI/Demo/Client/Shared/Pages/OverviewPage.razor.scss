@@ -12,9 +12,14 @@
     padding: rem(28px);
     position: relative;
     box-sizing: border-box;
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     margin-bottom: rem(28px);
     box-shadow: $bit-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+::deep .title {
+    margin-bottom: rem(50px);
 }
 
 .card-container {
@@ -44,8 +49,9 @@
     border-radius: rem(4px);
     justify-content: center;
     flex-flow: column nowrap;
-    color: $bit-color-foreground-primary;
     box-shadow: $bit-shadow-callout;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
 
     @include lg {
         width: calc((100% / 3) - 8px);

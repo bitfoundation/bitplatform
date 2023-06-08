@@ -31,19 +31,6 @@ public partial class Header
         await _menuService.ToggleMenu();
     }
 
-    private string GetActiveRouteName()
-    {
-        if (_currentUrl.Contains("components"))
-        {
-            return "Docs";
-        }
-        else return _currentUrl switch
-        {
-            "/" => "Home",
-            _ => "Docs",
-        };
-    }
-
     private async Task ToggleHeaderMenu()
     {
         try
