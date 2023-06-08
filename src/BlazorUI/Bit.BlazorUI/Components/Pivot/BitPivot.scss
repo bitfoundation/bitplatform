@@ -25,7 +25,7 @@
 .bit-pvt-hct {
     display: flex;
     white-space: nowrap;
-    height: spacing(6.25);
+    height: spacing(6.5);
 }
 
 .bit-pvt-cct {
@@ -113,17 +113,17 @@
         overflow-X: auto;
 
         &::-webkit-scrollbar {
-            height: spacing(0.625);
+            height: spacing(0.425);
         }
 
         &::-webkit-scrollbar-track {
             border-radius: spacing(1.25);
-            background-color: $color-background-primary2;
+            background-color: $color-background-secondary;
         }
 
         &::-webkit-scrollbar-thumb {
             border-radius: spacing(1.25);
-            background-color: $color-background-primary3;
+            background-color: $color-foreground-secondary;
         }
     }
 }

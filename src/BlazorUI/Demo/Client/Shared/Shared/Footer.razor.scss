@@ -10,7 +10,7 @@ footer {
     box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    border-top: rem(1px) solid $bit-color-background-primary3;
+    background-color: $bit-color-background-secondary;
 }
 
 section {
@@ -39,18 +39,18 @@ section {
         align-items: center;
         padding: rem(40px) rem(20px);
         justify-content: space-between;
-        border-top: rem(1px) solid $bit-color-background-primary3;
+        border-top: rem(1px) solid $bit-color-border-secondary2;
 
         @include sm {
+            align-items: center;
             flex-flow: column nowrap;
             justify-content: flex-start;
-            align-items: center;
         }
     }
 
     @include md {
-        padding-right: rem(30px);
         padding-left: rem(30px);
+        padding-right: rem(30px);
     }
 }
 
@@ -58,10 +58,10 @@ section {
     width: rem(32px);
     height: rem(27px);
     margin-bottom: rem(20px);
-    background-image: url('images/bit-logo.svg');
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain;
+    background-image: url('images/bit-logo.svg');
 }
 
 .go-to-top {
@@ -70,8 +70,8 @@ section {
     cursor: pointer;
     position: absolute;
     padding: rem(8px) rem(12px);
-    color: $bit-color-foreground-secondary;
-    background-color: $bit-color-background-primary3;
+    color: #EEEE;
+    background-color: #888;
 }
 
 .address-info {
@@ -115,27 +115,27 @@ section {
 }
 
 .links-container {
+    gap: 20px;
     display: grid;
     grid-auto-columns: 1fr;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }
 
 .column {
+    height: 100%;
     display: flex;
+    align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: flex-start;
-    height: 100%;
 }
 
 .col-title {
     margin: 0;
-    font-size: rem(14px);
-    line-height: 1.5;
-    letter-spacing: 0;
-    font-weight: 700;
     color: #1A2027;
+    line-height: 1.5;
+    font-weight: 700;
+    letter-spacing: 0;
+    font-size: rem(14px);
 }
 
 .footer-link {
@@ -174,15 +174,15 @@ section {
 
 
     .social-link {
+        cursor: pointer;
         width: rem(32px);
         height: rem(32px);
         margin: 0 rem(10);
+        border-radius: 50%;
+        background-color: #888;
+        background-size: rem(18px);
         background-position: center;
         background-repeat: no-repeat;
-        background-color: #a19f9d;
-        border-radius: 50%;
-        cursor: pointer;
-        background-size: rem(18px);
     }
 
     .twitter-link {
@@ -197,7 +197,7 @@ section {
         background-image: url('images/footer/github-icon.svg');
 
         &:hover {
-            background-color: #171515;
+            background-color: #000;
         }
     }
 

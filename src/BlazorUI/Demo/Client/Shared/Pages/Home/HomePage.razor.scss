@@ -79,9 +79,8 @@
 .component-list-section {
     overflow: hidden;
     padding-top: rem(60px);
-    margin-top: rem(100px);
     padding-bottom: rem(60px);
-    background-color: $bit-color-background-primary2;
+    background-color: $bit-color-background-secondary;
 
     @include md {
         margin-top: rem(60px);

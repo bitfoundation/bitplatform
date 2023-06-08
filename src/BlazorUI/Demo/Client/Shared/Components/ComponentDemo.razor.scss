@@ -15,9 +15,7 @@
     box-sizing: border-box;
     border-radius: rem(4px);
     margin-bottom: rem(28px);
-    background-clip: padding-box;
-    background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-border-primary2;
+    box-shadow: $bit-shadow-callout;
 }
 
 .table-view {

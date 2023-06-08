@@ -10,23 +10,18 @@
     --bit-clr-primary-text: #FFF;
     //main--secondary
     --bit-clr-secondary-main: #FFF;
-    --bit-clr-secondary-dark: #BBB;
+    --bit-clr-secondary-dark: #CCC;
     --bit-clr-secondary-light: #FFF;
     --bit-clr-secondary-text: #000;
     //foreground
     --bit-clr-fg-primary: #1A1A1A;
-    --bit-clr-fg-secondary: #333;
+    --bit-clr-fg-secondary: #555;
     --bit-clr-fg-disabled: #AAA;
     //backgrounds
     --bit-clr-bg-primary: #FFF;
-    --bit-clr-bg-primary2: #EEE;
-    --bit-clr-bg-primary3: #DDD;
-    --bit-clr-bg-secondary: #000;
-    --bit-clr-bg-secondary2: #222;
-    --bit-clr-bg-secondary3: #444;
+    --bit-clr-bg-secondary: #EEE;
     --bit-clr-bg-disabled: #F3F2F1;
-    --bit-clr-bg-transparent: rgba(255, 255, 255, 0.4);
-    --bit-clr-bg-callout: rgba(0, 0, 0, 0.4);
+    --bit-clr-bg-overlay: rgba(0, 0, 0, 0.4);
     //borders
     --bit-clr-brd-primary: #000;
     --bit-clr-brd-primary2: #333;
@@ -117,7 +112,7 @@
     --bit-clr-ntr-gray210: #161514;
     --bit-clr-ntr-gray220: #11100F;
     // shadows-callout
-    --bit-shd-clo: 0px 0px 4px -1px rgba(0, 0, 0, 0.2), 0px 0px 5px 0px rgba(0, 0, 0, 0.14), 0px 0px 10px 0px rgba(0, 0, 0, 0.12);
+    --bit-shd-clo: 0px 0px 7px 0px rgba(0, 0, 0, 0.2), 0px 0px 2px 0px rgba(0, 0, 0, 0.1);
     // shadows
     --bit-shd-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
     --bit-shd-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);

@@ -326,7 +326,7 @@
 }
 
 .bit-dtp-dc-sel {
-    background-color: $color-background-primary3;
+    background-color: $color-background-secondary;
 
     &::after {
         inset: 0;
@@ -348,7 +348,7 @@
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-secondary;
-    background-color: $color-background-primary2;
+    background-color: $color-background-secondary;
     border-right: $shape-border-width $shape-border-style $color-border-secondary2;
 }
 

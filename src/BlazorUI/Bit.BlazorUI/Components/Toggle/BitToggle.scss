@@ -18,14 +18,14 @@
             @media (hover: hover) {
                 &:hover {
                     .bit-tgl-sta {
-                        background-color: $color-background-primary3;
+                        background-color: $color-foreground-disabled;
                     }
                 }
             }
         }
 
         .bit-tgl-sta {
-            background-color: $color-background-primary3;
+            background-color: $color-foreground-disabled;
         }
 
         &.bit-tgl-chk {
@@ -121,7 +121,7 @@
     height: spacing(1.5);
     box-sizing: border-box;
     transition: all 0.1s ease 0s;
-    background-color: $color-background-secondary3;
+    background-color: $color-foreground-secondary;
     border: spacing(0.75) $shape-border-style transparent;
 }
 
