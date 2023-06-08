@@ -39,7 +39,7 @@ section {
         align-items: center;
         padding: rem(40px) rem(20px);
         justify-content: space-between;
-        border-top: rem(1px) solid $bit-color-border-secondary2;
+        border-top: rem(1px) solid $bit-color-border-secondary;
 
         @include sm {
             align-items: center;

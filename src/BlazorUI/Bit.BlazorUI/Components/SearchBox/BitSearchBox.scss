@@ -15,7 +15,7 @@
     font-family: $typography-font-family;
     background-color: $color-background-primary;
     padding: spacing(0.125) 0 spacing(0.125) spacing(0.5);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {

@@ -188,7 +188,7 @@
     border-radius: spacing(0.25);
     color: $color-foreground-secondary;
     padding: 0 spacing(3.5) 0 spacing(1);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
 .bit-drp-icn {
@@ -315,7 +315,7 @@
         border-radius: spacing(0.25);
         transition-property: background, border, border-color;
         transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary2;
+        border: $shape-border-width $shape-border-style $color-border-primary;
 
         .bit-drp-chm {
             opacity: 0;
@@ -466,7 +466,7 @@
     font-size: spacing(1.75);
     color: $color-foreground-primary;
     border-style: $shape-border-style;
-    border-color: $color-border-primary2;
+    border-color: $color-border-primary;
     font-family: $typography-font-family;
     border-width: 0 0 $shape-border-width;
     background-color: $color-background-primary;

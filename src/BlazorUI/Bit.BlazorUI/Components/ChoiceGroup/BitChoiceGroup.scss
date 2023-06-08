@@ -192,7 +192,7 @@
         box-sizing: border-box;
         background-color: $color-background-primary;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary2;
+        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 
     &:after {
@@ -260,7 +260,7 @@
         box-sizing: border-box;
         background-color: $color-background-primary;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary2;
+        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 
     &:after {

@@ -1,8 +1,9 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_fonts.scss';
+﻿@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 main {
     width: 100%;
@@ -12,55 +13,36 @@ main {
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
 
-    @include sm {
+    /*@include sm {
         padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
-    }
+    }*/
 
     &.full-page {
         .site-content {
+            padding: 0;
             max-width: 100%;
-            padding-left: 0;
-            padding-right: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-
-            @include lt-xl {
-                padding-top: 0;
-                padding-bottom: 0;
-            }
-
-            @include lg {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            @include md {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            @include sm {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            @media all and (min-width: 1620px) {
-                max-width: 100%;
-            }
         }
     }
 
     .site-content {
-        position: relative;
         width: 100%;
-        max-width: calc(100% - $NavMenuWidth);
-        padding-left: rem(60px);
-        padding-right: rem(60px);
-        padding-top: rem(65px);
-        padding-bottom: rem(65px);
         margin: 0 auto;
+        position: relative;
+        padding: rem(40px);
+        max-width: calc(100% - $NavMenuWidth);
+        background-color: $bit-color-background-disabled;
 
-        @include lt-xl {
+        @include md {
+            max-width: 100%;
+            padding: rem(30px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            padding: rem(20px);
+        }
+
+        /*@include lt-xl {
             padding-top: rem(35px);
             padding-bottom: rem(35px);
         }
@@ -70,21 +52,9 @@ main {
             padding-right: rem(16px);
         }
 
-        @include md {
-            max-width: 100%;
-            padding-left: rem(30px);
-            padding-right: rem(30px);
-        }
-
-        @include sm {
-            max-width: 100%;
-            padding-left: rem(20px);
-            padding-right: rem(20px);
-        }
-
         @media all and (min-width: 1621px) {
             max-width: rem(1320px);
-        }
+        }*/
     }
 }
 
@@ -163,12 +133,9 @@ main {
     display: none;
 }
 
-::deep ::-webkit-scrollbar-track {
-    /*background-color: #fff;*/
-}
-
 ::deep ::-webkit-scrollbar-thumb {
     border-radius: 16px;
+    background-color: $bit-color-foreground-secondary;
 }
 
 @supports (-webkit-touch-callout: none) {

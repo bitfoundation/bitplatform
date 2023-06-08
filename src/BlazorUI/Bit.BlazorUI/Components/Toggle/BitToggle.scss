@@ -101,7 +101,7 @@
     border-radius: spacing(1.25);
     transition: all 0.1s ease 0s;
     background: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {

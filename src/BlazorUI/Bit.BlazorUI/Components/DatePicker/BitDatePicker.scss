@@ -71,7 +71,7 @@
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     input {
         margin: 0;
@@ -332,7 +332,7 @@
         inset: 0;
         content: "";
         position: absolute;
-        border: $shape-border-width $shape-border-style $color-border-primary2;
+        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 }
 
@@ -349,7 +349,7 @@
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-secondary;
     background-color: $color-background-secondary;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary2;
+    border-right: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-dtp-pkr-hdr {
@@ -476,7 +476,7 @@
 
 .bit-dtp-div {
     top: 0;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary2;
+    border-right: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-dtp-mwp {
@@ -572,7 +572,7 @@
     justify-content: center;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     &:focus {
         outline: none;
@@ -653,7 +653,7 @@
     .bit-dtp-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shape-border-width $shape-border-style $color-border-secondary2;
+        border-bottom: $shape-border-width $shape-border-style $color-border-primary;
     }
 
     .bit-dtp-fld-grp {
@@ -690,7 +690,7 @@
 
     .bit-dtp-wnumc {
         border-right: none;
-        border-left: $shape-border-width $shape-border-style $color-border-secondary2;
+        border-left: $shape-border-width $shape-border-style $color-border-secondary;
     }
 
     .bit-dtp-pkr-tit {

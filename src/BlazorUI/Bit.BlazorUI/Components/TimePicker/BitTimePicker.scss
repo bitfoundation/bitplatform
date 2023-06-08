@@ -62,7 +62,7 @@
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     .bit-icon {
         cursor: pointer;
@@ -124,7 +124,7 @@
     .bit-tpc-wrp {
         display: flex;
         width: 100%;
-        border-bottom: $shape-border-width $shape-border-style $color-border-primary2;
+        border-bottom: $shape-border-width $shape-border-style $color-border-primary;
     }
 
     .bit-tpc-fld-grp {

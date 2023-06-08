@@ -34,4 +34,11 @@ public static class BitCss
         public const string Secondary = "bit-css-bg-secondary";
         public const string Disabled = "bit-css-bg-disabled";
     }
+
+    public static class Border
+    {
+        public const string Primary = "bit-css-brd-primary";
+        public const string Secondary = "bit-css-brd-secondary";
+        public const string Disabled = "bit-css-brd-disabled";
+    }
 }
