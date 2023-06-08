@@ -12,7 +12,6 @@ main {
     box-sizing: border-box;
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
-
     /*@include sm {
         padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
     }*/
@@ -21,6 +20,7 @@ main {
         .site-content {
             padding: 0;
             max-width: 100%;
+            background-color: unset;
         }
     }
 
@@ -41,7 +41,6 @@ main {
             max-width: 100%;
             padding: rem(20px);
         }
-
         /*@include lt-xl {
             padding-top: rem(35px);
             padding-bottom: rem(35px);
