@@ -1,11 +1,11 @@
 {
-  "version": 1,
-  "isRoot": true,
+    "version": 1,
+    "isRoot": true,
     "tools": {
-        "dartsassbuilder-tool": {
-            "version": "1.0.0",
+        "excubo.webcompiler": {
+            "version": "3.5.44",
             "commands": [
-                "dsb"
+                "webcompiler"
             ]
         }
     }

@@ -9,7 +9,7 @@
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CopyCssFiles;
+            CompileScssFiles;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -66,11 +66,7 @@
     </Target>
 
     <Target Name="CompileScssFiles" AfterTargets="CoreCompile;DotNetToolRestore">
-        <Exec Command="dotnet dsb files Styles/bit.blazorui.extras.scss" StandardOutputImportance="high" StandardErrorImportance="high" />
-    </Target>
-
-    <Target Name="CopyCssFiles" AfterTargets="CoreCompile;DotNetToolRestore;CompileScssFiles">
-        <Copy SourceFiles="Styles/bit.blazorui.extras.min.css" DestinationFolder="wwwroot/styles" />
+        <Exec Command="dotnet webcompiler Styles/bit.blazorui.extras.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
