@@ -58,7 +58,7 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="DotNetToolRestore">
+    <Target Name="CoreCompile;DotNetToolRestore">
         <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
     </Target>
 
