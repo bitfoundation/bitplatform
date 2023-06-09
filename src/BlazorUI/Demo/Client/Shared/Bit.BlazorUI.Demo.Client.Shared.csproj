@@ -75,7 +75,7 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="DotNetToolRestore">
+    <Target Name="DotNetToolRestore" AfterTargets="CoreCompile">
         <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
     </Target>
 
