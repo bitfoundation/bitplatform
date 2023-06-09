@@ -7,7 +7,7 @@
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileStaticAssets;
+            CopyCssFiles;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -62,8 +62,12 @@
         <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
     </Target>
 
-    <Target Name="CompileStaticAssets" AfterTargets="CoreCompile;DotNetToolRestore">
-        <Exec Command="dotnet webcompiler Styles/bit.blazorui.scss Styles/Fluent/bit.blazorui.fluent.scss Styles/Fluent/bit.blazorui.fluent-dark.scss Styles/Fluent/bit.blazorui.fluent-light.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile;DotNetToolRestore">
+        <Exec Command="dotnet dsb files Styles/bit.blazorui.scss Styles/Fluent/bit.blazorui.fluent.scss Styles/Fluent/bit.blazorui.fluent-dark.scss Styles/Fluent/bit.blazorui.fluent-light.scss" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="CopyCssFiles" AfterTargets="CoreCompile;DotNetToolRestore;CompileScssFiles">
+        <Copy SourceFiles="Styles/bit.blazorui.min.css;Styles/Fluent/bit.blazorui.fluent.min.css;Styles/Fluent/bit.blazorui.fluent-dark.min.css;Styles/Fluent/bit.blazorui.fluent-light.min.css" DestinationFolder="wwwroot/styles" />
     </Target>
 
 </Project>
