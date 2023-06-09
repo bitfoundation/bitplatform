@@ -17,6 +17,15 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
   
   - task: Bash@3
     displayName: 'Build'
@@ -36,6 +45,15 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
 
   - task: Bash@3
     displayName: 'Install maui'
@@ -68,6 +86,15 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
+
   - task: Bash@3
     displayName: 'Install maui'
     inputs:
@@ -98,6 +125,15 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
 
   - task: Bash@3
     displayName: 'Install maui'
@@ -130,6 +166,15 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
+
   - task: Bash@3
     displayName: 'Install maui'
     inputs:
@@ -160,6 +205,15 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm install sass -g
+    displayName: 'npm i sass -g'
 
   - task: Bash@3
     displayName: 'Restore workloads'
