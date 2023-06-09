@@ -30,6 +30,11 @@ jobs:
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 
@@ -97,6 +102,11 @@ jobs:
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 
@@ -163,6 +173,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -202,6 +217,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -256,6 +276,11 @@ jobs:
        uses: actions/setup-dotnet@v3
        with:
          dotnet-version: 5.x
+
+     - uses: actions/setup-node@v3
+       with:
+        node-version: latest
+     - run: npm i sass -g
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 

@@ -61,12 +61,12 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="DotNetToolRestore" AfterTargets="CoreCompile">
-        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-    </Target>
-
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile;DotNetToolRestore">
-        <Exec Command="dotnet webcompiler Styles/bit.blazorui.extras.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+        <Exec Command="sass --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
+        </Exec>
+        <Error Condition="'$(ErrorCodeSass)' != '0'" Text="dart-sass is required for this project. install globally with 'npm i -g sass' " />
+        <Exec Command="sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

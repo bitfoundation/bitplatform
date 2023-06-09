@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileStaticAssets;
+            CompileScssFiles;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -83,12 +83,12 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="DotNetToolRestore" AfterTargets="CoreCompile">
-        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-    </Target>
-
-    <Target Name="CompileStaticAssets" AfterTargets="CoreCompile;DotNetToolRestore">
-        <Exec Command="dotnet dsb" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+        <Exec Command="sass --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
+        </Exec>
+        <Error Condition="'$(ErrorCodeSass)' != '0'" Text="dart-sass is required for this project. install globally with 'npm i -g sass' " />
+        <Exec Command="sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
