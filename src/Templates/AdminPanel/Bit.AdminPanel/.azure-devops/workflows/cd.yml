@@ -24,11 +24,6 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
-    inputs:
-      version: 6.x
-
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'
     inputs:
@@ -161,11 +156,6 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
-    inputs:
-      version: 6.x
-
   - task: FileTransform@1
     displayName: Update appsettings.json
     inputs:
@@ -216,11 +206,6 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
-
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
-    inputs:
-      version: 6.x
 
   - task: Bash@3
     displayName: 'Install maui'
@@ -295,11 +280,6 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET sdk 5.x for DartSassBuilder'
-    inputs:
-      version: 5.x
 
   - task: FileTransform@1
     displayName: Update appsettings.json

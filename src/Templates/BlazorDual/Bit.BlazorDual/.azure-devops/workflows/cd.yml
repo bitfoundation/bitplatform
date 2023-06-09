@@ -23,12 +23,7 @@ jobs:
     inputs:
       useGlobalJson: true
       workingDirectory: 'src'
-
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
-    inputs:
-      version: 6.x
-
+      
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'
     inputs:
