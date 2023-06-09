@@ -66,7 +66,7 @@
     </Target>
 
     <Target Name="CompileStaticAssets" AfterTargets="CoreCompile;DotNetToolRestore">
-        <Exec Command="dotnet webcompiler Styles/bit.blazorui.scss Styles/Fluent/bit.blazorui.fluent.scss Styles/Fluent/bit.blazorui.fluent-dark.scss Styles/Fluent/bit.blazorui.fluent-light.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="dotnet webcompiler Styles/bit.blazorui.extras.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
