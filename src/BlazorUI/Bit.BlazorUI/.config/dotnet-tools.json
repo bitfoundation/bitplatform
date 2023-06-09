@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "excubo.webcompiler": {
+      "version": "3.5.44",
+      "commands": [
+        "webcompiler"
+      ]
+    }
+  }
+}

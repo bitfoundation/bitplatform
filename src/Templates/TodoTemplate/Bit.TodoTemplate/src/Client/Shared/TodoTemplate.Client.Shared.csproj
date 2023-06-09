@@ -5,6 +5,10 @@
         <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileStaticAssets;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,14 +30,10 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="DartSassBuilder" Version="1.0.0" Watch="false">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.5" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.5" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -85,5 +85,13 @@
             <Generator></Generator>
         </EmbeddedResource>
     </ItemGroup>
+
+    <Target Name="DotNetToolRestore">
+        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
+    </Target>
+
+    <Target Name="CompileStaticAssets" AfterTargets="CoreCompile;DotNetToolRestore">
+        <Exec Command="dotnet dsb" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
 </Project>

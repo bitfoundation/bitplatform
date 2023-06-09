@@ -6,6 +6,10 @@
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileStaticAssets;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,15 +17,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -57,5 +57,13 @@
         <Using Include="Microsoft.AspNetCore.Components.Web.Virtualization" />
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
+
+    <Target Name="DotNetToolRestore">
+        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
+    </Target>
+
+    <Target Name="CompileStaticAssets" AfterTargets="CoreCompile;DotNetToolRestore">
+        <Exec Command="dotnet webcompiler Styles/bit.blazorui.scss Styles/Fluent/bit.blazorui.fluent.scss Styles/Fluent/bit.blazorui.fluent-dark.scss Styles/Fluent/bit.blazorui.fluent-light.scss -o wwwroot/styles -z disable" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
 </Project>
