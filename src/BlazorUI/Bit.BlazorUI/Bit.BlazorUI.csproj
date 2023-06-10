@@ -67,7 +67,7 @@
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
         <Error Condition="'$(ErrorCodeSass)' != '0'" Text="dart-sass is required for this project. install globally with 'npm i -g sass' " />
-        <Exec Command="sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.min.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
