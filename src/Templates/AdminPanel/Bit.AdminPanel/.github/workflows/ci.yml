@@ -25,6 +25,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
       
     - name: Build
       run: dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
@@ -42,6 +47,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
 
     - name: Install Maui
       run: dotnet workload install maui
@@ -66,6 +76,11 @@ jobs:
       with:
         global-json-file: global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -88,6 +103,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
 
     - name: Install Maui
       run: dotnet workload install maui
@@ -112,6 +132,11 @@ jobs:
       with:
         global-json-file: global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -134,6 +159,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
 
     - name: Switch to blazor wasm
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj

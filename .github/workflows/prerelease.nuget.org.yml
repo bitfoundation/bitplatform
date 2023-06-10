@@ -31,6 +31,11 @@ jobs:
         dotnet-version: 8.0.x
         include-prerelease: true
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: dotnet restore BlazorUI
       run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild BlazorUI (1)

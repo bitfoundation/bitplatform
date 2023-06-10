@@ -31,6 +31,11 @@ jobs:
       with:
         global-json-file: global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
+
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
 
@@ -127,6 +132,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -166,6 +176,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -216,10 +231,10 @@ jobs:
        with:
          global-json-file: global.json
 
-     - name: Use .NET sdk 5.x for DartSassBuilder
-       uses: actions/setup-dotnet@v3
+     - uses: actions/setup-node@v3
        with:
-         dotnet-version: 5.x
+        node-version: latest
+     - run: npm i sass -g
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -260,10 +275,10 @@ jobs:
       with:
         global-json-file: global.json
 
-    - name: Use .NET sdk 5.x for DartSassBuilder
-      uses: actions/setup-dotnet@v3
+    - uses: actions/setup-node@v3
       with:
-        dotnet-version: 5.x
+        node-version: latest
+    - run: npm i sass -g
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
