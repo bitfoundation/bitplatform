@@ -151,7 +151,7 @@
                 background-color: $color-action-hover-background-primary;
 
                 i {
-                    color: $color-action-hover-text-primary2;
+                    color: $color-action-hover-foreground-primary;
                 }
             }
         }
@@ -210,7 +210,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+            border-color: $color-action-hover-primary;
         }
     }
 }
@@ -233,7 +233,7 @@
 
         @media (hover: hover) {
             &:hover {
-                border-bottom: spacing(0.25) $shape-border-style $color-action-hover-primary;
+                border-bottom-color: $color-action-hover-primary;
             }
         }
     }
@@ -247,7 +247,6 @@
 
                 i {
                     opacity: 0;
-                    color: $color-action-hover-primary;
                 }
             }
         }
@@ -283,7 +282,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border: spacing(0.25) $shape-border-style $color-action-hover-primary;
+            border-color: $color-action-hover-primary;
 
             .bit-srb-ict {
                 width: spacing(4);

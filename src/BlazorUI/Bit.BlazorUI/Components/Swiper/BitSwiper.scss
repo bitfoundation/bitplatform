@@ -48,7 +48,7 @@
             outline: 0;
             opacity: .9;
             text-decoration: none;
-            color: $color-action-hover-text-secondary2;
+            color: $color-action-hover-foreground-primary;
         }
     }
 }
@@ -77,7 +77,7 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-background-secondary;
             }
         }
 

@@ -69,7 +69,7 @@
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
                 background-color: $color-action-hover-background-primary;
             }
         }
@@ -95,7 +95,7 @@
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
-                color: $color-action-hover-secondary;
+                color: $color-primary-text;
                 background-color: $color-action-hover-primary;
             }
         }
@@ -103,7 +103,7 @@
 
     .bit-pvti-sel {
         font-weight: 400;
-        color: $color-secondary-main;
+        color: $color-primary-text;
         background-color: $color-primary-main;
     }
 }

@@ -9,8 +9,8 @@
     min-width: spacing(15);
     box-sizing: border-box;
     text-overflow: ellipsis;
+    border-width: spacing(0.1875);
     border-style: $shape-border-style;
-    border-width: $shape-border-width;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
@@ -40,12 +40,12 @@
     background-color: $color-primary-main;
 
     .bit-ldb-spn {
-        border-color: $color-secondary-light;
+        border-color: $color-border-secondary;
         border-top-color: $color-primary-dark;
     }
 
     .bit-ldb-lbl {
-        color: $color-secondary-main;
+        color: $color-primary-text;
     }
 
     @media (hover: hover) {
@@ -67,7 +67,7 @@
     background-color: $color-secondary-main;
 
     .bit-ldb-spn {
-        border-color: $color-secondary-light;
+        border-color: $color-border-secondary;
         border-top-color: $color-primary-dark;
     }
 

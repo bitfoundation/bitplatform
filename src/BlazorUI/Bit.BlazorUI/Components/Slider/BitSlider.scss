@@ -1,6 +1,6 @@
 ﻿@import "../../Styles/functions.scss";
 
-$BgDefult: $color-secondary-dark;
+$BgDefult: $color-background-secondary;
 $BgHover: $color-general-lightblue;
 $BgTrackHover: $color-primary-main;
 $BgTrack: $color-foreground-secondary;
@@ -111,7 +111,7 @@ $BgTrack: $color-foreground-secondary;
     }
 
     input:hover ~ .bit-sld-ztk {
-        background-color: $color-action-hover-background-primary2;
+        background-color: $color-action-hover-background-primary;
     }
 
     input::-webkit-slider-thumb:hover,

@@ -891,7 +891,7 @@ public partial class BitDateRangePicker
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc-btw-sel");
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel-btw");
         }
 
         return className.ToString();
