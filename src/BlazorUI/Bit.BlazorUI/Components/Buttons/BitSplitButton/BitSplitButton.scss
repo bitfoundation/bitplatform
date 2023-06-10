@@ -188,16 +188,16 @@
 }
 
 .bit-spl-its {
-    z-index: $space-overlay-zindex1;
     display: none;
     position: fixed;
     overflow: hidden auto;
     box-sizing: border-box;
     min-width: spacing(22.5);
     animation-fill-mode: both;
-    box-shadow: $shadow-callout;
     animation-duration: 0.367s;
-    background-color: $color-secondary-main;
+    box-shadow: $shadow-callout;
+    z-index: $space-overlay-zindex1;
+    background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);

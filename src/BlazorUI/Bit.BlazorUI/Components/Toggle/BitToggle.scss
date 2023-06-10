@@ -105,10 +105,10 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary2;
+            border-color: $color-action-hover-border-primary;
 
             .bit-tgl-sta {
-                background-color: $color-action-hover-background-secondary2;
+                background-color: $color-action-hover-foreground-secondary;
             }
         }
     }
@@ -145,14 +145,14 @@
                 background-color: $color-action-hover-primary;
 
                 .bit-tgl-sta {
-                    background-color: $color-action-hover-background-primary;
+                    background-color: $color-primary-text;
                 }
             }
         }
     }
 
     .bit-tgl-sta {
-        background-color: $color-background-primary;
+        background-color: $color-primary-text;
     }
 }
 

@@ -141,7 +141,7 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-text-primary2;
+            color: $color-action-hover-foreground-primary;
             background-color: $color-action-hover-background-primary;
         }
     }

@@ -9,7 +9,7 @@
             .bit-chb-ctn {
                 .bit-icon {
                     opacity: 1;
-                    color: $color-action-hover-text-primary;
+                    color: $color-action-hover-foreground-secondary;
                 }
             }
         }
@@ -192,7 +192,7 @@
 
         .bit-icon {
             opacity: 1;
-            color: $color-secondary-main;
+            color: $color-primary-text;
         }
     }
 

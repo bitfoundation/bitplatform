@@ -329,26 +329,24 @@
 }
 
 .bit-dtrp-dc-sel-st {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
     border-radius: spacing(1) 0 0 spacing(1);
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-secondary;
             background-color: $color-action-hover-primary;
         }
     }
 }
 
 .bit-dtrp-dc-sel-en {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
     border-radius: 0 spacing(1) spacing(1) 0;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-secondary;
             background-color: $color-action-hover-primary;
         }
     }
@@ -358,9 +356,9 @@
     border-radius: spacing(1);
 }
 
-.bit-dtrp-dc-btw-sel {
+.bit-dtrp-dc-sel-btw {
     border-radius: 0;
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-light;
 
     @media (hover: hover) {
@@ -398,7 +396,7 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-background-primary;
             }
         }
     }
@@ -570,12 +568,11 @@
 }
 
 .bit-dtrp-crtm {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-secondary;
             background-color: $color-action-hover-primary;
         }
     }
@@ -583,7 +580,7 @@
 
 .bit-dtrp-selm {
     font-weight: 600;
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
 
     @media (hover: hover) {

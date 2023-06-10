@@ -46,14 +46,14 @@
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-action-hover-primary2;
-                background-color: $color-action-hover-primary2;
+                border-color: $color-action-hover-primary-dark;
+                background-color: $color-action-hover-primary-dark;
             }
         }
 
         &:active {
-            border-color: $color-action-active-primary2;
-            background-color: $color-action-active-primary2;
+            border-color: $color-action-active-primary-dark;
+            background-color: $color-action-active-primary-dark;
         }
     }
 }
@@ -65,25 +65,25 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $color-action-hover-secondary;
         }
     }
 
     &:active {
-        background-color: $color-action-active-background-primary;
+        background-color: $color-action-active-secondary;
     }
 
     &.bit-tgb-chk {
-        background-color: $color-background-secondary;
+        background-color: $color-secondary-dark;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-secondary-dark;
             }
         }
 
         &:active {
-            background-color: $color-action-active-background-primary2;
+            background-color: $color-action-active-secondary-dark;
         }
     }
 }
