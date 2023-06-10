@@ -9,12 +9,10 @@ main {
     width: 100%;
     display: flex;
     min-height: 100vh;
+    position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
-    /*@include sm {
-        padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
-    }*/
 
     &.full-page {
         .site-content {
@@ -41,19 +39,6 @@ main {
             max-width: 100%;
             padding: rem(20px);
         }
-        /*@include lt-xl {
-            padding-top: rem(35px);
-            padding-bottom: rem(35px);
-        }
-
-        @include lg {
-            padding-left: rem(16px);
-            padding-right: rem(16px);
-        }
-
-        @media all and (min-width: 1621px) {
-            max-width: rem(1320px);
-        }*/
     }
 }
 
@@ -85,15 +70,9 @@ main {
 
     &::-webkit-scrollbar {
         width: rem(6.5px);
-        /*background-color: $White;*/
-    }
-
-    &::-webkit-scrollbar-track {
-        /*background-color: $White;*/
     }
 
     &::-webkit-scrollbar-thumb {
-        /*background-color: #c8c6c4;*/
         border-radius: rem(8px);
         border: rem(4px) solid #c8c6c4;
     }
@@ -103,7 +82,6 @@ main {
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        /*background-color: $B3Color;*/
         border: rem(4px) solid $B3Color;
         border-radius: rem(8px);
     }

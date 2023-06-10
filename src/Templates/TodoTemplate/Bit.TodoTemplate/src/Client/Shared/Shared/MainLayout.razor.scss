@@ -3,9 +3,9 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .main {
-    position: relative;
     width: 100%;
     min-height: 100vh;
+    position: relative;
     padding-top: rem(48px);
     box-sizing: border-box;
     background-color: $SecondaryColor;

@@ -57,12 +57,12 @@
                 overscroll-behavior: none;
             }
 
-            *:not(input) {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
+                *:not(input) {
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
         </style>
     }
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
@@ -74,7 +74,7 @@
     <div id="app-container">
         @if (isDefaultDeploymentType)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         @RenderBody()
     </div>
