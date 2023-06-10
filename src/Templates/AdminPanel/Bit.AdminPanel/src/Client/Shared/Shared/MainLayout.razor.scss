@@ -65,26 +65,6 @@
     box-sizing: border-box;
 }
 
-::deep .status-bar-safe-area {
-    display: none;
-}
-
-@supports (-webkit-touch-callout: none) {
-    ::deep .status-bar-safe-area {
-        display: flex;
-        position: sticky;
-        top: 0;
-        height: env(safe-area-inset-top);
-        background-color: #f7f7f7;
-        width: 100%;
-        z-index: 1;
-    }
-
-    ::deep .flex-column, ::deep .navbar-brand {
-        padding-left: env(safe-area-inset-left);
-    }
-}
-
 ::deep ::-webkit-scrollbar-track {
     background-color: #fff;
 }
