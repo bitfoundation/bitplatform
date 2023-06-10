@@ -8,23 +8,26 @@
     <link rel="stylesheet" href="_content/TodoTemplate.Client.Shared/styles/app.min.css" />
     <link rel="stylesheet" href="_content/TodoTemplate.Client.Shared/TodoTemplate.Client.Shared.bundle.scp.css" />
     <style>
-
         * {
             -webkit-user-drag: none;
+            overscroll-behavior: none;
         }
 
         *:not(input) {
-            user-select: none;
             -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
+    </style>
 
+    <style>
         .lds-wrapper {
             top: 50%;
             left: 50%;
             position: absolute;
             transform: translate(-50%, -50%);
         }
-
 
         .lds-grid {
             display: inline-block;

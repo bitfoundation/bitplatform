@@ -1,6 +1,14 @@
 * {
-    overscroll-behavior: none;
+    box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, h5 {
+    margin: 0;
+}
+
+p {
+    margin: 0;
 }
 
 html, body, #app-container {
@@ -9,4 +17,5 @@ html, body, #app-container {
     width: 100%;
     height: 100%;
     background: #0D2960;
+    -webkit-font-smoothing: antialiased;
 }

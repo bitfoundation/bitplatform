@@ -14,13 +14,19 @@
 
         * {
             -webkit-user-drag: none;
+            overscroll-behavior: none;
         }
 
         *:not(input) {
-            user-select: none;
             -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
+    </style>
+
+    <style>
         .lds-wrapper {
             top: 50%;
             left: 50%;
