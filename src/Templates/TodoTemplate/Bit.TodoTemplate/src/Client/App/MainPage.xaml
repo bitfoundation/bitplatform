@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:client="clr-namespace:TodoTemplate.Client.Shared;assembly=TodoTemplate.Client.Shared"
-    BackgroundColor="#0D2960"
+    BackgroundColor="{AppThemeBinding Dark=#0D2960,
+                                      Light={OnPlatform Android=#0D2960,
+                                                        Default=#F2F2F2}}"
     Loaded="ContentPage_Loaded"
     NavigationPage.HasNavigationBar="False">
 
