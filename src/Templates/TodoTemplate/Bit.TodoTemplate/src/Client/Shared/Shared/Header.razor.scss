@@ -19,6 +19,10 @@
     @media all and (max-width: #{em(370px)}) {
         padding: 0 rem(16px);
     }
+
+    @supports (-webkit-touch-callout: none) {
+        margin-top: env(safe-area-inset-top);
+    }
 }
 
 .logo-lnk {
