@@ -219,25 +219,25 @@
     @media (hover: hover) {
         &:hover {
             .bit-drp-txt-ctn {
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
                 border: $shape-border-width $shape-border-style $color-action-hover-border-primary;
             }
 
             .bit-drp-icn i {
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
             }
         }
     }
 
     &:active {
         .bit-drp-txt-ctn {
-            color: $color-action-active-text-primary;
+            color: $color-action-active-foreground-primary;
             border-color: $color-action-active-border-primary;
         }
 
         .bit-drp-icn {
             i {
-                color: $color-action-active-text-primary;
+                color: $color-action-active-foreground-primary;
             }
         }
     }
@@ -284,7 +284,7 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-background-primary;
             }
         }
     }
@@ -326,7 +326,6 @@
             align-items: center;
             justify-content: center;
             font-size: spacing(1.375);
-            color: $color-secondary-main;
             font-family: $typography-font-family-icons;
         }
     }
@@ -371,7 +370,7 @@
 
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-secondary-main;
+                color: $color-primary-text;
             }
         }
 
@@ -474,7 +473,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary2;
+            border-color: $color-action-hover-border-primary;
 
             .bit-drp-sic {
                 i {
@@ -493,7 +492,6 @@
 
                     i {
                         opacity: 0;
-                        color: $color-action-hover-primary;
                     }
                 }
             }
@@ -645,7 +643,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary2;
+            background-color: $color-action-hover-background-primary;
         }
     }
 }
@@ -733,7 +731,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary2;
+            background-color: $color-action-hover-background-primary;
         }
     }
 }
@@ -775,14 +773,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-text-primary;
+            color: $color-action-hover-foreground-primary;
             background-color: $color-action-hover-background-primary;
         }
     }
 
     &:active {
-        color: $color-action-active-text-primary2;
-        background-color: $color-action-hover-background-primary2;
+        color: $color-action-active-foreground-primary;
+        background-color: $color-action-active-background-primary;
     }
 }
 

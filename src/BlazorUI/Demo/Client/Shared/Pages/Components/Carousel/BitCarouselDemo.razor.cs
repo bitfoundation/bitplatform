@@ -129,7 +129,7 @@ public partial class BitCarouselDemo
 </style>
 
 <BitCarousel>
-    <BitCarouselItem AnimationDuration=""2"">
+    <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""images/carousel/img1.jpg"">
     </BitCarouselItem>

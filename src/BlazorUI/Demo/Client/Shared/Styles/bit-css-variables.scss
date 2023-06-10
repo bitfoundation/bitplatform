@@ -27,40 +27,32 @@ $bit-color-border-disabled: var(--bit-clr-brd-disabled);
 
 //actions
 $bit-color-action-hover-primary: var(--bit-clr-act-hover-pri);
-$bit-color-action-hover-primary2: var(--bit-clr-act-hover-pri2);
-$bit-color-action-hover-secondary: var(--bit-clr-act-hover-sec);
-$bit-color-action-hover-secondary2: var(--bit-clr-act-hover-sec2);
 $bit-color-action-active-primary: var(--bit-clr-act-active-pri);
-$bit-color-action-active-primary2: var(--bit-clr-act-active-pri2);
+$bit-color-action-hover-primary-dark: var(--bit-clr-act-hover-pri-dark);
+$bit-color-action-active-primary-dark: var(--bit-clr-act-active-pri-dark);
+$bit-color-action-hover-primary-light: var(--bit-clr-act-hover-pri-light);
+$bit-color-action-active-primary-light: var(--bit-clr-act-active-pri-light);
+$bit-color-action-hover-secondary: var(--bit-clr-act-hover-sec);
 $bit-color-action-active-secondary: var(--bit-clr-act-active-sec);
-$bit-color-action-active-secondary2: var(--bit-clr-act-active-sec2);
-//actions-texts
-$bit-color-action-hover-text-primary: var(--bit-clr-act-hover-txt-pri);
-$bit-color-action-hover-text-primary2: var(--bit-clr-act-hover-txt-pri2);
-$bit-color-action-hover-text-secondary: var(--bit-clr-act-hover-txt-sec);
-$bit-color-action-hover-text-secondary2: var(--bit-clr-act-hover-txt-sec2);
-$bit-color-action-active-text-primary: var(--bit-clr-act-active-txt-pri);
-$bit-color-action-active-text-primary2: var(--bit-clr-act-active-txt-pri2);
-$bit-color-action-active-text-secondary: var(--bit-clr-act-active-txt-sec);
-$bit-color-action-active-text-secondary2: var(--bit-clr-act-active-txt-sec2);
+$bit-color-action-hover-secondary-dark: var(--bit-clr-act-hover-sec-dark);
+$bit-color-action-active-secondary-dark: var(--bit-clr-act-active-sec-dark);
+$bit-color-action-hover-secondary-light: var(--bit-clr-act-hover-sec-light);
+$bit-color-action-active-secondary-light: var(--bit-clr-act-active-sec-light);
+//actions-foreground
+$bit-color-action-hover-foreground-primary: var(--bit-clr-act-hover-fg-pri);
+$bit-color-action-active-foreground-primary: var(--bit-clr-act-active-fg-pri);
+$bit-color-action-hover-foreground-secondary: var(--bit-clr-act-hover-fg-sec);
+$bit-color-action-active-foreground-secondary: var(--bit-clr-act-hover-fg-sec);
 //actions-backgrounds
 $bit-color-action-hover-background-primary: var(--bit-clr-act-hover-bg-pri);
-$bit-color-action-hover-background-primary2: var(--bit-clr-act-hover-bg-pri2);
-$bit-color-action-hover-background-secondary: var(--bit-clr-act-hover-bg-sec);
-$bit-color-action-hover-background-secondary2: var(--bit-clr-act-hover-bg-sec2);
 $bit-color-action-active-background-primary: var(--bit-clr-act-active-bg-pri);
-$bit-color-action-active-background-primary2: var(--bit-clr-act-active-bg-pri2);
+$bit-color-action-hover-background-secondary: var(--bit-clr-act-hover-bg-sec);
 $bit-color-action-active-background-secondary: var(--bit-clr-act-active-bg-sec);
-$bit-color-action-active-background-secondary2: var(--bit-clr-act-active-bg-sec2);
 //actions-borders
 $bit-color-action-hover-border-primary: var(--bit-clr-act-hover-brd-pri);
-$bit-color-action-hover-border-primary2: var(--bit-clr-act-hover-brd-pri2);
-$bit-color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
-$bit-color-action-hover-border-secondary2: var(--bit-clr-act-hover-brd-sec2);
 $bit-color-action-active-border-primary: var(--bit-clr-act-active-brd-pri);
-$bit-color-action-active-border-primary2: var(--bit-clr-act-active-brd-pri2);
+$bit-color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
 $bit-color-action-active-border-secondary: var(--bit-clr-act-active-brd-sec);
-$bit-color-action-active-border-secondary2: var(--bit-clr-act-active-brd-sec2);
 
 //states
 $bit-color-state-invalid: var(--bit-clr-sta-invalid);

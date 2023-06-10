@@ -314,7 +314,7 @@
     .bit-dtp-dbtn {
         font-weight: 600;
         border-radius: 50%;
-        color: $color-secondary-main;
+        color: $color-primary-text;
         background-color: $color-primary-main;
 
         @media(hover: hover) {
@@ -364,7 +364,7 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-background-primary;
             }
         }
     }
@@ -536,7 +536,7 @@
 }
 
 .bit-dtp-crtm {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
 
     @media (hover: hover) {
@@ -549,7 +549,7 @@
 
 .bit-dtp-selm {
     font-weight: 600;
-    color: $color-secondary-main;
+    color: $color-primary-text;
     background-color: $color-primary-main;
 
     @media (hover: hover) {
