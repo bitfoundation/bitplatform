@@ -53,54 +53,19 @@
     --bit-clr-act-hover-brd-sec: #777;
     --bit-clr-act-active-brd-sec: #888;
     //states
-    --bit-clr-sta-invalid: #A4262C;
-    --bit-clr-sta-invalid-hover: #750B1C;
-    --bit-clr-sta-info: #d9d9d9;
-    --bit-clr-sta-info2: #b9b9b9;
+    --bit-clr-sta-info: #b9b9b9;
     --bit-clr-sta-info-bg: #191919;
-    --bit-clr-sta-success: #00CC00;
-    --bit-clr-sta-success2: #00FF00;
+    --bit-clr-sta-success: #009900;
     --bit-clr-sta-success-bg: #002200;
-    --bit-clr-sta-warning: #CC9900;
-    --bit-clr-sta-warning2: #FFBB00;
+    --bit-clr-sta-warning: #FFBB00;
     --bit-clr-sta-warning-bg: #443300;
-    --bit-clr-sta-severe-warning: #EE4400;
-    --bit-clr-sta-severe-warning2: #FF7700;
+    --bit-clr-sta-severe-warning: #D83B01;
     --bit-clr-sta-severe-warning-bg: #442200;
-    --bit-clr-sta-error: #FF0000;
-    --bit-clr-sta-error2: #DD0000;
+    --bit-clr-sta-error: #A80000;
     --bit-clr-sta-error-bg: #330000;
-    //generals
-    --bit-clr-gnr-red: #A4262C;
-    --bit-clr-gnr-magenta: #B4009E;
-    --bit-clr-gnr-lightblue: #C7E0F4;
-    // neutrals
-    --bit-clr-ntr-white: #FFFFFF;
-    --bit-clr-ntr-black: #000000;
-    --bit-clr-ntr-gray10: #FAF9F8;
-    --bit-clr-ntr-gray20: #F3F2F1;
-    --bit-clr-ntr-gray30: #EDEBE9;
-    --bit-clr-ntr-gray40: #E1DFDD;
-    --bit-clr-ntr-gray50: #D2D0CE;
-    --bit-clr-ntr-gray60: #C8C6C4;
-    --bit-clr-ntr-gray70: #BEBBB8;
-    --bit-clr-ntr-gray80: #B3B0AD;
-    --bit-clr-ntr-gray90: #A19F9D;
-    --bit-clr-ntr-gray100: #979593;
-    --bit-clr-ntr-gray110: #8A8886;
-    --bit-clr-ntr-gray120: #797775;
-    --bit-clr-ntr-gray130: #605E5C;
-    --bit-clr-ntr-gray140: #484644;
-    --bit-clr-ntr-gray150: #3B3A39;
-    --bit-clr-ntr-gray160: #323130;
-    --bit-clr-ntr-gray170: #292827;
-    --bit-clr-ntr-gray180: #252423;
-    --bit-clr-ntr-gray190: #201F1E;
-    --bit-clr-ntr-gray200: #1B1A19;
-    --bit-clr-ntr-gray210: #161514;
-    --bit-clr-ntr-gray220: #11100F;
+    --bit-clr-sta-req: #A4262C;
     // shadows-callout
-    --bit-shd-clo: 0px 0px 3px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
+    --bit-shd-cal: 0px 0px 3px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
     // shadows
     --bit-shd-1: 0px 2px 1px -1px rgba(255, 255, 255, 0.2), 0px 1px 1px 0px rgba(255, 255, 255, 0.14), 0px 1px 3px 0px rgba(255, 255, 255, 0.12);
     --bit-shd-2: 0px 3px 1px -2px rgba(255, 255, 255, 0.2), 0px 2px 2px 0px rgba(255, 255, 255, 0.14), 0px 1px 5px 0px rgba(255, 255, 255, 0.12);

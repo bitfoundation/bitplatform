@@ -83,8 +83,8 @@
     font-size: spacing(1.75);
     animation-duration: 300ms;
     animation-fill-mode: both;
-    box-shadow: $shadow-callout;
     z-index: $space-overlay-zindex1;
+    box-shadow: $box-shadow-callout;
     animation-name: opacity, trans-y;
     background-color: $color-background-primary;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);

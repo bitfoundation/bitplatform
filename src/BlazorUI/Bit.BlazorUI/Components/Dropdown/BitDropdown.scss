@@ -10,18 +10,18 @@
             &:hover,
             &:active {
                 .bit-drp-txt-ctn {
-                    border-color: $color-state-invalid-hover;
+                    border-color: $color-state-error;
                 }
             }
 
             &:focus {
                 &::after {
-                    border-color: $color-state-invalid-hover;
+                    border-color: $color-state-error;
                 }
             }
 
             .bit-drp-txt-ctn {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
             }
         }
     }
@@ -111,7 +111,7 @@
             height: 100%;
             max-height: unset;
             width: spacing(34);
-            box-shadow: $shadow-callout;
+            box-shadow: $box-shadow-callout;
             padding: spacing(3) spacing(2.5);
             animation-name: opacity, bit-drp-trans-x;
         }
@@ -655,10 +655,10 @@
     overflow: hidden;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    box-shadow: $shadow-callout;
     animation-fill-mode: both;
     animation-duration: 0.367s;
     z-index: $space-overlay-zindex1;
+    box-shadow: $box-shadow-callout;
     background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;
     border-radius: 0 0 spacing(0.25) spacing(0.25);

@@ -20,7 +20,7 @@
         border-radius: rem(2px);
         max-width: calc(25% - 20px);
         flex-basis: calc(25% - 20px);
-        box-shadow: $bit-shadow-callout;
+        box-shadow: $bit-box-shadow-callout;
         transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     }
 }

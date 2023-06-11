@@ -1,9 +1,9 @@
 ﻿@import "../../Styles/functions.scss";
 
 $BgDefult: $color-background-secondary;
-$BgHover: $color-general-lightblue;
-$BgTrackHover: $color-primary-main;
 $BgTrack: $color-foreground-secondary;
+$BgTrackHover: $color-primary-main;
+$BgHover: $color-primary-light;
 
 .bit-sld {
     font-family: $typography-font-family;
