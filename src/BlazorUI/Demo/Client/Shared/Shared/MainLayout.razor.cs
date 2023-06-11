@@ -10,18 +10,6 @@ public partial class MainLayout : IDisposable
     private bool _isUserAuthenticated;
     private ErrorBoundary ErrorBoundaryRef = default!;
 
-    public bool IsWindows
-    {
-        get
-        {
-#if BlazorHybrid
-            return DeviceInfo.Current.Platform == DevicePlatform.WinUI;
-#else
-            return false;
-#endif
-        }
-    }
-
     [AutoInject] private IStateService _stateService = default!;
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;

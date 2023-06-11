@@ -5,10 +5,20 @@
     xmlns:maui="using:Microsoft.Maui">
     <maui:MauiWinUIApplication.Resources>
         <ResourceDictionary>
-            <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
             <DataTemplate x:Key="MauiAppTitleBarContainerTemplate">
                 <Grid HorizontalAlignment="Stretch">
                     <ContentControl
