@@ -10,6 +10,7 @@ public partial class Header
     private bool _isDarkMode;
 
     [Inject] private NavManuService _menuService { get; set; } = default!;
+    [Parameter] public string Style { get; set; } = string.Empty;
 
     protected override async Task OnInitAsync()
     {

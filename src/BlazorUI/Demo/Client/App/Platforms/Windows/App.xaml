@@ -5,13 +5,20 @@
     xmlns:maui="using:Microsoft.Maui">
     <maui:MauiWinUIApplication.Resources>
         <ResourceDictionary>
-            <SolidColorBrush x:Key="WindowCaptionForeground">#0D2960</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackground">#ffffff</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">#0D2960</SolidColorBrush>
-            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">#ffffff</SolidColorBrush>
-            <Style TargetType="WebView2">
-                <Setter Property="DefaultBackgroundColor" Value="#ffffff" />
-            </Style>
+            <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+            <DataTemplate x:Key="MauiAppTitleBarContainerTemplate">
+                <Grid HorizontalAlignment="Stretch">
+                    <ContentControl
+                        x:Name="AppTitleBarContentControl"
+                        Grid.Column="4"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        IsTabStop="False" />
+                </Grid>
+            </DataTemplate>
         </ResourceDictionary>
     </maui:MauiWinUIApplication.Resources>
 </maui:MauiWinUIApplication>

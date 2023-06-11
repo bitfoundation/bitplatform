@@ -13,6 +13,10 @@ main {
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
 
+    &.isWindows {
+        padding-top: calc(rem($HeaderHeight) + rem(30px))
+    }
+
     &.full-page {
         .site-content {
             padding: 0;

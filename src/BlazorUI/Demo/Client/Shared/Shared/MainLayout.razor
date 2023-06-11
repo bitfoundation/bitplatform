@@ -1,9 +1,11 @@
 ﻿@namespace Bit.BlazorUI.Demo.Client.Shared
 @inherits LayoutComponentBase
 
-<Header />
+<Header Style="@(IsWindows ? "padding-top: 30px" : "")" />
 
-<main class="@(CurrentUrl == "/" ? "full-page" : "")  @BitCss.Background.Primary">
+<main class="@(CurrentUrl == "/" ? "full-page" : "")
+             @BitCss.Background.Primary
+             @(IsWindows ? "isWindows" : "")">
     @if (CurrentUrl != "/")
     {
         <NavMenu />

@@ -18,12 +18,21 @@ public partial class MainPage
 
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
+#if WINDOWS
+            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
+            {
+                handler.PlatformView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
+            }
+#endif
+
 #if IOS || MACCATALYST
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #endif
 
 #if ANDROID
+            handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
             settings.AllowFileAccessFromFileURLs =
