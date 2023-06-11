@@ -9,6 +9,7 @@ main {
     width: 100%;
     display: flex;
     min-height: 100vh;
+    position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
@@ -73,15 +74,9 @@ main {
 
     &::-webkit-scrollbar {
         width: rem(6.5px);
-        /*background-color: $White;*/
-    }
-
-    &::-webkit-scrollbar-track {
-        /*background-color: $White;*/
     }
 
     &::-webkit-scrollbar-thumb {
-        /*background-color: #c8c6c4;*/
         border-radius: rem(8px);
         border: rem(4px) solid #c8c6c4;
     }
@@ -91,7 +86,6 @@ main {
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        /*background-color: $B3Color;*/
         border: rem(4px) solid $B3Color;
         border-radius: rem(8px);
     }
