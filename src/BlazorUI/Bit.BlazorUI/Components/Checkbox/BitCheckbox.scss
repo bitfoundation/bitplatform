@@ -9,7 +9,7 @@
             .bit-chb-ctn {
                 .bit-icon {
                     opacity: 1;
-                    color: $color-text-primary3;
+                    color: $color-action-hover-foreground-secondary;
                 }
             }
         }
@@ -17,40 +17,19 @@
 
     &.bit-inv {
         .bit-chb-ctn {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
 
         &.bit-chb-ckd {
             .bit-chb-ctn {
-                background-color: $color-state-invalid;
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-chb-ctn {
-                        border-color: $color-state-invalid-hover;
-                        background-color: $color-state-invalid-hover;
-                    }
-                }
+                background-color: $color-state-error;
             }
         }
 
         &.bit-chb-ind {
             .bit-chb-ctn {
                 .bit-icon {
-                    background-color: $color-state-invalid;
-                }
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-chb-ctn {
-                        border-color: $color-state-invalid-hover;
-
-                        .bit-icon {
-                            background-color: $color-state-invalid-hover;
-                        }
-                    }
+                    background-color: $color-state-error;
                 }
             }
         }
@@ -64,7 +43,7 @@
         }
 
         .bit-chb-txt {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-chb-ctn {
@@ -82,7 +61,7 @@
                 border-color: $color-border-disabled;
 
                 .bit-icon {
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                 }
             }
         }
@@ -103,8 +82,8 @@
     transition-duration: 200ms;
     border-style: $shape-border-style;
     border-width: $shape-border-width;
+    border-color: $color-border-primary;
     border-radius: $shape-border-radius;
-    border-color: $color-border-primary2;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 
@@ -174,11 +153,11 @@
     @media (hover: hover) {
         &:hover {
             .bit-chb-ctn {
-                border-color: $color-primary-lower;
+                border-color: $color-action-hover-primary;
                 background-color: $color-background-primary;
 
                 .bit-icon {
-                    background-color: $color-primary-lower;
+                    background-color: $color-action-hover-primary;
                 }
             }
         }
@@ -192,19 +171,19 @@
 
         .bit-icon {
             opacity: 1;
-            color: $color-secondary-main;
+            color: $color-primary-text;
         }
     }
 
     @media (hover: hover) {
         &:hover {
             .bit-chb-ctn {
-                border-color: $color-primary-low;
+                border-color: $color-action-hover-primary;
                 background-color: $color-action-hover-primary;
 
                 .bit-icon {
                     opacity: 1;
-                    color: $color-secondary-lower;
+                    color: $color-action-hover-secondary;
                 }
             }
         }

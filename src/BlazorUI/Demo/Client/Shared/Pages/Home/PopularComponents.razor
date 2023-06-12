@@ -8,7 +8,7 @@
             @foreach (var com in Components)
             {
                 <button @onclick="(() => SelectComponent(com))"
-                        class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Text.Primary">
+                        class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Color.Foreground.Primary">
                     <div class="component-icon">
                         <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                     </div>

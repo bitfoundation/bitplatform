@@ -25,12 +25,12 @@
 
     &.bit-dis {
         cursor: default;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         &:hover,
         &:active,
         &:focus {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         &:hover,

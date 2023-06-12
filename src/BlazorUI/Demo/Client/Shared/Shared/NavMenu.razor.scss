@@ -19,7 +19,6 @@
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
     background-color: $bit-color-background-primary;
-    border-right: rem(1px) solid $bit-color-border-secondary2;
 
     @include lt-lg {
         top: 0;
@@ -54,7 +53,7 @@
     inset: 0;
     z-index: 12;
     position: fixed;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: $bit-color-background-overlay;
 }
 
 .search-box-container {

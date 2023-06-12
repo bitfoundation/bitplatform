@@ -65,8 +65,8 @@ public class BitPersonaTests : BunitTestContext
         DataRow(BitPersonaPresenceStatus.Online, false),
         DataRow(BitPersonaPresenceStatus.Busy, true),
         DataRow(BitPersonaPresenceStatus.Busy, false),
-        DataRow(BitPersonaPresenceStatus.DND, true),
-        DataRow(BitPersonaPresenceStatus.DND, false)
+        DataRow(BitPersonaPresenceStatus.Dnd, true),
+        DataRow(BitPersonaPresenceStatus.Dnd, false)
     ]
     public void BitPersonaPresenceStatusClassNameTest(BitPersonaPresenceStatus presenceStatus, bool isOutOfOffice)
     {
@@ -81,7 +81,7 @@ public class BitPersonaTests : BunitTestContext
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
             BitPersonaPresenceStatus.Away => isOutOfOffice ? "presence_oof" : "presence_away",
-            BitPersonaPresenceStatus.DND => "presence_dnd",
+            BitPersonaPresenceStatus.Dnd => "presence_dnd",
             BitPersonaPresenceStatus.Offline => isOutOfOffice ? "presence_oof" : "presence_offline",
             _ => "presence_unknown",
         };
@@ -139,7 +139,7 @@ public class BitPersonaTests : BunitTestContext
         DataRow("Presence Title", BitPersonaPresenceStatus.Away),
         DataRow("Presence Title", BitPersonaPresenceStatus.Offline),
         DataRow("Presence Title", BitPersonaPresenceStatus.Online),
-        DataRow("Presence Title", BitPersonaPresenceStatus.DND),
+        DataRow("Presence Title", BitPersonaPresenceStatus.Dnd),
         DataRow("Presence Title", BitPersonaPresenceStatus.Busy)
     ]
     public void BitPersonaPresenceTitleTest(string presenceTitle, BitPersonaPresenceStatus presenceStatus)

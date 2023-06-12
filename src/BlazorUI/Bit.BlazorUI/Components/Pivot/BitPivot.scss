@@ -7,13 +7,13 @@
         .content-container {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-pvti {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-pvti-sel::before {
@@ -25,7 +25,7 @@
 .bit-pvt-hct {
     display: flex;
     white-space: nowrap;
-    height: spacing(6.25);
+    height: spacing(6.5);
 }
 
 .bit-pvt-cct {
@@ -37,7 +37,7 @@
     position: relative;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-pvt-top {
@@ -69,7 +69,7 @@
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
                 background-color: $color-action-hover-background-primary;
             }
         }
@@ -95,7 +95,7 @@
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
-                color: $color-action-hover-secondary;
+                color: $color-primary-text;
                 background-color: $color-action-hover-primary;
             }
         }
@@ -103,7 +103,7 @@
 
     .bit-pvti-sel {
         font-weight: 400;
-        color: $color-secondary-main;
+        color: $color-primary-text;
         background-color: $color-primary-main;
     }
 }
@@ -113,17 +113,17 @@
         overflow-X: auto;
 
         &::-webkit-scrollbar {
-            height: spacing(0.625);
+            height: spacing(0.425);
         }
 
         &::-webkit-scrollbar-track {
             border-radius: spacing(1.25);
-            background-color: $color-background-primary2;
+            background-color: $color-background-secondary;
         }
 
         &::-webkit-scrollbar-thumb {
             border-radius: spacing(1.25);
-            background-color: $color-background-primary3;
+            background-color: $color-foreground-secondary;
         }
     }
 }
@@ -159,8 +159,8 @@
     box-sizing: border-box;
     margin-right: spacing(1);
     line-height: spacing(5.5);
-    color: $color-text-primary2;
     background-color: transparent;
+    color: $color-foreground-primary;
 
     > span {
         height: 100%;
@@ -181,7 +181,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         &.bit-pvti-sel::before {
             background-color: $color-border-disabled;
@@ -203,10 +203,10 @@
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    line-height: spacing(5.5);
     margin-right: spacing(1);
-    color: $color-text-primary2;
+    line-height: spacing(5.5);
     background-color: transparent;
+    color: $color-foreground-primary;
 
     &:before {
         bottom: 0;

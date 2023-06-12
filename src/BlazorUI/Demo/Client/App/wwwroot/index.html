@@ -7,30 +7,26 @@
     <base href="/" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" />
     <style>
+
         * {
-            box-sizing: border-box;
-            font-family: "Segoe UI";
             -webkit-user-drag: none;
             overscroll-behavior: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         *:not(input) {
-            user-select: none;
             -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
-        html, body, #app-container {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            -webkit-font-smoothing: antialiased;
-        }
+    </style>
 
+    <style>
         .lds-wrapper {
             top: 50%;
             left: 50%;

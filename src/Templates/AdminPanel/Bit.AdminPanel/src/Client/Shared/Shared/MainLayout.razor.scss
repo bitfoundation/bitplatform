@@ -1,20 +1,20 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/abstracts/_fonts.scss';
-@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .main {
-    position: relative;
+    width: 100%;
     display: flex;
+    min-height: 100vh;
+    position: relative;
+    box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    width: 100%;
-    min-height: 100vh;
+    background: $BackgroundColor;
     padding-top: rem($HeaderHeight);
     padding-left: rem($NavMenuWidth);
-    box-sizing: border-box;
-    background: $BackgroundColor;
 
     @include lt-lg {
         padding-left: 0;

@@ -8,6 +8,10 @@
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileScssFiles;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,15 +19,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.4">
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -60,5 +60,13 @@
         <Using Include="Microsoft.AspNetCore.Components.Web.Virtualization" />
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
+
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+        <Exec Command="sass --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
+        </Exec>
+        <Error Condition="'$(ErrorCodeSass)' != '0'" Text="sass is required for this project. install globally with 'npm i -g sass' " />
+        <Exec Command="sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
 </Project>

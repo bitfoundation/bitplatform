@@ -1,9 +1,9 @@
 ﻿@import "../../Styles/functions.scss";
 
-$BgDefult: $color-text-secondary3;
-$BgTrack: $color-text-primary3;
-$BgHover: $color-general-lightblue;
-$BgTrackHover: $color-primary-low;
+$BgDefult: $color-background-secondary;
+$BgTrack: $color-foreground-secondary;
+$BgTrackHover: $color-primary-main;
+$BgHover: $color-primary-light;
 
 .bit-sld {
     font-family: $typography-font-family;
@@ -110,8 +110,8 @@ $BgTrackHover: $color-primary-low;
         -webkit-appearance: none;
     }
 
-    input:hover .bit-sld-ztk {
-        background-color: $color-secondary-high;
+    input:hover ~ .bit-sld-ztk {
+        background-color: $color-action-hover-background-primary;
     }
 
     input::-webkit-slider-thumb:hover,
@@ -168,7 +168,7 @@ $BgTrackHover: $color-primary-low;
 
         .bit-sld-lbl,
         .bit-sld-vlb {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-sld-ztk {
@@ -384,7 +384,7 @@ $BgTrackHover: $color-primary-low;
     box-sizing: border-box;
     font-size: spacing(1.75);
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-sld-cnt {
@@ -405,11 +405,11 @@ $BgTrackHover: $color-primary-low;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-sld-ztk {
     z-index: 2;
     position: absolute;
-    background-color: $color-background-primary3;
+    background-color: $color-background-secondary;
 }

@@ -17,14 +17,14 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
 }
 
 .bit-tgb-pri {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
@@ -41,49 +41,49 @@
     }
 
     &.bit-tgb-chk {
-        border-color: $color-primary-low;
-        background-color: $color-primary-low;
+        border-color: $color-primary-dark;
+        background-color: $color-primary-dark;
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-action-hover-primary2;
-                background-color: $color-action-hover-primary2;
+                border-color: $color-action-hover-primary-dark;
+                background-color: $color-action-hover-primary-dark;
             }
         }
 
         &:active {
-            border-color: $color-action-active-primary2;
-            background-color: $color-action-active-primary2;
+            border-color: $color-action-active-primary-dark;
+            background-color: $color-action-active-primary-dark;
         }
     }
 }
 
 .bit-tgb-std {
-    color: $color-text-primary;
-    border-color: $color-border-primary2;
-    background-color: $color-background-primary;
+    color: $color-secondary-text;
+    border-color: $color-border-primary;
+    background-color: $color-secondary-main;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $color-action-hover-secondary;
         }
     }
 
     &:active {
-        background-color: $color-action-active-background-primary;
+        background-color: $color-action-active-secondary;
     }
 
     &.bit-tgb-chk {
-        background-color: $color-background-primary2;
+        background-color: $color-secondary-dark;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary2;
+                background-color: $color-action-hover-secondary-dark;
             }
         }
 
         &:active {
-            background-color: $color-action-active-background-primary2;
+            background-color: $color-action-active-secondary-dark;
         }
     }
 }

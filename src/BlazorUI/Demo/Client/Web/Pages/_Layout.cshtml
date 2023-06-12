@@ -57,38 +57,24 @@
                 overscroll-behavior: none;
             }
 
-            *:not(input) {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
+                *:not(input) {
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
         </style>
     }
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI";
-            -webkit-font-smoothing: antialiased;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
-<body class="@BitCss.BgColor.Primary @BitCss.Text.Primary">
+<body class="@BitCss.Color.Background.Primary @BitCss.Color.Foreground.Primary">
     <div id="app-container">
         @if (isDefaultDeploymentType)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         @RenderBody()
     </div>

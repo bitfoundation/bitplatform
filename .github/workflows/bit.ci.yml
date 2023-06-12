@@ -9,7 +9,9 @@ jobs:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
     runs-on: windows-latest
+
     steps:
+
     - name: Checkout source code
       uses: actions/checkout@v2
 
@@ -29,6 +31,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
         include-prerelease: true
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
       
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
@@ -43,7 +50,9 @@ jobs:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
     runs-on: windows-latest
+
     steps:
+
     - name: Checkout source code
       uses: actions/checkout@v2
 
@@ -63,6 +72,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
         include-prerelease: true
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+    - run: npm i sass -g
 
     - name: Restore
       run: dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false

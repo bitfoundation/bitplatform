@@ -13,11 +13,14 @@
     position: relative;
     padding: rem(28px);
     box-sizing: border-box;
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     margin-bottom: rem(28px);
-    background-clip: padding-box;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-border-primary2;
+}
+
+::deep .component-name {
+    margin-bottom: rem(50px);
 }
 
 .table-view {
@@ -41,7 +44,7 @@
 .tdata-row {
     width: 100%;
     display: flex;
-    border-bottom: rem(1px) solid $bit-color-border-secondary2;
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     &:last-child {
         border: none;

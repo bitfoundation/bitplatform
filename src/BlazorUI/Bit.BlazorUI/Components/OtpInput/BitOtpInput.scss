@@ -21,7 +21,7 @@
     &.bit-inv {
         .bit-otp-inp {
             outline: none;
-            border: spacing(0.25) $shape-border-style $color-state-invalid;
+            border: spacing(0.25) $shape-border-style $color-state-error;
         }
     }
 }
@@ -39,7 +39,7 @@
     -moz-appearance: textfield; // Firefox
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {

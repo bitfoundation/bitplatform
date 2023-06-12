@@ -39,7 +39,7 @@
     inset: 0;
     z-index: 0;
     position: absolute;
-    background-color: $color-background-callout;
+    background-color: $color-background-overlay;
 }
 
 .bit-mdl-scr-cnt {
@@ -53,7 +53,7 @@
 .bit-mdl-ctn {
     position: absolute;
     box-sizing: border-box;
-    box-shadow: $shadow-callout;
+    box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
 }

@@ -12,11 +12,14 @@
     padding: rem(28px);
     position: relative;
     box-sizing: border-box;
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     margin-bottom: rem(28px);
-    background-clip: padding-box;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+::deep .title {
+    margin-bottom: rem(50px);
 }
 
 .card-container {
@@ -43,12 +46,12 @@
     box-sizing: border-box;
     line-height: rem(40px);
     width: calc(25% - 8px);
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     justify-content: center;
     flex-flow: column nowrap;
-    color: $bit-color-text-primary2;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-box-shadow-callout;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
 
     @include lg {
         width: calc((100% / 3) - 8px);

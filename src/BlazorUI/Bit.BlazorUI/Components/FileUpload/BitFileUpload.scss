@@ -7,7 +7,7 @@
     font-family: $typography-font-family;
 
     &.bit-dis {
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
 
@@ -39,9 +39,9 @@
     height: spacing(4.375);
     justify-content: center;
     border-radius: spacing(0.5);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {
@@ -73,8 +73,8 @@
     margin-top: spacing(0.375);
     border-radius: spacing(0.625);
     justify-content: space-between;
-    color: $color-text-primary2;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    color: $color-foreground-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {
@@ -101,7 +101,7 @@
 
 .bit-upl-fld {
     .bit-upl-us {
-        color: $color-state-invalid;
+        color: $color-state-error;
     }
 }
 
