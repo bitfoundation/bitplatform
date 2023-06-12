@@ -6,7 +6,7 @@ public enum BitPersonaPresenceStatus
     Offline,
     Online,
     Away,
-    DND,
+    Dnd,
     Blocked,
     Busy
 }

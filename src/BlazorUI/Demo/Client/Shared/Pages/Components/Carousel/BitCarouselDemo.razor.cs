@@ -85,6 +85,7 @@ public partial class BitCarouselDemo
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         }
     };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -131,19 +132,19 @@ public partial class BitCarouselDemo
 <BitCarousel>
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""images/carousel/img1.jpg"">
+        <img class=""image"" src=""img1.jpg"">
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""images/carousel/img2.jpg"" />
+        <img class=""image"" src=""img2.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""images/carousel/img3.jpg"" />
+        <img class=""image"" src=""img3.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""images/carousel/img4.jpg"" />
+        <img class=""image"" src=""img4.jpg"" />
     </BitCarouselItem>
 </BitCarousel>";
 
@@ -175,22 +176,22 @@ public partial class BitCarouselDemo
 
 <BitCarousel InfiniteScrolling=""true"">
     <BitCarouselItem>
-        <img class=""image"" src=""images/carousel/img1.jpg"" />
+        <img class=""image"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""images/carousel/img2.jpg"" />
+        <img class=""image"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""images/carousel/img3.jpg"" />
+        <img class=""image"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""images/carousel/img4.jpg"" />
+        <img class=""image"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -225,25 +226,25 @@ public partial class BitCarouselDemo
 <BitCarousel ShowDots=""false"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""images/carousel/img1.jpg"" />
+        <img class=""image"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""images/carousel/img2.jpg"" />
+        <img class=""image"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""images/carousel/img3.jpg"" />
+        <img class=""image"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""images/carousel/img4.jpg"" />
+        <img class=""image"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -293,25 +294,25 @@ public partial class BitCarouselDemo
     <BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
         <BitCarouselItem>
             <div class=""numbertext"">1 / 4</div>
-            <img class=""image"" src=""images/carousel/img1.jpg"" />
+            <img class=""image"" src=""img1.jpg"" />
             <div class=""text-title"">Aurora</div>
             <div class=""text-description"">This is Aurora and it's fantastic</div>
         </BitCarouselItem>
         <BitCarouselItem>
             <div class=""numbertext"">2 / 4</div>
-            <img class=""image"" src=""images/carousel/img2.jpg"" />
+            <img class=""image"" src=""img2.jpg"" />
             <div class=""text-title"">Beautiful Mountain</div>
             <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
         </BitCarouselItem>
         <BitCarouselItem>
             <div class=""numbertext"">3 / 4</div>
-            <img class=""image"" src=""images/carousel/img3.jpg"" />
+            <img class=""image"" src=""img3.jpg"" />
             <div class=""text-title"">Forest In The Valley</div>
             <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
         </BitCarouselItem>
         <BitCarouselItem>
             <div class=""numbertext"">4 / 4</div>
-            <img class=""image"" src=""images/carousel/img4.jpg"" />
+            <img class=""image"" src=""img4.jpg"" />
             <div class=""text-title"">Road Among The Mountains</div>
             <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
         </BitCarouselItem>
@@ -390,25 +391,25 @@ private void GoTo()
 <BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"" InfiniteScrolling=""true"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""images/carousel/img1.jpg"" />
+        <img class=""image"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""images/carousel/img2.jpg"" />
+        <img class=""image"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""images/carousel/img3.jpg"" />
+        <img class=""image"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""images/carousel/img4.jpg"" />
+        <img class=""image"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>

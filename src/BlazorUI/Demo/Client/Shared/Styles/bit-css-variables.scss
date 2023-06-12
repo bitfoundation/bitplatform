@@ -55,28 +55,17 @@ $bit-color-action-hover-border-secondary: var(--bit-clr-act-hover-brd-sec);
 $bit-color-action-active-border-secondary: var(--bit-clr-act-active-brd-sec);
 
 //states
-$bit-color-state-invalid: var(--bit-clr-sta-invalid);
-$bit-color-state-invalid-hover: var(--bit-clr-sta-invalid-hover);
 $bit-color-state-info: var(--bit-clr-sta-info);
-$bit-color-state-info2: var(--bit-clr-sta-info2);
 $bit-color-state-info-bg: var(--bit-clr-sta-info-bg);
 $bit-color-state-success: var(--bit-clr-sta-success);
 $bit-color-state-success-bg: var(--bit-clr-sta-success-bg);
-$bit-color-state-success-dark: var(--bit-clr-sta-success-dark);
 $bit-color-state-warning: var(--bit-clr-sta-warning);
 $bit-color-state-warning-bg: var(--bit-clr-sta-warning-bg);
-$bit-color-state-warning-dark: var(--bit-clr-sta-warning-dark);
 $bit-color-state-severe-warning: var(--bit-clr-sta-severe-warning);
 $bit-color-state-severe-warning-bg: var(--bit-clr-sta-severe-warning-bg);
-$bit-color-state-severe-warning-dark: var(--bit-clr-sta-severe-warning-dark);
 $bit-color-state-error: var(--bit-clr-sta-error);
 $bit-color-state-error-bg: var(--bit-clr-sta-error-bg);
-$bit-color-state-error-dark: var(--bit-clr-sta-error-dark);
-
-//generals
-$bit-color-general-red: var(--bit-clr-gnr-red);
-$bit-color-general-magenta: var(--bit-clr-gnr-magenta);
-$bit-color-general-lightblue: var(--bit-clr-gnr-lightblue);
+$bit-color-state-required: var(--bit-clr-sta-req);
 
 //neutrals
 $bit-color-neutrals-white: var(--bit-clr-ntr-white);
@@ -105,7 +94,8 @@ $bit-color-neutrals-gray210: var(--bit-clr-ntr-gray210);
 $bit-color-neutrals-gray220: var(--bit-clr-ntr-gray220);
 
 //shadows-callout
-$bit-shadow-callout: var(--bit-shd-clo);
+$bit-box-shadow-callout: var(--bit-shd-cal);
+
 //shadows
 $bit-box-shadow-1: var(--bit-shd-1);
 $bit-box-shadow-2: var(--bit-shd-2);

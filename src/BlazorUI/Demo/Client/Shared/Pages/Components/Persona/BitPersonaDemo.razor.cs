@@ -193,7 +193,7 @@ public partial class BitPersonaDemo
                 },
                 new()
                 {
-                    Name = "DND",
+                    Name = "Dnd",
                     Value = "4",
                 },
                 new()
@@ -415,114 +415,112 @@ public partial class BitPersonaDemo
 
 
     private static readonly string example1HtmlCode = @"
-<BitCheckbox @bind-Value=""IsHideDetails"" 
-             OnClick=""() => IsHideDetails = !IsHideDetails"">Include BitPersona details</BitCheckbox>
+<BitCheckbox @bind-Value=""IsDetailsHidden"" 
+             OnClick=""() => IsDetailsHidden = !IsDetailsHidden"">Include BitPersona details</BitCheckbox>
 
 <div>Size 24 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.None
+<BitPersona Text=""Annie Lindqvist""
             Size=@BitPersonaSize.Size24
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
-            SecondaryText=""secondry-text""></BitPersona>
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.None
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 32 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Busy
+<BitPersona Text=""Annie Lindqvist""
             Size=@BitPersonaSize.Size32
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
-            SecondaryText=""secondry-text""></BitPersona>
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Busy
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 40 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Away
+<BitPersona Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size40
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""></BitPersona>
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Away
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 48 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Blocked
+<BitPersona Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size48
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""></BitPersona>
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Blocked
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 56 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Online
+<BitPersona Text=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size56
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""></BitPersona>
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Online
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 72 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Busy
-            Size=@BitPersonaSize.Size72
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""></BitPersona>
+            TertiaryText=""In a meeting""
+            Size=@BitPersonaSize.Size72
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Busy
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 100 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Offline
-            Size=@BitPersonaSize.Size100
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>
+            OptionalText=""Available at 4:00pm""
+            Size=@BitPersonaSize.Size100
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Offline
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 120 BitPersona</div>
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.DND
-            Size=@BitPersonaSize.Size120
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>";
+            OptionalText=""Available at 4:00pm"" /
+            Size=@BitPersonaSize.Size120
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.Dnd
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" >";
     private static readonly string example1CSharpCode = @"
-public bool IsHideDetails { get; set; } = true;";
+public bool IsDetailsHidden { get; set; } = true;";
 
     private static readonly string example2HtmlCode = @"
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.None
-            Size=@BitPersonaSize.Size120
-            OnActionClick=""() => _actionClickCount++""
-            ActionIconName=""BitIconName.Edit""
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>
-<p>ActionClickCount: @_actionClickCount</p>";
+            OptionalText=""Available at 4:00pm"" 
+            Size=@BitPersonaSize.Size120
+            HidePersonaDetails=""!IsDetailsHidden""
+            Presence=@BitPersonaPresenceStatus.None
+            ActionIconName=""BitIconName.Edit""
+            OnActionClick=""() => ActionClickCount++""
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+<p>ActionClickCount: @ActionClickCount</p>";
     private static readonly string example2CSharpCode = @"
-private int _actionClickCount = 0;";
+private int ActionClickCount = 0;";
 
     private static readonly string example3HtmlCode = @"
-<BitPersona ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png""
-            Presence=@BitPersonaPresenceStatus.Online
-            Size=@BitPersonaSize.Size120
-            OnImageClick=""() => _imageClickCount++""
-            HidePersonaDetails=""!IsHideDetails""
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>
-<p>ImageClickCount: @_imageClickCount</p>";
+            OptionalText=""Available at 4:00pm"" 
+            Size=@BitPersonaSize.Size120
+            Presence=@BitPersonaPresenceStatus.Online
+            HidePersonaDetails=""!IsDetailsHidden""
+            OnImageClick=""() => ImageClickCount++""
+            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+<p>ImageClickCount: @ImageClickCount</p>";
     private static readonly string example3CSharpCode = @"
-private int _imageClickCount = 0;";
+private int ImageClickCount = 0;";
 
     private static readonly string example4HtmlCode = @"
-<BitPersona ImageUrl=""invalid-src""
-            Size=@BitPersonaSize.Size120
-            Text=""Annie Lindqvist""
+<BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""></BitPersona>";
+            OptionalText=""Available at 4:00pm""
+            Size=@BitPersonaSize.Size120
+            ImageUrl=""invalid-src"" />";
 }

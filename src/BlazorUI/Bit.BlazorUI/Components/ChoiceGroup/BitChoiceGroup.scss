@@ -10,7 +10,7 @@
         .bit-chg-lbl {
             &::after {
                 content: " *";
-                color: $color-general-red;
+                color: $color-state-required;
                 padding-right: spacing(1.5);
             }
         }
@@ -18,61 +18,61 @@
 
     &.bit-inv {
         .bit-chgi-lbl {
-            color: $color-state-invalid;
-            border-color: $color-state-invalid;
+            color: $color-state-error;
+            border-color: $color-state-error;
 
             &:before {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
             }
 
             &:after {
-                border-color: $color-state-invalid;
-                background-color: $color-state-invalid;
+                border-color: $color-state-error;
+                background-color: $color-state-error;
             }
 
             @media (hover: hover) {
                 &:hover {
                     .bit-chgi-txt {
-                        color: $color-state-invalid-hover;
+                        color: $color-state-error;
                     }
 
                     &:before {
-                        border-color: $color-state-invalid-hover;
+                        border-color: $color-state-error;
                     }
 
                     &:after {
-                        border-color: $color-state-invalid-hover;
-                        background-color: $color-state-invalid-hover;
+                        border-color: $color-state-error;
+                        background-color: $color-state-error;
                     }
                 }
             }
         }
 
         .bit-chgi-lbl-img {
-            color: $color-state-invalid;
-            border-color: $color-state-invalid;
+            color: $color-state-error;
+            border-color: $color-state-error;
 
             &:before {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
             }
 
             &:after {
-                border-color: $color-state-invalid;
-                background-color: $color-state-invalid;
+                border-color: $color-state-error;
+                background-color: $color-state-error;
             }
 
             @media (hover: hover) {
                 &:hover {
-                    border-color: $color-state-invalid;
+                    border-color: $color-state-error;
 
                     &:before {
                         opacity: 1;
-                        border-color: $color-state-invalid-hover;
+                        border-color: $color-state-error;
                     }
 
                     &:after {
-                        border-color: $color-state-invalid-hover;
-                        background-color: $color-state-invalid-hover;
+                        border-color: $color-state-error;
+                        background-color: $color-state-error;
                     }
                 }
             }
