@@ -25,10 +25,10 @@ public partial class Header
     }
 
 #if !BlazorHybrid
-    protected override Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         _isDarkMode = await JSRuntime.IsSystemThemeDark();
-        return base.OnAfterFirstRenderAsync();
+        await base.OnAfterFirstRenderAsync();
     }
 #endif
 

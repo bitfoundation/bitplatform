@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Shared.Services.Implementations;
+﻿namespace Bit.BlazorUI.Demo.Client.Web.Services;
 public class WebDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()
@@ -6,3 +6,4 @@ public class WebDeviceCoordinator : IBitDeviceCoordinator
         return 0;
     }
 }
+

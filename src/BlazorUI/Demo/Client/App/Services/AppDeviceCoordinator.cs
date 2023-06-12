@@ -5,6 +5,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
     public double GetStatusBarHeight()
     {
 #if iOS
+        //This is handled in css using env() variables
         return 0;
 #elif ANDROID
         var resourceId = MauiApplication.Current.Resources!.GetIdentifier("status_bar_height", "dimen", "android");

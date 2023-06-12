@@ -37,27 +37,6 @@ public partial class App
     {
         var cssClasses = new List<string>();
 
-        if (OperatingSystem.IsWindows())
-        {
-            cssClasses.Add("bit-windows");
-        }
-        else if (OperatingSystem.IsLinux())
-        {
-            cssClasses.Add("bit-linux");
-        }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
-        {
-            cssClasses.Add("bit-macos");
-        }
-        else if (OperatingSystem.IsIOS())
-        {
-            cssClasses.Add("bit-ios");
-        }
-        else if (OperatingSystem.IsAndroid())
-        {
-            cssClasses.Add("bit-android");
-        }
-
         if (BlazorModeDetector.Current.IsBlazorWebAssembly())
         {
             cssClasses.Add("bit-blazor-wasm");
@@ -69,6 +48,27 @@ public partial class App
         else if (BlazorModeDetector.Current.IsBlazorHybrid())
         {
             cssClasses.Add("bit-blazor-hybrid");
+
+            if (OperatingSystem.IsWindows())
+            {
+                cssClasses.Add("bit-windows");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                cssClasses.Add("bit-linux");
+            }
+            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            {
+                cssClasses.Add("bit-macos");
+            }
+            else if (OperatingSystem.IsIOS())
+            {
+                cssClasses.Add("bit-ios");
+            }
+            else if (OperatingSystem.IsAndroid())
+            {
+                cssClasses.Add("bit-android");
+            }
         }
         else if (BlazorModeDetector.Current.IsBlazorElectron())
         {
