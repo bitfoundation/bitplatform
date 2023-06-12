@@ -15,3 +15,7 @@ html, body, #app-container {
     height: 100%;
     -webkit-font-smoothing: antialiased;
 }
+
+#app-container {
+    padding-left: env(safe-area-inset-left);
+}

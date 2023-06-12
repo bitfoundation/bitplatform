@@ -1,8 +1,8 @@
-﻿@import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import "../Styles/abstracts/_vars.scss";
+@import "../Styles/abstracts/_colors.scss";
+@import "../Styles/bit-css-variables.scss";
+@import "../Styles/abstracts/_functions.scss";
+@import "../Styles/abstracts/_media-queries.scss";
 
 .header {
     top: 0;
@@ -14,6 +14,12 @@
     -webkit-backdrop-filter: blur(20px);
     padding-top: var(--bit-status-bar-height);
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.bit-ios {
+    .header {
+        padding-top: env(safe-area-inset-top);
+    }
 }
 
 .header--full-page {
@@ -41,14 +47,6 @@
     }
 }
 
-.bit-ios {
-    .container {
-        @supports (-webkit-touch-callout: none) {
-            padding-top: env(safe-area-inset-top);
-        }
-    }
-}
-
 .content {
     height: 100%;
     display: flex;
@@ -64,7 +62,7 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('images/bit-logo.svg');
+    background-image: url("images/bit-logo.svg");
 
     @include lt-lg {
         margin: 0 rem(10px);
@@ -102,7 +100,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('images/github-icon.webp');
+    background-image: url("images/github-icon.webp");
 }
 
 ::deep {
