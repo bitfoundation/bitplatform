@@ -5,17 +5,32 @@ public partial class MainPage
     public MainPage()
     {
         InitializeComponent();
+        HandleBlazorWebView();
+        HandleTitleBar();
+    }
 
-        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
+    private async void ContentPage_Loaded(object sender, EventArgs e)
+    {
+        try
         {
-#if MACCATALYST
-            if (handler != null)
-            {
-                handler.PlatformView.WindowScene.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
-            }
-#endif
-        });
+            HandleTitleBar();
+#if WINDOWS && RELEASE
+            var webView2 = (blazorWebView.Handler.PlatformView as Microsoft.UI.Xaml.Controls.WebView2);
+            await webView2.EnsureCoreWebView2Async();
 
+            var settings = webView2.CoreWebView2.Settings;
+            settings.IsZoomControlEnabled = false;
+            settings.AreBrowserAcceleratorKeysEnabled = false;
+#endif
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private void HandleBlazorWebView()
+    {
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
 #if WINDOWS
@@ -53,22 +68,37 @@ public partial class MainPage
         });
     }
 
-    private async void ContentPage_Loaded(object sender, EventArgs e)
+    private void HandleTitleBar()
     {
-        try
+        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
         {
-#if WINDOWS && RELEASE
-            var webView2 = (blazorWebView.Handler.PlatformView as Microsoft.UI.Xaml.Controls.WebView2);
-            await webView2.EnsureCoreWebView2Async();
+#if ANDROID
+            var window = handler.PlatformView.Window;
 
-            var settings = webView2.CoreWebView2.Settings;
-            settings.IsZoomControlEnabled = false;
-            settings.AreBrowserAcceleratorKeysEnabled = false;
+            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
+            {
+                window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
+                window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
+                window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable);
+                window.SetStatusBarColor(Android.Graphics.Color.Transparent);
+            }
 #endif
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+
+#if MACCATALYST
+            var window = handler.PlatformView.WindowScene;
+            if (window != null)
+            {
+                window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+            }
+#endif
+
+#if WINDOWS
+            var window = handler.PlatformView;
+            if (window != null)
+            {
+                window.ExtendsContentIntoTitleBar = true;
+            }
+#endif
+        });
     }
 }

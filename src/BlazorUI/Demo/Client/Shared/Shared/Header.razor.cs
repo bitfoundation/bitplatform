@@ -9,16 +9,28 @@ public partial class Header
     private bool _isHeaderMenuOpen;
     private bool _isDarkMode;
 
-    [Inject] private NavManuService _menuService { get; set; } = default!;
-    [Parameter] public string Style { get; set; } = string.Empty;
+    [AutoInject] private NavManuService _menuService { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
         _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+
         NavigationManager.LocationChanged += OnLocationChanged;
+
+#if BlazorHybrid
+        _isDarkMode = await JSRuntime.IsSystemThemeDark();
+#endif
 
         await base.OnInitAsync();
     }
+
+#if !BlazorHybrid
+    protected override Task OnAfterFirstRenderAsync()
+    {
+        _isDarkMode = await JSRuntime.IsSystemThemeDark();
+        return base.OnAfterFirstRenderAsync();
+    }
+#endif
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {

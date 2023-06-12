@@ -11,8 +11,75 @@ public partial class App
 #endif
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     private bool _cultureHasNotBeenSet = true;
+
+#if BlazorHybrid
+    protected override async Task OnInitializedAsync()
+    {
+        ApplyBodyElementStyles();
+        await base.OnInitializedAsync();
+    }
+#else
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ApplyBodyElementStyles();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+#endif
+
+    private void ApplyBodyElementStyles()
+    {
+        var cssClasses = new List<string>();
+
+        if (OperatingSystem.IsWindows())
+        {
+            cssClasses.Add("bit-windows");
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            cssClasses.Add("bit-linux");
+        }
+        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+        {
+            cssClasses.Add("bit-macos");
+        }
+        else if (OperatingSystem.IsIOS())
+        {
+            cssClasses.Add("bit-ios");
+        }
+        else if (OperatingSystem.IsAndroid())
+        {
+            cssClasses.Add("bit-android");
+        }
+
+        if (BlazorModeDetector.Current.IsBlazorWebAssembly())
+        {
+            cssClasses.Add("bit-blazor-wasm");
+        }
+        else if (BlazorModeDetector.Current.IsBlazorServer())
+        {
+            cssClasses.Add("bit-blazor-server");
+        }
+        else if (BlazorModeDetector.Current.IsBlazorHybrid())
+        {
+            cssClasses.Add("bit-blazor-hybrid");
+        }
+        else if (BlazorModeDetector.Current.IsBlazorElectron())
+        {
+            cssClasses.Add("bit-blazor-electron");
+        }
+
+        var cssVariables = new Dictionary<string, string>();
+        cssVariables.Add("--bit-status-bar-height", $"{_bitDeviceCoordinator.GetStatusBarHeight()}px");
+
+        _ = _jsRuntime.ApplyBodyElementStyles(cssClasses, cssVariables);
+    }
 
     private async Task OnNavigateAsync(NavigationContext args)
     {

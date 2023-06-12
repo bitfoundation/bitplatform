@@ -12,11 +12,7 @@ main {
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: rem($HeaderHeight);
-
-    &.isWindows {
-        padding-top: calc(rem($HeaderHeight) + rem(30px))
-    }
+    padding-top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
 
     &.full-page {
         .site-content {
@@ -113,4 +109,37 @@ main {
 ::deep ::-webkit-scrollbar-thumb {
     border-radius: 16px;
     background-color: $bit-color-foreground-secondary;
+}
+
+.status-bar {
+    top: 0;
+    z-index: 12;
+    width: 100%;
+    display: none;
+    position: fixed;
+    text-align: center;
+    align-items: center;
+    font-size: rem(14px);
+    justify-content: center;
+    color: $bit-color-background-primary;
+    background-color: $bit-color-background-primary;
+}
+
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+        color: $bit-color-foreground-primary;
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    height: env(safe-area-inset-top);
+}
+
+.bit-ios .flex-column,
+.bit-ios .navbar-brand {
+    padding-left: env(safe-area-inset-left);
 }
