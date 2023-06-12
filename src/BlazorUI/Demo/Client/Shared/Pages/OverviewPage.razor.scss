@@ -14,7 +14,7 @@
     box-sizing: border-box;
     border-radius: rem(2px);
     margin-bottom: rem(28px);
-    box-shadow: $bit-shadow-callout;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
 }
 
@@ -49,7 +49,7 @@
     border-radius: rem(2px);
     justify-content: center;
     flex-flow: column nowrap;
-    box-shadow: $bit-shadow-callout;
+    box-shadow: $bit-box-shadow-callout;
     color: $bit-color-foreground-primary;
     background-color: $bit-color-background-primary;
 

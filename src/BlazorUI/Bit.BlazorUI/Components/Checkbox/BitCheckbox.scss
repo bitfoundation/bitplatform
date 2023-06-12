@@ -17,40 +17,19 @@
 
     &.bit-inv {
         .bit-chb-ctn {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
 
         &.bit-chb-ckd {
             .bit-chb-ctn {
-                background-color: $color-state-invalid;
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-chb-ctn {
-                        border-color: $color-state-invalid-hover;
-                        background-color: $color-state-invalid-hover;
-                    }
-                }
+                background-color: $color-state-error;
             }
         }
 
         &.bit-chb-ind {
             .bit-chb-ctn {
                 .bit-icon {
-                    background-color: $color-state-invalid;
-                }
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-chb-ctn {
-                        border-color: $color-state-invalid-hover;
-
-                        .bit-icon {
-                            background-color: $color-state-invalid-hover;
-                        }
-                    }
+                    background-color: $color-state-error;
                 }
             }
         }

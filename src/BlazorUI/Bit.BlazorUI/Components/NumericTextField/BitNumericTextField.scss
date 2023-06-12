@@ -41,7 +41,7 @@
 
     &.bit-inv {
         .bit-ntf-wrp {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
     }
 }

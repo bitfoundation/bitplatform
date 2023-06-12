@@ -195,7 +195,7 @@
     min-width: spacing(22.5);
     animation-fill-mode: both;
     animation-duration: 0.367s;
-    box-shadow: $shadow-callout;
+    box-shadow: $box-shadow-callout;
     z-index: $space-overlay-zindex1;
     background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;

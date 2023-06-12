@@ -21,7 +21,7 @@
     &.bit-inv {
         .bit-otp-inp {
             outline: none;
-            border: spacing(0.25) $shape-border-style $color-state-invalid;
+            border: spacing(0.25) $shape-border-style $color-state-error;
         }
     }
 }

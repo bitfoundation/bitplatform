@@ -67,17 +67,17 @@
     &.bit-inv {
         .bit-txt-fgp,
         .bit-txt-wrp {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
 
         &.bit-txt-fcs {
             .bit-txt-fgp::after {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
             }
 
             &.bit-txt-und {
                 .bit-txt-wrp::after {
-                    border-color: $color-state-invalid;
+                    border-color: $color-state-error;
                 }
             }
         }
@@ -277,7 +277,7 @@
 .bit-txt-req {
     .bit-txt-lbl::after {
         content: "*";
-        color: $color-general-red;
+        color: $color-state-required;
         margin-left: spacing(0.625);
     }
 }
@@ -288,7 +288,7 @@
         position: absolute;
         top: spacing(-0.625);
         right: spacing(-1.25);
-        color: $color-general-red;
+        color: $color-state-required;
     }
 }
 
