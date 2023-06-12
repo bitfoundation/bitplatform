@@ -60,21 +60,21 @@
     }
 
     &.bit-inv {
-        border-color: $color-state-invalid;
+        border-color: $color-state-error;
 
         .bit-srb-ict {
             i {
-                color: $color-state-invalid;
+                color: $color-state-error;
             }
         }
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-state-invalid-hover;
+                border-color: $color-state-error;
 
                 .bit-srb-ict {
                     i {
-                        color: $color-state-invalid-hover;
+                        color: $color-state-error;
                     }
                 }
             }
@@ -82,11 +82,11 @@
 
         &.bit-srb-und {
             &.bit-srb-foc {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
 
                 @media (hover: hover) {
                     &:hover {
-                        border-color: $color-state-invalid;
+                        border-color: $color-state-error;
                     }
                 }
             }

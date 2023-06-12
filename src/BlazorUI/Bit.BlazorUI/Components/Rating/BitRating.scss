@@ -19,7 +19,7 @@
 
     &.bit-inv {
         .bit-rtg-iem, .bit-rtg-ifl {
-            color: $color-state-invalid;
+            color: $color-state-error;
         }
     }
 }

@@ -37,7 +37,7 @@
 
     &.bit-inv {
         .bit-dtrp-fld-grp {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
     }
 }
@@ -138,8 +138,8 @@
     outline: transparent;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    box-shadow: $shadow-callout;
     z-index: $space-overlay-zindex1;
+    box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
 }

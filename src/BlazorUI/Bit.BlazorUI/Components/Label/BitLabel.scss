@@ -20,7 +20,7 @@
 .bit-lbl-req {
     &::after {
         content: "*";
-        color: $color-general-red;
+        color: $color-state-required;
         margin-left: spacing(0.625);
     }
 }

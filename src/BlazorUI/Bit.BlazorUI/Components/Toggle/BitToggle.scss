@@ -43,26 +43,26 @@
 
     &.bit-inv {
         .bit-tgl-btn {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
 
         .bit-tgl-stx {
-            color: $color-state-invalid;
+            color: $color-state-error;
         }
 
         &.bit-tgl-chk {
             .bit-tgl-btn {
-                background-color: $color-state-invalid;
+                background-color: $color-state-error;
 
                 @media (hover: hover) {
                     &:hover {
-                        background-color: $color-state-invalid-hover;
+                        background-color: $color-state-error;
                     }
                 }
             }
 
             .bit-tgl-stx {
-                color: $color-state-invalid;
+                color: $color-state-error;
             }
         }
     }
