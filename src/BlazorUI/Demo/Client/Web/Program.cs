@@ -82,7 +82,7 @@ public class Program
             var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
                 AutoHideMenuBar = true,
-                BackgroundColor = "#0D2960",
+                BackgroundColor = "#fff",
                 WebPreferences = new WebPreferences
                 {
                     NodeIntegration = false
