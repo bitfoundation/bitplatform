@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Demo.Server.Api.Startup;
 
 public class Middlewares
 {
-    public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
+    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
@@ -75,27 +75,24 @@ public class Middlewares
             options.InjectJavascript("/swagger/swagger-utils.js");
         });
 
-        app.UseEndpoints(endpoints =>
+        app.MapControllers();
+
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+        var healthCheckSettings = appsettings.HealthCheckSettings;
+
+        if (healthCheckSettings.EnableHealthChecks)
         {
-            endpoints.MapControllers();
-
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-
-            var healthCheckSettings = appsettings.HealthCheckSettings;
-
-            if (healthCheckSettings.EnableHealthChecks)
+            app.MapHealthChecks("/healthz", new HealthCheckOptions
             {
-                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
-                {
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-                endpoints.MapHealthChecksUI();
-            }
+            app.MapHealthChecksUI();
+        }
 
 #if BlazorWebAssembly
-            endpoints.MapFallbackToPage("/_Host");
+            app.MapFallbackToPage("/_Host");
 #endif
-        });
     }
 }
