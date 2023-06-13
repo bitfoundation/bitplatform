@@ -73,13 +73,17 @@ public partial class MainPage
         {
 #if ANDROID
             var window = handler.PlatformView.Window;
-
-            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
+            if (window != null && Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
             {
                 window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
                 window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
-                window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable);
                 window.SetStatusBarColor(Android.Graphics.Color.Transparent);
+
+                window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
+                if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
+                {
+                    window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+                }
             }
 #endif
 
