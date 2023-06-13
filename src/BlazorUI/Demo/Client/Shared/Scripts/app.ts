@@ -42,8 +42,7 @@ function toggleBitTheme(isDark: boolean) {
 
 function applyBodyElementStyles(cssClasses: string[], cssVariables: any) {
     cssClasses?.forEach(c => document.body.classList.add(c));
-    Object.keys(cssVariables)
-        .forEach(key => document.body.style.setProperty(key, cssVariables[key]));
+    Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
 }
 
 function isSystemThemeDark() {
