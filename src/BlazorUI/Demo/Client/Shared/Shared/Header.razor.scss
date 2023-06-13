@@ -1,8 +1,8 @@
-﻿@import "../Styles/abstracts/_vars.scss";
-@import "../Styles/abstracts/_colors.scss";
-@import "../Styles/bit-css-variables.scss";
-@import "../Styles/abstracts/_functions.scss";
-@import "../Styles/abstracts/_media-queries.scss";
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .header {
     top: 0;
@@ -62,7 +62,7 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url("images/bit-logo.svg");
+    background-image: url('images/bit-logo.svg');
 
     @include lt-lg {
         margin: 0 rem(10px);
@@ -100,7 +100,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url("images/github-icon.webp");
+    background-image: url('images/github-icon.webp');
 }
 
 ::deep {

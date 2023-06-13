@@ -19,6 +19,21 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #else 
         return 0;
 #endif
+    }
 
+    public void SetUserAppTheme(bool isDark)
+    {
+        Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
+#if ANDROID
+        var window = Platform.CurrentActivity?.Window;
+        if (isDark)
+        {
+            window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+        }
+        else
+        {
+            window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
+        }
+#endif
     }
 }

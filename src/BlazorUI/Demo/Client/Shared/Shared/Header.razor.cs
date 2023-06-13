@@ -10,6 +10,7 @@ public partial class Header
     private bool _isDarkMode;
 
     [AutoInject] private NavManuService _menuService { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -66,5 +67,8 @@ public partial class Header
     {
         _isDarkMode = !_isDarkMode;
         await JSRuntime.ToggleBitTheme(_isDarkMode);
+#if BlazorHybrid
+        _bitDeviceCoordinator.SetUserAppTheme(_isDarkMode);
+#endif
     }
 }

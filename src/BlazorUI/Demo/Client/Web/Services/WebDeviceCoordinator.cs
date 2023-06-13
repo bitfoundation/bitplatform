@@ -5,5 +5,7 @@ public class WebDeviceCoordinator : IBitDeviceCoordinator
     {
         return 0;
     }
+
+    public void SetUserAppTheme(bool isDark) { }
 }
 
