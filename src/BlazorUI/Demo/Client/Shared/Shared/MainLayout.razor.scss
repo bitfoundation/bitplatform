@@ -42,6 +42,12 @@ main {
     }
 }
 
+.bit-ios {
+    main {
+        padding-top: calc(rem($HeaderHeight) + env(safe-area-inset-top));
+    }
+}
+
 ::deep a {
     text-decoration: none;
 }
@@ -136,6 +142,8 @@ main {
 
 .bit-ios .status-bar {
     display: flex;
+    color: transparent;
+    background-color: transparent;
     height: env(safe-area-inset-top);
 }
 

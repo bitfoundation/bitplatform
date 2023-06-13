@@ -1,65 +1,65 @@
 ﻿@import "theme-variables.scss";
 
 //colors
-.bit-css-color-primary-main {
+.bit-css-clr-primary-main {
     color: $color-primary-main;
 }
-.bit-css-color-primary-dark {
+.bit-css-clr-primary-dark {
     color: $color-primary-dark;
 }
-.bit-css-color-primary-light {
+.bit-css-clr-primary-light {
     color: $color-primary-light;
 }
-.bit-css-color-primary-text {
+.bit-css-clr-primary-text {
     color: $color-primary-text;
 }
 
-.bit-css-color-secondary-main {
+.bit-css-clr-secondary-main {
     color: $color-secondary-main;
 }
-.bit-css-color-secondary-dark {
+.bit-css-clr-secondary-dark {
     color: $color-secondary-dark;
 }
-.bit-css-color-secondary-light {
+.bit-css-clr-secondary-light {
     color: $color-secondary-light;
 }
-.bit-css-color-secondary-text {
+.bit-css-clr-secondary-text {
     color: $color-secondary-text;
 }
 
 //foreground
-.bit-css-fg-primary {
+.bit-css-clr-fg-primary {
     color: $color-foreground-primary;
 }
-.bit-css-fg-secondary {
+.bit-css-clr-fg-secondary {
     color: $color-foreground-secondary;
 }
-.bit-css-fg-disabled {
+.bit-css-clr-fg-disabled {
     color: $color-foreground-disabled;
 }
 
 //background
-.bit-css-bg-primary {
+.bit-css-clr-bg-primary {
     background-color: $color-background-primary;
 }
 
-.bit-css-bg-secondary {
+.bit-css-clr-bg-secondary {
     background-color: $color-background-secondary;
 }
 
-.bit-css-bg-disabled {
+.bit-css-clr-bg-disabled {
     background-color: $color-background-disabled;
 }
 
 //border
-.bit-css-brd-primary {
+.bit-css-clr-brd-primary {
     border-color: $color-border-primary;
 }
 
-.bit-css-brd-secondary {
+.bit-css-clr-brd-secondary {
     border-color: $color-border-secondary;
 }
 
-.bit-css-brd-disabled {
+.bit-css-clr-brd-disabled {
     border-color: $color-border-disabled;
 }
