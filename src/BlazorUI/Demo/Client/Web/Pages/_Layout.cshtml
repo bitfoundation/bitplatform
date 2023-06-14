@@ -1,5 +1,5 @@
 ﻿@using Bit.BlazorUI.Demo.Shared.Infra;
-@using Microsoft.AspNetCore.Components.Web
+
 @namespace Bit.BlazorUI.Demo.Client.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
 @inject IConfiguration Configuration
@@ -48,7 +48,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="@shoudAddAspAppendVersion">
     <link rel="stylesheet" href="/prism-1.28.0/prism-okaidia.min.css" />
-    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)" render-mode="@renderMode" />
     @if (isElectron)
     {
         <style>

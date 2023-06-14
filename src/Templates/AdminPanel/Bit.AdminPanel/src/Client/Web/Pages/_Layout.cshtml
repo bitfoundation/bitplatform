@@ -1,5 +1,5 @@
 ﻿@using AdminPanel.Shared.Infra;
-@using Microsoft.AspNetCore.Components.Web
+
 @namespace AdminPanel.Client.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -43,7 +43,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The AdminPanel is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build Android, iOS, Windows, Linux and Web applications from a single codebase." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
-    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     @if (isPwa)
     {
