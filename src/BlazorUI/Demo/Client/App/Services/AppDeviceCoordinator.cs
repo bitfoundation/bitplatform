@@ -4,10 +4,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()
     {
-#if iOS
-        //This is handled in css using env() variables
-        return 0;
-#elif ANDROID
+#if ANDROID
         var resourceId = MauiApplication.Current.Resources!.GetIdentifier("status_bar_height", "dimen", "android");
         var dimensionPixelSize = MauiApplication.Current.Resources.GetDimensionPixelSize(resourceId);
         var density = (double)DeviceDisplay.Current.MainDisplayInfo.Density;
@@ -17,6 +14,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #elif MACCATALYST
         return 25;
 #else 
+        // In other cases, either there is no status bar or its value is read from other places like CSS env variables.
         return 0;
 #endif
     }
