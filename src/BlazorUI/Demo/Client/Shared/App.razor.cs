@@ -78,7 +78,7 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
         
-        if (OperatingSystem.IsIOS() == false)
+        if (OperatingSystem.IsIOS())
         {
             //This is handled in css using safe-area env() variables
             statusBarHeight = 0;
