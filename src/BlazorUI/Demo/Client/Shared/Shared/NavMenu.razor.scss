@@ -13,12 +13,12 @@
     flex: 1 0 auto;
     position: sticky;
     overflow-y: auto;
-    top: rem($HeaderHeight);
     flex-direction: column;
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
     background-color: $bit-color-background-primary;
+    top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
 
     @include lt-lg {
         top: 0;
