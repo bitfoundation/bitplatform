@@ -76,8 +76,15 @@ public partial class App
         }
 
         var cssVariables = new Dictionary<string, string>();
-        cssVariables.Add("--bit-status-bar-height", $"{_bitDeviceCoordinator.GetStatusBarHeight()}px");
+        var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
+        
+        if (OperatingSystem.IsIOS() == false)
+        {
+            //This is handled in css using safe-area env() variables
+            statusBarHeight = 0;
+        }
 
+        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight}px");
         _ = _jsRuntime.ApplyBodyElementStyles(cssClasses, cssVariables);
     }
 

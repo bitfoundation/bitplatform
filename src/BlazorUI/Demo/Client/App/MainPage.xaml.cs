@@ -95,6 +95,15 @@ public partial class MainPage
             }
 #endif
 
+#if IOS
+            var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, true);
+                Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
+            });
+#endif
+
 #if WINDOWS
             var window = handler.PlatformView;
             if (window != null)
