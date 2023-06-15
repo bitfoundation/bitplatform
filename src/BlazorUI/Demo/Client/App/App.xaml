@@ -12,11 +12,4 @@
             </Style>
         </ResourceDictionary>
     </Application.Resources>
-    <Application.MainPage>
-        <NavigationPage>
-            <x:Arguments>
-                <app:MainPage />
-            </x:Arguments>
-        </NavigationPage>
-    </Application.MainPage>
 </Application>

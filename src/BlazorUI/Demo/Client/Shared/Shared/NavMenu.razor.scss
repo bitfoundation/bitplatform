@@ -1,8 +1,8 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import "../Styles/bit-css-variables.scss";
+@import "../Styles/abstracts/_vars.scss";
+@import "../Styles/abstracts/_colors.scss";
+@import "../Styles/abstracts/_functions.scss";
+@import "../Styles/abstracts/_media-queries.scss";
 
 .nav-menu {
     left: 0;
@@ -30,6 +30,12 @@
 
     @include sm {
         border-radius: 0 rem(10px) rem(10px) 0;
+    }
+}
+
+.bit-ios {
+    .nav-menu {
+        padding-top: env(safe-area-inset-top);
     }
 }
 

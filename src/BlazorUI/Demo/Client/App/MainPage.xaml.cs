@@ -2,9 +2,14 @@
 
 public partial class MainPage
 {
-    public MainPage()
+    private readonly IExceptionHandler _exceptionHandler;
+
+    public MainPage(IExceptionHandler exceptionHandler)
     {
+        _exceptionHandler = exceptionHandler;
+
         InitializeComponent();
+
         SetupBlazorWebView();
         SetupStatusBar();
     }
@@ -22,9 +27,9 @@ public partial class MainPage
             settings.AreBrowserAcceleratorKeysEnabled = false;
 #endif
         }
-        catch (Exception)
+        catch (Exception exp)
         {
-            throw;
+            _exceptionHandler.Handle(exp);
         }
     }
 
@@ -37,14 +42,10 @@ public partial class MainPage
             {
                 handler.PlatformView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
             }
-#endif
-
-#if IOS || MACCATALYST
+#elif IOS || MACCATALYST
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
-#endif
-
-#if ANDROID
+#elif ANDROID
             handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
@@ -69,48 +70,49 @@ public partial class MainPage
 
     private void SetupStatusBar()
     {
-        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
+        try
         {
+            Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
+            {
 #if ANDROID
-            var window = handler.PlatformView.Window;
-            if (window != null && Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
-            {
-                window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
-                window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
-                window.SetStatusBarColor(Android.Graphics.Color.Transparent);
-
-                window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
-                if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
+                var window = handler.PlatformView.Window;
+                if (window != null && Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
                 {
-                    window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+                    window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
+                    window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
+                    window.SetStatusBarColor(Android.Graphics.Color.Transparent);
+
+                    window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
+                    if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
+                    {
+                        window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+                    }
                 }
-            }
+#elif MACCATALYST
+                var window = handler.PlatformView.WindowScene;
+                if (window != null)
+                {
+                    window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+                }
+#elif IOS
+                var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
+                    Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
+                });
+#elif WINDOWS
+                var window = handler.PlatformView;
+                if (window != null)
+                {
+                    window.ExtendsContentIntoTitleBar = true;
+                }
 #endif
-
-#if MACCATALYST
-            var window = handler.PlatformView.WindowScene;
-            if (window != null)
-            {
-                window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
-            }
-#endif
-
-#if IOS
-            var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, true);
-                Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
             });
-#endif
-
-#if WINDOWS
-            var window = handler.PlatformView;
-            if (window != null)
-            {
-                window.ExtendsContentIntoTitleBar = true;
-            }
-#endif
-        });
+        }
+        catch (Exception exp)
+        {
+            _exceptionHandler.Handle(exp);
+        }
     }
 }

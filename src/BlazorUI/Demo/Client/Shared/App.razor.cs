@@ -61,7 +61,7 @@ public partial class App
             {
                 cssClasses.Add("bit-macos");
             }
-            else if (OperatingSystem.IsIOS())
+            else if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
             {
                 cssClasses.Add("bit-ios");
             }
@@ -78,7 +78,7 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
         
-        if (OperatingSystem.IsIOS())
+        if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
         {
             //This is handled in css using safe-area env() variables
             statusBarHeight = 0;

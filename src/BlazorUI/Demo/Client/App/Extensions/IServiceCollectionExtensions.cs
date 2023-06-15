@@ -1,4 +1,5 @@
-﻿using Bit.BlazorUI.Demo.Client.App.Services;
+﻿using Bit.BlazorUI.Demo.Client.App;
+using Bit.BlazorUI.Demo.Client.App.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -7,8 +8,6 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddClientAppServices(this IServiceCollection services)
     {
         // Services being registered here can get injected in Android, iOS, Windows, and Mac.
-
-        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
 #if ANDROID
         services.AddClientAndroidServices();
@@ -19,6 +18,9 @@ public static class IServiceCollectionExtensions
 #elif Windows
         services.AddClientWindowsServices();
 #endif
+
+        services.AddScoped<MainPage>();
+        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;
     }
