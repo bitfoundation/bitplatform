@@ -12,6 +12,10 @@
     background-color: $White;
     border-top: rem(1px) solid $Gray10;
     font-family: "Segoe UI";
+
+    @supports (-webkit-touch-callout: none) {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
 .footer-content {

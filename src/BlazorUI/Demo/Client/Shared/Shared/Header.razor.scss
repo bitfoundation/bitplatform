@@ -12,7 +12,14 @@
     backdrop-filter: blur(20px);
     box-shadow: $bit-box-shadow-1;
     -webkit-backdrop-filter: blur(20px);
+    padding-top: var(--bit-status-bar-height);
     transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.bit-ios {
+    .header {
+        padding-top: env(safe-area-inset-top);
+    }
 }
 
 .header--full-page {
@@ -35,7 +42,8 @@
     justify-content: space-between;
 
     @include lt-lg {
-        padding: 0 rem(10px);
+        padding-left: rem(10px);
+        padding-right: rem(10px);
     }
 }
 

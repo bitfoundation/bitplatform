@@ -39,3 +39,16 @@ function goToTop() {
 function toggleBitTheme(isDark: boolean) {
     document.documentElement.setAttribute('bit-theme', isDark ? 'dark' : 'light');
 }
+
+function applyBodyElementStyles(cssClasses: string[], cssVariables: any) {
+    cssClasses?.forEach(c => document.body.classList.add(c));
+    Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
+}
+
+function isSystemThemeDark() {
+    return matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+(function () {
+    toggleBitTheme(isSystemThemeDark());
+}());

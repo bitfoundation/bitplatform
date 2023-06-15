@@ -5,8 +5,7 @@
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:client="clr-namespace:AdminPanel.Client.Shared;assembly=AdminPanel.Client.Shared"
     BackgroundColor="#FBFCFF"
-    Loaded="ContentPage_Loaded"
-    NavigationPage.HasNavigationBar="False">
+    Loaded="ContentPage_Loaded">
 
     <b:BlazorWebView
         x:Name="blazorWebView"

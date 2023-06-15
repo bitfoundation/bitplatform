@@ -20,5 +20,15 @@ public static class IJSRuntimeExtensions
     {
         await jsRuntime.InvokeVoidAsync("toggleBitTheme", isDark);
     }
+
+    public static async Task<bool> IsSystemThemeDark(this IJSRuntime jsRuntime)
+    {
+        return await jsRuntime.InvokeAsync<bool>("isSystemThemeDark");
+    }
+
+    public static async Task ApplyBodyElementStyles(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
+    {
+        await jsRuntime.InvokeVoidAsync("applyBodyElementStyles", cssClasses, cssVariables);
+    }
 }
 

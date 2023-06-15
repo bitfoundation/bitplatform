@@ -12,7 +12,7 @@ main {
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: rem($HeaderHeight);
+    padding-top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
 
     &.full-page {
         .site-content {
@@ -39,6 +39,12 @@ main {
             max-width: 100%;
             padding: rem(20px);
         }
+    }
+}
+
+.bit-ios {
+    main {
+        padding-top: calc(rem($HeaderHeight) + env(safe-area-inset-top));
     }
 }
 
@@ -106,27 +112,42 @@ main {
     background-color: transparent !important;
 }
 
-::deep .status-bar-safe-area {
-    display: none;
-}
-
 ::deep ::-webkit-scrollbar-thumb {
     border-radius: 16px;
     background-color: $bit-color-foreground-secondary;
 }
 
-@supports (-webkit-touch-callout: none) {
-    ::deep .status-bar-safe-area {
-        display: flex;
-        position: sticky;
-        top: 0;
-        height: env(safe-area-inset-top);
-        background-color: #f7f7f7;
-        width: 100%;
-        z-index: 1;
-    }
+.status-bar {
+    top: 0;
+    z-index: 12;
+    width: 100%;
+    display: none;
+    position: fixed;
+    text-align: center;
+    align-items: center;
+    font-size: rem(14px);
+    justify-content: center;
+    color: $bit-color-background-primary;
+    background-color: $bit-color-background-primary;
+}
 
-    ::deep .flex-column, ::deep .navbar-brand {
-        padding-left: env(safe-area-inset-left);
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+        color: $bit-color-foreground-primary;
     }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    background-color: transparent;
+    height: env(safe-area-inset-top);
+}
+
+.bit-ios .flex-column,
+.bit-ios .navbar-brand {
+    padding-left: env(safe-area-inset-left);
 }
