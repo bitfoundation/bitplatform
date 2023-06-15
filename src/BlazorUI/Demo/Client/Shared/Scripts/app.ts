@@ -40,15 +40,15 @@ function toggleBitTheme(isDark: boolean) {
     document.documentElement.setAttribute('bit-theme', isDark ? 'dark' : 'light');
 }
 
-function applyBodyElementStyles(cssClasses: string[], cssVariables: any) {
+function applyBodyElementClasses(cssClasses: string[], cssVariables: any) {
     cssClasses?.forEach(c => document.body.classList.add(c));
     Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
 }
 
-declare class BitTheme { static initTheme(options: any): void; };
+declare class BitTheme { static init(options: any): void; };
 
 (function () {
-    BitTheme.initTheme({
+    BitTheme.init({
         system: true,
         onChange: (newTheme: string, oldThem: string) => {
             if (newTheme === 'dark') {

@@ -18,7 +18,7 @@ public partial class App
 #if BlazorHybrid
     protected override async Task OnInitializedAsync()
     {
-        SetupThemeAndStyles();
+        SetupThemeAndBodyClasses();
         await base.OnInitializedAsync();
     }
 #else
@@ -26,14 +26,14 @@ public partial class App
     {
         if (firstRender)
         {
-            SetupThemeAndStyles();
+            SetupThemeAndBodyClasses();
         }
 
         base.OnAfterRender(firstRender);
     }
 #endif
 
-    private void SetupThemeAndStyles()
+    private void SetupThemeAndBodyClasses()
     {
         BitThemeManager.init(_jsRuntime);
 
@@ -87,7 +87,7 @@ public partial class App
         }
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight}px");
-        _ = _jsRuntime.ApplyBodyElementStyles(cssClasses, cssVariables);
+        _ = _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
     private async Task OnNavigateAsync(NavigationContext args)

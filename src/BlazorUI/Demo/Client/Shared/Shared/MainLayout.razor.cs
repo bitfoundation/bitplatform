@@ -8,7 +8,7 @@ public partial class MainLayout : IDisposable
     private bool _disposed;
     private bool _isMenuOpen;
     private bool _isUserAuthenticated;
-    //private ErrorBoundary ErrorBoundaryRef = default!;
+    private ErrorBoundary ErrorBoundaryRef = default!;
 
     [AutoInject] private IStateService _stateService = default!;
 

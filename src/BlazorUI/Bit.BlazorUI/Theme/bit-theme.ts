@@ -4,7 +4,7 @@ class BitTheme {
     private static currentTheme = 'light';
     private static onChange: (newThemeName: string, oldThemeName: string) => void = () => { };
 
-    static initTheme(options: any) {
+    static init(options: any) {
         if (options.system) {
             this.currentTheme = this.isSystemThemeDark() ? 'dark' : 'light';
         } else if (options.default) {

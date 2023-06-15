@@ -16,9 +16,9 @@ public static class IJSRuntimeExtensions
         await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
     }
 
-    public static async Task ApplyBodyElementStyles(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
+    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
-        await jsRuntime.InvokeVoidAsync("applyBodyElementStyles", cssClasses, cssVariables);
+        await jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
     }
 }
 
