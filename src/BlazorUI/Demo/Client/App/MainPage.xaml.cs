@@ -97,7 +97,7 @@ public partial class MainPage
                 }
 #elif IOS
                 var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-                await MainThread.InvokeOnMainThreadAsync(() =>
+                await Device.InvokeOnMainThreadAsync(() =>
                 {
                     UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
                     Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
