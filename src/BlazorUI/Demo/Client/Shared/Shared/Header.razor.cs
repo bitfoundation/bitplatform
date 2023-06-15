@@ -7,7 +7,6 @@ public partial class Header
 {
     private string _currentUrl = string.Empty;
     private bool _isHeaderMenuOpen;
-    private bool _isDarkMode;
 
     [AutoInject] private NavManuService _menuService { get; set; } = default!;
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
@@ -18,20 +17,8 @@ public partial class Header
 
         NavigationManager.LocationChanged += OnLocationChanged;
 
-#if BlazorHybrid
-        _isDarkMode = await JSRuntime.IsSystemThemeDark();
-#endif
-
         await base.OnInitAsync();
     }
-
-#if !BlazorHybrid
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        _isDarkMode = await JSRuntime.IsSystemThemeDark();
-        await base.OnAfterFirstRenderAsync();
-    }
-#endif
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
@@ -65,8 +52,6 @@ public partial class Header
 
     private async Task ToggleTheme()
     {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.ToggleBitTheme(_isDarkMode);
-        await _bitDeviceCoordinator.SetDeviceTheme(_isDarkMode);
+        await _bitDeviceCoordinator.SetDeviceTheme(await BitThemeManager.ToggleDarkLight() == "dark");
     }
 }

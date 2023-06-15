@@ -18,7 +18,7 @@ public partial class App
 #if BlazorHybrid
     protected override async Task OnInitializedAsync()
     {
-        ApplyBodyElementStyles();
+        SetupThemeAndStyles();
         await base.OnInitializedAsync();
     }
 #else
@@ -26,15 +26,17 @@ public partial class App
     {
         if (firstRender)
         {
-            ApplyBodyElementStyles();
+            SetupThemeAndStyles();
         }
 
         base.OnAfterRender(firstRender);
     }
 #endif
 
-    private void ApplyBodyElementStyles()
+    private void SetupThemeAndStyles()
     {
+        BitThemeManager.init(_jsRuntime);
+
         var cssClasses = new List<string>();
 
         if (BlazorModeDetector.Current.IsBlazorWebAssembly())
@@ -77,7 +79,7 @@ public partial class App
 
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
-        
+
         if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
         {
             //This is handled in css using safe-area env() variables

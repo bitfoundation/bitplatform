@@ -45,10 +45,19 @@ function applyBodyElementStyles(cssClasses: string[], cssVariables: any) {
     Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
 }
 
-function isSystemThemeDark() {
-    return matchMedia('(prefers-color-scheme: dark)').matches;
-}
+declare class BitTheme { static initTheme(options: any): void; };
 
 (function () {
-    toggleBitTheme(isSystemThemeDark());
+    BitTheme.initTheme({
+        system: true,
+        onChange: (newTheme: string, oldThem: string) => {
+            if (newTheme === 'dark') {
+                document.body.classList.add('bit-theme-dark');
+                document.body.classList.remove('bit-theme-light');
+            } else {
+                document.body.classList.add('bit-theme-light');
+                document.body.classList.remove('bit-theme-dark');
+            }
+        }
+    });
 }());
