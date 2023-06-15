@@ -8,6 +8,10 @@
     justify-content: center;
     align-items: center;
     width: 100%;
+
+    @supports (-webkit-touch-callout: none) {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
 .footer-content {

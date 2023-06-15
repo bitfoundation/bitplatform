@@ -11,6 +11,16 @@ public partial class MainPage
 
         InitializeComponent();
 
+        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
+        {
+#if MACCATALYST
+            if (handler != null)
+            {
+                handler.PlatformView.WindowScene.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+            }
+#endif
+        });
+
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
 #if IOS || MACCATALYST

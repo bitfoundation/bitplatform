@@ -5,8 +5,7 @@
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:client="clr-namespace:TodoTemplate.Client.Shared;assembly=TodoTemplate.Client.Shared"
     BackgroundColor="#0D2960"
-    Loaded="ContentPage_Loaded"
-    NavigationPage.HasNavigationBar="False">
+    Loaded="ContentPage_Loaded">
 
     <b:BlazorWebView
         x:Name="blazorWebView"

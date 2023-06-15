@@ -14,7 +14,7 @@
         </div>
         <div class="right-section">
             <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
-            <BitIconButton OnClick="ToggleTheme"
+            <BitIconButton OnClick="WrapHandled(ToggleTheme)"
                            Class="@($"toggle-theme-btn{(_isDarkMode ? " fix-light-icon" : "")}")"
                            IconName="@(_isDarkMode ? BitIconName.Sunny : BitIconName.ClearNight)"
                            Title="@(_isDarkMode ? "Turn on light" : "Turn off light")" />
