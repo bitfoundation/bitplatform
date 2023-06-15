@@ -53,7 +53,7 @@
     height: spacing(2.5);
     transform: translate(-50%,-50%);
     background: $color-background-secondary;
-    border: $shape-border-width $shape-border-style $color-neutrals-gray100;
+    border: $shape-border-width $shape-border-style $color-border-primary;
     box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
 
     &::before {
@@ -93,7 +93,7 @@
 .bit-clp-inp {
     background: none;
     position: relative;
-    top: spacing(-0.125);
+    top: spacing(-0.0625);
     -webkit-appearance: none;
     margin: 0 spacing(-0.875);
     width: calc(100% + #{spacing(1.75)});
@@ -106,8 +106,7 @@
         height: spacing(2.5);
         -webkit-appearance: none;
         background-color: $color-neutrals-white;
-        border: $shape-border-width $shape-border-style $color-neutrals-gray100;
-        box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
+        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 
     &::-moz-range-thumb {
@@ -116,8 +115,7 @@
         width: spacing(2.5);
         height: spacing(2.5);
         background-color: $color-neutrals-white;
-        border: $shape-border-width $shape-border-style $color-neutrals-gray100;
-        box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.375) spacing(0.875) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.125) spacing(0.25) 0;
+        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 }
 

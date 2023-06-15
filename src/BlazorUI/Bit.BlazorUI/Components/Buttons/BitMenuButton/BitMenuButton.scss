@@ -70,7 +70,7 @@
 .bit-mnb-md .bit-mnb-mbt {
     font-size: spacing(1.75);
     padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height-buttons;
+    line-height: $typography-line-height;
 }
 
 .bit-mnb-lg .bit-mnb-mbt {
@@ -96,11 +96,11 @@
 .bit-mnb-its {
     opacity: 0;
     display: none;
-    z-index: 1001;
     position: fixed;
     pointer-events: none;
     overflow: hidden auto;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     min-width: spacing(22.5);
     box-shadow: $box-shadow-callout;
     background-color: $color-background-primary;
@@ -128,10 +128,10 @@
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 999;
     height: 100%;
     display: none;
     position: fixed;
+    z-index: $zindex-overlay;
     background-color: transparent;
 }
 

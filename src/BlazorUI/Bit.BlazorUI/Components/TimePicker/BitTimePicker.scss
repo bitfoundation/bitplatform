@@ -161,8 +161,8 @@
     height: 100%;
     display: none;
     position: fixed;
+    z-index: $zindex-overlay;
     background-color: transparent;
-    z-index: $space-overlay-zindex0;
 }
 
 .bit-tpc-cal {
@@ -172,8 +172,8 @@
     top: spacing(4.25);
     outline: transparent;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     font-size: spacing(1.75);
-    z-index: $space-overlay-zindex1;
     box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;

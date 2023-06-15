@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using Bit.BlazorUI.Theme;
+
+namespace Bit.BlazorUI;
 
 public static class BitThemeManager
 {
@@ -8,18 +10,25 @@ public static class BitThemeManager
         _js = js;
     }
 
+    public static async Task ApplyBitTheme(BitTheme bitTheme, ElementReference? element = null)
+    {
+        CheckJsRuntime();
+
+        await _js.ApplyBitTheme(BitThemeMapper.MapToCssVariables(bitTheme), element);
+    }
+
     public static async Task ChangeTheme(string themeName)
     {
         CheckJsRuntime();
 
-        await _js.InvokeVoidAsync("Bit.changeTheme", themeName);
+        await _js.ChangeTheme(themeName);
     }
 
     public static async Task ToggleDarkLight(bool isDark)
     {
         CheckJsRuntime();
 
-        await _js.InvokeVoidAsync("Bit.changeTheme", isDark ? "dark" : "light");
+        await _js.ChangeTheme(isDark ? "dark" : "light");
     }
 
     private static void CheckJsRuntime()
