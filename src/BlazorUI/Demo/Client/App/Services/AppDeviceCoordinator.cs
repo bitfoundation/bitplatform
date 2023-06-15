@@ -2,13 +2,6 @@
 
 public class AppDeviceCoordinator : IBitDeviceCoordinator
 {
-    private readonly IExceptionHandler _exceptionHandler;
-
-    public AppDeviceCoordinator(IExceptionHandler exceptionHandler)
-    {
-        _exceptionHandler = exceptionHandler;
-    }
-
     public double GetStatusBarHeight()
     {
 #if ANDROID
@@ -28,7 +21,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
-    public void SetDeviceTheme(bool isDark)
+    public async Task SetDeviceTheme(bool isDark)
     {
         Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if ANDROID
@@ -43,18 +36,11 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
         }
 #elif IOS
         var style = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-        try
+        await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                UIKit.UIApplication.SharedApplication.SetStatusBarStyle(style, false);
-                Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
-            });
-        }
-        catch (Exception exp)
-        {
-            _exceptionHandler.Handle(exp);
-        }
+            UIKit.UIApplication.SharedApplication.SetStatusBarStyle(style, false);
+            Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
+        });
 #endif
     }
 }

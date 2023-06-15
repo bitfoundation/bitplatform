@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Shared.Services.Contracts;
 public interface IBitDeviceCoordinator
 {
-    public double GetStatusBarHeight();
+    public double GetStatusBarHeight() { return 0; }
 
-    public void SetDeviceTheme(bool isDark);
+    public async Task SetDeviceTheme(bool isDark) { }
 }

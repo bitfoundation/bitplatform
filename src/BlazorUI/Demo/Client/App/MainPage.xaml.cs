@@ -70,9 +70,10 @@ public partial class MainPage
 
     private void SetupStatusBar()
     {
-        try
+
+        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), async (handler, view) =>
         {
-            Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
+            try
             {
 #if ANDROID
                 var window = handler.PlatformView.Window;
@@ -96,7 +97,7 @@ public partial class MainPage
                 }
 #elif IOS
                 var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-                Device.BeginInvokeOnMainThread(() =>
+                await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
                     Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
@@ -108,11 +109,12 @@ public partial class MainPage
                     window.ExtendsContentIntoTitleBar = true;
                 }
 #endif
-            });
-        }
-        catch (Exception exp)
-        {
-            _exceptionHandler.Handle(exp);
-        }
+            }
+            catch (Exception exp)
+            {
+                _exceptionHandler.Handle(exp);
+            }
+        });
+
     }
 }

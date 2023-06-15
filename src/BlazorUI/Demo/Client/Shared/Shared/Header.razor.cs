@@ -67,8 +67,6 @@ public partial class Header
     {
         _isDarkMode = !_isDarkMode;
         await JSRuntime.ToggleBitTheme(_isDarkMode);
-#if BlazorHybrid
-        _bitDeviceCoordinator.SetDeviceTheme(_isDarkMode);
-#endif
+        await _bitDeviceCoordinator.SetDeviceTheme(_isDarkMode);
     }
 }
