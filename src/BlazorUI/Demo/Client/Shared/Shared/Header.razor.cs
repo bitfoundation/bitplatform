@@ -7,13 +7,14 @@ public partial class Header
 {
     private string _currentUrl = string.Empty;
     private bool _isHeaderMenuOpen;
-    private bool _isDarkMode;
 
-    [Inject] private NavManuService _menuService { get; set; } = default!;
+    [AutoInject] private NavManuService _menuService { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
         _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+
         NavigationManager.LocationChanged += OnLocationChanged;
 
         await base.OnInitAsync();
@@ -29,19 +30,6 @@ public partial class Header
     {
         _isHeaderMenuOpen = false;
         await _menuService.ToggleMenu();
-    }
-
-    private string GetActiveRouteName()
-    {
-        if (_currentUrl.Contains("components"))
-        {
-            return "Docs";
-        }
-        else return _currentUrl switch
-        {
-            "/" => "Home",
-            _ => "Docs",
-        };
     }
 
     private async Task ToggleHeaderMenu()
@@ -62,9 +50,8 @@ public partial class Header
         }
     }
 
-    private async Task ToggleTheme(bool value)
+    private async Task ToggleTheme()
     {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.ToggleBitTheme(_isDarkMode);
+        await _bitDeviceCoordinator.SetDeviceTheme(await BitThemeManager.ToggleDarkLight() == "dark");
     }
 }

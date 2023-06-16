@@ -19,6 +19,10 @@
     @include lt-lg {
         width: 100%;
     }
+
+    @supports (-webkit-touch-callout: none) {
+        padding-top: env(safe-area-inset-top);
+    }
 }
 
 .header-main-container {

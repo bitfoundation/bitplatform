@@ -10,12 +10,12 @@
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
 
     &.bit-dis {
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         background-color: $color-background-disabled;
     }
 }
@@ -54,12 +54,12 @@
     animation-duration: 0.367s;
     perspective: spacing(0.125);
     margin-right: spacing(1.25);
-    background-color: $color-primary-low;
+    background-color: $color-primary-main;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
 .bit-prs-ini {
-    //background-color: $color-primary-low;
+    //background-color: $color-primary-main;
 }
 
 .bit-prs-imo {
@@ -77,6 +77,8 @@
 
 .bit-prs-pre {
     top: auto;
+    width: spacing(1);
+    height: spacing(1);
     position: absolute;
     text-align: center;
     border-radius: 50%;
@@ -85,7 +87,7 @@
     box-sizing: content-box;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.25) $shape-border-style $color-border-secondary;
+    border: spacing(0.125) $shape-border-style $color-border-secondary;
 }
 
 .bit-prs-det {
@@ -101,28 +103,28 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-stx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-ttx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-otx {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-prs-abt {
@@ -148,7 +150,7 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-text-secondary;
+            color: $color-action-hover-foreground-primary;
         }
     }
 
@@ -179,9 +181,9 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    color: $color-primary-text;
                     transition: all 0.1s linear;
-                    color: $color-text-secondary;
-                    background-color: $color-primary-low;
+                    background-color: $color-primary-main;
                 }
             }
         }
@@ -191,12 +193,6 @@
 .bit-prs-20px {
     height: spacing(2.5);
     min-width: spacing(2.5);
-
-    .bit-prs-pre {
-        width: spacing(1);
-        height: spacing(1);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
-    }
 
     .bit-prs-det {
         padding: 0 spacing(1);
@@ -231,12 +227,6 @@
         height: spacing(3);
     }
 
-    .bit-prs-pre {
-        width: spacing(1);
-        height: spacing(1);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
-    }
-
     .bit-prs-det {
         padding: 0 spacing(1);
     }
@@ -267,12 +257,6 @@
     .bit-prs-imc {
         width: spacing(4);
         height: spacing(4);
-    }
-
-    .bit-prs-pre {
-        width: spacing(1);
-        height: spacing(1);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -310,7 +294,6 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -360,7 +343,6 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -410,7 +392,6 @@
     .bit-prs-pre {
         width: spacing(2);
         height: spacing(2);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -460,7 +441,6 @@
     .bit-prs-pre {
         width: spacing(2.5);
         height: spacing(2.5);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -512,7 +492,6 @@
     .bit-prs-pre {
         width: spacing(3.5);
         height: spacing(3.5);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -566,7 +545,6 @@
     .bit-prs-pre {
         width: spacing(4);
         height: spacing(4);
-        border: spacing(0.25) $shape-border-style $color-border-secondary;
     }
 
     .bit-prs-det {
@@ -615,18 +593,6 @@
 .bit-prs-blocked {
     .bit-prs-pre {
         background-color: $color-state-error;
-
-        &::before {
-            top: 0;
-            left: 0;
-            width: 100%;
-            content: "";
-            height: 100%;
-            position: absolute;
-            border-radius: 50%;
-            box-sizing: border-box;
-            border: spacing(0.25) $shape-border-style $color-state-error;
-        }
     }
 }
 
@@ -638,18 +604,12 @@
 
 .bit-prs-dnd {
     .bit-prs-pre {
-        background-color: $color-state-error2;
+        background-color: $color-state-error;
     }
 }
 
 .bit-prs-offline {
     .bit-prs-pre {
         background-color: $color-neutrals-gray110;
-    }
-}
-
-.bit-prs-off {
-    .bit-prs-pre {
-        background-color: $color-general-magenta;
     }
 }

@@ -28,7 +28,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-width: $shape-border-width;
         border-style: $shape-border-style;
         border-color: $color-border-disabled;
@@ -59,7 +59,7 @@
     width: spacing(4.5);
     height: spacing(4.5);
     font-size: spacing(1.75);
-    line-height: $typography-line-height-buttons;
+    line-height: $typography-line-height;
 }
 
 .bit-icb-lg {

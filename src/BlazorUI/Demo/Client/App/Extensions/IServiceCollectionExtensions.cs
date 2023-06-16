@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Bit.BlazorUI.Demo.Client.App;
+using Bit.BlazorUI.Demo.Client.App.Services;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
@@ -15,6 +18,9 @@ public static class IServiceCollectionExtensions
 #elif Windows
         services.AddClientWindowsServices();
 #endif
+
+        services.AddScoped<MainPage>();
+        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;
     }

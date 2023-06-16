@@ -203,7 +203,7 @@ public partial class BitPersona
             BitPersonaPresenceStatus.Online => "presence_available",
             BitPersonaPresenceStatus.Busy => "presence_busy",
             BitPersonaPresenceStatus.Away => IsOutOfOffice ? "presence_oof" : "presence_away",
-            BitPersonaPresenceStatus.DND => "presence_dnd",
+            BitPersonaPresenceStatus.Dnd => "presence_dnd",
             BitPersonaPresenceStatus.Offline => IsOutOfOffice ? "presence_oof" : "presence_offline",
             _ => "presence_unknown",
         };

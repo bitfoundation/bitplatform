@@ -5,11 +5,11 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 
 .main-container {
+    width: 100%;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: space-between;
     align-items: flex-start;
-    width: 100%;
+    justify-content: space-between;
 
     @include lt-lg {
         flex-flow: column nowrap;
@@ -18,10 +18,10 @@
 }
 
 .content-container {
+    width: 50%;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    width: 50%;
 
     &:last-child {
         margin-left: rem(20px);
@@ -37,10 +37,10 @@
 }
 
 .component-list {
-    display: flex;
-    flex-flow: column nowrap;
     width: 100%;
+    display: flex;
     max-width: rem(500px);
+    flex-flow: column nowrap;
 
     @include lt-lg {
         display: none;
@@ -48,41 +48,40 @@
 }
 
 .component-row {
+    outline: 0;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+    padding: rem(20px);
     position: relative;
     display: inline-flex;
     flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    outline: 0;
-    padding: rem(20px);
     margin-top: rem(10px);
-    border-radius: rem(4px);
-    border: rem(1px) solid transparent;
-    box-sizing: border-box;
-    cursor: pointer;
-    background-color: transparent;
-    -webkit-user-select: none;
-    -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
     text-decoration: none;
+    box-sizing: border-box;
+    -moz-user-select: none;
+    align-items: flex-start;
+    border-radius: rem(2px);
     transition-property: all;
+    -webkit-user-select: none;
     transition-duration: 150ms;
+    justify-content: flex-start;
+    background-color: transparent;
+    border: rem(1px) solid transparent;
 
     &:hover {
-        background-color: $bit-color-background-primary3;
+        background-color: $bit-color-action-active-background-primary;
     }
 
     .component-icon {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        min-width: rem(36px);
         height: rem(36px);
         border-radius: 50%;
-        background-color: $White;
+        align-items: center;
+        min-width: rem(36px);
         margin-right: rem(20px);
+        justify-content: center;
 
         @include lt-lg {
             margin-bottom: rem(10px);
@@ -99,35 +98,35 @@
 
     .component-name {
         margin: 0;
-        font-size: rem(14px);
         line-height: 1.5;
-        letter-spacing: 0;
-        color: $bit-color-text-primary;
         font-weight: 700;
+        letter-spacing: 0;
+        font-size: rem(14px);
+        color: $bit-color-foreground-primary;
     }
 
     .component-desc {
-        margin-top: rem(5px);
-        margin-bottom: rem(5px);
-        font-size: rem(14px);
         line-height: 1.5;
-        letter-spacing: 0;
-        font-weight: 400;
-        color: $bit-color-text-primary3;
         text-align: left;
+        font-weight: 400;
+        letter-spacing: 0;
+        margin-top: rem(5px);
+        font-size: rem(14px);
+        margin-bottom: rem(5px);
+        color: $bit-color-foreground-secondary;
     }
 
     .component-link {
-        min-height: rem(24px);
         margin: 0;
-        font-size: rem(14px);
-        line-height: 1.5;
-        letter-spacing: 0;
-        text-decoration: none;
         color: #0072E5;
+        line-height: 1.5;
         font-weight: 700;
-        display: inline-flex;
+        letter-spacing: 0;
         align-items: center;
+        display: inline-flex;
+        font-size: rem(14px);
+        min-height: rem(24px);
+        text-decoration: none;
 
         &:hover {
             color: #0059B2;
@@ -135,18 +134,14 @@
     }
 
     @include lt-lg {
+        align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
-        align-items: flex-start;
     }
 }
 
 .component-row--active {
-    background-color: $bit-color-background-primary3;
-
-    .component-icon {
-        background-color: #eaeef3;
-    }
+    background-color: $bit-color-background-secondary;
 }
 
 ::deep .component-row--active {
@@ -169,13 +164,11 @@
     width: 100%;
     display: flex;
     overflow: auto;
-    padding: rem(20px);
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    border-radius: rem(4px) rem(4px) 0 0;
-    background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-box-shadow-callout;
+    border-radius: rem(2px) rem(2px) 0 0;
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 
     @include lt-lg {
@@ -190,12 +183,9 @@
     padding: rem(20px);
     box-sizing: border-box;
     min-height: rem(180px);
-    border-radius: rem(4px);
+    border-radius: rem(2px);
     align-items: flex-start;
     justify-content: flex-start;
-    box-shadow: $bit-shadow-callout;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
 }
 
 .example-code {
@@ -207,7 +197,6 @@
     flex-direction: column;
     box-sizing: border-box;
     border-radius: 0 0 rem(4px) rem(4px);
-    border: rem(1px) solid $bit-color-background-primary3;
 
     pre {
         margin: 0;

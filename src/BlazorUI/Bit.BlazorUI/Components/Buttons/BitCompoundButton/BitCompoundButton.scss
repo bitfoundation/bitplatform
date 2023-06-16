@@ -17,14 +17,14 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
 }
 
 .bit-cmb-pri {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
@@ -42,9 +42,9 @@
 }
 
 .bit-cmb-std {
-    color: $color-text-primary;
-    border-color: $color-border-primary2;
-    background-color: $color-background-primary;
+    color: $color-secondary-text;
+    border-color: $color-border-primary;
+    background-color: $color-secondary-main;
 
     @media (hover: hover) {
         &:hover {
@@ -85,7 +85,7 @@
 .bit-cmb-md {
     font-size: spacing(1.75);
     padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height-buttons;
+    line-height: $typography-line-height;
 
     .bit-cmb-sct {
         font-size: spacing(1.25);

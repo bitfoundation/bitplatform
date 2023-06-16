@@ -79,9 +79,8 @@
 .component-list-section {
     overflow: hidden;
     padding-top: rem(60px);
-    margin-top: rem(100px);
     padding-bottom: rem(60px);
-    background-color: $bit-color-background-primary2;
+    background-color: $bit-color-background-secondary;
 
     @include md {
         margin-top: rem(60px);
@@ -138,24 +137,24 @@
     }
 
     .section-btn {
-        display: inline-flex;
-        justify-content: center;
-        padding: rem(14px) rem(16px);
-        border-radius: rem(4px);
-        box-shadow: none;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        text-decoration: none;
-        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-        background-color: $B2Color;
         color: $White;
-        font-size: rem(16px);
-        line-height: 1.3125;
-        letter-spacing: 0;
+        cursor: pointer;
+        box-shadow: none;
         font-weight: 700;
+        user-select: none;
+        letter-spacing: 0;
+        line-height: 1.3125;
+        display: inline-flex;
+        font-size: rem(16px);
+        text-decoration: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        border-radius: rem(2px);
+        justify-content: center;
+        -webkit-user-select: none;
+        background-color: $B2Color;
+        padding: rem(14px) rem(16px);
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 
         @include sm {
             width: 100%;

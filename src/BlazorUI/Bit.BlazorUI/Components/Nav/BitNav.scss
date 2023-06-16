@@ -19,7 +19,7 @@
         background-color: transparent;
 
         .bit-nav-itm {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 }
@@ -31,7 +31,7 @@
     width: spacing(3.75);
     font-size: spacing(1.5);
     background-color: transparent;
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 
     i {
         transition: transform 0.1s linear 0s;
@@ -48,7 +48,7 @@
     gap: spacing(1.25);
     align-items: center;
     height: spacing(5.5);
-    border-bottom: $shape-border-width $shape-border-style $color-border-primary2;
+    border-bottom: $shape-border-width $shape-border-style $color-border-primary;
 }
 
 .bit-nav-ghd {
@@ -93,7 +93,7 @@
     margin: 0 spacing(0.5);
     text-overflow: ellipsis;
     font-size: spacing(1.75);
-    color: $color-text-primary2;
+    color: $color-foreground-primary;
 }
 
 .bit-nav-iic {
@@ -102,12 +102,12 @@
 }
 
 .bit-nav-sel {
-    background-color: $color-background-primary2;
+    background-color: $color-background-secondary;
     border-left: spacing(0.25) $shape-border-style $color-primary-main;
 
     @media(hover:hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary2;
+            background-color: $color-action-hover-background-primary;
 
             .bit-nav-itm {
                 color: $color-primary-main;
@@ -117,11 +117,11 @@
 
     .bit-nav-itm {
         font-weight: 500;
-        color: $color-text-primary;
+        color: $color-foreground-primary;
     }
 }
 
 .bit-nav-dis {
     pointer-events: none;
-    color: $color-text-disabled;
+    color: $color-foreground-disabled;
 }

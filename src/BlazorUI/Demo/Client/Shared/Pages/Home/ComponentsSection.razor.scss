@@ -4,11 +4,12 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 
 .list-group {
+    width: 100%;
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-between;
+    margin-top: rem(25px);
     align-items: flex-start;
-    width: 100%;
+    justify-content: space-between;
 
     .list-col {
         display: flex;

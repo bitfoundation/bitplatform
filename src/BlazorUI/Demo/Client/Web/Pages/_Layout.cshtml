@@ -1,5 +1,7 @@
-﻿@using Bit.BlazorUI.Demo.Shared.Infra;
+﻿@using Bit.BlazorUI.Demo.Shared.Infra
 @using Microsoft.AspNetCore.Components.Web
+@using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+
 @namespace Bit.BlazorUI.Demo.Client.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
 @inject IConfiguration Configuration
@@ -49,6 +51,10 @@
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="@shoudAddAspAppendVersion">
     <link rel="stylesheet" href="/prism-1.28.0/prism-okaidia.min.css" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    @if (isPwa)
+    {
+        <link rel="manifest" href="manifest.json">
+    }
     @if (isElectron)
     {
         <style>
@@ -57,38 +63,24 @@
                 overscroll-behavior: none;
             }
 
-            *:not(input) {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
+                *:not(input) {
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                }
         </style>
     }
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI";
-            -webkit-font-smoothing: antialiased;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
-<body class="@BitCss.BgColor.Primary @BitCss.Text.Primary">
+<body class="@BitCss.Color.Background.Primary @BitCss.Color.Foreground.Primary">
     <div id="app-container">
-        @if (isDefaultDeploymentType)
+        @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         @RenderBody()
     </div>
@@ -108,21 +100,35 @@
         }
         else
         {
-            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
-            <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-            <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-
-            @if (isSsr)
+            @if (isPwa)
             {
-                <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                <script src="_framework/blazor.webassembly.js" autostart=false></script>
+                <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion">
+                <component type="typeof(Bit.Bswup.BswupProgress)"
+                           param-AutoReload="true"
+                           param-AppContainer="@("#app-container")"
+                           render-mode="@RenderMode.Static" />
             }
             else
             {
-                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
-                <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
-                           param-AutoHide="true"
-                           param-HideApp="true"
-                           param-AppContainer="@("#app-container")" />
+                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+
+                @if (isSsr)
+                {
+                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                }
+                else
+                {
+                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                               param-AutoHide="true"
+                               param-HideApp="true"
+                               param-AppContainer="@("#app-container")" />
+                }
             }
         }
 

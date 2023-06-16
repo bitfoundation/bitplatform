@@ -160,10 +160,6 @@ public partial class BitSplitButton<TItem> where TItem : class
             BitButtonSize.Large => $"{RootElementClass}-lg",
             _ => $"{RootElementClass}-md"
         });
-
-        ClassBuilder.Register(() => _isCalloutOpen
-                                       ? $"{RootElementClass}-omn"
-                                       : string.Empty);
     }
 
     protected override void OnInitialized()

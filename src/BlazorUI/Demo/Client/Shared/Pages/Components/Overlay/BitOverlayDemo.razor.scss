@@ -43,10 +43,10 @@
 
 ::deep {
     .overlay {
-        z-index: 9999;
+        z-index: 10;
         align-items: center;
         justify-content: center;
-        background-color: $bit-color-background-callout;
+        background-color: $bit-color-background-overlay;
     }
 
     .close-button {

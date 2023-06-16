@@ -2,22 +2,10 @@
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 
-::deep * {
-    box-sizing: border-box;
-}
-
-::deep h1, h2, h3, h4, h5 {
-    margin: 0;
-}
-
-::deep p {
-    margin: 0;
-}
-
 .main {
-    position: relative;
     width: 100%;
     min-height: 100vh;
+    position: relative;
     padding-top: rem(48px);
     box-sizing: border-box;
     background-color: $SecondaryColor;

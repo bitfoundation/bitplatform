@@ -2,6 +2,7 @@
 
 <LayoutView Layout="@typeof(MainLayout)">
     <Router AppAssembly="@GetType().Assembly"
+            AdditionalAssemblies="@(new[] { Assembly.Load(BlazorModeDetector.Current.IsBlazorHybrid() ? "Bit.BlazorUI.Demo.Client.App" : "Bit.BlazorUI.Demo.Client.Web") })"
             OnNavigateAsync="@OnNavigateAsync">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />

@@ -9,7 +9,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.5" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.7" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
 
@@ -23,7 +23,7 @@
         </PackageReference>
 
 
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.1.2" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />

@@ -12,28 +12,17 @@
         .bit-spl-opb, .bit-spl-chb {
             cursor: default;
             pointer-events: none;
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
             border-color: $color-border-disabled;
             background-color: $color-background-disabled;
         }
-    }
-
-    .bit-spl-omn {
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 999;
-        display: none;
-        position: fixed;
-        background-color: transparent;
     }
 }
 
 .bit-spl-pri {
     .bit-spl-opb,
     .bit-spl-chb {
-        color: $color-secondary-main;
+        color: $color-primary-text;
         border-color: $color-primary-main;
         background-color: $color-primary-main;
 
@@ -66,9 +55,9 @@
 .bit-spl-std {
     .bit-spl-opb,
     .bit-spl-chb {
-        color: $color-text-primary;
-        border-color: $color-border-primary2;
-        background-color: $color-background-primary;
+        color: $color-secondary-text;
+        border-color: $color-border-primary;
+        background-color: $color-secondary-main;
 
         @media (hover: hover) {
             &:hover {
@@ -83,14 +72,14 @@
 
     &.bit-spl-omn {
         .bit-spl-chb {
-            border-color: $color-border-primary2;
+            border-color: $color-action-active-border-primary;
             background-color: $color-action-active-background-primary;
         }
     }
 
     .bit-spl-spb {
         width: spacing(0.0625);
-        background-color: $color-border-primary2;
+        background-color: $color-border-primary;
     }
 }
 
@@ -105,7 +94,7 @@
 
 .bit-spl-md {
     font-size: spacing(1.75);
-    line-height: $typography-line-height-buttons;
+    line-height: $typography-line-height;
 
     .bit-spl-opb {
         padding: spacing(0.5) spacing(2);
@@ -126,9 +115,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 999;
     display: none;
     position: fixed;
+    z-index: $zindex-overlay;
     background-color: transparent;
 }
 
@@ -162,7 +151,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
@@ -188,16 +177,16 @@
 }
 
 .bit-spl-its {
-    z-index: $space-overlay-zindex1;
     display: none;
     position: fixed;
     overflow: hidden auto;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     min-width: spacing(22.5);
     animation-fill-mode: both;
-    box-shadow: $shadow-callout;
     animation-duration: 0.367s;
-    background-color: $color-secondary-main;
+    box-shadow: $box-shadow-callout;
+    background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
@@ -230,8 +219,8 @@
     padding: spacing(1);
     align-items: center;
     line-height: inherit;
-    color: $color-text-primary;
     background-color: transparent;
+    color: $color-foreground-primary;
 
     .bit-icon {
         color: $color-primary-main;
@@ -247,10 +236,10 @@
 
     &.bit-dis {
         cursor: default;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
 
         .bit-icon {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 }

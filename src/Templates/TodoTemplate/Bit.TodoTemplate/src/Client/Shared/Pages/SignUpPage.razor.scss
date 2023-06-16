@@ -25,23 +25,8 @@
     font-weight: 600;
     font-size: rem(16px);
     line-height: rem(24px);
-    width: rem(432px);
+    max-width: rem(432px);
     height: rem(48px);
-
-    @include lg {
-        width: rem(368px);
-        height: rem(40px);
-    }
-
-    @include md {
-        width: rem(364px);
-        height: rem(40px);
-    }
-
-    @include sm {
-        width: rem(280px);
-        height: rem(60px);
-    }
 
     @include lt-xl {
         font-size: rem(14px);

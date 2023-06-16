@@ -11,8 +11,84 @@ public partial class App
 #endif
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     private bool _cultureHasNotBeenSet = true;
+
+#if BlazorHybrid
+    protected override async Task OnInitializedAsync()
+    {
+        SetupThemeAndBodyClasses();
+        await base.OnInitializedAsync();
+    }
+#else
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            SetupThemeAndBodyClasses();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+#endif
+
+    private void SetupThemeAndBodyClasses()
+    {
+        BitThemeManager.init(_jsRuntime);
+
+        var cssClasses = new List<string>();
+
+        if (BlazorModeDetector.Current.IsBlazorWebAssembly())
+        {
+            cssClasses.Add("bit-blazor-wasm");
+        }
+        else if (BlazorModeDetector.Current.IsBlazorServer())
+        {
+            cssClasses.Add("bit-blazor-server");
+        }
+        else if (BlazorModeDetector.Current.IsBlazorHybrid())
+        {
+            cssClasses.Add("bit-blazor-hybrid");
+
+            if (OperatingSystem.IsWindows())
+            {
+                cssClasses.Add("bit-windows");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                cssClasses.Add("bit-linux");
+            }
+            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            {
+                cssClasses.Add("bit-macos");
+            }
+            else if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+            {
+                cssClasses.Add("bit-ios");
+            }
+            else if (OperatingSystem.IsAndroid())
+            {
+                cssClasses.Add("bit-android");
+            }
+        }
+        else if (BlazorModeDetector.Current.IsBlazorElectron())
+        {
+            cssClasses.Add("bit-blazor-electron");
+        }
+
+        var cssVariables = new Dictionary<string, string>();
+        var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
+
+        if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        {
+            //This is handled in css using safe-area env() variables
+            statusBarHeight = 0;
+        }
+
+        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight}px");
+        _ = _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
+    }
 
     private async Task OnNavigateAsync(NavigationContext args)
     {

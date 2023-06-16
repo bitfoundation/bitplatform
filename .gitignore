@@ -216,6 +216,9 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
@@ -245,24 +248,6 @@ _book
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
-/src/BlazorUI/Demo/Client/App/Styles
-/src/BlazorUI/Demo/Client/App/Shared
-/src/BlazorUI/Demo/Client/App/Services
-/src/BlazorUI/Demo/Client/App/Scripts
-/src/BlazorUI/Demo/Client/App/Pages
-/src/BlazorUI/Demo/Client/App/Models
-/src/BlazorUI/Demo/Client/App/Extensions
-/src/BlazorUI/Demo/Client/App/Components
-/src/BlazorUI/Demo/Client/App/wwwroot/styles
-/src/BlazorUI/Demo/Client/App/wwwroot/scripts
-/src/BlazorUI/Demo/Client/App/wwwroot/images
-/src/BlazorUI/Demo/Client/App/wwwroot/fonts
-/src/BlazorUI/Demo/Client/App/tsconfig.json
-/src/BlazorUI/Demo/Client/App/_Imports.razor
-/src/BlazorUI/Demo/Client/App/Main.razor
-/src/BlazorUI/Demo/Client/App/compilerconfig.json.defaults
-/src/BlazorUI/Demo/Client/App/compilerconfig.json
-/src/BlazorUI/Demo/Client/App/appsettings.json
 /src/BlazorUI/Demo/Server/Api/BitFileUploaderFiles
 /src/BlazorUI/Demo/Server/Api/Properties/PublishProfiles/*.*
 /src/BlazorUI/Demo/Server/Api/Properties/ServiceDependencies/*.*

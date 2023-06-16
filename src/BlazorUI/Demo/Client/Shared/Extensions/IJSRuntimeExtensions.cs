@@ -16,9 +16,9 @@ public static class IJSRuntimeExtensions
         await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
     }
 
-    public static async Task ToggleBitTheme(this IJSRuntime jsRuntime, bool isDark)
+    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
-        await jsRuntime.InvokeVoidAsync("toggleBitTheme", isDark);
+        await jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
     }
 }
 
