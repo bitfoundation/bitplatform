@@ -248,8 +248,4 @@ _book
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
-/src/BlazorUI/Demo/Server/Api/BitFileUploaderFiles
-/src/BlazorUI/Demo/Server/Api/Properties/PublishProfiles/*.*
-/src/BlazorUI/Demo/Server/Api/Properties/ServiceDependencies/*.*
-
 custom.aprof

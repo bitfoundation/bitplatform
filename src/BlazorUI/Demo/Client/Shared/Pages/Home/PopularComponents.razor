@@ -20,11 +20,11 @@
                 </button>
             }
         </div>
-        <BitCarousel Class="component-carousel" ShowNextPrev=false>
+        <BitCarousel Class="component-carousel" ShowNextPrev="false" OnChange="index => SelectComponent(Components[index])">
             @foreach (var com in Components)
             {
                 <BitCarouselItem Style="width: 100%">
-                    <button class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)" @onclick="(() => SelectComponent(com))">
+                    <button class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)">
                         <div class="component-icon">
                             <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                         </div>
