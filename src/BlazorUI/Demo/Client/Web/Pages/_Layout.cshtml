@@ -49,7 +49,6 @@
     <meta name="description" content="Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="@shoudAddAspAppendVersion">
-    <link rel="stylesheet" href="/prism-1.28.0/prism-okaidia.min.css" />
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     @if (isPwa)
     {
@@ -75,6 +74,7 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-okaidia.min.css" />
 </head>
 <body class="@BitCss.Color.Background.Primary @BitCss.Color.Foreground.Primary">
     <div id="app-container">
@@ -87,9 +87,9 @@
 
     @if (isStatic is false)
     {
-        <script src="/prism-1.28.0/prism.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-        <script src="/prism-1.28.0/prism-csharp.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-        <script src="/prism-1.28.0/prism-cshtml.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism.min.js"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-csharp.min.js"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-cshtml.min.js"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         <script src="_content/Bit.BlazorUI.Demo.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>

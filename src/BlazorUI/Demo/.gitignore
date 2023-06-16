@@ -231,3 +231,4 @@ custom.aprof
 
 /Client/Shared/**/*.css
 /Client/Shared/wwwroot/scripts/app*.js
+!/Client/Shared/wwwroot/prism-1.28.0/prism-okaidia.min.css
