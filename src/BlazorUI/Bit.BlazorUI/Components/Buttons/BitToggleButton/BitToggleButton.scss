@@ -46,14 +46,14 @@
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-action-hover-primary-dark;
-                background-color: $color-action-hover-primary-dark;
+                border-color: $color-primary-dark;
+                background-color: $color-primary-dark;
             }
         }
 
         &:active {
-            border-color: $color-action-active-primary-dark;
-            background-color: $color-action-active-primary-dark;
+            border-color: $color-primary-dark;
+            background-color: $color-primary-dark;
         }
     }
 }
@@ -78,12 +78,12 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-secondary-dark;
+                background-color: $color-secondary-dark;
             }
         }
 
         &:active {
-            background-color: $color-action-active-secondary-dark;
+            background-color: $color-secondary-dark;
         }
     }
 }

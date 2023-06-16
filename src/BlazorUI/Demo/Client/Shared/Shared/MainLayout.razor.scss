@@ -42,6 +42,38 @@ main {
     }
 }
 
+::deep {
+    .page-container {
+        width: 100%;
+    }
+
+    .page-section {
+        width: 100%;
+        overflow: hidden;
+        padding: rem(28px);
+        position: relative;
+        box-sizing: border-box;
+        border-radius: rem(2px);
+        margin-bottom: rem(28px);
+        box-shadow: $bit-box-shadow-callout;
+        color: $bit-color-foreground-secondary;
+        background-color: $bit-color-background-primary;
+    }
+
+    .title {
+        margin-bottom: rem(50px);
+    }
+
+    .subtitle {
+        margin-bottom: rem(35px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .section-title {
+        color: $bit-color-foreground-primary;
+    }
+}
+
 .bit-ios {
     main {
         padding-top: calc(rem($HeaderHeight) + env(safe-area-inset-top));

@@ -2,16 +2,16 @@
 
 <section class="box" id="@ExampleId">
     <div class="box-header">
-        <BitTypography Variant="BitTypographyVariant.H5">@Title</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H5" Class="section-title">@Title</BitTypography>
         <div class="header-btn-group">
-            <BitToggleButton Class="com-example-box-header-btn"
-                             @bind-IsChecked="showCode"
+            <BitToggleButton @bind-IsChecked="showCode"
+                             Class="header-btn show-code"
                              IconName="BitIconName.CodeEdit"
                              ButtonStyle="BitButtonStyle.Standard"
                              Label="@(showCode ? "Hide code" : "Show code")"
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
-            <BitIconButton Class="com-example-box-header-btn"
+            <BitIconButton Class="header-btn copy-link"
                            IconName="BitIconName.Link"
                            Title="Copy link"
                            OnClick="@CopyLinkToClipboard">
@@ -22,10 +22,10 @@
     <div class="box-content">
         @if (showCode)
         {
-            <BitIconButton Class="com-example-box-copy-btn"
-                       OnClick=CopyCodeToClipboard
-                       IconName="BitIconName.Copy"
-                       Title="Copy source">
+            <BitIconButton Class="copy-btn"
+                           OnClick=CopyCodeToClipboard
+                           IconName="BitIconName.Copy"
+                           Title="Copy source">
             </BitIconButton>
 
             <pre class="code">
@@ -34,11 +34,11 @@
                 @if (CSharpSourceCode.HasValue())
                 {
                 <code class="language-csharp">
-&#64code {
-     @CSharpSourceCode.Trim().Replace("\n", "\n     ")
-}</code>
+                &#64code {
+                        @CSharpSourceCode.Trim().Replace("\n", "\n     ")
+                }</code>
                 }
-             </pre>
+                     </pre>
         }
 
         <div class="example-container">

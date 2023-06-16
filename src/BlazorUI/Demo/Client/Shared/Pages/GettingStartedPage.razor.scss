@@ -3,25 +3,6 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
-.page-container {
-    width: 100%;
-}
-
-.page-section {
-    width: 100%;
-    padding: rem(28px);
-    position: relative;
-    box-sizing: border-box;
-    border-radius: rem(2px);
-    margin-bottom: rem(28px);
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-primary;
-}
-
-::deep .title {
-    margin-bottom: rem(50px);
-}
-
 .txt--blue {
     color: $B3Color;
 }

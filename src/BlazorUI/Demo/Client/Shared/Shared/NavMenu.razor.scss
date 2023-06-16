@@ -76,6 +76,6 @@
     height: calc(100% - #{rem(89px)});
 
     &::-webkit-scrollbar {
-        width: rem(6px);
+        width: rem(0px);
     }
 }
