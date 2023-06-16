@@ -16,27 +16,56 @@
     border-radius: rem(4px);
     margin-bottom: rem(28px);
     background-clip: padding-box;
-    background-color: $bit-color-background-primary2;
-    border: rem(1px) solid $bit-color-background-primary3;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+::deep .title {
+    margin-bottom: rem(50px);
+}
+
+.code-box {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding: rem(8px);
+    user-select: text;
+    margin: rem(16px) 0;
+    white-space: nowrap;
+    align-items: center;
+    box-sizing: border-box;
+    -webkit-user-select: text;
+    justify-content: flex-start;
+    background-color: $bit-color-background-secondary;
+    border-left: rem(4px) solid $bit-color-border-secondary;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        height: rem(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem(8px);
+        background-color: $bit-color-border-secondary;
+    }
 }
 
 .colors-list {
     width: 100%;
-    height: rem(369px);
     display: flex;
     overflow: auto;
+    height: rem(369px);
     flex-flow: row wrap;
     align-items: flex-start;
     justify-content: flex-start;
 
     &::-webkit-scrollbar {
-        width: rem(6.5px);
-        height: rem(6.5px);
+        width: rem(5px);
     }
 
     &::-webkit-scrollbar-thumb {
         border-radius: rem(8px);
-        background-color: $bit-color-background-secondary3;
+        background-color: $bit-color-foreground-secondary;
     }
 }
 

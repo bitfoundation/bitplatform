@@ -6,106 +6,64 @@
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Theming</BitTypography>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit, colors are defined in CSS and SCSS variables, allowing for easy customization and flexibility, These colors are part of fluent design system and contains both dark and light mode colors that you can theme your app in anyway you like.
+            In Bit BlazorUI, color, typography, spacing, and other style properties are defined in CSS and SCSS variables, for allowing easy customization and flexibility, these variables are part of Microsoft Fluent design system and contains both dark and light mode colors that you can theme your app in anyway you like.
         </BitTypography>
+        <p>For colors you can find the SCSS files for the BitTheme on the official GitHub repository:</p>
+        <ul>
+            <li><a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-dark.scss" target="_blank">Dark Fluent SCSS file</a></li>
+            <li><a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-light.scss" target="_blank">Light Fluent SCSS file</a></li>
+        </ul>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Theming Basics</BitTypography>
-        <ol>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Light and Dark Themes</BitTypography>
-            <ul>
-                <li>
-                    Bit BlazorUI Components offers support for both light and dark color schemes.
-                </li>
-                <li>
-                    The light theme consists of a light background with darker text and primary colors.
-                </li>
-                <li>
-                    The dark theme features a dark background with lighter text and accent colors.
-                </li>
-                <li>
-                    Users can switch between these themes based on their preferences or the application's requirements.
-                </li>
-            </ul>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>CSS and SCSS Variables</BitTypography>
-            <ul>
-                <li>
-                    The colors used in the Bit BlazorUI Components website are defined using CSS and SCSS variables.
-                </li>
-                <li>
-                    CSS variables allow for dynamic color changes throughout the application.
-                </li>
-                <li>
-                    SCSS variables, which can be compiled into CSS variables, offer enhanced features such as nesting and inheritance.
-                </li>
-            </ul>
-        </ol>
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Initialization</BitTypography>
+        <p>To initialize the BitThemeManager, you can use the <code>OnAfterRender</code> method in your <code>App</code> component (usually found in the <code>App.razor.cs</code> file). Here's an example:</p>
+        <pre><code>public partial class App
+{
+    [Inject] private IJSRuntime _jsRuntime = default!;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            BitThemeManager.Init(_jsRuntime);
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+}       </code></pre>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Implementing Theming</BitTypography>
-        <ol>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Theme CSS Variables</BitTypography>
-            <ul>
-                <li>
-                    Open the CSS or SCSS file containing the theme variables for Bit BlazorUI Components.
-                </li>
-                <li>
-                    Locate the section where the colors are defined.
-                </li>
-                <li>
-                    Update the variable values to reflect the desired color scheme for the website.
-                </li>
-            </ul>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Applying Theme Colors</BitTypography>
-            <ul>
-                <li>
-                    Bit BlazorUI Components utilize the defined CSS and SCSS variables to apply the appropriate colors.
-                </li>
-                <li>
-                    For each component, verify that the styles are referencing the theme variables for colors.
-                </li>
-                <li>
-                    Update the component styles or templates to use the appropriate theme variables for background colors, text colors, borders, etc.
-                </li>
-            </ul>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Theming Ready Components</BitTypography>
-            <ul>
-                <li>
-                    Bit BlazorUI Components are designed to be theming ready, meaning they inherently support both light and dark themes.
-                </li>
-                <li>
-                    When the theme is changed, the components should automatically adjust their appearance based on the updated theme variables.
-                </li>
-                <li>
-                    Test the components after applying the theme changes to ensure they reflect the selected color scheme correctly.
-                </li>
-            </ul>
-        </ol>
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Applying BitTheme</BitTypography>
+        <p>To apply the BitTheme styles to your web application, you can use the <code>Apply</code> method provided by the BitThemeManager. The <code>Apply</code> method accepts two parameters: the custom theme and the target <code>Element Refrence</code>.</p>
+        <p>Here's an example of how to apply the BitTheme to the entire body:</p>
+        <div class="code-box">BitThemeManager.Apply(myTheme)</div>
+        <p>You can also apply the BitTheme to specific elements by passing it's Element Refrence as the target:</p>
+        <div class="code-box">BitThemeManager.Apply(myTheme, _myElementRef)</div>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Additional Considerations</BitTypography>
-        <ol>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Accessibility</BitTypography>
-            <ul>
-                <li>
-                    While theming can enhance the visual experience, it is crucial to maintain accessibility standards.
-                </li>
-                <li>
-                    Ensure that the contrast between text and background colors meets accessibility requirements.
-                </li>
-                <li>
-                    Test the website using appropriate tools or guidelines to confirm accessibility compliance.
-                </li>
-            </ul>
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Customizing Themes</BitTypography>
-            <ul>
-                <li>
-                    Developers can go beyond the provided light and dark themes by creating custom themes.
-                </li>
-                <li>
-                    Experiment with different color combinations by modifying the theme variables to achieve a unique look and feel.
-                </li>
-            </ul>
-        </ol>
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Full Code Example</BitTypography>
+        <p>Here's an full example of how you can use the BitTheme class to customize the theme of your web application:</p>
+        <pre><code>&lt;div @@ref="_myElementRef">Content...&lt;/div>
+
+@@code {
+    private ElementReference _myElementRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Customize the theme properties
+            var newTheme = new BitTheme();
+            newTheme.Color.Primary.Main = "gold";
+            newTheme.Color.Action.Hover.Primary = "red";
+            newTheme.Color.Action.Active.Primary = "blue";
+
+            // Apply the customized theme
+            await BitThemeManager.ApplyBitTheme(newTheme, _myElementRef);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
+        </code></pre>
     </section>
 </div>
