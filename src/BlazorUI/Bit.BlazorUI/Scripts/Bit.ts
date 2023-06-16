@@ -21,70 +21,45 @@ class Bit {
     static currentCallout: BitCalloutComponent = new BitCalloutComponent();
     static currentDropdownCalloutResponsiveModeIsEnabled = false;
 
-    //static init() {
-    //    Bit.currentCallout = new BitCalloutComponent();
-    //}
-
     static setProperty(element: Record<string, any>, property: string, value: any): void {
+        if (!element) return;
         element[property] = value;
     }
 
     static getProperty(element: Record<string, any>, property: string): string | null {
-        return element[property];
+        return element?.[property];
     }
 
     static getClientHeight(element: HTMLElement): number {
-        return element.clientHeight;
+        return element?.clientHeight;
     }
 
     static getBoundingClientRect(element: HTMLElement): DOMRect {
-        return element.getBoundingClientRect();
+        return element?.getBoundingClientRect();
     }
 
     static scrollElementIntoView(targetElementId: string) {
         const element = document.getElementById(targetElementId);
+        if (!element) return;
 
-        if (element != null) {
-            element.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest"
-            });
-        }
-    }
-
-    static closeCurrentCalloutIfExists(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        if (Bit.currentCallout.calloutId.length === 0 || Bit.currentCallout.overlayId.length === 0) {
-            Bit.currentCallout.update(calloutId, overlayId, obj);
-            return;
-        }
-
-        if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
-            const callout = document.getElementById(Bit.currentCallout.calloutId);
-            if (callout == null)
-                return;
-
-            const overlay = document.getElementById(Bit.currentCallout.overlayId);
-            if (overlay == null)
-                return;
-
-            callout.style.display = "none";
-            overlay.style.display = "none";
-            Bit.currentCallout.objRef?.invokeMethodAsync("CloseCallout");
-            Bit.currentCallout.update(calloutId, overlayId, obj);
-        }
+        element.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest"
+        });
     }
 
     static selectText(element: HTMLInputElement) {
-        element.select();
+        element?.select();
     }
 
     static setStyle(element: HTMLElement, key: string, value: string) {
+        if (!element || !element.style) return;
         (element.style as any)[key] = value;
     }
 
     static preventDefault(element: HTMLElement, event: string) {
-        element.addEventListener(event, e => e.preventDefault(), { passive: false });
+        element?.addEventListener(event, e => e.preventDefault(), { passive: false });
     }
 
     static getComputedTransform(element: HTMLElement) {
@@ -127,5 +102,28 @@ class Bit {
             return result.toString(16);
         });
         return result;
+    }
+
+
+    static closeCurrentCalloutIfExists(calloutId: string, overlayId: string, obj: DotNetObject | null) {
+        if (Bit.currentCallout.calloutId.length === 0 || Bit.currentCallout.overlayId.length === 0) {
+            Bit.currentCallout.update(calloutId, overlayId, obj);
+            return;
+        }
+
+        if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
+            const callout = document.getElementById(Bit.currentCallout.calloutId);
+            if (callout == null)
+                return;
+
+            const overlay = document.getElementById(Bit.currentCallout.overlayId);
+            if (overlay == null)
+                return;
+
+            callout.style.display = "none";
+            overlay.style.display = "none";
+            Bit.currentCallout.objRef?.invokeMethodAsync("CloseCallout");
+            Bit.currentCallout.update(calloutId, overlayId, obj);
+        }
     }
 }

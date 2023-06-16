@@ -15,7 +15,7 @@ public partial class BitCarousel : IDisposable
     private int scrollItemsCount = 1;
 
     private string _resizeObserverId = string.Empty;
-    private DotNetObjectReference<BitCarousel>? _dotnetObjectReference = default!;
+    private DotNetObjectReference<BitCarousel>? _dotnetObjRef = default!;
 
     private System.Timers.Timer _autoPlayTimer = default!;
 
@@ -82,6 +82,11 @@ public partial class BitCarousel : IDisposable
     /// </summary>
     [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
 
+    /// <summary>
+    /// The event that will be called on carousel page navigation.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnChange { get; set; }
+
 
 
     public async Task GoPrev()
@@ -127,8 +132,8 @@ public partial class BitCarousel : IDisposable
 
         if (firstRender is false) return;
 
-        _dotnetObjectReference = DotNetObjectReference.Create(this);
-        _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+        _dotnetObjRef = DotNetObjectReference.Create(this);
+        _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjRef, "OnRootResize");
 
         if (AutoPlay)
         {
@@ -153,7 +158,7 @@ public partial class BitCarousel : IDisposable
 
         var itemsCount = AllItems.Count;
         var rect = await _js.GetBoundingClientRect(_carousel);
-
+        if (rect is null) return;
         var sign = Direction == BitDirection.RightToLeft ? -1 : 1;
         for (int i = 0; i < itemsCount; i++)
         {
@@ -266,6 +271,7 @@ public partial class BitCarousel : IDisposable
 
         _currentIndices = newIndices;
         _currentPage = (int)Math.Floor((decimal)_currentIndices[0] / VisibleItemsCount);
+        _ = OnChange.InvokeAsync(_currentPage);
 
         SetNavigationButtonsVisibility();
 
@@ -363,10 +369,10 @@ public partial class BitCarousel : IDisposable
             _autoPlayTimer.Dispose();
         }
 
-        if (_dotnetObjectReference is not null)
+        if (_dotnetObjRef is not null)
         {
-            _dotnetObjectReference.Dispose();
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId, _dotnetObjRef);
+            //_dotnetObjRef.Dispose();
         }
 
         _disposed = true;

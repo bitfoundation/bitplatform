@@ -83,6 +83,13 @@ public partial class BitCarouselDemo
             Type = "Direction",
             DefaultValue = "Direction.LeftToRight",
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<int>",
+            DefaultValue = "null",
+            Description = "The event that will be called on carousel page navigation."
         }
     };
 

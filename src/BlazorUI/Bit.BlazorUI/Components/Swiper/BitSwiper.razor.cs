@@ -22,7 +22,7 @@ public partial class BitSwiper : IDisposable
     private string _rightButtonStyle = string.Empty;
 
     private string _resizeObserverId = string.Empty;
-    private DotNetObjectReference<BitSwiper>? _dotnetObjectReference = default!;
+    private DotNetObjectReference<BitSwiper>? _dotnetObjRef = default!;
 
     private ElementReference _swiper = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
@@ -124,8 +124,8 @@ public partial class BitSwiper : IDisposable
             //    _autoPlayTimer.Start();
             //}
 
-            _dotnetObjectReference = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+            _dotnetObjRef = DotNetObjectReference.Create(this);
+            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjRef, "OnRootResize");
 
             await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
 
@@ -276,10 +276,10 @@ public partial class BitSwiper : IDisposable
             _autoPlayTimer.Dispose();
         }
 
-        if (_dotnetObjectReference is not null)
+        if (_dotnetObjRef is not null)
         {
-            _dotnetObjectReference.Dispose();
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId, _dotnetObjRef);
+            //_dotnetObjRef.Dispose();
         }
 
         _disposed = true;
