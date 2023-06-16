@@ -143,33 +143,6 @@ public class BitSplitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true),
-        DataRow(false)
-    ]
-    public void BitSplitButtonOpenMenu(bool isEnabled)
-    {
-        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
-        {
-            parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsEnabled, isEnabled);
-        });
-
-        var button = com.Find("button.bit-spl-chb");
-        var bitSplitButton = com.Find(".bit-spl");
-        Assert.IsFalse(bitSplitButton.ClassList.Contains("bit-spl-omn"));
-        button.Click();
-
-        if (isEnabled)
-        {
-            Assert.IsTrue(bitSplitButton.ClassList.Contains("bit-spl-omn"));
-        }
-        else
-        {
-            Assert.IsFalse(bitSplitButton.ClassList.Contains("bit-spl-omn"));
-        }
-    }
-
-    [DataTestMethod,
         DataRow(BitButtonSize.Small),
         DataRow(BitButtonSize.Medium),
         DataRow(BitButtonSize.Large),

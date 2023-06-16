@@ -124,8 +124,12 @@ $box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
-$space-overlay-zindex0: var(--bit-spa-ovr-zindex0);
-$space-overlay-zindex1: var(--bit-spa-ovr-zindex1);
+
+//z-index
+$zindex-snackbar: var(--bit-zin-snackbar);
+$zindex-modal: var(--bit-zin-modal);
+$zindex-callout: var(--bit-zin-callout);
+$zindex-overlay: var(--bit-zin-overlay);
 
 //shape
 $shape-border-radius: var(--bit-shp-brd-radius);
@@ -136,8 +140,6 @@ $shape-border-style: var(--bit-shp-brd-style);
 $typography-font-family: var(--bit-tpg-font-family);
 $typography-font-weight: var(--bit-tpg-font-weight);
 $typography-line-height: var(--bit-tpg-line-height);
-$typography-line-height-buttons: var(--bit-tpg-line-height-btns);
-$typography-font-family-icons: var(--bit-tpg-font-family-icons);
 $typography-gutter-size: var(--bit-tpg-gutter-size);
 
 // body1

@@ -326,7 +326,6 @@
             align-items: center;
             justify-content: center;
             font-size: spacing(1.375);
-            font-family: $typography-font-family-icons;
         }
     }
 
@@ -382,69 +381,6 @@
 
                     .bit-drp-chm {
                         color: $color-action-hover-secondary;
-                    }
-                }
-            }
-        }
-    }
-
-    &.bit-dis {
-        pointer-events: none;
-
-        .bit-drp-chb-ctn {
-            cursor: default;
-        }
-
-        .bit-drp-chb {
-            border-color: $color-neutrals-gray60;
-            background-color: $color-background-primary;
-
-            .bit-drp-chm {
-                opacity: 1;
-                color: $color-neutrals-white;
-                background-color: $color-background-primary;
-            }
-        }
-
-        .bit-drp-txt {
-            color: $color-neutrals-gray60;
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                .bit-drp-chb {
-                    border-color: $color-neutrals-gray60;
-
-                    .bit-drp-chm {
-                        opacity: 0;
-                    }
-                }
-            }
-        }
-
-        &.bit-drp-chd {
-            .bit-drp-chb {
-                border-color: $color-neutrals-gray60;
-                background-color: $color-neutrals-gray60;
-
-                .bit-drp-chm {
-                    color: $color-neutrals-white;
-                    background-color: $color-neutrals-gray60;
-                    opacity: 1;
-                }
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-drp-chb {
-                        border-color: $color-neutrals-gray60;
-                        background-color: $color-neutrals-gray60;
-
-                        .bit-drp-chm {
-                            color: $color-neutrals-white;
-                            background-color: $color-neutrals-gray60;
-                            opacity: 1;
-                        }
                     }
                 }
             }
@@ -629,8 +565,8 @@
     height: 100%;
     display: none;
     position: fixed;
+    z-index: $zindex-overlay;
     background-color: transparent;
-    z-index: $space-overlay-zindex0;
 }
 
 .bit-drp-clr {
@@ -654,10 +590,10 @@
     font-weight: 400;
     overflow: hidden;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
     animation-duration: 0.367s;
-    z-index: $space-overlay-zindex1;
     box-shadow: $box-shadow-callout;
     background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;

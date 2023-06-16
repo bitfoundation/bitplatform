@@ -5,7 +5,7 @@
     position: fixed;
     gap: spacing(1.25);
     flex-flow: column nowrap;
-    z-index: $space-overlay-zindex0;
+    z-index: $zindex-snackbar;
 
     @keyframes bit-snackbar-progress-animation {
         from {

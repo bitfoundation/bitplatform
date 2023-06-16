@@ -28,7 +28,7 @@ main {
         position: relative;
         padding: rem(40px);
         max-width: calc(100% - $NavMenuWidth);
-        background-color: $bit-color-background-disabled;
+        background-color: $bit-color-background-secondary;
 
         @include md {
             max-width: 100%;
