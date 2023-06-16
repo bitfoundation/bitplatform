@@ -29,16 +29,17 @@
             </BitIconButton>
 
             <pre class="code">
-            <code class="language-cshtml">@HTMLSourceCode.Trim()</code>
+                <code class="language-cshtml">@HTMLSourceCode.Trim()</code>
 
                 @if (CSharpSourceCode.HasValue())
                 {
-                <code class="language-csharp">
-                &#64code {
-                        @CSharpSourceCode.Trim().Replace("\n", "\n     ")
-                }</code>
+                    <code class="language-csharp">
+&#64code {
+     @CSharpSourceCode.Trim().Replace("\n", "\n     ")
+}
+                    </code>
                 }
-                     </pre>
+            </pre>
         }
 
         <div class="example-container">
