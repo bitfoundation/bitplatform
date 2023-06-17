@@ -58,10 +58,6 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="DotNetToolRestore" AfterTargets="BeforeBuild">
-        <Exec Command="dotnet tool restore" StandardOutputImportance="high" />
-    </Target>
-
     <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />

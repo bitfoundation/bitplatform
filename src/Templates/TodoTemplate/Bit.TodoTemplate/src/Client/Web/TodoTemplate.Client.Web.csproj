@@ -72,7 +72,7 @@
         <Exec Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
-        <Exec Condition="'$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
+        <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
     </Target>
 
 </Project>
