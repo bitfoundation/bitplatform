@@ -33,7 +33,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -105,7 +104,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -177,7 +175,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -221,7 +218,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -275,7 +271,6 @@ jobs:
      - uses: actions/setup-node@v3
        with:
         node-version: latest
-     - run: npm i sass -g
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 

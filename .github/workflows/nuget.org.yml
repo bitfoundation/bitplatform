@@ -32,7 +32,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: dotnet restore BlazorUI
       run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false

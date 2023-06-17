@@ -32,7 +32,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorDual.Web/BlazorDual.Web.csproj
