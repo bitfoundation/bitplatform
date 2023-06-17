@@ -48,6 +48,15 @@ public partial class BitIconButtonDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitIconButtonClassStyles",
+            DefaultValue = "",
+            Href = "class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the component."
+        },
+        new()
+        {
             Name = "Href",
             Type = "string",
             DefaultValue = "",
@@ -80,6 +89,46 @@ public partial class BitIconButtonDemo
             Type = "string",
             DefaultValue = "",
             Description = "The title to show when the mouse is placed on the icon button.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitIconButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for the modal container.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS style."
+               }
+            }
         }
     };
 
