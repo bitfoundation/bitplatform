@@ -3,11 +3,15 @@
         <HeaderTemplate Context="isExpanded">
             @if (isExpanded)
             {
-                <BitIconButton IconName="BitIconName.ChevronDown" Class="acc-icon" />
+                <BitIconButton IconName="BitIconName.ChevronDown"
+                               Class="acc-icon"
+                               ClassStyles="@(new() { Icon = new() { Class = "bold-icon" } })" />
             }
             else
             {
-                <BitIconButton IconName="BitIconName.ChevronRight" Class="acc-icon" />
+                <BitIconButton IconName="BitIconName.ChevronRight"
+                               Class="acc-icon"
+                               ClassStyles="@(new() { Icon = new() { Class = "bold-icon" } })" />
             }
             <div class="acc-title">@Title</div>
         </HeaderTemplate>
