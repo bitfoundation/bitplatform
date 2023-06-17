@@ -23,6 +23,7 @@ public static class Services
 
 #if BlazorWebAssembly
         services.AddClientSharedServices();
+        services.AddClientWebServices();
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
