@@ -191,7 +191,7 @@
 }
 
 ::deep {
-    .bit-mdl-ctn {
+    .modal-container {
         min-width: rem(500px);
 
         @include sm {
@@ -237,20 +237,20 @@
     }
 
     .modal-txt {
-        margin-bottom: rem(24px);
         text-align: left;
+        margin-bottom: rem(24px);
     }
 
     .validation-message {
         color: #a4262c;
-        margin-top: rem(-20px);
-        font-size: rem(12px);
         text-align: left;
+        font-size: rem(12px);
+        margin-top: rem(-20px);
     }
 
     .close-btn {
-        position: absolute;
         top: rem(16px);
         right: rem(16px);
+        position: absolute;
     }
 }

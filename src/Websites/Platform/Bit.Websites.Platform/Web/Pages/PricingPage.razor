@@ -81,7 +81,7 @@
         </div>
     </section>
 
-    <BitModal IsOpen=@IsBuyModalOpen>
+    <BitModal IsOpen=@IsBuyModalOpen ClassStyles="@(new() { Container = new() { Class = "modal-container" } })">
         <EditForm Model="BuyPackageModel" OnValidSubmit="SendMessage" class="form">
             <DataAnnotationsValidator />
 
