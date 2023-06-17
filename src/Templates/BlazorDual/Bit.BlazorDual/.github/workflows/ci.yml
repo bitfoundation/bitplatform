@@ -27,7 +27,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: Build
       run: dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

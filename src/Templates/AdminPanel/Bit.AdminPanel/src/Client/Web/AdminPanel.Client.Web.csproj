@@ -31,13 +31,13 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="5.1.0-pre-01" />
-        <PackageReference Include="Bit.Bswup" Version="5.1.0-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-01">
+		<PackageReference Include="Bit.Bup" Version="5.1.0-pre-02" />
+        <PackageReference Include="Bit.Bswup" Version="5.1.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -69,5 +69,16 @@
         </Content>
         <PackageReference Include="ElectronNET.API" Version="23.6.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+        <Exec Command="dotnet electronize version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
+        </Exec>
+        <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
+    </Target>
     
 </Project>

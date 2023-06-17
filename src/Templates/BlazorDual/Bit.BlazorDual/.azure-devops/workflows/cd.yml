@@ -28,10 +28,6 @@ jobs:
     inputs:
       versionSpec: '18.x'
     displayName: 'Install Node.js'
-
-  - script: |
-      npm install sass -g
-    displayName: 'npm i sass -g'
       
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'
@@ -50,8 +46,9 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        dotnet tool install --global dotnet-ef --version 7.0.0
-        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
+        dotnet new tool-manifest
+        dotnet tool install dotnet-ef --version 7.0.7
+        dotnet dotnet-ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
       failOnStderr: true
 
   - task: FileTransform@1

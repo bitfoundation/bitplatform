@@ -11,8 +11,8 @@
         },
         "AdminPanel.Client.Web.Electron": {
             "commandName": "Executable",
-            "executablePath": "electronize",
-            "commandLineArgs": "start",
+            "executablePath": "dotnet",
+            "commandLineArgs": "electronize start",
             "workingDirectory": "."
         }
     }
