@@ -44,9 +44,9 @@ public partial class BitIconButton
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// Custom CSS classes/styles for different parts of the BitIconButton component.
     /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
+    [Parameter] public BitIconButtonClassStyles? ClassStyles { get; set; }
 
     /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
@@ -72,6 +72,11 @@ public partial class BitIconButton
     /// If Href provided, specifies how to open the link
     /// </summary>
     [Parameter] public string? Target { get; set; }
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
 
     protected override string RootElementClass => "bit-icb";
 

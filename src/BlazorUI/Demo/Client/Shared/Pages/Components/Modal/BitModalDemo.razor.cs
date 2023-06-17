@@ -30,6 +30,15 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitModalClassStyles",
+            DefaultValue = "",
+            Href = "class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the BitModal component."
+        },
+        new()
+        {
             Name = "DragElementSelector",
             Type = "string?",
             DefaultValue = "",
@@ -106,6 +115,46 @@ public partial class BitModalDemo
             Type = "string",
             DefaultValue = "",
             Description = "ARIA id for the title of the Modal, if any.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitModalClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for the modal container.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS style."
+               }
+            }
         }
     };
 

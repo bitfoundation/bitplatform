@@ -30,6 +30,11 @@ public partial class BitModal : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitModal component.
+    /// </summary>
+    [Parameter] public BitModalClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
     /// The CSS selector of the drag element. by default it's the Modal container.
     /// </summary>
     [Parameter] public string? DragElementSelector { get; set; }
