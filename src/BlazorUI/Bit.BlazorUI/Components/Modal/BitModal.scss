@@ -37,8 +37,8 @@
 
 .bit-mdl-ovl {
     inset: 0;
+    z-index: 0;
     position: absolute;
-    z-index: $zindex-overlay;
     background-color: $color-background-overlay;
 }
 
