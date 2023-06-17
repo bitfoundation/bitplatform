@@ -69,5 +69,16 @@
         </Content>
         <PackageReference Include="ElectronNET.API" Version="23.6.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+        <Exec Command="dotnet electronize version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
+    </Target>
     
 </Project>
