@@ -19,7 +19,7 @@
                     <div class="bit-mdl-ovl" aria-hidden="true" @onclick="CloseModal" />
                 }
 
-                <div id="@_containerId" class="bit-mdl-ctn">
+                <div id="@_containerId" style="@ClassStyles?.Container?.Style" class="bit-mdl-ctn @ClassStyles?.Container?.Class">
                     <div class="bit-mdl-scr-cnt">
                         @ChildContent
                     </div>
