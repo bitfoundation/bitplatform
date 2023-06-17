@@ -61,12 +61,12 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-primary;
+                background-color: $color-action-hover-secondary;
             }
         }
 
         &:active {
-            background-color: $color-action-active-background-primary;
+            background-color: $color-action-active-secondary;
         }
     }
 

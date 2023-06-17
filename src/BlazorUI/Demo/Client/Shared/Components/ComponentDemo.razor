@@ -3,27 +3,27 @@
 
 @inherits AppComponentBase
 
-<section class="component-demo-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Class="component-name">@ComponentName</BitTypography>
-    <section id="overview-section" class="demo-section">
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Class="title">@ComponentName</BitTypography>
+    <section id="overview-section" class="page-section">
         <BitTypography Variant="BitTypographyVariant.Subtitle1">
             @ComponentDescription
         </BitTypography>
     </section>
     @if (Notes.HasValue())
     {
-        <section id="notes-section" class="demo-section">
-            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Notes</BitTypography>
+        <section id="notes-section" class="page-section">
+            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Notes</BitTypography>
          @Notes
      </section>
     }
-    <section id="usage-section" class="demo-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Usage</BitTypography>
+    <section id="usage-section" class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Usage</BitTypography>
         @ChildContent
     </section>
-    <section id="implementation-section" class="demo-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Implementation</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.H6" Gutter>@ComponentName parameters</BitTypography>
+    <section id="implementation-section" class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H6" Class="subtitle">@ComponentName parameters</BitTypography>
         <table class="table-view params-table">
             <tr class="th-row">
                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
@@ -107,4 +107,4 @@
             </table>
         }
     </section>
-</section>
+</div>

@@ -51,13 +51,13 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $color-action-hover-secondary;
         }
     }
 
     &:active,
     &.bit-mnb-omn {
-        background-color: $color-action-active-background-primary;
+        background-color: $color-action-active-secondary;
     }
 }
 

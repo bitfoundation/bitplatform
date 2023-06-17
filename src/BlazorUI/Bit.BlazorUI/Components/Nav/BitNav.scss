@@ -93,7 +93,7 @@
     margin: 0 spacing(0.5);
     text-overflow: ellipsis;
     font-size: spacing(1.75);
-    color: $color-foreground-primary;
+    color: $color-foreground-secondary;
 }
 
 .bit-nav-iic {
@@ -103,20 +103,19 @@
 
 .bit-nav-sel {
     background-color: $color-background-secondary;
-    border-left: spacing(0.25) $shape-border-style $color-primary-main;
+    border-left: spacing(0.375) $shape-border-style $color-primary-main;
 
     @media(hover:hover) {
         &:hover {
             background-color: $color-action-hover-background-primary;
-
-            .bit-nav-itm {
+            /*.bit-nav-itm {
                 color: $color-primary-main;
-            }
+            }*/
         }
     }
 
     .bit-nav-itm {
-        font-weight: 500;
+        font-weight: 600;
         color: $color-foreground-primary;
     }
 }
