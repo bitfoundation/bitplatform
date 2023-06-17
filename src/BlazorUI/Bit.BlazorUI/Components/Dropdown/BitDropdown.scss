@@ -215,6 +215,7 @@
     user-select: none;
     position: relative;
     box-sizing: border-box;
+    background-color: $color-background-primary;
 
     @media (hover: hover) {
         &:hover {
