@@ -49,16 +49,16 @@
     {
         <link rel="manifest" href="manifest.json">
     }
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link rel="stylesheet" href="styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="BlazorDual.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(BlazorDual.Web.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(BlazorDual.Web.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
+        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="BlazorDual.Web.styles.css" asp-append-version="@shoudAddAspAppendVersion" />
         @RenderBody()
     </div>
 

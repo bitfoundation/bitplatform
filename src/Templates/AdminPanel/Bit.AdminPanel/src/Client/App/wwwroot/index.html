@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <base href="/" />
+
+    <link rel="preload" href="_content/Bit.BlazorUI/assets/fluent/fonts/FabMDL2.4.46.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/TodoTemplate.Client.Shared/fonts/segoe-ui-bold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/TodoTemplate.Client.Shared/fonts/segoe-ui-light.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/TodoTemplate.Client.Shared/fonts/segoe-ui-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/TodoTemplate.Client.Shared/fonts/segoe-ui-semibold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/TodoTemplate.Client.Shared/fonts/segoe-ui-semilight.woff2" as="font" type="font/woff2" crossorigin>
+
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" />
+    <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/styles/app.min.css" />
+    <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/AdminPanel.Client.Shared.bundle.scp.css" />
+
     <style>
         * {
             -webkit-user-drag: none;
             overscroll-behavior: none;
         }
 
-        *:not(input) {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+            *:not(input) {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
     </style>
 
     <style>
-
         .lds-wrapper {
             top: 50%;
             left: 50%;
@@ -128,22 +140,17 @@
             }
         }
     </style>
-
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" />
-    <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/styles/app.min.css" />
-    <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/AdminPanel.Client.Shared.bundle.scp.css" />
 </head>
 
 <body>
 
     <div class="status-bar-safe-area"></div>
 
-    <app>
+    <div id="app-container">
         <div class="lds-wrapper">
             <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
         </div>
-    </app>
+    </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
