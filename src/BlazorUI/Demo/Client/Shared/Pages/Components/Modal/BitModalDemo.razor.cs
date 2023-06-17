@@ -123,7 +123,7 @@ public partial class BitModalDemo
         new()
         {
             Id = "class-styles",
-            Title = "BitNavClassStyles",
+            Title = "BitModalClassStyles",
             Parameters = new()
             {
                new()
