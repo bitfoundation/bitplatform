@@ -20,6 +20,11 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/BlazorUI/Demo/global.json
+
     - uses: actions/setup-node@v3
       with:
         node-version: latest
