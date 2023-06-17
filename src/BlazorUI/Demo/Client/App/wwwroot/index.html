@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Blazor UI Demo</title>
     <base href="/" />
+    <meta charset="utf-8" />
+    <title>Blazor UI Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <link rel="preload" href="_content/Bit.BlazorUI/assets/fluent/fonts/FabMDL2.4.46.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Shared/fonts/segoe-ui-bold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Shared/fonts/segoe-ui-light.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Shared/fonts/segoe-ui-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Shared/fonts/segoe-ui-semibold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Shared/fonts/segoe-ui-semilight.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-okaidia.min.css" />
     <style>
-
         * {
             -webkit-user-drag: none;
             overscroll-behavior: none;
@@ -117,13 +120,12 @@
     </style>
 </head>
 
-<body class="bit-css-bgcolor-primary bit-css-txt-primary">
-
-    <app>
+<body class="bit-css-clr-bg-primary bit-css-clr-fg-primary">
+    <div id="app-container">
         <div class="lds-wrapper">
             <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
         </div>
-    </app>
+    </div>
 
     <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism.min.js"></script>
     <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-csharp.min.js"></script>

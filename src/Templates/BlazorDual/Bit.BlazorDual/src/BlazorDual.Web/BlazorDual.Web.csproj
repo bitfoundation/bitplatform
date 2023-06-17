@@ -34,6 +34,11 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
+        <None Include="wwwroot\fonts\segoe-ui-bold.woff2" />
+        <None Include="wwwroot\fonts\segoe-ui-light.woff2" />
+        <None Include="wwwroot\fonts\segoe-ui-normal.woff2" />
+        <None Include="wwwroot\fonts\segoe-ui-semibold.woff2" />
+        <None Include="wwwroot\fonts\segoe-ui-semilight.woff2" />
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />

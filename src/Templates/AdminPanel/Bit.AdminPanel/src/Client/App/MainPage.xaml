@@ -12,7 +12,7 @@
         BackgroundColor="#FBFCFF"
         HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
-            <b:RootComponent ComponentType="{x:Type client:App}" Selector="app" />
+            <b:RootComponent ComponentType="{x:Type client:App}" Selector="#app-container" />
         </b:BlazorWebView.RootComponents>
     </b:BlazorWebView>
 
