@@ -81,7 +81,7 @@
         </div>
     </section>
 
-    <BitModal IsOpen=@IsBuyModalOpen>
+    <BitModal IsOpen=@IsBuyModalOpen ClassStyles="@(new() { Container = new() { Class = "modal-container" } })">
         <EditForm Model="BuyPackageModel" OnValidSubmit="SendMessage" class="form">
             <DataAnnotationsValidator />
 
@@ -89,8 +89,9 @@
             <div class="package-name">
                 $@_selectedPackagePrice<span class="grey-txt">/month</span>
             </div>
-            <BitIconButton OnClick=@WrapHandled(CloseModal) IconName="BitIconName.ChromeClose" />
+            <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="BitIconName.ChromeClose" />
             <BitTextField @bind-Value="@BuyPackageModel.Email"
+                          Class="modal-txt"
                           Type="BitTextFieldType.Email"
                           Label="Email"
                           IsRequired=true
@@ -99,13 +100,14 @@
             <ValidationMessage For="() => BuyPackageModel.Email" />
 
             <BitTextField @bind-Value="@BuyPackageModel.Message"
+                          Class="modal-txt"
                           Type="BitTextFieldType.Text"
                           Label="Message"
                           HasBorder=true
                           IsMultiline=true
                           Placeholder="Enter your message" />
             <ValidationMessage For="() => BuyPackageModel.Message" />
-            <BitButton ButtonType="BitButtonType.Submit" IsEnabled="IsSubmitButtonEnabled">
+            <BitButton Class="buy-btn" ButtonType="BitButtonType.Submit" IsEnabled="IsSubmitButtonEnabled">
                 @if (IsLoading)
                 {
                     <BitSpinner Size="BitSpinnerSize.Small"></BitSpinner>
