@@ -190,73 +190,65 @@
     }
 }
 
-::deep .bit-btn {
-    &.bit-btn-fluent {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-}
+::deep {
+    .bit-mdl-ctn {
+        min-width: rem(500px);
 
-::deep .bit-mdl-container {
-    min-width: rem(500px);
-
-    @include sm {
-        min-width: calc(100% - 32px);
-    }
-}
-
-::deep .form {
-    width: 100%;
-    padding: rem(48px) rem(32px);
-    box-sizing: border-box;
-    color: #1A2027;
-    text-align: center;
-
-    .form-title {
-        margin: 0;
-        margin-bottom: rem(16px);
-        font-size: rem(24px);
-        letter-spacing: 0;
-        font-weight: 700;
-        color: #1A2027;
-
-        .blue-txt {
-            color: $B6Color;
+        @include sm {
+            min-width: calc(100% - 32px);
         }
     }
 
-    .package-name {
+    .form {
+        width: 100%;
+        padding: rem(48px) rem(32px);
+        box-sizing: border-box;
+        color: #1A2027;
+        text-align: center;
+
+        .form-title {
+            margin: 0;
+            margin-bottom: rem(16px);
+            font-size: rem(24px);
+            letter-spacing: 0;
+            font-weight: 700;
+            color: #1A2027;
+
+            .blue-txt {
+                color: $B6Color;
+            }
+        }
+
+        .package-name {
+            margin-bottom: rem(24px);
+            font-size: rem(18px);
+            letter-spacing: 0;
+            font-weight: 700;
+            color: #1A2027;
+
+            .grey-txt {
+                color: $Gray2;
+            }
+        }
+    }
+
+    .buy-btn {
+        margin-top: rem(16px);
+    }
+
+    .modal-txt {
         margin-bottom: rem(24px);
-        font-size: rem(18px);
-        letter-spacing: 0;
-        font-weight: 700;
-        color: #1A2027;
-
-        .grey-txt {
-            color: $Gray2;
-        }
+        text-align: left;
     }
-}
 
-::deep .bit-btn-fluent {
-    margin-top: rem(16px);
-}
+    .validation-message {
+        color: #a4262c;
+        margin-top: rem(-20px);
+        font-size: rem(12px);
+        text-align: left;
+    }
 
-::deep .bit-txt-fluent {
-    margin-bottom: rem(24px);
-    text-align: left;
-}
-
-::deep .validation-message {
-    color: #a4262c;
-    margin-top: rem(-20px);
-    font-size: rem(12px);
-    text-align: left;
-}
-
-::deep .bit-icob {
-    &.bit-icob-fluent {
+    .close-btn {
         position: absolute;
         top: rem(16px);
         right: rem(16px);
