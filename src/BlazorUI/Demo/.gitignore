@@ -216,7 +216,6 @@ ModelManifest.xml
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
 # Bit.BlazorUI.Demo

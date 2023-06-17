@@ -22,10 +22,6 @@ jobs:
     inputs:
       versionSpec: '18.x'
     displayName: 'Install Node.js'
-
-  - script: |
-      npm install sass -g
-    displayName: 'npm i sass -g'
   
   - task: Bash@3
     displayName: 'Build'
@@ -51,10 +47,6 @@ jobs:
     inputs:
       versionSpec: '18.x'
     displayName: 'Install Node.js'
-
-  - script: |
-      npm install sass -g
-    displayName: 'npm i sass -g'
 
   - task: Bash@3
     displayName: 'Restore workloads'

@@ -23,7 +23,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
       
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
@@ -49,10 +48,14 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET (Demo)
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/BlazorUI/Demo/global.json
+
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-    - run: npm i sass -g
 
     - name: Restore
       run: dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
