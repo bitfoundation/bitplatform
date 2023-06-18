@@ -150,7 +150,7 @@ public static class IServiceCollectionExtensions
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
-            setup.AddHealthCheckEndpoint("AdminPanelHealthChecks", env.IsDevelopment() ? "https://localhost:5001/healthz" : "/healthz");
+            setup.AddHealthCheckEndpoint("AdminPanelHealthChecks", env.IsDevelopment() ? "https://localhost:5031/healthz" : "/healthz");
         }).AddInMemoryStorage();
 
         var healthChecksBuilder = services.AddHealthChecks()
