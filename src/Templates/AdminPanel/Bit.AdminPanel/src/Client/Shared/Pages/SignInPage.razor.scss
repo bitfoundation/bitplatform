@@ -46,6 +46,10 @@
         @include sm {
             display: none;
         }
+
+        @media screen and (max-height:700px) {
+            display: none;
+        }
     }
 
     &:last-child {

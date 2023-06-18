@@ -68,7 +68,7 @@ public class Program
         if (OperatingSystem.IsWindows())
         {
             // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-            builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000", "https://*:4001", "http://*:4000");
+            builder.WebHost.UseUrls("https://localhost:4041", "http://localhost:4040", "https://*:4041", "http://*:4040");
         }
 #endif
 
