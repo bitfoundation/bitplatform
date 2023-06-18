@@ -1,0 +1,19 @@
+<linker>
+
+    <assembly fullname="Microsoft.Maui.Controls.Xaml">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Bit.BlazorUI.Demo.Client.Shared">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.AspNetCore.Components.WebView.Maui">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Bit.BlazorUI.Demo.Client.App">
+        <type fullname="*" />
+    </assembly>
+
+</linker>

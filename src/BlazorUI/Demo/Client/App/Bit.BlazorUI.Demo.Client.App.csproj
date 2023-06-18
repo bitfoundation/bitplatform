@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit BlazorUI Demo</ApplicationTitle>
+        <ApplicationTitle>Bit&#x2002;BlazorUI&#x2002;Demo</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -34,13 +34,25 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <TrimMode>link</TrimMode>
         <EnableLLVM>true</EnableLLVM>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+      <MtouchLink>Full</MtouchLink>
+      <EnableSGenConc>True</EnableSGenConc>
+      <BuildIpa>True</BuildIpa>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <LinkDescription Include="Platforms\iOS\LinkDesc.xml" />
+    </ItemGroup>
+
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <LinkDescription Include="Platforms\Android\LinkDesc.xml" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0 -->
