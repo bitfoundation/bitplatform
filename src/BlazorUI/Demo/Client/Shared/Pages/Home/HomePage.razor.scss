@@ -3,7 +3,7 @@
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 
-.page-container {
+.homepage-container {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -13,13 +13,13 @@
     overflow: hidden;
 }
 
-.page-section {
+.homepage-section {
     display: flex;
     justify-content: center;
     width: 100%;
 }
 
-.page-section-contnet {
+.homepage-section-contnet {
     width: 100%;
     max-width: rem(1200px);
     margin-left: auto;
@@ -35,7 +35,7 @@
 }
 
 .hero-section {
-    .page-section-contnet {
+    .homepage-section-contnet {
         display: flex;
         flex-flow: row nowrap;
         justify-content: center;
@@ -98,7 +98,7 @@
         margin-bottom: rem(20px);
     }
 
-    .page-section-contnet {
+    .homepage-section-contnet {
         display: flex;
         flex-flow: column nowrap;
     }
@@ -118,7 +118,7 @@
         padding-bottom: rem(40px);
     }
 
-    .page-section-contnet {
+    .homepage-section-contnet {
         display: flex;
         flex-flow: column nowrap;
         justify-content: flex-start;

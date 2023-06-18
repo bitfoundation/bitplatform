@@ -52,7 +52,7 @@ public class Middlewares
 
         app.UseRouting();
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4051").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
         app.UseAuthentication();

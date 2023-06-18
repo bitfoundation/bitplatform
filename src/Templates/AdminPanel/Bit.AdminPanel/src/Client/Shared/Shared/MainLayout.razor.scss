@@ -27,6 +27,13 @@
     .site-content {
         padding: 0 !important;
         height: calc(100vh - 49px);
+
+        @media screen and (max-height:700px) {
+            height: unset;
+            min-height: calc(100vh - 49px);
+            display: flex;
+            align-items: center;
+        }
     }
 }
 
