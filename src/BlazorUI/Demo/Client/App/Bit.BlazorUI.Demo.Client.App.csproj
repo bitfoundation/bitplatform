@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit&#x2002;BlazorUI&#x2002;Demo</ApplicationTitle>
+        <ApplicationTitle>Bit BlazorUI Demo</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -42,9 +42,10 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
-      <MtouchLink>Full</MtouchLink>
-      <EnableSGenConc>True</EnableSGenConc>
-      <BuildIpa>True</BuildIpa>
+        <MtouchLink>Full</MtouchLink>
+        <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+        <EnableSGenConc>True</EnableSGenConc>
+        <BuildIpa>True</BuildIpa>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
