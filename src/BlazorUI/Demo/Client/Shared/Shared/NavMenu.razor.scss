@@ -18,7 +18,7 @@
     max-width: rem($NavMenuWidth);
     background-color: $bit-color-background-primary;
     top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
-    height: calc(100vh - rem($HeaderHeight) + var(--bit-status-bar-height));
+    height: calc(100vh - (rem($HeaderHeight) + var(--bit-status-bar-height)));
 
     @include lt-lg {
         top: 0;
