@@ -89,22 +89,22 @@ main {
 }
 
 ::deep pre {
-    position: relative;
-    display: flex;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    max-height: rem(464px);
-    min-height: rem(70px);
     margin: 0;
-    padding: 24px 80px 24px 24px;
-    box-sizing: border-box;
-    direction: ltr;
+    width: 100%;
+    display: flex;
     overflow: auto;
-    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
-    border: rem(1px) solid #a19f9d;
+    direction: ltr;
     border-top: none;
+    flex-flow: column;
+    position: relative;
+    min-height: rem(70px);
+    max-height: rem(464px);
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px 80px 24px 24px;
+    border: rem(1px) solid $bit-color-border-primary;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
     &::-webkit-scrollbar {
         width: rem(6.5px);
