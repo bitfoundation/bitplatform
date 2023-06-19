@@ -1,69 +1,118 @@
 ﻿@page "/theming"
+@inherits AppComponentBase
 
 <PageTitle>Bit BlazorUI - Theming</PageTitle>
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Theming</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Class="title">Theming</BitTypography>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI, color, typography, spacing, and other style properties are defined in CSS and SCSS variables, for allowing easy customization and flexibility, these variables are part of Microsoft Fluent design system and contains both dark and light mode colors that you can theme your app in anyway you like.
+            In Bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
+            the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
+            <br />
+            <br />
+            Different aspects of the UI element styles are pre-defined in CSS variables that let you apply a consistent tone to your app.
+            It allows you to customize all design aspects of your project to meet the specific needs of your business or brand.
+            <br />
+            <br />
+            The default theme is based on the Microsoft Fluent design system with light and dark theme types available to choose from.
+            By default, components use the light theme type.
         </BitTypography>
-        <p>For colors you can find the SCSS files for the BitTheme on the official GitHub repository:</p>
-        <ul>
-            <li><a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-dark.scss" target="_blank">Dark Fluent SCSS file</a></li>
-            <li><a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-light.scss" target="_blank">Light Fluent SCSS file</a></li>
-        </ul>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Initialization</BitTypography>
-        <p>To initialize the BitThemeManager, you can use the <code>OnAfterRender</code> method in your <code>App</code> component (usually found in the <code>App.razor.cs</code> file). Here's an example:</p>
-        <pre><code>public partial class App
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS variables</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            All CSS variables defined in the Theme system of the Bit BlazorUI are attached to the root element like this:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-css">:root,
+:root[bit-theme="light"],
+:root[bit-theme="fluent"],
+:root[bit-theme="fluent-light"] {
+
+...
+
+    --bit-clr-primary-main: #0078D4;
+    --bit-clr-primary-dark: #005A9E;
+    --bit-clr-primary-light: #C7E0F4;
+    --bit-clr-primary-text: #FFF;
+
+    --bit-clr-secondary-main: #FFF;
+    --bit-clr-secondary-dark: #EDEBE9;
+    --bit-clr-secondary-light: #FFF;
+    --bit-clr-secondary-text: #000;
+
+...
+
+}
+        </code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            The source code of these CSS variables is available in the
+            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" Target="_blank">
+                Bit BlazorUI GitHub repo
+            </BitLink>.
+            <br />
+            You can simply override these values to customize the UI.
+        </BitTypography>
+    </section>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeManager</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            In Bit BlazorUI the <code>BitThemeManager</code> class is available to customize the Theme.
+            <br />
+            To start using the BitThemeManager, you first need to initialize it using an instance of <code>IJSRuntime</code> like this:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">public partial class App
 {
-    [Inject] private IJSRuntime _jsRuntime = default!;
+    [Inject] private IJSRuntime _js;
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            BitThemeManager.Init(_jsRuntime);
+            BitThemeManager.Init(_js);
         }
-
-        base.OnAfterRender(firstRender);
     }
-}       </code></pre>
+}</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Then you need to call the <code>ApplyBitTheme</code> method of the <code>BitThemeManager</code>
+            using an instance of the <code>BitTheme</code>, which contains the desired theme values.
+            <br />
+            The <code>ApplyBitTheme</code> method accepts two parameters: a BitTheme instace and an optional target element 
+            which is by default the body element.
+            <br />
+            Here's an example of how to apply custom theme values to the entire body:
+            <br />
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">var myTheme = new BitTheme();
+myTheme.Color.Foreground.Primary = "#111";
+myTheme.Color.Background.Primary = "#777";
+BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Applying BitTheme</BitTypography>
-        <p>To apply the BitTheme styles to your web application, you can use the <code>Apply</code> method provided by the BitThemeManager. The <code>Apply</code> method accepts two parameters: the custom theme and the target <code>Element Refrence</code>.</p>
-        <p>Here's an example of how to apply the BitTheme to the entire body:</p>
-        <div class="code-box">BitThemeManager.Apply(myTheme)</div>
-        <p>You can also apply the BitTheme to specific elements by passing it's Element Refrence as the target:</p>
-        <div class="code-box">BitThemeManager.Apply(myTheme, _myElementRef)</div>
-    </section>
-    <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Full Code Example</BitTypography>
-        <p>Here's an full example of how you can use the BitTheme class to customize the theme of your web application:</p>
-        <pre><code>&lt;div @@ref="_myElementRef">Content...&lt;/div>
-
-@@code {
-    private ElementReference _myElementRef;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Customize the theme properties
-            var newTheme = new BitTheme();
-            newTheme.Color.Primary.Main = "gold";
-            newTheme.Color.Action.Hover.Primary = "red";
-            newTheme.Color.Action.Active.Primary = "blue";
-
-            // Apply the customized theme
-            await BitThemeManager.ApplyBitTheme(newTheme, _myElementRef);
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Bit BlazorUI also has a JavaScript API to customize even further the UX of the app.
+            You can see an example of this API here:
+        </BitTypography>
+        <br />
+        <pre><code class="language-js">(function () {
+    BitTheme.init({
+        system: true,
+        onChange: (newTheme, oldThem) => {
+            if (newTheme === 'dark') {
+                document.body.classList.add('bit-theme-dark');
+                document.body.classList.remove('bit-theme-light');
+            } else {
+                document.body.classList.add('bit-theme-light');
+                document.body.classList.remove('bit-theme-dark');
+            }
         }
-        await base.OnAfterRenderAsync(firstRender);
-    }
-}
-        </code></pre>
+    });
+}());</code></pre>
     </section>
 </div>
