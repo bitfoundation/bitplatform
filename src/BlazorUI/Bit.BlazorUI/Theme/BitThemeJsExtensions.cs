@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bit.BlazorUI.Theme;
+﻿namespace Bit.BlazorUI;
 internal static class BitThemeJsExtensions
 {
     internal static async Task<string> GetCurrentTheme(this IJSRuntime jsRuntime)

@@ -2,14 +2,14 @@
 
 public class BitThemeColors
 {
-    public BitThemeColorVariants Primary { get; private set; } = new();
-    public BitThemeColorVariants Secondary { get; private set; } = new();
-    public BitThemeGeneralColorVariants Foreground { get; private set; } = new();
-    public BitThemeBackgroundColorVariants Background { get; private set; } = new();
-    public BitThemeGeneralColorVariants Border { get; private set; } = new();
-    public BitThemeActionColorVariants Action { get; private set; } = new();
-    public BitThemeStateColorVariants State { get; private set; } = new();
-    public BitThemeNeutralColorVariants Neutral { get; private set; } = new();
+    public BitThemeColorVariants Primary { get; set; } = new();
+    public BitThemeColorVariants Secondary { get; set; } = new();
+    public BitThemeGeneralColorVariants Foreground { get; set; } = new();
+    public BitThemeBackgroundColorVariants Background { get; set; } = new();
+    public BitThemeGeneralColorVariants Border { get; set; } = new();
+    public BitThemeActionColorVariants Action { get; set; } = new();
+    public BitThemeStateColorVariants State { get; set; } = new();
+    public BitThemeNeutralColorVariants Neutral { get; set; } = new();
 }
 public class BitThemeColorVariants
 {
@@ -34,8 +34,8 @@ public class BitThemeBackgroundColorVariants : BitThemeGeneralColorVariants
 
 public class BitThemeActionColorVariants
 {
-    public BitThemeSubActionColorVariants Hover { get; private set; } = new();
-    public BitThemeSubActionColorVariants Active { get; private set; } = new();
+    public BitThemeSubActionColorVariants Hover { get; set; } = new();
+    public BitThemeSubActionColorVariants Active { get; set; } = new();
 }
 public class BitThemeSubActionColorVariants
 {
@@ -46,9 +46,9 @@ public class BitThemeSubActionColorVariants
     public string? SecondaryDark { get; set; }
     public string? SecondaryLight { get; set; }
 
-    public BitThemeSubColorVariants Foreground { get; private set; } = new();
-    public BitThemeSubColorVariants Background { get; private set; } = new();
-    public BitThemeSubColorVariants Border { get; private set; } = new();
+    public BitThemeSubColorVariants Foreground { get; set; } = new();
+    public BitThemeSubColorVariants Background { get; set; } = new();
+    public BitThemeSubColorVariants Border { get; set; } = new();
 }
 public class BitThemeSubColorVariants
 {
