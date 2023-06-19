@@ -16,9 +16,9 @@
     flex-direction: column;
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
-    height: calc(100vh - rem($HeaderHeight));
     background-color: $bit-color-background-primary;
     top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
+    height: calc(100vh - (rem($HeaderHeight) + var(--bit-status-bar-height)));
 
     @include lt-lg {
         top: 0;
@@ -26,6 +26,7 @@
         height: 100vh;
         z-index: 13;
         position: fixed;
+        padding-top: var(--bit-status-bar-height);
     }
 
     @include sm {
