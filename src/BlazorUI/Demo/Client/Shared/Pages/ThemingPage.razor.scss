@@ -1,0 +1,98 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+
+.page-container {
+    width: 100%;
+}
+
+.page-section {
+    width: 100%;
+    padding: rem(28px);
+    position: relative;
+    box-sizing: border-box;
+    border-radius: rem(4px);
+    margin-bottom: rem(28px);
+    background-clip: padding-box;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+::deep .title {
+    margin-bottom: rem(50px);
+}
+
+.code-box {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding: rem(8px);
+    user-select: text;
+    margin: rem(16px) 0;
+    white-space: nowrap;
+    align-items: center;
+    box-sizing: border-box;
+    -webkit-user-select: text;
+    justify-content: flex-start;
+    background-color: $bit-color-background-secondary;
+    border-left: rem(4px) solid $bit-color-border-secondary;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        height: rem(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem(8px);
+        background-color: $bit-color-border-secondary;
+    }
+}
+
+.colors-list {
+    width: 100%;
+    display: flex;
+    overflow: auto;
+    height: rem(369px);
+    flex-flow: row wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    &::-webkit-scrollbar {
+        width: rem(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem(8px);
+        background-color: $bit-color-foreground-secondary;
+    }
+}
+
+.color-box {
+    cursor: help;
+    display: flex;
+    width: rem(80px);
+    margin: rem(10px);
+    overflow: visible;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    .color-name {
+        opacity: 0;
+        font-size: rem(11px);
+        margin-top: rem(8px);
+    }
+
+    &:hover {
+        .color-name {
+            opacity: 1;
+        }
+    }
+}
+
+.empty-list {
+    width: 100%;
+    height: rem(144px);
+}
