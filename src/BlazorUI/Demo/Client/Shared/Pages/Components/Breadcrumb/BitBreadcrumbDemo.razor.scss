@@ -1,4 +1,5 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../Styles/bit-css-variables.scss';
+@import '../../../Styles/abstracts/_functions.scss';
 
 ::deep {
     .custom-item {
@@ -21,6 +22,14 @@
         &:hover {
             background: greenyellow;
         }
+    }
+
+    .pivot-sticky-header {
+        z-index: 10;
+        top: rem(75px);
+        position: sticky;
+        padding: rem(10px);
+        background-color: $bit-color-background-secondary;
     }
 }
 

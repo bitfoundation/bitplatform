@@ -15,6 +15,15 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitPivotClassStyles",
+            DefaultValue = "",
+            Href = "class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the BitPivot component."
+        },
+        new()
+        {
             Name = "DefaultSelectedKey",
             Type = "string",
             Description = "Default selected key for the pivot.",
@@ -113,6 +122,42 @@ public partial class BitPivotDemo
                     Type = "string",
                     Description = "A required key to uniquely identify a pivot item.",
                 }
+            }
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitPivotClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Description = "Custom CSS classes/styles for the modal container.",
+                   Href = "class-style-pair",
+                   LinkType = LinkType.Link
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS style."
+               }
             }
         }
     };
