@@ -19,6 +19,7 @@
             By default, components use the light theme type.
         </BitTypography>
     </section>
+    
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS variables</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
@@ -56,6 +57,7 @@
             You can simply override these values to customize the UI.
         </BitTypography>
     </section>
+
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeManager</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
@@ -93,6 +95,7 @@ myTheme.Color.Foreground.Primary = "#111";
 myTheme.Color.Background.Primary = "#777";
 BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
     </section>
+
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
@@ -114,5 +117,55 @@ BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
         }
     });
 }());</code></pre>
+    </section>
+
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeProvider</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            In Bit BlazorUI the <code>BitThemeProvider</code> component is available to further customize the Theme.
+            <br />
+            You can wrap any elements with the <code>BitThemeProvider</code> component and assign an instance of <code>BitTheme</code> to it:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-cshtml">&ltBitThemeProvider Theme="myTheme"&gt
+    &ltBitCheckbox Label="Check me!" /&gt
+&lt/BitThemeProvider&gt
+
+@@code {
+    BitTheme myTheme = new()
+    {
+        Color = { Primary = { Main = "red" } }
+    };
+}</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            The applied theme provided by the <code>BitThemeProvider</code> can be accessed directly using a CascadingParameter in the child components:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">[CascadingParameter] public BitTheme? Theme { get; set; }</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            You can also nest <code>BitThemeProvider</code> components to achieve the desired style:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-cshtml">&ltBitThemeProvider Theme="myTheme"&gt
+    &ltBitCheckbox Label="Check me!" /&gt
+    &ltBitThemeProvider Theme="myTheme2"&gt
+        &ltBitCheckbox Label="Check me 2!" /&gt
+    &lt/BitThemeProvider&gt
+&lt/BitThemeProvider&gt
+
+@@code {
+    BitTheme myTheme = new()
+    {
+        Color = { Primary = { Main = "red" } }
+    };
+
+    BitTheme myTheme2 = new()
+    {
+        Color = { Primary = { Main = "blue" } }
+    };
+}</code></pre>
+        <br />
     </section>
 </div>

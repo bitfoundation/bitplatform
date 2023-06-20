@@ -2,15 +2,15 @@
 
 public class BitTheme
 {
-    public BitThemeColors Color { get; private set; } = new();
+    public BitThemeColors Color { get; set; } = new();
 
-    public BitThemeBoxShadows BoxShadow { get; private set; } = new();
+    public BitThemeBoxShadows BoxShadow { get; set; } = new();
 
-    public BitThemeSpacings Spacing { get; private set; } = new();
+    public BitThemeSpacings Spacing { get; set; } = new();
 
-    public BitThemeZIndices ZIndex { get; private set; } = new();
+    public BitThemeZIndices ZIndex { get; set; } = new();
 
-    public BitThemeShapes Shape { get; private set; } = new();
+    public BitThemeShapes Shape { get; set; } = new();
 
-    public BitThemeTypography Typography { get; private set; } = new();
+    public BitThemeTypography Typography { get; set; } = new();
 }

@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Theme;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public static class BitThemeManager
 {
@@ -13,6 +11,8 @@ public static class BitThemeManager
     public static async Task ApplyBitTheme(BitTheme bitTheme, ElementReference? element = null)
     {
         CheckJsRuntime();
+
+        if (bitTheme is null) return;
 
         await _js.ApplyBitTheme(BitThemeMapper.MapToCssVariables(bitTheme), element);
     }
