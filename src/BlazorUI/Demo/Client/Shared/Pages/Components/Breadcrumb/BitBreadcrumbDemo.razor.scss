@@ -26,22 +26,22 @@
 
     .pivot-sticky-header {
         z-index: 10;
-        top: rem(75px);
         position: sticky;
         padding: rem(10px);
         background-color: $bit-color-background-secondary;
+        top: calc(rem(75px) + var(--bit-status-bar-height));
     }
 }
 
 .example-box {
-    display: flex;
     gap: 20px;
+    display: flex;
     flex-direction: column;
 
     .operators {
-        display: flex;
-        flex-flow: column nowrap;
         gap: 5px;
+        display: flex;
         max-width: 300px;
+        flex-flow: column nowrap;
     }
 }
