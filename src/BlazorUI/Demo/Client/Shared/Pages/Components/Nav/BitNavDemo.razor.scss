@@ -1,4 +1,5 @@
-﻿@import '../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../Styles/bit-css-variables.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 
 ::deep {
     .nav-custom-header {
@@ -14,6 +15,14 @@
         gap: 4px;
         color: #ff7800;
         font-weight: 600;
+    }
+
+    .pivot-sticky-header {
+        z-index: 10;
+        top: rem(75px);
+        position: sticky;
+        padding: rem(10px);
+        background-color: $bit-color-background-secondary;
     }
 }
 

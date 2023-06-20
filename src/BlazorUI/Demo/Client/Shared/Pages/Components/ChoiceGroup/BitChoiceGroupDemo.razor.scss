@@ -1,6 +1,33 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
+﻿@import '../../../Styles/bit-css-variables.scss';
+@import '../../../Styles/abstracts/_colors.scss';
 @import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem(12px);
+    }
+
+    .validation-summary {
+        overflow: hidden;
+        margin-bottom: rem(10px);
+        background-color: $ErrorBlockRed;
+        border-left: rem(5px) solid $Red10;
+
+        .validation-errors {
+            margin: rem(5px);
+        }
+    }
+
+    .pivot-sticky-header {
+        z-index: 10;
+        top: rem(75px);
+        position: sticky;
+        padding: rem(10px);
+        background-color: $bit-color-background-secondary;
+    }
+}
 
 .chg-box {
     display: flex;
@@ -59,24 +86,6 @@
             border-left: rem(10px) solid #66C;
             border-right: rem(10px) solid #CC6;
             border-bottom: rem(10px) solid #6C6;
-        }
-    }
-}
-
-::deep {
-    .validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
-
-    .validation-summary {
-        overflow: hidden;
-        margin-bottom: rem(10px);
-        background-color: $ErrorBlockRed;
-        border-left: rem(5px) solid $Red10;
-
-        .validation-errors {
-            margin: rem(5px);
         }
     }
 }
