@@ -6,16 +6,13 @@
         isOpen: boolean) {
 
         const dateRangePicker = document.getElementById(dateRangePickerId);
-        if (dateRangePicker == null)
-            return;
+        if (dateRangePicker == null) return;
 
         const dateRangePickerCallout = document.getElementById(dateRangePickerCalloutId);
-        if (dateRangePickerCallout == null)
-            return;
+        if (dateRangePickerCallout == null) return;
 
         const dateRangePickerOverlay = document.getElementById(dateRangePickerOverlayId);
-        if (dateRangePickerOverlay == null)
-            return;
+        if (dateRangePickerOverlay == null) return;
 
         if (isOpen) {
             dateRangePickerCallout.style.display = "none";
@@ -59,7 +56,7 @@
         }
     }
 
-    static checkMonthPickerWidth(dateRangePickerCalloutId: string, responsive: boolean) {
+    static checkMonthPickerWidth(dateRangePickerId: string, dateRangePickerCalloutId: string, responsive: boolean) {
 
         const dateRangePickerCallout = document.getElementById(dateRangePickerCalloutId);
 
@@ -76,11 +73,29 @@
 
         if (dateRangePickerCalloutWidth > bodyWidth) return true;
 
+        const dateRangePicker = document.getElementById(dateRangePickerId);
+
+        if (dateRangePicker == null) return;
+
         const { x: calloutLeft } = dateRangePickerCallout.getBoundingClientRect();
 
         if (dateRangePickerCalloutWidth + calloutLeft > bodyWidth) {
-            dateRangePickerCallout.style.left = "0";
-            dateRangePickerCallout.style.right = "0";
+            const dateRangePickerOffsetRight = bodyWidth - (dateRangePicker.offsetLeft + dateRangePicker.offsetWidth);
+            const rightPositon = bodyWidth - (dateRangePickerCalloutWidth + dateRangePickerOffsetRight);
+            const leftPositon = rightPositon + dateRangePickerCalloutWidth;
+            const spaceFromRight = bodyWidth - rightPositon;
+            const spaceFromLeft = bodyWidth - leftPositon;
+
+            if (rightPositon > 0 && spaceFromRight > spaceFromLeft) {
+                dateRangePickerCallout.style.left = rightPositon + "px";
+            }
+            else if (leftPositon > 0 && spaceFromRight < spaceFromLeft) {
+                dateRangePickerCallout.style.left = leftPositon + "px";
+            }
+            else {
+                dateRangePickerCallout.style.left = ((bodyWidth - dateRangePickerCalloutWidth) / 2) + "px";
+            }
+            dateRangePickerCallout.style.right = "unset";
             dateRangePickerCallout.style.margin = "auto";
             dateRangePickerCallout.style.width = "fit-content";
         }
