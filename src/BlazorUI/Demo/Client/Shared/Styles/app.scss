@@ -1,3 +1,7 @@
+@import 'bit-css-variables.scss';
+@import 'abstracts/_colors.scss';
+@import 'abstracts/_functions.scss';
+
 :root {
     --bit-status-bar-height: 0px;
 }
@@ -18,4 +22,15 @@ html, body, #app-container {
 
 #app-container {
     padding-left: env(safe-area-inset-left);
+}
+
+.pivot-sticky-header {
+    z-index: 10;
+    position: sticky;
+    padding: rem(10px);
+    background-color: $bit-color-background-secondary;
+    top: calc(rem(75px) + var(--bit-status-bar-height));
+    .bit-ios & {
+        top: calc(rem(75px) + env(safe-area-inset-top));
+    }
 }

@@ -19,14 +19,6 @@
             margin: rem(5px);
         }
     }
-
-    .pivot-sticky-header {
-        z-index: 10;
-        position: sticky;
-        padding: rem(10px);
-        background-color: $bit-color-background-secondary;
-        top: calc(rem(75px) + var(--bit-status-bar-height));
-    }
 }
 
 .chg-box {
