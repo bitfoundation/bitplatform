@@ -3,7 +3,7 @@
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
         
-        <BlazorMode>BlazorServer</BlazorMode>
+        <BlazorMode>BlazorHybrid</BlazorMode>
         <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
         
         <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>

@@ -49,12 +49,12 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <ProjectReference Include="..\Shared\AdminPanel.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\AdminPanel.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="AdminPanel.Client.Shared.Services.Contracts" />
-        <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Shared.Components" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
+        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Components" />
     </ItemGroup>
 
     <ItemGroup>

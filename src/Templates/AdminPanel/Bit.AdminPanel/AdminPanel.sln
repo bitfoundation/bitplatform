@@ -17,13 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A97138
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{6271885D-B26B-49D2-AFC5-010A53B9D7BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "src\Shared\Shared\AdminPanel.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "src\Shared\AdminPanel.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "src\Infra\Iac\AdminPanel.Iac.csproj", "{E409C340-6F88-414A-A956-29D46B7C71C8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "src\Server\Api\AdminPanel.Server.Api.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Shared", "src\Client\Shared\AdminPanel.Client.Shared.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Core", "src\Client\Core\AdminPanel.Client.Core.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Web", "src\Client\Web\AdminPanel.Client.Web.csproj", "{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}"
 EndProject

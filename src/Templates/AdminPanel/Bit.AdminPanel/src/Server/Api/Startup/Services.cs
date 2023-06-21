@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
 using AdminPanel.Client.Web.Services.Implementations;
-using AdminPanel.Client.Shared.Services.Implementations;
+using AdminPanel.Client.Core.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 

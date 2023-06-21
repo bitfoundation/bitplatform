@@ -77,7 +77,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\Shared\AdminPanel.Shared.csproj" />
+        <ProjectReference Include="..\..\Shared\AdminPanel.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -72,11 +72,11 @@
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(AdminPanel.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
+            <component type="typeof(AdminPanel.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/AdminPanel.Client.Shared/AdminPanel.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="_content/AdminPanel.Client.Core/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="_content/AdminPanel.Client.Core/AdminPanel.Client.Core.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
         @RenderBody()
         <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     </div>
@@ -125,7 +125,7 @@
         <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
 
-    <script src="_content/AdminPanel.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="_content/AdminPanel.Client.Core/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)
     {

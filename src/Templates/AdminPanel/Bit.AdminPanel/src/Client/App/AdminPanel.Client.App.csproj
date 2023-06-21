@@ -46,9 +46,9 @@
 
     <ItemGroup>
 
-        <Using Include="AdminPanel.Client.Shared.Components" />
-        <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Shared.Services.Contracts" />
+        <Using Include="AdminPanel.Client.Core.Components" />
+        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
 
     </ItemGroup>
@@ -85,7 +85,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shared\AdminPanel.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\AdminPanel.Client.Core.csproj" />
     </ItemGroup>
 
 </Project>
