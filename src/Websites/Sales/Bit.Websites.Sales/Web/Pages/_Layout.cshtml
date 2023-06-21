@@ -7,14 +7,12 @@
 @inject IConfiguration Configuration
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var gtmId = @Configuration.GetSection("Google")["TagManagerId"];
-    var googleAnalyticsId = @Configuration.GetSection("Google")["AnalyticsId"];
+    var gtmContainerId = @Configuration.GetSection("GoogleTagManager")["ContainerId"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
     var shoudAddAspAppendVersion = true;
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
-
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
@@ -50,24 +48,14 @@
             }); var f = d.getElementsByTagName(s)[0],
                 j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '@gtmId');</script>
+        })(window, document, 'script', 'dataLayer', '@gtmContainerId');</script>
     <!-- End Google Tag Manager -->
 </head>
 <body>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=@googleAnalyticsId"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', '@googleAnalyticsId');
-    </script>
-
     <!-- Google Tag Manager (noscript) -->
     <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=@gtmId"
+        <iframe src="https://www.googletagmanager.com/ns.html?id=@gtmContainerId"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <!-- End Google Tag Manager (noscript) -->
