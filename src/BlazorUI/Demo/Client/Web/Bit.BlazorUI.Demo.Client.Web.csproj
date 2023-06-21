@@ -38,15 +38,15 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.7" PrivateAssets="all" />
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Contracts" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Implementations" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">

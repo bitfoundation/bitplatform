@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 #if BlazorWebAssembly
-using Bit.BlazorUI.Demo.Client.Shared.Services.Implementations;
+using Bit.BlazorUI.Demo.Client.Core.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 

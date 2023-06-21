@@ -228,5 +228,5 @@ custom.aprof
 /Server/Api/Properties/PublishProfiles/*.*
 /Server/Api/Properties/ServiceDependencies/*.*
 
-/Client/Shared/**/*.css
-/Client/Shared/wwwroot/scripts/app*.js
+/Client/Core/**/*.css
+/Client/Core/wwwroot/scripts/app*.js

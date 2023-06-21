@@ -59,9 +59,9 @@
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Components" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Implementations" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
@@ -74,7 +74,7 @@
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
