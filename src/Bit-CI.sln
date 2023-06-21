@@ -73,7 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "Templat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "Templates\TodoTemplate\Bit.TodoTemplate\src\Server\Api\TodoTemplate.Server.Api.csproj", "{5D0A0FB8-22BD-4035-8D27-D1EA76B3E826}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\src\Shared\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\src\Shared\TodoTemplate.Shared.csproj", "{64C0A483-7BE3-4CB6-891F-9AFA942357DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{97B6AB01-19FF-4D94-8530-17F3C90AE6B2}"
 EndProject
@@ -85,17 +85,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Iac", "Templates
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Server.Api", "Templates\AdminPanel\Bit.AdminPanel\src\Server\Api\AdminPanel.Server.Api.csproj", "{3A36AF8C-5D1E-4710-8747-9508ABAAA95A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\src\Shared\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Shared", "Templates\AdminPanel\Bit.AdminPanel\src\Shared\AdminPanel.Shared.csproj", "{55BF5D67-27FE-477F-B94F-141AE860D548}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{14D85379-ACAA-44B2-834F-18950BD4C8AE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Shared", "Templates\AdminPanel\Bit.AdminPanel\src\Client\Shared\AdminPanel.Client.Shared.csproj", "{99618CB4-BADA-4759-A9E8-E894D19FF7AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Core", "Templates\AdminPanel\Bit.AdminPanel\src\Client\Core\AdminPanel.Client.Core.csproj", "{99618CB4-BADA-4759-A9E8-E894D19FF7AA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Web", "Templates\AdminPanel\Bit.AdminPanel\src\Client\Web\AdminPanel.Client.Web.csproj", "{6B4AA383-059F-46DF-BB7E-B6A2A87EDC1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{E191BBCD-AA35-4E3D-B76A-1F5AD078C070}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Shared", "Templates\TodoTemplate\Bit.TodoTemplate\src\Client\Shared\TodoTemplate.Client.Shared.csproj", "{B74BFD30-49C2-4428-9383-1E621A93CF90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Core", "Templates\TodoTemplate\Bit.TodoTemplate\src\Client\Core\TodoTemplate.Client.Core.csproj", "{B74BFD30-49C2-4428-9383-1E621A93CF90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Web", "Templates\TodoTemplate\Bit.TodoTemplate\src\Client\Web\TodoTemplate.Client.Web.csproj", "{280FA727-6E97-4131-9FB2-DBDE1472F419}"
 EndProject
