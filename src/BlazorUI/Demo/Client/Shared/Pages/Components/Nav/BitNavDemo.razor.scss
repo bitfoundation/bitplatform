@@ -3,33 +3,25 @@
 
 ::deep {
     .nav-custom-header {
+        color: green;
         font-size: 17px;
         font-weight: 600;
-        color: green;
     }
 
     .nav-custom-item {
-        display: flex;
-        align-items: center;
-        flex-flow: row nowrap;
         gap: 4px;
+        display: flex;
         color: #ff7800;
         font-weight: 600;
-    }
-
-    .pivot-sticky-header {
-        z-index: 10;
-        top: rem(75px);
-        position: sticky;
-        padding: rem(10px);
-        background-color: $bit-color-background-secondary;
+        align-items: center;
+        flex-flow: row nowrap;
     }
 }
 
 .example-box {
+    width: 350px;
     display: flex;
     flex-direction: column;
-    width: 350px;
 
     @include sm {
         width: 250px;
@@ -41,10 +33,10 @@
 }
 
 .events-example-box {
-    display: flex;
-    flex-direction: row;
     gap: 100px;
+    display: flex;
     align-items: center;
+    flex-direction: row;
 
     ::deep {
         .bit-nav {
