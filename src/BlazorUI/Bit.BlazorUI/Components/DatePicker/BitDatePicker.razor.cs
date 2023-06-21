@@ -417,7 +417,7 @@ public partial class BitDatePicker
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", UniqueId, _calloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)
