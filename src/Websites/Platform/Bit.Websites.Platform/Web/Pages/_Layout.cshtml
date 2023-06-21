@@ -8,7 +8,7 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
 
-    var googleTagManagerContainerId = @Configuration.GetSection("GoogleTagManager")["ContainerId"];
+    var gtmId = @Configuration.GetSection("Google")["TagManagerId"];
     var googleAnalyticsId = @Configuration.GetSection("Google")["AnalyticsId"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
@@ -91,14 +91,23 @@
             }); var f = d.getElementsByTagName(s)[0],
                 j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '@googleTagManagerContainerId');</script>
+        })(window, document, 'script', 'dataLayer', '@gtmId');</script>
     <!-- End Google Tag Manager -->
 </head>
 <body>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@googleAnalyticsId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', '@googleAnalyticsId');
+    </script>
 
     <!-- Google Tag Manager (noscript) -->
     <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=@googleTagManagerContainerId"
+        <iframe src="https://www.googletagmanager.com/ns.html?id=@gtmId"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <!-- End Google Tag Manager (noscript) -->
