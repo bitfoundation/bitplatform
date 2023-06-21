@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using TodoTemplate.Server.Api.Services.Implementations;
 #if BlazorWebAssembly
 using TodoTemplate.Client.Web.Services.Implementations;
-using TodoTemplate.Client.Shared.Services.Implementations;
+using TodoTemplate.Client.Core.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 

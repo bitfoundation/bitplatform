@@ -17,13 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{4CB2E4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{4FFA9633-C4EC-4DD8-8C26-DE597E731E09}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "src\Shared\Shared\TodoTemplate.Shared.csproj", "{E654B009-D083-4476-AEA5-EF5D73BF2EA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Shared", "src\Shared\TodoTemplate.Shared.csproj", "{E654B009-D083-4476-AEA5-EF5D73BF2EA8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Iac", "src\Infra\Iac\TodoTemplate.Iac.csproj", "{50296618-0E17-4596-9BFF-B5C47EB40E74}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Server.Api", "src\Server\Api\TodoTemplate.Server.Api.csproj", "{29532CE7-708E-4ED0-981E-EF17C573B6CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Shared", "src\Client\Shared\TodoTemplate.Client.Shared.csproj", "{0AAA866C-CEA9-4D11-B66A-AA2E295DA30B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Core", "src\Client\Core\TodoTemplate.Client.Core.csproj", "{0AAA866C-CEA9-4D11-B66A-AA2E295DA30B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Web", "src\Client\Web\TodoTemplate.Client.Web.csproj", "{37B0BFFF-762E-42C6-A999-80EF9F38BE4C}"
 EndProject
