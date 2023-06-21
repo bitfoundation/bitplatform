@@ -7,7 +7,7 @@
 @inject IConfiguration Configuration
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var gtmContainerId = @Configuration.GetSection("GoogleTagManager")["ContainerId"];
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
@@ -71,26 +71,19 @@
     </style>
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
     <link href="Bit.Websites.Careers.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
-    <!-- Google Tag Manager -->
-    <script>
-        (function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '@gtmContainerId');</script>
-    <!-- End Google Tag Manager -->
 </head>
 <body>
 
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=@gtmContainerId"
-                height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', '@gtmId');
+    </script>
+    <!-- Google tag -->
 
     <div id="app-container">
         @if (isDefaultDeploymentType)
