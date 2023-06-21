@@ -60,9 +60,9 @@
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
-        <Using Include="TodoTemplate.Client.Shared.Components" />
-        <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
-        <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
+        <Using Include="TodoTemplate.Client.Core.Components" />
+        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
@@ -81,7 +81,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Shared\TodoTemplate.Client.Shared.csproj" />
+      <ProjectReference Include="..\Core\TodoTemplate.Client.Core.csproj" />
     </ItemGroup>
 
 </Project>

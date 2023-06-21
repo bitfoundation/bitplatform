@@ -47,14 +47,14 @@
         <!--/+:msbuild-conditional:noEmit -->
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="TodoTemplate.Client.Shared.Services.Contracts" />
-        <Using Include="TodoTemplate.Client.Shared.Services.Implementations" />
-        <Using Include="TodoTemplate.Client.Shared.Components" />
+        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
+        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Core.Components" />
     </ItemGroup>
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <ProjectReference Include="..\Shared\TodoTemplate.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\TodoTemplate.Client.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">

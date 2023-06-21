@@ -109,7 +109,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -159,7 +159,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -205,7 +205,7 @@ jobs:
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Shared/appsettings.json'
+         files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 

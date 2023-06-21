@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
-using TodoTemplate.Client.Shared;
+using TodoTemplate.Client.Core;
 
 namespace TodoTemplate.Client.App;
 

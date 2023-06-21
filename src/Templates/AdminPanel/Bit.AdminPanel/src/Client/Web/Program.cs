@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Shared;
+using AdminPanel.Client.Core;
 #if BlazorElectron
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -32,7 +32,7 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.appsettings.json"));
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Core.appsettings.json"));
 
         var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
 
@@ -59,7 +59,7 @@ public class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Shared.appsettings.json")!);
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Core.appsettings.json")!);
 #if BlazorElectron
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();

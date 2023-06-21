@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Client.Shared;
+using TodoTemplate.Client.Core;
 #if BlazorElectron
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -29,7 +29,7 @@ public class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Shared.appsettings.json"));
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Core.appsettings.json"));
 
         var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
 
@@ -56,7 +56,7 @@ public class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Shared.appsettings.json")!);
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Core.appsettings.json")!);
 #if BlazorElectron
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();

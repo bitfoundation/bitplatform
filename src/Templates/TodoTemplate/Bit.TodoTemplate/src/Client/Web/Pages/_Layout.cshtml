@@ -71,11 +71,11 @@
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(TodoTemplate.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
+            <component type="typeof(TodoTemplate.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/TodoTemplate.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link href="_content/TodoTemplate.Client.Shared/TodoTemplate.Client.Shared.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="_content/TodoTemplate.Client.Core/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link href="_content/TodoTemplate.Client.Core/TodoTemplate.Client.Core.bundle.scp.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
         @RenderBody()
     </div>
 
@@ -120,7 +120,7 @@
         }
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
     }
-    <script src="_content/TodoTemplate.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="_content/TodoTemplate.Client.Core/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
     @if (isSsr)
     {

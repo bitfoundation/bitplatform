@@ -1,0 +1,18 @@
+﻿@namespace AdminPanel.Client.Core
+@inherits LayoutComponentBase
+
+<div class="main @(_isUserAuthenticated is false ? "main--full-page" : null)">
+    @if (_isUserAuthenticated)
+    {
+        <Header OnToggleMenu=@ToggleMenuHandler />
+        <NavMenu @bind-IsMenuOpen=@_isMenuOpen />
+    }
+    <div class="site-content">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+    </div>
+    <Footer />
+</div>
+
+<MessageBox />

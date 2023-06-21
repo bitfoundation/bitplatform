@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.FileProviders;
-using Bit.BlazorUI.Demo.Client.Shared;
+using Bit.BlazorUI.Demo.Client.Core;
 
 namespace Bit.BlazorUI.Demo.Client.App;
 

@@ -56,7 +56,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Shared/appsettings.json'
+      targetFiles: 'src/BlazorDual.Web/appsettings.json'
 
   - task: Bash@3
     displayName: 'Restore workloads'

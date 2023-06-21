@@ -76,7 +76,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\Shared\TodoTemplate.Shared.csproj" />
+        <ProjectReference Include="..\..\Shared\TodoTemplate.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

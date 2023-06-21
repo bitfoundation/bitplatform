@@ -75,25 +75,25 @@
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
 
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/Bit.BlazorUI.Demo.Client.Shared.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.min.css" asp-append-version="@shoudAddAspAppendVersion" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" asp-append-version="@shoudAddAspAppendVersion" />
         @RenderBody()
         <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-okaidia.min.css" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia.min.css" />
     </div>
 
     @if (isStatic is false)
     {
-        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism.min.js"></script>
-        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-csharp.min.js"></script>
-        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/prism-1.28.0/prism-cshtml.min.js"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.min.js"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-csharp.min.js"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-cshtml.min.js"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
         <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-        <script src="_content/Bit.BlazorUI.Demo.Client.Shared/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
 
         @if (isBlazorServer)
         {
