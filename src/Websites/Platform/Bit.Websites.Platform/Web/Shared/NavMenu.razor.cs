@@ -28,7 +28,7 @@ public partial class NavMenu
         new BitNavItem { Text = "Exception handling", Url = "/todo-template/exception-handling"},
         new BitNavItem { Text = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
         new BitNavItem { Text = "Multilingualism", Url = "/todo-template/multilingualism"},
-        new BitNavItem { Text = "DevOps", Url = "/todo-template/dev-ops"},
+        new BitNavItem { Text = "DevOps", Url = "/todo-template/devops"},
         new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
     };
 
@@ -46,7 +46,7 @@ public partial class NavMenu
         new BitNavItem { Text = "Exception handling", Url = "/admin-panel/exception-handling"},
         new BitNavItem { Text = "Cache mechanism", Url = "/admin-panel/cache-mechanism"},
         new BitNavItem { Text = "Multilingualism", Url = "/admin-panel/multilingualism"},
-        new BitNavItem { Text = "DevOps", Url = "/admin-panel/dev-ops"},
+        new BitNavItem { Text = "DevOps", Url = "/admin-panel/devops"},
         new BitNavItem { Text = "Contribute", Url = "/admin-panel/contribute"}
     };
 

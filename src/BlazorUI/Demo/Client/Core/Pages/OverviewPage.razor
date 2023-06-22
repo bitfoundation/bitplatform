@@ -1,6 +1,8 @@
 ﻿@page "/overview"
 
-<PageTitle>Bit BlazorUI - Overview</PageTitle>
+<PageOutlet Url="overview"
+            Title="Overview"
+            Description="overview of the bit blazorui components" />
 
 <section class="page-container">
     <BitTypography Variant="BitTypographyVariant.H3" Class="title">Bit BlazorUI</BitTypography>
@@ -19,7 +21,7 @@
             <div class="card-img galleries-pickers"></div>
             Galleries & Pickers
         </a>
-        <a class="card list-card" href="/components/basic-list">
+        <a class="card list-card" href="/components/basiclist">
             <div class="card-img items-lists"></div>
             Items & Lists
         </a>
@@ -27,11 +29,11 @@
             <div class="card-img menus-navs"></div>
             Commands, Menus & Navs
         </a>
-        <a class="card notification-card" href="/components/message-bar">
+        <a class="card notification-card" href="/components/messagebar">
             <div class="card-img notification"></div>
             Notification & Engagement
         </a>
-        <a class="card progress-card" href="/components/progress-indicator">
+        <a class="card progress-card" href="/components/progressindicator">
             <div class="card-img progress"></div>
             Progress
         </a>
