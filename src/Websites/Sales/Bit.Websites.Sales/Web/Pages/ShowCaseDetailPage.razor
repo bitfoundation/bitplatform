@@ -1,7 +1,7 @@
 ﻿@page "/case-details/{CaseKey}"
 @inherits AppComponentBase
 
-<PageOutlet Url="case-details"
+<PageOutlet Url="@($"case-details/{CaseKey}")"
             Title="Bit Services - Case Details"
             Description="details of use-case of the bit platform's software development as a service" />
 
