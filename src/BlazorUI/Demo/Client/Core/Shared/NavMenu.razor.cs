@@ -16,26 +16,26 @@ public partial class NavMenu
             ChildItems = new()
             {
                 new() { Text = "Button", Url = "/components/button" },
-                new() { Text = "ActionButton", Url = "/components/action-button" },
-                new() { Text = "CompoundButton", Url = "/components/compound-button" },
-                new() { Text = "IconButton", Url = "/components/icon-button" },
-                new() { Text = "LoadingButton", Url = "/components/loading-button" },
-                new() { Text = "ToggleButton", Url = "/components/toggle-button" },
-                new() { Text = "MenuButton", Url = "/components/menu-button" },
-                new() { Text = "SplitButton", Url = "/components/split-button" },
-                new() { Text = "CheckBox", Url = "/components/check-box" },
-                new() { Text = "ChoiceGroup", Url = "/components/choice-group" },
+                new() { Text = "ActionButton", Url = "/components/actionbutton" },
+                new() { Text = "CompoundButton", Url = "/components/compoundbutton" },
+                new() { Text = "IconButton", Url = "/components/iconbutton" },
+                new() { Text = "LoadingButton", Url = "/components/loadingbutton" },
+                new() { Text = "ToggleButton", Url = "/components/togglebutton" },
+                new() { Text = "MenuButton", Url = "/components/menubutton" },
+                new() { Text = "SplitButton", Url = "/components/splitbutton" },
+                new() { Text = "CheckBox", Url = "/components/checkbox" },
+                new() { Text = "ChoiceGroup", Url = "/components/choicegroup" },
                 new() { Text = "Dropdown", Url = "/components/dropdown" },
-                new() { Text = "FileUpload", Url = "/components/file-upload" },
+                new() { Text = "FileUpload", Url = "/components/fileupload" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link" },
                 new() { Text = "Rating", Url = "/components/rating" },
-                new() { Text = "SearchBox", Url = "/components/search-box" },
+                new() { Text = "SearchBox", Url = "/components/searchbox" },
                 new() { Text = "Slider", Url = "/components/slider" },
-                new() { Text = "SpinButton", Url = "/components/spin-button" },
-                new() { Text = "TextField", Url = "/components/text-field" },
-                new() { Text = "NumericTextField", Url = "/components/numeric-text-field" },
-                new() { Text = "OtpInput", Url = "/components/otp-input" },
+                new() { Text = "SpinButton", Url = "/components/spinbutton" },
+                new() { Text = "TextField", Url = "/components/textfield" },
+                new() { Text = "NumericTextField", Url = "/components/numerictextfield" },
+                new() { Text = "OtpInput", Url = "/components/otpinput" },
                 new() { Text = "Toggle (Switch)", Url = "/components/toggle" }
             }
         },
@@ -44,10 +44,10 @@ public partial class NavMenu
             Text = "Galleries & Pickers",
             ChildItems = new()
             {
-                new() { Text = "ColorPicker", Url = "/components/color-picker" },
-                new() { Text = "DatePicker", Url = "/components/date-picker" },
-                new() { Text = "DateRangePicker", Url = "/components/date-range-picker" },
-                new() { Text = "TimePicker", Url = "/components/time-picker" },
+                new() { Text = "ColorPicker", Url = "/components/colorpicker" },
+                new() { Text = "DatePicker", Url = "/components/datepicker" },
+                new() { Text = "DateRangePicker", Url = "/components/daterangepicker" },
+                new() { Text = "TimePicker", Url = "/components/timepicker" },
             }
         },
         new()
@@ -55,7 +55,7 @@ public partial class NavMenu
             Text = "Items & Lists",
             ChildItems = new()
             {
-                new() { Text = "BasicList", Url = "/components/basic-list" },
+                new() { Text = "BasicList", Url = "/components/basiclist" },
                 new() { Text = "Carousel", Url = "/components/carousel" },
                 new() { Text = "Swiper", Url = "/components/swiper" },
                 new() { Text = "Persona (AvatarView)", Url = "/components/persona" }
@@ -76,8 +76,8 @@ public partial class NavMenu
             Text = "Notification & Engagement",
             ChildItems = new()
             {
-                new() { Text = "MessageBar", Url = "/components/message-bar" },
-                new() { Text = "SnackBar", Url = "/components/SnackBar" },
+                new() { Text = "MessageBar", Url = "/components/messagebar" },
+                new() { Text = "SnackBar", Url = "/components/snackbar" },
             }
         },
         new()
@@ -85,7 +85,7 @@ public partial class NavMenu
             Text = "Progress",
             ChildItems = new()
             {
-                new() { Text = "ProgressIndicator", Url = "/components/progress-indicator" },
+                new() { Text = "ProgressIndicator", Url = "/components/progressindicator" },
                 new() { Text = "Spinner (BusyIndicator)", Url = "/components/spinner" },
                 new() { Text = "Loading", Url = "/components/loading" }
             },
@@ -114,7 +114,7 @@ public partial class NavMenu
             Text = "Extras",
             ChildItems = new()
             {
-                new() { Text = "DataGrid", Url = "/components/data-grid" },
+                new() { Text = "DataGrid", Url = "/components/datagrid" },
                 new() { Text = "Chart", Url = "/components/chart" }
             }
         },

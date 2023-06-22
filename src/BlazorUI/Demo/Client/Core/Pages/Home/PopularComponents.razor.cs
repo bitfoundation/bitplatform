@@ -16,19 +16,19 @@ public partial class PopularComponents
         {
             Name = "ColorPicker",
             Description = "The ColorPicker component is used to browse through and select colors.",
-            Url = "/components/color-picker"
+            Url = "/components/colorpicker"
         },
         new()
         {
             Name = "DatePicker",
             Description = "The DatePicker component offers a drop-down control that’s optimized for picking a single date from a calendar view.",
-            Url = "/components/date-picker"
+            Url = "/components/datepicker"
         },
         new()
         {
             Name = "FileUpload",
             Description = "The FileUpload component wraps the HTML file input element(s) and uploads them to a given URL.",
-            Url = "/components/file-upload"
+            Url = "/components/fileupload"
         },
         new()
         {
