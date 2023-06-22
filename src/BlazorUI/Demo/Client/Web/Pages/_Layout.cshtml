@@ -8,7 +8,7 @@
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var googleTagContainerID = @Configuration.GetSection("GoogleTagManager")["ContainerID"];
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
 
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
@@ -72,6 +72,18 @@
     }
 </head>
 <body class="@BitCss.Color.Background.Primary @BitCss.Color.Foreground.Primary">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', '@gtmId');
+    </script>
+    <!-- Google tag -->
+
     <div id="app-container">
         @if (isDefaultDeploymentType || isPwa)
         {
@@ -140,17 +152,5 @@
     {
         <persist-component-state />
     }
-
-    <!-- Google Tag Manager -->
-    <script>
-        (function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '@googleTagContainerID');</script>
-    <!-- End Google Tag Manager -->
 </body>
 </html>

@@ -4,15 +4,16 @@
 
 @namespace Bit.Websites.Careers.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
+@inject IConfiguration Configuration
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
     var shoudAddAspAppendVersion = true;
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
-
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
@@ -72,6 +73,18 @@
     <link href="Bit.Websites.Careers.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', '@gtmId');
+    </script>
+    <!-- Google tag -->
+
     <div id="app-container">
         @if (isDefaultDeploymentType)
         {
