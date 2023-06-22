@@ -1,23 +1,9 @@
 ﻿@page "/admin-panel/multilingualism"
 @inherits AppComponentBase
 
-<PageTitle>Bit Platform - AdminPanel multilingualism</PageTitle>
-
-<HeadContent>
-    <meta name="title" content="Bit Platform - AdminPanel multilingualism" />
-    <meta name="description" content="multilingualism of the admin panel template of the bit platform" />
-
-    <meta property="og:url" content="https://bitplatform.dev/admin-panel/multilingualism" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit Platform" />
-    <meta property="og:title" content="Bit Platform - AdminPanel multilingualism" />
-    <meta property="og:description" content="multilingualism of the admin panel template of the bit platform" />
-    <meta property="og:image" content="https://bitplatform.dev/images/og-image.svg" />
-
-    <meta name="twitter:title" content="Bit Platform - AdminPanel multilingualism" />
-    <meta name="twitter:description" content="multilingualism of the admin panel template of the bit platform" />
-    <meta name="twitter:image" content="https://bitplatform.dev/images/og-image.svg" />
-</HeadContent>
+<PageOutlet Url="admin-panel/multilingualism"
+            Title="Bit Platform - AdminPanel multilingualism"
+            Description="multilingualism of the admin panel template of the bit platform" />
 
 <div class="page-container">
     <h1 class="page-main-title">Multilingualism</h1>
@@ -55,4 +41,4 @@ public class CustomerDto
     </div>
 </div>
 
-<NavigationButtons Prev="Cache mechanism" PrevUrl="/admin-panel/cache-mechanism" Next="DevOps" NextUrl="/admin-panel/dev-ops" />
+<NavigationButtons Prev="Cache mechanism" PrevUrl="/admin-panel/cache-mechanism" Next="DevOps" NextUrl="/admin-panel/devops" />

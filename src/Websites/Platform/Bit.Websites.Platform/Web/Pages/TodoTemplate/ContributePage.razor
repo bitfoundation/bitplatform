@@ -1,23 +1,9 @@
 ﻿@page "/todo-template/contribute"
 @inherits AppComponentBase
 
-<PageTitle>Bit Platform - TodoTemplate contribution</PageTitle>
-
-<HeadContent>
-    <meta name="title" content="Bit Platform - TodoTemplate contribution" />
-    <meta name="description" content="how to contribute to the todo template of the bit platform" />
-
-    <meta property="og:url" content="https://bitplatform.dev/todo-template/contribute" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit Platform" />
-    <meta property="og:title" content="Bit Platform - TodoTemplate contribution" />
-    <meta property="og:description" content="how to contribute to the todo template of the bit platform" />
-    <meta property="og:image" content="https://bitplatform.dev/images/og-image.svg" />
-
-    <meta name="twitter:title" content="Bit Platform - TodoTemplate contribution" />
-    <meta name="twitter:description" content="how to contribute to the todo template of the bit platform" />
-    <meta name="twitter:image" content="https://bitplatform.dev/images/og-image.svg" />
-</HeadContent>
+<PageOutlet Url="todo-template/contribute"
+            Title="Bit Platform - TodoTemplate contribute"
+            Description="how to contribute to the todo template of the bit platform" />
 
 
 <div class="page-container">
@@ -44,4 +30,4 @@
     </div>
 </div>
 
-<NavigationButtons Prev="DevOps" PrevUrl="/todo-template/dev-ops" />
+<NavigationButtons Prev="DevOps" PrevUrl="/todo-template/devops" />

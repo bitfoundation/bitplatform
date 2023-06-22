@@ -1,23 +1,9 @@
 ﻿@page "/components"
 @inherits AppComponentBase
 
-<PageTitle>Bit Platform - Components</PageTitle>
-
-<HeadContent>
-    <meta name="title" content="Bit Platform - Components" />
-    <meta name="description" content="about the bit platform's blazor ui components" />
-
-    <meta property="og:url" content="https://bitplatform.dev/components" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit Platform" />
-    <meta property="og:title" content="Bit Platform - Components" />
-    <meta property="og:description" content="about the bit platform's blazor ui components" />
-    <meta property="og:image" content="https://bitplatform.dev/images/og-image.svg" />
-
-    <meta name="twitter:title" content="Bit Platform - Components" />
-    <meta name="twitter:description" content="about the bit platform's blazor ui components" />
-    <meta name="twitter:image" content="https://bitplatform.dev/images/og-image.svg" />
-</HeadContent>
+<PageOutlet Url="components"
+            Title="Bit Platform - Components"
+            Description="the bit platform's blazor ui components" />
 
 <div class="page-container">
     <section class="page-section main-section">
