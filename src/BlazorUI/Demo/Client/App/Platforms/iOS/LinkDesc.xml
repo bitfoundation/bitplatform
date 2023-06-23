@@ -20,4 +20,8 @@
         <type fullname="*" />
     </assembly>
 
+    <assembly fullname="Bit.BlazorUI.Extras">
+        <type fullname="*" />
+    </assembly>
+
 </linker>
