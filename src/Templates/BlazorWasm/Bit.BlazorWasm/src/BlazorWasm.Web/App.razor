@@ -13,10 +13,8 @@
 </Router>
 
 @code {
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         BitThemeManager.init(_js);
-
-        return base.OnInitializedAsync();
     }
 }
