@@ -1,4 +1,6 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject IJSRuntime _js
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
@@ -9,3 +11,12 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        BitThemeManager.init(_js);
+
+        return base.OnInitializedAsync();
+    }
+}

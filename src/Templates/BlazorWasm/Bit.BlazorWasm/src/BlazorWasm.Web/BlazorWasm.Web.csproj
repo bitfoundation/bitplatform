@@ -29,6 +29,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
+        <Using Include="Bit.BlazorUI" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="BlazorWasm.Web" />
         <Using Include="BlazorWasm.Web.Shared" />
