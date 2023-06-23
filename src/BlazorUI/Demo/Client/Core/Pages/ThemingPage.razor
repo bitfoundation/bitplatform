@@ -21,7 +21,7 @@
             By default, components use the light theme type.
         </BitTypography>
     </section>
-    
+
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS variables</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
@@ -85,7 +85,7 @@
             Then you need to call the <code>ApplyBitTheme</code> method of the <code>BitThemeManager</code>
             using an instance of the <code>BitTheme</code>, which contains the desired theme values.
             <br />
-            The <code>ApplyBitTheme</code> method accepts two parameters: a BitTheme instace and an optional target element 
+            The <code>ApplyBitTheme</code> method accepts two parameters: a BitTheme instace and an optional target element
             which is by default the body element.
             <br />
             Here's an example of how to apply custom theme values to the entire body:
@@ -96,6 +96,27 @@
 myTheme.Color.Foreground.Primary = "#111";
 myTheme.Color.Background.Primary = "#777";
 BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            You can set the current theme using the <code>SetTheme</code> method:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">await BitThemeManager.SetTheme("fluent-dark");</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            You can also toggle current theme between light/dark using the <code>ToggleDarkLight</code> method:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">await BitThemeManager.ToggleDarkLight();</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            This method returns the name of the new toggled theme.
+            <br />
+            The <code>BitThemeManager</code> has a method named <code>GetCurrentTheme</code> which returns the name of the current theme:
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">var currentTheme = await BitThemeManager.GetCurrentTheme();</code></pre>
+        <br />
     </section>
 
     <section class="page-section">
@@ -168,6 +189,11 @@ BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
         Color = { Primary = { Main = "blue" } }
     };
 }</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            <strong>Note:</strong> The <code>BitThemeProvider</code> initializes the <code>BitThemeManager</code> class itself 
+            and by using <code>BitThemeProvider</code> component there is no need for calling the <code>init</code> method.
+        </BitTypography>
         <br />
     </section>
 </div>
