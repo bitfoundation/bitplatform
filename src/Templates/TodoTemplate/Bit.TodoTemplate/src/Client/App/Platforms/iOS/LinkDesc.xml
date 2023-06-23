@@ -4,7 +4,7 @@
         <type fullname="*" />
     </assembly>
 
-    <assembly fullname="Bit.BlazorUI.Demo.Client.Core">
+    <assembly fullname="TodoTemplate.Client.Core">
         <type fullname="*" />
     </assembly>
 
@@ -12,7 +12,7 @@
         <type fullname="*" />
     </assembly>
 
-    <assembly fullname="Bit.BlazorUI.Demo.Client.App">
+    <assembly fullname="TodoTemplate.Client.App">
         <type fullname="*" />
     </assembly>
 

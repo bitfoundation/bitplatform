@@ -4,7 +4,7 @@
         <type fullname="*" />
     </assembly>
 
-    <assembly fullname="Bit.BlazorUI.Demo.Client.Core">
+    <assembly fullname="AdminPanel.Client.Core">
         <type fullname="*" />
     </assembly>
 
@@ -12,7 +12,7 @@
         <type fullname="*" />
     </assembly>
 
-    <assembly fullname="Bit.BlazorUI.Demo.Client.App">
+    <assembly fullname="AdminPanel.Client.App">
         <type fullname="*" />
     </assembly>
 

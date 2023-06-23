@@ -40,7 +40,6 @@
         <MtouchLink>Full</MtouchLink>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
-        <BuildIpa>True</BuildIpa>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
