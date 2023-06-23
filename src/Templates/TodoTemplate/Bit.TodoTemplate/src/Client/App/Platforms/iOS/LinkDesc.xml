@@ -16,4 +16,8 @@
         <type fullname="*" />
     </assembly>
 
+    <assembly fullname="TodoTemplate.Shared">
+        <type fullname="*" />
+    </assembly>
+
 </linker>

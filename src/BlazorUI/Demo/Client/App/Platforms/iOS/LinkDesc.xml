@@ -16,4 +16,8 @@
         <type fullname="*" />
     </assembly>
 
+    <assembly fullname="Bit.BlazorUI.Demo.Shared">
+        <type fullname="*" />
+    </assembly>
+
 </linker>

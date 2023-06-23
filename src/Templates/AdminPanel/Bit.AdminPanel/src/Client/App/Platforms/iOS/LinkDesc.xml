@@ -16,4 +16,8 @@
         <type fullname="*" />
     </assembly>
 
+    <assembly fullname="AdminPanel.Shared">
+        <type fullname="*" />
+    </assembly>
+
 </linker>
