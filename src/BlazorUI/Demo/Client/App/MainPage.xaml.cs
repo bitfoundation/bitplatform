@@ -45,7 +45,7 @@ public partial class MainPage
 #elif IOS || MACCATALYST
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
-#if DEBUG
+#if DEBUG && (MACCATALYST13_3_OR_GREATER || IOS16_1_OR_GREATER)
             handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
 #endif
 #elif ANDROID
