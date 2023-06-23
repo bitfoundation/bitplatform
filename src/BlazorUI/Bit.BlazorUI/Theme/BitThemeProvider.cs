@@ -32,6 +32,13 @@ public partial class BitThemeProvider : ComponentBase
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
+    protected override void OnInitialized()
+    {
+        BitThemeManager.init(_js);
+
+        base.OnInitialized();
+    }
+
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
