@@ -260,4 +260,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ios-bundle
-        path: '**/*.ipa'
+        path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-ios/*.ipa
