@@ -18,7 +18,7 @@
     }
 
 .section {
-    padding: 3rem 1rem;
+    padding: 3rem 0rem;
     text-align: center;
     border-bottom: 1px solid var(--bit-clr-brd-disabled);
 }
