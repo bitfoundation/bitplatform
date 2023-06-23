@@ -239,7 +239,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+        global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -248,7 +248,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Core/appsettings.json'
+        files: 'src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -256,7 +256,7 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+      run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1
@@ -274,19 +274,19 @@ jobs:
     - name: Download Apple Provisioning Profiles
       uses: Apple-Actions/download-provisioning-profiles@v1
       with:
-        bundle-id: 'com.bitplatform.Todo.Template'
+        bundle-id: 'com.bitplatform.AdminPanel.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+      run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
   
     - name: Build ipa
-      run: dotnet publish src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+      run: dotnet publish src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: ios-bundle
-        path: src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa
+        path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa
