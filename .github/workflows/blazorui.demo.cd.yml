@@ -254,7 +254,7 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
   
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:BuildIpa=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:BuildIpa=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
