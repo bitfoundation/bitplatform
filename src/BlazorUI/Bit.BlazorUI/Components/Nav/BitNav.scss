@@ -122,5 +122,9 @@
 
 .bit-nav-dis {
     pointer-events: none;
-    color: $color-foreground-disabled;
+
+    .bit-nav-itm {
+        pointer-events: none;
+        color: $color-foreground-disabled;
+    }
 }
