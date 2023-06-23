@@ -29,6 +29,7 @@ html, body, #app-container {
     position: sticky;
     background-color: $bit-color-background-secondary;
     top: calc(rem(75px) + var(--bit-status-bar-height));
+
     .bit-ios & {
         top: calc(rem(75px) + env(safe-area-inset-top));
     }

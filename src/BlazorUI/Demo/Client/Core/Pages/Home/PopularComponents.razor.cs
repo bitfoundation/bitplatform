@@ -4,6 +4,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class PopularComponents
 {
+    private bool showCode;
+    private DateTimeOffset? SelectedDate;
     private IQueryable<Country>? allCountries;
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
     private string typicalSampleNameFilter = string.Empty;
@@ -45,7 +47,7 @@ public partial class PopularComponents
     };
 
     private PopularComponent? SelectedComponent;
-    private string ColorRgb = "rgb(0,101,239)";
+    private string Color = "rgb(0,101,239)";
     private double Alpha = 1;
     string UploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     string RemoveUrl => $"FileUpload/RemoveFile";
@@ -73,21 +75,20 @@ public partial class PopularComponents
         new BitNavItem
         {
             Text = "Home",
-            Url = "http://example.com",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
             ChildItems = new List<BitNavItem>
             {
-                new BitNavItem { Text = "Activity", Url = "http://msn.com", Target="_blank" },
-                new BitNavItem { Text = "MSN", Url = "http://msn.com", IsEnabled = false, Target = "_blank" }
+                new BitNavItem { Text = "Activity", Target="_blank" },
+                new BitNavItem { Text = "MSN", IsEnabled = false, Target = "_blank" }
             }
         },
-        new BitNavItem { Text = "Documents", Url = "http://example.com", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
-        new BitNavItem { Text = "Notebook", Url = "http://msn.com", IsEnabled = false },
-        new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "Documents", Target = "_blank", IsExpanded = true },
+        new BitNavItem { Text = "Pages", Target = "_parent" },
+        new BitNavItem { Text = "Notebook", IsEnabled = false },
+        new BitNavItem { Text = "Communication and Media", Target = "_top" },
+        new BitNavItem { Text = "News", Title = "News", IconName = BitIconName.News, Target = "_self" },
     };
 
     private List<BitDropdownItem> GetDropdownItems()
