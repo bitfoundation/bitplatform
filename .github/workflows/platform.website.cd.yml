@@ -33,7 +33,9 @@ jobs:
       run: (Get-Content src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj) -replace 'Microsoft.NET.Sdk.Web', 'Microsoft.NET.Sdk.BlazorWebAssembly' | Set-Content src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj
 
     - name: Restore workloads
-      run: dotnet workload restore src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: >
+        dotnet workload install wasm-experimental
+        dotnet workload restore src/Websites/Platform/Bit.Websites.Platform/Web/Bit.Websites.Platform.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 

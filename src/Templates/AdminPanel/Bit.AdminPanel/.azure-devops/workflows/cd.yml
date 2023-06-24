@@ -39,7 +39,9 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+      script: |
+          'dotnet workload install wasm-experimental'
+          'dotnet workload restore src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly'
 
   - task: Bash@3
     displayName: 'Build migrations bundle'
