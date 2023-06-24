@@ -656,6 +656,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The username or password you entered is incorrect..
+        /// </summary>
+        public static string InvalidUsernameOrPassword {
+            get {
+                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
