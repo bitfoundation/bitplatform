@@ -40,7 +40,8 @@
         <MtouchLink>Full</MtouchLink>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
-        <BuildIpa>True</BuildIpa>
+        <!-- AOT everything, except Bit.BlazorUI.Extras.dll, which will be interpreted -->
+        <MtouchInterpreter>-all,Bit.BlazorUI.Extras.dll</MtouchInterpreter>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
@@ -80,7 +81,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-03">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

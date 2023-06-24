@@ -191,3 +191,73 @@ jobs:
       with:
         name: android-bundle
         path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-android/*-Signed.*
+
+
+  build_blazor_hybrid_ios:
+    name: build blazor hybrid (ios)
+    runs-on: macos-latest
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v3
+     
+    - name: Setup .NET (Bit Blazor UI)
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+    
+    - name: Setup .NET (Bit Blazor UI Demo)
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/BlazorUI/Demo/global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+  
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/BlazorUI/Demo/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install Maui
+      run: dotnet workload install maui
+
+    - name: Restore workloads
+      run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+  
+    - name: Extract iOS code signing certificate from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './'
+          fileName: 'DistributionCert.p12'
+          encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+
+    - name: Import Code-Signing Certificates
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-filepath: './DistributionCert.p12'
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v1
+      with:
+        bundle-id: 'com.bitplatform.BlazorUI.Demo'
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+
+    - name: Build (To generate CSS/JS files)
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+  
+    - name: Build ipa
+      run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ios-bundle
+        path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa

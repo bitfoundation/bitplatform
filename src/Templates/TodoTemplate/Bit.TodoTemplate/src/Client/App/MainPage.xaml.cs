@@ -27,7 +27,11 @@ public partial class MainPage
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG
-            handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3)) 
+                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
+            {
+                handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+            }
 #endif
 #endif
 

@@ -1,6 +1,6 @@
 <linker>
 
-    <assembly fullname="Bit.BlazorUI.Demo.Client.Shared">
+    <assembly fullname="Bit.BlazorUI.Demo.Client.Core">
         <type fullname="*" />
     </assembly>
 
