@@ -57,6 +57,13 @@
             </BitLink>.
             <br />
             You can simply override these values to customize the UI.
+            <br />
+            <br />
+            <strong>Note:</strong> If you're using <code>scss</code> in your project, you can use <code>bit-css-variables.scss</code>
+            file which introduces scss variables for each bit theme css variable. you can find the latest version of this file
+            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Core/Styles/bit-css-variables.scss" Target="_blank">
+                here
+            </BitLink>.
         </BitTypography>
     </section>
 
@@ -191,9 +198,34 @@ BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
 }</code></pre>
         <br />
         <BitTypography Variant="BitTypographyVariant.Body1">
-            <strong>Note:</strong> The <code>BitThemeProvider</code> initializes the <code>BitThemeManager</code> class itself 
+            <strong>Note:</strong> The <code>BitThemeProvider</code> initializes the <code>BitThemeManager</code> class itself
             and by using <code>BitThemeProvider</code> component there is no need for calling the <code>init</code> method.
         </BitTypography>
         <br />
+    </section>
+
+
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS in C#</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            In Bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
+            <br />
+            You can use different properties of this class to further customize your UI:
+        </BitTypography>
+        <br />
+        <pre><code class="language-cshtml">&lthtml&gt
+    &lthead&gt...&lt/head&gt
+    &ltbody class="@@BitCss.Class.Color.Background.Primary @@BitCss.Class.Color.Foreground.Primary"&gt
+        ...
+    &lt/body&gt
+&lt/html&gt</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            This class contians two main property for accessing CSS classes (<code>BitCss.Class</code>) and CSS variables (<code>BitCss.Var</code>).
+        </BitTypography>
+        <br />
+        <pre><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
+    hello world!
+&lt/div&gt</code></pre>
     </section>
 </div>
