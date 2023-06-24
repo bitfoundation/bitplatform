@@ -4,7 +4,6 @@
     z-index: 11;
     position: fixed;
     backdrop-filter: blur(20px);
-    box-shadow: var(--bit-shd-1);
     -webkit-backdrop-filter: blur(20px);
 }
 
