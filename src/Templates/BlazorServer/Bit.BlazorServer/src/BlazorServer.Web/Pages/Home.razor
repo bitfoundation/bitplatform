@@ -3,7 +3,7 @@
 <PageTitle>Home</PageTitle>
 
 <div class="page">
-    <div class="hero">
+    <div class="hero @BitCss.Class.Color.Border.Disabled">
         <div class="container">
             <BitTypography Variant="BitTypographyVariant.H1" Gutter>
                 Hello World
@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <div class="section">
+    <div class="section @BitCss.Class.Color.Border.Disabled">
         <BitTypography Variant="BitTypographyVariant.H3" Gutter>
             Counter
         </BitTypography>
@@ -23,12 +23,12 @@
         <BitButton OnClick="() => _counter++">Increase [@_counter]</BitButton>
     </div>
 
-    <div class="section">
-        <BitTypography Variant="BitTypographyVariant.H3" Gutter>
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter Style="@($"color:{_colorPickerRef?.Rgba}")">
             ColorPicker
         </BitTypography>
         <div style="display:flex;justify-content:center">
-            <BitColorPicker ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="_alpha" @bind-Color="@_color" />
+            <BitColorPicker @ref="_colorPickerRef" ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="_alpha" @bind-Color="@_color" />
         </div>
         <BitTypography Variant="BitTypographyVariant.Body1">Alpha: @_alpha</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">Color: @_color</BitTypography>
@@ -38,5 +38,6 @@
 @code {
     int _counter;
     double _alpha = 1;
-    string? _color = "#0078d4";
+    string? _color = "#000000";
+    private BitColorPicker? _colorPickerRef;
 }
