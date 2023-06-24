@@ -35,6 +35,16 @@
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+        <MtouchLink>Full</MtouchLink>
+        <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+        <EnableSGenConc>True</EnableSGenConc>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <LinkDescription Include="Platforms\iOS\LinkDesc.xml" />
+    </ItemGroup>
+
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
