@@ -16,11 +16,11 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-preview.5.23302.2" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Web\Bit.Websites.Platform.Web.csproj" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-04">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-04">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

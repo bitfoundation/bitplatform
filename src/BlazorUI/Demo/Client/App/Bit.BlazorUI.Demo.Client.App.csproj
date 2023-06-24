@@ -81,7 +81,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-04">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
