@@ -1,28 +1,43 @@
 ﻿@page "/"
 
-@code {
-    int counter;
-}
-
 <PageTitle>Home</PageTitle>
 
 <div class="page">
-    <div class="hero">
+    <div class="hero @BitCss.Class.Color.Border.Disabled">
         <div class="container">
-            <div class="content">
-                <h1 class="title">
-                    Hello World
-                </h1>
-                <div class="desc">
-                    Welcome to your new Bit Blazor WebAssembly app
-                </div>
-            </div>
+            <BitTypography Variant="BitTypographyVariant.H1" Gutter>
+                Hello World
+            </BitTypography>
+
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                Welcome to your Bit Blazor WebAssembly app
+            </BitTypography>
         </div>
     </div>
 
-    <div class="counter">
-        <h1>Counter</h1>
-        <BitButton OnClick="() => counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
-        <BitButton OnClick="() => counter++">Increase [@counter]</BitButton>
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter>
+            Counter
+        </BitTypography>
+        <BitButton OnClick="() => _counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
+        <BitButton OnClick="() => _counter++">Increase [@_counter]</BitButton>
+    </div>
+
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter Style="@($"color:{_colorPickerRef?.Rgba}")">
+            ColorPicker
+        </BitTypography>
+        <div style="display:flex;justify-content:center">
+            <BitColorPicker @ref="_colorPickerRef" ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="_alpha" @bind-Color="@_color" />
+        </div>
+        <BitTypography Variant="BitTypographyVariant.Body1">Alpha: @_alpha</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">Color: @_color</BitTypography>
     </div>
 </div>
+
+@code {
+    int _counter;
+    double _alpha = 1;
+    string? _color = "#000000";
+    private BitColorPicker? _colorPickerRef;
+}

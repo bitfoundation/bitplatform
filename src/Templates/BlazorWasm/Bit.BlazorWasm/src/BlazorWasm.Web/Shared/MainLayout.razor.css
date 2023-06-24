@@ -1,11 +1,11 @@
 ﻿::deep *, * {
     box-sizing: border-box;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 main {
     height: 100%;
     display: flex;
+    padding-top: 56px;
     flex-direction: column;
 }
 
