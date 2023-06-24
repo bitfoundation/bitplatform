@@ -35,13 +35,14 @@
 
 .gitpod-section {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
 
     .gitpod-icon {
         width: rem(35px);
-        height: rem(35px);
+        height: rem(45px);
         display: inline-block;
         margin-right: rem(12px);
+        background-position-y: rem(3px);
         background-size: contain;
         background-repeat: no-repeat;
         background-image: url('images/icon/gitpod-icon.webp');
