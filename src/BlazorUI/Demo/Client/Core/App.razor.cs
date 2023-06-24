@@ -35,7 +35,7 @@ public partial class App
 
     private void SetupThemeAndBodyClasses()
     {
-        BitThemeManager.init(_jsRuntime);
+        BitThemeManager.Init(_jsRuntime);
 
         var cssClasses = new List<string>();
 
