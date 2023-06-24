@@ -49,7 +49,7 @@ jobs:
 
     - name: Restore workloads
       run: >
-        dotnet workload install wasm-experimental
+        dotnet workload install wasm-experimental &&
         dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
       
     - name: Build (To generate CSS/JS files)
