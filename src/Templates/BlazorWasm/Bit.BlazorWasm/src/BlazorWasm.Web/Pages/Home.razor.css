@@ -7,7 +7,8 @@
     display: flex;
     padding-bottom: 7rem;
     justify-content: center;
-    border-bottom: 1px solid var(--bit-clr-brd-disabled);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
 }
 
     .hero .container {
@@ -20,5 +21,6 @@
 .section {
     padding: 3rem 0rem;
     text-align: center;
-    border-bottom: 1px solid var(--bit-clr-brd-disabled);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
 }
