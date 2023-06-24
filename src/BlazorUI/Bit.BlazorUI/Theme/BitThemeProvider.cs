@@ -34,7 +34,7 @@ public partial class BitThemeProvider : ComponentBase
 
     protected override void OnInitialized()
     {
-        BitThemeManager.init(_js);
+        BitThemeManager.Init(_js);
 
         base.OnInitialized();
     }

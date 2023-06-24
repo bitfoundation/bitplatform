@@ -1,10 +1,11 @@
-﻿namespace Bit.BlazorUI;
+﻿
+namespace Bit.BlazorUI;
 
 public static class BitThemeManager
 {
     private static bool _isInitialized;
     private static IJSRuntime _js = default!;
-    public static void init(IJSRuntime js)
+    public static void Init(IJSRuntime js)
     {
         if(_isInitialized) return;
 
