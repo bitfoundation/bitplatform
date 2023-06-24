@@ -819,4 +819,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="TermsTitle" xml:space="preserve">
     <value>Terms</value>
   </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Invalid username or password</value>
+  </data>
 </root>

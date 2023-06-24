@@ -643,4 +643,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
   </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Invalid username or password</value>
+  </data>
 </root>
