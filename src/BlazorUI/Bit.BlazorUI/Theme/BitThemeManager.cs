@@ -3,14 +3,10 @@ namespace Bit.BlazorUI;
 
 public static class BitThemeManager
 {
-    private static bool _isInitialized;
     private static IJSRuntime _js = default!;
     public static void Init(IJSRuntime js)
     {
-        if(_isInitialized) return;
-
         _js = js;
-        _isInitialized = true;
     }
 
     public static async Task ApplyBitTheme(BitTheme bitTheme, ElementReference? element = null)

@@ -1,3 +1,5 @@
+@inherits AppComponentBase
+
 <PageTitle>@Title - Bit BlazorUI</PageTitle>
 
 <HeadContent>
@@ -17,7 +19,19 @@
 </HeadContent>
 
 @code {
-    [Parameter] public string? Title { get; set; }
+    private string? title;
+
+    [Parameter]
+    public string? Title
+    {
+        get => title;
+        set
+        {
+            title = value;
+            PubSubService.Pub(PubSubMessages.PAGE_TITLE_CHANGED, title);
+        }
+    }
+
     [Parameter] public string? Description { get; set; }
     [Parameter] public string? Url { get; set; }
     [Parameter] public string ImageUrl { get; set; } = "https://components.bitplatform.dev/images/og-image.svg";
