@@ -9,24 +9,24 @@ public class BitThemeManager
         _js = js;
     }
 
-    public async Task ApplyBitThemeAsync(BitTheme bitTheme, ElementReference? element = null)
+    public async ValueTask ApplyBitThemeAsync(BitTheme bitTheme, ElementReference? element = null)
     {
         if (bitTheme is null) return;
 
         await _js.ApplyBitTheme(BitThemeMapper.MapToCssVariables(bitTheme), element);
     }
 
-    public async Task SetThemeAsync(string themeName)
+    public async ValueTask SetThemeAsync(string themeName)
     {
         await _js.SetTheme(themeName);
     }
 
-    public async Task<string> ToggleDarkLightAsync()
+    public async ValueTask<string> ToggleDarkLightAsync()
     {
         return await _js.ToggleThemeDarkLight();
     }
 
-    public async Task<string> GetCurrentThemeAsync()
+    public async ValueTask<string> GetCurrentThemeAsync()
     {
         return await _js.GetCurrentTheme();
     }
