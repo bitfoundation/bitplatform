@@ -13,6 +13,8 @@
 	<array>
 		<string>arm64</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses camera for uploading profile photo using FileUpload component</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
