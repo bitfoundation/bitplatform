@@ -14,6 +14,8 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<NavManuService>();
 
+        services.AddBitBlazorUIServices();
+
         return services;
     }
 }

@@ -1,4 +1,5 @@
 ﻿namespace Bit.BlazorUI;
+
 internal static class BitThemeMapper
 {
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
