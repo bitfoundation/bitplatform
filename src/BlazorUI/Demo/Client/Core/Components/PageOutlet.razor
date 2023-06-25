@@ -19,10 +19,10 @@
 </HeadContent>
 
 @code {
-    private string title = "Bit BlazorUI";
+    private string? title;
 
     [Parameter]
-    public string Title
+    public string? Title
     {
         get => title;
         set
