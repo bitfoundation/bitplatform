@@ -18,7 +18,7 @@ public partial class App
 #if BlazorHybrid
     protected override async Task OnInitializedAsync()
     {
-        SetupThemeAndBodyClasses();
+        SetupBodyClasses();
         await base.OnInitializedAsync();
     }
 #else
@@ -26,17 +26,15 @@ public partial class App
     {
         if (firstRender)
         {
-            SetupThemeAndBodyClasses();
+            SetupBodyClasses();
         }
 
         base.OnAfterRender(firstRender);
     }
 #endif
 
-    private void SetupThemeAndBodyClasses()
+    private void SetupBodyClasses()
     {
-        BitThemeManager.Init(_jsRuntime);
-
         var cssClasses = new List<string>();
 
         if (BlazorModeDetector.Current.IsBlazorWebAssembly())

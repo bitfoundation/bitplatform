@@ -42,7 +42,6 @@ class BitTheme {
         Object.keys(theme).forEach(key => el.style.setProperty(key, theme[key]));
     }
 
-
     static isSystemThemeDark() {
         return matchMedia('(prefers-color-scheme: dark)').matches;
     }

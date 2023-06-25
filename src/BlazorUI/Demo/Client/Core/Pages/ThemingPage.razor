@@ -72,28 +72,26 @@
         <BitTypography Variant="BitTypographyVariant.Body1">
             In Bit BlazorUI the <code>BitThemeManager</code> class is available to customize the Theme.
             <br />
-            To start using the BitThemeManager, you first need to initialize it using an instance of <code>IJSRuntime</code> like this:
+            To start using the BitThemeManager, you first need to register BitBlazorUI services like this:
         </BitTypography>
         <br />
-        <pre class="code"><code class="language-csharp">public partial class App
-{
-    [Inject] private IJSRuntime _js;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            BitThemeManager.Init(_js);
-        }
-    }
-}</code></pre>
+        <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
         <br />
         <BitTypography Variant="BitTypographyVariant.Body1">
-            Then you need to call the <code>ApplyBitTheme</code> method of the <code>BitThemeManager</code>
-            using an instance of the <code>BitTheme</code>, which contains the desired theme values.
+            Now you can call methods of an injected instance of the <code>BitThemeManager</code>
+            class to customize the UI:
             <br />
-            The <code>ApplyBitTheme</code> method accepts two parameters: a BitTheme instace and an optional target element
-            which is by default the body element.
+        </BitTypography>
+        <br />
+        <pre class="code"><code class="language-csharp">[Inject] private BitThemeManager _bitThemeManager { get; set; }</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            For example using <code>ApplyBitThemeAsync</code> method and an instance of the
+            <code>BitTheme</code> class, which contains the desired theme values,
+            you can change the current theme styles.
+            <br />
+            The <code>ApplyBitThemeAsync</code> method accepts two parameters: a BitTheme instace
+            and an optional target element which is by default the body element.
             <br />
             Here's an example of how to apply custom theme values to the entire body:
             <br />
@@ -102,27 +100,29 @@
         <pre class="code"><code class="language-csharp">var myTheme = new BitTheme();
 myTheme.Color.Foreground.Primary = "#111";
 myTheme.Color.Background.Primary = "#777";
-BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
+_bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         <br />
         <BitTypography Variant="BitTypographyVariant.Body1">
-            You can set the current theme using the <code>SetTheme</code> method:
+            You can set the current theme using the <code>SetThemeAsync</code> method:
         </BitTypography>
         <br />
-        <pre class="code"><code class="language-csharp">await BitThemeManager.SetTheme("fluent-dark");</code></pre>
+        <pre class="code"><code class="language-csharp">await _bitThemeManager.SetThemeAsync("fluent-dark");</code></pre>
         <br />
         <BitTypography Variant="BitTypographyVariant.Body1">
-            You can also toggle current theme between light/dark using the <code>ToggleDarkLight</code> method:
+            You can also toggle current theme between dark/light using the 
+            <code>ToggleDarkLightAsync</code> method:
         </BitTypography>
         <br />
-        <pre class="code"><code class="language-csharp">await BitThemeManager.ToggleDarkLight();</code></pre>
+        <pre class="code"><code class="language-csharp">await _bitThemeManager.ToggleDarkLightAsync();</code></pre>
         <br />
         <BitTypography Variant="BitTypographyVariant.Body1">
             This method returns the name of the new toggled theme.
             <br />
-            The <code>BitThemeManager</code> has a method named <code>GetCurrentTheme</code> which returns the name of the current theme:
+            The <code>BitThemeManager</code> has a method named <code>GetCurrentThemeAsync</code> 
+            which returns the name of the current theme:
         </BitTypography>
         <br />
-        <pre class="code"><code class="language-csharp">var currentTheme = await BitThemeManager.GetCurrentTheme();</code></pre>
+        <pre class="code"><code class="language-csharp">var currentTheme = await _bitThemeManager.GetCurrentThemeAsync();</code></pre>
         <br />
     </section>
 
@@ -196,12 +196,6 @@ BitThemeManager.ApplyBitTheme(myTheme);</code></pre>
         Color = { Primary = { Main = "blue" } }
     };
 }</code></pre>
-        <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
-            <strong>Note:</strong> The <code>BitThemeProvider</code> initializes the <code>BitThemeManager</code> class itself
-            and by using <code>BitThemeProvider</code> component there is no need for calling the <code>init</code> method.
-        </BitTypography>
-        <br />
     </section>
 
 

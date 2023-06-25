@@ -10,6 +10,7 @@ public partial class Header
 
     [AutoInject] private NavManuService _menuService { get; set; } = default!;
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -52,6 +53,6 @@ public partial class Header
 
     private async Task ToggleTheme()
     {
-        await _bitDeviceCoordinator.SetDeviceTheme(await BitThemeManager.ToggleDarkLight() == "dark");
+        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
     }
 }
