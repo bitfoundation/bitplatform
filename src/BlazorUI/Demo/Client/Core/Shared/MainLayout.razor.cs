@@ -8,7 +8,7 @@ public partial class MainLayout : IDisposable
     private bool _disposed;
     private bool _isMenuOpen;
     private bool _isUserAuthenticated;
-    private string? pageTitle;
+    private string? _pageTitle;
     private Action _unsubscribe = default!;
     private ErrorBoundary ErrorBoundaryRef = default!;
 
@@ -45,13 +45,11 @@ public partial class MainLayout : IDisposable
             _exceptionHandler.Handle(exp);
         }
 
-        _unsubscribe = _pubSubService.Sub("PageTitleChanged", UpdatePageTitle);
-    }
-
-    private void UpdatePageTitle(object? payload)
-    {
-        pageTitle = (string)payload;
-        StateHasChanged();
+        _unsubscribe = _pubSubService.Sub(PubSubMessages.PAGE_TITLE_CHANGED, payload =>
+        {
+            _pageTitle = payload?.ToString();
+            StateHasChanged();
+        });
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
