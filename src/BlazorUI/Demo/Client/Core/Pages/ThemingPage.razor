@@ -7,6 +7,7 @@
 
 <div class="page-container">
     <BitTypography Variant="BitTypographyVariant.H3" Class="title">Theming</BitTypography>
+
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.Body1">
             In Bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
@@ -127,26 +128,39 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">System Theme</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            Bit BlazorUI also has a JavaScript API to customize even further the UX of the app.
-            You can see an example of this API here:
+            In Bit BlazorUI you can use the system theme as the default theme when the app starts up.
+            <br/>
+            In order to enable this feature a specific attribute named 
+            <code>use-system-theme</code> should be added to the <code>html</code> tag:
         </BitTypography>
         <br />
-        <pre><code class="language-js">(function () {
-    BitTheme.init({
-        system: true,
-        onChange: (newTheme, oldThem) => {
-            if (newTheme === 'dark') {
-                document.body.classList.add('bit-theme-dark');
-                document.body.classList.remove('bit-theme-light');
-            } else {
-                document.body.classList.add('bit-theme-light');
-                document.body.classList.remove('bit-theme-dark');
-            }
-        }
-    });
-}());</code></pre>
+        <pre><code class="language-cshtml">&lthtml use-system-theme&gt...&lt/html&gt</code></pre>
+    </section>
+
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS in C#</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            In Bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
+            <br />
+            You can use different properties of this class to further customize your UI:
+        </BitTypography>
+        <br />
+        <pre><code class="language-cshtml">&lthtml&gt
+    &lthead&gt...&lt/head&gt
+    &ltbody class="@@BitCss.Class.Color.Background.Primary @@BitCss.Class.Color.Foreground.Primary"&gt
+        ...
+    &lt/body&gt
+&lt/html&gt</code></pre>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            This class contians two main property for accessing CSS classes (<code>BitCss.Class</code>) and CSS variables (<code>BitCss.Var</code>).
+        </BitTypography>
+        <br />
+        <pre><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
+    hello world!
+&lt/div&gt</code></pre>
     </section>
 
     <section class="page-section">
@@ -198,28 +212,80 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
 }</code></pre>
     </section>
 
-
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS in C#</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
+            Bit BlazorUI also has a JavaScript API through <code>BitTheme</code> javascript object
+            to customize the UI of the app even further.
             <br />
-            You can use different properties of this class to further customize your UI:
+            The differnet functions available in this object are as follows:
         </BitTypography>
         <br />
-        <pre><code class="language-cshtml">&lthtml&gt
-    &lthead&gt...&lt/head&gt
-    &ltbody class="@@BitCss.Class.Color.Background.Primary @@BitCss.Class.Color.Foreground.Primary"&gt
-        ...
-    &lt/body&gt
-&lt/html&gt</code></pre>
-        <br />
+        <pre><code class="language-js">BitTheme.get()</code></pre>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            This class contians two main property for accessing CSS classes (<code>BitCss.Class</code>) and CSS variables (<code>BitCss.Var</code>).
+            Gets the current theme.
         </BitTypography>
         <br />
-        <pre><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
-    hello world!
-&lt/div&gt</code></pre>
+        <br />
+        <pre><code class="language-js">BitTheme.set('dark')</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Sets the current theme.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.toggleDarkLight()</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Toggles the current theme between dark & light.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.useSystem()</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Uses the current theme of the system (dark or light) as the app theme.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.onChange((newTheme, oldTheme) => {
+    if (newTheme.includes('dark')) {
+        document.body.classList.add('bit-theme-dark');
+        document.body.classList.remove('bit-theme-light');
+    } else {
+        document.body.classList.add('bit-theme-light');
+        document.body.classList.remove('bit-theme-dark');
+    }
+});</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            An event that fires when the current theme changes.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.applyBitTheme({...}, el)</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Applies an instance of BitTheme to the specified or body element just like the
+            <code>ApplyBitThemeAsync</code> method of the <code>BitThemeManager</code>.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.isSystemDark()</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Checks if the current theme of the system is dark.
+        </BitTypography>
+        <br />
+        <br />
+        <pre><code class="language-js">BitTheme.init({
+    system: true,
+    onChange: (newTheme: string, oldThem: string) => {
+        if (newTheme === 'dark') {
+            document.body.classList.add('bit-theme-dark');
+            document.body.classList.remove('bit-theme-light');
+        } else {
+            document.body.classList.add('bit-theme-light');
+            document.body.classList.remove('bit-theme-dark');
+        }
+    }
+});</code></pre>
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            Initializes the BitTheme object using the provided options.
+        </BitTypography>
     </section>
 </div>

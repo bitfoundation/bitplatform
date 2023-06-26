@@ -47,17 +47,15 @@ function applyBodyElementClasses(cssClasses: string[], cssVariables: any) {
 
 declare class BitTheme { static init(options: any): void; };
 
-(function () {
-    BitTheme.init({
-        system: true,
-        onChange: (newTheme: string, oldThem: string) => {
-            if (newTheme === 'dark') {
-                document.body.classList.add('bit-theme-dark');
-                document.body.classList.remove('bit-theme-light');
-            } else {
-                document.body.classList.add('bit-theme-light');
-                document.body.classList.remove('bit-theme-dark');
-            }
+BitTheme.init({
+    system: true,
+    onChange: (newTheme: string, oldThem: string) => {
+        if (newTheme === 'dark') {
+            document.body.classList.add('bit-theme-dark');
+            document.body.classList.remove('bit-theme-light');
+        } else {
+            document.body.classList.add('bit-theme-light');
+            document.body.classList.remove('bit-theme-dark');
         }
-    });
-}());
+    }
+});
