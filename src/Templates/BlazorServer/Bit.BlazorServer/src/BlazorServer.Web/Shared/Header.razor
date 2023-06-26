@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager _navigationManager
+@inject BitThemeManager _bitThemeManager
 
 <header class="@BitCss.Class.Shadow.S1">
     <div class="container">
@@ -35,7 +36,7 @@
 
     private async Task ToggleTheme()
     {
-        var newTheme = await BitThemeManager.ToggleDarkLight();
+        var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
         var isDark = newTheme.Contains("dark");
         _toggleThemeIcon = isDark ? BitIconName.Sunny : BitIconName.ClearNight;
     }
