@@ -1,4 +1,6 @@
 ﻿@page "/components/choicegroup"
+@page "/components/choice-group"
+
 @using System.Drawing;
 
 <PageOutlet Url="components/choicegroup"
@@ -75,7 +77,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -85,7 +87,7 @@
                             @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -137,7 +139,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -167,7 +169,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -296,7 +298,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.ItemValue ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -309,7 +311,7 @@
                             @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.ItemValue ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -403,7 +405,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.ItemValue ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -474,7 +476,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.ItemValue ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -631,7 +633,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -647,7 +649,7 @@
                                 </ChildContent>
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -756,7 +758,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -830,7 +832,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName.Value" />
+                                        <BitIcon IconName="@option.IconName!.Value" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
