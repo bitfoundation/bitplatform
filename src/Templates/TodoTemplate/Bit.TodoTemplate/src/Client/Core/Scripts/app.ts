@@ -18,3 +18,8 @@
         window.history.back();
     }
 }
+
+function applyBodyElementClasses(cssClasses: string[], cssVariables: any) {
+    cssClasses?.forEach(c => document.body.classList.add(c));
+    Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
+}
