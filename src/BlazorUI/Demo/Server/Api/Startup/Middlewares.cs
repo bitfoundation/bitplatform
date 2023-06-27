@@ -52,7 +52,7 @@ public class Middlewares
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
-        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0", "app://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
 
