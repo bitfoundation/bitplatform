@@ -13,7 +13,7 @@
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
-                <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" />
+                <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -25,7 +25,8 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl" />
+                               UploadUrl="@ChunkedUploadUrl"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -51,7 +52,8 @@
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl" />
+                               UploadUrl="@ChunkedUploadUrl"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -64,7 +66,8 @@
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
-                               ShowRemoveButton="true" />
+                               ShowRemoveButton="true"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -77,7 +80,8 @@
                                AutoUploadEnabled="true"
                                OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
                                Label="Select or drag and drop files"
-                               UploadUrl="@ChunkedUploadUrl" />
+                               UploadUrl="@ChunkedUploadUrl"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
             <div class="example-desc">@onAllUploadsCompleteText</div>
         </ExamplePreview>
@@ -94,7 +98,8 @@
                                UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
                                RemoveUrl="@RemoveUrl"
                                RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })"
-                               RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })" />
+                               RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -105,7 +110,8 @@
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
                                ChunkedUploadEnabled="false"
-                               UploadUrl="@NonChunkedUploadUrl" />
+                               UploadUrl="@NonChunkedUploadUrl"
+                               MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

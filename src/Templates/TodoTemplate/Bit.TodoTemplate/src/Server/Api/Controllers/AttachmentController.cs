@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using ImageMagick;
+using Microsoft.Extensions.Primitives;
 using MimeTypes;
 using TodoTemplate.Server.Api.Models.Account;
 using SystemFile = System.IO.File;
@@ -16,7 +17,7 @@ public partial class AttachmentController : AppControllerBase
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
     public async Task UploadProfileImage(IFormFile? file, CancellationToken cancellationToken)
     {
-        if (file is null || Request.Headers.TryGetValue("bit_file_id", out StringValues bitFileId) is false)
+        if (file is null)
             throw new BadRequestException();
 
         var userId = UserInformationProvider.GetUserId();
@@ -26,31 +27,30 @@ public partial class AttachmentController : AppControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var fileName = $"{userId}_{bitFileId}_{Path.GetExtension(file.FileName)}";
+        var destFileName = $"{userId}_{file.FileName}";
 
-        await using var requestStream = file.OpenReadStream();
+        var userProfileImagesDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
 
-        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
+        var destFilePath = Path.Combine(userProfileImagesDir, destFileName);
 
-        Directory.CreateDirectory(userProfileImageDirPath);
+        await using (var requestStream = file.OpenReadStream())
+        {
+            Directory.CreateDirectory(userProfileImagesDir);
 
-        var path = Path.Combine(userProfileImageDirPath, fileName);
+            await using var fileStream = SystemFile.Create(destFilePath);
 
-        await using var fileStream = SystemFile.Exists(path) 
-            ? SystemFile.Open(path, FileMode.Append) 
-            : SystemFile.Create(path);
-
-        await requestStream.CopyToAsync(fileStream, cancellationToken);
+            await requestStream.CopyToAsync(fileStream, cancellationToken);
+        }
 
         if (user.ProfileImageName is not null)
         {
             try
             {
-                var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
+                var oldFilePath = Path.Combine(userProfileImagesDir, user.ProfileImageName);
 
-                if (SystemFile.Exists(filePath))
+                if (SystemFile.Exists(oldFilePath))
                 {
-                    SystemFile.Delete(filePath);
+                    SystemFile.Delete(oldFilePath);
                 }
             }
             catch
@@ -59,17 +59,32 @@ public partial class AttachmentController : AppControllerBase
             }
         }
 
+        var resizedFilePath = destFilePath.Replace(Path.GetExtension(destFilePath), ".webp");
+
         try
         {
-            user.ProfileImageName = fileName;
+            using MagickImage sourceImage = new(destFilePath);
+
+            MagickGeometry resizedImageSize = new(128, 128);
+
+            sourceImage.Resize(resizedImageSize);
+
+            sourceImage.Write(resizedFilePath, MagickFormat.WebP);
+
+            user.ProfileImageName = resizedFilePath;
 
             await _userManager.UpdateAsync(user);
         }
         catch
         {
-            SystemFile.Delete(path);
+            if (SystemFile.Exists(resizedFilePath))
+                SystemFile.Delete(resizedFilePath);
 
             throw;
+        }
+        finally
+        {
+            SystemFile.Delete(destFilePath);
         }
     }
 
@@ -83,7 +98,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
+        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
 
         var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
@@ -107,7 +122,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagePath);
+        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
 
         var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
