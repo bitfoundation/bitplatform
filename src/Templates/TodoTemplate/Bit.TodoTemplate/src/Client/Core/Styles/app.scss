@@ -19,3 +19,9 @@ html, body, #app-container {
     background: #0D2960;
     -webkit-font-smoothing: antialiased;
 }
+
+@supports (-webkit-touch-callout: none) {
+    #app-container {
+        height: calc(100vh - env(safe-area-inset-top));
+    }
+}

@@ -15,15 +15,15 @@
 }
 
 .footer-content {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    min-height: rem(54px);
-    border-top: rem(1px) solid $S1Color;
+    display: flex;
+    position: relative;
     padding: rem(4px) 0;
+    align-items: center;
+    min-height: rem(54px);
     box-sizing: border-box;
+    justify-content: center;
+    flex-flow: column nowrap;
 
     @include lt-xl {
         min-height: rem(50px);
@@ -31,10 +31,10 @@
 }
 
 .footer-contact {
-    margin-bottom: rem(4px);
-    font-size: rem(14px);
-    line-height: rem(20px);
     color: $S4Color;
+    font-size: rem(14px);
+    margin-bottom: rem(4px);
+    line-height: rem(20px);
 
     @include lg {
         font-size: rem(13px);
@@ -47,9 +47,9 @@
 }
 
 .footer-copyright {
+    color: $S4Color;
     font-size: rem(12px);
     line-height: rem(20px);
-    color: $S4Color;
 
     @include lt-xl {
         font-size: rem(10px);
@@ -59,17 +59,17 @@
 
 .footer-social-lnk-grp {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
 }
 
 .social-lnk {
     width: rem(32px);
     height: rem(32px);
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
 }
 
 .twitter-lnk {
@@ -94,9 +94,10 @@
 
 ::deep {
     .culture-drp {
-        position: absolute;
+        top: rem(-3px);
         left: rem(5px);
         width: rem(105px);
+        position: absolute;
         background-color: white;
     }
 }

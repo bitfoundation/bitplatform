@@ -3,37 +3,29 @@
 @import '../Styles/abstracts/_media-queries.scss';
 
 .page-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
     width: 100%;
     height: 100%;
-    padding: rem(56px) rem(16px);
+    display: flex;
+    align-items: center;
     box-sizing: border-box;
-
-    @include lg {
-        padding: rem(48px) rem(16px);
-    }
+    justify-content: center;
+    flex-flow: column nowrap;
+    padding: rem(48px) rem(16px);
 
     @include md {
-        padding: rem(72px) rem(16px);
-    }
-
-    @include sm {
-        padding: rem(24px) rem(16px);
+        padding: rem(16px);
     }
 }
 
 .page-content--white {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
     width: 100%;
+    display: flex;
+    position: relative;
+    align-items: center;
     max-width: rem(860px);
     border-radius: rem(4px);
     background-color: $Gray6;
+    flex-flow: column nowrap;
 
     @include lg {
         max-width: rem(816px);
@@ -334,5 +326,11 @@
 
     .bit-drp-wrapper .bit-drp-wrapper-txt {
         display: none;
+    }
+
+    @supports (-webkit-touch-callout: none) {
+        .bit-drp-iwp{
+            padding-top: env(safe-area-inset-top);
+        }
     }
 }
