@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Client.App;
+using AdminPanel.Client.App.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class IServiceCollectionExtensions
 #endif
 
         services.AddScoped<MainPage>();
+        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;
     }

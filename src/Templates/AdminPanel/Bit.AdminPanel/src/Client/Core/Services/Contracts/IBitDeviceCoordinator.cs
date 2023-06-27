@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Core.Services.Contracts;
+﻿namespace AdminPanel.Client.Core.Services.Contracts;
 
 public interface IBitDeviceCoordinator
 {

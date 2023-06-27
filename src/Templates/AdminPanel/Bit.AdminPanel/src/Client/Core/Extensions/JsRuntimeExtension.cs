@@ -11,4 +11,9 @@ public static class JsRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("App.goBack");
     }
+
+    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
+    {
+        await jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
+    }
 }
