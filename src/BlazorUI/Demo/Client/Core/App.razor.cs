@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI.Demo.Client.Core;
@@ -84,7 +85,9 @@ public partial class App
             statusBarHeight = 0;
         }
 
-        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight}px");
+        var formattedBarHeight = statusBarHeight.ToString("F3", CultureInfo.InvariantCulture);
+
+        cssVariables.Add("--bit-status-bar-height", $"{formatted‌BarHeight}px");
         _ = _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 

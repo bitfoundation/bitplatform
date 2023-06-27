@@ -329,8 +329,8 @@
     }
 
     @supports (-webkit-touch-callout: none) {
-        .bit-drp-iwp{
-            padding-top: env(safe-area-inset-top);
+        .bit-drp-iwp .bit-drp-rsp-lbl-ctn{
+            margin-top: calc(env(safe-area-inset-top) - rem(24px));
         }
     }
 }
