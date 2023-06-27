@@ -24,6 +24,8 @@ public partial class MainPage
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
 #if IOS || MACCATALYST
+            handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
+            
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG

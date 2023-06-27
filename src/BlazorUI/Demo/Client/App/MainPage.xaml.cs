@@ -43,6 +43,8 @@ public partial class MainPage
                 handler.PlatformView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
             }
 #elif IOS || MACCATALYST
+            handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
+            
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG
