@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using BlazorDual.Shared.Dtos.Account;
 
-namespace BlazorDual.Web.Pages;
+namespace BlazorDual.Client.Core.Pages;
 
 [Authorize]
 public partial class EditProfilePage
@@ -16,7 +16,8 @@ public partial class EditProfilePage
     private string? _profileImageRemoveUrl;
     private BitMessageBarType _editProfileMessageType;
     private UserDto _user = new();
-    private readonly UserDto _userToEdit = new();
+    private readonly EditUserDto _userToEdit = new();
+    private bool _isDeleteAccountConfirmModalOpen;
 
     protected override async Task OnInitAsync()
     {
@@ -61,7 +62,6 @@ public partial class EditProfilePage
         _userToEdit.Gender = _user.Gender;
         _userToEdit.FullName = _user.FullName;
         _userToEdit.BirthDate = _user.BirthDate;
-        _userToEdit.ProfileImageName = _user.ProfileImageName;
     }
 
     private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
@@ -80,7 +80,7 @@ public partial class EditProfilePage
             _user.BirthDate = _userToEdit.BirthDate;
             _user.Gender = _userToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User/Update", _user, AppJsonContext.Default.EditUserDto);
+            await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto);
 
             PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
 

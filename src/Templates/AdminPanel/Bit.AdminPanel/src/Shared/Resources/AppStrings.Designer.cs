@@ -521,6 +521,24 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete Account.
+        /// </summary>
+        public static string DeleteAccount {
+            get {
+                return ResourceManager.GetString("DeleteAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete your account?.
+        /// </summary>
+        public static string DeleteAccountPrompt {
+            get {
+                return ResourceManager.GetString("DeleteAccountPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DeleteCategory.
         /// </summary>
         public static string DeleteCategory {
@@ -827,7 +845,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Full Name.
+        ///   Looks up a localized string similar to FullName.
         /// </summary>
         public static string FullName {
             get {
@@ -926,15 +944,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The username or password you entered is incorrect..
-        /// </summary>
-        public static string InvalidUsernameOrPassword {
-            get {
-                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
@@ -976,6 +985,15 @@ namespace AdminPanel.Shared.Resources {
         public static string InvalidUserName {
             get {
                 return ResourceManager.GetString("InvalidUserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid username or password.
+        /// </summary>
+        public static string InvalidUsernameOrPassword {
+            get {
+                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
             }
         }
         

@@ -30,21 +30,4 @@ public class UserDto
     public DateTimeOffset? BirthDate { get; set; }
 
     public string? ProfileImageName { get; set; }
-
-    [JsonIgnore]
-    public string? GenderAsString
-    {
-        get
-        {
-            return Gender?.ToString();
-        }
-        set
-        {
-            if (string.IsNullOrEmpty(value) is false)
-            {
-                Gender = Enum.Parse<Gender>(value);
-            }
-        }
-    }
-
 }
