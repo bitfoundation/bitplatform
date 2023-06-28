@@ -14,6 +14,6 @@ public static class JsRuntimeExtension
 
     public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
-        await jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
+        await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
     }
 }
