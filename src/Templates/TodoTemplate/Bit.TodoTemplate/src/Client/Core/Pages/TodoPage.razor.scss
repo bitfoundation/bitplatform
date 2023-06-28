@@ -331,7 +331,7 @@
     .bit-drp-iwp .bit-drp-rsp-lbl-ctn{
         margin-top: calc(var(--bit-status-bar-height) - rem(24px));
 
-        .bit-ios & {
+        @supports (-webkit-touch-callout: none) {
             margin-top: calc(env(safe-area-inset-top) - rem(24px));
         }
     }

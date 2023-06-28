@@ -3,13 +3,13 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .footer {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
 
-    @supports (-webkit-touch-callout: none) {
+    .bit-ios & {
         padding-bottom: env(safe-area-inset-bottom);
     }
 }
