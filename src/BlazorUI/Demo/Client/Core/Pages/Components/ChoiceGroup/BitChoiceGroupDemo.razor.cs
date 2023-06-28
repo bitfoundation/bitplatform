@@ -10,7 +10,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "AriaLabelledBy",
             Type = "string?",
-            Description = "ID of an element to use as the aria label for this ChoiceGroup."
+            Description = "Id of an element to use as the aria label for the ChoiceGroup."
         },
         new()
         {
@@ -29,7 +29,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            Description = "The content of ChoiceGroup, common values are RadioButtonGroup component."
+            Description = "The content of the ChoiceGroup, a list of BitChoiceGroupOption components."
         },
         new()
         {
@@ -61,7 +61,7 @@ public partial class BitChoiceGroupDemo
             Name = "IsRequired",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, an option must be selected in the ChoiceGroup."
+            Description = "If true, selecting an option is mandatory in the ChoiceGroup."
         },
         new()
         {
@@ -152,26 +152,26 @@ public partial class BitChoiceGroupDemo
         {
             Name = "Label",
             Type = "string?",
-            Description = "Descriptive label for the ChoiceGroup."
+            Description = "The label for the ChoiceGroup."
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
-            Description = "Used to customize the label for the ChoiceGroup."
+            Description = "Custom RenderFragment for the label of the ChoiceGroup."
         },
         new()
         {
             Name = "LayoutFlow",
             Type = "BitLayoutFlow?",
-            Description = "You can define the ChoiceGroup in Horizontal or Vertical mode."
+            Description = "The render flow of the items in the ChoiceGroup, Horizontal or Vertical."
         },
         new()
         {
             Name = "Name",
             Type = "string",
             DefaultValue = "a Guid",
-            Description = "Name of ChoiceGroup, this name is used to group each option into the same logical ChoiceGroup."
+            Description = "Name of the ChoiceGroup, this name is used to group each item into the same logical component."
         },
         new()
         {
