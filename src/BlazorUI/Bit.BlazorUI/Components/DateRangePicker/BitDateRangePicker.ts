@@ -28,7 +28,7 @@
             const dateRangePickerWidth = dateRangePicker.offsetWidth;
             const dateRangePickerX = dateRangePicker.getBoundingClientRect().x;
             const dateRangePickerY = dateRangePicker.getBoundingClientRect().y;
-            const dateRangePickerTop = dateRangePicker.getBoundingClientRect().y;
+            const dateRangePickerTop = dateRangePicker.getBoundingClientRect().top;
             const dateRangePickerWrapperBottom = window.innerHeight - (dateRangePickerHeight + dateRangePickerY);
             const dateRangePickerWrapperRight = window.innerWidth - (dateRangePickerWidth + dateRangePickerX);
 
