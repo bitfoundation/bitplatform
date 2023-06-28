@@ -22,6 +22,7 @@
 }
 
 .main--full-page {
+    height: 100%;
     padding: var(--bit-status-bar-height) 0 0 0;
 
     .bit-ios & {
@@ -30,20 +31,20 @@
 
     .site-content {
         padding: 0;
-        height: calc(100vh - 49px - var(--bit-status-bar-height));
+        height: calc(100vh - 49px);
 
         .bit-ios & {
-            height: calc(100vh - 49px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            height: calc(100vh - 49px - env(safe-area-inset-bottom));
         }
 
         @media screen and (max-height:700px) {
             display: flex;
             align-items: center;
             height: unset !important;
-            min-height: calc(100vh - 49px - var(--bit-status-bar-height));
+            min-height: calc(100vh - 49px);
     
             .bit-ios & {
-                min-height: calc(100vh - 49px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+                min-height: calc(100vh - 49px - env(safe-area-inset-bottom));
             }
         }
     }

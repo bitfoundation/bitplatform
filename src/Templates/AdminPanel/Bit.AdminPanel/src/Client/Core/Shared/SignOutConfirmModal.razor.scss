@@ -4,13 +4,17 @@
 
 .main-container {
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
     width: rem(560px);
-    padding: rem(16px) rem(24px);
+    align-items: center;
     box-sizing: border-box;
+    flex-flow: column nowrap;
     background-color: $White;
+    justify-content: flex-start;
+    padding: rem(16px) rem(24px);
+
+    .bit-ios & {
+        padding: rem(16px) rem(24px) env(safe-area-inset-bottom);
+    }
 
     @include sm {
         position: fixed;
