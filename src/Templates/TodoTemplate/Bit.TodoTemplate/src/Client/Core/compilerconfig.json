@@ -64,7 +64,11 @@
         "outputFile": "Pages/TodoPage.razor.css"
     },
     {
-        "inputFile": "Pages/EditProfilePage.razor.scss",
-        "outputFile": "Pages/EditProfilePage.razor.css"
+        "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss",
+        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css"
+    },
+    {
+        "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
+        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css"
     }
 ]

@@ -1,6 +1,6 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     display: flex;
@@ -21,34 +21,37 @@
     }
 }
 
-.content-container--white {
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
+.content-container {
     width: 100%;
+    display: flex;
+    position: relative;
+    align-items: center;
     max-width: rem(608px);
-    min-height: rem(640px);
-    border-radius: rem(4px);
-    padding: rem(32px) rem(14px);
     box-sizing: border-box;
+    border-radius: rem(4px);
+    flex-flow: column nowrap;
+    padding: rem(32px) rem(14px);
     background-color: $Gray6;
+
+    &.profile-panel {
+    }
+
+    &.danger-panel {
+        border: 2px solid darkred;
+    }
 
     @include lg {
         max-width: rem(524px);
-        min-height: rem(606px);
         padding: rem(32px) rem(14px);
     }
 
     @include md {
         max-width: rem(572px);
-        min-height: rem(678px);
         padding: rem(40px) rem(14px);
     }
 
     @include sm {
         max-width: 100%;
-        min-height: rem(678px);
         padding: rem(16px) rem(14px);
     }
 }
@@ -229,3 +232,4 @@
     align-items: center;
     width: 100%;
 }
+

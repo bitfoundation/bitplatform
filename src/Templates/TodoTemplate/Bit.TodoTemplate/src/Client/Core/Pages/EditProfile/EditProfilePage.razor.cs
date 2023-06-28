@@ -1,14 +1,14 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Shared.Dtos.Account;
+using TodoTemplate.Shared.Dtos.Account;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace TodoTemplate.Client.Core.Pages;
 
 [Authorize]
 public partial class EditProfilePage
 {
-    private bool _isLoading;
+    private bool _isSaving;
     private bool _isRemoving;
-    private bool _isLoadingData;
+    private bool _isLoading;
     private string? _profileImageUrl;
     private string? _profileImageError;
     private string? _editProfileMessage;
@@ -16,11 +16,12 @@ public partial class EditProfilePage
     private string? _profileImageRemoveUrl;
     private BitMessageBarType _editProfileMessageType;
     private UserDto _user = new();
-    private readonly UserDto _userToEdit = new();
+    private readonly EditUserDto _userToEdit = new();
+    private bool _isDeleteAccountConfirmModalOpen;
 
     protected override async Task OnInitAsync()
     {
-        _isLoadingData = true;
+        _isLoading = true;
 
         try
         {
@@ -34,8 +35,10 @@ public partial class EditProfilePage
         }
         finally
         {
-            _isLoadingData = false;
+            _isLoading = false;
         }
+
+        await base.OnInitAsync();
     }
 
     private async Task LoadEditProfileData()
@@ -56,21 +59,19 @@ public partial class EditProfilePage
 
     private void UpdateEditProfileData()
     {
-        _userToEdit.ProfileImageName = _user.ProfileImageName;
+        _userToEdit.Gender = _user.Gender;
         _userToEdit.FullName = _user.FullName;
         _userToEdit.BirthDate = _user.BirthDate;
-        _userToEdit.Gender = _user.Gender;
     }
 
     private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
 
-    private async Task GoBack() => await JsRuntime.GoBack();
 
     private async Task DoSave()
     {
-        if (_isLoading) return;
+        if (_isSaving) return;
 
-        _isLoading = true;
+        _isSaving = true;
         _editProfileMessage = null;
 
         try
@@ -79,25 +80,25 @@ public partial class EditProfilePage
             _user.BirthDate = _userToEdit.BirthDate;
             _user.Gender = _userToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User/Update", _user, AppJsonContext.Default.EditUserDto);
+            await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto);
 
             PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
 
             _editProfileMessageType = BitMessageBarType.Success;
-
             _editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
-            _editProfileMessage = e.Message;
             _editProfileMessageType = BitMessageBarType.Error;
+
+            _editProfileMessage = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            _isSaving = false;
         }
     }
-    
+
     private async Task RemoveProfileImage()
     {
         if (_isRemoving) return;
@@ -121,3 +122,4 @@ public partial class EditProfilePage
         }
     }
 }
+
