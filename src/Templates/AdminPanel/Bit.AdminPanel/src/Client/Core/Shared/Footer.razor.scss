@@ -4,16 +4,16 @@
 @import '../Styles/abstracts/_vars.scss';
 
 .footer {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI";
+    flex-flow: column nowrap;
     background-color: $White;
     border-top: rem(1px) solid $Gray10;
-    font-family: "Segoe UI";
 
-    @supports (-webkit-touch-callout: none) {
+    .bit-ios & {
         padding-bottom: env(safe-area-inset-bottom);
     }
 }
