@@ -53,7 +53,7 @@
             <div class="form-input-error">@_profileImageError</div>
         </div>
 
-        <EditForm Model="_userToEdit" OnSubmit="WrapHandled(DoSave)">
+        <EditForm Model="_userToEdit" OnValidSubmit="WrapHandled(DoSave)">
             <AppDataAnnotationsValidator />
 
             <div class="form-input-container">
