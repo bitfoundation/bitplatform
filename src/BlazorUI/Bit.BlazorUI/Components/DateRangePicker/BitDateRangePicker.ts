@@ -80,7 +80,7 @@
         const { x: calloutLeft } = dateRangePickerCallout.getBoundingClientRect();
 
         if (dateRangePickerCalloutWidth + calloutLeft > bodyWidth) {
-            const dateRangePickerOffsetRight = bodyWidth - (dateRangePicker.offsetLeft + dateRangePicker.offsetWidth);
+            const dateRangePickerOffsetRight = bodyWidth - (dateRangePicker.getBoundingClientRect().x + dateRangePicker.offsetWidth);
             const rightPositon = bodyWidth - (dateRangePickerCalloutWidth + dateRangePickerOffsetRight);
             const leftPositon = rightPositon + dateRangePickerCalloutWidth;
             const spaceFromRight = bodyWidth - rightPositon;
