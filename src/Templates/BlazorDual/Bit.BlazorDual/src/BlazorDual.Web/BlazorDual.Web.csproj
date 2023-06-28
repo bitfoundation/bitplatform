@@ -34,6 +34,8 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
+        <None Include="Pages\EditProfile\DeleteAccountConfirmModal.razor" />
+        <None Include="Pages\EditProfile\EditProfilePage.razor" />
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />

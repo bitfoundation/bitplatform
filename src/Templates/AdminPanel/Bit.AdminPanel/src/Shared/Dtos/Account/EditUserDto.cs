@@ -13,13 +13,19 @@ public class EditUserDto
     [Display(Name = nameof(AppStrings.BirthDate))]
     public DateTimeOffset? BirthDate { get; set; }
 
-    public static implicit operator EditUserDto(UserDto user)
+    [JsonIgnore]
+    public string? GenderAsString
     {
-        return new()
+        get
         {
-            BirthDate = user.BirthDate,
-            FullName = user.FullName,
-            Gender = user.Gender
-        };
+            return Gender?.ToString();
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value) is false)
+            {
+                Gender = Enum.Parse<Gender>(value);
+            }
+        }
     }
 }
