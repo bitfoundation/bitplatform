@@ -20,22 +20,25 @@ public partial class App
 #if BlazorHybrid
     protected override async Task OnInitializedAsync()
     {
-        SetupBodyClasses();
+        await SetupBodyClasses();
         await base.OnInitializedAsync();
+    
+        //Temperory: until BitTheme get's implemented in UI
+        await _bitDeviceCoordinator.SetDeviceTheme(isDark: false);
     }
 #else
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            SetupBodyClasses();
+            await SetupBodyClasses();
         }
 
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 #endif
 
-    private void SetupBodyClasses()
+    private async Task SetupBodyClasses()
     {
         var cssClasses = new List<string>();
 
@@ -88,7 +91,7 @@ public partial class App
 
         var formattedBarHeight = statusBarHeight.ToString("F3", CultureInfo.InvariantCulture);
         cssVariables.Add("--bit-status-bar-height", $"{formattedBarHeight}px");
-        _ = _jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
+        await _jsRuntime.InvokeVoidAsync("applyBodyElementClasses", cssClasses, cssVariables);
     }
 
     private async Task OnNavigateAsync(NavigationContext args)

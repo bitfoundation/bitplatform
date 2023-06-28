@@ -171,7 +171,7 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: rem(240px);
+    height: rem(242px);
     border: rem(1px) solid $Gray4;
 
     @media all and (max-width: #{em(390px)}) {
@@ -328,8 +328,10 @@
         display: none;
     }
 
-    @supports (-webkit-touch-callout: none) {
-        .bit-drp-iwp .bit-drp-rsp-lbl-ctn{
+    .bit-drp-iwp .bit-drp-rsp-lbl-ctn{
+        margin-top: calc(var(--bit-status-bar-height) - rem(24px));
+
+        .bit-ios & {
             margin-top: calc(env(safe-area-inset-top) - rem(24px));
         }
     }
