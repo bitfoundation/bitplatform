@@ -807,4 +807,16 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="InvalidUsernameOrPassword" xml:space="preserve">
     <value>Nom d'utilisateur ou mot de passe invalide</value>
   </data>
+    <data name="DeleteAccount" xml:space="preserve">
+    <value>Supprimer le compte</value>
+  </data>
+    <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+    <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+    <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer votre compte?</value>
+  </data>
 </root>

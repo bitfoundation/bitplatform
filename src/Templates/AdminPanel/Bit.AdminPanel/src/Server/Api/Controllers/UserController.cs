@@ -36,4 +36,15 @@ public partial class UserController : AppControllerBase
 
         await _userManager.UpdateAsync(updatedUser);
     }
+
+    [HttpDelete]
+    public async Task Delete(CancellationToken cancellationToken)
+    {
+        var userId = UserInformationProvider.GetUserId();
+
+        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
+                    ?? throw new ResourceNotFoundException();
+
+        await _userManager.DeleteAsync(user);
+    }
 }

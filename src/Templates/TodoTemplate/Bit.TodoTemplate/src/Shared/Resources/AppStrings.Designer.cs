@@ -350,6 +350,24 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete Account.
+        /// </summary>
+        public static string DeleteAccount {
+            get {
+                return ResourceManager.GetString("DeleteAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete your account?.
+        /// </summary>
+        public static string DeleteAccountPrompt {
+            get {
+                return ResourceManager.GetString("DeleteAccountPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0} property has not been set.  Use the {1} method to get the value..
         /// </summary>
         public static string DisplayAttribute_PropertyNotSet {
@@ -566,7 +584,7 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Full Name.
+        ///   Looks up a localized string similar to FullName.
         /// </summary>
         public static string FullName {
             get {
@@ -656,15 +674,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The username or password you entered is incorrect..
-        /// </summary>
-        public static string InvalidUsernameOrPassword {
-            get {
-                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
         /// </summary>
         public static string InvalidConfirmationLinkMessage {
@@ -706,6 +715,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string InvalidUserName {
             get {
                 return ResourceManager.GetString("InvalidUserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid username or password.
+        /// </summary>
+        public static string InvalidUsernameOrPassword {
+            get {
+                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
             }
         }
         
@@ -805,6 +823,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string NewPassword {
             get {
                 return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        public static string No {
+            get {
+                return ResourceManager.GetString("No", resourceCulture);
             }
         }
         
@@ -1552,6 +1579,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string WaitForResetPasswordEmailResendDelay {
             get {
                 return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        public static string Yes {
+            get {
+                return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
         
