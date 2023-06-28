@@ -53,6 +53,12 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
             foreach (var attribute in validationAttributes)
             {
+                if (string.IsNullOrEmpty(attribute.ErrorMessage) is false)
+                {
+                    attribute.ErrorMessageResourceName = attribute.ErrorMessage;
+                    attribute.ErrorMessage = null;
+                }
+
                 if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
                 {
                     attribute.ErrorMessageResourceType = resourceType;
@@ -115,6 +121,12 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                 var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
                 foreach (var attribute in validationAttributes)
                 {
+                    if (string.IsNullOrEmpty(attribute.ErrorMessage) is false)
+                    {
+                        attribute.ErrorMessageResourceName = attribute.ErrorMessage;
+                        attribute.ErrorMessage = null;
+                    }
+
                     if (string.IsNullOrWhiteSpace(attribute.ErrorMessageResourceName) is false && attribute.ErrorMessageResourceType is null)
                     {
                         attribute.ErrorMessageResourceType = resourceType;
