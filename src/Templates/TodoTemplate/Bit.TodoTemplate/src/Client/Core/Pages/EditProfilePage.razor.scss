@@ -12,8 +12,8 @@
     flex-flow: column nowrap;
     padding: rem(48px) rem(16px);
 
-    @include sm {
-        padding: rem(16px);
+    @include md {
+        padding: rem(24px) rem(16px);
     }
 }
 
