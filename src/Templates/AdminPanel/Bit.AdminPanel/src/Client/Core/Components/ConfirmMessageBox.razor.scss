@@ -4,45 +4,49 @@
 
 .main-container {
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
     width: rem(560px);
-    padding: rem(16px) rem(24px);
+    align-items: center;
     box-sizing: border-box;
+    flex-flow: column nowrap;
     background-color: $White;
+    justify-content: flex-start;
+    padding: rem(16px) rem(24px);
+
+    .bit-ios & {
+        padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));
+    }
 
     @include sm {
-        position: fixed;
-        bottom: 0;
         left: 0;
+        bottom: 0;
         width: 100%;
+        position: fixed;
         border-radius: rem(8px) rem(8px) 0 0;
     }
 }
 
 .header {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
     margin-bottom: rem(20px);
+    justify-content: space-between;
 }
 
 .title {
+    color: $Gray190;
     font-weight: 600;
     font-size: rem(20px);
     line-height: rem(28px);
-    color: $Gray190;
 }
 
 .body {
     width: 100%;
+    color: $Gray130;
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(20px);
-    color: $Gray130;
     margin-bottom: rem(16px);
 }
 
@@ -50,6 +54,6 @@
     width: 100%;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
 }
