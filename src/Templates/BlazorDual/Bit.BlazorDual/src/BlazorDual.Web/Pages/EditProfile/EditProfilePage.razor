@@ -52,7 +52,9 @@
                                AutoUploadEnabled="true"
                                UploadUrl="@_profileImageUploadUrl"
                                OnUploadComplete="WrapHandled(RefreshProfileData)"
-                               OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
+                               OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
+                               MaxSize="1024 * 1024 * 10"
+                               ChunkedUploadEnabled=false />
                 <div class="form-input-error">@_profileImageError</div>
             </div>
 
