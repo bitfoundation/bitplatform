@@ -1,6 +1,11 @@
+:root {
+    --bit-status-bar-height: 0px;
+}
+
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
 
 h1, h2, h3, h4, h5 {

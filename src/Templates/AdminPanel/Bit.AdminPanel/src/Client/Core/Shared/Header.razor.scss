@@ -5,22 +5,23 @@
 @import '../Styles/abstracts/_fonts.scss';
 
 .main-header {
-    font-family: "Segoe UI";
-    position: fixed;
     top: 0;
     z-index: 1100;
-    width: calc(100% - #{$NavMenuWidth});
-    border-bottom: rem(1px) solid $Gray10;
+    position: fixed;
+    font-family: "Segoe UI";
     backdrop-filter: blur(20px);
+    width: calc(100% - $NavMenuWidth);
     -webkit-backdrop-filter: blur(20px);
+    border-bottom: rem(1px) solid $Gray10;
     box-shadow: inset 0px -1px 1px #e7ebf0;
+    padding-top: var(--bit-status-bar-height);
     background-color: rgba(255, 255, 255, 0.72);
 
     @include lt-lg {
         width: 100%;
     }
 
-    @supports (-webkit-touch-callout: none) {
+    .bit-ios & {
         padding-top: env(safe-area-inset-top);
     }
 }

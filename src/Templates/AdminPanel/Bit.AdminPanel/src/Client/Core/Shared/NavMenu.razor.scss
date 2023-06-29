@@ -23,6 +23,11 @@
     padding-bottom: rem(24px);
     max-width: rem($NavMenuWidth);
     justify-content: space-between;
+    padding-top: var(--bit-status-bar-height);
+
+    .bit-ios & {
+        padding-top: env(safe-area-inset-top);
+    }
 
     @include lt-lg {
         top: 0;

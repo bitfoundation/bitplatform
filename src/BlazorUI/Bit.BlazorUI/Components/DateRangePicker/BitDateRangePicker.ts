@@ -28,7 +28,7 @@
             const dateRangePickerWidth = dateRangePicker.offsetWidth;
             const dateRangePickerX = dateRangePicker.getBoundingClientRect().x;
             const dateRangePickerY = dateRangePicker.getBoundingClientRect().y;
-            const dateRangePickerTop = dateRangePicker.getBoundingClientRect().y;
+            const dateRangePickerTop = dateRangePicker.getBoundingClientRect().top;
             const dateRangePickerWrapperBottom = window.innerHeight - (dateRangePickerHeight + dateRangePickerY);
             const dateRangePickerWrapperRight = window.innerWidth - (dateRangePickerWidth + dateRangePickerX);
 
@@ -80,7 +80,7 @@
         const { x: calloutLeft } = dateRangePickerCallout.getBoundingClientRect();
 
         if (dateRangePickerCalloutWidth + calloutLeft > bodyWidth) {
-            const dateRangePickerOffsetRight = bodyWidth - (dateRangePicker.offsetLeft + dateRangePicker.offsetWidth);
+            const dateRangePickerOffsetRight = bodyWidth - (dateRangePicker.getBoundingClientRect().x + dateRangePicker.offsetWidth);
             const rightPositon = bodyWidth - (dateRangePickerCalloutWidth + dateRangePickerOffsetRight);
             const leftPositon = rightPositon + dateRangePickerCalloutWidth;
             const spaceFromRight = bodyWidth - rightPositon;

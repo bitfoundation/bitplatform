@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Client.App;
+using TodoTemplate.Client.App.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class IServiceCollectionExtensions
 #endif
 
         services.AddTransient<MainPage>();
+        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;
     }
