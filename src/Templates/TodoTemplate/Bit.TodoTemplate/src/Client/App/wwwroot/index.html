@@ -118,33 +118,10 @@
                 opacity: 0.5;
             }
         }
-
-        .status-bar-safe-area {
-            display: none;
-        }
-
-        @supports (-webkit-touch-callout: none) {
-            .status-bar-safe-area {
-                display: flex;
-                position: sticky;
-                top: 0;
-                height: env(safe-area-inset-top);
-                background-color: #f2f2f2;
-                width: 100%;
-                z-index: 1;
-            }
-
-            .flex-column, .navbar-brand {
-                padding-left: env(safe-area-inset-left);
-            }
-        }
     </style>
 </head>
 
 <body>
-
-    <div class="status-bar-safe-area"></div>
-
     <div id="app-container">
         <div class="lds-wrapper">
             <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>

@@ -124,6 +124,5 @@ public partial class MainPage
                 _exceptionHandler.Handle(exp);
             }
         });
-
     }
 }

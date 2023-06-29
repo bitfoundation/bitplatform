@@ -36,7 +36,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     private IEnumerable<TItem>? _oldItems;
 
     /// <summary>
-    /// ID of an element to use as the aria label for this RadioButtonList.
+    /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
 
@@ -51,7 +51,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
 
     /// <summary>
-    /// The content of ChoiceGroup, common values are RadioButtonGroup component.
+    /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -76,7 +76,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
 
     /// <summary>
-    /// If true, an option must be selected in the RadioButtonList.
+    /// If true, selecting an option is mandatory in the ChoiceGroup.
     /// </summary>
     [Parameter]
     public bool IsRequired
@@ -157,22 +157,22 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public bool IsRtl { get; set; }
 
     /// <summary>
-    /// Descriptive label for the radio button list.
+    /// The label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// Used to customize the label for the radio button list.
+    /// Custom RenderFragment for the label of the ChoiceGroup.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// You can define the RadioButtonList in Horizontal or Vertical mode.
+    /// The render flow of the items in the ChoiceGroup, Horizontal or Vertical.
     /// </summary>
     [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
 
     /// <summary>
-    /// Name of RadioButtonList, this name is used to group each item into the same logical RadioButtonList.
+    /// Name of the ChoiceGroup, this name is used to group each item into the same logical component.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
 

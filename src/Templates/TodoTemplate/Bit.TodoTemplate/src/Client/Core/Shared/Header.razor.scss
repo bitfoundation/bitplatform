@@ -5,23 +5,29 @@
 .header {
     position: fixed;
     top: 0;
+    width: 100%;
     z-index: 100;
     display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
     align-items: center;
-    width: 100%;
+    flex-flow: row nowrap;
     min-height: rem(48px);
-    padding: rem(7px) rem(32px);
     box-sizing: border-box;
     background-color: $Gray5;
+    justify-content: space-between;
+    padding-left: rem(32px);
+    padding-right: rem(32px);
+    padding-bottom: rem(7px);
+    padding-top: calc(rem(7px) + var(--bit-status-bar-height));
 
     @media all and (max-width: #{em(370px)}) {
-        padding: rem(7px) rem(16px);
+        padding-left: rem(16px);
+        padding-right: rem(16px);
     }
+}
 
-    @supports (-webkit-touch-callout: none) {
-        padding-top: env(safe-area-inset-top);
+.bit-ios {
+    .header {
+        padding-top: calc(rem(7px) + env(safe-area-inset-top));
     }
 }
 

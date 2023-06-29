@@ -17,4 +17,9 @@
     public static goBack(): void {
         window.history.back();
     }
+
+    public static applyBodyElementClasses(cssClasses: string[], cssVariables: any): void {
+        cssClasses?.forEach(c => document.body.classList.add(c));
+        Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
+    }
 }
