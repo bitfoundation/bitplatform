@@ -30,7 +30,7 @@
         padding: var(--bit-status-bar-height) 0 0 0;
 
         .bit-ios & {
-            padding-top: env(safe-area-inset-bottom);
+            padding-top: env(safe-area-inset-top);
             height: calc(100vh - 49px - env(safe-area-inset-bottom));
         }
 
