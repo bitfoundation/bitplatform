@@ -10,8 +10,8 @@
     position: fixed;
     font-family: "Segoe UI";
     backdrop-filter: blur(20px);
+    width: calc(100% - $NavMenuWidth);
     -webkit-backdrop-filter: blur(20px);
-    width: calc(100% - #{$NavMenuWidth});
     border-bottom: rem(1px) solid $Gray10;
     box-shadow: inset 0px -1px 1px #e7ebf0;
     padding-top: var(--bit-status-bar-height);

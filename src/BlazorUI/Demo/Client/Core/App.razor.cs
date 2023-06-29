@@ -84,10 +84,8 @@ public partial class App
             //This is handled in css using safe-area env() variables
             statusBarHeight = 0;
         }
-
-        var formattedBarHeight = statusBarHeight.ToString("F3", CultureInfo.InvariantCulture);
-
-        cssVariables.Add("--bit-status-bar-height", $"{formatted‌BarHeight}px");
+        
+        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         _ = _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 

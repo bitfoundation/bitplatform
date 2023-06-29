@@ -328,7 +328,7 @@
         display: none;
     }
 
-    .bit-drp-iwp .bit-drp-rsp-lbl-ctn{
+    .bit-drp-iwp .bit-drp-rsp-lbl-ctn {
         margin-top: calc(var(--bit-status-bar-height) - rem(24px));
 
         @supports (-webkit-touch-callout: none) {

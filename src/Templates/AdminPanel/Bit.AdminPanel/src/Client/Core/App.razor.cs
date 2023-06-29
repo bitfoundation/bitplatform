@@ -92,8 +92,7 @@ public partial class App
             statusBarHeight = 0;
         }
 
-        var formattedBarHeight = statusBarHeight.ToString("F3", CultureInfo.InvariantCulture);
-        cssVariables.Add("--bit-status-bar-height", $"{formattedBarHeight}px");
+        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         await _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 

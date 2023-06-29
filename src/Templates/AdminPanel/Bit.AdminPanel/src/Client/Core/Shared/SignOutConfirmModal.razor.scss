@@ -13,7 +13,7 @@
     padding: rem(16px) rem(24px);
 
     .bit-ios & {
-        padding: rem(16px) rem(24px) calc(rem(16px) + env(safe-area-inset-bottom));
+        padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));
     }
 
     @include sm {

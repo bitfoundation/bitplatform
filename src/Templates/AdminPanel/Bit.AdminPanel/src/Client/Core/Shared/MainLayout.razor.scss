@@ -26,7 +26,7 @@
     padding: var(--bit-status-bar-height) 0 0 0;
 
     .bit-ios & {
-        padding: env(safe-area-inset-top) 0 0 0 0;
+        padding-top: env(safe-area-inset-top);
     }
 
     .site-content {
@@ -145,9 +145,4 @@
     color: transparent;
     background-color: transparent;
     height: env(safe-area-inset-top);
-}
-
-.bit-ios .flex-column,
-.bit-ios .navbar-brand {
-    padding-left: env(safe-area-inset-left);
 }

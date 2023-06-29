@@ -22,7 +22,7 @@
     display: flex;
     flex-flow: column;
     margin-left: rem(240px);
-    width: calc(100% - #{rem(240px)});
+    width: calc(100% - rem(240px));
 
     @include lt-lg {
         width: 100%;
@@ -190,9 +190,4 @@
     color: transparent;
     background-color: transparent;
     height: env(safe-area-inset-top);
-}
-
-.bit-ios .flex-column,
-.bit-ios .navbar-brand {
-    padding-left: env(safe-area-inset-left);
 }
