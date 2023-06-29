@@ -1,5 +1,10 @@
+:root {
+    --bit-status-bar-height: 0px;
+}
+
 * {
     overscroll-behavior: none;
+    font-family: "Segoe UI";
     -webkit-tap-highlight-color: transparent;
 }
 

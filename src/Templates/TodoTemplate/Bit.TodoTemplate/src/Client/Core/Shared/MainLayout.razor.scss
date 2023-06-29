@@ -5,17 +5,24 @@
 
 .main {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    flex-flow: column;
     position: relative;
-    padding-top: rem(48px);
     box-sizing: border-box;
     background-color: $SecondaryColor;
-    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    padding-top: calc(rem(48px) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        padding-top: calc(rem(48px) + env(safe-area-inset-top));
+    }
 }
 
 .main--authenticated {
-    width: calc(100% - #{rem(240px)});
+    display: flex;
+    flex-flow: column;
     margin-left: rem(240px);
+    width: calc(100% - rem(240px));
 
     @include lt-lg {
         width: 100%;
@@ -24,18 +31,10 @@
 }
 
 .main-content {
+    flex-grow: 1;
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 138px);
-
-    @include lg {
-        min-height: calc(100vh - 134px);
-    }
-
-    @include md {
-        min-height: calc(100vh - 134px);
-    }
+    justify-content: center;
 }
 
 @media all and (max-width: #{em(370px)}) {
@@ -45,20 +44,15 @@
 
     .main {
         padding-top: rem(84px);
-        min-height: calc(100vh - 170px);
-    }
-
-    .main-content {
-        min-height: calc(100vh - 170px);
     }
 }
 
 ::deep .form-title {
-    margin-bottom: rem(25px);
     font-weight: 600;
     font-size: rem(28px);
     line-height: rem(44px);
     color: $SecondaryColor;
+    margin-bottom: rem(25px);
 
     @include lg {
         font-size: rem(24px);
@@ -166,4 +160,34 @@
 
 ::deep .bit-file-upload-lbl {
     padding: 0;
+}
+
+.status-bar {
+    top: 0;
+    width: 100%;
+    z-index: 101;
+    display: none;
+    position: fixed;
+    text-align: center;
+    align-items: center;
+    font-size: rem(14px);
+    color: $PrimaryColor;
+    justify-content: center;
+    background-color: $Gray5;
+}
+
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        color: $PrimaryColor;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    background-color: transparent;
+    height: env(safe-area-inset-top);
 }

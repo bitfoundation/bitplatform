@@ -3,16 +3,20 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .main-container {
-    position: fixed;
     left: 0;
-    top: rem(48px);
     z-index: 16;
     display: flex;
+    position: fixed;
+    min-height: 100%;
+    width: rem(240px);
+    background-color: $Gray3;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    width: rem(240px);
-    height: calc(100vh - #{rem(48px)});
-    background-color: $Gray3;
+    padding-top: calc(rem(48px) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        padding-top: calc(rem(48px) + env(safe-area-inset-top));
+    }
 }
 
 .main-container--closed {

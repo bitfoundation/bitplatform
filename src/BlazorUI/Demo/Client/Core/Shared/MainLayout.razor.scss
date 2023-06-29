@@ -178,8 +178,3 @@ main {
     background-color: transparent;
     height: env(safe-area-inset-top);
 }
-
-.bit-ios .flex-column,
-.bit-ios .navbar-brand {
-    padding-left: env(safe-area-inset-left);
-}
