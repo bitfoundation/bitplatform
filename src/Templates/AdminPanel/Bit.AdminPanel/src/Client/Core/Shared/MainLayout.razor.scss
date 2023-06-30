@@ -22,18 +22,15 @@
 }
 
 .main--full-page {
-    height: 100%;
-    padding: var(--bit-status-bar-height) 0 0 0;
-
-    .bit-ios & {
-        padding-top: env(safe-area-inset-top);
-    }
+    padding: 0;
+    min-height: 100%;
 
     .site-content {
-        padding: 0;
         height: calc(100vh - 49px);
+        padding: var(--bit-status-bar-height) 0 0 0;
 
         .bit-ios & {
+            padding-top: env(safe-area-inset-top);
             height: calc(100vh - 49px - env(safe-area-inset-bottom));
         }
 
@@ -41,7 +38,7 @@
             display: flex;
             align-items: center;
             height: unset !important;
-            min-height: calc(100vh - 49px);
+            min-height: calc(100vh - 49px - var(--bit-status-bar-height));
     
             .bit-ios & {
                 min-height: calc(100vh - 49px - env(safe-area-inset-bottom));
