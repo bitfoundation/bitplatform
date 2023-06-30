@@ -30,41 +30,97 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-Expand All
-	@@ -43,7 +25,6 @@ jobs:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+
+    - name: Switch to blazor web assembly
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
+
+    - name: Restore workloads
       run: >
         dotnet workload install wasm-experimental &&
         dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
-Expand All
-	@@ -54,7 +35,6 @@ jobs:
+    - name: Publish
+      run: dotnet publish src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+
+    - name: Build migrations bundle
       run: |
         dotnet tool install --global dotnet-ef --version 7.0.0
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/TodoTemplate.Server.Api.csproj
+
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v3
       with:
-Expand Down
-Expand Up
-	@@ -98,7 +78,6 @@ jobs:
+        name: migrations-bundle
+        path: efbundle
+
+    - name: Upload api-web artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-web-bundle
+        path: ${{env.DOTNET_ROOT}}/api-web
+
+  deploy_blazor_api_wasm:
+    name: deploy blazor api + web assembly
+    needs: build_blazor_api_wasm
+    runs-on: ubuntu-latest
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve api-web bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: api-web-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+
       - name: Delete IdentityCertificate.pfx
         run: |
             rm IdentityCertificate.pfx
+
       - name: Extract identity certificate from env
         uses: timheuer/base64-to-file@v1
         with:
-Expand All
-	@@ -111,7 +90,6 @@ jobs:
+            fileDir: './'
+            fileName: 'IdentityCertificate.pfx'
+            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Run migrations
+        run: |
             chmod +x efbundle
             ./efbundle
             rm efbundle
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
-Expand All
-	@@ -124,12 +102,12 @@ jobs:
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
+
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-latest
@@ -77,8 +133,8 @@ Expand All
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-Expand All
-	@@ -138,7 +116,7 @@ jobs:
+        global-json-file: global.json
+
     - uses: actions/setup-node@v3
       with:
         node-version: latest
@@ -86,8 +142,9 @@ Expand All
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-Expand All
-	@@ -148,31 +126,31 @@ jobs:
+        files: 'src/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install Maui
       run: dotnet workload install maui
@@ -119,8 +176,8 @@ Expand All
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-Expand All
-	@@ -181,94 +159,89 @@ jobs:
+        global-json-file: global.json
+
     - uses: actions/setup-node@v3
       with:
         node-version: latest
@@ -165,10 +222,10 @@ Expand All
      runs-on: macos-latest
    
      steps:
-
+      
      - name: Checkout source code
        uses: actions/checkout@v3
-
+      
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
@@ -177,7 +234,7 @@ Expand All
      - uses: actions/setup-node@v3
        with:
          node-version: latest
-
+   
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
@@ -215,8 +272,8 @@ Expand All
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-Expand All
-	@@ -277,7 +250,7 @@ jobs:
+        global-json-file: global.json
+
     - uses: actions/setup-node@v3
       with:
         node-version: latest
@@ -224,8 +281,12 @@ Expand All
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-Expand All
-	@@ -290,7 +263,7 @@ jobs:
+        files: 'src/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install Maui
+      run: dotnet workload install maui
 
     - name: Restore workloads
       run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
@@ -233,11 +294,32 @@ Expand All
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1
       with:
-Expand All
-	@@ -314,7 +287,7 @@ jobs:
+          fileDir: './'
+          fileName: 'DistributionCert.p12'
+          encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+
+    - name: Import Code-Signing Certificates
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-filepath: './DistributionCert.p12'
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v1
+      with:
+        bundle-id: 'com.bitplatform.Todo.Template'
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
   
     - name: Build ipa
       run: dotnet publish src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: iOS-bundle
+        path: src/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa
