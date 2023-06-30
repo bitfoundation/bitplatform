@@ -12,7 +12,7 @@
     "productName": "TodoTemplate.Client.Web",
     "copyright": "Copyright © 2023",
     "buildVersion": "1.0.0",
-    "compression": "store",
+    "compression": "maximum",
     "directories": {
       "output": "../../../bin/Desktop"
     },
