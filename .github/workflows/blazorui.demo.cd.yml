@@ -291,10 +291,10 @@ jobs:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
      - name: Restore workloads
-       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron
+       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/BlazorUI/Demo/Client/Web/BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
    
      - name: Build app image
        run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
