@@ -3,7 +3,7 @@
   "splashscreen": {
     "imageFile": ""
   },
-  "name": "Bit.BlazorUI.Demo.Client.Web",
+  "name": "BlazorUIDemo",
   "author": "",
   "singleInstance": true,
   "environment": "Production",
