@@ -408,4 +408,4 @@ jobs:
        uses: actions/upload-artifact@v2
        with:
          name: linux-app-image
-         path: src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/bin/desktop/linux-unpacked/*.*
+         path: ./*.*
