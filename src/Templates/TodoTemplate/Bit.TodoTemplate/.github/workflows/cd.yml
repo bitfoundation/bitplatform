@@ -259,6 +259,51 @@ jobs:
        with:
          name: mac-pkg-bundle
          path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+
+  build_blazor_electron_linux:
+     name: build blazor electron (linux)
+     runs-on: ubuntu-latest
+   
+     steps:
+      
+     - name: Checkout source code
+       uses: actions/checkout@v3
+      
+     - name: Setup .NET
+       uses: actions/setup-dotnet@v3
+       with:
+         global-json-file: global.json
+
+     - name: Setup .NET for Electron.NET
+       uses: actions/setup-dotnet@v3
+       with:
+        dotnet-version: '6.x.x'
+
+     - uses: actions/setup-node@v3
+       with:
+         node-version: latest
+   
+     - name: Update appsettings.json api server address
+       uses: microsoft/variable-substitution@v1 
+       with:
+         files: 'src/Client/Core/appsettings.json'
+       env:
+         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+     - name: Restore workloads
+       run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron
+   
+     - name: Build (To generate CSS/JS files)
+       run: dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+   
+     - name: Build app image
+       run: cd src/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
+   
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: linux-app-image
+         path: bin/desktop/linux-unpacked/*.*
   
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
