@@ -8,11 +8,11 @@ powershell -Command "[string]$trackedFiles = git ls-files; Get-ChildItem -Includ
 :: Runs dotnet clean for each csproj file
 powershell -Command "Get-ChildItem -Include *.csproj -Recurse | ForEach-Object { dotnet clean $_.FullName }"
 
-@REM :: Delete specified directories
-@REM powershell -Command "Get-ChildItem -Include bin,obj,node_modules,Packages,.vs,TestResults,AppPackages -Recurse -Directory | Remove-Item -Recurse -Confirm:$false -Force"
+:: Delete specified directories
+powershell -Command "Get-ChildItem -Include bin,obj,node_modules,Packages,.vs,TestResults,AppPackages -Recurse -Directory | Remove-Item -Recurse -Confirm:$false -Force"
 
-@REM :: Delete specified files
-@REM powershell -Command "Get-ChildItem -Include *.csproj.user,Resources.designer.cs -Recurse | Remove-Item -Confirm:$false -Force"
+:: Delete specified files
+powershell -Command "Get-ChildItem -Include *.csproj.user,Resources.designer.cs -Recurse | Remove-Item -Confirm:$false -Force"
 
-@REM :: Delete empty directories
-@REM powershell -Command "Get-ChildItem -Recurse | Where-Object { $_.PSIsContainer -and @(Get-ChildItem -Lit $_.FullName).Count -eq 0 } | Remove-Item -Confirm:$false -Force"
+:: Delete empty directories
+powershell -Command "Get-ChildItem -Recurse | Where-Object { $_.PSIsContainer -and @(Get-ChildItem -Lit $_.FullName).Count -eq 0 } | Remove-Item -Confirm:$false -Force"
