@@ -39,8 +39,7 @@
         <MtouchLink>Full</MtouchLink>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
-        <!-- AOT everything, except Bit.BlazorUI.Extras.dll, which will be interpreted -->
-        <MtouchInterpreter>-all,Bit.BlazorUI.Extras.dll</MtouchInterpreter>
+        <MtouchInterpreter>all</MtouchInterpreter>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
