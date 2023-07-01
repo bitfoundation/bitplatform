@@ -33,18 +33,18 @@
     }
 }
 
-.gitpod-section {
+.github-codespaces-section {
     display: flex;
     align-items: flex-start;
 
-    .gitpod-icon {
+    .github-codespaces-icon {
         width: rem(35px);
-        height: rem(45px);
-        display: inline-block;
+        height: rem(35px);
         margin-right: rem(12px);
-        background-position-y: rem(3px);
-        background-size: contain;
+        background-size: cover;
+        background-position: center;
         background-repeat: no-repeat;
-        background-image: url('images/icon/gitpod-icon.webp');
+        background-position-y: rem(3px);
+        background-image: url('images/github-icon.webp');
     }
 }
