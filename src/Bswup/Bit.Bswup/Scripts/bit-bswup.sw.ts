@@ -13,6 +13,7 @@
     assetsInclude: any
     assetsExclude: any
     externalAssets: any
+    noPrerenderQuery: any
 }
 
 interface Event {
@@ -115,7 +116,11 @@ async function createNewCache() {
     uniqueAssets.map(addCache);
 
     async function addCache(asset, index) {
-        const request = new Request(asset.url, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
+        let assetUrl = asset.url;
+        if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+            assetUrl = asset.url + '?' + self.noPrerenderQuery;
+        }
+        const request = new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
         if (oldCache && asset.hash) {
