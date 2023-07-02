@@ -7,9 +7,9 @@ public class WebAppDeploymentTypeDetector
 {
     public static WebAppDeploymentTypeDetector Current { get; set; } = new WebAppDeploymentTypeDetector();
 
-    public virtual bool IsPrerendered()
+    public virtual bool IsPrerenderedOnly()
     {
-        return Mode == WebAppDeploymentType.Prerendered;
+        return Mode == WebAppDeploymentType.PrerenderedOnly;
     }
 
     public virtual bool IsSpa()
@@ -36,8 +36,8 @@ public class WebAppDeploymentTypeDetector
     {
         get
         {
-#if Prerendered
-            return WebAppDeploymentType.Prerendered;
+#if PrerenderedOnly
+            return WebAppDeploymentType.PrerenderedOnly;
 #elif Spa
             return WebAppDeploymentType.Spa;
 #elif Pwa

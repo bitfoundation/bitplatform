@@ -2,7 +2,7 @@
 
 public enum WebAppDeploymentType
 {
-    Prerendered,
+    PrerenderedOnly,
     Spa,
     Pwa,
     SpaPrerendered,

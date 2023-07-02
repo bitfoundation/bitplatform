@@ -1,26 +1,32 @@
 ﻿@page "/"
 @using Bit.BlazorUI.Demo.Client.Core;
 @using Bit.BlazorUI.Demo.Shared.Infra;
+
 @namespace Bit.BlazorUI.Demo.Client.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isPrerendered = WebAppDeploymentTypeDetector.Current.IsPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
     var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
+
+    var noPrerender = Request.Query["no-prerender"].Count > 0;
+
     RenderMode renderMode = RenderMode.Static;
-    if (isPrerendered is false)
+
+    if (isPrerenderedOnly is false)
     {
         if (isBlazorServer)
         {
-            renderMode = isSpa || isPwa ? RenderMode.Server : RenderMode.ServerPrerendered;
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.Server : RenderMode.ServerPrerendered;
         }
         else
         {
-            renderMode = isSpa || isPwa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
         }
     }
 

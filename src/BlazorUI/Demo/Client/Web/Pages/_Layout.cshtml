@@ -10,35 +10,37 @@
 @{
     var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isPrerendered = WebAppDeploymentTypeDetector.Current.IsPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
     var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
     var useAspAppendVersion = !isPwa;
+    var request = ContextAccessor?.HttpContext?.Request;
+    var noPrerender = (request?.Query["no-prerender"].Count ?? 0) > 0;
 
     RenderMode renderMode = RenderMode.Static;
-    if (isPrerendered is false)
+    if (isPrerenderedOnly is false)
     {
         if (isBlazorServer)
         {
-            renderMode = isSpa || isPwa ? RenderMode.Server : RenderMode.ServerPrerendered;
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.Server : RenderMode.ServerPrerendered;
         }
         else
         {
-            renderMode = isSpa || isPwa ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
         }
     }
 
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
-        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
+        var shouldRenderStaticMode = request?.ShouldRenderStaticMode();
 
         if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
         {
             renderMode = RenderMode.Static;
-            isPrerendered = true;
+            isPrerenderedOnly = true;
         }
     }
 }
@@ -88,9 +90,9 @@
     <!-- Google tag -->
 
     <div id="app-container">
-        @if (isSpa || isPwa)
+        @if (isSpa || isPwa || isSpaPrerendered || isPwaPrerendered)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#444")" render-mode="@RenderMode.Static" />
         }
 
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@useAspAppendVersion" />
@@ -101,7 +103,7 @@
         <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia.min.css" />
     </div>
 
-    @if (isPrerendered is false)
+    @if (isPrerenderedOnly is false)
     {
         <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.min.js"></script>
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@useAspAppendVersion"></script>
