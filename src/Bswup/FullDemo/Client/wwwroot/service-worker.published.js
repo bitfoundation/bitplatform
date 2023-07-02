@@ -19,6 +19,8 @@ self.caseInsensitiveUrl = true;
 self.serverHandledUrls = [/\/api\//];
 self.serverRenderedUrls = [/\/privacy$/];
 
+self.noPrerenderQuery = 'no-prerender=true';
+
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 
 //// Caution! Be sure you understand the caveats before publishing an application with
