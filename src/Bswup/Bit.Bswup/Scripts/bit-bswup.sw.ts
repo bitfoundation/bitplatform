@@ -48,7 +48,7 @@ async function handleActivate(e) {
     sendMessage({ type: 'activate', data: { version: VERSION } });
 }
 
-// ===============================================================================================
+// ============================================================================
 
 const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
 const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
