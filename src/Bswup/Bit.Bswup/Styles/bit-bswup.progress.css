@@ -43,7 +43,9 @@
 
 #bit-bswup-reload {
     display: none;
-    margin-bottom: 8px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
 }
 
 #bit-bswup-assets {
