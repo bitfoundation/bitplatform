@@ -14,6 +14,8 @@ public static class Services
 
         services.AddControllers();
 
+        services.AddHttpContextAccessor();
+
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
