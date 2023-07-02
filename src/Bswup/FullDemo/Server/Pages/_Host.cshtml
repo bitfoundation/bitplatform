@@ -2,14 +2,12 @@
 @namespace Bit.Bswup.Demo.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-@inject IHttpContextAccessor ContextAccessor
 @using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 
 @{
     Layout = "_Layout";
 
-    var request = ContextAccessor?.HttpContext?.Request;
-    var noPrerender = request.Query["no-prerender"].Count > 0;
+    var noPrerender = Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
 }
 
