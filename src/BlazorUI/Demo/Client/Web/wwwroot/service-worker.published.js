@@ -19,6 +19,9 @@ self.externalAssets = [
     {
         "url": "/"
     },
+    {
+        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+    }
 ];
 
 self.serverHandledUrls = [

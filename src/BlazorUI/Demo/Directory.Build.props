@@ -5,7 +5,7 @@
         <BlazorMode>BlazorWebAssembly</BlazorMode>
         <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
 
-        <WebAppDeploymentType>Pwa</WebAppDeploymentType>
+        <WebAppDeploymentType>PwaPrerendered</WebAppDeploymentType>
         <!-- You can choose either Prerendered, Spa, Pwa, SpaPrerendered or PwaPrerendered -->
 
         <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->

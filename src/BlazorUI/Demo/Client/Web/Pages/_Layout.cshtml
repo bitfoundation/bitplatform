@@ -8,8 +8,6 @@
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
-
     var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isPrerendered = WebAppDeploymentTypeDetector.Current.IsPrerendered();
@@ -79,13 +77,13 @@
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        gtag('config', '@gtmId');
+        gtag('config', 'G-G1ET5L69QF');
     </script>
     <!-- Google tag -->
 
@@ -124,7 +122,7 @@
 
                 @if (isPwaPrerendered)
                 {
-                    <component type="typeof(BlazorUiDemoBswupProgressBar)" render-mode="@RenderMode.Static" />
+                    <component type="typeof(DemoBswupProgressBar)" render-mode="@RenderMode.Static" />
                 }
                 else
                 {
@@ -143,7 +141,7 @@
 
                 @if (isSpaPrerendered)
                 {
-                    <component type="typeof(BlazorUiDemoBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                    <component type="typeof(DemoBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
                 }
                 else
                 {

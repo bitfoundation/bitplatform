@@ -39,7 +39,7 @@ public class Middlewares
                 // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-#if PWA
+#if Pwa
                     NoCache = true
 #else
                     MaxAge = TimeSpan.FromDays(365),
