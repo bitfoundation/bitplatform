@@ -76,7 +76,7 @@
             if (type === 'progress') {
                 handle(BswupMessage.downloadProgress, data);
                 if (data.percent >= 100) {
-                    var firstInstall = !(navigator.serviceWorker.controller);
+                    const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
                 }
             }
@@ -86,8 +86,15 @@
             }
         }
 
+        let reloading = false;
         function handleController(e) {
             info('controller changed.', e);
+
+            if (reloading) {
+                warn('app is already reloading...');
+                return;
+            }
+            reloading = true;
 
             //at this state the new sw has gained the control (after skip_waiting) and the ui SHOULD reload!!!
             window.location.reload();
