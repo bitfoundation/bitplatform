@@ -34,12 +34,9 @@ self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
-    sendMessage({ type: 'installing', data: { version: VERSION } });
+    sendMessage({ type: 'install', data: { version: VERSION } });
 
     createNewCache();
-
-    log(`installed version (${VERSION})`);
-    sendMessage({ type: 'installed', data: { version: VERSION } });
 }
 
 async function handleActivate(e) {

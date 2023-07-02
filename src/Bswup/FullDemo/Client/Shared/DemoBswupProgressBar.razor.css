@@ -74,3 +74,10 @@
         ::deep #bit-bswup .bswup-progress-text::after {
             content: var(--bit-bswup-percent-text, "");
         }
+
+::deep #bit-bswup-reload {
+    display: none;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+}

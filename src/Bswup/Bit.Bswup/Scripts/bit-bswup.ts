@@ -3,7 +3,7 @@
 ; (function () {
     const bitBswupScript = document.currentScript;
 
-    window.addEventListener('load', runBswup);
+    window.addEventListener('load', runBswup); // very important: use only the "load" event!!!
 
     function runBswup() {
         if (!('serviceWorker' in navigator)) {
@@ -26,36 +26,39 @@
                 if (navigator.serviceWorker.controller) {
                     reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
                 } else {
-                    window.location.reload();
+                    return Blazor.start();
                 }
             };
 
             if (reg.waiting) {
+                info('registration waiting:', reg.waiting);
                 if (reg.installing) {
-                    handle('installing', {});
+                    info('registration installing:', reg.installing);
                 } else {
-                    handle('installed');
+                    info('registration is ready:', reg.waiting);
+                    handle(BswupMessage.updateReady, { reload });
                 }
             }
 
             reg.addEventListener('updatefound', function (e) {
                 info('update found', e);
-                handle('updatefound', e);
+                handle(BswupMessage.updateFound, e);
+
                 if (!reg.installing) {
                     warn('no registration.installing found!');
                     return;
                 }
+
                 reg.installing.addEventListener('statechange', function (e) {
                     info('state chnaged', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
-                    handle('statechange', e);
+                    handle(BswupMessage.stateChanged, e);
 
                     if (!reg.waiting) return;
 
                     if (navigator.serviceWorker.controller) {
-                        info('update finished.');
-                        handle('installed', { reload: () => reload() });
+                        info('update finished.'); // not first install
                     } else {
-                        info('initialization finished.');
+                        info('initialization finished.'); // first install
                     }
                 });
             });
@@ -66,32 +69,27 @@
             const type = message.type;
             const data = message.data;
 
-            if (type === 'installing') {
-                handle('installing', data);
+            if (type === 'install') {
+                handle(BswupMessage.downloadStarted, data);
             }
 
             if (type === 'progress') {
-                handle('progress', { ...data, reload: () => reload() });
-            }
-
-            if (type === 'installed') {
-                handle('installed', data);
+                handle(BswupMessage.downloadProgress, data);
+                if (data.percent >= 100) {
+                    var firstInstall = !(navigator.serviceWorker.controller);
+                    handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                }
             }
 
             if (type === 'activate') {
-                handle('activate', data);
+                handle(BswupMessage.activate, data);
             }
         }
 
-        var refreshing = false;
         function handleController(e) {
             info('controller changed.', e);
-            handle('controllerchange', e);
-            if (refreshing) {
-                warn('app is already refreshing...');
-                return;
-            }
-            refreshing = true;
+
+            //at this state the new sw has gained the control (after skip_waiting) and the ui SHOULD reload!!!
             window.location.reload();
         }
 
@@ -160,12 +158,14 @@
         //function info(...texts: string[]) {
         //    console.log(`%cBitBSWUP: ${texts.join('\n')}`, 'color:lightblue');
         //}
+
         function info(...args: any[]) {
             if (options.log === 'none') return;
             console.info(...['BitBswup:', ...args]);
         }
-        function warn(text: string) {
-            console.warn(`BitBswup: ${text}`);
+
+        function warn(...args: any[]) {
+            console.warn(...['BitBswup:', ...args]);
         }
     }
 }());
@@ -177,3 +177,14 @@ interface BswupOptions {
     handler(...args: any[]): void
     blazorScript: string
 }
+
+const BswupMessage = {
+    downloadStarted: 'DOWNLOAD_STARTED',
+    downloadProgress: 'DOWNLOAD_PROGRESS',
+    downloadFinished: 'DOWNLOAD_FINISHED',
+    activate: 'ACTIVATE',
+    updateInstalled: 'UPDATE_INSTALLED',
+    updateReady: 'UPDATE_READY',
+    updateFound: 'UPDATE_FOUND',
+    stateChanged: 'STATE_CHANGED'
+};
