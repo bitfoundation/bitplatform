@@ -24,6 +24,16 @@
             }
 </style>
 
+@if (_showLoading)
+{
+    <div>
+        <BupProgress>
+            <div class="bup-progress-text" />
+            <BitRollerLoading Size="42" Color="#0078d4" />
+        </BupProgress>
+    </div>
+}
+
 @code {
     private bool _showLoading = true;
 
@@ -35,14 +45,4 @@
         _showLoading = false;
         StateHasChanged();
     }
-}
-
-@if (_showLoading)
-{
-    <div>
-        <BupProgress>
-            <div class="bup-progress-text" />
-            <BitRollerLoading Size="42" Color="#0078d4" />
-        </BupProgress>
-    </div>
 }
