@@ -78,12 +78,12 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Bit.BlazorUI" Version="5.1.0-pre-13" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-13">
+        <PackageReference Include="Bit.BlazorUI" Version="5.1.0-pre-14" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-14">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-13">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0-pre-14">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

@@ -30,9 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bup" Version="5.1.0-pre-13" />
-        <PackageReference Include="Bit.Bswup" Version="5.1.0-pre-13" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-13">
+        <PackageReference Include="Bit.Bup" Version="5.1.0-pre-14" />
+        <PackageReference Include="Bit.Bswup" Version="5.1.0-pre-14" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-14">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

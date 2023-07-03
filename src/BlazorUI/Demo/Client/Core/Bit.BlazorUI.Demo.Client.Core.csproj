@@ -24,7 +24,7 @@
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Shared\Bit.BlazorUI.Demo.Shared.csproj" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-13">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0-pre-14">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
