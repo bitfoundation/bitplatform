@@ -15,7 +15,7 @@
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
     var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
-    var useAspAppendVersion = !isPwa;
+    var useAspAppendVersion = !isPwa && !isPwaPrerendered;
     var request = ContextAccessor?.HttpContext?.Request;
     var noPrerender = (request?.Query["no-prerender"].Count ?? 0) > 0;
 
@@ -55,7 +55,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="@useAspAppendVersion">
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
-    @if (isPwa)
+    @if (isPwa || isPwaPrerendered)
     {
         <link rel="manifest" href="manifest.json">
     }
