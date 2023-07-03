@@ -8,11 +8,11 @@
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
     var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
 
     var noPrerender = Request.Query["no-prerender"].Count > 0;
 

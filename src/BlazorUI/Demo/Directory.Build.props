@@ -6,7 +6,7 @@
         <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
 
         <WebAppDeploymentType>Spa</WebAppDeploymentType>
-        <!-- You can choose either PrerenderedOnly, Spa, Pwa, SpaPrerendered or PwaPrerendered -->
+        <!-- You can choose either Spa, Pwa, SpaPrerendered, PwaPrerendered or PrerenderedOnly -->
 
         <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/todo-template/hosting-models -->
 
@@ -18,11 +18,11 @@
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
-        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PrerenderedOnly' ">$(DefineConstants);PrerenderedOnly</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Spa' ">$(DefineConstants);Spa</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Pwa' ">$(DefineConstants);Pwa</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SpaPrerendered' ">$(DefineConstants);SpaPrerendered</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PwaPrerendered' ">$(DefineConstants);PwaPrerendered</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PrerenderedOnly' ">$(DefineConstants);PrerenderedOnly</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-android')) ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>

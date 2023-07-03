@@ -10,11 +10,12 @@
 @{
     var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
     var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
     var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
+
     var useAspAppendVersion = !isPwa && !isPwaPrerendered;
     var request = ContextAccessor?.HttpContext?.Request;
     var noPrerender = (request?.Query["no-prerender"].Count ?? 0) > 0;
@@ -32,12 +33,9 @@
         }
     }
 
-
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
-        var shouldRenderStaticMode = request?.ShouldRenderStaticMode();
-
-        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        if (request?.ShouldRenderStaticMode() is true)
         {
             renderMode = RenderMode.Static;
             isPrerenderedOnly = true;
@@ -90,7 +88,7 @@
     <!-- Google tag -->
 
     <div id="app-container">
-        @if (isSpa || isPwa || isSpaPrerendered || isPwaPrerendered)
+        @if (isSpa || isPwa || noPrerender)
         {
             <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#444")" render-mode="@RenderMode.Static" />
         }
@@ -157,7 +155,7 @@
         }
     }
 
-    @if (isSpaPrerendered)
+    @if ((isSpaPrerendered || isPwaPrerendered) && !noPrerender)
     {
         <persist-component-state />
     }
