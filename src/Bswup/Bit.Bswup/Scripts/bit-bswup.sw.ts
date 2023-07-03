@@ -105,8 +105,12 @@ async function handleFetch(e) {
 }
 
 function handleMessage(e) {
-    if (e.data == 'SKIP_WAITING') {
-        self.skipWaiting();
+    if (e.data === 'SKIP_WAITING') {
+        self.skipWaiting().then(() => e.source.postMessage('WAITING_SKIPPED'));
+    }
+
+    if (e.data === 'CLAIM_CLIENTS') {
+        self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 }
 
@@ -180,7 +184,7 @@ async function deleteOldCaches() {
 
 function sendMessage(message) {
     self.clients
-        .matchAll({ includeUncontrolled: true, type: 'window', })
+        .matchAll({ includeUncontrolled: true })
         .then(function (clients) {
             (clients || []).forEach(function (client) { client.postMessage(JSON.stringify(message)); });
         });

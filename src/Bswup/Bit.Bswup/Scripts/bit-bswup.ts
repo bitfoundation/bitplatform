@@ -17,17 +17,24 @@
         startBlazor();
 
         navigator.serviceWorker.register(options.sw, { scope: options.scope }).then(prepareRegistration);
+        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
         navigator.serviceWorker.addEventListener('message', handleMessage);
-        navigator.serviceWorker.addEventListener('controllerchange', handleController);
 
         let reload: () => void;
+        let blazorStartResolver: (value: unknown) => void;
         function prepareRegistration(reg) {
             reload = () => {
                 if (navigator.serviceWorker.controller) {
                     reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
-                } else {
-                    return Blazor.start();
+                    return;
                 }
+
+                if (reg.active) {
+                    reg.active.postMessage('CLAIM_CLIENTS');
+                    return new Promise((res, _) => blazorStartResolver = res);
+                }
+
+                window.location.reload();
             };
 
             if (reg.waiting) {
@@ -64,7 +71,22 @@
             });
         }
 
+        function handleControllerChange(e) {
+            info('controller changed.', e);
+        }
+
         function handleMessage(e) {
+
+            if (e.data === 'WAITING_SKIPPED') {
+                window.location.reload();
+                return;
+            }
+
+            if (e.data === 'CLIENTS_CLAIMED') {
+                Blazor.start().then(() => blazorStartResolver(undefined));
+                return;
+            }
+
             const message = JSON.parse(e.data);
             const type = message.type;
             const data = message.data;
@@ -84,20 +106,6 @@
             if (type === 'activate') {
                 handle(BswupMessage.activate, data);
             }
-        }
-
-        let reloading = false;
-        function handleController(e) {
-            info('controller changed.', e);
-
-            if (reloading) {
-                warn('app is already reloading...');
-                return;
-            }
-            reloading = true;
-
-            //at this state the new sw has gained the control (after skip_waiting) and the ui SHOULD reload!!!
-            window.location.reload();
         }
 
         // ============================================================
