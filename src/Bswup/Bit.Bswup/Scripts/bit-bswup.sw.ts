@@ -105,11 +105,11 @@ async function handleFetch(e) {
 }
 
 function handleMessage(e) {
-    if (e.data == 'SKIP_WAITING') {
+    if (e.data === 'SKIP_WAITING') {
         self.skipWaiting().then(() => e.source.postMessage('WAITING_SKIPPED'));
     }
 
-    if (e.data == 'CLAIM_CLIENTS') {
+    if (e.data === 'CLAIM_CLIENTS') {
         self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 }
