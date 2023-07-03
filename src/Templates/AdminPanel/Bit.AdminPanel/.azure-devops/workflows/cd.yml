@@ -2,7 +2,7 @@ trigger:
 - main
 
 variables:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   APP_SERVICE_NAME: 'app-service-ad-test'
   AZURE_SUBSCRIPTION: 'ad-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)

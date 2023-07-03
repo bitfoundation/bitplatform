@@ -6,23 +6,24 @@
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
         
-        <WebAppDeploymentType>DefaultDeploymentType</WebAppDeploymentType>
-        <!-- You can choose either Static, DefaultDeploymentType, PWA or SSR -->
+        <WebAppDeploymentType>Spa</WebAppDeploymentType>
+        <!-- You can choose either Spa, Pwa, SpaPrerendered, PwaPrerendered or PrerenderedOnly -->
         
         <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/adminpanel/hosting-models -->
 
         <UseElectron Condition=" '$(BlazorMode)' == 'BlazorElectron' ">true</UseElectron>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorElectron' ">$(DefineConstants);BlazorElectron</DefineConstants>
-        <WebAppDeploymentType Condition=" '$(BlazorMode)' == 'BlazorElectron' ">DefaultDeploymentType</WebAppDeploymentType>
+        <WebAppDeploymentType Condition=" '$(BlazorMode)' == 'BlazorElectron' ">Spa</WebAppDeploymentType>
         <BlazorMode Condition=" '$(BlazorMode)' == 'BlazorElectron' ">BlazorServer</BlazorMode>
         
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
-        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'DefaultDeploymentType' ">$(DefineConstants);DefaultDeploymentType</DefineConstants>
-        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PWA' ">$(DefineConstants);PWA</DefineConstants>
-        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SSR' ">$(DefineConstants);SSR</DefineConstants>
-        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Static' ">$(DefineConstants);Static</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Spa' ">$(DefineConstants);Spa</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Pwa' ">$(DefineConstants);Pwa</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SpaPrerendered' ">$(DefineConstants);SpaPrerendered</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PwaPrerendered' ">$(DefineConstants);PwaPrerendered</DefineConstants>
+        <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PrerenderedOnly' ">$(DefineConstants);PrerenderedOnly</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-android')) ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
@@ -33,7 +34,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         
         <NeutralLanguage>en</NeutralLanguage>
-        <MultilingualEnabled>false</MultilingualEnabled>
+        <MultilingualEnabled>true</MultilingualEnabled>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
         
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.2</SupportedOSPlatformVersion>

@@ -18,8 +18,7 @@ The following websites are developed by Bit Platform and published in Blazor Web
 
 * [Bit Platform web site](https://bitplatform.dev/)
 
-* [Todo SSR enabled web app](https://todo.bitplatform.dev/)
-* [Todo PWA](https://todo-app.bitplatform.dev/)
+* [Todo Prerendere enabled PWA enabled web app](https://todo.bitplatform.dev/)
 * [Todo mobile app](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template)
 
 * [Admin panel multilingual web app](https://adminpanel.bitplatform.dev/)

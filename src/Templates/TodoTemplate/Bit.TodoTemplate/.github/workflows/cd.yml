@@ -3,7 +3,7 @@ name: TodoTemplate CD
 # https://bitplatform.dev/todo-template/dev-ops
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'app-service-td-test'
   IOS_CODE_SIGN_PROVISION: 'TodoTemplate'

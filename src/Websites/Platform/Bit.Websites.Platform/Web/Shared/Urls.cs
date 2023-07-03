@@ -21,8 +21,7 @@ public static class Urls
     public const string Facebook = "#";
 
     public const string TodoTemplate = "/todo-template/overview";
-    public const string TodoTemplateSSR = "https://todo.bitplatform.dev/";
-    public const string TodoTemplatePWA = "https://todo-app.bitplatform.dev/";
+    public const string TodoTemplatePwaPrerendered = "https://todo.bitplatform.dev/";
     public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
     public const string TodoTemplateFigma = "https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223";
     public const string TodoTemplateNuget = "https://www.nuget.org/packages/Bit.TodoTemplate/";

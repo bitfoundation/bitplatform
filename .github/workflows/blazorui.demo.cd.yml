@@ -3,7 +3,7 @@ name: Blazor UI Demo CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/admin-panel/dev-ops
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'SSR'
+  WEB_APP_DEPLOYMENT_TYPE: 'PwaPrerendered'
   API_SERVER_ADDRESS: 'https://components.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
 

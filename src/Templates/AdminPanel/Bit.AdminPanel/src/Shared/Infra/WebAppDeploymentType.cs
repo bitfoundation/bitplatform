@@ -2,8 +2,9 @@
 
 public enum WebAppDeploymentType
 {
-    Default,
+    Spa,
     Pwa,
-    Ssr,
-    Static
+    SpaPrerendered,
+    PwaPrerendered,
+    PrerenderedOnly,
 }

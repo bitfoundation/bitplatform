@@ -1,7 +1,7 @@
 name: BlazorDual CI
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
 
 on:
   workflow_dispatch:
