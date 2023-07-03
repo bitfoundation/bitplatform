@@ -87,9 +87,14 @@ async function handleFetch(e) {
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
 
-    const asset = UNIQUE_ASSETS.find(a => isServerRendered
-        ? new URL(requestUrl).pathname.endsWith(a.url)
-        : a.url[caseMethod]() === requestUrl[caseMethod]());
+    let asset = UNIQUE_ASSETS.find(a => shouldServeIndexHtml
+        ? a.url[caseMethod]() === requestUrl[caseMethod]()
+        : new URL(requestUrl).pathname.endsWith(a.url)
+    );
+
+    if (!asset) {
+        asset = EXTERNAL_ASSETS.find(a => a.url[caseMethod]() === requestUrl[caseMethod]());
+    }
 
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
