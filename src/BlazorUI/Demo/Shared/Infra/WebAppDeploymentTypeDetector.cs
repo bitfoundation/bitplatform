@@ -7,9 +7,14 @@ public class WebAppDeploymentTypeDetector
 {
     public static WebAppDeploymentTypeDetector Current { get; set; } = new WebAppDeploymentTypeDetector();
 
-    public virtual bool IsDefault()
+    public virtual bool IsPrerenderedOnly()
     {
-        return Mode == WebAppDeploymentType.Default;
+        return Mode == WebAppDeploymentType.PrerenderedOnly;
+    }
+
+    public virtual bool IsSpa()
+    {
+        return Mode == WebAppDeploymentType.Spa;
     }
 
     public virtual bool IsPwa()
@@ -17,28 +22,30 @@ public class WebAppDeploymentTypeDetector
         return Mode == WebAppDeploymentType.Pwa;
     }
 
-    public virtual bool IsStatic()
+    public virtual bool IsSpaPrerendered()
     {
-        return Mode == WebAppDeploymentType.Static;
+        return Mode == WebAppDeploymentType.SpaPrerendered;
     }
 
-    public virtual bool IsSsr()
+    public virtual bool IsPwaPrerendered()
     {
-        return Mode == WebAppDeploymentType.Ssr;
+        return Mode == WebAppDeploymentType.PwaPrerendered;
     }
 
     public virtual WebAppDeploymentType Mode
     {
         get
         {
-#if SSR
-            return WebAppDeploymentType.Ssr;
-#elif PWA
+#if PrerenderedOnly
+            return WebAppDeploymentType.PrerenderedOnly;
+#elif Spa
+            return WebAppDeploymentType.Spa;
+#elif Pwa
             return WebAppDeploymentType.Pwa;
-#elif Static
-            return WebAppDeploymentType.Static;
-#else
-            return WebAppDeploymentType.Default;
+#elif SpaPrerendered
+            return WebAppDeploymentType.SpaPrerendered;
+#elif PwaPrerendered
+            return WebAppDeploymentType.PwaPrerendered;
 #endif
         }
     }

@@ -21,6 +21,9 @@ self.externalAssets = [
     {
         "url": "/"
     },
+    {
+        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+    }
 ];
 
 self.serverHandledUrls = [
@@ -38,5 +41,7 @@ self.serverHandledUrls = [
 self.defaultUrl = "/";
 
 self.caseInsensitiveUrl = true;
+
+self.noPrerenderQuery = 'no-prerender=true';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
