@@ -1,6 +1,8 @@
 ﻿@using Bit.Bswup
 @using Bit.BlazorUI
 
+@inherits AppComponentBase
+
 <style>
     #bit-bswup {
         top: 2px;
@@ -63,5 +65,5 @@
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
     </BswupProgress>
-    <button id="bit-bswup-reload">Update</button>
+    <button id="bit-bswup-reload">@Localizer[nameof(AppStrings.Update)]</button>
 </div>

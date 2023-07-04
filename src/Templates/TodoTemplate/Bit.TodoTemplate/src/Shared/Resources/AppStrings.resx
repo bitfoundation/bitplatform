@@ -658,4 +658,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="DeleteAccountPrompt" xml:space="preserve">
     <value>Are you sure you want to delete your account?</value>
   </data>
+  <data name="Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
 </root>
