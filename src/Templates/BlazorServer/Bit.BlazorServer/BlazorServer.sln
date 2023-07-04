@@ -5,11 +5,12 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		.\global.json = .\global.json
-		.\src\Clean.bat = .\src\Clean.bat
+		Clean.bat = Clean.bat
+		Clean.sh = Clean.sh
+		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = ".\src\BlazorServer.Web", ".\src\BlazorServer.Web\BlazorServer.Web.csproj", "{2B232F0F-9704-451E-8E3E-313AE0BEEF03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServer.Web", "BlazorServer.Web\BlazorServer.Web.csproj", "{4A114F52-6AAE-4387-8F00-6B749962C08F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +18,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2B232F0F-9704-451E-8E3E-313AE0BEEF03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B232F0F-9704-451E-8E3E-313AE0BEEF03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B232F0F-9704-451E-8E3E-313AE0BEEF03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B232F0F-9704-451E-8E3E-313AE0BEEF03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A114F52-6AAE-4387-8F00-6B749962C08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A114F52-6AAE-4387-8F00-6B749962C08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A114F52-6AAE-4387-8F00-6B749962C08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A114F52-6AAE-4387-8F00-6B749962C08F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
