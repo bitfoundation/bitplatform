@@ -122,13 +122,14 @@
 
                 @if (isPwaPrerendered)
                 {
-                    <component type="typeof(DemoBswupProgressBar)" render-mode="@RenderMode.Static" />
+                    <component type="typeof(AppBswupProgressBar)" render-mode="@RenderMode.Static" />
                 }
                 else
                 {
                     <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@useAspAppendVersion">
                     <component type="typeof(Bit.Bswup.BswupProgress)"
                                param-AutoReload="true"
+                               param-HideApp="true"
                                param-AppContainer="@("#app-container")"
                                render-mode="@RenderMode.Static" />
                 }
@@ -141,7 +142,7 @@
 
                 @if (isSpaPrerendered)
                 {
-                    <component type="typeof(DemoBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                    <component type="typeof(AppBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
                 }
                 else
                 {

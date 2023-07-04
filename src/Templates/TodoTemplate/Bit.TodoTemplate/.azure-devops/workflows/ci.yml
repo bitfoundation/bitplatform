@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
 
 jobs:
 - job: build_blazor_server

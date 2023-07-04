@@ -6,8 +6,8 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!--/-:msbuild-conditional:noEmit -->
-        <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
+        <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
@@ -48,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="$(WebAppDeploymentType.Contains('Pwa'))" />
         <ProjectReference Include="..\Core\AdminPanel.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />

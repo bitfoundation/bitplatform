@@ -4,7 +4,7 @@ namespace TodoTemplate.Client.Core.Services.Implementations;
 
 // Using this class, persisting the application state on Pre-Rendering mode (explained here: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state) will be very simple in this multi-mode Template project.
 
-#if (BlazorWebAssembly || BlazorServer) && SSR
+#if (BlazorWebAssembly || BlazorServer) && (SpaPrerendered || PwaPrerendered)
 public class StateService : IStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;

@@ -3,7 +3,7 @@ name: AdminPanel CD
 # https://bitplatform.dev/admin-panel/dev-ops
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'app-service-ad-test'
   IOS_CODE_SIGN_PROVISION: 'AdminPanel'
