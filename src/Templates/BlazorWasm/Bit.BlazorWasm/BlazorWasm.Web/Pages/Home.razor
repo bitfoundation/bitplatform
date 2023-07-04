@@ -24,7 +24,7 @@
     </div>
 
     <div class="section @BitCss.Class.Color.Border.Disabled">
-        <BitTypography Variant="BitTypographyVariant.H3" Gutter Style="@($"color:{_colorPickerRef?.Rgba}")">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter Style="@($"color:{_colorPickerRef?.Rgba ?? _color}")">
             ColorPicker
         </BitTypography>
         <div style="display:flex;justify-content:center">
@@ -38,6 +38,6 @@
 @code {
     int _counter;
     double _alpha = 1;
-    string? _color = "#000000";
+    string? _color = "#0078d4";
     private BitColorPicker? _colorPickerRef;
 }
