@@ -9,28 +9,28 @@ public partial class BitSliderDemo
         new()
         {
             Name = "AriaValueText",
-            Type = "Func<double, string>",
+            Type = "Func<double, string>?",
             DefaultValue = "",
             Description = "A text description of the Slider number value for the benefit of screen readers. This should be used when the Slider number value is not accurately represented by a number.",
         },
         new()
         {
             Name = "DefaultLowerValue",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The default lower value of the ranged Slider.",
         },
         new()
         {
             Name = "DefaultUpperValue",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The default upper value of the ranged Slider.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The default value of the Slider.",
         },
@@ -65,14 +65,14 @@ public partial class BitSliderDemo
         new()
         {
             Name = "Label",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Description label of the Slider.",
         },
         new()
         {
             Name = "LowerValue",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The lower value of the ranged Slider.",
         },
@@ -108,13 +108,13 @@ public partial class BitSliderDemo
         {
             Name = "ShowValue",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether to show the value on the right of the Slider.",
         },
         new()
         {
             Name = "SliderBoxHtmlAttributes",
-            Type = "Dictionary<string, object>",
+            Type = "Dictionary<string, object>?",
             DefaultValue = "",
             Description = "Additional parameter for the Slider box.",
         },
@@ -122,27 +122,27 @@ public partial class BitSliderDemo
         {
             Name = "Step",
             Type = "double",
-            DefaultValue = "",
+            DefaultValue = "1",
             Description = "The difference between the two adjacent values of the Slider.",
         },
         new()
         {
             Name = "UpperValue",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The upper value of the ranged Slider.",
         },
         new()
         {
             Name = "Value",
-            Type = "double",
+            Type = "double?",
             DefaultValue = "",
             Description = "The value of the Slider.",
         },
         new()
         {
             Name = "ValueFormat",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Custom formatter for the Slider value.",
         }

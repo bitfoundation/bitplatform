@@ -36,6 +36,7 @@ public partial class BitOtpInputDemo
         {
             Name = "Length",
             Type = "int",
+            DefaultValue= "0",
             Description = "Length of input in Otp.",
         },
         new()

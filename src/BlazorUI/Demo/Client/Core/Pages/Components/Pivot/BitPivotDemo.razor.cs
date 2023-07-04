@@ -10,13 +10,13 @@ public partial class BitPivotDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             Description = "The content of pivot, It can be Any custom tag.",
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitPivotClassStyles",
+            Type = "BitPivotClassStyles?",
             DefaultValue = "",
             Href = "class-styles",
             LinkType = LinkType.Link,
@@ -25,14 +25,21 @@ public partial class BitPivotDemo
         new()
         {
             Name = "DefaultSelectedKey",
-            Type = "string",
+            Type = "string?",
             Description = "Default selected key for the pivot.",
         },
         new()
         {
+            Name = "HeadersOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to skip rendering the tabpanel with the content of the selected tab.",
+        },
+        new()
+        {
             Name = "LinkFormat",
-            Type = "BitLinkFormat",
-            DefaultValue = "BitLinkFormat.Tabs",
+            Type = "BitPivotLinkFormat",
+            DefaultValue = "BitPivotLinkFormat.Links",
             LinkType = LinkType.Link,
             Href = "#linkFormat-enum",
             Description = "Pivot link format, display mode for the pivot links.",
@@ -40,19 +47,11 @@ public partial class BitPivotDemo
         new()
         {
             Name = "LinkSize",
-            Type = "BitLinkSize",
-            DefaultValue = "BitLinkSize.Normal",
+            Type = "BitPivotLinkSize",
+            DefaultValue = "BitPivotLinkSize.Normal",
             LinkType = LinkType.Link,
             Href = "#linkSize-enum",
             Description = "Pivot link size.",
-        },
-        new()
-        {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitPivotItem>",
-            LinkType = LinkType.Link,
-            Href = "#pivotItem",
-            Description = "Callback for when the a pivot item is clicked.",
         },
         new()
         {
@@ -65,8 +64,25 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitPivotItem>",
+            LinkType = LinkType.Link,
+            Href = "#pivotItem",
+            Description = "Callback for when the a pivot item is clicked.",
+        },
+        new()
+        {
+            Name = "Position",
+            Type = "BitPivotPosition",
+            DefaultValue = "BitPivotPosition.Top",
+            LinkType = LinkType.Link,
+            Href = "#pivotPosition-enum",
+            Description = "Position of the pivot header.",
+        },
+        new()
+        {
             Name = "SelectedKey",
-            Type = "string",
+            Type = "string?",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
         },
     };
@@ -230,6 +246,39 @@ public partial class BitPivotDemo
                     Name= "Scroll",
                     Description="Display a scroll bar below of the tabs for moving between them.",
                     Value="2",
+                },
+            }
+        },
+        new()
+        {
+            Id = "pivotPosition-enum",
+            Name = "BitPivotPosition",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="Display header at the top.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="Display header at the Bottom.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Left",
+                    Description="Display header at the Left.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Right",
+                    Description="Display header at the Right.",
+                    Value="3",
                 },
             }
         },

@@ -17,30 +17,23 @@ public partial class BitRatingDemo
         new()
         {
             Name = "AriaLabelFormat",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
+            DefaultValue = "",
             Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
         },
         new()
         {
             Name = "GetAriaLabel",
-            Type = "Func<double, double, string>",
+            Type = "Func<double, double, string>?",
             DefaultValue = "",
             Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.",
-        },
-        new()
-        {
-            Name = "Icon",
-            Type = "BitIcon",
-            DefaultValue = "FavoriteStarFill",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
         },
         new()
         {
@@ -48,6 +41,13 @@ public partial class BitRatingDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "A flag to mark rating control as readOnly.",
+        },
+        new()
+        {
+            Name = "Icon",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.FavoriteStarFill",
+            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
         },
         new()
         {
@@ -74,7 +74,7 @@ public partial class BitRatingDemo
         {
             Name = "Size",
             Type = "BitRatingSize",
-            DefaultValue = "BitRatingSize.small",
+            DefaultValue = "BitRatingSize.Small",
             LinkType = LinkType.Link,
             Href = "#rating-size-enum",
             Description = "Size of rating.",

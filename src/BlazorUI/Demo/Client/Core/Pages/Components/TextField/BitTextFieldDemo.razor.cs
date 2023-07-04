@@ -17,6 +17,7 @@ public partial class BitTextFieldDemo
         {
             Name = "CanRevealPassword",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether to show the reveal password button for input type 'password'.",
         },
         new()
@@ -48,31 +49,35 @@ public partial class BitTextFieldDemo
         {
             Name = "IsMultiline",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether or not the text field is a Multiline text field.",
         },
         new()
         {
             Name = "IsReadonly",
             Type = "bool",
+            DefaultValue = "false",
             Description = "If true, the text field is readonly.",
         },
         new()
         {
             Name = "IsRequired",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
         },
         new()
         {
             Name = "IsUnderlined",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether or not the text field is underlined.",
         },
         new()
         {
             Name = "IsResizable",
-            DefaultValue = "true",
             Type = "bool",
+            DefaultValue = "true",
             Description = "For multiline text fields, whether or not the field is resizable.",
         },
         new()
@@ -85,6 +90,7 @@ public partial class BitTextFieldDemo
         {
             Name = "IsTrimmed",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
         },
         new()
@@ -103,6 +109,7 @@ public partial class BitTextFieldDemo
         {
             Name = "MaxLength",
             Type = "int",
+            DefaultValue = "-1",
             Description = "Specifies the maximum number of characters allowed in the input.",
         },
         new()
@@ -169,6 +176,7 @@ public partial class BitTextFieldDemo
         {
             Name = "Rows",
             Type = "int",
+            DefaultValue = "3",
             Description = "For multiline text, Number of rows.",
         },
         new()

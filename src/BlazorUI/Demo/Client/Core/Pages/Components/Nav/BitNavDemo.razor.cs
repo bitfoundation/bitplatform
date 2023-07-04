@@ -45,7 +45,7 @@ public partial class BitNavDemo
         {
             Name = "ChildItemsField",
             Type = "string",
-            DefaultValue = "Items",
+            DefaultValue = "ChildItems",
             Description = "A list of items to render as children of the current item."
         },
         new()
@@ -57,7 +57,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "ClassStyles",
-            Type = "BitNavClassStyles",
+            Type = "BitNavClassStyles?",
             DefaultValue = "",
             Href = "class-styles",
             LinkType = LinkType.Link,

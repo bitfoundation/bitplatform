@@ -10,34 +10,31 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             Description = "Detailed description of the input for the benefit of screen readers.",
         },
         new()
         {
             Name = "AriaPositionInSet",
-            Type = "int",
-            DefaultValue = "0",
+            Type = "int?",
             Description = "The position in the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaSetSize",
-            Type = "int",
-            DefaultValue = "0",
+            Type = "int?",
             Description = "The total size of the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaValueNow",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
             Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
         },
         new()
         {
             Name = "AriaValueText",
-            Type = "string",
+            Type = "string?",
             Description = "Sets the control's aria-valuetext.",
         },
         new()
@@ -49,14 +46,13 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
             Description = "Initial value of the spin button.",
         },
         new()
         {
             Name = "DecrementButtonAriaLabel",
-            Type = "string",
+            Type = "string?",
             Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new()
@@ -69,19 +65,20 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
+            Type = "BitIconName?",
             Description = "Icon name for an icon to display alongside the spin button's label.",
         },
         new()
         {
             Name = "IconAriaLabel",
             Type = "string",
+            DefaultValue = "string.Empty",
             Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new()
         {
             Name = "IncrementButtonAriaLabel",
-            Type = "string",
+            Type = "string?",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new()
@@ -95,6 +92,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "Label",
             Type = "string",
+            DefaultValue = "string.Empty",
             Description = "Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.",
         },
         new()
@@ -115,15 +113,13 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "Min",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
             Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
         },
         new()
         {
             Name = "Max",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
             Description = "Max value of the spin button. If not provided, the spin button has max value of double type.",
         },
         new()
@@ -164,7 +160,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "Precision",
-            Type = "int",
+            Type = "int?",
             Description = "How many decimal places the value should be rounded to.",
         },
         new()
@@ -184,8 +180,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "Title",
-            Type = "string",
-            DefaultValue = "ChevronUpSmall",
+            Type = "string?",
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
     };

@@ -23,7 +23,15 @@ public partial class BitTypographyDemo
         {
             Name = "NoWrap",
             Type = "bool",
+            DefaultValue = "false",
             Description = "If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.",
+        },
+        new()
+        {
+            Name = "Gutter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the text will have a bottom margin.",
         },
         new()
         {

@@ -9,14 +9,14 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "Autocomplete",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Specifies the value of the autocomplete attribute of the input component.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "string",
+            Type = "strin?g",
             DefaultValue = "",
             Description = "The default value of the text in the SearchBox, in the case of an uncontrolled component.",
         },
@@ -45,6 +45,7 @@ public partial class BitSearchBoxDemo
         {
             Name = "IconName",
             Type = "BitIconName",
+            DefaultValue = "BitIconName.Search",
             Description = "The icon name for the icon shown at the beginning of the search box.",
         },
         new()
@@ -78,7 +79,7 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "Placeholder",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Placeholder for the search box.",
         },

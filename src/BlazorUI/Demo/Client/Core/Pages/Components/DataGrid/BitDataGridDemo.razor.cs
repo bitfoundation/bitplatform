@@ -10,7 +10,7 @@ public partial class BitDataGridDemo
          new()
          {
             Name = "Items",
-            Type = "IQueryable<TGridItem>",
+            Type = "IQueryable<TGridItem>?",
             DefaultValue = "",
             Description = @"A queryable source of data for the grid.
                             This could be in-memory data converted to queryable using the
@@ -21,7 +21,7 @@ public partial class BitDataGridDemo
          new()
          {
             Name = "ItemsProvider",
-            Type = "BitDataGridItemsProvider<TGridItem>",
+            Type = "BitDataGridItemsProvider<TGridItem>?",
             DefaultValue = "",
             Description = @"A callback that supplies data for the rid.
                             You should supply either Items or ItemsProvider, but not both.",
@@ -29,21 +29,21 @@ public partial class BitDataGridDemo
          new()
          {
             Name = "Class",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
          },
          new()
          {
             Name = "Theme",
-            Type = "IQueryable<TGridItem>",
+            Type = "string?",
             DefaultValue = "default",
             Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
          },
          new()
          {
             Name = "ChildContent",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Defines the child components of this instance. For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>",
          },
@@ -69,7 +69,7 @@ public partial class BitDataGridDemo
          {
             Name = "ResizableColumns",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
                             manually. Size changes are not persisted.",
         },

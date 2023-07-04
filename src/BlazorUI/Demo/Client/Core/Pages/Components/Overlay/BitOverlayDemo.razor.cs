@@ -24,6 +24,7 @@ public partial class BitOverlayDemo
         {
             Name = "AbsolutePosition",
             Type = "bool",
+            DefaultValue = "false",
             Description = "When true, the Overlay will be positioned absolute instead of fixed.",
         },
         new()
@@ -36,6 +37,7 @@ public partial class BitOverlayDemo
         {
             Name = "IsVisible",
             Type = "bool",
+            DefaultValue = "false",
             Description = "When true, the Overlay and its content will be shown.",
         },
         new()

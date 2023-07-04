@@ -24,14 +24,14 @@ public partial class BitModalDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "The content of Modal, It can be Any custom tag or a text.",
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitModalClassStyles",
+            Type = "BitModalClassStyles?",
             DefaultValue = "",
             Href = "class-styles",
             LinkType = LinkType.Link,
@@ -105,14 +105,14 @@ public partial class BitModalDemo
         new()
         {
             Name = "SubtitleAriaId",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "ARIA id for the subtitle of the Modal, if any.",
         },
         new()
         {
             Name = "TitleAriaId",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "ARIA id for the title of the Modal, if any.",
         }

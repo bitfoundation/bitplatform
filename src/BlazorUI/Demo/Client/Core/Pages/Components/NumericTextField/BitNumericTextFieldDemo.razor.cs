@@ -185,6 +185,7 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "ShowArrows",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether to show the up/down spinner arrows (buttons).",
         },
         new()

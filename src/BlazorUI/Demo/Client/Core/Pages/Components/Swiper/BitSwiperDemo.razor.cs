@@ -7,27 +7,12 @@ public partial class BitSwiperDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
-        //new()
-        //{
-        //    Name = "InfiniteScrolling",
-        //    Type = "bool",
-        //    DefaultValue = "false",
-        //    Description = "If enabled the swiper items will navigate in an infinite loop."
-        //},
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            DefaultValue = "",
             Description = "Items of the swiper."
         },
-        //new()
-        //{
-        //    Name = "ShowDots",
-        //    Type = "bool",
-        //    DefaultValue = "true",
-        //    Description = "Shows or hides the Dots indicator at the bottom of the BitSwiper."
-        //},
         new()
         {
             Name = "ShowNextPrev",
@@ -35,32 +20,25 @@ public partial class BitSwiperDemo
             DefaultValue = "true",
             Description = "Shows or hides the Next/Prev buttons of the BitSwiper."
         },
-        //new()
-        //{
-        //    Name = "AutoPlay",
-        //    Type = "bool",
-        //    DefaultValue = "false",
-        //    Description = "Enables/disables the auto scrolling of the slides."
-        //},
-        //new()
-        //{
-        //    Name = "AutoPlayInterval",
-        //    Type = "double",
-        //    DefaultValue = "2000",
-        //    Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
-        //},
-        //new()
-        //{
-        //    Name = "AnimationDuration",
-        //    Type = "double",
-        //    DefaultValue = "0.5",
-        //    Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
-        //},
+        new()
+        {
+            Name = "ScrollItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is going to be changed on navigation."
+        },
+        new()
+        {
+            Name = "AnimationDuration",
+            Type = "double",
+            DefaultValue = "0.5",
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
+        },
         new()
         {
             Name = "Direction",
-            Type = "Direction",
-            DefaultValue = "Direction.LeftToRight",
+            Type = "BitDirection",
+            DefaultValue = "BitDirection.LeftToRight",
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         }
     };

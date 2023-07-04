@@ -62,7 +62,7 @@ public partial class BitPersonaDemo
             Type = "BitPersonaInitialsColor?",
             LinkType = LinkType.Link,
             Href = "#bitpersona-initial-color",
-            DefaultValue = "0",
+            DefaultValue = "",
             Description = "The background color when the user's initials are displayed.",
         },
         new()

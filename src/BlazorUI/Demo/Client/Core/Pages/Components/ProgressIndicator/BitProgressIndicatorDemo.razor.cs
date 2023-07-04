@@ -10,7 +10,7 @@ public partial class BitProgressIndicatorDemo
         {
             Name = "AriaValueText",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Text alternative of the progress status, used by screen readers for reading the value of the progress.",
         },
         new()
@@ -24,13 +24,13 @@ public partial class BitProgressIndicatorDemo
         {
             Name = "Description",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Text describing or supplementing the operation.",
         },
         new()
         {
             Name = "DescriptionTemplate",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom template for describing or supplementing the operation.",
         },
@@ -45,27 +45,27 @@ public partial class BitProgressIndicatorDemo
         {
             Name = "Label",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Label to display above the component.",
         },
         new()
         {
             Name = "LabelTemplate",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom label template to display above the component.",
         },
         new()
         {
             Name = "PercentComplete",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
+            DefaultValue = "",
             Description = "Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.",
         },
         new()
         {
             Name = "ProgressTemplate",
-            Type = "RenderFragment<BitProgressIndicator>",
+            Type = "RenderFragment<BitProgressIndicator>?",
             DefaultValue = "",
             Description = "A custom template for progress track.",
         }
