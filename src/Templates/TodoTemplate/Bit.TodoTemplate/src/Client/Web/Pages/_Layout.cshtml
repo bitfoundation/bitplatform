@@ -100,7 +100,7 @@
 
                 @if (isPwaPrerendered)
                 {
-                    <component type="typeof(BswupProgressBar)" render-mode="@RenderMode.Static" />
+                    <component type="typeof(TodoBswupProgressBar)" render-mode="@RenderMode.Static" />
                 }
                 else
                 {
@@ -119,7 +119,7 @@
 
                 @if (isSpaPrerendered)
                 {
-                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                    <component type="typeof(TodoBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
                 }
                 else
                 {
