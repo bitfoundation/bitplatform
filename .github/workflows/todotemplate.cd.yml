@@ -40,13 +40,13 @@ jobs:
     - name: Restore workloads
       run: >
         dotnet workload install wasm-experimental &&
-        dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+        dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:MultilingualEnabled=false
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=false
 
     - name: Publish
-      run: dotnet publish src/Templates/TodoTemplate/Bit.TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Templates/TodoTemplate/Bit.TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release -p:MultilingualEnabled=false --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
@@ -118,13 +118,13 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:MultilingualEnabled=false -f net7.0-windows10.0.19041.0
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:MultilingualEnabled=false -f net7.0-windows10.0.19041.0
   
     - name: Build exe
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -168,16 +168,16 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:MultilingualEnabled=false -f net7.0-android
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net7.0-android
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -p:MultilingualEnabled=false -f net7.0-android
   
     - name: Build aab
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-android
   
     - name: Build apk
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-android
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -214,13 +214,13 @@ jobs:
        run: dotnet workload install maui
 
      - name: Restore workloads
-       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:MultilingualEnabled=false -f net7.0-maccatalyst
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net7.0-maccatalyst
+       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=false -f net7.0-maccatalyst
    
      - name: Build pkg
-       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-maccatalyst
+       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
@@ -257,7 +257,7 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+      run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:MultilingualEnabled=false -f net7.0-ios
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1
@@ -281,10 +281,10 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+      run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:MultilingualEnabled=false -f net7.0-ios
   
     - name: Build ipa
-      run: dotnet publish src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+      run: dotnet publish src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -323,13 +323,13 @@ jobs:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
      - name: Restore workloads
-       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron
+       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:MultilingualEnabled=false
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release -p:MultilingualEnabled=false
    
      - name: Build app image
-       run: cd src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
+       run: cd src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron /p:MultilingualEnabled=false
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
