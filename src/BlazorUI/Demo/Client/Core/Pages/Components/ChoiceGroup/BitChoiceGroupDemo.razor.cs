@@ -9,7 +9,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "AriaLabelledBy",
-            Type = "string?",
+            Type = "string",
+            DefaultValue = "",
             Description = "Id of an element to use as the aria label for the ChoiceGroup."
         },
         new()
@@ -170,7 +171,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "Name",
             Type = "string",
-            DefaultValue = "a Guid",
+            DefaultValue = "Guid.NewGuid().ToString()",
             Description = "Name of the ChoiceGroup, this name is used to group each item into the same logical component."
         },
         new()

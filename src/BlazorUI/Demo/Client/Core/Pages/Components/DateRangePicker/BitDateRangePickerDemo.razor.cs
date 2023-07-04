@@ -45,7 +45,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "DateFormat",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = @"Date format like ""yyyy/MM/dd"".",
         },
@@ -60,21 +60,21 @@ public partial class BitDateRangePickerDemo
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to previous month",
             Description = "The title of the Go to previous month button.",
         },
         new()
         {
             Name = "GoToNextMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to next month",
             Description = "The title of the Go to next month button.",
         },
         new()
         {
             Name = "HasBorder",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Determines if the DateRangePicker has a border.",
         },
         new()
@@ -104,7 +104,7 @@ public partial class BitDateRangePickerDemo
             Type = "BitIconLocation",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Left",
+            DefaultValue = "BitIconLocation.Right",
             Description = "DateRangePicker icon location"
         },
         new()
@@ -118,7 +118,7 @@ public partial class BitDateRangePickerDemo
         {
             Name = "IsMonthPickerVisible",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the month picker is shown beside the day picker or hidden.",
         },
         new()
@@ -145,7 +145,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "Label",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Label for the DateRangePicker.",
         },
@@ -153,20 +153,20 @@ public partial class BitDateRangePickerDemo
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "null",
+            DefaultValue = "",
             Description = "Used to customize the label for the DateRangePicker."
         },
         new()
         {
             Name = "MaxDate",
-            Type = "DateTimeOffset",
+            Type = "DateTimeOffset?",
             DefaultValue = "",
             Description = "Maximum date for the DateRangePicker",
         },
         new()
         {
             Name = "MinDate",
-            Type = "DateTimeOffset",
+            Type = "DateTimeOffset?",
             DefaultValue = "",
             Description = "Minimum date for the DateRangePicker",
         },
@@ -218,14 +218,14 @@ public partial class BitDateRangePickerDemo
         {
             Name = "Placeholder",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Placeholder text for the DateRangePicker.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Whether the CalendarDay close button should be shown or not."
         },
         new()
@@ -246,7 +246,7 @@ public partial class BitDateRangePickerDemo
         {
             Name = "ShowWeekNumbers",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Show week number in the year.",
         },
         new()
@@ -259,7 +259,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "Value",
-            Type = "BitDateRangePickerValue",
+            Type = "BitDateRangePickerValue?",
             LinkType = LinkType.Link,
             Href = "#dateRangePickerValue",
             DefaultValue = "",

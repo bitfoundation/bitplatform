@@ -31,7 +31,7 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "DateFormat",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
         },
@@ -53,14 +53,14 @@ public partial class BitDatePickerDemo
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to previous month",
             Description = "The title of the Go to previous month button.",
         },
         new()
         {
             Name = "GoToNextMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to next month",
             Description = "The title of the Go to next month button.",
         },
         new()
@@ -97,7 +97,7 @@ public partial class BitDatePickerDemo
             Type = "BitIconLocation",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Left",
+            DefaultValue = "BitIconLocation.Right",
             Description = "DatePicker icon location."
         },
         new()
@@ -110,15 +110,15 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "InvalidErrorMessage",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "",
             Description = "The custom validation error message for the invalid value."
         },
         new()
         {
             Name = "IsMonthPickerVisible",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the month picker is shown beside the day picker or hidden.",
         },
         new()
@@ -145,7 +145,7 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "Label",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Label for the DatePicker.",
         },
@@ -166,7 +166,7 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "MinDate",
-            Type = "DateTimeOffset",
+            Type = "DateTimeOffset?",
             DefaultValue = "",
             Description = "The minimum allowable date.",
         },
@@ -216,14 +216,14 @@ public partial class BitDatePickerDemo
         {
             Name = "Placeholder",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Placeholder text for the DatePicker.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Whether the CalendarDay close button should be shown or not."
         },
         new()
@@ -244,7 +244,7 @@ public partial class BitDatePickerDemo
         {
             Name = "ShowWeekNumbers",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Show week number in the year.",
         },
         new()
@@ -257,7 +257,7 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "Value",
-            Type = "DateTimeOffset",
+            Type = "DateTimeOffset?",
             DefaultValue = "",
             Description = "The value of DatePicker.",
         },

@@ -49,7 +49,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "Items",
             Type = "IList<TItem>",
-            DefaultValue = "new List<TItem>()",
+            DefaultValue = "new IList<TItem>()",
             Description = "Collection of breadcrumbs to render"
         },
         new()
@@ -69,7 +69,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "IsEnabledField",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "IsEnabled",
             Description = "Whether an item is enabled or not."
         },
         new()
@@ -82,6 +82,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "MaxDisplayedItems",
             Type = "uint",
+            DefaultValue = "0",
             Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
         },
         new()
@@ -94,6 +95,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "OverflowIndex",
             Type = "uint",
+            DefaultValue = "0",
             Description = "Optional index where overflow items will be collapsed."
         },
         new()

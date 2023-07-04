@@ -10,12 +10,14 @@ public partial class BitColorPickerDemo
         {
             Name = "Alpha",
             Type = "double",
+            DefaultValue = "1",
             Description = "Indicates the Alpha value.",
         },
         new()
         {
             Name = "Color",
             Type = "string",
+            DefaultValue = "#ffffff",
             Description = "CSS-compatible string to describe the color.",
         },
         new()

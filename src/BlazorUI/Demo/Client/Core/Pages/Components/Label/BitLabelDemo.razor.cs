@@ -9,14 +9,14 @@ public partial class BitLabelDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "The content of label, It can be Any custom tag or a text.",
         },
         new()
         {
             Name = "For",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "This attribute specifies which form element a label is bound to.",
         },

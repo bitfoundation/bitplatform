@@ -9,7 +9,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "CaretDownTemplate",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Optional custom template for chevron icon.",
         },
@@ -23,7 +23,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "DefaultValue",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Key that will be initially used to set selected item.",
         },
@@ -31,7 +31,7 @@ public partial class BitDropdownDemo
         {
             Name = "DefaultValues",
             Type = "List<string>",
-            DefaultValue = "",
+            DefaultValue = "new List<string>()",
             Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
         },
         new()
@@ -58,21 +58,28 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "Items",
-            Type = "List<BitDropdownItem>",
+            Type = "List<BitDropdownItem>?",
             DefaultValue = "",
             Description = "A list of items to display in the dropdown.",
         },
         new()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitDropdownItem>",
+            Type = "RenderFragment<BitDropdownItem>?",
             DefaultValue = "",
             Description = "Optional custom template for dropdown item.",
         },
         new()
         {
             Name = "Label",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "the label associated with the dropdown.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
             DefaultValue = "",
             Description = "The title to show when the mouse is placed on the drop down.",
         },
@@ -87,7 +94,7 @@ public partial class BitDropdownDemo
         {
             Name = "MultiSelectDelimiter",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = ", ",
             Description = "When multiple items are selected, this still will be used to separate values in the dropdown title.",
         },
         new()
@@ -107,21 +114,21 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnSelectItem",
-            Type = "EventCallback<BitDropdownItem> ",
+            Type = "EventCallback<BitDropdownItem>",
             DefaultValue = "",
             Description = "Callback for when an item is selected.",
         },
         new()
         {
             Name = "Placeholder",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Input placeholder Text, Displayed until an option is selected.",
         },
         new()
         {
             Name = "PlaceholderTemplate",
-            Type = "RenderFragment<BitDropdown>",
+            Type = "RenderFragment<BitDropdown>?",
             DefaultValue = "",
             Description = "Optional custom template for placeholder Text.",
         },
@@ -129,7 +136,7 @@ public partial class BitDropdownDemo
         {
             Name = "Values",
             Type = "List<string>",
-            DefaultValue = "",
+            DefaultValue = "new List<string>()",
             Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.",
         },
         new()
@@ -176,8 +183,15 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnSearch",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Callback for when the search box input value changes.",
+        },
+        new()
+        {
             Name = "SearchBoxPlaceholder",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Search box input placeholder text.",
         },
@@ -197,6 +211,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ItemsProvider",
+            Type = "BitDropdownItemsProvider<BitDropdownItem>?",
+            DefaultValue = "",
+            Description = "The function providing items to the list.",
+        },
+        new()
+        {
+            Name = "VirtualizePlaceholder",
+            Type = "RenderFragment<PlaceholderContext>?",
+            DefaultValue = "",
+            Description = "The template for items that have not yet been loaded in memory.",
+        },
+        new()
+        {
             Name = "OverscanCount",
             Type = "int",
             DefaultValue = "3",
@@ -206,7 +234,7 @@ public partial class BitDropdownDemo
         {
             Name = "SelectedItems",
             Type = "List<BitDropdownItem>",
-            DefaultValue = "",
+            DefaultValue = "new List<BitDropdownItem>()",
             Description = "The selected items for multiSelect scenarios.",
         },
         new()
@@ -219,7 +247,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "SelectedItem",
-            Type = "BitDropdownItem",
+            Type = "BitDropdownItem?",
             DefaultValue = "",
             Description = "The selected item for singleSelect scenarios.",
         },
@@ -242,7 +270,7 @@ public partial class BitDropdownDemo
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Darpdown opening direction.",
+            Description = "Dropdown opening direction.",
         },
     };
 
