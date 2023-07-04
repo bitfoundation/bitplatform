@@ -11,13 +11,13 @@ public partial class BitIconButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the icon button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Detailed description of the icon button for the benefit of screen readers.",
         },
@@ -65,8 +65,8 @@ public partial class BitIconButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIcon",
-            DefaultValue = "",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.NotSet",
             Description = "The icon name for the icon shown in the icon button.",
         },
         new()

@@ -56,22 +56,22 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            Description = "The content inside the header of MenuButton can be customized.",
+        },
+        new()
+        {
+            Name = "IconName",
             Type = "BitIconName?",
             Description = "The icon to show inside the header of MenuButton.",
         },
         new()
         {
-            Name = "IconName",
-            Type = "RenderFragment<TItem>?",
-            Description = "The content inside the item can be customized.",
-        },
-        new()
-        {
             Name = "Items",
-            Type = "List<TItem>",
+            Type = "IEnumerable<TItem>",
             LinkType = LinkType.Link,
             Href = "#menu-button-items",
-            DefaultValue = "new List<TItem>()",
+            DefaultValue = "new IEnumerable<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the MenuButton."
         },
         new()

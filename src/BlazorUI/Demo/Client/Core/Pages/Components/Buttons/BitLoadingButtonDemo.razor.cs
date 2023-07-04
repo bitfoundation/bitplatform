@@ -11,18 +11,21 @@ public partial class BitLoadingButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
+            DefaultValue = "true",
             Description = "Whether the icon button can have focus in disabled mode."
         },
         new()
         {
             Name = "AriaDescription",
             Type = "string?",
+            DefaultValue = "",
             Description = "Detailed description of the icon button for the benefit of screen readers."
         },
         new()
         {
             Name = "AriaHidden",
             Type = "bool",
+            DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
         },
         new()

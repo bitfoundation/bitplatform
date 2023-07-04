@@ -11,13 +11,13 @@ public partial class BitCompoundButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the compound button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Detailed description of the compound button for the benefit of screen readers.",
         },

@@ -56,7 +56,7 @@ public partial class BitSplitButtonDemo
         new()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitSplitButtonItem>?",
+            Type = "RenderFragment<TItem>?",
             Description = "The content inside the item can be customized.",
         },
         new()
@@ -69,8 +69,8 @@ public partial class BitSplitButtonDemo
         new()
         {
             Name = "Items",
-            Type = "List<BitSplitButtonItem>",
-            DefaultValue = "new List<BitSplitButtonItem>()",
+            Type = "IEnumerable<TItem>",
+            DefaultValue = "new IEnumerable<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the SplitButton.",
             LinkType = LinkType.Link,
             Href = "#split-button-items",
@@ -104,7 +104,7 @@ public partial class BitSplitButtonDemo
         new()
         {
             Name = "OnClick",
-            Type = "EventCallback<BitSplitButtonItem>",
+            Type = "EventCallback<TItem>",
             Description = "The callback is called when the button or button item is clicked."
         },
         new()

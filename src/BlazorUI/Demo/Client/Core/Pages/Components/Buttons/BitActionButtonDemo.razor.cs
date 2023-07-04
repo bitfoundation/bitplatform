@@ -11,13 +11,13 @@ public partial class BitActionButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the action button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Detailed description of the button for the benefit of screen readers.",
         },
@@ -39,6 +39,15 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "ButtonType",
+            Type = "BitButtonType",
+            LinkType = LinkType.Link,
+            Href = "#button-type-enum",
+            DefaultValue = "BitButtonType.Button",
+            Description = "The type of the button.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment",
             DefaultValue = "",
@@ -54,18 +63,9 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIcon",
-            DefaultValue = "",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.NotSet",
             Description = "The icon name for the icon shown in the action button.",
-        },
-        new()
-        {
-            Name = "ButtonType",
-            Type = "BitButtonType",
-            LinkType = LinkType.Link,
-            Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
-            Description = "The type of the button.",
         },
         new()
         {

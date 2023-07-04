@@ -11,13 +11,13 @@ public partial class BitToggleButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the toggle button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Detailed description of the toggle button for the benefit of screen readers.",
         },
@@ -63,7 +63,7 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIcon",
+            Type = "BitIconName?",
             DefaultValue = "",
             Description = "The icon that shows in the toggle button.",
         },
@@ -71,13 +71,13 @@ public partial class BitToggleButtonDemo
         {
             Name = "IsChecked",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Determine if the toggle button is in checked state, default is true.",
         },
         new()
         {
             Name = "Label",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "The text that shows in the label.",
         },

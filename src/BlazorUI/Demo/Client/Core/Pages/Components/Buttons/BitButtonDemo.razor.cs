@@ -11,13 +11,13 @@ public partial class BitButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "",
             Description = "Detailed description of the button for the benefit of screen readers.",
         },
