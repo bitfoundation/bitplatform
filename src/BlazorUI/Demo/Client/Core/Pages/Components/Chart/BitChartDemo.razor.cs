@@ -10,7 +10,6 @@ public partial class BitChartDemo
         {
             Name = "SetupCompletedCallback",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = @"This event is fired when the chart has been setup through interop and the JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options or register plugins.",
         },
 
@@ -18,7 +17,6 @@ public partial class BitChartDemo
         {
             Name = "Config",
             Type = "BitChartConfigBase",
-            DefaultValue = "",
             Description = "Gets or sets the configuration of the chart.",
         },
 
@@ -26,7 +24,7 @@ public partial class BitChartDemo
         {
             Name = "Width",
             Type = "int?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Gets or sets the width of the canvas HTML element.",
         },
 
@@ -34,7 +32,7 @@ public partial class BitChartDemo
         {
             Name = "Height",
             Type = "int?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = @"Gets or sets the height of the canvas HTML element. Use <see langword=""null""/> when using <see cref=""BitChartBaseConfigOptions.AspectRatio""/>.",
         }
     };

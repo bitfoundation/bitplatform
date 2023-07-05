@@ -11,6 +11,7 @@ public partial class BitSwiperDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Items of the swiper."
         },
         new()

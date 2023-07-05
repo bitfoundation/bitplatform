@@ -11,30 +11,35 @@ public partial class BitSpinButtonDemo
         {
             Name = "AriaDescription",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the input for the benefit of screen readers.",
         },
         new()
         {
             Name = "AriaPositionInSet",
             Type = "int?",
+            DefaultValue = "null",
             Description = "The position in the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaSetSize",
             Type = "int?",
+            DefaultValue = "null",
             Description = "The total size of the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaValueNow",
             Type = "double?",
+            DefaultValue = "null",
             Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
         },
         new()
         {
             Name = "AriaValueText",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Sets the control's aria-valuetext.",
         },
         new()
@@ -47,12 +52,14 @@ public partial class BitSpinButtonDemo
         {
             Name = "DefaultValue",
             Type = "double?",
+            DefaultValue = "null",
             Description = "Initial value of the spin button.",
         },
         new()
         {
             Name = "DecrementButtonAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new()
@@ -66,6 +73,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "IconName",
             Type = "BitIconName?",
+            DefaultValue = "null",
             Description = "Icon name for an icon to display alongside the spin button's label.",
         },
         new()
@@ -79,6 +87,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "IncrementButtonAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new()
@@ -99,6 +108,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
         },
         new()
@@ -114,53 +124,51 @@ public partial class BitSpinButtonDemo
         {
             Name = "Min",
             Type = "double?",
+            DefaultValue = "null",
             Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
         },
         new()
         {
             Name = "Max",
             Type = "double?",
+            DefaultValue = "null",
             Description = "Max value of the spin button. If not provided, the spin button has max value of double type.",
         },
         new()
         {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the input.",
         },
         new()
         {
             Name = "OnBlur",
             Type = "EventCallback<FocusEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the control loses focus.",
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<double>",
-            DefaultValue = "",
             Description = "Callback for when the spin button value change.",
         },
         new()
         {
             Name = "OnDecrement",
             Type = "EventCallback<BitSpinButtonChangeEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
         },
         new()
         {
             Name = "OnIncrement",
             Type = "EventCallback<BitSpinButtonChangeEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the increment button or up arrow key is pressed.",
         },
         new()
         {
             Name = "Precision",
             Type = "int?",
+            DefaultValue = "null",
             Description = "How many decimal places the value should be rounded to.",
         },
         new()
@@ -181,6 +189,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "Title",
             Type = "string?",
+            DefaultValue = "null",
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
     };

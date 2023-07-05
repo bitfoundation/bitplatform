@@ -31,6 +31,7 @@ public partial class BitOverlayDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the Overlay.",
         },
         new()

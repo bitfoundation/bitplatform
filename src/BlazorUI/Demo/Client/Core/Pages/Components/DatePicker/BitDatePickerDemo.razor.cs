@@ -18,7 +18,7 @@ public partial class BitDatePickerDemo
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
-            DefaultValue = "",
+            DefaultValue = "new Dictionary<string, object>()",
             Description = "Capture and render additional attributes in addition to the main callout's parameters."
         },
         new()
@@ -32,14 +32,14 @@ public partial class BitDatePickerDemo
         {
             Name = "DateFormat",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
         },
         new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the day cell is rendered."
         },
         new()
@@ -88,7 +88,7 @@ public partial class BitDatePickerDemo
         {
             Name = "IconTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom DatePicker icon template."
         },
         new()
@@ -111,7 +111,7 @@ public partial class BitDatePickerDemo
         {
             Name = "InvalidErrorMessage",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The custom validation error message for the invalid value."
         },
         new()
@@ -146,7 +146,7 @@ public partial class BitDatePickerDemo
         {
             Name = "Label",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Label for the DatePicker.",
         },
         new()
@@ -160,49 +160,45 @@ public partial class BitDatePickerDemo
         {
             Name = "MaxDate",
             Type = "DateTimeOffset",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The maximum allowable date.",
         },
         new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The minimum allowable date.",
         },
         new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the month cell is rendered."
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the DatePicker input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
         new()
@@ -258,21 +254,20 @@ public partial class BitDatePickerDemo
         {
             Name = "Value",
             Type = "DateTimeOffset?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The value of DatePicker.",
         },
         new()
         {
             Name = "ValueChanged",
             Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
             Description = "Callback for when the on date value changed.",
         },
         new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the year cell is rendered."
         },
         new()

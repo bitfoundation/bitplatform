@@ -11,14 +11,14 @@ public partial class BitTimePickerDemo
         {
             Name = "Label",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Label for the TimePicker.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize the label for the TimePicker."
         },
         new()
@@ -55,14 +55,14 @@ public partial class BitTimePickerDemo
         {
             Name = "Placeholder",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Placeholder text for the DatePicker.",
         },
         new()
         {
             Name = "IconTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom TimePicker icon template."
         },
         new()
@@ -113,28 +113,24 @@ public partial class BitTimePickerDemo
         {
             Name = "OnClick",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on TimePicker input.",
         },
         new()
         {
             Name = "OnFocus",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the TimePicker input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the TimePicker input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on TimePicker input.",
         },
         new()
@@ -162,21 +158,20 @@ public partial class BitTimePickerDemo
         {
             Name = "TimeFormat",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
         },
         new()
         {
             Name = "InvalidErrorMessage",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The custom validation error message for the invalid value."
         },
         new()
         {
             Name = "OnSelectTime",
             Type = "EventCallback<TimeSpan?>",
-            DefaultValue = "",
             Description = "Callback for when the on selected time changed.",
         },
         new()
@@ -190,14 +185,13 @@ public partial class BitTimePickerDemo
         {
             Name = "Value",
             Type = "TimeSpan?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The value of TimePicker.",
         },
         new()
         {
             Name = "ValueChanged",
             Type = "EventCallback<TimeSpan?>",
-            DefaultValue = "",
             Description = "Callback for when the on time value changed.",
         }
     };

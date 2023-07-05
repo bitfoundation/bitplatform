@@ -45,14 +45,14 @@ public partial class BitBasicListDemo
         {
             Name = "RowTemplate",
             Type = "RenderFragment<TItem>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Gets or sets the Template to render each row.",
         },
         new()
         {
             Name = "ItemsProvider",
             Type = "BitBasicListItemsProvider<TItem>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = @"A callback that supplies data for the rid.
                             You should supply either Items or ItemsProvider, but not both.",
         },
@@ -60,7 +60,7 @@ public partial class BitBasicListDemo
         {
             Name = "VirtualizePlaceholder",
             Type = "RenderFragment<PlaceholderContext>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional custom template for placeholder Text.",
         },
     };

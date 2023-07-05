@@ -10,6 +10,7 @@ public partial class BitToggleDemo
         {
             Name = "DefaultText",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Default text of the toggle when it is neither ON or OFF.",
         },
         new()
@@ -23,12 +24,14 @@ public partial class BitToggleDemo
         {
             Name = "Label",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Label of the toggle.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Custom label of the toggle.",
         },
         new()
@@ -41,12 +44,14 @@ public partial class BitToggleDemo
         {
             Name = "OffText",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Text to display when toggle is OFF.",
         },
         new()
         {
             Name = "OnText",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Text to display when toggle is ON.",
         },
         new()

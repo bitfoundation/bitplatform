@@ -18,7 +18,7 @@ public partial class BitLoadingButtonDemo
         {
             Name = "AriaDescription",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Detailed description of the icon button for the benefit of screen readers."
         },
         new()
@@ -64,12 +64,14 @@ public partial class BitLoadingButtonDemo
         {
             Name = "IsLoading",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Determine whether the button is in loading mode or not."
         },
         new()
         {
             Name = "LoadingLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The loading label to show next to the spinner."
         },
         new()
@@ -94,6 +96,7 @@ public partial class BitLoadingButtonDemo
         {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Used to customize the content inside the Button in the Loading state.",
         },
         new()
@@ -106,6 +109,7 @@ public partial class BitLoadingButtonDemo
         {
             Name = "Title",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The tooltip to show when the mouse is placed on the icon button."
         },
     };

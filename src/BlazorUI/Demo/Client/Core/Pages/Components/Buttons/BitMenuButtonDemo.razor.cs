@@ -11,6 +11,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "AriaDescription",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the button for the benefit of screen readers."
         },
         new()
@@ -51,18 +52,21 @@ public partial class BitMenuButtonDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the BitMenuButton, that are BitMenuButtonOption components.",
         },
         new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content inside the header of MenuButton can be customized.",
         },
         new()
         {
             Name = "IconName",
             Type = "BitIconName?",
+            DefaultValue = "null",
             Description = "The icon to show inside the header of MenuButton.",
         },
         new()
@@ -85,6 +89,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Whether or not the item is enabled.",
         },
         new()
@@ -98,12 +103,14 @@ public partial class BitMenuButtonDemo
         {
             Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
+            DefaultValue = "null",
             Description = "Name of an icon to render next to the item text.",
         },
         new()
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "The content inside the item can be customized.",
         },
         new()
@@ -122,6 +129,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "Text",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The text to show inside the header of MenuButton."
         },
         new()
@@ -135,6 +143,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Name of an icon to render next to the item text.",
         },
         new()
@@ -148,6 +157,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "KeyFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "A unique value to use as a key of the item.",
         },
     };

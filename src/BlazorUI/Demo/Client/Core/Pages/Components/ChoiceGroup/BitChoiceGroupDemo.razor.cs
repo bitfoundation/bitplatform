@@ -10,7 +10,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "AriaLabelledBy",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Id of an element to use as the aria label for the ChoiceGroup."
         },
         new()
@@ -24,18 +24,21 @@ public partial class BitChoiceGroupDemo
         {
             Name = "AriaLabelFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be enable item."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the ChoiceGroup, a list of BitChoiceGroupOption components."
         },
         new()
         {
             Name = "DefaultValue",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Default selected Value for ChoiceGroup."
         },
         new()
@@ -49,6 +52,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "Used to customize the label for the Item content."
         },
         new()
@@ -75,6 +79,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be enable item."
         },
         new()
@@ -88,6 +93,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "IdFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be the id."
         },
         new()
@@ -101,6 +107,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the BitIconName."
         },
         new()
@@ -114,6 +121,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageSrcFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the image src."
         },
         new()
@@ -127,6 +135,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageAltFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the image alternate text."
         },
         new()
@@ -140,6 +149,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageSizeFieldSelector",
             Type = "Expression<Func<TItem, Size>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be the image alternate text."
         },
         new()
@@ -153,18 +163,21 @@ public partial class BitChoiceGroupDemo
         {
             Name = "Label",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The label for the ChoiceGroup."
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Custom RenderFragment for the label of the ChoiceGroup."
         },
         new()
         {
             Name = "LayoutFlow",
             Type = "BitLayoutFlow?",
+            DefaultValue = "null",
             Description = "The render flow of the items in the ChoiceGroup, Horizontal or Vertical."
         },
         new()
@@ -223,6 +236,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ValueFieldSelector",
             Type = "Expression<Func<TItem, TValue>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the underlying value."
         },
     };
@@ -236,63 +250,58 @@ public partial class BitChoiceGroupDemo
             {
                new()
                {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "AriaLabel attribute for the GroupOption Option input.",
-               },
-               new()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the GroupOption Option is enabled.",
-               },
-               new()
-               {
                    Name = "IconName",
                    Type = "BitIconName?",
+                   DefaultValue = "null",
                    Description = "The icon to show as Option content.",
                },
                new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "The image address to show as Option content.",
                },
                new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides alternative information for the Option image.",
                },
                new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
+                   DefaultValue = "null",
                    Description = "Provides Height and Width for the Option image.",
                },
                new()
                {
                    Name = "Id",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
                new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to show as content of GroupOption Option.",
                },
                new()
                {
                    Name = "Value",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "This value is returned when GroupOption Option is Clicked.",
                }
             }
@@ -305,63 +314,58 @@ public partial class BitChoiceGroupDemo
             {
                new()
                {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "AriaLabel attribute for the GroupOption Option input.",
-               },
-               new()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the GroupOption Option is enabled.",
-               },
-               new()
-               {
                    Name = "IconName",
                    Type = "BitIconName?",
+                   DefaultValue = "null",
                    Description = "The icon to show as Option content.",
                },
                new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "The image address to show as Option content.",
                },
                new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides alternative information for the Option image.",
                },
                new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
+                   DefaultValue = "null",
                    Description = "Provides Height and Width for the Option image.",
                },
                new()
                {
                    Name = "Id",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
                new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to show as content of GroupOption Option.",
                },
                new()
                {
                    Name = "Value",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "This value is returned when GroupOption Option is Clicked.",
                }
             }

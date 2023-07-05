@@ -11,13 +11,14 @@ public partial class BitPivotDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of pivot, It can be Any custom tag.",
         },
         new()
         {
             Name = "ClassStyles",
             Type = "BitPivotClassStyles?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Href = "class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitPivot component."
@@ -26,6 +27,7 @@ public partial class BitPivotDemo
         {
             Name = "DefaultSelectedKey",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Default selected key for the pivot.",
         },
         new()
@@ -83,6 +85,7 @@ public partial class BitPivotDemo
         {
             Name = "SelectedKey",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
         },
     };
@@ -98,31 +101,36 @@ public partial class BitPivotDemo
                 new()
                 {
                     Name = "Body",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).",
                 },
                 new()
                 {
                     Name = "ChildContent",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item, It can be Any custom tag or a text.",
                 },
                 new()
                 {
                     Name = "Header",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item header, It can be Any custom tag or a text.",
                 },
                 new()
                 {
                     Name = "HeaderText",
-                    Type = "string",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "The text of the pivot item header, The text displayed of each pivot link.",
                 },
                 new()
                 {
                     Name = "IconName",
-                    Type = "BitIconName",
+                    Type = "BitIconName?",
+                    DefaultValue = "null",
                     Description = "The icon name for the icon shown next to the pivot link.",
                 },
                 new()
@@ -135,7 +143,8 @@ public partial class BitPivotDemo
                 new()
                 {
                     Name = "Key",
-                    Type = "string",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "A required key to uniquely identify a pivot item.",
                 }
             }
@@ -150,6 +159,7 @@ public partial class BitPivotDemo
                {
                    Name = "Container",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the modal container.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -166,12 +176,14 @@ public partial class BitPivotDemo
                {
                    Name = "Class",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS class."
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS style."
                }
             }

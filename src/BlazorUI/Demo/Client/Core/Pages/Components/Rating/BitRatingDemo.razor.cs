@@ -18,21 +18,21 @@ public partial class BitRatingDemo
         {
             Name = "AriaLabelFormat",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.",
         },
         new()
         {
             Name = "DefaultValue",
             Type = "double?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
         },
         new()
         {
             Name = "GetAriaLabel",
             Type = "Func<double, double, string>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.",
         },
         new()
@@ -60,7 +60,6 @@ public partial class BitRatingDemo
         {
             Name = "OnChange",
             Type = "EventCallback<double>",
-            DefaultValue = "",
             Description = "Callback that is called when the rating has changed.",
         },
         new()

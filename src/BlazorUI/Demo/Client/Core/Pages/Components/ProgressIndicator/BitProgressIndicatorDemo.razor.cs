@@ -31,7 +31,7 @@ public partial class BitProgressIndicatorDemo
         {
             Name = "DescriptionTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom template for describing or supplementing the operation.",
         },
         new()
@@ -52,21 +52,21 @@ public partial class BitProgressIndicatorDemo
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom label template to display above the component.",
         },
         new()
         {
             Name = "PercentComplete",
             Type = "double?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.",
         },
         new()
         {
             Name = "ProgressTemplate",
             Type = "RenderFragment<BitProgressIndicator>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "A custom template for progress track.",
         }
     };

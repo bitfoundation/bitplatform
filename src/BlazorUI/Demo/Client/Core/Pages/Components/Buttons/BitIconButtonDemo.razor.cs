@@ -18,7 +18,7 @@ public partial class BitIconButtonDemo
         {
             Name = "AriaDescription",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Detailed description of the icon button for the benefit of screen readers.",
         },
         new()
@@ -58,8 +58,8 @@ public partial class BitIconButtonDemo
         new()
         {
             Name = "Href",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL the link points to, if provided, icon button renders as an anchor.",
         },
         new()
@@ -73,21 +73,20 @@ public partial class BitIconButtonDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the icon button clicked.",
         },
         new()
         {
             Name = "Target",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
         },
         new()
         {
             Name = "Title",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the icon button.",
         }
     };

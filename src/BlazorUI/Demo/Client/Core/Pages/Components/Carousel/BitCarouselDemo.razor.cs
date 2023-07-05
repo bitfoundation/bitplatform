@@ -9,20 +9,6 @@ public partial class BitCarouselDemo
     {
         new()
         {
-            Name = "AriaLabel",
-            Type = "string?",
-            DefaultValue = "",
-            Description = "The aria-label of the control for the benefit of screen readers."
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "",
-            Description = "Custom CSS class for the root element of the component."
-        },
-        new()
-        {
             Name = "InfiniteScrolling",
             Type = "bool",
             DefaultValue = "false",
@@ -32,15 +18,8 @@ public partial class BitCarouselDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Items of the carousel."
-        },
-        new()
-        {
-            Name = "SelectedKey",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The Key of the current item of the carousel."
         },
         new()
         {
@@ -94,15 +73,14 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "Direction",
-            Type = "Direction",
-            DefaultValue = "Direction.LeftToRight",
+            Type = "BitDirection",
+            DefaultValue = "BitDirection.LeftToRight",
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<int>",
-            DefaultValue = "null",
             Description = "The event that will be called on carousel page navigation."
         }
     };

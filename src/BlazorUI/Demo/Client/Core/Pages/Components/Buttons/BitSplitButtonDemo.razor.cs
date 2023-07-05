@@ -11,6 +11,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "AriaDescription",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the button for the benefit of screen readers."
         },
         new()
@@ -51,12 +52,14 @@ public partial class BitSplitButtonDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the BitSplitButton, that are BitSplitButtonOption components.",
         },
         new()
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "The content inside the item can be customized.",
         },
         new()
@@ -86,6 +89,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Whether or not the item is enabled.",
         },
         new()
@@ -99,6 +103,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "IconNameFieldSelector",
             Type = "Expression<Func<TItem, BitIconName>>?",
+            DefaultValue = "null",
             Description = "Name of an icon to render next to the item text.",
         },
         new()
@@ -118,6 +123,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Name of an icon to render next to the item text.",
         },
         new()
@@ -131,6 +137,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "KeyFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "A unique value to use as a key of the item.",
         },
     };

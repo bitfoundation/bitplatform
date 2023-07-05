@@ -11,21 +11,21 @@ public partial class BitMessageBarDemo
         {
             Name = "Actions",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The content of the action to show on the message bar.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The content of message bar.",
         },
         new()
         {
             Name = "DismissButtonAriaLabel",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Aria label on dismiss button if onDismiss is defined.",
         },
         new()
@@ -55,28 +55,27 @@ public partial class BitMessageBarDemo
         {
             Name = "MessageBarIconName",
             Type = "BitIconName?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.",
         },
         new()
         {
             Name = "OnDismiss",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.",
         },
         new()
         {
             Name = "OverflowButtonAriaLabel",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Aria label on overflow button if truncated is true.",
         },
         new()
         {
             Name = "Role",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom role to apply to the message bar.",
         },
         new()

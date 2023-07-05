@@ -10,7 +10,7 @@ public partial class BitLinkDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The content of link, can be any custom tag or a text.",
         },
         new()
@@ -31,14 +31,13 @@ public partial class BitLinkDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the action button clicked.",
         },
         new()
         {
             Name = "Target",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
         }
     };
