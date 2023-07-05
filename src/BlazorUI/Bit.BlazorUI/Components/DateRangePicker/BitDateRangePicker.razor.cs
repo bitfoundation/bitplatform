@@ -492,7 +492,7 @@ public partial class BitDateRangePicker
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDateRangePicker.checkMonthPickerWidth", _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDateRangePicker.checkMonthPickerWidth", UniqueId, _calloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -891,7 +891,7 @@ public partial class BitDateRangePicker
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className.Append(' ').Append(RootElementClass).Append("-dc-btw-sel");
+            className.Append(' ').Append(RootElementClass).Append("-dc-sel-btw");
         }
 
         return className.ToString();

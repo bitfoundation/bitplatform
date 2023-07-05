@@ -9,26 +9,20 @@ jobs:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
     runs-on: windows-latest
+
     steps:
+
     - name: Checkout source code
       uses: actions/checkout@v2
 
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        global-json-file: src/global.json
 
-    - name: Setup .NET 7.0.x
-      uses: actions/setup-dotnet@v1
+    - uses: actions/setup-node@v3
       with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-
-    - name: Setup .NET 8.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 8.0.x
-        include-prerelease: true
+        node-version: latest
       
     - name: Restore prerelease
       run: dotnet restore src/Bit-CI-release.sln
@@ -43,26 +37,25 @@ jobs:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
     runs-on: windows-latest
+
     steps:
+
     - name: Checkout source code
       uses: actions/checkout@v2
 
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        global-json-file: src/global.json
 
-    - name: Setup .NET 7.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET (Demo)
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-        
-    - name: Setup .NET 8.0.x
-      uses: actions/setup-dotnet@v1
+        global-json-file: src/BlazorUI/Demo/global.json
+
+    - uses: actions/setup-node@v3
       with:
-        dotnet-version: 8.0.x
-        include-prerelease: true
+        node-version: latest
 
     - name: Restore
       run: dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false

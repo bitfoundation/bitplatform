@@ -1,0 +1,43 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<div class="page">
+    <div class="hero @BitCss.Class.Color.Border.Disabled">
+        <div class="container">
+            <BitTypography Variant="BitTypographyVariant.H1" Gutter>
+                Hello World
+            </BitTypography>
+
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                Welcome to your Bit Blazor WebAssembly app
+            </BitTypography>
+        </div>
+    </div>
+
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter>
+            Counter
+        </BitTypography>
+        <BitButton OnClick="() => _counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
+        <BitButton OnClick="() => _counter++">Increase [@_counter]</BitButton>
+    </div>
+
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter Style="@($"color:{_colorPickerRef?.Rgba ?? _color}")">
+            ColorPicker
+        </BitTypography>
+        <div style="display:flex;justify-content:center">
+            <BitColorPicker @ref="_colorPickerRef" ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="_alpha" @bind-Color="@_color" />
+        </div>
+        <BitTypography Variant="BitTypographyVariant.Body1">Alpha: @_alpha</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1">Color: @_color</BitTypography>
+    </div>
+</div>
+
+@code {
+    int _counter;
+    double _alpha = 1;
+    string? _color = "#0078d4";
+    private BitColorPicker? _colorPickerRef;
+}

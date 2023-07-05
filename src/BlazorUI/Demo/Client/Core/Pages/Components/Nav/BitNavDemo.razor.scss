@@ -1,0 +1,63 @@
+﻿@import '../../../Styles/bit-css-variables.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .nav-custom-header {
+        color: green;
+        font-size: 17px;
+        font-weight: 600;
+    }
+
+    .nav-custom-item {
+        gap: 4px;
+        display: flex;
+        color: #ff7800;
+        font-weight: 600;
+        align-items: center;
+        flex-flow: row nowrap;
+    }
+}
+
+.example-box {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+
+    @include sm {
+        width: 250px;
+    }
+
+    .margin-top {
+        margin-top: 20px;
+    }
+}
+
+.events-example-box {
+    gap: 100px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+
+    ::deep {
+        .bit-nav {
+            width: 350px;
+        }
+    }
+
+    @include sm {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+
+        ::deep {
+            .bit-nav {
+                width: 250px;
+            }
+        }
+    }
+
+    .flex {
+        display: flex;
+        flex-direction: column;
+    }
+}

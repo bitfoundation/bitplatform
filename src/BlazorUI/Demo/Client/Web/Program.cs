@@ -1,4 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Shared;
+﻿using Bit.BlazorUI.Demo.Client.Core;
 #if BlazorElectron
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -28,7 +28,7 @@ public class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Shared.appsettings.json"));
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Core.appsettings.json"));
 
         var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
 
@@ -54,20 +54,20 @@ public class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Shared.appsettings.json")!);
+        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Core.appsettings.json")!);
 #if BlazorElectron
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();
 #endif
 
-#if DEBUG
-        if (OperatingSystem.IsWindows())
-        {
-            // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-            builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000", "https://*:4001", "http://*:4000");
-        }
-#elif BlazorElectron
-        builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000");
+#if BlazorElectron
+        builder.WebHost.UseUrls("http://localhost:8001");
+#elif DEBUG
+    if (OperatingSystem.IsWindows())
+    {
+        // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
+        builder.WebHost.UseUrls("https://localhost:4001", "http://localhost:4000", "https://*:4001", "http://*:4000");
+    }
 #endif
 
         Startup.Services.Add(builder.Services, builder.Configuration);
@@ -82,12 +82,12 @@ public class Program
             var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
                 AutoHideMenuBar = true,
-                BackgroundColor = "#0D2960",
+                BackgroundColor = "#fff",
                 WebPreferences = new WebPreferences
                 {
                     NodeIntegration = false
                 }
-            }, "https://localhost:4001");
+            }, "http://localhost:8001");
 
             window.OnClosed += delegate
             {

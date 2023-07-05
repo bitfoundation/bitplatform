@@ -200,7 +200,7 @@ public partial class AuthController : AppControllerBase
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd).Value.ToString("mm\\:ss")));
 
         if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.UserName!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));
 
         return await _jwtService.GenerateToken(user);
     }

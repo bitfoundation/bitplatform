@@ -1,0 +1,145 @@
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.main {
+    width: 100%;
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background: $BackgroundColor;
+    padding-top: rem($HeaderHeight);
+    padding-left: rem($NavMenuWidth);
+
+    @include lt-lg {
+        padding-left: 0;
+    }
+}
+
+.main--full-page {
+    padding: 0;
+    min-height: 100%;
+
+    .site-content {
+        height: calc(100vh - 49px);
+        padding: var(--bit-status-bar-height) 0 0 0;
+
+        .bit-ios & {
+            padding-top: env(safe-area-inset-top);
+            height: calc(100vh - 49px - env(safe-area-inset-bottom));
+        }
+
+        @media screen and (max-height:700px) {
+            display: flex;
+            align-items: center;
+            height: unset !important;
+            min-height: calc(100vh - 49px - var(--bit-status-bar-height));
+    
+            .bit-ios & {
+                min-height: calc(100vh - 49px - env(safe-area-inset-bottom));
+            }
+        }
+    }
+}
+
+.site-content {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 rem($LargeScreenPadding);
+    max-width: rem($LargeScreenMaxWidth);
+    box-sizing: border-box;
+    padding-bottom: rem(32px);
+    min-height: calc(100vh - 103px);
+    padding-top: calc(rem(32px) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        padding-top: calc(rem(32px) + env(safe-area-inset-top));
+        min-height: calc(100vh - 103px - env(safe-area-inset-bottom));
+    }
+
+    @include md {
+        padding: 0 rem($MediumScreenPadding);
+        max-width: rem($MediumScreenMaxWidth);
+        padding-top: calc(rem(32px) + var(--bit-status-bar-height));
+        padding-bottom: rem(32px);
+
+        .bit-ios & {
+            padding-top: calc(rem(32px) + env(safe-area-inset-top));
+        }
+    }
+
+    @include sm {
+        padding: 0 rem($SmallScreenPadding);
+        max-width: rem($SmallScreenMaxWidth);
+        padding-top: calc(rem(16px) + var(--bit-status-bar-height));
+        padding-bottom: rem(16px);
+        
+        .bit-ios & {
+            padding-top: calc(rem(16px) + env(safe-area-inset-top));
+        }
+    }
+}
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep ::-webkit-scrollbar-track {
+    background-color: #fff;
+}
+
+::deep ::-webkit-scrollbar-thumb {
+    background-color: $Gray90;
+    border-radius: 16px;
+    border: 4px solid $Gray90;
+}
+
+::deep .bit-btn-fluent {
+    border-radius: rem(2px);
+}
+
+::deep .bit-mdl-fluent {
+    .bit-mdl-container {
+        min-height: unset !important;
+    }
+}
+
+::deep .validation-message {
+    color: $StatusErrorColor;
+}
+
+.status-bar {
+    top: 0;
+    width: 100%;
+    z-index: 1101;
+    display: none;
+    position: fixed;
+    text-align: center;
+    align-items: center;
+    font-size: rem(14px);
+    color: $PrimaryColor;
+    justify-content: center;
+    background-color: $Gray5;
+}
+
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        color: $PrimaryColor;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    background-color: transparent;
+    height: env(safe-area-inset-top);
+}

@@ -6,8 +6,8 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!--/-:msbuild-conditional:noEmit -->
-        <ServiceWorkerAssetsManifest Condition="'$(WebAppDeploymentType)' == 'PWA'">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition="'$(WebAppDeploymentType)' == 'PWA'">false</BlazorCacheBootResources>
+        <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
@@ -31,30 +31,30 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="5.0.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.0.0">
+		<PackageReference Include="Bit.Bup" Version="5.1.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.1.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.0.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="'$(WebAppDeploymentType)' == 'PWA'" />
-        <ProjectReference Include="..\Shared\AdminPanel.Client.Shared.csproj" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="$(WebAppDeploymentType.Contains('Pwa'))" />
+        <ProjectReference Include="..\Core\AdminPanel.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="AdminPanel.Client.Shared.Services.Contracts" />
-        <Using Include="AdminPanel.Client.Shared.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Shared.Components" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
+        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Components" />
     </ItemGroup>
 
     <ItemGroup>
@@ -67,7 +67,18 @@
         <Content Update="electron.manifest.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+        <PackageReference Include="ElectronNET.API" Version="23.6.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+        <Exec Command="dotnet electronize version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
+        </Exec>
+        <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
+    </Target>
     
 </Project>

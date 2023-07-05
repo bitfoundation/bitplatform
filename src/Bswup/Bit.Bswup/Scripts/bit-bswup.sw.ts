@@ -13,6 +13,7 @@
     assetsInclude: any
     assetsExclude: any
     externalAssets: any
+    noPrerenderQuery: any
 }
 
 interface Event {
@@ -34,12 +35,9 @@ self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
-    sendMessage({ type: 'installing', data: { version: VERSION } });
+    sendMessage({ type: 'install', data: { version: VERSION } });
 
     createNewCache();
-
-    log(`installed version (${VERSION})`);
-    sendMessage({ type: 'installed', data: { version: VERSION } });
 }
 
 async function handleActivate(e) {
@@ -50,17 +48,37 @@ async function handleActivate(e) {
     sendMessage({ type: 'activate', data: { version: VERSION } });
 }
 
+// ============================================================================
+
 const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
 const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
 const SERVER_HANDLED_URLS = prepareRegExpArray(self.serverHandledUrls);
 const SERVER_RENDERED_URLS = prepareRegExpArray(self.serverRenderedUrls);
+
+const USER_ASSETS_INCLUDE = prepareRegExpArray(self.assetsInclude);
+const USER_ASSETS_EXCLUDE = prepareRegExpArray(self.assetsExclude);
+const EXTERNAL_ASSETS = prepareExternalAssetsArray(self.externalAssets);
+
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
+const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/, /^service-worker\.js$/, /^service-worker\.min\.js$/];
+
+const ASSETS_INCLUDE = DEFAULT_ASSETS_INCLUDE.concat(USER_ASSETS_INCLUDE);
+const ASSETS_EXCLUDE = DEFAULT_ASSETS_EXCLUDE.concat(USER_ASSETS_EXCLUDE);
+
+const ALL_ASSETS = self.assetsManifest.assets
+    .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
+    .filter(asset => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
+    .concat(EXTERNAL_ASSETS);
+
+const UNIQUE_ASSETS = unique(ALL_ASSETS);
 
 async function handleFetch(e) {
     if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
         return fetch(e.request);
     }
 
-    const shouldServeIndexHtml = (e.request.mode === 'navigate' && !SERVER_RENDERED_URLS.some(pattern => pattern.test(e.request.url)));
+    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(e.request.url))
+    const shouldServeIndexHtml = (e.request.mode === 'navigate' && !isServerRendered);
     const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
@@ -68,9 +86,16 @@ async function handleFetch(e) {
     }
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
-    const asset = self.assetsManifest.assets.find(a => shouldServeIndexHtml
+
+    let asset = UNIQUE_ASSETS.find(a => shouldServeIndexHtml
         ? a.url[caseMethod]() === requestUrl[caseMethod]()
-        : new URL(requestUrl).pathname.endsWith(a.url));
+        : new URL(requestUrl).pathname.endsWith(a.url)
+    );
+
+    if (!asset) {
+        asset = EXTERNAL_ASSETS.find(a => a.url[caseMethod]() === requestUrl[caseMethod]());
+    }
+
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
     const cache = await caches.open(CACHE_NAME);
@@ -80,32 +105,20 @@ async function handleFetch(e) {
 }
 
 function handleMessage(e) {
-    if (e.data == 'SKIP_WAITING') {
-        self.skipWaiting();
+    if (e.data === 'SKIP_WAITING') {
+        self.skipWaiting().then(() => e.source.postMessage('WAITING_SKIPPED'));
+    }
+
+    if (e.data === 'CLAIM_CLIENTS') {
+        self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 }
 
 // ============================================================================
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
-const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/, /^service-worker\.js$/, /^service-worker\.min\.js$/];
-
 async function createNewCache() {
-    const userAssetsInclude = prepareRegExpArray(self.assetsInclude);
-    const userAssetsExclude = prepareRegExpArray(self.assetsExclude);
-    const externalAssets = prepareExternalAssetsArray(self.externalAssets);
-
-    const assetsInclude = DEFAULT_ASSETS_INCLUDE.concat(userAssetsInclude);
-    const assetsExclude = DEFAULT_ASSETS_EXCLUDE.concat(userAssetsExclude);
-
-    const assets = self.assetsManifest.assets
-        .filter(asset => assetsInclude.some(pattern => pattern.test(asset.url)))
-        .filter(asset => !assetsExclude.some(pattern => pattern.test(asset.url)))
-        .concat(externalAssets);
-    const uniqueAssets = distinct(assets);
-
     let current = 0;
-    const total = uniqueAssets.length;
+    const total = UNIQUE_ASSETS.length;
 
     const cacheKeys = await caches.keys();
     const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
@@ -115,10 +128,14 @@ async function createNewCache() {
     }
 
     const cache = await caches.open(CACHE_NAME);
-    uniqueAssets.map(addCache);
+    UNIQUE_ASSETS.map(addCache);
 
     async function addCache(asset, index) {
-        const request = new Request(asset.url, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
+        let assetUrl = asset.url;
+        if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+            assetUrl = asset.url + '?' + self.noPrerenderQuery;
+        }
+        const request = new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
         if (oldCache && asset.hash) {
@@ -146,17 +163,17 @@ async function createNewCache() {
             Promise.reject(err);
         }
     }
+}
 
-    function distinct(assets) {
-        const unique = {};
-        const distinct = [];
-        for (let i = 0; i < assets.length; i++) {
-            if (unique[assets[i].url]) continue;
-            distinct.push(assets[i]);
-            unique[assets[i].url] = 1;
-        }
-        return distinct;
+function unique(assets) {
+    const unique = {};
+    const distinct = [];
+    for (let i = 0; i < assets.length; i++) {
+        if (unique[assets[i].url]) continue;
+        distinct.push(assets[i]);
+        unique[assets[i].url] = 1;
     }
+    return distinct;
 }
 
 async function deleteOldCaches() {
@@ -167,7 +184,7 @@ async function deleteOldCaches() {
 
 function sendMessage(message) {
     self.clients
-        .matchAll({ includeUncontrolled: true, type: 'window', })
+        .matchAll({ includeUncontrolled: true })
         .then(function (clients) {
             (clients || []).forEach(function (client) { client.postMessage(JSON.stringify(message)); });
         });

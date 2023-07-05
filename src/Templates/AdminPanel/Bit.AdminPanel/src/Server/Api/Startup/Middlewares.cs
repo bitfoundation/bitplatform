@@ -7,7 +7,7 @@ namespace AdminPanel.Server.Api.Startup;
 
 public class Middlewares
 {
-    public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
+    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
@@ -40,7 +40,7 @@ public class Middlewares
                 // https://bitplatform.dev/adminpanel/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-#if PWA
+#if Pwa || PwaPrerendered
                     NoCache = true
 #else
                     MaxAge = TimeSpan.FromDays(365),
@@ -53,7 +53,7 @@ public class Middlewares
         app.UseRouting();
 
         // 0.0.0.0 is for the Blazor Hybrid mode (Android, iOS, Windows apps)
-        app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4031", "https://0.0.0.0", "app://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
         app.UseAuthentication();
@@ -78,27 +78,24 @@ public class Middlewares
             options.InjectJavascript("/swagger/swagger-utils.js");
         });
 
-        app.UseEndpoints(endpoints =>
+        app.MapControllers().RequireAuthorization();
+
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+        var healthCheckSettings = appsettings.HealthCheckSettings;
+
+        if (healthCheckSettings.EnableHealthChecks)
         {
-            endpoints.MapControllers().RequireAuthorization();
-
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-
-            var healthCheckSettings = appsettings.HealthCheckSettings;
-
-            if (healthCheckSettings.EnableHealthChecks)
+            app.MapHealthChecks("/healthz", new HealthCheckOptions
             {
-                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
-                {
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-                endpoints.MapHealthChecksUI();
-            }
+            app.MapHealthChecksUI();
+        }
 
 #if BlazorWebAssembly
-            endpoints.MapFallbackToPage("/_Host");
+        app.MapFallbackToPage("/_Host");
 #endif
-        });
     }
 }

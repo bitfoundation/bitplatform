@@ -1,0 +1,14 @@
+﻿::deep *, * {
+    box-sizing: border-box;
+}
+
+main {
+    height: 100%;
+    display: flex;
+    padding-top: 56px;
+    flex-direction: column;
+}
+
+article {
+    flex-grow: 1;
+}

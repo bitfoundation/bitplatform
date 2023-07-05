@@ -1,0 +1,103 @@
+﻿@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+
+    .bit-ios & {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+.footer-content {
+    width: 100%;
+    display: flex;
+    position: relative;
+    padding: rem(4px) 0;
+    align-items: center;
+    min-height: rem(54px);
+    box-sizing: border-box;
+    justify-content: center;
+    flex-flow: column nowrap;
+
+    @include lt-xl {
+        min-height: rem(50px);
+    }
+}
+
+.footer-contact {
+    color: $S4Color;
+    font-size: rem(14px);
+    margin-bottom: rem(4px);
+    line-height: rem(20px);
+
+    @include lg {
+        font-size: rem(13px);
+        line-height: rem(19px);
+    }
+
+    @include lt-lg {
+        font-size: rem(12px);
+    }
+}
+
+.footer-copyright {
+    color: $S4Color;
+    font-size: rem(12px);
+    line-height: rem(20px);
+
+    @include lt-xl {
+        font-size: rem(10px);
+        line-height: rem(16px);
+    }
+}
+
+.footer-social-lnk-grp {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.social-lnk {
+    width: rem(32px);
+    height: rem(32px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.twitter-lnk {
+    background-image: url('images/icons/twitter-icon.svg');
+}
+
+.youtube-lnk {
+    background-image: url('images/icons/youtube-icon.svg');
+}
+
+.linkedin-lnk {
+    background-image: url('images/icons/linkedin-icon.svg');
+}
+
+.github-lnk {
+    background-image: url('images/icons/github-icon.svg');
+}
+
+.text--red {
+    color: $Red;
+}
+
+::deep {
+    .culture-drp {
+        top: rem(-3px);
+        left: rem(5px);
+        width: rem(105px);
+        position: absolute;
+        background-color: white;
+    }
+}

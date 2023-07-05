@@ -39,13 +39,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{32A245
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{C16B7050-0842-4A34-89EE-1A41A5BE8651}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", "Demo\Shared\Shared\Bit.BlazorUI.Demo.Shared.csproj", "{524D1133-5940-416E-81C2-7AF2469B935E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", "Demo\Shared\Bit.BlazorUI.Demo.Shared.csproj", "{524D1133-5940-416E-81C2-7AF2469B935E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Server.Api", "Demo\Server\Api\Bit.BlazorUI.Demo.Server.Api.csproj", "{FCC7E125-43F1-44D4-8193-817E4698F5CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.App", "Demo\Client\App\Bit.BlazorUI.Demo.Client.App.csproj", "{65DEE16F-22DF-4795-A219-87E120FC59F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Shared", "Demo\Client\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj", "{A0661277-A62E-4358-A61B-E4EE6AF3C976}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Core", "Demo\Client\Core\Bit.BlazorUI.Demo.Client.Core.csproj", "{A0661277-A62E-4358-A61B-E4EE6AF3C976}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Web", "Demo\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj", "{87AD691F-4EC9-493E-BC07-D4CBEC9050E5}"
 EndProject

@@ -1,0 +1,403 @@
+﻿@import '../../Styles/bit-css-variables.scss';
+@import '../../Styles/abstracts/_vars.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/bit-css-variables.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.main-container {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    @include lt-lg {
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.content-container {
+    width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    &:last-child {
+        margin-left: rem(20px);
+    }
+
+    @include lt-lg {
+        width: 100%;
+
+        &:last-child {
+            margin-left: 0;
+        }
+    }
+
+    &.sample-side {
+        top: calc(rem($HeaderHeight) - var(--bit-status-bar-height) + 5px);
+        position: sticky;
+    }
+}
+
+.component-list {
+    width: 100%;
+    display: flex;
+    max-width: rem(500px);
+    flex-flow: column nowrap;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.component-row {
+    outline: 0;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+    padding: rem(20px);
+    position: relative;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    margin-top: rem(10px);
+    -ms-user-select: none;
+    text-decoration: none;
+    box-sizing: border-box;
+    -moz-user-select: none;
+    align-items: flex-start;
+    border-radius: rem(2px);
+    transition-property: all;
+    -webkit-user-select: none;
+    transition-duration: 150ms;
+    justify-content: flex-start;
+    background-color: transparent;
+    border: rem(1px) solid transparent;
+
+    &:hover {
+        background-color: $bit-color-action-active-background-primary;
+    }
+
+    .component-icon {
+        display: flex;
+        height: rem(36px);
+        border-radius: 50%;
+        align-items: center;
+        min-width: rem(36px);
+        margin-right: rem(20px);
+        justify-content: center;
+
+        @include lt-lg {
+            margin-bottom: rem(10px);
+        }
+    }
+
+    .component-info-container {
+        width: 100%;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .component-name {
+        margin: 0;
+        line-height: 1.5;
+        font-weight: 700;
+        letter-spacing: 0;
+        font-size: rem(14px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .component-desc {
+        line-height: 1.5;
+        text-align: left;
+        font-weight: 400;
+        letter-spacing: 0;
+        margin-top: rem(5px);
+        font-size: rem(14px);
+        margin-bottom: rem(5px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    .component-link {
+        margin: 0;
+        color: #0072E5;
+        line-height: 1.5;
+        font-weight: 700;
+        letter-spacing: 0;
+        align-items: center;
+        display: inline-flex;
+        font-size: rem(14px);
+        min-height: rem(24px);
+        text-decoration: none;
+
+        &:hover {
+            color: #0059B2;
+        }
+    }
+
+    @include lt-lg {
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.component-row--active {
+    background-color: $bit-color-background-secondary;
+}
+
+::deep .component-row--active {
+    .component-icon {
+        path {
+            fill: $B2Color;
+            stroke: $B2Color;
+        }
+    }
+}
+
+::deep .component-icon {
+    path {
+        fill: $B2Color;
+        stroke: $B2Color;
+    }
+}
+
+.example-preview {
+    box-shadow: $bit-box-shadow-callout;
+    border-radius: rem(2px) rem(2px) 0 0;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+    @include lt-lg {
+        margin-top: rem(20px);
+    }
+}
+
+.component-container {
+    padding: rem(20px);
+    min-height: rem(50px);
+}
+
+.example-code {
+    border-radius: 0 0 rem(4px) rem(4px);
+
+    pre {
+        margin: 0;
+        border: none;
+        direction: ltr;
+        overflow: auto;
+        border-radius: 0;
+        max-height: rem(300px);
+        min-height: rem(200px);
+
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: #c8c6c4 !important;
+            border-radius: rem(8px);
+            border: rem(4px) solid #c8c6c4 !important;
+        }
+    }
+}
+
+::deep .component-carousel {
+    height: rem(250px);
+
+    @include gt-md {
+        display: none;
+    }
+}
+
+.grid {
+    display: inline-flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #e9eaed;
+    overflow: auto;
+
+    .flag {
+        vertical-align: middle;
+    }
+
+    ::deep {
+        .column--large {
+            width: 220px;
+        }
+
+        th:nth-child(1) {
+            .col-options-button {
+                background-image: none;
+                cursor: pointer;
+            }
+        }
+
+        th:nth-child(1) {
+            .col-options-button:before {
+                display: inline-block;
+                font-family: "Fabric MDL2 Assets";
+                font-style: normal;
+                font-weight: normal;
+                content: "\e721";
+                position: relative;
+                top: 2px;
+            }
+        }
+
+        th:not(.col-sort-asc):not(.col-sort-desc) {
+            .sort-indicator:before {
+                display: inline-block;
+                font-family: "Fabric MDL2 Assets";
+                font-style: normal;
+                font-weight: normal;
+                content: "⇅";
+                position: relative;
+                top: -2px;
+            }
+        }
+
+        .bitdatagrid-paginator {
+            padding: 0.5rem;
+        }
+
+        .bitdatagrid-paginator {
+            .pagination-text {
+                padding-top: 3px;
+            }
+        }
+
+        .bitdatagrid-paginator {
+            nav {
+                button {
+                    border-radius: 0.25rem;
+                }
+            }
+        }
+
+        .bitdatagrid-paginator {
+            nav {
+                button:before {
+                    vertical-align: middle;
+                }
+            }
+        }
+
+        .bitdatagrid-paginator {
+            nav {
+                button:not([disabled]) {
+                    background-color: #eee;
+                }
+            }
+        }
+
+        .bitdatagrid-paginator {
+            nav {
+                button:not([disabled]):hover {
+                    background-color: #d0d1d5;
+                }
+            }
+        }
+
+        table {
+            position: relative;
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-indent: initial;
+        }
+
+        thead {
+            th:not(:last-child) {
+                border-right: 1px solid #e9eaed;
+            }
+
+            .col-width-draghandle {
+                cursor: col-resize;
+                width: 3px;
+            }
+
+            .col-width-draghandle:active {
+                background: unset;
+            }
+
+            .col-width-draghandle:after {
+                left: 3px;
+                border-left: unset;
+            }
+
+            .col-width-draghandle:hover {
+                background: unset;
+            }
+        }
+
+        th {
+            background-color: #f4f5f9;
+            padding: 0.5rem;
+            display: table-cell;
+            vertical-align: inherit;
+            font-weight: bold;
+            border-bottom: 1px solid #e9eaed;
+        }
+
+        tr {
+            height: 41px;
+        }
+
+        tr:nth-child(even) {
+            background: #f4f5f9;
+        }
+
+        tr:nth-child(odd) {
+            background: #FFF;
+        }
+
+        tr:last-child > td {
+            border-bottom: none;
+        }
+
+        td {
+            border-bottom: 1px solid #e9eaed;
+            color: #4f4f50;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+        }
+
+        td:not(:last-child) {
+            border-right: 1px solid #e9eaed;
+        }
+
+        .sort-indicator {
+            margin-left: auto;
+        }
+
+        .col-width-draghandle:after {
+            border-left: unset;
+        }
+
+        .col-title-text {
+            color: #262526;
+        }
+
+        .col-header-content {
+            padding-right: 0px;
+        }
+
+        button.col-title:active {
+            background-color: unset;
+        }
+
+        .col-options-button:active {
+            background-color: unset;
+        }
+
+        button.col-title:hover {
+            background-color: unset;
+        }
+
+        .col-options-button:hover {
+            background-color: unset;
+        }
+    }
+}

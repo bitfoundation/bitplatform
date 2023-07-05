@@ -6,14 +6,14 @@ namespace Bit.Websites.Sales.Web.Pages;
 public partial class ShowCaseDetailPage
 {
     [Parameter]
-    public string CaseKey { get; set; }
-    public Case ShowCase { get; set; }
+    public string? CaseKey { get; set; }
+    public Case? ShowCase { get; set; }
 
     protected override async Task OnInitAsync()
     {
         var cases = new List<Case>();
-        cases = await System.Text.Json.JsonSerializer.DeserializeAsync<List<Case>>(Assembly.Load("Bit.Websites.Sales.Web").GetManifestResourceStream("Bit.Websites.Sales.Web.Data.Cases.json"));
-        ShowCase = cases.Find(item => item.Key == CaseKey);
+        cases = await System.Text.Json.JsonSerializer.DeserializeAsync<List<Case>>(Assembly.Load("Bit.Websites.Sales.Web")!.GetManifestResourceStream("Bit.Websites.Sales.Web.Data.Cases.json")!);
+        ShowCase = cases?.Find(item => item.Key == CaseKey);
         await base.OnInitAsync();
     }
 

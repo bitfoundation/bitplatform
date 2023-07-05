@@ -1,34 +1,41 @@
-﻿@using BlazorDual.Shared.Infra;
+﻿@using BlazorDual.Shared.Infra
 @using Microsoft.AspNetCore.Components.Web
+@using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+
 @namespace BlazorDual.Web.Pages
 @inject IHttpContextAccessor ContextAccessor
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
-    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
-    var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
+    var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
-    var shoudAddAspAppendVersion = !isPwa;
-    RenderMode renderMode = isStatic
-                            ? RenderMode.Static
-                            : isBlazorServer
-                            ? isDefaultDeploymentType || isPwa
-                            ? RenderMode.Server
-                            : RenderMode.ServerPrerendered
-                            : isDefaultDeploymentType || isPwa
-                            ? RenderMode.WebAssembly
-                            : RenderMode.WebAssemblyPrerendered;
+    var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
+    var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
 
+    var useAspAppendVersion = !isPwa && !isPwaPrerendered;
+    var request = ContextAccessor?.HttpContext?.Request;
+    var noPrerender = (request?.Query["no-prerender"].Count ?? 0) > 0;
+
+    RenderMode renderMode = RenderMode.Static;
+    if (isPrerenderedOnly is false)
+    {
+        if (isBlazorServer)
+        {
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.Server : RenderMode.ServerPrerendered;
+        }
+        else
+        {
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
+        }
+    }
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
     {
-        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
-
-        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        if (request?.ShouldRenderStaticMode() is true)
         {
             renderMode = RenderMode.Static;
-            isStatic = true;
+            isPrerenderedOnly = true;
         }
     }
 }
@@ -40,66 +47,67 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The BlazorDual is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build a multi-mode Web applications from a single codebase." />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@useAspAppendVersion">
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    @if (isPwa)
+    @if (isPwa || isPwaPrerendered)
     {
         <link rel="manifest" href="manifest.json">
     }
-    <style>
-        html, body, #app-container {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: #0D2960;
-        }
-    </style>
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="BlazorDual.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
 </head>
 <body>
     <div id="app-container">
-        @if (isDefaultDeploymentType || isPwa)
+        @if (isSpa || isPwa || noPrerender)
         {
-            <component type="typeof(BlazorDual.Web.LoadingComponent)" param-Color="@("#FFF")" render-mode="@RenderMode.Static" />
+            <component type="typeof(BlazorDual.Web.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
+        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@useAspAppendVersion" />
+        <link rel="stylesheet" href="styles/app.min.css" asp-append-version="@useAspAppendVersion" />
+        <link rel="stylesheet" href="BlazorDual.Web.styles.css" asp-append-version="@useAspAppendVersion" />
         @RenderBody()
     </div>
 
-    @if (isStatic is false)
+    @if (isPrerenderedOnly is false)
     {
         @if (isBlazorServer)
         {
-            <script src="_framework/blazor.server.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_framework/blazor.server.js" asp-append-version="@useAspAppendVersion"></script>
         }
         else
         {
-            @if (isPwa)
+            @if (isPwa || isPwaPrerendered)
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
-                <script src="_content/Bit.Bswup/bit-bswup.js" scope="/" sw="service-worker.js" handler="bitBswupHandler"></script>
-                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion">
-                <component type="typeof(Bit.Bswup.BswupProgress)"
-                           param-AutoReload="true"
-                           param-AppContainer="@("#app-container")"
-                           render-mode="@RenderMode.Static" />
-            }
-            else
-            {
-                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.js" log="none"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@useAspAppendVersion"></script>
 
-                @if (isSsr)
+                @if (isPwaPrerendered)
                 {
-                    <component type="typeof(BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                    <component type="typeof(AppBswupProgressBar)" render-mode="@RenderMode.Static" />
                 }
                 else
                 {
-                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@shoudAddAspAppendVersion">
+                    <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@useAspAppendVersion">
+                    <component type="typeof(Bit.Bswup.BswupProgress)"
+                               param-AutoReload="true"
+                               param-HideApp="true"
+                               param-AppContainer="@("#app-container")"
+                               render-mode="@RenderMode.Static" />
+                }
+            }
+            else if (isSpa || isSpaPrerendered)
+            {
+                <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@useAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="@useAspAppendVersion"></script>
+                <script src="_content/Bit.Bup/bit-bup.min.js" asp-append-version="@useAspAppendVersion"></script>
+
+                @if (isSpaPrerendered)
+                {
+                    <component type="typeof(AppBupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+                }
+                else
+                {
+                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@useAspAppendVersion">
                     <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                                param-AutoHide="true"
                                param-HideApp="true"
@@ -107,11 +115,11 @@
                 }
             }
         }
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@useAspAppendVersion"></script>
     }
-    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="scripts/app.js" asp-append-version="@useAspAppendVersion"></script>
 
-    @if (isSsr)
+    @if ((isSpaPrerendered || isPwaPrerendered) && !noPrerender)
     {
         <persist-component-state />
     }

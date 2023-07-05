@@ -1,7 +1,7 @@
 name: BlazorDual CI
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
 
 on:
   workflow_dispatch:
@@ -24,5 +24,9 @@ jobs:
       with:
         global-json-file: global.json
       
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+
     - name: Build
       run: dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

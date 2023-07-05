@@ -1,0 +1,43 @@
+﻿@inject NavigationManager _navigationManager
+@inject BitThemeManager _bitThemeManager
+
+<header class="@BitCss.Class.Shadow.S1">
+    <div class="container">
+        <div class="content">
+            <BitLink Class="logo" Href="/" aria-label="Home page" />
+            <BitLink Class="@($"link {(_currentUrl == "/" ? BitCss.Class.Color.Primary.Main : BitCss.Class.Color.Foreground.Secondary)}")" Href="/">Home</BitLink>
+            <BitLink Class="@($"link {(_currentUrl == "/about" ? BitCss.Class.Color.Primary.Main : BitCss.Class.Color.Foreground.Secondary)}")" Href="/about">About</BitLink>
+        </div>
+
+        <div class="right-section">
+            <BitIconButton OnClick="ToggleTheme" IconName="_toggleThemeIcon" />
+        </div>
+    </div>
+</header>
+
+
+@code {
+    private string _currentUrl = string.Empty;
+    private BitIconName _toggleThemeIcon = BitIconName.ClearNight;
+
+    protected override void OnInitialized()
+    {
+        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        _navigationManager.LocationChanged += OnLocationChanged;
+
+        base.OnInitialized();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        StateHasChanged();
+    }
+
+    private async Task ToggleTheme()
+    {
+        var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
+        var isDark = newTheme.Contains("dark");
+        _toggleThemeIcon = isDark ? BitIconName.Sunny : BitIconName.ClearNight;
+    }
+}

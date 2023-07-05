@@ -40,7 +40,7 @@ public class Middlewares
                 // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-#if PWA
+#if Pwa || PwaPrerendered
                     NoCache = true
 #else
                     MaxAge = TimeSpan.FromDays(365),
@@ -52,7 +52,7 @@ public class Middlewares
 
         app.UseRouting();
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4001").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+        app.UseCors(options => options.WithOrigins("https://localhost:4051").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
         app.UseAuthentication();

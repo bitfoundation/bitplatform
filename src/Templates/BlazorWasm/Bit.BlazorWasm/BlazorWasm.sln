@@ -3,14 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = ".\src\BlazorWasm.Web", ".\src\BlazorWasm.Web\BlazorWasm.Web.csproj", "{A6E8A493-0D53-4A5E-9C99-E8A2C248C46A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90C15A75-AFB4-428F-9EFE-17248F03C9D3}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		.\global.json = .\global.json
-		.\src\Clean.bat = .\src\Clean.bat
+		Clean.bat = Clean.bat
+		Clean.sh = Clean.sh
+		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWasm.Web", "BlazorWasm.Web\BlazorWasm.Web.csproj", "{FB65EAE5-7479-4E70-940E-899551D15260}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +19,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A6E8A493-0D53-4A5E-9C99-E8A2C248C46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A6E8A493-0D53-4A5E-9C99-E8A2C248C46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A6E8A493-0D53-4A5E-9C99-E8A2C248C46A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A6E8A493-0D53-4A5E-9C99-E8A2C248C46A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB65EAE5-7479-4E70-940E-899551D15260}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB65EAE5-7479-4E70-940E-899551D15260}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB65EAE5-7479-4E70-940E-899551D15260}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB65EAE5-7479-4E70-940E-899551D15260}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

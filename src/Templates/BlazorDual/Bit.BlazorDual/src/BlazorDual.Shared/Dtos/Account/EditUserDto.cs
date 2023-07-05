@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public class EditUserDto
 {
-    [Required(ErrorMessageResourceName = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 
@@ -13,13 +13,19 @@ public class EditUserDto
     [Display(Name = nameof(AppStrings.BirthDate))]
     public DateTimeOffset? BirthDate { get; set; }
 
-    public static implicit operator EditUserDto(UserDto user)
+    [JsonIgnore]
+    public string? GenderAsString
     {
-        return new()
+        get
         {
-            BirthDate = user.BirthDate,
-            FullName = user.FullName,
-            Gender = user.Gender
-        };
+            return Gender?.ToString();
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value) is false)
+            {
+                Gender = Enum.Parse<Gender>(value);
+            }
+        }
     }
 }

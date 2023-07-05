@@ -1,0 +1,150 @@
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.header {
+    top: 0;
+    width: 100%;
+    z-index: 11;
+    position: fixed;
+    backdrop-filter: blur(20px);
+    box-shadow: $bit-box-shadow-1;
+    -webkit-backdrop-filter: blur(20px);
+    padding-top: var(--bit-status-bar-height);
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.bit-ios {
+    .header {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+.header--full-page {
+    .container {
+        max-width: rem(1200px);
+    }
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    padding-left: rem(20px);
+    padding-right: rem(20px);
+    min-height: rem($HeaderHeight);
+    justify-content: space-between;
+
+    @include lt-lg {
+        padding-left: rem(10px);
+        padding-right: rem(10px);
+    }
+}
+
+.content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.logo {
+    cursor: pointer;
+    width: rem(50px);
+    height: rem(50px);
+    margin-right: rem(30px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/bit-logo.svg');
+
+    @include lt-lg {
+        margin: 0 rem(10px);
+    }
+}
+
+.link {
+    height: 100%;
+    cursor: pointer;
+    line-height: 1.5;
+    padding-bottom: 0;
+    padding: rem(10px);
+    font-size: rem(16px);
+    text-decoration: none;
+    box-sizing: border-box;
+    color: $bit-color-foreground-secondary;
+}
+
+.link--active {
+    color: $B2Color;
+    font-weight: 600;
+}
+
+.right-section {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.github-btn {
+    cursor: pointer;
+    width: rem(40px);
+    height: rem(40px);
+    border-radius: 50%;
+    margin-left: rem(10px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/github-icon.webp');
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    height: rem(35px);
+    min-width: rem(35px);
+    border-radius: 50%;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary-main;
+
+    .icon-container {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        .bit-icon {
+            margin: 0 rem(4px);
+        }
+    }
+
+    &.dark-theme {
+        .icon-container {
+            padding: 3px 0px 0 1px;
+        }
+    }
+}
+
+.bit-theme-dark .light-theme {
+    display: none;
+}
+
+.bit-theme-light .dark-theme {
+    display: none;
+}
+
+::deep {
+    .menu-btn {
+        @include gt-md {
+            display: none;
+        }
+    }
+}

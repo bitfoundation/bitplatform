@@ -1,0 +1,23 @@
+<linker>
+
+    <assembly fullname="Microsoft.Maui.Controls.Xaml">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="TodoTemplate.Client.Core">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="Microsoft.AspNetCore.Components.WebView.Maui">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="TodoTemplate.Client.App">
+        <type fullname="*" />
+    </assembly>
+
+    <assembly fullname="TodoTemplate.Shared">
+        <type fullname="*" />
+    </assembly>
+
+</linker>

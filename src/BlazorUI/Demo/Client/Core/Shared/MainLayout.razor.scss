@@ -1,0 +1,180 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_fonts.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+main {
+    width: 100%;
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
+
+    &.full-page {
+        .site-content {
+            padding: 0;
+            max-width: 100%;
+            background-color: unset;
+        }
+    }
+
+    .site-content {
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        padding: rem(40px);
+        max-width: calc(100% - $NavMenuWidth);
+        background-color: $bit-color-background-secondary;
+
+        @include md {
+            max-width: 100%;
+            padding: rem(30px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            padding: rem(20px);
+        }
+    }
+}
+
+::deep {
+    .page-container {
+        width: 100%;
+    }
+
+    .page-section {
+        width: 100%;
+        /*overflow: hidden;*/
+        padding: rem(28px);
+        position: relative;
+        box-sizing: border-box;
+        border-radius: rem(2px);
+        margin-bottom: rem(28px);
+        box-shadow: $bit-box-shadow-callout;
+        color: $bit-color-foreground-secondary;
+        background-color: $bit-color-background-primary;
+    }
+
+    .title {
+        margin-bottom: rem(50px);
+    }
+
+    .subtitle {
+        margin-bottom: rem(35px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .section-title {
+        color: $bit-color-foreground-primary;
+    }
+}
+
+.bit-ios {
+    main {
+        padding-top: calc(rem($HeaderHeight) + env(safe-area-inset-top));
+    }
+}
+
+::deep a {
+    text-decoration: none;
+}
+
+::deep .example-desc {
+    margin-bottom: rem(8px);
+}
+
+::deep pre {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    overflow: auto;
+    direction: ltr;
+    border-top: none;
+    flex-flow: column;
+    position: relative;
+    min-height: rem(70px);
+    max-height: rem(464px);
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px 80px 24px 24px;
+    border: rem(1px) solid $bit-color-border-primary;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    &::-webkit-scrollbar {
+        width: rem(6.5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem(8px);
+        border: rem(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        border: rem(4px) solid $B3Color;
+        border-radius: rem(8px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(6px);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep .hljs {
+    overflow-x: unset !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+}
+
+::deep ::-webkit-scrollbar-thumb {
+    border-radius: 16px;
+    background-color: $bit-color-foreground-secondary;
+}
+
+.status-bar {
+    top: 0;
+    z-index: 12;
+    width: 100%;
+    display: none;
+    position: fixed;
+    text-align: center;
+    align-items: center;
+    font-size: rem(14px);
+    justify-content: center;
+    color: $bit-color-background-primary;
+    background-color: $bit-color-background-primary;
+}
+
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+        color: $bit-color-foreground-primary;
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    background-color: transparent;
+    height: env(safe-area-inset-top);
+}

@@ -18,6 +18,11 @@ public partial class BitPivot
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitPivot component.
+    /// </summary>
+    [Parameter] public BitPivotClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
     /// Default selected key for the pivot
     /// </summary>
     [Parameter] public string? DefaultSelectedKey { get; set; }

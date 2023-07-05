@@ -10,18 +10,18 @@
             &:hover,
             &:active {
                 .bit-drp-txt-ctn {
-                    border-color: $color-state-invalid-hover;
+                    border-color: $color-state-error;
                 }
             }
 
             &:focus {
                 &::after {
-                    border-color: $color-state-invalid-hover;
+                    border-color: $color-state-error;
                 }
             }
 
             .bit-drp-txt-ctn {
-                border-color: $color-state-invalid;
+                border-color: $color-state-error;
             }
         }
     }
@@ -32,14 +32,14 @@
             background-color: $color-background-disabled;
 
             .bit-drp-txt-ctn {
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
                 border-color: $color-border-disabled;
             }
 
             &:hover,
             &:active {
                 .bit-drp-txt-ctn {
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                     border-color: $color-border-disabled;
                 }
             }
@@ -55,18 +55,18 @@
 
         .bit-drp-icn {
             i:first-child {
-                color: $color-text-disabled;
+                color: $color-foreground-disabled;
             }
         }
 
         .bit-drp-lbl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         &.bit-drp-hval {
             .bit-drp-wrp {
                 .bit-drp-txt-ctn {
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                 }
             }
         }
@@ -100,7 +100,7 @@
 .bit-drp-hval {
     .bit-drp-wrp {
         .bit-drp-txt-ctn {
-            color: $color-text-primary;
+            color: $color-foreground-primary;
         }
     }
 }
@@ -111,7 +111,7 @@
             height: 100%;
             max-height: unset;
             width: spacing(34);
-            box-shadow: $shadow-callout;
+            box-shadow: $box-shadow-callout;
             padding: spacing(3) spacing(2.5);
             animation-name: opacity, bit-drp-trans-x;
         }
@@ -125,7 +125,7 @@
             position: fixed;
             cursor: pointer;
             pointer-events: auto;
-            background: $color-background-transparent;
+            background: $color-background-overlay;
         }
     }
 }
@@ -169,7 +169,7 @@
     box-sizing: border-box;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-drp-txt-ctn {
@@ -185,10 +185,10 @@
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     line-height: spacing(3.75);
-    color: $color-text-primary3;
     border-radius: spacing(0.25);
+    color: $color-foreground-secondary;
     padding: 0 spacing(3.5) 0 spacing(1);
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
 .bit-drp-icn {
@@ -205,7 +205,7 @@
         pointer-events: none;
         display: inline-block;
         font-size: spacing(1.5);
-        color: $color-text-primary3;
+        color: $color-foreground-secondary;
     }
 }
 
@@ -215,29 +215,30 @@
     user-select: none;
     position: relative;
     box-sizing: border-box;
+    background-color: $color-background-primary;
 
     @media (hover: hover) {
         &:hover {
             .bit-drp-txt-ctn {
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
                 border: $shape-border-width $shape-border-style $color-action-hover-border-primary;
             }
 
             .bit-drp-icn i {
-                color: $color-action-hover-text-primary;
+                color: $color-action-hover-foreground-primary;
             }
         }
     }
 
     &:active {
         .bit-drp-txt-ctn {
-            color: $color-action-active-text-primary;
+            color: $color-action-active-foreground-primary;
             border-color: $color-action-active-border-primary;
         }
 
         .bit-drp-icn {
             i {
-                color: $color-action-active-text-primary;
+                color: $color-action-active-foreground-primary;
             }
         }
     }
@@ -245,7 +246,7 @@
     &:focus {
         .bit-drp-txt-ctn,
         .bit-drp-icn i {
-            color: $color-text-primary;
+            color: $color-foreground-primary;
         }
 
         &::after {
@@ -275,16 +276,16 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     line-height: spacing(2.5);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     background-color: transparent;
     border: $shape-border-width $shape-border-style transparent;
 
     &.bit-drp-sel {
-        background-color: $color-background-primary2;
+        background-color: $color-background-secondary;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-background-primary2;
+                background-color: $color-action-hover-background-primary;
             }
         }
     }
@@ -307,6 +308,7 @@
         overflow: hidden;
         position: relative;
         width: spacing(2.5);
+        min-width: spacing(2.5);
         align-items: center;
         height: spacing(2.5);
         box-sizing: border-box;
@@ -315,7 +317,7 @@
         border-radius: spacing(0.25);
         transition-property: background, border, border-color;
         transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary2;
+        border: $shape-border-width $shape-border-style $color-border-primary;
 
         .bit-drp-chm {
             opacity: 0;
@@ -326,25 +328,23 @@
             align-items: center;
             justify-content: center;
             font-size: spacing(1.375);
-            color: $color-text-primary;
-            font-family: $typography-font-family-icons;
         }
     }
 
     .bit-drp-txt {
         line-height: spacing(2.5);
-        color: $color-text-primary;
+        color: $color-foreground-primary;
     }
 
     &.bit-drp-idis {
         cursor: default;
 
         .bit-drp-chb {
-            border-color: $color-text-disabled;
+            border-color: $color-foreground-disabled;
         }
 
         .bit-drp-txt {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
     }
 
@@ -352,13 +352,13 @@
         &:hover {
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-action-hover-text-primary;
+                color: $color-foreground-secondary;
             }
 
             &.bit-drp-idis {
                 .bit-drp-chm {
                     opacity: 0;
-                    color: $color-text-disabled;
+                    color: $color-foreground-disabled;
                 }
             }
         }
@@ -371,7 +371,7 @@
 
             .bit-drp-chm {
                 opacity: 1;
-                color: $color-text-primary;
+                color: $color-primary-text;
             }
         }
 
@@ -382,70 +382,7 @@
                     background-color: $color-action-hover-primary;
 
                     .bit-drp-chm {
-                        color: $color-action-hover-text-primary;
-                    }
-                }
-            }
-        }
-    }
-
-    &.bit-dis {
-        pointer-events: none;
-
-        .bit-drp-chb-ctn {
-            cursor: default;
-        }
-
-        .bit-drp-chb {
-            border-color: $color-neutrals-gray60;
-            background-color: $color-background-primary;
-
-            .bit-drp-chm {
-                opacity: 1;
-                color: $color-neutrals-white;
-                background-color: $color-background-primary;
-            }
-        }
-
-        .bit-drp-txt {
-            color: $color-neutrals-gray60;
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                .bit-drp-chb {
-                    border-color: $color-neutrals-gray60;
-
-                    .bit-drp-chm {
-                        opacity: 0;
-                    }
-                }
-            }
-        }
-
-        &.bit-drp-chd {
-            .bit-drp-chb {
-                border-color: $color-neutrals-gray60;
-                background-color: $color-neutrals-gray60;
-
-                .bit-drp-chm {
-                    color: $color-neutrals-white;
-                    background-color: $color-neutrals-gray60;
-                    opacity: 1;
-                }
-            }
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-drp-chb {
-                        border-color: $color-neutrals-gray60;
-                        background-color: $color-neutrals-gray60;
-
-                        .bit-drp-chm {
-                            color: $color-neutrals-white;
-                            background-color: $color-neutrals-gray60;
-                            opacity: 1;
-                        }
+                        color: $color-action-hover-secondary;
                     }
                 }
             }
@@ -464,9 +401,9 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     border-style: $shape-border-style;
-    border-color: $color-border-primary2;
+    border-color: $color-border-primary;
     font-family: $typography-font-family;
     border-width: 0 0 $shape-border-width;
     background-color: $color-background-primary;
@@ -474,11 +411,11 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary2;
+            border-color: $color-action-hover-border-primary;
 
             .bit-drp-sic {
                 i {
-                    color: $color-primary-lower;
+                    color: $color-action-hover-primary;
                 }
             }
         }
@@ -489,11 +426,10 @@
             &:hover {
                 .bit-drp-sic {
                     width: spacing(0.5);
-                    color: $color-primary-lower;
+                    color: $color-action-hover-primary;
 
                     i {
                         opacity: 0;
-                        color: $color-primary-lower;
                     }
                 }
             }
@@ -505,11 +441,9 @@
 
         .bit-drp-sic {
             width: spacing(0.5);
-            color: $color-primary-lower;
 
             i {
                 opacity: 0;
-                color: $color-primary-lower;
             }
         }
 
@@ -558,9 +492,9 @@
     font-family: inherit;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    color: $color-text-primary;
     padding: 0 0 spacing(0.0625);
     background-color: transparent;
+    color: $color-foreground-primary;
 }
 
 .bit-drp-sbcc {
@@ -579,7 +513,7 @@
                 background-color: $color-background-secondary;
 
                 i {
-                    color: $color-text-primary;
+                    color: $color-foreground-primary;
                 }
             }
         }
@@ -622,7 +556,7 @@
         margin: 0 spacing(0.5);
         font-size: spacing(1.5);
         line-height: spacing(2);
-        color: $color-text-primary2;
+        color: $color-foreground-primary;
     }
 }
 
@@ -633,8 +567,8 @@
     height: 100%;
     display: none;
     position: fixed;
+    z-index: $zindex-overlay;
     background-color: transparent;
-    z-index: $space-overlay-zindex0;
 }
 
 .bit-drp-clr {
@@ -643,10 +577,11 @@
     width: spacing(3.75);
     height: spacing(3.75);
     justify-content: center;
+    background-color: $color-background-secondary;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-background-secondary2;
+            background-color: $color-action-hover-background-primary;
         }
     }
 }
@@ -657,11 +592,11 @@
     font-weight: 400;
     overflow: hidden;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     font-size: spacing(1.75);
-    box-shadow: $shadow-callout;
     animation-fill-mode: both;
     animation-duration: 0.367s;
-    z-index: $space-overlay-zindex1;
+    box-shadow: $box-shadow-callout;
     background-color: $color-background-primary;
     animation-name: bit-fade-show, bit-slide-down;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
@@ -708,7 +643,7 @@
     font-size: spacing(1.875);
     line-height: spacing(2.5);
     background-color: transparent;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
     border: $shape-border-width $shape-border-style transparent;
 
     @media (hover: hover) {
@@ -720,7 +655,7 @@
 
 .bit-drp-itm[disabled] {
     cursor: default;
-    color: $color-text-disabled;
+    color: $color-foreground-disabled;
 
     @media (hover: hover) {
         &:hover {
@@ -730,11 +665,11 @@
 }
 
 .bit-drp-sel {
-    background-color: $color-background-primary2;
+    background-color: $color-background-secondary;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-background-primary2;
+            background-color: $color-action-hover-background-primary;
         }
     }
 }
@@ -742,7 +677,7 @@
 .bit-drp-idiv {
     width: 100%;
     height: spacing(0.125);
-    background-color: $color-background-primary3;
+    background-color: $color-background-secondary;
 }
 
 .bit-drp-cls {
@@ -758,9 +693,9 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     font-size: spacing(1.75);
-    color: $color-text-primary2;
     border-radius: spacing(0.25);
     background-color: transparent;
+    color: $color-foreground-primary;
 
     span {
         height: 100%;
@@ -776,14 +711,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-text-primary;
+            color: $color-action-hover-foreground-primary;
             background-color: $color-action-hover-background-primary;
         }
     }
 
     &:active {
-        color: $color-action-active-text-primary2;
-        background-color: $color-action-hover-background-primary2;
+        color: $color-action-active-foreground-primary;
+        background-color: $color-action-active-background-primary;
     }
 }
 

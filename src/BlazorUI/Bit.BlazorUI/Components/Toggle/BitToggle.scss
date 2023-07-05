@@ -7,7 +7,7 @@
 
     &.bit-dis {
         .bit-tgl-lbl {
-            color: $color-text-disabled;
+            color: $color-foreground-disabled;
         }
 
         .bit-tgl-btn {
@@ -18,14 +18,14 @@
             @media (hover: hover) {
                 &:hover {
                     .bit-tgl-sta {
-                        background-color: $color-background-primary3;
+                        background-color: $color-foreground-disabled;
                     }
                 }
             }
         }
 
         .bit-tgl-sta {
-            background-color: $color-background-primary3;
+            background-color: $color-foreground-disabled;
         }
 
         &.bit-tgl-chk {
@@ -43,26 +43,26 @@
 
     &.bit-inv {
         .bit-tgl-btn {
-            border-color: $color-state-invalid;
+            border-color: $color-state-error;
         }
 
         .bit-tgl-stx {
-            color: $color-state-invalid;
+            color: $color-state-error;
         }
 
         &.bit-tgl-chk {
             .bit-tgl-btn {
-                background-color: $color-state-invalid;
+                background-color: $color-state-error;
 
                 @media (hover: hover) {
                     &:hover {
-                        background-color: $color-state-invalid-hover;
+                        background-color: $color-state-error;
                     }
                 }
             }
 
             .bit-tgl-stx {
-                color: $color-state-invalid;
+                color: $color-state-error;
             }
         }
     }
@@ -77,7 +77,7 @@
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-text-primary;
+    color: $color-foreground-primary;
 }
 
 .bit-tgl-cnt {
@@ -101,14 +101,14 @@
     border-radius: spacing(1.25);
     transition: all 0.1s ease 0s;
     background: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary2;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary2;
+            border-color: $color-action-hover-border-primary;
 
             .bit-tgl-sta {
-                background-color: $color-action-hover-background-secondary2;
+                background-color: $color-action-hover-foreground-secondary;
             }
         }
     }
@@ -121,7 +121,7 @@
     height: spacing(1.5);
     box-sizing: border-box;
     transition: all 0.1s ease 0s;
-    background-color: $color-background-secondary3;
+    background-color: $color-foreground-secondary;
     border: spacing(0.75) $shape-border-style transparent;
 }
 
@@ -145,14 +145,14 @@
                 background-color: $color-action-hover-primary;
 
                 .bit-tgl-sta {
-                    background-color: $color-action-hover-background-primary;
+                    background-color: $color-primary-text;
                 }
             }
         }
     }
 
     .bit-tgl-sta {
-        background-color: $color-background-primary;
+        background-color: $color-primary-text;
     }
 }
 

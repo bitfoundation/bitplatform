@@ -10,7 +10,7 @@ public class AppSettings
 
     public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
 
-    public string UserProfileImagePath { get; set; } = default!;
+    public string UserProfileImagesDir { get; set; } = default!;
 
     public string WebServerAddress { get; set; } = default!;
 }

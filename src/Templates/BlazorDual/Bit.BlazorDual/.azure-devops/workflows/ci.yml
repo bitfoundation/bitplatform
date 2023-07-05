@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
 
 jobs:
 - job: build_blazor_server
@@ -18,10 +18,10 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+  - task: NodeTool@0
     inputs:
-      version: 6.x
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
   
   - task: Bash@3
     displayName: 'Build'
@@ -43,10 +43,10 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: UseDotNet@2
-    displayName: 'Use dotnet sdk 6.x for LibSassBuilder'
+  - task: NodeTool@0
     inputs:
-      version: 6.x
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
 
   - task: Bash@3
     displayName: 'Restore workloads'

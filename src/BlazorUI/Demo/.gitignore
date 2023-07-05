@@ -216,15 +216,17 @@ ModelManifest.xml
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
 # Bit.BlazorUI.Demo
 *.map
 *Resource.designer.cs
-/Client/Shared/**/*.css
 custom.aprof
 
 /Server/Api/Attachments/**/*.*
+/Server/Api/BitFileUploaderFiles
+/Server/Api/Properties/PublishProfiles/*.*
+/Server/Api/Properties/ServiceDependencies/*.*
 
-/Client/Shared/wwwroot/scripts/app*.js
+/Client/Core/**/*.css
+/Client/Core/wwwroot/scripts/app*.js

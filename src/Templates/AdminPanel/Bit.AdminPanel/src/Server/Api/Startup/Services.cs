@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
 using AdminPanel.Client.Web.Services.Implementations;
-using AdminPanel.Client.Shared.Services.Implementations;
+using AdminPanel.Client.Core.Services.Implementations;
 using Microsoft.AspNetCore.Components;
 #endif
 
@@ -29,6 +29,7 @@ public static class Services
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddClientSharedServices();
+        services.AddClientWebServices();
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")

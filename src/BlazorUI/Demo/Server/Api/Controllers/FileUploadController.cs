@@ -45,7 +45,7 @@ public partial class FileUploadController : AppControllerBase
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task<IActionResult> UploadChunkedFile(IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadChunkedFile(IFormFile file, [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId, CancellationToken cancellationToken)
     {
         if (file is null)
         {
@@ -60,7 +60,6 @@ public partial class FileUploadController : AppControllerBase
             Directory.CreateDirectory(_settings.UploadPath);
         }
 
-        var bitFileId = Request.Headers["BIT_FILE_ID"].ToString();
         var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{file.FileName}");
 
         using var targetStream = System.IO.File.Exists(path) 

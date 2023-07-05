@@ -1,5 +1,5 @@
 ﻿@page "/"
-@using AdminPanel.Client.Shared
+@using AdminPanel.Client.Core
 @using AdminPanel.Shared.Infra;
 @namespace AdminPanel.Client.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -7,24 +7,25 @@
 @{
     Layout = "_Layout";
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
-    var isDefaultDeploymentType = WebAppDeploymentTypeDetector.Current.IsDefault();
-    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();
-    RenderMode renderMode = isStatic
-                            ? RenderMode.Static
-                            : isBlazorServer
-                            ? isDefaultDeploymentType || isPwa
-                            ? RenderMode.Server
-                            : RenderMode.ServerPrerendered
-                            : isDefaultDeploymentType || isPwa
-                            ? RenderMode.WebAssembly
-                            : RenderMode.WebAssemblyPrerendered;
+    var isSpaPrerendered = WebAppDeploymentTypeDetector.Current.IsSpaPrerendered();
+    var isPwaPrerendered = WebAppDeploymentTypeDetector.Current.IsPwaPrerendered();
+    var isPrerenderedOnly = WebAppDeploymentTypeDetector.Current.IsPrerenderedOnly();
 
-    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    var noPrerender = Request.Query["no-prerender"].Count > 0;
+
+    RenderMode renderMode = RenderMode.Static;
+
+    if (isPrerenderedOnly is false)
     {
-        if (Request.ShouldRenderStaticMode())
+        if (isBlazorServer)
         {
-            renderMode = RenderMode.Static;
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.Server : RenderMode.ServerPrerendered;
+        }
+        else
+        {
+            renderMode = isSpa || isPwa || noPrerender ? RenderMode.WebAssembly : RenderMode.WebAssemblyPrerendered;
         }
     }
 }

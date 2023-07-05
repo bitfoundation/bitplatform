@@ -14,7 +14,6 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId">
-    <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
     <button id="@_menuButtonId"
             type="@ButtonType?.GetValue()"
             aria-label="@AriaLabel"
@@ -37,6 +36,7 @@
             <i class="bit-icon bit-icon--ChevronDown"></i>
         }
     </button>
+    <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
     <div id="@_menuButtonCalloutId" class="bit-mnb-its" tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (TItem item in _items)

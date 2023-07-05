@@ -1,0 +1,26 @@
+﻿.page {
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.bitplatform {
+    width: 100%;
+    display: flex;
+    padding-top: 5rem;
+    justify-content: center;
+}
+
+.vision {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    max-width: 75rem;
+    padding-top: 7rem;
+    text-align: center;
+    padding-bottom: 5rem;
+    justify-content: center;
+}

@@ -1,6 +1,9 @@
 ﻿@page "/admin-panel/settings"
-
 @inherits AppComponentBase
+
+<PageOutlet Url="admin-panel/settings"
+            Title="Settings - AdminPanel"
+            Description="settings of the admin panel template of the bit platform" />
 
 <div class="page-container">
     <h1 class="page-main-title">Settings</h1>
@@ -92,7 +95,7 @@
             of Environment.SpecialFolder.ApplicationData as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
         </div>
         <div class="code-box">
-            <pre class="code"><code>"UserProfileImagePath": "Attachments/Profiles/"</code></pre>
+            <pre class="code"><code>"UserProfileImagesDir": "Attachments/Profiles/"</code></pre>
         </div>
     </section>
 
@@ -109,7 +112,7 @@
 }</code></pre>
         </div>
         <div class="section-card-txt">
-            <span class="bold-txt">Note</span>: You can find Health Checks dashboard from <span class="high-light-text">https://localhost:5001/healthchecks-ui</span> by default.
+            <span class="bold-txt">Note</span>: You can find Health Checks dashboard from <span class="high-light-text">https://localhost:5011/healthchecks-ui</span> by default.
         </div>
     </section>
 </div>

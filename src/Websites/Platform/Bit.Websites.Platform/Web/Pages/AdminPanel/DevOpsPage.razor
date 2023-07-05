@@ -1,6 +1,9 @@
-﻿@page "/admin-panel/dev-ops"
-
+﻿@page "/admin-panel/devops"
 @inherits AppComponentBase
+
+<PageOutlet Url="admin-panel/devops"
+            Title="DevOps - AdminPanel"
+            Description="devops of the admin panel template of the bit platform" />
 
 <div class="page-container">
     <h1 class="page-main-title">DevOps</h1>
@@ -45,7 +48,7 @@
         </div>
         <div class="code-box">
             <pre><code>env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev/api/' # The API backend URL that clients use to connect to the server.
   APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you want to deploy your project to the Azure Web App)
 </code></pre>
@@ -69,12 +72,18 @@ AZURE_APP_SERVICE_PUBLISH_PROFILE # https://learn.microsoft.com/en-us/azure/app-
 ANDROID_RELEASE_KEYSTORE_FILE_BASE64
 ANDROID_RELEASE_SIGNING_PASSWORD
 ANDROID_RELEASE_KEYSTORE_PASSWORD
+APPLICATION_VERSION
+APPLICATION_DISPLAY_VERSION
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
-# iOS https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
-iOS_BUILD_CERTIFICATE_FILE_BASE64
-iOS_P12_PASSWORD
-iOS_BUILD_PROVISION_PROFILE_FILE_BASE64
-iOS_KEYCHAIN_PASSWORD
+# iOS https://www.andreasnesheim.no/setting-up-ci-for-your-net-maui-ios-app-with-github-actions/
+APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64
+APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD
+APPSTORE_API_KEY_ISSUER_ID
+APPSTORE_API_KEY_ID
+APPSTORE_API_KEY_PRIVATE_KEY
+IOS_CODE_SIGN_PROVISION
+APPLICATION_VERSION
+APPLICATION_DISPLAY_VERSION
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-</code></pre>
         </div>
         <div class="section-card-txt">

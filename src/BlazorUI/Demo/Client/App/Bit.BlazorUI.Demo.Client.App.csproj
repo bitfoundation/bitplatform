@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net7.0-android;net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net7.0-android</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
         <OutputType>Exe</OutputType>
@@ -11,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit BlazorUI Demo</ApplicationTitle>
+        <ApplicationTitle>Bit&#x2004;BlazorUI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -27,22 +28,30 @@
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <!-- Workaround for inspect MacCatalyst app in Safari -->
-        <CodeSignEntitlements Condition="'$(Configuration)' == 'Debug'">Platforms/MacCatalyst/Entitlements.Debug.plist</CodeSignEntitlements>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <TrimMode>link</TrimMode>
         <EnableLLVM>true</EnableLLVM>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+        <MtouchLink>Full</MtouchLink>
+        <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+        <EnableSGenConc>True</EnableSGenConc>
+        <MtouchInterpreter>all</MtouchInterpreter>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <LinkDescription Include="Platforms\iOS\LinkDesc.xml" />
+    </ItemGroup>
+
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <LinkDescription Include="Platforms\Android\LinkDesc.xml" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
-        <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0-preview1 -->
+        <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0 -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net7.0-android /p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net7.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
@@ -63,21 +72,22 @@
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Components" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Implementations" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.0.0">
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 

@@ -9,8 +9,8 @@
     min-width: spacing(15);
     box-sizing: border-box;
     text-overflow: ellipsis;
+    border-width: spacing(0.1875);
     border-style: $shape-border-style;
-    border-width: $shape-border-width;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
@@ -18,7 +18,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-text-disabled;
+        color: $color-foreground-disabled;
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
@@ -35,17 +35,17 @@
 }
 
 .bit-ldb-pri {
-    color: $color-secondary-main;
+    color: $color-primary-text;
     border-color: $color-primary-main;
     background-color: $color-primary-main;
 
     .bit-ldb-spn {
-        border-color: $color-secondary-high;
-        border-top-color: $color-primary-lower;
+        border-color: $color-border-secondary;
+        border-top-color: $color-primary-dark;
     }
 
     .bit-ldb-lbl {
-        color: $color-secondary-main;
+        color: $color-primary-text;
     }
 
     @media (hover: hover) {
@@ -62,27 +62,27 @@
 }
 
 .bit-ldb-std {
-    color: $color-text-primary;
-    border-color: $color-border-primary2;
-    background-color: $color-background-primary;
+    color: $color-secondary-text;
+    border-color: $color-border-primary;
+    background-color: $color-secondary-main;
 
     .bit-ldb-spn {
-        border-color: $color-secondary-lower;
-        border-top-color: $color-primary-main;
+        border-color: $color-border-secondary;
+        border-top-color: $color-primary-dark;
     }
 
     .bit-ldb-lbl {
-        color: $color-text-primary2;
+        color: $color-foreground-primary;
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $color-action-hover-secondary;
         }
     }
 
     &:active {
-        background-color: $color-action-active-background-primary;
+        background-color: $color-action-active-secondary;
     }
 }
 
@@ -97,7 +97,7 @@
     font-size: spacing(1.75);
     min-height: spacing(4.5);
     padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height-buttons;
+    line-height: $typography-line-height;
 }
 
 .bit-ldb-lg {

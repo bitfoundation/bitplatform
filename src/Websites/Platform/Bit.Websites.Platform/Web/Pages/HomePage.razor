@@ -1,6 +1,9 @@
 ﻿@page "/"
-
 @inherits AppComponentBase
+
+<PageOutlet Url=""
+            Title="Home"
+            Description="home page of the bit platform" />
 
 <div class="page-container">
     <section class="page-section hero-section">
@@ -40,7 +43,7 @@
                     </div>
                     <div class="flex-container">
                         <a class="template-link" href="@Urls.TodoTemplate">Learn more about the TodoTemplate <span class="template-link-arrow"></span></a>
-                        <a class="demo-btn" href="@Urls.TodoTemplateSSR" target="_blank">Demo</a>
+                        <a class="demo-btn" href="@Urls.TodoTemplatePwaPrerendered" target="_blank">Demo</a>
                     </div>
                 </div>
                 <div class="template-card">

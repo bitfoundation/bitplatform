@@ -6,16 +6,13 @@
         isOpen: boolean) {
 
         const datePicker = document.getElementById(datePickerId);
-        if (datePicker == null)
-            return;
+        if (datePicker == null) return;
 
         const datePickerCallout = document.getElementById(datePickerCalloutId);
-        if (datePickerCallout == null)
-            return;
+        if (datePickerCallout == null) return;
 
         const datePickerOverlay = document.getElementById(datePickerOverlayId);
-        if (datePickerOverlay == null)
-            return;
+        if (datePickerOverlay == null) return;
 
         if (isOpen) {
             datePickerCallout.style.display = "none";
@@ -31,7 +28,7 @@
             const datePickerWidth = datePicker.offsetWidth;
             const datePickerX = datePicker.getBoundingClientRect().x;
             const datePickerY = datePicker.getBoundingClientRect().y;
-            const datePickerTop = datePicker.getBoundingClientRect().y;
+            const datePickerTop = datePicker.getBoundingClientRect().top;
             const datePickerWrapperBottom = window.innerHeight - (datePickerHeight + datePickerY);
             const datePickerWrapperRight = window.innerWidth - (datePickerWidth + datePickerX);
 
@@ -59,7 +56,7 @@
         }
     }
 
-    static checkMonthPickerWidth(datePickerCalloutId: string, responsive: boolean) {
+    static checkMonthPickerWidth(datePickerId: string, datePickerCalloutId: string, responsive: boolean) {
 
         const datePickerCallout = document.getElementById(datePickerCalloutId);
 
@@ -76,11 +73,29 @@
 
         if (datePickerCalloutWidth > bodyWidth) return true;
 
+        const datePicker = document.getElementById(datePickerId);
+
+        if (datePicker == null) return;
+
         const { x: calloutLeft } = datePickerCallout.getBoundingClientRect();
 
         if (datePickerCalloutWidth + calloutLeft > bodyWidth) {
-            datePickerCallout.style.left = "0";
-            datePickerCallout.style.right = "0";
+            const datePickerOffsetRight = bodyWidth - (datePicker.getBoundingClientRect().x + datePicker.offsetWidth);
+            const rightPositon = bodyWidth - (datePickerCalloutWidth + datePickerOffsetRight);
+            const leftPositon = rightPositon + datePickerCalloutWidth;
+            const spaceFromRight = bodyWidth - rightPositon;
+            const spaceFromLeft = bodyWidth - leftPositon;
+
+            if (rightPositon > 0 && spaceFromRight > spaceFromLeft) {
+                datePickerCallout.style.left = rightPositon + "px";
+            }
+            else if (leftPositon > 0 && spaceFromRight < spaceFromLeft) {
+                datePickerCallout.style.left = leftPositon + "px";
+            }
+            else {
+                datePickerCallout.style.left = ((bodyWidth - datePickerCalloutWidth) / 2) + "px";
+            }
+            datePickerCallout.style.right = "unset";
             datePickerCallout.style.margin = "auto";
             datePickerCallout.style.width = "fit-content";
         }

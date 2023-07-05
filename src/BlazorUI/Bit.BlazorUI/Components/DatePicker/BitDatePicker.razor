@@ -36,7 +36,7 @@
                    disabled=@(IsEnabled is false)
                    readonly=@(AllowTextInput is false)
                    aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-controls="@(IsOpen ? _calloutId : null)" 
+                   aria-controls="@(IsOpen ? _calloutId : null)"
                    aria-labelledby="@(Label.HasValue() ? _labelId : null)" />
 
             @if (IconTemplate is not null)
@@ -101,11 +101,12 @@
                                 </button>
                                 @if (ShowCloseButton)
                                 {
-                                    <BitIconButton IconName="BitIconName.ChromeClose"
-                                                   Class="bit-dtp-hdr-ibtn"
-                                                   Title="Close date picker"
-                                                   ButtonType="BitButtonType.Button"
-                                                   OnClick="CloseCallout" />
+                                    <button @onclick="CloseCallout"
+                                            type="button"
+                                            class="bit-dtp-nav-btn bit-dtp-cbtn"
+                                            title="Close date picker">
+                                        <i class="bit-icon" aria-hidden="true">&#xE8BB;</i>
+                                    </button>
                                 }
                             </div>
                         </div>
@@ -208,7 +209,7 @@
                                            @bind:event="oninput"
                                            @onfocus="HandleOnTimeMinuteFocus"
                                            min="0"
-                                           max="59" 
+                                           max="59"
                                            type="number"
                                            inputmode="numeric"
                                            class="bit-dtp-tinp"
@@ -272,7 +273,7 @@
                                                     title="@monthName"
                                                     aria-readonly="true"
                                                     aria-label="@monthName"
-                                                    class=@GetMonthCellClassName(monthIndex)
+                                                    class="bit-dtp-rbtn @GetMonthCellClassName(monthIndex)"
                                                     disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
                                                     tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
                                                     aria-disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
@@ -331,6 +332,7 @@
                                             <button @onclick="() => SelectYear(year)"
                                                     type="button"
                                                     role="gridcell"
+                                                    class="bit-dtp-rbtn"
                                                     aria-readonly="true"
                                                     disabled="@IsYearOutOfMinAndMaxDate(year)"
                                                     tabindex="@(IsYearSelected(year) ? 0 : -1)"

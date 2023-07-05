@@ -9,6 +9,9 @@
         <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+
+        <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,37 +28,50 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bup" Version="5.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.0.0">
+        <PackageReference Include="Bit.Bup" Version="5.1.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.1.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Contracts" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Services.Implementations" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Shared.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\Shared\Bit.BlazorUI.Demo.Client.Shared.csproj" />
+        <ProjectReference Include="..\Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
         <Content Update="electron.manifest.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+        <PackageReference Include="ElectronNET.API" Version="23.6.1" />
     </ItemGroup>
 
     <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="$(WebAppDeploymentType.Contains('Pwa'))" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Newtonsoft.Json.dll" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+        <Exec Command="dotnet electronize version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
+        </Exec>
+        <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
+    </Target>
 
 </Project>

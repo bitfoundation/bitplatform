@@ -213,10 +213,12 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
 # AdminPanel
@@ -227,4 +229,4 @@ custom.aprof
 
 /src/Server/Api/Attachments/**/*.*
 
-/src/Client/Shared/wwwroot/scripts/app*.js
+/src/Client/Core/wwwroot/scripts/app*.js

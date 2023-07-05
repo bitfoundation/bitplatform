@@ -1,7 +1,10 @@
 ﻿@page "/admin-panel"
 @page "/admin-panel/overview"
-
 @inherits AppComponentBase
+
+<PageOutlet Url="admin-panel/overview"
+            Title="Overview - AdminPanel"
+            Description="overview of the admin panel template of the bit platform" />
 
 <div class="page-container">
     <h1 class="page-main-title">AdminPanel</h1>
@@ -21,7 +24,7 @@
         </div>
 
         <div class="page-conent-container">
-            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="SPA">Multi-lingual Demo</a>
+            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="Spa">Multi-lingual Demo</a>
             <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
             <a class="secondary-btn" href="@Urls.AdminPanelNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
             <a class="secondary-btn" href="@Urls.AdminPanelFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>

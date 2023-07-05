@@ -3,7 +3,7 @@
   "splashscreen": {
     "imageFile": ""
   },
-  "name": "AdminPanel.Client.Web",
+  "name": "AdminPanel",
   "author": "",
   "singleInstance": true,
   "environment": "Production",

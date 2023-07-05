@@ -3,7 +3,7 @@ name: TodoTemplate CI
 # https://bitplatform.dev/todo-template/dev-ops
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'DefaultDeploymentType'
+  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
 
 on:
   workflow_dispatch:
@@ -26,6 +26,10 @@ jobs:
       with:
         global-json-file: global.json
       
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+
     - name: Build
       run: dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
 
@@ -42,6 +46,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
 
     - name: Install Maui
       run: dotnet workload install maui
@@ -66,6 +74,10 @@ jobs:
       with:
         global-json-file: global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -88,6 +100,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
 
     - name: Install Maui
       run: dotnet workload install maui
@@ -112,6 +128,10 @@ jobs:
       with:
         global-json-file: global.json
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+
     - name: Install Maui
       run: dotnet workload install maui
 
@@ -134,6 +154,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
 
     - name: Switch to blazor wasm
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj

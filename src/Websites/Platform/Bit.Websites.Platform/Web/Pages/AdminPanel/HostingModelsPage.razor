@@ -1,6 +1,9 @@
 ﻿@page "/admin-panel/hosting-models"
-
 @inherits AppComponentBase
+
+<PageOutlet Url="admin-panel/hosting-models"
+            Title="Hosting models - AdminPanel"
+            Description="hosting models of the admin panel template of the bit platform" />
 
 <div class="page-container">
     <h1 class="page-main-title">Hosting models (Blazor Mode)</h1>
@@ -78,7 +81,7 @@
             <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/debug-target.webp" />
         </div>
         <div>
-            3. Change <span class="bold-txt">ApiServerAddress</span> in Client/Shared/appsettings.json to make sure your Android / iOS device can reach the server.
+            3. Change <span class="bold-txt">ApiServerAddress</span> in Client/Core/appsettings.json to make sure your Android / iOS device can reach the server.
         </div>
         <br />
         <div>
@@ -107,10 +110,6 @@
         <br />
         <div>
             3. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
-        </div>
-        <div class="section-card-txt">
-            <br />
-            <div class="code-box">dotnet tool install ElectronNET.CLI -g</div>
         </div>
         <div class="section-card-txt">
             <span class="bold-txt">Note</span>: This only runs the project. To debug the project, switch to other modes or consult the <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET </a> documentation.

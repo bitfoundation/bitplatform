@@ -1,0 +1,99 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.box {
+    width: 100%;
+    display: flex;
+    max-width: 100%;
+    margin-bottom: rem(36px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.box-header {
+    width: 100%;
+    display: flex;
+    position: relative;
+    flex-flow: row nowrap;
+    align-items: flex-end;
+    margin-top: rem(32px);
+    box-sizing: border-box;
+    justify-content: space-between;
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
+}
+
+.header-btn-group {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.box-content {
+    width: 100%;
+    overflow: auto;
+    position: relative;
+    min-height: rem(70px);
+    box-sizing: border-box;
+    line-height: rem(24px);
+    /*pre {
+        margin: 0;
+        background-color: $White;
+    }*/
+
+    &::-webkit-scrollbar {
+        width: rem(6px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(8px);
+    }
+}
+
+.example-container {
+    padding: rem(24px);
+
+    &::-webkit-scrollbar {
+        width: rem(10px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem(10px);
+    }
+}
+
+::deep {
+    .header-btn {
+        height: 100%;
+        min-height: rem(40px);
+        border-bottom: none !important;
+        border-radius: rem(4px) rem(4px) 0 0;
+        border: rem(1px) solid $bit-color-border-secondary;
+
+        &.show-code {
+            min-width: rem(125px);
+            padding: rem(4px) rem(12px);
+
+            i {
+                font-size: 1.125rem;
+                margin-right: rem(8px);
+                color: $bit-color-primary-main;
+            }
+        }
+
+        &.copy-link {
+            padding: 0 rem(20px);
+        }
+    }
+
+    .copy-btn {
+        z-index: 1;
+        top: rem(16px);
+        right: rem(24px);
+        width: rem(34px);
+        height: rem(34px);
+        position: absolute;
+        border-radius: 50%;
+    }
+}

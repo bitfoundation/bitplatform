@@ -3,7 +3,7 @@
   "splashscreen": {
     "imageFile": ""
   },
-  "name": "TodoTemplate.Client.Web",
+  "name": "TodoTemplate",
   "author": "",
   "singleInstance": true,
   "environment": "Production",

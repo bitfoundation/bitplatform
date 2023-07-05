@@ -1,8 +1,9 @@
 ﻿using System.Globalization;
+using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
-public partial class BitColorPicker : IAsyncDisposable
+public partial class BitColorPicker : IDisposable
 {
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
@@ -226,12 +227,20 @@ public partial class BitColorPicker : IAsyncDisposable
         await OnSaturationPickerPointerMove(e);
     }
 
-
-    public async ValueTask DisposeAsync()
+    private bool _disposed;
+    public void Dispose()
     {
-        await _js.AbortProcedure(_onWindowPointerUpAbortControllerId);
-        await _js.AbortProcedure(_onWindowPointerMoveAbortControllerId);
-
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        _ = _js.AbortProcedure(_onWindowPointerUpAbortControllerId);
+        _ = _js.AbortProcedure(_onWindowPointerMoveAbortControllerId);
+
+        _disposed = true;
     }
 }

@@ -206,7 +206,7 @@
     <value>Les mots de passe doivent avoir au moins une majuscule ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>{0} doit comporter au moins {1} caractères.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -654,5 +654,23 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
+  </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Nom d'utilisateur ou mot de passe invalide</value>
+  </data>
+  <data name="DeleteAccount" xml:space="preserve">
+    <value>Supprimer le compte</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer votre compte?</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Mise à jour</value>
   </data>
 </root>

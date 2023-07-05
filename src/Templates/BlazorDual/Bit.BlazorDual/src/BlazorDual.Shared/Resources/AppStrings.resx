@@ -206,7 +206,7 @@
     <value>Passwords must have at least one uppercase ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
-    <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>{0} must be at least {1} characters.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
@@ -338,7 +338,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Forgot password?</value>
   </data>
   <data name="FullName" xml:space="preserve">
-    <value>Full Name</value>
+    <value>FullName</value>
   </data>
   <data name="GenderCustom" xml:space="preserve">
     <value>Custom</value>
@@ -648,5 +648,23 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
+  </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Invalid username or password</value>
+  </data>
+  <data name="DeleteAccount" xml:space="preserve">
+    <value>Delete Account</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>Are you sure you want to delete your account?</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Update</value>
   </data>
 </root>
