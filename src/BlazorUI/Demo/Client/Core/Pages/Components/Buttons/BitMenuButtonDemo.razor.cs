@@ -71,7 +71,7 @@ public partial class BitMenuButtonDemo
             Type = "IEnumerable<TItem>",
             LinkType = LinkType.Link,
             Href = "#menu-button-items",
-            DefaultValue = "new IEnumerable<TItem>()",
+            DefaultValue = "new List<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the MenuButton."
         },
         new()

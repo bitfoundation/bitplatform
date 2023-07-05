@@ -70,7 +70,7 @@ public partial class BitSplitButtonDemo
         {
             Name = "Items",
             Type = "IEnumerable<TItem>",
-            DefaultValue = "new IEnumerable<TItem>()",
+            DefaultValue = "new List<TItem>()",
             Description = "List of Item, each of which can be a Button with different action in the SplitButton.",
             LinkType = LinkType.Link,
             Href = "#split-button-items",

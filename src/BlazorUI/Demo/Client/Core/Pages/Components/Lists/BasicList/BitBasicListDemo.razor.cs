@@ -17,7 +17,7 @@ public partial class BitBasicListDemo
         {
             Name = "Items",
             Type = "ICollection<TItem>",
-            DefaultValue = "new ICollection<TItem>()",
+            DefaultValue = "new Array.Empty<TItem>()",
             Description = "Gets or sets the list of items to render.",
         },
         new()

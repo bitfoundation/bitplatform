@@ -16,7 +16,7 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "DefaultValue",
-            Type = "strin?g",
+            Type = "string?",
             DefaultValue = "",
             Description = "The default value of the text in the SearchBox, in the case of an uncontrolled component.",
         },
