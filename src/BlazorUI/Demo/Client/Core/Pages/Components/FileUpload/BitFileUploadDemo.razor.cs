@@ -106,7 +106,7 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "OnProgress",
-            Type = "EventCallback<BitFileInfo>",=
+            Type = "EventCallback<BitFileInfo>",
             Description = "Callback for when the file upload is progressed."
         },
         new()
