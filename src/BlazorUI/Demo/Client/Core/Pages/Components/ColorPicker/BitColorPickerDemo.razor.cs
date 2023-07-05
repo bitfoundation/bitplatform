@@ -17,7 +17,6 @@ public partial class BitColorPickerDemo
         {
             Name = "Color",
             Type = "string",
-            DefaultValue = "#ffffff",
             Description = "CSS-compatible string to describe the color.",
         },
         new()
