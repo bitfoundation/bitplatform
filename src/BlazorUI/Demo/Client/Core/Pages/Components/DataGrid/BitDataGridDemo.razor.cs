@@ -10,8 +10,8 @@ public partial class BitDataGridDemo
          new()
          {
             Name = "Items",
-            Type = "IQueryable<TGridItem>",
-            DefaultValue = "",
+            Type = "IQueryable<TGridItem>?",
+            DefaultValue = "null",
             Description = @"A queryable source of data for the grid.
                             This could be in-memory data converted to queryable using the
                             System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable) extension method,
@@ -21,30 +21,30 @@ public partial class BitDataGridDemo
          new()
          {
             Name = "ItemsProvider",
-            Type = "BitDataGridItemsProvider<TGridItem>",
-            DefaultValue = "",
+            Type = "BitDataGridItemsProvider<TGridItem>?",
+            DefaultValue = "null",
             Description = @"A callback that supplies data for the rid.
                             You should supply either Items or ItemsProvider, but not both.",
          },
          new()
          {
             Name = "Class",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
          },
          new()
          {
             Name = "Theme",
-            Type = "IQueryable<TGridItem>",
+            Type = "string?",
             DefaultValue = "default",
             Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
          },
          new()
          {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Defines the child components of this instance. For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>",
          },
          new()
@@ -69,7 +69,7 @@ public partial class BitDataGridDemo
          {
             Name = "ResizableColumns",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
                             manually. Size changes are not persisted.",
         },
@@ -87,8 +87,8 @@ public partial class BitDataGridDemo
         new()
         {
             Name = "Pagination",
-            Type = "BitDataGridPaginationState",
-            DefaultValue = "",
+            Type = "BitDataGridPaginationState?",
+            DefaultValue = "null",
             Description = @"Optionally links this BitDataGrid<TGridItem> instance with a BitDataGridPaginationState model,
                             causing the grid to fetch and render only the current page of data.
                             This is normally used in conjunction with a Paginator component or some other UI logic
@@ -107,37 +107,37 @@ public partial class BitDataGridDemo
                 new()
                 {
                     Name = "Title",
-                    Type = "string",
-                    DefaultValue = "",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
                 },
                 new()
                 {
                     Name = "Class",
-                    Type = "string",
-                    DefaultValue = "",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "An optional CSS class name. If specified, this is included in the class attribute of table header and body cells for this column.",
                 },
                 new()
                 {
                     Name = "Align",
-                    Type = "BitDataGridAlign",
-                    DefaultValue = "",
+                    Type = "BitDataGridAlign?",
+                    DefaultValue = "null",
                     Description = "If specified, controls the justification of table header and body cells for this column.",
                  },
                  new()
                     {
                         Name = "HeaderTemplate",
-                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
-                        DefaultValue = "",
+                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                        DefaultValue = "null",
                         Description = @"An optional template for this column's header cell. If not specified, the default header template
                                         includes the Title along with any applicable sort indicators and options buttons.",
                     },
                     new()
                     {
                         Name = "ColumnOptions",
-                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>",
-                        DefaultValue = "",
+                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                        DefaultValue = "null",
                         Description = @"If specified, indicates that this column has this associated options UI. A button to display this
                                         UI will be included in the header cell by default.
                                         If HeaderTemplate is used, it is left up to that template to render any relevant
@@ -146,8 +146,8 @@ public partial class BitDataGridDemo
                     new()
                     {
                         Name = "Sortable",
-                        Type = "bool",
-                        DefaultValue = "",
+                        Type = "bool?",
+                        DefaultValue = "null",
                         Description = @"Indicates whether the data should be sortable by this column.
                                         The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
                                         is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
@@ -155,15 +155,15 @@ public partial class BitDataGridDemo
                     new()
                     {
                         Name = "IsDefaultSort",
-                        Type = "BitDataGridSortDirection",
-                        DefaultValue = "",
+                        Type = "BitDataGridSortDirection?",
+                        DefaultValue = "null",
                         Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
                     },
                     new()
                     {
                         Name = "PlaceholderTemplate",
-                        Type = "RenderFragment<PlaceholderContext>",
-                        DefaultValue = "",
+                        Type = "RenderFragment<PlaceholderContext>?",
+                        DefaultValue = "null",
                         Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
                     }
             },
@@ -181,14 +181,13 @@ public partial class BitDataGridDemo
                 {
                     Name = "Property",
                     Type = "Expression<Func<TGridItem, TProp>>",
-                    DefaultValue = "",
                     Description = "Defines the value to be displayed in this column's cells.",
                 },
                 new()
                 {
                     Name = "Format",
-                    Type = "string",
-                    DefaultValue = "",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
                 },
             },
@@ -204,14 +203,13 @@ public partial class BitDataGridDemo
                  {
                     Name = "ChildContent",
                     Type = "RenderFragment<TGridItem>",
-                    DefaultValue= "",
                     Description = @"Specifies the content to be rendered for each row in the table.",
                  },
                  new()
                  {
                     Name = "SortBy",
-                    Type = "BitDataGridSort<TGridItem>",
-                    DefaultValue = "",
+                    Type = "BitDataGridSort<TGridItem>?",
+                    DefaultValue = "null",
                     Description = "Optionally specifies sorting rules for this column.",
                  },
             },

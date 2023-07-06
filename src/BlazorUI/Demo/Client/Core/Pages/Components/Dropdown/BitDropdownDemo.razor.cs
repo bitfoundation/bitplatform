@@ -9,8 +9,8 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "CaretDownTemplate",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Optional custom template for chevron icon.",
         },
         new()
@@ -23,15 +23,15 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "DefaultValue",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Key that will be initially used to set selected item.",
         },
         new()
         {
             Name = "DefaultValues",
             Type = "List<string>",
-            DefaultValue = "",
+            DefaultValue = "new List<string>()",
             Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
         },
         new()
@@ -58,36 +58,43 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "Items",
-            Type = "List<BitDropdownItem>",
-            DefaultValue = "",
+            Type = "List<BitDropdownItem>?",
+            DefaultValue = "null",
             Description = "A list of items to display in the dropdown.",
         },
         new()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitDropdownItem>",
-            DefaultValue = "",
+            Type = "RenderFragment<BitDropdownItem>?",
+            DefaultValue = "null",
             Description = "Optional custom template for dropdown item.",
         },
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "the label associated with the dropdown.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the drop down.",
         },
         new()
         {
             Name = "LabelTemplate",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Optional custom template for label.",
         },
         new()
         {
             Name = "MultiSelectDelimiter",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = ", ",
             Description = "When multiple items are selected, this still will be used to separate values in the dropdown title.",
         },
         new()
@@ -101,49 +108,46 @@ public partial class BitDropdownDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the action button clicked.",
         },
         new()
         {
             Name = "OnSelectItem",
-            Type = "EventCallback<BitDropdownItem> ",
-            DefaultValue = "",
+            Type = "EventCallback<BitDropdownItem>",
             Description = "Callback for when an item is selected.",
         },
         new()
         {
             Name = "Placeholder",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Input placeholder Text, Displayed until an option is selected.",
         },
         new()
         {
             Name = "PlaceholderTemplate",
-            Type = "RenderFragment<BitDropdown>",
-            DefaultValue = "",
+            Type = "RenderFragment<BitDropdown>?",
+            DefaultValue = "null",
             Description = "Optional custom template for placeholder Text.",
         },
         new()
         {
             Name = "Values",
             Type = "List<string>",
-            DefaultValue = "",
+            DefaultValue = "new List<string>()",
             Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.",
         },
         new()
         {
             Name = "ValuesChanged",
             Type = "EventCallback<List<string>>",
-            DefaultValue = "",
             Description = "Callback for when the values changed.",
         },
         new()
         {
             Name = "TextTemplate",
-            Type = "RenderFragment<BitDropdown>",
-            DefaultValue = "",
+            Type = "RenderFragment<BitDropdown>?",
+            DefaultValue = "null",
             Description = "Optional custom template for selected option displayed in after selection.",
         },
         new()
@@ -176,9 +180,15 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnSearch",
+            Type = "EventCallback<string>",
+            Description = "Callback for when the search box input value changes.",
+        },
+        new()
+        {
             Name = "SearchBoxPlaceholder",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Search box input placeholder text.",
         },
         new()
@@ -197,6 +207,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ItemsProvider",
+            Type = "BitDropdownItemsProvider<BitDropdownItem>?",
+            DefaultValue = "null",
+            Description = "The function providing items to the list.",
+        },
+        new()
+        {
+            Name = "VirtualizePlaceholder",
+            Type = "RenderFragment<PlaceholderContext>?",
+            DefaultValue = "null",
+            Description = "The template for items that have not yet been loaded in memory.",
+        },
+        new()
+        {
             Name = "OverscanCount",
             Type = "int",
             DefaultValue = "3",
@@ -206,28 +230,26 @@ public partial class BitDropdownDemo
         {
             Name = "SelectedItems",
             Type = "List<BitDropdownItem>",
-            DefaultValue = "",
+            DefaultValue = "new List<BitDropdownItem>()",
             Description = "The selected items for multiSelect scenarios.",
         },
         new()
         {
             Name = "SelectedItemsChanged",
             Type = "EventCallback<List<BitDropdownItem>>",
-            DefaultValue = "",
             Description = "Callback for when the SelectedItems changed.",
         },
         new()
         {
             Name = "SelectedItem",
-            Type = "BitDropdownItem",
-            DefaultValue = "",
+            Type = "BitDropdownItem?",
+            DefaultValue = "null",
             Description = "The selected item for singleSelect scenarios.",
         },
         new()
         {
             Name = "SelectedItemChanged",
             Type = "EventCallback<BitDropdownItem>",
-            DefaultValue = "",
             Description = "Callback for when the SelectedItem changed.",
         },
         new()
@@ -242,7 +264,7 @@ public partial class BitDropdownDemo
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Darpdown opening direction.",
+            Description = "Dropdown opening direction.",
         },
     };
 

@@ -8,32 +8,11 @@ public partial class BitIconDemo
     {
         new()
         {
-            Name = "AriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Aria label for the root element of the component"
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Custom CSS class for the root element of the component."
-        },
-        new()
-        {
-            Name = "Style",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Custom style for the root element of the component",
-        },
-        new()
-        {
             Name = "IconName",
             Type = "BitIconName",
             LinkType = LinkType.Link,
             Href = "/iconography",
-            DefaultValue = "",
+            DefaultValue = "BitIconName.NotSet",
             Description = "The icon name for the icon shown in the button"
         }
     };

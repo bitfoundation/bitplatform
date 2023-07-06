@@ -9,29 +9,29 @@ public partial class BitSliderDemo
         new()
         {
             Name = "AriaValueText",
-            Type = "Func<double, string>",
-            DefaultValue = "",
+            Type = "Func<double, string>?",
+            DefaultValue = "null",
             Description = "A text description of the Slider number value for the benefit of screen readers. This should be used when the Slider number value is not accurately represented by a number.",
         },
         new()
         {
             Name = "DefaultLowerValue",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The default lower value of the ranged Slider.",
         },
         new()
         {
             Name = "DefaultUpperValue",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The default upper value of the ranged Slider.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The default value of the Slider.",
         },
         new()
@@ -65,15 +65,15 @@ public partial class BitSliderDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Description label of the Slider.",
         },
         new()
         {
             Name = "LowerValue",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The lower value of the ranged Slider.",
         },
         new()
@@ -94,56 +94,55 @@ public partial class BitSliderDemo
         {
             Name = "OnChange",
             Type = "EventCallback<ChangeEventArgs>",
-            DefaultValue = "",
             Description = "Callback when the value has been changed. This will be called on every individual step.",
         },
         new()
         {
             Name = "RangeValue",
-            Type = "BitSliderRangeValue",
-            DefaultValue = "",
+            Type = "BitSliderRangeValue?",
+            DefaultValue = "null",
             Description = "The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue.",
         },
         new()
         {
             Name = "ShowValue",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether to show the value on the right of the Slider.",
         },
         new()
         {
             Name = "SliderBoxHtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "",
+            Type = "Dictionary<string, object>?",
+            DefaultValue = "null",
             Description = "Additional parameter for the Slider box.",
         },
         new()
         {
             Name = "Step",
             Type = "double",
-            DefaultValue = "",
+            DefaultValue = "1",
             Description = "The difference between the two adjacent values of the Slider.",
         },
         new()
         {
             Name = "UpperValue",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The upper value of the ranged Slider.",
         },
         new()
         {
             Name = "Value",
-            Type = "double",
-            DefaultValue = "",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "The value of the Slider.",
         },
         new()
         {
             Name = "ValueFormat",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom formatter for the Slider value.",
         }
     };

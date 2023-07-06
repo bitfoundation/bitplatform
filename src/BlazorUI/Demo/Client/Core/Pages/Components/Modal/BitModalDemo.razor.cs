@@ -24,15 +24,15 @@ public partial class BitModalDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of Modal, It can be Any custom tag or a text.",
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitModalClassStyles",
-            DefaultValue = "",
+            Type = "BitModalClassStyles?",
+            DefaultValue = "null",
             Href = "class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitModal component."
@@ -41,14 +41,14 @@ public partial class BitModalDemo
         {
             Name = "DragElementSelector",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The CSS selector of the drag element. by default the Modal container is the drag element.",
         },
         new()
         {
             Name = "IsAlert",
             Type = "bool?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Determines the ARIA role of the dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.",
         },
         new()
@@ -83,7 +83,6 @@ public partial class BitModalDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "A callback function for when the Modal is dismissed.",
         },
         new()
@@ -105,15 +104,15 @@ public partial class BitModalDemo
         new()
         {
             Name = "SubtitleAriaId",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "ARIA id for the subtitle of the Modal, if any.",
         },
         new()
         {
             Name = "TitleAriaId",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "ARIA id for the title of the Modal, if any.",
         }
     };

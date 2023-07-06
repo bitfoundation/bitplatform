@@ -24,18 +24,21 @@ public partial class BitOverlayDemo
         {
             Name = "AbsolutePosition",
             Type = "bool",
+            DefaultValue = "false",
             Description = "When true, the Overlay will be positioned absolute instead of fixed.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the Overlay.",
         },
         new()
         {
             Name = "IsVisible",
             Type = "bool",
+            DefaultValue = "false",
             Description = "When true, the Overlay and its content will be shown.",
         },
         new()

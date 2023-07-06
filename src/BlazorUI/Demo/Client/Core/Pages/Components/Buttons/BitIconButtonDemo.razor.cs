@@ -11,14 +11,14 @@ public partial class BitIconButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the icon button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the icon button for the benefit of screen readers.",
         },
         new()
@@ -58,36 +58,35 @@ public partial class BitIconButtonDemo
         new()
         {
             Name = "Href",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL the link points to, if provided, icon button renders as an anchor.",
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIcon",
-            DefaultValue = "",
+            Type = "BitIconName",
+            DefaultValue = "BitIconName.NotSet",
             Description = "The icon name for the icon shown in the icon button.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the icon button clicked.",
         },
         new()
         {
             Name = "Target",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
         },
         new()
         {
             Name = "Title",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the icon button.",
         }
     };

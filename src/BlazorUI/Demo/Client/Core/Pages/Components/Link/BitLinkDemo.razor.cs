@@ -9,8 +9,8 @@ public partial class BitLinkDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of link, can be any custom tag or a text.",
         },
         new()
@@ -24,30 +24,22 @@ public partial class BitLinkDemo
         {
             Name = "Href",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "URL the link points to.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the action button clicked.",
         },
         new()
         {
             Name = "Target",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
-        },
-        new()
-        {
-            Name = "Title",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The title to show when the mouse is placed on the action button.",
-        },
+        }
     };
 
 

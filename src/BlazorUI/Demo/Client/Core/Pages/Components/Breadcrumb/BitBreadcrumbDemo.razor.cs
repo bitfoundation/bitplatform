@@ -17,12 +17,14 @@ public partial class BitBreadcrumbDemo
         {
             Name = "ClassFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
+            DefaultValue = "null",
             Description = "Class HTML attribute for BreadList item."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the BitBreadcrumb, that are BitBreadOption components."
         },
         new()
@@ -43,6 +45,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "HrefFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
+            DefaultValue = "null",
             Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
         },
         new()
@@ -63,37 +66,42 @@ public partial class BitBreadcrumbDemo
         {
             Name = "IsSelectedFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Display the item as a Selected item."
         },
         new()
         {
             Name = "IsEnabledField",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "IsEnabled",
             Description = "Whether an item is enabled or not."
         },
         new()
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Whether an item is enabled or not."
         },
         new()
         {
             Name = "MaxDisplayedItems",
             Type = "uint",
+            DefaultValue = "0",
             Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
         },
         new()
         {
             Name = "OverflowAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Aria label for the overflow button."
         },
         new()
         {
             Name = "OverflowIndex",
             Type = "uint",
+            DefaultValue = "0",
             Description = "Optional index where overflow items will be collapsed."
         },
         new()
@@ -113,12 +121,14 @@ public partial class BitBreadcrumbDemo
         {
             Name = "SelectedItemClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The CSS class attribute for the selected item."
         },
         new()
         {
             Name = "SelectedItemStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The style attribute for selected item."
         },
         new()
@@ -132,6 +142,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "StyleFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
+            DefaultValue = "null",
             Description = "Style HTML attribute for BreadList item."
         },
         new()
@@ -145,6 +156,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "TextFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
+            DefaultValue = "null",
             Description = "Text to display in the BreadList item."
         },
     };

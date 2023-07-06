@@ -19,8 +19,8 @@ public partial class BitSpinnerDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The label to show next to the spinner. Label updates will be announced to the screen readers.",
         },
         new()

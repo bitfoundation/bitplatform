@@ -17,13 +17,13 @@ public partial class BitBasicListDemo
         {
             Name = "Items",
             Type = "ICollection<TItem>",
-            DefaultValue = "",
+            DefaultValue = "new Array.Empty<TItem>()",
             Description = "Gets or sets the list of items to render.",
         },
         new()
         {
             Name = "ItemSize",
-            Type = "int",
+            Type = "float",
             DefaultValue = "50",
             Description = "Gets the size of each item in pixels. Defaults to 50px.",
         },
@@ -44,23 +44,23 @@ public partial class BitBasicListDemo
         new()
         {
             Name = "RowTemplate",
-            Type = "RenderFragment<TItem>",
-            DefaultValue = "",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "Gets or sets the Template to render each row.",
         },
         new()
         {
             Name = "ItemsProvider",
             Type = "BitBasicListItemsProvider<TItem>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = @"A callback that supplies data for the rid.
                             You should supply either Items or ItemsProvider, but not both.",
         },
         new()
         {
             Name = "VirtualizePlaceholder",
-            Type = "RenderFragment<PlaceholderContext>",
-            DefaultValue = "",
+            Type = "RenderFragment<PlaceholderContext>?",
+            DefaultValue = "null",
             Description = "Optional custom template for placeholder Text.",
         },
     };

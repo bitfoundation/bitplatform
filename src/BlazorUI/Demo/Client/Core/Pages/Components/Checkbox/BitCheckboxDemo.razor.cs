@@ -10,88 +10,101 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the checkbox for the benefit of screen readers.",
         },
         new()
         {
             Name = "AriaLabelledby",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "ID for element that contains label information for the checkbox.",
         },
         new()
         {
             Name = "AriaPositionInSet",
-            Type = "string",
+            Type = "int?",
+            DefaultValue = "null",
             Description = "The position in the parent set (if in a set) for aria-posinset.",
         },
         new()
         {
             Name = "AriaSetSize",
-            Type = "string",
+            Type = "int?",
+            DefaultValue = "null",
             Description = "The total size of the parent set (if in a set) for aria-setsize.",
         },
         new()
         {
             Name = "BoxSide",
-            Type = "BitBoxSide",
+            Type = "BitCheckBoxSide",
             LinkType = LinkType.Link,
             Href = "#box-side-enum",
-            DefaultValue = "BitBoxSide.Start",
+            DefaultValue = "BitCheckBoxSide.Start",
             Description = "Determines whether the checkbox should be shown before the label (start) or after (end).",
         },
         new()
         {
             Name = "CheckmarkIconName",
-            Type = "BitIcon",
+            Type = "BitIconName",
+            DefaultValue = "Accept",
             Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
         },
         new()
         {
             Name = "CheckmarkIconAriaLabel",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Used to customize the content of checkbox(Label and Box).",
         },
         new()
         {
             Name = "DefaultIsIndeterminate",
-            Type = "bool",
+            Type = "bool?",
+            DefaultValue = "null",
             Description = "Default indeterminate visual state for checkbox.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "bool",
+            Type = "bool?",
+            DefaultValue = "null",
             Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
         },
         new()
         {
             Name = "IsIndeterminate",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Callback that is called when the IsIndeterminate parameter changed.",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Descriptive label for the checkbox.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Used to customize the label for the checkbox.",
         },
         new()
         {
             Name = "Name",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI.",
         },
         new()
@@ -109,7 +122,8 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "Title",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Title text applied to the root element and the hidden checkbox input.",
         },
 
@@ -117,6 +131,7 @@ public partial class BitCheckboxDemo
         {
             Name = "Value",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Checkbox state, control the checked state at a higher level.",
         },
         new()

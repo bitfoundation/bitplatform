@@ -10,24 +10,28 @@ public partial class BitAccordionDemo
         {
             Name = "DefaultIsExpanded",
             Type = "bool?",
+            DefaultValue = "null",
             Description = "Default value of the IsExpanded."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the Accordion."
         },
         new()
         {
             Name = "Description",
             Type = "string?",
+            DefaultValue = "null",
             Description = "A short description in the header of Accordion."
         },
         new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment<bool>?",
+            DefaultValue = "null",
             Description = "Used to customize how the header inside the Accordion is rendered."
         },
         new()
@@ -53,6 +57,7 @@ public partial class BitAccordionDemo
         {
             Name = "Title",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Title in the header of Accordion."
         }
     };

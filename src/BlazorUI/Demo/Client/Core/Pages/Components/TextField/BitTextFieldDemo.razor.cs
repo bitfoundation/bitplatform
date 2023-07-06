@@ -11,30 +11,35 @@ public partial class BitTextFieldDemo
         {
             Name = "AutoComplete",
             Type = "string?",
+            DefaultValue = "null",
             Description = "AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.",
         },
         new()
         {
             Name = "CanRevealPassword",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether to show the reveal password button for input type 'password'.",
         },
         new()
         {
             Name = "DefaultValue",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.",
         },
         new()
         {
             Name = "Description",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Description displayed below the text field to provide additional details about what text to enter.",
         },
         new()
         {
             Name = "DescriptionTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom description for text field.",
         },
         new()
@@ -48,61 +53,70 @@ public partial class BitTextFieldDemo
         {
             Name = "IsMultiline",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether or not the text field is a Multiline text field.",
         },
         new()
         {
             Name = "IsReadonly",
             Type = "bool",
+            DefaultValue = "false",
             Description = "If true, the text field is readonly.",
         },
         new()
         {
             Name = "IsRequired",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
         },
         new()
         {
             Name = "IsUnderlined",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether or not the text field is underlined.",
         },
         new()
         {
             Name = "IsResizable",
-            DefaultValue = "true",
             Type = "bool",
+            DefaultValue = "true",
             Description = "For multiline text fields, whether or not the field is resizable.",
         },
         new()
         {
             Name = "IconName",
             Type = "BitIconName?",
+            DefaultValue = "null",
             Description = "The icon name for the icon shown in the far right end of the text field.",
         },
         new()
         {
             Name = "IsTrimmed",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Label displayed above the text field and read by screen readers.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom label for text field.",
         },
         new()
         {
             Name = "MaxLength",
             Type = "int",
+            DefaultValue = "-1",
             Description = "Specifies the maximum number of characters allowed in the input.",
         },
         new()
@@ -151,42 +165,49 @@ public partial class BitTextFieldDemo
         {
             Name = "Placeholder",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Input placeholder text.",
         },
         new()
         {
             Name = "Prefix",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Prefix displayed before the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.",
         },
         new()
         {
             Name = "PrefixTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom prefix for text field.",
         },
         new()
         {
             Name = "Rows",
             Type = "int",
+            DefaultValue = "3",
             Description = "For multiline text, Number of rows.",
         },
         new()
         {
             Name = "RevealPasswordAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
         },
         new()
         {
             Name = "Suffix",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
         },
         new()
         {
             Name = "SuffixTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom suffix for text field.",
         },
         new()
@@ -202,72 +223,84 @@ public partial class BitTextFieldDemo
         {
             Name = "LabelStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's Label.",
         },
         new()
         {
             Name = "LabelClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's Label.",
         },
         new()
         {
             Name = "InputStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's Input.",
         },
         new()
         {
             Name = "InputClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's Input.",
         },
         new()
         {
             Name = "PrefixStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's Prefix.",
         },
         new()
         {
             Name = "PrefixClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's Prefix.",
         },
         new()
         {
             Name = "SuffixStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's Suffix.",
         },
         new()
         {
             Name = "SuffixClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's Suffix.",
         },
         new()
         {
             Name = "RevealPasswordStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's RevealPassword button.",
         },
         new()
         {
             Name = "RevealPasswordClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's RevealPassword button.",
         },
         new()
         {
             Name = "DescriptionStyle",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Style of the BitTextField's Description.",
         },
         new()
         {
             Name = "DescriptionClass",
             Type = "string?",
+            DefaultValue = "null",
             Description = "CSS class of the BitTextField's Description.",
         },
     };

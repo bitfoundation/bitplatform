@@ -10,8 +10,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Label for the TimePicker.",
         },
         new()
@@ -54,15 +54,15 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "Placeholder",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Placeholder text for the DatePicker.",
         },
         new()
         {
             Name = "IconTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom TimePicker icon template."
         },
         new()
@@ -71,7 +71,7 @@ public partial class BitTimePickerDemo
             Type = "BitIconLocation",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Left",
+            DefaultValue = "BitIconLocation.Right",
             Description = "TimePicker icon location."
         },
         new()
@@ -92,7 +92,7 @@ public partial class BitTimePickerDemo
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
-            DefaultValue = "",
+            DefaultValue = "new Dictionary<String, Object>()",
             Description = "Capture and render additional attributes in addition to the main callout's parameters."
         },
         new()
@@ -113,28 +113,24 @@ public partial class BitTimePickerDemo
         {
             Name = "OnClick",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on TimePicker input.",
         },
         new()
         {
             Name = "OnFocus",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the TimePicker input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the TimePicker input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on TimePicker input.",
         },
         new()
@@ -148,7 +144,7 @@ public partial class BitTimePickerDemo
         {
             Name = "HasBorder",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Determines if the TimePicker has a border.",
         },
         new()
@@ -161,22 +157,21 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "TimeFormat",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
         },
         new()
         {
             Name = "InvalidErrorMessage",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The custom validation error message for the invalid value."
         },
         new()
         {
             Name = "OnSelectTime",
             Type = "EventCallback<TimeSpan?>",
-            DefaultValue = "",
             Description = "Callback for when the on selected time changed.",
         },
         new()
@@ -189,15 +184,14 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "Value",
-            Type = "TimeSpan",
-            DefaultValue = "",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
             Description = "The value of TimePicker.",
         },
         new()
         {
             Name = "ValueChanged",
             Type = "EventCallback<TimeSpan?>",
-            DefaultValue = "",
             Description = "Callback for when the on time value changed.",
         }
     };
