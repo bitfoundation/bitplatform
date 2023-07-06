@@ -323,14 +323,17 @@ jobs:
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
+     - name: Switch to BlazorElectron
+       run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/Templates/AdminPanel/Bit.AdminPanel/src/Directory.Build.props > temp.xml && mv temp.xml src/Templates/AdminPanel/Bit.AdminPanel/src/Directory.Build.props
+
      - name: Restore workloads
-       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorElectron
+       run: dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
-       run: cd src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
+       run: cd src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/ && dotnet electronize build /target linux
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2

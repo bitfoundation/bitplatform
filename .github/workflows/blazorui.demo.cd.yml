@@ -290,14 +290,17 @@ jobs:
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
+     - name: Switch to BlazorElectron
+       run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/BlazorUI/Demo/Directory.Build.props > temp.xml && mv temp.xml src/BlazorUI/Demo/Directory.Build.props
+
      - name: Restore workloads
-       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron
+       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
-       run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
+       run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
