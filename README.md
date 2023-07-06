@@ -23,7 +23,7 @@ With these templates, one can easily switch between different modes:
 These templates are powered by [bit BlazorUI](https://components.bitplatform.dev) components, which are super-fast 🌶 and lightweight making them together the best toolbox for developing common apps.
 
 
-# 🎁 OSS Showcase
+# 🎁 OSS Showcases
 
 The following apps are our open-source projects powered by the bit platform showcasing the different capbilities of our toolchain:
 
