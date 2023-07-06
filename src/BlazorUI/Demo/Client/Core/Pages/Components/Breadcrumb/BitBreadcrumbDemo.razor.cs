@@ -52,7 +52,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "Items",
             Type = "IList<TItem>",
-            DefaultValue = "new IList<TItem>()",
+            DefaultValue = "new List<TItem>()",
             Description = "Collection of breadcrumbs to render"
         },
         new()
