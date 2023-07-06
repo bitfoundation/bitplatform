@@ -339,4 +339,4 @@ jobs:
        uses: actions/upload-artifact@v2
        with:
          name: linux-app-image
-         path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/bin/Desktop/linux-unpacked/*.*
+         path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Web/bin/Desktop/linux-unpacked
