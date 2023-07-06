@@ -321,7 +321,7 @@ jobs:
     displayName: 'Build (To generate CSS/JS files)'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:Configuration=Release -f net7.0-maccatalyst'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:Configuration=Release -f net7.0-maccatalyst'
 
   - task: Bash@3
     displayName: 'Build pkg'
