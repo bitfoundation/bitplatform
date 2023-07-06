@@ -1,4 +1,4 @@
-![Header](https://github.com/bitfoundation/bitplatform/assets/6169846/693011db-e13f-4109-8eca-f2b375efbfcc)
+![Header](https://user-images.githubusercontent.com/6169846/251394122-693011db-e13f-4109-8eca-f2b375efbfcc.png)
 
 <br/>
 
