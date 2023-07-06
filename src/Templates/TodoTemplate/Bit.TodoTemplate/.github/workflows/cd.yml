@@ -358,7 +358,7 @@ jobs:
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/Directory.Build.props > temp.xml && mv temp.xml src/Directory.Build.props
 
      - name: Restore workloads
-       run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csprok
+       run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj
    
      - name: Build (To generate CSS/JS files)
        run: dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release
