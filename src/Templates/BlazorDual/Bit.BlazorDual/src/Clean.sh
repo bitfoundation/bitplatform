@@ -3,7 +3,6 @@
 # This batch script is designed for comprehensive cleaning of your project by deleting unnecessary files.
 # It's crucial to close any Integrated Development Environment (IDE), such as vs code, etc., before executing this script to prevent any conflicts or loss of unsaved data.
 # Please note that the commands included in this script are specifically tailored for the Linux/macOS
-# Give it execute permissions using | chmod +x Clean.sh | and then run it using | ./Clean.sh |
 
 # Runs dotnet clean for each csproj file
 for csproj in $(find . -name '*.csproj'); do
