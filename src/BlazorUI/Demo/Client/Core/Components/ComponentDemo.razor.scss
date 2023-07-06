@@ -25,6 +25,7 @@
 .tdata-row {
     width: 100%;
     display: flex;
+    min-width: max-content;
     border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     &:last-child {
@@ -92,11 +93,11 @@
     .th-cell,
     .td-cell {
         &:nth-child(1) {
-            width: 20%;
+            width: 26%;
         }
 
         &:nth-child(2) {
-            width: 44%;
+            width: 22%;
         }
 
         &:nth-child(3) {

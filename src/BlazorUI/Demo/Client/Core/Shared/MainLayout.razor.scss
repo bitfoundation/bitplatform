@@ -45,11 +45,12 @@ main {
 ::deep {
     .page-container {
         width: 100%;
+        overflow-x: hidden;
     }
 
     .page-section {
         width: 100%;
-        /*overflow: hidden;*/
+        overflow-x: auto;
         padding: rem(28px);
         position: relative;
         box-sizing: border-box;
@@ -70,6 +71,8 @@ main {
     }
 
     .section-title {
+        bottom: rem(8px);
+        position: absolute;
         color: $bit-color-foreground-primary;
     }
 }

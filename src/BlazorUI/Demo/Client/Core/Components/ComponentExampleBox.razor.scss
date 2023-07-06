@@ -15,8 +15,8 @@
 .box-header {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
     position: relative;
-    flex-flow: row nowrap;
     align-items: flex-end;
     margin-top: rem(32px);
     box-sizing: border-box;
@@ -25,9 +25,11 @@
 }
 
 .header-btn-group {
+    width: 100%;
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
+    justify-content: flex-end;
 }
 
 .box-content {
@@ -80,10 +82,23 @@
                 margin-right: rem(8px);
                 color: $bit-color-primary-main;
             }
+
+            @include lt-lg {
+                width: rem(42px);
+                min-width: unset;
+                padding: rem(4px) rem(20px);
+
+                .bit-tgb-txt {
+                    display: none;
+                }
+            }
         }
 
         &.copy-link {
+            z-index: 1;
+            width: rem(42px);
             padding: 0 rem(20px);
+            background-color: $bit-color-secondary-main;
         }
     }
 
