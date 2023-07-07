@@ -72,6 +72,7 @@ main {
     .section-title {
         bottom: rem(8px);
         position: absolute;
+        margin-right: rem(90px);
         color: $bit-color-foreground-primary;
     }
 }
