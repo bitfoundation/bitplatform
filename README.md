@@ -1,11 +1,13 @@
-![Header](https://user-images.githubusercontent.com/6169846/251394122-693011db-e13f-4109-8eca-f2b375efbfcc.png)
+![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
 
 <br/>
 
 ![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
-[![NuGet](https://img.shields.io/nuget/v/bit.blazorui.svg)](https://www.nuget.org/profiles/bit-foundation)
-![Size](https://img.shields.io/github/repo-size/bitfoundation/bitplatform.svg)
+![Code size](https://img.shields.io/github/languages/code-size/bitfoundation/bitplatform.svg?logo=github)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
+![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
+[![Nuget downloads](https://img.shields.io/badge/packages_download-3.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+
 
 # 🧾 Introduction
 
@@ -25,7 +27,7 @@ These templates are powered by [bit BlazorUI](https://components.bitplatform.dev
 
 # 🎁 OSS Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capbilities of our toolchain:
+The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS | &nbsp;Linux&nbsp;
 |:-:|:--:|:--:|:--:|:--:|:--:|:--:|
