@@ -5,8 +5,9 @@
 
 .table-view {
     width: 100%;
-    overflow: hidden;
+    overflow: auto;
     border-spacing: 0;
+    display: inline-grid;
     box-sizing: border-box;
     margin-bottom: rem(40px);
 
@@ -80,11 +81,11 @@
 
         &:nth-child(2),
         &:nth-child(3) {
-            width: 22%;
+            width: 25%;
         }
 
         &:nth-child(4) {
-            width: 36%;
+            width: 35%;
         }
     }
 }
@@ -93,15 +94,15 @@
     .th-cell,
     .td-cell {
         &:nth-child(1) {
-            width: 26%;
+            width: 20%;
+        }
+
+        &:nth-child(2) {
+            width: 44%;
         }
 
         &:nth-child(2) {
             width: 22%;
-        }
-
-        &:nth-child(3) {
-            width: 36%;
         }
     }
 }

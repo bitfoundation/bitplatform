@@ -45,12 +45,10 @@ main {
 ::deep {
     .page-container {
         width: 100%;
-        overflow-x: hidden;
     }
 
     .page-section {
         width: 100%;
-        overflow-x: auto;
         padding: rem(28px);
         position: relative;
         box-sizing: border-box;
@@ -63,6 +61,7 @@ main {
 
     .title {
         margin-bottom: rem(50px);
+        overflow-wrap: break-word;
     }
 
     .subtitle {
