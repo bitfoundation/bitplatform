@@ -72,8 +72,12 @@ main {
     .section-title {
         bottom: rem(8px);
         position: absolute;
-        margin-right: rem(90px);
+        margin-right: rem(175px);
         color: $bit-color-foreground-primary;
+
+        @include lt-lg {
+            margin-right: rem(90px);
+        }
     }
 }
 
