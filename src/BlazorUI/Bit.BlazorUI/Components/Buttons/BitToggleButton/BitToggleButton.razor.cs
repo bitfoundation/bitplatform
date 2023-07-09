@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
@@ -53,6 +52,11 @@ public partial class BitToggleButton
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitToggleButton component.
+    /// </summary>
+    [Parameter] public BitToggleButtonClassStyles? ClassStyles { get; set; }
 
     /// <summary>
     /// Default value of the IsChecked.
