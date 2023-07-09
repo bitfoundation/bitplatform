@@ -130,6 +130,7 @@ public partial class BitToggleButtonDemo
                {
                    Name = "Icon",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon element.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link
@@ -138,6 +139,7 @@ public partial class BitToggleButtonDemo
                {
                    Name = "Container",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon and label container.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link
@@ -146,6 +148,7 @@ public partial class BitToggleButtonDemo
                {
                    Name = "Label",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label element.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link
@@ -162,12 +165,14 @@ public partial class BitToggleButtonDemo
                {
                    Name = "Class",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS class."
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS style."
                }
             }
