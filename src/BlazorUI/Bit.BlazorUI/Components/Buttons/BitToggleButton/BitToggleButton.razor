@@ -15,15 +15,15 @@
        href="@Href"
        tabindex="@_tabIndex"
        @onclick="HandleOnClick">
-        <span class="bit-tgb-con">
+        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
             @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName.GetName() @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())
             {
-                <span class="bit-tgb-txt">@Label</span>
+                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
             }
         </span>
     </a>
@@ -41,15 +41,15 @@ else
             tabindex="@_tabIndex"
             title="@Title"
             @onclick="HandleOnClick">
-        <span class="bit-tgb-con">
+        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
             @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName.GetName() @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())
             {
-                <span class="bit-tgb-txt">@Label</span>
+                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
             }
         </span>
     </button>

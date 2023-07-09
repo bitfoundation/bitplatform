@@ -48,6 +48,15 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitToggleButtonClassStyles?",
+            DefaultValue = "null",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the component."
+        },
+        new()
+        {
             Name = "DefaultIsChecked",
             Type = "bool?",
             DefaultValue = "null",
@@ -106,6 +115,67 @@ public partial class BitToggleButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the toggle button.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitToggleButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Icon",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon element.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon and label container.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "Label",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label element.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS style."
+               }
+            }
         }
     };
 
