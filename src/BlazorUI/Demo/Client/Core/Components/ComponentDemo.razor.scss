@@ -5,8 +5,9 @@
 
 .table-view {
     width: 100%;
-    overflow: hidden;
+    overflow: auto;
     border-spacing: 0;
+    display: inline-grid;
     box-sizing: border-box;
     margin-bottom: rem(40px);
 
@@ -25,6 +26,7 @@
 .tdata-row {
     width: 100%;
     display: flex;
+    min-width: max-content;
     border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     &:last-child {
