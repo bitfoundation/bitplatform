@@ -71,11 +71,10 @@
 }
 
 ::deep .form-input-container {
-    width: 100%;
     display: flex;
-    text-align: start;
-    max-width: rem(340px);
     flex-flow: column nowrap;
+    width: 100%;
+    max-width: rem(340px);
     margin-bottom: rem(21px);
 
     @include lt-xl {
@@ -140,7 +139,6 @@
     padding: rem(48px) rem(5px);
     box-sizing: border-box;
     background-color: $Gray6;
-    text-align: center;
 
     @include lg {
         padding: rem(48px) rem(5px);
