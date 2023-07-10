@@ -29,7 +29,7 @@
                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryId" Sortable="true" Align="BitDataGridAlign.Left" />
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" />
             <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center" Context="product">
                 <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" OnClick="() => EditProduct(product!)" Title="@Localizer[(nameof(AppStrings.Edit))]" />
