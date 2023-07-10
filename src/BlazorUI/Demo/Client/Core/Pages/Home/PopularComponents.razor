@@ -3,7 +3,7 @@
 
 <section class="main-container">
     <div class="content-container">
-        <BitTypography Variant="BitTypographyVariant.H3" Gutter>Most popular components</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter>Popular components</BitTypography>
         <div class="component-list">
             @foreach (var com in Components)
             {
@@ -15,7 +15,10 @@
                     <div class="component-info-container">
                         <div class="component-name">@com.Name</div>
                         <div class="component-desc">@com.Description</div>
-                        <a class="component-link" href="@com.Url">More about @com.Name</a>
+                        <BitLink Href="@com.Url" Class="component-link">
+                            More about @com.Name 
+                            <BitIcon Class="link-chevron-right" IconName="@BitIconName.ChevronRight" />
+                        </BitLink>
                     </div>
                 </button>
             }
@@ -31,7 +34,10 @@
                         <div class="component-info-container">
                             <div class="component-name">@com.Name</div>
                             <div class="component-desc">@com.Description</div>
-                            <a class="component-link" href="@com.Url">More about @com.Name</a>
+                            <BitLink Href="@com.Url" Class="component-link">
+                                More about @com.Name 
+                                <BitIcon Class="link-chevron-right" IconName="@BitIconName.ChevronRight" />
+                            </BitLink>
                         </div>
                     </button>
                 </BitCarouselItem>
@@ -42,57 +48,63 @@
     <div class="content-container sample-side">
         <div class="example-preview">
             <div class="component-container">
+                <div>
+                    <span>@SelectedComponent?.Name</span>
+                    &nbsp;&nbsp;
+                    <BitLink Href="@SelectedComponent?.Url" Class="component-link">
+                        Learn more
+                        <BitIcon Class="link-chevron-right" IconName="@BitIconName.ChevronRight" />
+                    </BitLink>
+                </div>
+                <br />
                 @if (SelectedComponent?.Name == "ColorPicker")
                 {
-                    <div>ColorPicker</div>
-                    <br />
                     <BitColorPicker ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="Alpha" @bind-Color="@Color" />
+                    <br />
                     <div>Alpha: @Alpha</div>
                     <div>Color: @Color</div>
                 }
                 else if (SelectedComponent?.Name == "DatePicker")
                 {
-                    <div>DatePicker</div>
-                    <br />
                     <BitDatePicker @bind-Value="SelectedDate" Placeholder="Select a date" Style="width: 300px" ShowWeekNumbers="true" />
-                    <div>Selected Date: @SelectedDate</div>
+                    <br />
+                    <div>Selected Date: <b>@SelectedDate?.ToString("dd MMM yyyy")</b></div>
                 }
                 else if (SelectedComponent?.Name == "FileUpload")
                 {
-                    <div>FileUpload</div>
-                    <br />
                     <BitFileUpload IsMultiSelect="true"
                                    Label="Select files"
                                    AutoUploadEnabled="true"
                                    UploadUrl="@UploadUrl"
                                    RemoveUrl="@RemoveUrl"
-                                   Style="flex-grow:1; max-width:none;"
                                    MaxSize="1024 * 1024 * 500" />
                 }
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
-                    <div>Dropdown</div>
-                    <br />
-                    <BitDropdown Label="Multi-select uncontrolled"
-                                 Items="GetDropdownItems()"
+                    <BitDropdown Label="Multi-select Dropdown"
+                                 Items="DropdownItems"
+                                 @bind-Values="SelectedDropdownValues"
                                  Placeholder="Select options"
                                  IsMultiSelect="true"
-                                 Style="width: 290px; margin-bottom: 20px;" />
+                                 Style="width:290px" />
+                    <br />
+                    <div>Selected Items: @string.Join(", ", SelectedDropdownValues)</div>
                 }
                 else if (SelectedComponent?.Name == "Nav (TreeList)")
                 {
-                    <div>Nav</div>
+                    <BitNav Items="NavItems"
+                            Mode="BitNavMode.Manual"
+                            @bind-SelectedItem="SelectedNavItem"
+                            Style="width: 225px; border: 1px solid #eee;" />
                     <br />
-                    <BitNav Items="BasicNavLinks"
-                            Style="width: 225px; border: 1px solid #eee;"
-                            AriaLabel="Nav basic example"
-                            SelectedItem="BasicNavLinks[2]" />
+                    <div>Selected Item: @SelectedNavItem.Text</div>
                 }
             </div>
             <div style="text-align:right">
                 <BitToggleButton @bind-IsChecked="showCode"
                                  IconName="BitIconName.CodeEdit"
                                  ButtonStyle="BitButtonStyle.Standard"
+                                 Style="border:none"
                                  Label="@(showCode ? "Hide code" : "Show code")"
                                  Title="@(showCode ? "Hide code" : "Show code")" />
             </div>
@@ -109,7 +121,7 @@
                 @@bind-Color="@@Color" /&gt
 &ltdiv&gtAlpha: @@Alpha&lt/div&gt
 &ltdiv&gtColor: @@Color&lt/div&gt
-
+                    </code><br/><code class="language-csharp">
 @@code {
     private double Alpha = 1;
     private string Color = "rgb(0,101,239)";
@@ -122,8 +134,8 @@
                Placeholder="Select a date"
                Style="width: 300px"
                ShowWeekNumbers="true" /&gt
-&ltdiv&gtSelected Date: @@SelectedDate&lt/div&gt
-
+&ltdiv&gtSelected Date: &ltb&gt@@SelectedDate?.ToString("dd MMM yyyy")&lt/b&gt&lt/div&gt
+                    </code><br /><code class="language-csharp">
 @@code {
     private DateTimeOffset? SelectedDate;
 }</code></pre>
@@ -136,6 +148,7 @@
                UploadUrl="@@UploadUrl"
                RemoveUrl="@@RemoveUrl"
                Style="flex-grow:1; max-width:none;" /&gt
+                    </code><br/><code class="language-csharp">
 @@code {
     private string UploadUrl = "FileUpload/UploadFile";
     private string RemoveUrl = "FileUpload/RemoveFile";
@@ -144,97 +157,57 @@
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
                     <pre class="code">
-                    <code class="language-cshtml">&ltBitDropdown Label="Multi-select uncontrolled"
-             Items="GetDropdownItems()"
+                    <code class="language-cshtml">&ltBitDropdown Label="Multi-select Dropdown"
+             Items="DropdownItems"
+             @@bind-Values="SelectedDropdownValues"
              Placeholder="Select options"
-             @@bind-SelectedMultipleKeys="ControlledSelectedMultipleKeys"
              IsMultiSelect="true"
-             Style="width: 290px; margin:20px 0 20px 0" />
-                                        
+             Style="width:290px" /&gt
+&ltdiv>Selected Items: @@string.Join(", ", SelectedDropdownValues)&lt/div>
+                    </code><br /><code class="language-csharp">
 @@code {
-    private List&ltstring> ControlledSelectedMultipleKeys = new List&ltstring>() { "Apple", "Banana", "Grape" };
-    private List&ltBitDropdownItem> GetDropdownItems()
+    private List&ltstring&gt SelectedDropdownValues = new() { "f-app", "f-ban" };
+    private static List&ltBitDropdownItem&gt DropdownItems = new()
     {
-        List&ltBitDropdownItem> items = new();
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Header,
-            Text = "Fruits"
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = "Apple",
-            Value = "f-app"
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = "Orange",
-            Value = "f-ora",
-            IsEnabled = false
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = "Banana",
-            Value = "f-ban",
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Divider,
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Header,
-            Text = "Vegetables"
-        });
-
-        items.Add(new BitDropdownItem()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = "Broccoli",
-            Value = "v-bro",
-        });
-
-        return items;
-    }
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" }
+    };
 }</code></pre>
                 }
                 else if (SelectedComponent?.Name == "Nav (TreeList)")
                 {
                     <pre class="code">
-                    <code class="language-cshtml">&ltBitNav Items="BasicNavLinks"
-        Style="width: 208px; border: 1px solid #eee;"
-        AriaLabel="Nav basic example"
-        SelectedItem="BasicNavLinks[2]" /&gt
-
+                    <code class="language-cshtml">&ltBitNav Items="NavItems"
+        Mode="BitNavMode.Manual"
+        @@bind-SelectedItem="SelectedNavItem"
+        Style="width: 208px; border: 1px solid #eee;" /&gt
+                    </code><br/><code class="language-csharp">
 @@code {
-    private readonly List&ltBitNavItem> BasicNavLinks = new()
+    private BitNavItem SelectedNavItem = NavItems[2];
+    private static List&ltBitNavItem&gt NavItems = new()
     {
-        new BitNavItem
+        new()
         {
-            Name = "Home",
+            Text = "Home",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            Items = new List&ltBitNavItem>
+            ChildItems = new()
             {
-                new BitNavItem { Name = "Activity", Target="_blank" },
-                new BitNavItem { Name = "MSN", IsEnabled = false, Target = "_blank" }
+                new() { Text = "Activity" },
+                new() { Text = "MSN", IsEnabled = false }
             }
         },
-        new BitNavItem { Name = "Documents", Target = "_blank", IsExpanded = true },
-        new BitNavItem { Name = "Pages", Target = "_parent" },
-        new BitNavItem { Name = "Notebook", IsEnabled = false },
-        new BitNavItem { Name = "Communication and Media", Target = "_top" },
-        new BitNavItem { Name = "News", Title = "News", Icon = "News", Target = "_self" },
+        new() { Text = "Documents", IsExpanded = true },
+        new() { Text = "Pages" },
+        new() { Text = "Notebook", IsEnabled = false },
+        new() { Text = "Communication and Media" },
+        new() { Text = "News", Title = "News", IconName = BitIconName.News },
     };
 }</code></pre>
                 }
