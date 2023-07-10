@@ -71,10 +71,11 @@
 }
 
 ::deep .form-input-container {
-    display: flex;
-    flex-flow: column nowrap;
     width: 100%;
+    display: flex;
+    text-align: start;
     max-width: rem(340px);
+    flex-flow: column nowrap;
     margin-bottom: rem(21px);
 
     @include lt-xl {
@@ -117,6 +118,7 @@
 
 ::deep .form-submit-button {
     margin-top: rem(20px);
+    margin-bottom: rem(10px);
 }
 
 ::deep .form-message-bar {
