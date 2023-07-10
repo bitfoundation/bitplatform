@@ -9,8 +9,9 @@
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
-    <BitPivot OnItemClick="OnTabClick">
+               ComponentSubEnums="componentSubEnums"
+               Notes="The BitSplitButton is a Multi-API component which can accept the list of Items in 3 different ways: BitSplitButtonItem class, a custom Generic class, and BitSplitButtonOption component.">
+    <BitPivot OnItemClick="OnTabClick" ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
         <BitPivotItem HeaderText="Item">
             <ComponentExampleBox Title="Basic SplitButton" HTMLSourceCode="@example1BitSplitButtonItemHTMLCode" CSharpSourceCode="@example1BitSplitButtonItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
