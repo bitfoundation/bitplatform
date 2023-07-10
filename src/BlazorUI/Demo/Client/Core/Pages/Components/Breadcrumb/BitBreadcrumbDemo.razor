@@ -8,7 +8,8 @@
     <ComponentDemo ComponentName="Breadcrumb"
                    ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                    ComponentParameters="componentParameters"
-                   ComponentSubClasses="componentSubClasses">
+                   ComponentSubClasses="componentSubClasses"
+                   Notes="The BitBreadcrumb is a Multi-API component which can accept the list of Items in 3 different ways: BitBreadcrumbItem class, a custom Generic class, and BitBreadcrumbOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
                 <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BreadcrumbItemHTMLCode" CSharpSourceCode="@example1BreadcrumbItemCSharpCode" ExampleId="example1">
