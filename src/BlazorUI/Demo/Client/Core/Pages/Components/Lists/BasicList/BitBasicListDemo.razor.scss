@@ -2,13 +2,8 @@
 @import "../../../../Styles/abstracts/_functions.scss";
 
 .list-item {
-    width: 20%;
     height: rem(144px);
-    align-items: center;
-    display: inline-grid;
-    min-width: rem(208px);
-    justify-content: center;
     margin: rem(10px) rem(10px);
-    padding: rem(16px) rem(20px);
+    padding: rem(10px) rem(20px);
     background-color: $bit-color-background-secondary;
 }
