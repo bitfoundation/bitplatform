@@ -32,7 +32,7 @@ public static class Urls
     public const string AdminPanelFigma = "https://www.figma.com/community/file/1161030350747233731";
     public const string AdminPanelNuget = "https://www.nuget.org/packages/Bit.AdminPanel";
 
-    public const string Components = "/components";
+    public const string Components = "https://components.bitplatform.dev/";
     public const string ComponentsDocs = "https://components.bitplatform.dev/";
 
     public const string CloudHostingSolutins = "/cloud-hosting-solutions";
