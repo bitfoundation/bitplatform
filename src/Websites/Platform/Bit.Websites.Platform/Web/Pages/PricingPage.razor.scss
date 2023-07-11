@@ -169,13 +169,14 @@
     }
 
     .plan-card-subtitle {
-        margin-bottom: rem(24px);
+        margin-bottom: rem(16px);
         font-size: rem(22px);
         letter-spacing: 0;
         font-weight: 700;
         color: #1A2027;
 
         .grey-txt {
+            font-size: rem(16px);
             color: $Gray2;
         }
     }
