@@ -1,15 +1,25 @@
-﻿
+﻿@import "../../../Styles/abstracts/_functions.scss";
+@import "../../../Styles/abstracts/_media-queries.scss";
+
+
 ::deep {
+    @include sm {
+        .color-picker {
+            width: rem(220px);
+            height: rem(256px);
+        }
+    }
+
     .custom-color-picker {
-        width: 100px;
-        height: 250px;
+        width: rem(100px);
+        height: rem(250px);
     }
 }
 
 .example-box {
     display: flex;
     flex-flow: column nowrap;
-    gap: 30px;
+    gap: rem(30px);
 }
 
 .example {
