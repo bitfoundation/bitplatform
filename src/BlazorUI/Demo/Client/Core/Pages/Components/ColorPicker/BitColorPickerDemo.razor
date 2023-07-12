@@ -17,12 +17,12 @@
             <div class="example-box">
                 <div class="example">
                     <BitLabel>Rgb</BitLabel>
-                    <BitColorPicker @bind-Color="BasicRgbColor" />
+                    <BitColorPicker Class="color-picker" @bind-Color="BasicRgbColor" />
                     <span>Color: @BasicRgbColor</span>
                 </div>
                 <div class="example">
                     <BitLabel>Hex</BitLabel>
-                    <BitColorPicker @bind-Color="BasicHexColor" />
+                    <BitColorPicker Class="color-picker" @bind-Color="BasicHexColor" />
                     <span>Color: @BasicHexColor</span>
                 </div>
             </div>
@@ -32,7 +32,7 @@
     <ComponentExampleBox Title="Color with Alpha" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example">
-                <BitColorPicker @bind-Color="AlphaRgbColor" @bind-Alpha="Alpha" ShowAlphaSlider="true" />
+                <BitColorPicker Class="color-picker" @bind-Color="AlphaRgbColor" @bind-Alpha="Alpha" ShowAlphaSlider="true" />
                 <span>Color: @AlphaRgbColor</span>
                 <span>Alpha: @Alpha</span>
             </div>
@@ -41,14 +41,16 @@
 
     <ComponentExampleBox Title="Previewing Color" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <BitColorPicker ShowAlphaSlider="true" ShowPreview="true" />
+            <div class="example">
+                <BitColorPicker Class="color-picker" ShowAlphaSlider="true" ShowPreview="true" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Two-way Binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example">
-                <BitColorPicker @bind-Color="TwoWayColor" ShowPreview="true" />
+                <BitColorPicker Class="color-picker" @bind-Color="TwoWayColor" ShowPreview="true" />
                 <BitTextField Label="Enter Color (Hex or Rgb)" @bind-Value="TwoWayColor" Style="width: 200px;" />
             </div>
         </ExamplePreview>
@@ -57,7 +59,7 @@
     <ComponentExampleBox Title="OnChange Event" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example">
-                <BitColorPicker OnChange="(value) => ColorValue = value" ShowAlphaSlider="true" ShowPreview="true" />
+                <BitColorPicker Class="color-picker" OnChange="(value) => ColorValue = value" ShowAlphaSlider="true" ShowPreview="true" />
                 <span>Color: @ColorValue?.Color</span>
                 <span>Alpha: @ColorValue?.Alpha</span>
             </div>
@@ -67,7 +69,7 @@
     <ComponentExampleBox Title="Public Api" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example">
-                <BitColorPicker @ref="ColorPicker" @bind-Color="BoundColor" ShowAlphaSlider="true" ShowPreview="true" />
+                <BitColorPicker Class="color-picker" @ref="ColorPicker" @bind-Color="BoundColor" ShowAlphaSlider="true" ShowPreview="true" />
                 <span>Color Value: @BoundColor</span>
                 <span>Hex: @ColorPicker?.Hex</span>
                 <span>Rgb: @ColorPicker?.Rgb</span>
@@ -86,7 +88,7 @@
                 </div>
                 <div>
                     <BitLabel>Style</BitLabel>
-                    <BitColorPicker ShowAlphaSlider="true" Style="width: 250px; height: 150px;" />
+                    <BitColorPicker ShowAlphaSlider="true" Style="width: 230px; height: 150px;" />
                 </div>
             </div>
         </ExamplePreview>
