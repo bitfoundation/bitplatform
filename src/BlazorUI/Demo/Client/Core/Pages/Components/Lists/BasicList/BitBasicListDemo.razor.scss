@@ -1,12 +1,10 @@
 ﻿@import "../../../../Styles/bit-css-variables.scss";
+@import "../../../../Styles/abstracts/_functions.scss";
 
 .list-item {
-    width: 20%;
-    height: 143px;
-    margin: 10px 10px;
-    padding: 16px 20px;
-    align-items: center;
-    display: inline-grid;
-    justify-content: center;
+    height: rem(44px);
+    min-width: rem(450px);
+    margin: rem(10px) rem(10px);
+    padding: rem(10px) rem(20px);
     background-color: $bit-color-background-secondary;
 }
