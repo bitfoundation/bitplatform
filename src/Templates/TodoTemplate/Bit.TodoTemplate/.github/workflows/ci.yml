@@ -162,9 +162,6 @@ jobs:
     - name: Switch to blazor wasm
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
 
-    - name: Install Maui
-      run: dotnet workload install maui
-
     - name: Restore workloads
       run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly
       
