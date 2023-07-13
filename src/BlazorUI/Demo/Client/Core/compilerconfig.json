@@ -238,5 +238,9 @@
   {
     "outputFile": "Pages/ThemingPage.razor.css",
     "inputFile": "Pages/ThemingPage.razor.scss"
+  },
+  {
+    "outputFile": "Pages/Components/Chart/BitChartDemo.razor.css",
+    "inputFile": "Pages/Components/Chart/BitChartDemo.razor.scss"
   }
 ]
