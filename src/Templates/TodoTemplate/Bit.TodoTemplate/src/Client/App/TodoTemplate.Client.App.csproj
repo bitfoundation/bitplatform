@@ -55,8 +55,17 @@
     </ItemGroup>
 
     <ItemGroup>
+
+        <Using Include="TodoTemplate.Client.Core.Components" />
+        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+    
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0D2960" />
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundScale="0.68" Color="#0065EF" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
@@ -69,11 +78,6 @@
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-
-        <Using Include="TodoTemplate.Client.Core.Components" />
-        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
-        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
-        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
     <ItemGroup>
