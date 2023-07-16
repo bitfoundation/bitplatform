@@ -64,8 +64,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundScale="0.68" Color="#0065EF" />
+        <!-- App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Include="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68"/>
+
+        <!-- App icon for all other platforms -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF"/>
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
