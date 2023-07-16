@@ -7,27 +7,27 @@
             Description="overview of the todo template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">TodoTemplate</h1>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>TodoTemplate</BitTypography>
     <div class="page-flex-container">
-        <div class="page-conent-container">
+        <div class="page-content-container">
             <div class="image-container">
                 <img class="template-img" src="/images/templates/todo-template.webp" alt="TodoTemplate" />
-                <a class="preview-btn-shadow" href="@Urls.TodoTemplatePwaPrerendered" target="_blank">
-                    <div class="preview-btn">Demo</div>
+                <a class="demo-btn-shadow" href="@Urls.TodoTemplatePwaPrerendered" target="_blank">
+                    <div class="demo-btn">Demo</div>
                 </a>
             </div>
-            <div class="content-title">Description</div>
-            <div>
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Description</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Body1">
                 The TodoTemplate is a project template that includes work packages and actions that you can apply to various projects.
                 This guide aims to help you create and run a Bit Platform Todo project in a short time.
-            </div>
+            </BitTypography>
         </div>
 
-        <div class="page-conent-container">
-            <a class="primary-btn" href="@Urls.TodoTemplatePwaPrerendered" target="_blank" title="pwa">Prerender enabled Pwa Demo</a>
-            <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
-            <a class="secondary-btn" href="@Urls.TodoTemplateNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
-            <a class="secondary-btn" href="@Urls.TodoTemplateFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>
+        <div class="page-content-container">
+            <a class="primary-btn" href="@Urls.TodoTemplatePwaPrerendered" target="_blank" title="Prerendered PWA demo">Prerendered PWA</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><i class="btn-img google-play" />Android</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateNuget" target="_blank" title="NuGet"><i class="btn-img nuget" />NuGet</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateFigma" target="_blank" title="Figma"><i class="btn-img figma" />Figma</a>
         </div>
     </div>
 </div>

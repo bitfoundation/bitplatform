@@ -68,8 +68,8 @@
         "inputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.scss"
     },
     {
-        "outputFile": "Pages/AdminPanel/GettingStartedPage.razor.css",
-        "inputFile": "Pages/AdminPanel/GettingStartedPage.razor.scss"
+        "outputFile": "Pages/AdminPanel/CreateProjectPage.razor.css",
+        "inputFile": "Pages/AdminPanel/CreateProjectPage.razor.scss"
     },
     {
         "outputFile": "Pages/AdminPanel/HostingModelsPage.razor.css",
@@ -124,8 +124,8 @@
         "inputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.scss"
     },
     {
-        "outputFile": "Pages/TodoTemplate/GettingStartedPage.razor.css",
-        "inputFile": "Pages/TodoTemplate/GettingStartedPage.razor.scss"
+        "outputFile": "Pages/TodoTemplate/CreateProjectPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/CreateProjectPage.razor.scss"
     },
     {
         "outputFile": "Pages/TodoTemplate/HostingModelsPage.razor.css",

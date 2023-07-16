@@ -4,22 +4,18 @@
 @import '../Styles/abstracts/_vars.scss';
 
 .nav-menu {
-    position: sticky;
-    z-index: 1000;
     left: 0;
-    top: rem($HeaderHeight);
+    z-index: 10;
     display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
     flex: 1 0 auto;
+    flex-shrink: 0;
+    position: sticky;
+    flex-direction: column;
+    top: rem($HeaderHeight);
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
-    border-right: rem(1px) solid rgb(231, 235, 240);
     outline: 0;
-    box-shadow: none;
-    background-color: $White;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     overflow-y: auto;
 
     @include lt-lg {

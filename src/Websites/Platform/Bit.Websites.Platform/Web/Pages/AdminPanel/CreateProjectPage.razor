@@ -1,17 +1,20 @@
-﻿@page "/admin-panel/getting-started"
+﻿@page "/admin-panel/create-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="admin-panel/getting-started"
-            Title="Getting started - AdminPanel"
-            Description="getting started of the admin panel template of the bit platform" />
+            Title="Create project - AdminPanel"
+            Description="create project of the admin panel template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">Getting started</h1>
-    <div class="page-desc">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create project</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
         Install the necessary packages to start building with the Bit AdminPanel.
-    </div>
+    </BitTypography>
+    <br />
+
     <section class="section-card">
-        <h2 class="section-card-title">Create project</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>How?</BitTypography>
         <div class="section-card-txt">
             1. Install the AdminPanel Template from the NuGet package manager.
         </div>
@@ -20,11 +23,16 @@
             2. Create a new project using the Template installed
         </div>
         <div class="code-box">dotnet new bit-admin</div>
-        <div class="section-card-txt"><span class="bold-txt">Note</span>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.</div>
+        <div class="section-card-txt">
+            <b>Note</b>: By default, the current folder name will be considered as the solution name. If you want to choose another name, use the switch -n as below.
+        </div>
         <div class="code-box">dotnet new bit-admin -n [YourSolutionName]</div>
         <div class="section-card-txt">
             During the project construction, you will be prompted to install the LibSassBuilder global tool and generate CSS from SCSS files. Select "Yes" to both requests.
-            CSS files will automatically be generated from SCSS files after each build, and the <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a> in Visual Studio and the <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler Extension</a> in Visual Studio Code will also generate CSS immediately after saving SCSS files.
+            CSS files will automatically be generated from SCSS files after each build, and the 
+            <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a> in Visual Studio and the 
+            <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler Extension</a> in Visual Studio Code 
+            will also generate CSS immediately after saving SCSS files.
             This allows for real-time changes to be viewed in the browser without losing state, thanks to dotnet hot reload.
         </div>
         <div class="section-card-txt">

@@ -1,17 +1,19 @@
-﻿using Bit.Websites.Platform.Web.Services;
+﻿using Microsoft.AspNetCore.Components.Routing;
 using Bit.Websites.Platform.Web.Shared;
-using Microsoft.AspNetCore.Components.Routing;
+using Bit.Websites.Platform.Web.Services;
 
 namespace Bit.Websites.Platform.Web;
 
 public partial class Header : IDisposable
 {
+    private BitIconName _toggleThemeIcon = BitIconName.ClearNight;
     private string CurrentUrl = string.Empty;
     private bool IsHeaderMenuOpen;
 
     [AutoInject] private NavigationManager _navigationManager = default!;
-    [AutoInject] public NavManuService _navManuService { get; set; }
-    [AutoInject] public IJSRuntime _jsRuntime { get; set; }
+    [AutoInject] public NavManuService _navManuService { get; set; } = default!;
+    [AutoInject] public IJSRuntime _jsRuntime { get; set; } = default!;
+    [AutoInject] public BitThemeManager _bitThemeManager { get; set; } = default!;
 
     protected override void OnInitialized()
     {
@@ -21,7 +23,7 @@ public partial class Header : IDisposable
         base.OnInitialized();
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         StateHasChanged();
@@ -70,6 +72,15 @@ public partial class Header : IDisposable
         await _jsRuntime.SetToggleBodyOverflow(IsHeaderMenuOpen);
         StateHasChanged();
     }
+
+    private async Task ToggleTheme()
+    {
+        var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
+        var isDark = newTheme.Contains("dark");
+        _toggleThemeIcon = isDark ? BitIconName.Sunny : BitIconName.ClearNight;
+    }
+
+
 
     public void Dispose()
     {

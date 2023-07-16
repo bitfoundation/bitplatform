@@ -1,40 +1,28 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using Bit.Websites.Platform.Shared.Dtos;
-using Bit.Websites.Platform.Shared.Dtos.ContactUs;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Bit.Websites.Platform.Shared.Dtos.ContactUs;
 
 namespace Bit.Websites.Platform.Web.Pages;
 
 public partial class ContactUsPage
 {
-    [AutoInject] protected HttpClient HttpClient = default!;
+    private ContactUsDto _contactUsModel { get; set; } = new();
 
-    public ContactUsDto ContactUsModel { get; set; } = new();
-
-    public bool IsLoading { get; set; }
-
-    public bool IsSubmitButtonEnabled => IsLoading is false;
+    private bool _isSending { get; set; }
 
     private async Task SendMessage()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isSending) return;
 
-        IsLoading = true;
+        _isSending = true;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("ContactUs/SendMessage", ContactUsModel, AppJsonContext.Default.ContactUsDto);
-            ContactUsModel.Email = "";
-            ContactUsModel.Message = "";
+            await HttpClient.PostAsJsonAsync("ContactUs/SendMessage", _contactUsModel, AppJsonContext.Default.ContactUsDto);
+            _contactUsModel.Email = "";
+            _contactUsModel.Message = "";
         }
         finally
         {
-            IsLoading = false;
+            _isSending = false;
         }
     }
 }
