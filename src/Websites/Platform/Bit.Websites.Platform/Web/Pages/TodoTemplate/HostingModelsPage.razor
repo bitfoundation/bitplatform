@@ -61,12 +61,16 @@
         </div>
         <div class="code-box">@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</div>
         <div class="section-card-txt">
-            2. Set <b>Api</b> project as startup project.
+            2. Set <b>Api</b> project as the only startup project.
         </div>
         <div class="section-card-txt">
             3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
         </div>
         <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</div>
+        <br />
+        <div class="section-card-txt">
+            <b>Note</b>: When you run the project, the swagger page will open in a browser by default. Simply remove the swagger url from the browser's address bar to access the app.
+        </div>
     </section>
 
     <section class="section-card">
