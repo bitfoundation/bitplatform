@@ -261,8 +261,10 @@
     .col-header {
         font-weight: 700;
         font-size: rem(16px);
+        color: $bit-color-primary-main;
         padding: rem(8px) rem(16px) rem(20px);
     }
+
 
     .menu-item {
         display: flex;
