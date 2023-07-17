@@ -6,6 +6,7 @@
             Description="hosting models of the todo template of the bit platform" />
 
 <div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Hosting models (Blazor Mode)</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
@@ -23,7 +24,7 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Server</BitTypography>
         <div class="section-card-txt">
-            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, 
+            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling,
             and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
             <br />
             To switch to Blazor server mode:
@@ -37,8 +38,9 @@
             2. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
         </div>
         <div class="image-container">
-            <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/demo/multi-startup.webp" />
+            <img class="image small" alt="Multi-startup solution" src="/images/templates/multi-startup.webp" />
         </div>
+        <br />
         <div class="section-card-txt">
             3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
         </div>
@@ -48,8 +50,8 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor WebAssembly</BitTypography>
         <div class="section-card-txt">
-            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, 
-            and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. 
+            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies,
+            and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
             The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
             <br />
             To switch to Blazor WebAssembly mode:
@@ -70,8 +72,8 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Hybrid</BitTypography>
         <div class="section-card-txt">
-            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. 
-            In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS 
+            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality.
+            In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS
             to an embedded Web View control through a local interop channel.
             <br />
             Blazor Hybrid is on top of .NET MAUI and has access to all native features of supported platforms (Android, iOS, macOS and Windows)
@@ -86,8 +88,9 @@
             2. Set <b>App</b> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
         </div>
         <div class="image-container">
-            <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/debug-target.webp" />
+            <img class="image small" alt="Debug target" src="/images/templates/debug-target.webp" />
         </div>
+        <br />
         <div>
             3. Change <b>ApiServerAddress</b> in <b>Client/Core/appsettings.json</b> to make sure your Android / iOS device can reach the server.
         </div>
@@ -112,14 +115,14 @@
             2. Set <b>Web</b> as the startup project, choose electron as run target.
         </div>
         <div class="image-container">
-            <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/electron-target.webp" />
+            <img class="image small" alt="Debug target" src="/images/templates/electron-target.webp" />
         </div>
         <br />
         <div>
             3. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
         </div>
         <div class="section-card-txt">
-            <b>Note</b>: This only runs the project. To debug the project, switch to other modes or consult the 
+            <b>Note</b>: This only runs the project. To debug the project, switch to other modes or consult the
             <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET</a> documentation.
         </div>
     </section>

@@ -83,6 +83,10 @@
 
 .header-link--active {
     color: $bit-color-primary-main;
+
+    &:hover {
+        color: $bit-color-primary-main;
+    }
 }
 
 .right-section {

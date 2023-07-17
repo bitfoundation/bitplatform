@@ -45,4 +45,8 @@
 
 .image {
     @include Image;
+
+    &.small {
+        max-width: 500px;
+    }
 }

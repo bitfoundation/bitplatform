@@ -51,7 +51,6 @@
     .template-img {
         top: 0;
         width: 100%;
-        height: 100%;
         color: #f5f5f5;
         display: block;
         position: absolute;
@@ -169,13 +168,13 @@
 }
 
 .google-play {
-    background-image: url('/images/demo/google-play.svg');
+    background-image: url('/images/templates/google-play.svg');
 }
 
 .figma {
-    background-image: url('/images/demo/figma.svg');
+    background-image: url('/images/templates/figma.svg');
 }
 
 .nuget {
-    background-image: url('/images/demo/nuget.svg');
+    background-image: url('/images/templates/nuget.svg');
 }
