@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.BlazorUI;
-using Bit.Websites.Platform.Web.Services;
-using Microsoft.AspNetCore.Components;
+﻿using Bit.Websites.Platform.Web.Services;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 
 namespace Bit.Websites.Platform.Web;
 
 public partial class NavMenu
 {
-    private bool isNavOpen = false;
+    private bool _isNavOpen = false;
+    private string _searchText = string.Empty;
+    private List<BitNavItem> _filteredNavLinks = default!;
 
-    private readonly List<BitNavItem> AdminPanelNavLinks = new()
+    private readonly List<BitNavItem> _adminPanelNavItems = new()
     {
         new BitNavItem { Text = "Overview", Url = "/admin-panel/overview"},
         new BitNavItem { Text = "Development prerequisites", Url = "/admin-panel/development-prerequisites"},
@@ -33,7 +27,7 @@ public partial class NavMenu
         new BitNavItem { Text = "Contribute", Url = "/admin-panel/contribute"}
     };
 
-    private readonly List<BitNavItem> TodoTemplateNavLinks = new()
+    private readonly List<BitNavItem> _todoTemplateNavItems = new()
     {
         new BitNavItem { Text = "Overview", Url = "/todo-template/overview"},
         new BitNavItem { Text = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
@@ -51,9 +45,6 @@ public partial class NavMenu
         new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
     };
 
-    private List<BitNavItem> filteredNavLinks = default!;
-    private string searchText = string.Empty;
-
     [AutoInject] private NavManuService _navManuService = default!;
     [AutoInject] private IJSRuntime _jsRuntime = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
@@ -65,14 +56,14 @@ public partial class NavMenu
         _navManuService.OnToggleMenu += ToggleMenu;
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         _navigationManager.LocationChanged += OnLocationChanged;
-        HandleClear();
+        HandleOnClear();
         base.OnInitialized();
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        HandleClear();
+        HandleOnClear();
         StateHasChanged();
     }
 
@@ -80,9 +71,9 @@ public partial class NavMenu
     {
         try
         {
-            isNavOpen = !isNavOpen;
+            _isNavOpen = !_isNavOpen;
 
-            await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
+            await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
             StateHasChanged();
         }
         catch (Exception ex)
@@ -91,40 +82,38 @@ public partial class NavMenu
         }
     }
 
-    private async Task HideMenu()
+    private void HandleOnClear()
     {
-        isNavOpen = false;
-        await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
-        StateHasChanged();
+        _filteredNavLinks = CurrentUrl.Contains("admin-panel") ? _adminPanelNavItems : _todoTemplateNavItems;
     }
 
-    private void HandleClear()
+    private void HandleValueChanged(string text)
     {
-        filteredNavLinks = CurrentUrl.Contains("admin-panel") ? AdminPanelNavLinks : TodoTemplateNavLinks;
-    }
-
-    private void HandleChange(string text)
-    {
-        HandleClear();
-        searchText = text;
+        HandleOnClear();
+        _searchText = text;
         if (string.IsNullOrEmpty(text)) return;
 
         var flatNavLinkList = CurrentUrl.Contains("admin-panel") ?
-            Flatten(AdminPanelNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url)) : Flatten(TodoTemplateNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+            Flatten(_adminPanelNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url)) : Flatten(_todoTemplateNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        _filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private async Task HandleLinkClick(BitNavItem item)
+    private async Task HandleOnItemClick(BitNavItem item)
     {
-        searchText = string.Empty;
+        _searchText = string.Empty;
 
-        HandleClear();
-        await HideMenu();
+        HandleOnClear();
+
+        _isNavOpen = false;
+
+        await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
+
+        StateHasChanged();
     }
 
     private string GetNavMenuClass()
     {
-        if (string.IsNullOrEmpty(searchText))
+        if (string.IsNullOrEmpty(_searchText))
         {
             return "side-nav";
         }
