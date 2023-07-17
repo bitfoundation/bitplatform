@@ -87,6 +87,61 @@
     }
 }
 
+.intro-section {
+    padding: 10rem 0;
+    background-color: $bit-color-background-secondary;
+}
+
+.tech-section {
+    padding: 10rem 0;
+    text-align: center;
+
+    .tech-list {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tech-item {
+        width: rem(70px);
+        height: rem(70px);
+        margin: rem(20px);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .blazor-item {
+        background-image: url('/images/home/tech/blazor-logo.webp');
+    }
+
+    .csharp-item {
+        background-image: url('/images/home/tech/csharp-logo.webp');
+    }
+
+    .dotnet-item {
+        background-image: url('/images/home/tech/dotnet-logo.webp');
+    }
+
+    .sass-item {
+        background-image: url('/images/home/tech/sass-logo.webp');
+    }
+
+    .vs-item {
+        background-image: url('/images/home/tech/visual-studio-logo.webp');
+    }
+
+    .git-item {
+        background-image: url('/images/home/tech/git-logo.webp');
+    }
+
+    .github-item {
+        background-image: url('/images/home/tech/github-logo.webp');
+    }
+}
+
 .components-section {
     background-color: $bit-color-background-secondary;
 
@@ -281,7 +336,6 @@
     .template-img {
         top: 0;
         width: 100%;
-        height: 100%;
         position: absolute;
         border-radius: rem(6px);
     }
@@ -387,5 +441,11 @@
         width: rem(64px);
         border-radius: 50%;
         margin-right: rem(10px);
+    }
+}
+
+::deep {
+    .blue-txt {
+        color: $bit-color-primary-main;
     }
 }

@@ -11,26 +11,28 @@
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
-            <div class="header-link header-ps-btn @(IsProductsServicesActive() ? "header-link--active" : null)">
+            <div class="header-link header-ps-btn @((CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template")) ? "header-link--active" : null)">
                 Products & Services
                 <div class="header-menu-popup">
                     <div class="col">
                         <div class="col-header">Products</div>
-                        <a class="menu-item" href="@Urls.TodoTemplate">
-                            <span class="menu-item-icon todo-item"></span>
-                            <div class="menu-item-content">
-                                <div class="item-title">TodoTemplate</div>
-                                <div class="item-desc">Simple project template</div>
-                            </div>
-                        </a>
-                        <a class="menu-item" href="@Urls.AdminPanel">
+                        <a class="menu-item @(CurrentUrl.Contains("admin-panel") ? "active" : "")" href="@Urls.AdminPanel">
                             <span class="menu-item-icon admin-item"></span>
                             <div class="menu-item-content">
                                 <div class="item-title">AdminPanel</div>
                                 <div class="item-desc">Admin & dashboard project template</div>
                             </div>
                         </a>
-                        <a class="menu-item" href="@Urls.Components">
+
+                        <a class="menu-item @(CurrentUrl.Contains("todo-template") ? "active" : "")" href="@Urls.TodoTemplate">
+                            <span class="menu-item-icon todo-item"></span>
+                            <div class="menu-item-content">
+                                <div class="item-title">TodoTemplate</div>
+                                <div class="item-desc">Simple project template</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item" href="@Urls.Components" target="_blank">
                             <span class="menu-item-icon components-item"></span>
                             <div class="menu-item-content">
                                 <div class="item-title">BlazorUI</div>
@@ -50,7 +52,7 @@
                         <a class="menu-item menu-item--disabled">
                             <span class="menu-item-icon academy-item"></span>
                             <div class="menu-item-content">
-                                <div class="item-title">Bit academy</div>
+                                <div class="item-title">bit Academy</div>
                                 <div class="item-desc">Coming soon</div>
                             </div>
                         </a>
@@ -113,7 +115,7 @@
                             <div class="item-desc">Admin & dashboard project template</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <span class="menu-item-icon components-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">BlazorUI</div>
@@ -133,7 +135,7 @@
                     <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon academy-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">Bit academy</div>
+                            <div class="item-title">bit Academy</div>
                             <div class="item-desc">Coming soon</div>
                         </div>
                     </a>

@@ -14,23 +14,6 @@ namespace Bit.Websites.Platform.Web;
 public partial class NavMenu
 {
     private bool isNavOpen = false;
-    private readonly List<BitNavItem> TodoTemplateNavLinks = new()
-    {
-        new BitNavItem { Text = "Overview", Url = "/todo-template/overview"},
-        new BitNavItem { Text = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
-        new BitNavItem { Text = "Create project", Url = "/todo-template/create-project"},
-        new BitNavItem { Text = "Database", Url = "/todo-template/database"},
-        new BitNavItem { Text = "Run", Url = "/todo-template/run"},
-        new BitNavItem { Text = "Hosting models", Url = "/todo-template/hosting-models"},
-        new BitNavItem { Text = "Deployment type", Url = "/todo-template/deployment-type"},
-        new BitNavItem { Text = "Settings", Url = "/todo-template/settings"},
-        new BitNavItem { Text = "Project structure", Url = "/todo-template/project-structure"},
-        new BitNavItem { Text = "Exception handling", Url = "/todo-template/exception-handling"},
-        new BitNavItem { Text = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
-        new BitNavItem { Text = "Multilingualism", Url = "/todo-template/multilingualism"},
-        new BitNavItem { Text = "DevOps", Url = "/todo-template/devops"},
-        new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
-    };
 
     private readonly List<BitNavItem> AdminPanelNavLinks = new()
     {
@@ -48,6 +31,24 @@ public partial class NavMenu
         new BitNavItem { Text = "Multilingualism", Url = "/admin-panel/multilingualism"},
         new BitNavItem { Text = "DevOps", Url = "/admin-panel/devops"},
         new BitNavItem { Text = "Contribute", Url = "/admin-panel/contribute"}
+    };
+
+    private readonly List<BitNavItem> TodoTemplateNavLinks = new()
+    {
+        new BitNavItem { Text = "Overview", Url = "/todo-template/overview"},
+        new BitNavItem { Text = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
+        new BitNavItem { Text = "Create project", Url = "/todo-template/create-project"},
+        new BitNavItem { Text = "Database", Url = "/todo-template/database"},
+        new BitNavItem { Text = "Run", Url = "/todo-template/run"},
+        new BitNavItem { Text = "Hosting models", Url = "/todo-template/hosting-models"},
+        new BitNavItem { Text = "Deployment type", Url = "/todo-template/deployment-type"},
+        new BitNavItem { Text = "Settings", Url = "/todo-template/settings"},
+        new BitNavItem { Text = "Project structure", Url = "/todo-template/project-structure"},
+        new BitNavItem { Text = "Exception handling", Url = "/todo-template/exception-handling"},
+        new BitNavItem { Text = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
+        new BitNavItem { Text = "Multilingualism", Url = "/todo-template/multilingualism"},
+        new BitNavItem { Text = "DevOps", Url = "/todo-template/devops"},
+        new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
     };
 
     private List<BitNavItem> filteredNavLinks = default!;

@@ -276,12 +276,28 @@
         transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
 
         &:hover {
-            background-color: rgba(0, 0, 0, 0.06);
+            background-color: $bit-color-action-hover-background-primary;
+        }
 
-            .menu-item-icon {
-                border-color: $Gray4;
+        &.active {
+            .item-title {
+                color: $bit-color-primary-main;
             }
         }
+    }
+
+    .item-title {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: rem(16px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .item-desc {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: rem(14px);
+        color: $bit-color-foreground-secondary;
     }
 
     .menu-item--disabled {
@@ -343,20 +359,6 @@
     .support-item {
         background-image: url('/images/header/support-icon.webp');
         background-size: rem(22px);
-    }
-
-    .item-title {
-        font-weight: 600;
-        white-space: nowrap;
-        font-size: rem(16px);
-        color: $bit-color-primary-main;
-    }
-
-    .item-desc {
-        font-weight: 600;
-        white-space: nowrap;
-        font-size: rem(14px);
-        color: $bit-color-foreground-secondary;
     }
 }
 
