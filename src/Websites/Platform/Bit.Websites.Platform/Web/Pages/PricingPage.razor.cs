@@ -1,59 +1,48 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
-using Microsoft.Extensions.DependencyInjection;
-using Bit.Websites.Platform.Shared.Dtos;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
+﻿using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
 namespace Bit.Websites.Platform.Web.Pages;
 
 public partial class PricingPage
 {
-    [AutoInject] protected HttpClient HttpClient = default!;
-
     private string _selectedPackageTitle = string.Empty;
     private string _selectedPackagePrice = string.Empty;
 
-    public BuyPackageDto BuyPackageModel { get; set; } = new();
+    private BuyPackageDto _buyPackageModel { get; set; } = new();
 
-    public bool IsBuyModalOpen { get; set; }
+    private bool _isBuyModalOpen { get; set; }
 
-    public bool IsLoading { get; set; }
+    private bool _isSending { get; set; }
 
-    public bool IsSubmitButtonEnabled => IsLoading is false;
-
-    private void ShowBuyModal(string title, string price) {
+    private void ShowBuyModal(string title, string price)
+    {
         _selectedPackageTitle = title;
         _selectedPackagePrice = price;
-        BuyPackageModel.SalePackageTitle = title;
-        IsBuyModalOpen = true;
+        _buyPackageModel.SalePackageTitle = title;
+        _isBuyModalOpen = true;
     }
 
     private void CloseModal()
     {
-        IsBuyModalOpen = false;
+        _isBuyModalOpen = false;
     }
 
     private async Task SendMessage()
     {
-        if (IsLoading)
-        {
-            return;
-        }
+        if (_isSending) return;
 
-        IsLoading = true;
+        _isSending = true;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", BuyPackageModel, AppJsonContext.Default.BuyPackageDto);
-            BuyPackageModel.Email = "";
-            BuyPackageModel.Message = "";
-            BuyPackageModel.SalePackageTitle = "";
+            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+
+            _buyPackageModel.Email = "";
+            _buyPackageModel.Message = "";
+            _buyPackageModel.SalePackageTitle = "";
         }
         finally
         {
-            IsLoading = false;
+            _isSending = false;
             CloseModal();
         }
     }

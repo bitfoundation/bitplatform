@@ -45,4 +45,5 @@
 .image {
     @include Image;
     width: 69%;
+    max-width: 400px;
 }

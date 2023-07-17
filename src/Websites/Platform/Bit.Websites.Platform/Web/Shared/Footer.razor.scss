@@ -1,40 +1,33 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
-.footer {
+footer {
+    width: 100%;
     display: flex;
+    align-items: center;
+    box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    border-top: rem(1px) solid #E7EBF0;
-    box-sizing: border-box;
+    border-top: rem(1px) solid $bit-color-border-secondary;
 }
 
 .footer-section {
     width: 100%;
-    max-width: rem(1200px);
-    padding: rem(40px) rem(20px) rem(80px);
-    box-sizing: border-box;
     position: relative;
-
-    .go-to-top {
-        position: absolute;
-        right: rem(2px);
-        bottom: 0;
-        background-color: $Gray3;
-        padding: rem(8px) rem(12px);
-    }
+    max-width: rem(1200px);
+    box-sizing: border-box;
+    padding: rem(40px) rem(20px) rem(80px);
 
     &:first-child {
         display: grid;
-        grid-auto-columns: 1fr;
-        grid-template-columns: 1fr 1fr;
-        align-items: center;
-        justify-content: space-between;
         gap: rem(40px);
+        align-items: center;
+        grid-auto-columns: 1fr;
         grid-template-rows: auto;
+        grid-template-columns: 1fr 1fr;
+        justify-content: space-between;
 
         @include lg {
             grid-template-columns: 1fr 1.75fr;
@@ -47,138 +40,136 @@
 
     &:last-child {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        border-top: rem(1px) solid #E7EBF0;
         padding: rem(40px) rem(20px);
+        justify-content: space-between;
+        border-top: rem(1px) solid $bit-color-border-secondary;
 
         @include sm {
+            align-items: center;
             flex-flow: column nowrap;
             justify-content: flex-start;
-            align-items: center;
         }
     }
 
     @include md {
-        padding-right: rem(30px);
         padding-left: rem(30px);
+        padding-right: rem(30px);
     }
-
-    .address-info {
-        display: flex;
-        flex-flow: column nowrap;
-        gap: 3px;
-
-        @include sm {
-            margin-bottom: rem(30px);
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .address, .tel, .country {
-            padding-left: rem(20px);
-            background-repeat: no-repeat;
-            background-position-y: rem(4px);
-        }
-
-        .address, .tel {
-            color: #3E5060;
-
-            &:hover {
-                color: #4A5AAB;
-            }
-        }
-
-        .address {
-            background-image: url('/images/footer/location-icon.svg');
-        }
-
-        .country {
-            line-height: 2;
-        }
-
-        .tel {
-            background-image: url('/images/footer/tel-icon.svg');
-        }
-    }
-}
-
-.grid-container {
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
 }
 
 .footer-col {
+    height: 100%;
     display: flex;
+    align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: flex-start;
-    height: 100%;
+}
+
+.footer-links-container {
+    gap: 20px;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.go-to-top {
+    bottom: 0;
+    right: rem(2px);
+    cursor: pointer;
+    position: absolute;
+    padding: rem(8px) rem(12px);
+    background-color: $bit-color-background-secondary;
+
+    &:hover {
+        background-color: $bit-color-action-hover-background-secondary;
+    }
+}
+
+.address-info {
+    gap: 3px;
+    display: flex;
+    flex-flow: column nowrap;
+
+    @include sm {
+        margin-bottom: rem(30px);
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .address, .tel, .country {
+        padding-left: rem(20px);
+        background-repeat: no-repeat;
+        background-position-y: rem(4px);
+    }
+
+    .address, .tel {
+        color: $bit-color-primary-main;
+
+        &:hover {
+            color: $bit-color-action-hover-primary;
+        }
+    }
+
+    .address {
+        background-image: url('/images/footer/location-icon.svg');
+    }
+
+    .country {
+        line-height: 2;
+    }
+
+    .tel {
+        background-image: url('/images/footer/tel-icon.svg');
+    }
 }
 
 .bit-logo {
     width: rem(32px);
     height: rem(27px);
     margin-bottom: rem(20px);
-    background-image: url('/images/bit-blue-icon.svg');
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain;
+    background-image: url('/images/bit-blue-icon.svg');
 }
 
-.footer-desc {
-    font-weight: 400;
-    font-size: rem(14px);
-    line-height: 1.5;
-    color: #3E5060;
-
-    @include sm {
-        text-align: center;
-    }
-}
-
-.col-title {
+.footer-col-title {
     margin: 0;
-    font-size: rem(14px);
     line-height: 1.5;
     letter-spacing: 0;
-    font-weight: 700;
-    color: #1A2027;
+    font-size: rem(14px);
 }
 
 .footer-link {
-    margin-top: rem(10px);
-    color: #3E5060;
-    font-size: rem(14px);
     line-height: 1.5;
-    letter-spacing: 0;
     font-weight: 400;
+    letter-spacing: 0;
+    font-size: rem(14px);
+    margin-top: rem(10px);
     text-decoration: none;
+    color: $bit-color-primary-main;
 
     &:hover {
-        color: #007FFF;
         text-decoration: underline;
     }
 }
 
-.copy-right-txt {
-    font-size: rem(14px);
+.copyright-txt {
     line-height: 1.5;
-    letter-spacing: 0;
     font-weight: 400;
-    color: #3E5060;
+    letter-spacing: 0;
+    font-size: rem(14px);
     margin-top: rem(16px);
 }
 
 .social-link-group {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
 
     @include sm {
         margin-bottom: rem(8px);
@@ -186,15 +177,15 @@
 }
 
 .social-link {
+    cursor: pointer;
     width: rem(32px);
     height: rem(32px);
     margin: 0 rem(10);
+    border-radius: 50%;
+    background-color: #a19f9d;
+    background-size: rem(18px);
     background-position: center;
     background-repeat: no-repeat;
-    background-color: #a19f9d;
-    border-radius: 50%;
-    cursor: pointer;
-    background-size: rem(18px);
 }
 
 .twitter-link {
@@ -209,7 +200,7 @@
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
-        background-color: #171515;
+        background-color: #333;
     }
 }
 

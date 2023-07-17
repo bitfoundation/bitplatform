@@ -11,46 +11,51 @@
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
-            <div class="header-link header-ps-btn @(IsProductsServicesActive() ? "header-link--active" : null)">
+            <div class="header-link header-ps-btn @((CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template")) ? "header-link--active" : null)">
                 Products & Services
                 <div class="header-menu-popup">
                     <div class="col">
                         <div class="col-header">Products</div>
-                        <a class="menu-item" href="@Urls.TodoTemplate">
-                            <span class="menu-item-icon todo-item"></span>
-                            <div class="menu-item-content">
-                                <div class="item-title">TodoTemplate</div>
-                                <div class="item-desc">Simple project template</div>
-                            </div>
-                        </a>
-                        <a class="menu-item" href="@Urls.AdminPanel">
-                            <span class="menu-item-icon admin-item"></span>
-                            <div class="menu-item-content">
-                                <div class="item-title">AdminPanel</div>
-                                <div class="item-desc">Admin & dashboard project template</div>
-                            </div>
-                        </a>
-                        <a class="menu-item" href="@Urls.Components">
-                            <span class="menu-item-icon components-item"></span>
+
+                        <a class="menu-item" href="@Urls.Components" target="_blank">
+                            @* <span class="menu-item-icon components-item"></span> *@
                             <div class="menu-item-content">
                                 <div class="item-title">BlazorUI</div>
                                 <div class="item-desc">Native Blazor UI components</div>
                             </div>
                         </a>
+
+                        <a class="menu-item @(CurrentUrl.Contains("admin-panel") ? "active" : "")" href="@Urls.AdminPanel">
+                            @* <span class="menu-item-icon admin-item"></span> *@
+                            <div class="menu-item-content">
+                                <div class="item-title">AdminPanel</div>
+                                <div class="item-desc">Admin & dashboard project template</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(CurrentUrl.Contains("todo-template") ? "active" : "")" href="@Urls.TodoTemplate">
+                            @* <span class="menu-item-icon todo-item"></span> *@
+                            <div class="menu-item-content">
+                                <div class="item-title">TodoTemplate</div>
+                                <div class="item-desc">Simple project template</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col">
                         <div class="col-header">Services</div>
+
                         <a class="menu-item menu-item--disabled">
-                            <span class="menu-item-icon cloud-item"></span>
+                            @* <span class="menu-item-icon cloud-item"></span> *@
                             <div class="menu-item-content">
                                 <div class="item-title">Cloud hosting solutions</div>
                                 <div class="item-desc">Coming soon</div>
                             </div>
                         </a>
+
                         <a class="menu-item menu-item--disabled">
-                            <span class="menu-item-icon academy-item"></span>
+                            @* <span class="menu-item-icon academy-item"></span> *@
                             <div class="menu-item-content">
-                                <div class="item-title">Bit academy</div>
+                                <div class="item-title">bit Academy</div>
                                 <div class="item-desc">Coming soon</div>
                             </div>
                         </a>
@@ -58,15 +63,26 @@
                 </div>
             </div>
             <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+
             @* <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
             <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>*@
-            <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About</a>
-            <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+
         </div>
-        <a class="github-btn" aria-label="Github repository" href="@Urls.GithubRepo" target="_blank">
-            <img class="github-icon" src='/images/github-icon.svg' alt="github repo" />
-            <img src="https://img.shields.io/github/stars/bitfoundation/bitplatform.svg" alt="github stars" />
-        </a>
+        <div class="right-section">
+            <div class="github-container">
+                <img src="https://img.shields.io/github/stars/bitfoundation/bitplatform.svg" alt="GitHub stars" title="GitHub stars" />
+                <a class="github-btn" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo"></a>
+            </div>
+
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
+                <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
+            </button>
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
+                <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
+            </button>
+        </div>
     </div>
 
     <div class="header-second-row">
@@ -102,7 +118,7 @@
                             <div class="item-desc">Admin & dashboard project template</div>
                         </div>
                     </a>
-                    <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <span class="menu-item-icon components-item"></span>
                         <div class="menu-item-content">
                             <div class="item-title">BlazorUI</div>
@@ -122,7 +138,7 @@
                     <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon academy-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">Bit academy</div>
+                            <div class="item-title">bit Academy</div>
                             <div class="item-desc">Coming soon</div>
                         </div>
                     </a>
@@ -130,9 +146,10 @@
             </div>
         </div>
         <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+
         @*<a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@WrapHandled(ToggleHeaderMenu)>Blogs</a>
     <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@WrapHandled(ToggleHeaderMenu)>Videos</a>*@
-        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
     </nav>
 }

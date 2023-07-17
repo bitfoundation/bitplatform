@@ -1,7 +1,6 @@
 ﻿#if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using Bit.Websites.Platform.Web.Services.Implementations;
 
 namespace Bit.Websites.Platform.Web.Startup;
 
@@ -22,6 +21,7 @@ public static class Services
         services.AddHttpContextAccessor();
         services.AddRazorPages();
         services.AddServerSideBlazor();
+
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;

@@ -6,17 +6,20 @@
             Description="settings of the admin panel template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">Settings</h1>
-    <div class="page-desc">
-        Other configurations available in the Bit AdminPanel are as follows:
-    </div>
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>AdminPanel</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Settings</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        Other configurations available in the bit AdminPanel are as follows:
+    </BitTypography>
+    <br />
 
     <section class="section-card">
-        <h2 class="section-card-title">Authentication policies</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Authentication policies</BitTypography>
         <div class="section-card-txt">
-            Bit AdminPanel provides authentication with and implements the SignUp and SignIn user interfaces.
-            You can change the default settings of the Identity Settings according to your needs; 
-            These settings are in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+            bit AdminPanel provides authentication with and implements the SignUp and SignIn user interfaces.
+            You can change the default settings of the Identity Settings according to your needs;
+            These settings are in the <b>appsettings.json</b> file in the Api project.
         </div>
         <div class="code-box">
             <pre>
@@ -35,10 +38,10 @@
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">JWT settings</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>JWT settings</BitTypography>
         <div class="section-card-txt">
-            Bit AdminPanel uses JWT to provide token-based authentication and you can change these settings.
-            You can find these settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+            bit AdminPanel uses JWT to provide token-based authentication and you can change these settings.
+            You can find these settings in the <b>appsettings.json</b> file in the Api project.
         </div>
         <div class="code-box">
             <pre class="code">
@@ -52,9 +55,9 @@
             </pre>
         </div>
         <div class="section-card-txt">
-            <span class="bold-txt">Note</span>: IdentityCertificatePassword referring to the password of the 
-            <span class="high-light-text">IdentityCertificate.pfx</span> file in the Api project that used as certificate file 
-            for store the public key and etc for validating incoming JWT tokens. 
+            <b>Note</b>: IdentityCertificatePassword referring to the password of the
+            <b>IdentityCertificate.pfx</b> file in the Api project that used as certificate file
+            for store the public key and etc for validating incoming JWT tokens.
             To create PFX file run the following commands in PowerShell with the desired password and file path for your pfx file.
         </div>
         <div class="code-box">
@@ -66,10 +69,10 @@
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">Email settings</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Email settings</BitTypography>
         <div class="section-card-txt">
-            Bit AdminPanel uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
-            You can change the SMTP provider settings in the <span class="high-light-text">appsettings.json</span> file in the Api project.
+            bit AdminPanel uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
+            You can change the SMTP provider settings in the <b>appsettings.json</b> file in the Api project.
         </div>
         <div class="code-box">
             <pre class="code">
@@ -84,15 +87,15 @@
         </pre>
         </div>
         <div class="section-card-txt">
-            <span class="bold-txt">Note</span>: You can find email templates used for email confirmation and reset password in the <span class="high-light-text">Resources</span> directory of the Api project.
+            <b>Note</b>: You can find email templates used for email confirmation and reset password in the <b>Resources</b> directory of the Api project.
         </div>
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">User profile image setting</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>User profile image settings</BitTypography>
         <div class="section-card-txt">
-            Bit AdminPanel saves user profile image in <span class="high-light">Attachments\Profiles</span> directory
-            of Environment.SpecialFolder.ApplicationData as default, you can change this path as you need from the <span class="high-light">appsettings.json</span> file in the Api project.
+            bit AdminPanel saves user profile image in <b>Attachments\Profiles</b> directory
+            of Environment.SpecialFolder.ApplicationData as default, you can change this path as you need from the <b>appsettings.json</b> file in the Api project.
         </div>
         <div class="code-box">
             <pre class="code"><code>"UserProfileImagesDir": "Attachments/Profiles/"</code></pre>
@@ -100,11 +103,11 @@
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">Health check settings</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Health check settings</BitTypography>
         <div class="section-card-txt">
-            Bit AdminPanel supports Health Checks for reporting the health of app infrastructure components.
-            Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the 
-            <span class="high-light-text">appsettings.json</span> file in the Api project.
+            bit AdminPanel supports Health Checks for reporting the health of app infrastructure components.
+            Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the
+            <b>appsettings.json</b> file in the Api project.
         </div>
         <div class="code-box">
             <pre class="code"><code>"HealthCheckSettings": {
@@ -112,7 +115,7 @@
 }</code></pre>
         </div>
         <div class="section-card-txt">
-            <span class="bold-txt">Note</span>: You can find Health Checks dashboard from <span class="high-light-text">https://localhost:5011/healthchecks-ui</span> by default.
+            <b>Note</b>: You can find Health Checks dashboard from <b>https://localhost:5011/healthchecks-ui</b> by default.
         </div>
     </section>
 </div>

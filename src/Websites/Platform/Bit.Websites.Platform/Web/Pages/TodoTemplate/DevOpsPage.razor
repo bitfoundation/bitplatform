@@ -6,19 +6,24 @@
             Description="devops of the todo template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">DevOps</h1>
-    <div class="page-desc">
-        Bit TodoTemplate provides features to add support for DevOps using GitHub actions.
-    </div>
-    <div class="section-card">
-        <h2 class="section-card-title">CI</h2>
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>DevOps</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit TodoTemplate provides features to add support for DevOps using GitHub actions.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CI</BitTypography>
         <div class="section-card-txt">
-            <span class="high-light-text">CI</span> pipeline which is located in <span class="high-light-text">.github/workflows/ci.yml</span> ensures that every change that is committed into <span class="high-light-text">develop branch</span> won't break projects build in the following modes:
+            <b>CI</b> pipeline which is located in <b>.github/workflows/ci.yml</b> ensures that every change that is committed into 
+            <b>develop branch</b> won't break projects build in the following modes:
         </div>
         <div class="section-card-txt">
             <ul>
                 <li>Blazor Server</li>
-                <li>Blazor Web Assembly</li>
+                <li>Blazor WebAssembly</li>
                 <li>Blazor Hybrid - Android</li>
                 <li>Blazor Hybrid - iOS</li>
                 <li>Blazor Hybrid - Windows</li>
@@ -26,22 +31,24 @@
             </ul>
         </div>
         <div class="section-card-txt">
-            The CI pipeline only has one variable called <span class="high-light-text">WEB_APP_DEPLOYMENT_TYPE</span> that you can read more about it <a href="todo-template/deployment-type" target="_blank">here</a>
+            The CI pipeline only has one variable called <b>WEB_APP_DEPLOYMENT_TYPE</b> that you can read more about it <a href="todo-template/deployment-type">here</a>.
         </div>
-    </div>
+    </section>
 
-
-    <div class="section-card">
-        <h2 class="section-card-title">CD</h2>
-
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CD</BitTypography>
         <div class="section-card-txt">
-            <span class="high-light-text">CD</span> pipeline located in <span class="high-light-text">.github/workflows/cd.yml</span> builds and deploys every change committed in the<span class="high-light-text">main branch</span> into production.
+            <b>CD</b> pipeline located in <b>.github/workflows/cd.yml</b> builds and deploys every change committed in the main branch into production.
         </div>
         <div class="section-card-txt">
-            By default, the CD pipeline produces <span class="high-light-text">.aab</span> and <span class="high-light-text">.apk</span> for android, <span class="high-light-text">.ipa</span> for iOS, <span class="high-light-text">.exe</span> for Windows and, <span class="high-light-text">.pkg</span> for macOS. It also creates a zip folder that contains API+WebAssembly projects and an <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a> to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
+            By default, the CD pipeline produces <b>.aab</b> and <b>.apk</b> for android, <b>.ipa</b> for iOS, <b>.exe</b> for Windows and, <b>.pkg</b> for macOS. 
+            It also creates a zip folder that contains API+WebAssembly projects and an 
+            <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a> 
+            to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
         </div>
         <div class="section-card-txt">
-            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes. For example, we've created a deploy phase for API+WebAssembly that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
+            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes. 
+            For example, we've created a deploy phase for API+WebAssembly that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
         </div>
         <div class="section-card-txt">
             The CD pipeline includes the following variables:
@@ -54,7 +61,8 @@
 </code></pre>
         </div>
         <div class="section-card-txt">
-            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>. It's important to mention that since the GitHub Actions secrets does not support storing files, 
+            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>. 
+            It's important to mention that since the GitHub Actions secrets does not support storing files,
             to store secret files (such as pfx files), you need to convert the files' content to base64 and store the encoded result value as secret values.
         </div>
         <div class="code-box">
@@ -87,9 +95,9 @@ APPLICATION_DISPLAY_VERSION
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-</code></pre>
         </div>
         <div class="section-card-txt">
-            We have a plan to automate the deployment of <span class="high-light-text">.ipa</span> and <span class="high-light-text">.aab</span> files to the Apple Store & Google Play in the near future. So stay tuned!
+            We have a plan to automate the deployment of <b>.ipa</b> and <b>.aab</b> files to the Apple Store & Google Play in the near future. So stay tuned!
         </div>
-    </div>
+    </section>
 
 </div>
 

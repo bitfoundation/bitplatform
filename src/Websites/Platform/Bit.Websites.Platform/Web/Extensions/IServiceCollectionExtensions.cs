@@ -13,6 +13,7 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IPubSubService, PubSubService>();
 
         services.AddTransient<AppHttpClientHandler>();
+        services.AddBitBlazorUIServices();
 
         return services;
     }

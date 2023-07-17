@@ -1,14 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
-namespace Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 public class BuyPackageDto
 {
+    [Required]
     [EmailAddress]
-    [Required]
-    public string Email { get; set; }
+    public string Email { get; set; } = default!;
 
     [Required]
-    public string SalePackageTitle { get; set; }
+    public string SalePackageTitle { get; set; } = default!;
 
-    public string Message { get; set; }
+    public string Message { get; set; } = default!;
 }

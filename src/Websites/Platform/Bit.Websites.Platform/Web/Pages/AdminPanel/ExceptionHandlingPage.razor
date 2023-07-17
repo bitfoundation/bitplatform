@@ -6,37 +6,42 @@
             Description="exception handling in the admin panel template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">Exception handling</h1>
-    <div class="page-desc">
-        Bit AdminPanel provides features to handle all of the exceptions occurring in different locations.
-    </div>
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>AdminPanel</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Exception handling</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit AdminPanel provides features to handle all of the exceptions occurring in different locations.
+    </BitTypography>
+    <br />
+
     <section class="section-card">
-        <h2 class="section-card-title">Server-Side exception handling</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server-Side exception handling</BitTypography>
         <div class="section-card-txt">
             <ul>
                 <li>
-                    <span class="bold-txt">known and unknown exception</span>: In development When an error occurred if this error is known or unknown, details of the error returned, but in test and production for unknown error details of the error not returned from server.
+                    <b>known and unknown exception</b>: In development When an error occurred if this error is known or unknown, 
+                    details of the error returned, but in test and production for unknown error details of the error not returned from server.
                     <ul dir="auto">
-                        <li>known exception inhrites <span class="high-light-text">KnownException</span> class</li>
-                        <li>Unknown exception inhrites <span class="high-light-text">UnknownException</span> class</li>
+                        <li>known exception inherits <b>KnownException</b> class</li>
+                        <li>Unknown exception inherits <b>UnknownException</b> class</li>
                     </ul>
                 </li>
                 <li>
-                    <span class="bold-txt">RestException</span>: It's a class that has an HTTP Response <span class="high-light-text">StatusCode</span> that you to perform a response with status code.
+                    <b>RestException</b>: It's a class that has an HTTP Response <b>StatusCode</b> that you to perform a response with status code.
                 </li>
             </ul>
         </div>
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">Client-Side exception handling</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client-Side exception handling</BitTypography>
         <div class="section-card-txt">
-            When an error is raised in App(android, iOS) maybe cause crash app. for avoiding app crash; Bit provides some mechanism for error handling.
+            When an error is raised in App(android, iOS) maybe cause crash app. for avoiding app crash; bit provides some mechanism for error handling.
             <ul>
-                <li>inheriting <span class="high-light-text">AppComponentBase</span> in razor pages.</li>
-                <li>Instead of initializing your components in the <span class="high-light-text">OnInitializedAsync</span> method, override the <span class="high-light-text">OnInitAsync</span> method of the <span class="high-light-text">AppComponentBase</span> class.</li>
-                <li>Use <span class="high-light-text">WrapHandle</span> method instead of direct calling events such as <span class="high-light-text">OnClick</span> in the Razor components.</li>
-                <li>Use <span class="high-light-text">try-catch</span> block in <span class="high-light-text">asyn-avoid</span> method and call <span class="high-light-text">StatehasChanged</span> method to handle unexpected errors.</li>
+                <li>inheriting <b>AppComponentBase</b> in razor pages.</li>
+                <li>Instead of initializing your components in the <b>OnInitializedAsync</b> method, override the <b>OnInitAsync</b> method of the <b>AppComponentBase</b> class.</li>
+                <li>Use <b>WrapHandle</b> method instead of direct calling events such as <b>OnClick</b> in the Razor components.</li>
+                <li>Use <b>try-catch</b> block in <b>async void</b> method and call <b>StateHasChanged</b> method to handle unexpected errors.</li>
             </ul>
         </div>
     </section>

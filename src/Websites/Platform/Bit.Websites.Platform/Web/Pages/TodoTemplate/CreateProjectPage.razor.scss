@@ -19,24 +19,12 @@
     @include SectionCard;
 }
 
-.section-card-title {
-    @include SectionCardTitle;
-}
-
 .section-card-txt {
     @include SectionCardText;
 }
 
 .code-box {
     @include CodeBox;
-}
-
-.high-light-text {
-    @include HighLightText;
-}
-
-.bold-txt {
-    font-weight: bold;
 }
 
 .image-container {

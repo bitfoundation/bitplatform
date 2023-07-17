@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Bit.Websites.Platform.Shared.Dtos.ContactUs;
 
-namespace Bit.Websites.Platform.Shared.Dtos.ContactUs;
 public class ContactUsDto
 {
     [EmailAddress]

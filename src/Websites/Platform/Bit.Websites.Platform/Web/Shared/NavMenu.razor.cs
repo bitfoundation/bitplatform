@@ -14,29 +14,12 @@ namespace Bit.Websites.Platform.Web;
 public partial class NavMenu
 {
     private bool isNavOpen = false;
-    private readonly List<BitNavItem> TodoTemplateNavLinks = new()
-    {
-        new BitNavItem { Text = "Overview", Url = "/todo-template/overview"},
-        new BitNavItem { Text = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
-        new BitNavItem { Text = "Getting Started", Url = "/todo-template/getting-started"},
-        new BitNavItem { Text = "Database", Url = "/todo-template/database"},
-        new BitNavItem { Text = "Run", Url = "/todo-template/run"},
-        new BitNavItem { Text = "Hosting models", Url = "/todo-template/hosting-models"},
-        new BitNavItem { Text = "Deployment type", Url = "/todo-template/deployment-type"},
-        new BitNavItem { Text = "Settings", Url = "/todo-template/settings"},
-        new BitNavItem { Text = "Project structure", Url = "/todo-template/project-structure"},
-        new BitNavItem { Text = "Exception handling", Url = "/todo-template/exception-handling"},
-        new BitNavItem { Text = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
-        new BitNavItem { Text = "Multilingualism", Url = "/todo-template/multilingualism"},
-        new BitNavItem { Text = "DevOps", Url = "/todo-template/devops"},
-        new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
-    };
 
     private readonly List<BitNavItem> AdminPanelNavLinks = new()
     {
         new BitNavItem { Text = "Overview", Url = "/admin-panel/overview"},
         new BitNavItem { Text = "Development prerequisites", Url = "/admin-panel/development-prerequisites"},
-        new BitNavItem { Text = "Getting Started", Url = "/admin-panel/getting-started"},
+        new BitNavItem { Text = "Create project", Url = "/admin-panel/create-project"},
         new BitNavItem { Text = "Database", Url = "/admin-panel/database"},
         new BitNavItem { Text = "Run", Url = "/admin-panel/run"},
         new BitNavItem { Text = "Hosting models", Url = "/admin-panel/hosting-models"},
@@ -50,14 +33,32 @@ public partial class NavMenu
         new BitNavItem { Text = "Contribute", Url = "/admin-panel/contribute"}
     };
 
-    private List<BitNavItem> filteredNavLinks;
+    private readonly List<BitNavItem> TodoTemplateNavLinks = new()
+    {
+        new BitNavItem { Text = "Overview", Url = "/todo-template/overview"},
+        new BitNavItem { Text = "Development prerequisites", Url = "/todo-template/development-prerequisites"},
+        new BitNavItem { Text = "Create project", Url = "/todo-template/create-project"},
+        new BitNavItem { Text = "Database", Url = "/todo-template/database"},
+        new BitNavItem { Text = "Run", Url = "/todo-template/run"},
+        new BitNavItem { Text = "Hosting models", Url = "/todo-template/hosting-models"},
+        new BitNavItem { Text = "Deployment type", Url = "/todo-template/deployment-type"},
+        new BitNavItem { Text = "Settings", Url = "/todo-template/settings"},
+        new BitNavItem { Text = "Project structure", Url = "/todo-template/project-structure"},
+        new BitNavItem { Text = "Exception handling", Url = "/todo-template/exception-handling"},
+        new BitNavItem { Text = "Cache mechanism", Url = "/todo-template/cache-mechanism"},
+        new BitNavItem { Text = "Multilingualism", Url = "/todo-template/multilingualism"},
+        new BitNavItem { Text = "DevOps", Url = "/todo-template/devops"},
+        new BitNavItem { Text = "Contribute", Url = "/todo-template/contribute"}
+    };
+
+    private List<BitNavItem> filteredNavLinks = default!;
     private string searchText = string.Empty;
 
     [AutoInject] private NavManuService _navManuService = default!;
     [AutoInject] private IJSRuntime _jsRuntime = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
 
-    public string CurrentUrl { get; set; }
+    public string CurrentUrl { get; set; } = default!;
 
     protected override void OnInitialized()
     {
@@ -68,7 +69,7 @@ public partial class NavMenu
         base.OnInitialized();
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         HandleClear();

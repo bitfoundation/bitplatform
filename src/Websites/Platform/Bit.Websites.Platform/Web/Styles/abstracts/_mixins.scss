@@ -1,7 +1,8 @@
-﻿@import '_media-queries.scss';
-@import '_functions.scss';
+﻿@import '_vars.scss';
 @import '_colors.scss';
-@import '_vars.scss';
+@import '_functions.scss';
+@import '_media-queries.scss';
+@import '../bit-css-variables.scss';
 
 @mixin PageContainer {
     width: 100%;
@@ -31,16 +32,14 @@
 }
 
 @mixin SectionCard {
-    position: relative;
     width: 100%;
     padding: rem(28px);
-    margin-bottom: rem(28px);
+    position: relative;
     border-radius: rem(4px);
-    border: rem(1px) solid #E0E3E7;
-    box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
-    box-sizing: border-box;
+    margin-bottom: rem(28px);
     background-clip: padding-box;
-    background-color: $White;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
 }
 
 @mixin SectionCardTitle {
@@ -53,26 +52,21 @@
 }
 
 @mixin SectionCardText {
-    margin-bottom: rem(24px);
     font-weight: 400;
-    font-size: rem(18px);
-    line-height: rem(32px);
-    text-align: justify;
-    color: $Gray1;
-    //@include lg {
-    //    font-size: rem(14px);
-    //}
+    font-size: rem(15px);
+    line-height: rem(24px);
+    margin-bottom: rem(24px);
 
     @include md {
-        margin-bottom: rem(16px);
         font-size: rem(16px);
         line-height: rem(30px);
+        margin-bottom: rem(16px);
     }
 
     @include sm {
-        margin-bottom: rem(12px);
         font-size: rem(15px);
         line-height: rem(28px);
+        margin-bottom: rem(12px);
 
         ul {
             padding-left: rem(16px);
@@ -81,43 +75,32 @@
 }
 
 @mixin CodeBox {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
     width: 100%;
-    min-height: rem(48px);
-    margin-bottom: rem(32px);
-    border-left: rem(4px) solid $B6Color;
-    padding: rem(12px) rem(22px);
-    box-sizing: border-box;
-    font-weight: 400;
-    font-size: rem(16px);
-    line-height: rem(24px);
-    color: $B3Color;
-    background-color: $Gray5;
+    display: flex;
     overflow: auto;
+    font-weight: 400;
     white-space: nowrap;
+    align-items: center;
+    font-size: rem(16px);
+    min-height: rem(48px);
+    line-height: rem(24px);
+    margin-bottom: rem(32px);
+    justify-content: flex-start;
+    padding: rem(12px) rem(22px);
+    background-color: $bit-color-background-secondary;
+    border-left: rem(2px) solid $bit-color-primary-main;
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-    //@include lg {
-    //    padding: rem(12px) rem(20px);
-    //}
 
     @include md {
         min-height: rem(40px);
         margin-bottom: rem(24px);
-        border-left: rem(2px) solid $B6Color;
         padding: rem(10px) rem(8px);
-        //font-size: rem(12px);
-        //line-height: rem(20px);
     }
 
     @include sm {
         min-height: rem(32px);
         margin-bottom: rem(12px);
-        border-left: rem(2px) solid $B6Color;
         padding: rem(6px) rem(8px);
-        //font-size: rem(12px);
-        //line-height: rem(28px);
     }
 
     &::-webkit-scrollbar {
