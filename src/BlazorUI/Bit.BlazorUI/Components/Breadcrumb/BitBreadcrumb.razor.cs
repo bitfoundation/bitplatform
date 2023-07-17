@@ -392,6 +392,9 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty(_internalIsEnabledField, true);
     }
 
+    [JSInvokable("CloseCallout")]
+    public void CloseCallout() => _isCalloutOpen = false;
+
     public void Dispose()
     {
         Dispose(true);
