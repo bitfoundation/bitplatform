@@ -104,20 +104,7 @@
             <div class="header-menu-popup">
                 <div class="col">
                     <div class="col-header">Products</div>
-                    <a class="menu-item" href="@Urls.TodoTemplate" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <span class="menu-item-icon todo-item"></span>
-                        <div class="menu-item-content">
-                            <div class="item-title">TodoTemplate</div>
-                            <div class="item-desc">Simple project template</div>
-                        </div>
-                    </a>
-                    <a class="menu-item" href="@Urls.AdminPanel" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <span class="menu-item-icon admin-item"></span>
-                        <div class="menu-item-content">
-                            <div class="item-title">AdminPanel</div>
-                            <div class="item-desc">Admin & dashboard project template</div>
-                        </div>
-                    </a>
+
                     <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <span class="menu-item-icon components-item"></span>
                         <div class="menu-item-content">
@@ -125,9 +112,26 @@
                             <div class="item-desc">Native Blazor UI components</div>
                         </div>
                     </a>
+
+                    <a class="menu-item" href="@Urls.TodoTemplate" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <span class="menu-item-icon todo-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">TodoTemplate</div>
+                            <div class="item-desc">Simple project template</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.AdminPanel" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <span class="menu-item-icon admin-item"></span>
+                        <div class="menu-item-content">
+                            <div class="item-title">AdminPanel</div>
+                            <div class="item-desc">Admin & dashboard project template</div>
+                        </div>
+                    </a>
                 </div>
                 <div class="col">
                     <div class="col-header">Services</div>
+
                     <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon cloud-item"></span>
                         <div class="menu-item-content">
@@ -135,6 +139,7 @@
                             <div class="item-desc">Coming soon</div>
                         </div>
                     </a>
+
                     <a class="menu-item menu-item--disabled">
                         <span class="menu-item-icon academy-item"></span>
                         <div class="menu-item-content">
