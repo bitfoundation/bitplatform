@@ -22,3 +22,7 @@
 .section-card-txt {
     @include SectionCardText;
 }
+
+::deep a {
+    color: $bit-color-primary-main;
+}

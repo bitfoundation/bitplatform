@@ -181,6 +181,7 @@
 }
 
 .header-nav-link {
+    width: 100%;
     line-height: 1.5;
     padding: rem(8px) 0;
     font-size: rem(14px);
@@ -238,6 +239,13 @@
     border-color: $bit-color-border-secondary;
     background-color: $bit-color-background-primary;
 
+    @include sm {
+        padding: 0;
+        overflow: auto;
+        max-height: rem(222px);
+        flex-flow: column nowrap;
+    }
+
     ::-webkit-scrollbar {
         width: 7px;
         -webkit-appearance: none;
@@ -247,11 +255,6 @@
         border-radius: 4px;
         background-color: rgba(0, 0, 0, .5);
         box-shadow: 0 0 1px rgba(255, 255, 255, .5);
-    }
-
-    @include sm {
-        overflow: auto;
-        flex-flow: column nowrap;
     }
 
     .col {

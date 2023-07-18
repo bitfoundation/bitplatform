@@ -50,3 +50,7 @@
         max-width: 500px;
     }
 }
+
+::deep a {
+    color: $bit-color-primary-main;
+}

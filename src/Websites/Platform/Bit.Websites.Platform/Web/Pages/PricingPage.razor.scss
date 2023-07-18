@@ -1,5 +1,4 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
 
@@ -82,10 +81,6 @@
     .grey-txt {
         display: inline;
         color: $bit-color-foreground-secondary;
-    }
-
-    .blue-txt {
-        color: $bit-color-primary-main;
     }
 
     .modal-container {

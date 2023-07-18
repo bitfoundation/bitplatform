@@ -1,7 +1,7 @@
-﻿@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_colors.scss';
+﻿@import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     @include PageContainer;
@@ -49,4 +49,8 @@
     &.small {
         max-width: 500px;
     }
+}
+
+::deep a {
+    color: $bit-color-primary-main;
 }

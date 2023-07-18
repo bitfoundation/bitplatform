@@ -98,6 +98,12 @@
     background-color: $bit-color-background-secondary;
 }
 
-::deep code {
-    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+::deep {
+    .blue-txt {
+        color: $bit-color-primary-main;
+    }
+
+    code {
+        font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+    }
 }

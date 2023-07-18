@@ -27,6 +27,12 @@
     }
 }
 
+::deep .page-title {
+    @include lt-md {
+        font-size: 4rem;
+    }
+}
+
 .contact-container {
     width: 100%;
     display: flex;

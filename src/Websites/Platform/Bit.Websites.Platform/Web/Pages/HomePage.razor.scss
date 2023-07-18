@@ -16,9 +16,9 @@
 .page-section {
     width: 100%;
     display: flex;
-    justify-content: center;
     padding-top: 5rem;
     padding-bottom: 5rem;
+    justify-content: center;
 }
 
 .page-section-content {
@@ -50,6 +50,10 @@
             padding-top: 2rem;
             justify-content: center;
         }
+
+        @include lt-md {
+            margin-bottom: 3rem;
+        }
     }
 
     .hero-section-content {
@@ -70,6 +74,14 @@
             max-width: 100%;
             padding-top: 10rem;
             align-items: center;
+        }
+
+        @include lt-md {
+            padding-top: 2rem;
+
+            ::deep .hero-title {
+                font-size: 5rem;
+            }
         }
     }
 
@@ -109,11 +121,19 @@
 .intro-section {
     padding: 10rem 0;
     background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        padding: 5rem 0;
+    }
 }
 
 .tech-section {
     padding: 10rem 0;
     text-align: center;
+
+    @include lt-md {
+        padding: 5rem 0;
+    }
 
     .tech-list {
         width: 100%;
@@ -460,11 +480,5 @@
         width: rem(64px);
         border-radius: 50%;
         margin-right: rem(10px);
-    }
-}
-
-::deep {
-    .blue-txt {
-        color: $bit-color-primary-main;
     }
 }
