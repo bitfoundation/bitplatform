@@ -46,3 +46,7 @@
 .image {
     @include Image;
 }
+
+::deep a {
+    color: $bit-color-primary-main;
+}

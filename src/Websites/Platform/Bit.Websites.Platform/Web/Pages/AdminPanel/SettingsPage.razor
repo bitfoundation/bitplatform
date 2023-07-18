@@ -21,9 +21,7 @@
             You can change the default settings of the Identity Settings according to your needs;
             These settings are in the <b>appsettings.json</b> file in the Api project.
         </div>
-        <div class="code-box">
-            <pre>
-<code>"IdentitySettings": {
+        <pre class="code-box">"IdentitySettings": {
     "PasswordRequireDigit": "false",
     "PasswordRequiredLength": "6",
     "PasswordRequireNonAlphanumeric": "false",
@@ -32,9 +30,7 @@
     "RequireUniqueEmail": "true",
     "ConfirmationEmailResendDelay": "0.00:02:00", //Format: D.HH:mm:nn
     "ResetPasswordEmailResendDelay": "0.00:02:00" //Format: D.HH:mm:nn
-}</code>
-            </pre>
-        </div>
+}</pre>
     </section>
 
     <section class="section-card">
@@ -43,29 +39,21 @@
             bit AdminPanel uses JWT to provide token-based authentication and you can change these settings.
             You can find these settings in the <b>appsettings.json</b> file in the Api project.
         </div>
-        <div class="code-box">
-            <pre class="code">
-<code>"JwtSettings": {
+        <pre class="code-box">"JwtSettings": {
     "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd",
     "Issuer": "AdminPanel",
     "Audience": "AdminPanel",
     "NotBeforeMinutes": "0",
     "ExpirationMinutes": "1440"
-}</code>
-            </pre>
-        </div>
+}</pre>
         <div class="section-card-txt">
             <b>Note</b>: IdentityCertificatePassword referring to the password of the
             <b>IdentityCertificate.pfx</b> file in the Api project that used as certificate file
             for store the public key and etc for validating incoming JWT tokens.
             To create PFX file run the following commands in PowerShell with the desired password and file path for your pfx file.
         </div>
-        <div class="code-box">
-            <pre class="code">
-<code>> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
-> Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</code>
-        </pre>
-        </div>
+        <pre class="code-box">> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+> Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</pre>
     </section>
 
     <section class="section-card">
@@ -74,18 +62,14 @@
             bit AdminPanel uses <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
             You can change the SMTP provider settings in the <b>appsettings.json</b> file in the Api project.
         </div>
-        <div class="code-box">
-            <pre class="code">
-<code>"EmailSettings": {
+        <pre class="code-box">"EmailSettings": {
     "Host": "LocalFolder", // Local folder means storing emails in bin\sent-emails folder. (Recommended for testing purposes only)
     "Port": "25",
-    "DefaulFromEmail": "info@admin.com",
+    "DefaultFromEmail": "info@admin.com",
     "DefaultFromName": "Admin",
     "UserName": null,
     "Password": null
-}</code>
-        </pre>
-        </div>
+}</pre>
         <div class="section-card-txt">
             <b>Note</b>: You can find email templates used for email confirmation and reset password in the <b>Resources</b> directory of the Api project.
         </div>
@@ -97,9 +81,7 @@
             bit AdminPanel saves user profile image in <b>Attachments\Profiles</b> directory
             of Environment.SpecialFolder.ApplicationData as default, you can change this path as you need from the <b>appsettings.json</b> file in the Api project.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>"UserProfileImagesDir": "Attachments/Profiles/"</code></pre>
-        </div>
+        <div class="code-box">"UserProfileImagesDir": "Attachments/Profiles/"</div>
     </section>
 
     <section class="section-card">
@@ -109,11 +91,9 @@
             Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the
             <b>appsettings.json</b> file in the Api project.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>"HealthCheckSettings": {
+        <pre class="code-box">"HealthCheckSettings": {
     "EnableHealthChecks": true
-}</code></pre>
-        </div>
+}</pre>
         <div class="section-card-txt">
             <b>Note</b>: You can find Health Checks dashboard from <b>https://localhost:5011/healthchecks-ui</b> by default.
         </div>

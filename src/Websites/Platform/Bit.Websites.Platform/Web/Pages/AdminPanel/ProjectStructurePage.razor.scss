@@ -47,3 +47,7 @@
     width: 69%;
     max-width: 400px;
 }
+
+::deep a {
+    color: $bit-color-primary-main;
+}

@@ -33,6 +33,7 @@
 
 @mixin SectionCard {
     width: 100%;
+    overflow: auto;
     padding: rem(28px);
     position: relative;
     border-radius: rem(4px);
@@ -79,7 +80,6 @@
     display: flex;
     overflow: auto;
     font-weight: 400;
-    white-space: nowrap;
     align-items: center;
     font-size: rem(16px);
     min-height: rem(48px);

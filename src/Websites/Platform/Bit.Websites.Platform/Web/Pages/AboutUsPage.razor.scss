@@ -40,6 +40,20 @@
         text-align: center;
         justify-content: center;
     }
+
+    ::deep {
+        .page-title {
+            @include lt-md {
+                font-size: 4rem;
+            }
+        }
+
+        .vision-title {
+            @include lt-md {
+                font-size: 2rem;
+            }
+        }
+    }
 }
 
 .values-section {
@@ -63,6 +77,10 @@
         max-width: calc((100% / 3) - 20px);
         flex-basis: calc((100% / 3) - 20px);
         box-shadow: $bit-box-shadow-callout;
+
+        @include lt-md {
+            min-width: 18rem;
+        }
     }
 }
 
@@ -138,11 +156,5 @@
     .member-position {
         font-size: rem(14px);
         color: $bit-color-foreground-secondary;
-    }
-}
-
-::deep {
-    .blue-txt {
-        color: $bit-color-primary-main;
     }
 }

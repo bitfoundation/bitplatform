@@ -19,31 +19,27 @@
         <div class="section-card-txt">
             Open <b>appsettings.json</b> file in <b>AdminPanel.Api</b> project and change the <b>ConnectionStrings</b> connection string if you want.
         </div>
-        <div class="code-box">
-            <pre><code>"ConnectionStrings": {
+        <pre class="code-box">"ConnectionStrings": {
     "SqlServerConnectionString": "Data Source=.; Initial Catalog=AdminPanelDb;Integrated Security=true;Application Name=Todo;"
-}</code></pre>
-        </div>
+}</pre>
         <div class="section-card-txt">
             For Other Entity Framework supported databases, you need to configure the context that provides your preferred database. with change
             <b>UseSqlServer</b> method on <b>Api\Startup\Services.cs</b> file.
         </div>
-        <div class="code-box">
-            <pre><code>services.AddDbContext@("<AppDbContext>")(options =>
+        <pre class="code-box">services.AddDbContext@("<AppDbContext>")(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
     {
         sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
     });
-});</code></pre>
-        </div>
+});</pre>
     </section>
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Migration</BitTypography>
         <div class="section-card-txt">
             To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations.
-            Open <b>Package Manager Console</b> in Visual Studio set <b>AdminPanel.Api</b> 
+            Open <b>Package Manager Console</b> in Visual Studio set <b>AdminPanel.Api</b>
             as the Default Project and run the Update-Database command as shown below:
         </div>
         <div class="code-box">Update-Database</div>
