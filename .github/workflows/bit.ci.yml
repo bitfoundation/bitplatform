@@ -24,8 +24,11 @@ jobs:
       with:
         node-version: latest
       
-    - name: Restore prerelease
-      run: dotnet workload restore src/Bit-CI-release.sln && dotnet restore src/Bit-CI-release.sln
+    - name: Restore nuget packages prerelease
+      run: dotnet restore src/Bit-CI-release.sln
+
+    - name: Restore workloads prerelease
+      run: dotnet workload restore src/Bit-CI-release.sln && dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj
 
     - name: MSBuild prerelease
       run: dotnet msbuild src/Bit-CI-release.sln -m:1
@@ -57,8 +60,11 @@ jobs:
       with:
         node-version: latest
 
-    - name: Restore
+    - name: Restore nuget packages
       run: dotnet workload restore src/Bit-CI.sln && dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
+
+    - name: Restore workloads
+      run: dotnet workload restore src/Bit-CI.sln && dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj
 
     - name: MSBuild
       run: dotnet msbuild src/Bit-CI.sln -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
