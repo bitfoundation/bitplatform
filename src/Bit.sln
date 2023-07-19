@@ -4,21 +4,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31808.319
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorUI", "BlazorUI", "{DC165533-038F-4D71-9BA1-44CF254E116F}"
+	ProjectSection(SolutionItems) = preProject
+		BlazorUI\Clean.bat = BlazorUI\Clean.bat
+		BlazorUI\README.md = BlazorUI\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{7B24BEC3-93BA-4789-B009-71A778ADA56F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		..\.gitignore = ..\.gitignore
 		Bit.Build.props = Bit.Build.props
+		Clean.bat = Clean.bat
+		..\CODE_OF_CONDUCT.md = ..\CODE_OF_CONDUCT.md
+		..\CONTRIBUTING.md = ..\CONTRIBUTING.md
 		global.json = global.json
+		..\ISSUE_TEMPLATE.md = ..\ISSUE_TEMPLATE.md
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
+		BlazorUI\Demo\.gitignore = BlazorUI\Demo\.gitignore
 		BlazorUI\Demo\Directory.Build.props = BlazorUI\Demo\Directory.Build.props
 		BlazorUI\Demo\global.json = BlazorUI\Demo\global.json
+		BlazorUI\Demo\README.md = BlazorUI\Demo\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Websites", "Websites", "{293480D2-1505-4C9F-B2B9-D78CA5573866}"
@@ -50,7 +60,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoTemplate", "TodoTemplate", "{C236F999-4F4A-4D87-A49D-8F5977185F7B}"
 	ProjectSection(SolutionItems) = preProject
 		Templates\TodoTemplate\Bit.TodoTemplate\.gitignore = Templates\TodoTemplate\Bit.TodoTemplate\.gitignore
-		Templates\TodoTemplate\Bit.TodoTemplate\src\Clean.bat = Templates\TodoTemplate\Bit.TodoTemplate\src\Clean.bat
+		Templates\TodoTemplate\Bit.TodoTemplate\Clean.bat = Templates\TodoTemplate\Bit.TodoTemplate\Clean.bat
 		Templates\TodoTemplate\Bit.TodoTemplate\src\Directory.Build.props = Templates\TodoTemplate\Bit.TodoTemplate\src\Directory.Build.props
 		Templates\TodoTemplate\Bit.TodoTemplate\global.json = Templates\TodoTemplate\Bit.TodoTemplate\global.json
 		Templates\TodoTemplate\Readme.md = Templates\TodoTemplate\Readme.md
@@ -82,7 +92,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPanel", "AdminPanel", "{5CDE0A2E-FB17-47F0-AEDC-A74A6C10B1BD}"
 	ProjectSection(SolutionItems) = preProject
 		Templates\AdminPanel\Bit.AdminPanel\.gitignore = Templates\AdminPanel\Bit.AdminPanel\.gitignore
-		Templates\AdminPanel\Bit.AdminPanel\src\Clean.bat = Templates\AdminPanel\Bit.AdminPanel\src\Clean.bat
+		Templates\AdminPanel\Bit.AdminPanel\Clean.bat = Templates\AdminPanel\Bit.AdminPanel\Clean.bat
 		Templates\AdminPanel\Bit.AdminPanel\src\Directory.Build.props = Templates\AdminPanel\Bit.AdminPanel\src\Directory.Build.props
 		Templates\AdminPanel\Bit.AdminPanel\global.json = Templates\AdminPanel\Bit.AdminPanel\global.json
 		Templates\AdminPanel\Readme.md = Templates\AdminPanel\Readme.md
@@ -103,6 +113,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Server", "Bs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{0691024C-D19B-41C0-AA76-7CBC1A875831}"
 	ProjectSection(SolutionItems) = preProject
+		Websites\Platform\.gitignore = Websites\Platform\.gitignore
+		Websites\Platform\Clean.bat = Websites\Platform\Clean.bat
 		Websites\Platform\Bit.Websites.Platform\Directory.Build.props = Websites\Platform\Bit.Websites.Platform\Directory.Build.props
 		Websites\Platform\global.json = Websites\Platform\global.json
 		Websites\Platform\README.md = Websites\Platform\README.md
@@ -110,6 +122,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{06
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{9FBD6994-1614-454B-9F04-D5F282405E9E}"
 	ProjectSection(SolutionItems) = preProject
+		Websites\Sales\.gitignore = Websites\Sales\.gitignore
+		Websites\Sales\Clean.bat = Websites\Sales\Clean.bat
 		Websites\Sales\Bit.Websites.Sales\Directory.Build.props = Websites\Sales\Bit.Websites.Sales\Directory.Build.props
 		Websites\Sales\global.json = Websites\Sales\global.json
 		Websites\Sales\README.md = Websites\Sales\README.md
@@ -185,7 +199,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorServer", "BlazorServer", "{D8F4B225-E82B-4BCF-80A6-485A0D5F46A5}"
 	ProjectSection(SolutionItems) = preProject
 		Templates\BlazorServer\Bit.BlazorServer\.gitignore = Templates\BlazorServer\Bit.BlazorServer\.gitignore
-		Templates\BlazorServer\Bit.BlazorServer\src\Clean.bat = Templates\BlazorServer\Bit.BlazorServer\src\Clean.bat
+		Templates\BlazorServer\Bit.BlazorServer\Clean.bat = Templates\BlazorServer\Bit.BlazorServer\Clean.bat
 		Templates\BlazorServer\Bit.BlazorServer\global.json = Templates\BlazorServer\Bit.BlazorServer\global.json
 		Templates\BlazorServer\Readme.md = Templates\BlazorServer\Readme.md
 	EndProjectSection
@@ -225,7 +239,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWasm", "BlazorWasm", "{4910B6F5-AC52-4382-A3C8-C4EC3B6AC867}"
 	ProjectSection(SolutionItems) = preProject
 		Templates\BlazorWasm\Bit.BlazorWasm\.gitignore = Templates\BlazorWasm\Bit.BlazorWasm\.gitignore
-		Templates\BlazorWasm\Bit.BlazorWasm\src\Clean.bat = Templates\BlazorWasm\Bit.BlazorWasm\src\Clean.bat
+		Templates\BlazorWasm\Bit.BlazorWasm\Clean.bat = Templates\BlazorWasm\Bit.BlazorWasm\Clean.bat
 		Templates\BlazorWasm\Bit.BlazorWasm\global.json = Templates\BlazorWasm\Bit.BlazorWasm\global.json
 		Templates\BlazorWasm\Readme.md = Templates\BlazorWasm\Readme.md
 	EndProjectSection
@@ -237,7 +251,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorDual", "BlazorDual", "{C6624DE1-7886-444E-BB96-380B807593BD}"
 	ProjectSection(SolutionItems) = preProject
 		Templates\BlazorDual\Bit.BlazorDual\.gitignore = Templates\BlazorDual\Bit.BlazorDual\.gitignore
-		Templates\BlazorDual\Bit.BlazorDual\src\Clean.bat = Templates\BlazorDual\Bit.BlazorDual\src\Clean.bat
+		Templates\BlazorDual\Bit.BlazorDual\Clean.bat = Templates\BlazorDual\Bit.BlazorDual\Clean.bat
 		Templates\BlazorDual\Bit.BlazorDual\src\Directory.Build.props = Templates\BlazorDual\Bit.BlazorDual\src\Directory.Build.props
 		Templates\BlazorDual\Bit.BlazorDual\global.json = Templates\BlazorDual\Bit.BlazorDual\global.json
 		Templates\BlazorDual\Readme.md = Templates\BlazorDual\Readme.md
@@ -300,6 +314,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Careers", "Careers", "{E70ACC14-8616-42C6-8A77-8A1123A91228}"
 	ProjectSection(SolutionItems) = preProject
+		Websites\Careers\.gitignore = Websites\Careers\.gitignore
+		Websites\Careers\Clean.bat = Websites\Careers\Clean.bat
 		Websites\Careers\Bit.Websites.Careers\Directory.Build.props = Websites\Careers\Bit.Websites.Careers\Directory.Build.props
 		Websites\Careers\global.json = Websites\Careers\global.json
 		Websites\Careers\README.md = Websites\Careers\README.md
