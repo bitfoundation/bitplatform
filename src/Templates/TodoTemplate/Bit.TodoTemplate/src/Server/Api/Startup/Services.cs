@@ -56,7 +56,7 @@ public static class Services
 
         services
             .AddControllers()
-            .AddOData()
+            .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
