@@ -861,7 +861,7 @@ public class Openfda
 ";
     private readonly string example3CSharpCode = @"
 
-// To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData()
+// To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData(options => options.EnableQueryFeatures())
 // Note that this need Microsoft.AspNetCore.OData nuget package to be installed
 
 [ApiController]

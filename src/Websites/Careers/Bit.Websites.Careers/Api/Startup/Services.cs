@@ -49,7 +49,7 @@ public static class Services
 
         services
             .AddControllers()
-            .AddOData()
+            .AddOData(options => options.EnableQueryFeatures())
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>
