@@ -18,13 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Tests", "Bit.B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.SourceGenerators", "Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj", "{050CE6DE-ECAF-4C7E-A7C8-DB8D977C98C8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{04FCC31B-45F7-4DBF-B9B3-2DCC8168759E}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\Bit.ci.yml = ..\..\.github\workflows\Bit.ci.yml
-		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
-		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{0EB8B659-FE79-46B6-A87A-3EAC7A5AE321}"
 	ProjectSection(SolutionItems) = preProject
 		Demo\.gitignore = Demo\.gitignore
@@ -304,7 +297,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{04FCC31B-45F7-4DBF-B9B3-2DCC8168759E} = {7B24BEC3-93BA-4789-B009-71A778ADA56F}
 		{90459635-8633-482F-9A01-AD07AC033B99} = {0EB8B659-FE79-46B6-A87A-3EAC7A5AE321}
 		{32A24596-2D20-47D1-9C75-9E42CB592D11} = {0EB8B659-FE79-46B6-A87A-3EAC7A5AE321}
 		{C16B7050-0842-4A34-89EE-1A41A5BE8651} = {0EB8B659-FE79-46B6-A87A-3EAC7A5AE321}
