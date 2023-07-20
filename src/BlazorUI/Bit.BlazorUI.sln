@@ -44,6 +44,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Extras", "Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj", "{E2D0BBB0-9317-47EF-83F6-F50F452C6A26}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Assets", "Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj", "{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -248,6 +250,26 @@ Global
 		{E2D0BBB0-9317-47EF-83F6-F50F452C6A26}.Release|x64.Build.0 = Release|Any CPU
 		{E2D0BBB0-9317-47EF-83F6-F50F452C6A26}.Release|x86.ActiveCfg = Release|Any CPU
 		{E2D0BBB0-9317-47EF-83F6-F50F452C6A26}.Release|x86.Build.0 = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|x64.Build.0 = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Debug|x86.Build.0 = Debug|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|iPhone.Build.0 = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|x64.ActiveCfg = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|x64.Build.0 = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|x86.ActiveCfg = Release|Any CPU
+		{3F41403F-A9A3-45CE-81E2-3FAFCEDD9509}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
