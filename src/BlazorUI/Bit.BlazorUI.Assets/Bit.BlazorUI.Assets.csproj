@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazorUI</RootNamespace>
+        <WarningLevel>0</WarningLevel>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileScssFiles;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+        <Exec Command="npx sass --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Command="npx sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+</Project>
