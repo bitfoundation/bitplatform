@@ -1,4 +1,5 @@
-﻿using AdminPanel.Server.Api.Models.Account;
+﻿//+:cnd:noEmit
+using AdminPanel.Server.Api.Models.Account;
 using AdminPanel.Server.Api.Models.Categories;
 using AdminPanel.Server.Api.Models.Products;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

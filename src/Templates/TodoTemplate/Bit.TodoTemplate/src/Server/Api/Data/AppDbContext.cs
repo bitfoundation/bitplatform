@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+﻿//+:cnd:noEmit
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TodoTemplate.Server.Api.Models.Account;
 using TodoTemplate.Server.Api.Models.TodoItem;
 
