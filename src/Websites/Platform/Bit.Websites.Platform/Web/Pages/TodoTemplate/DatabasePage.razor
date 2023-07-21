@@ -17,35 +17,25 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Connection String</BitTypography>
         <div class="section-card-txt">
-            Open <b>appsettings.json</b> file in <b>TodoTemplate.Server.Api</b> project and change the <b>ConnectionStrings</b> connection string if you want.
+            You can change connection string at <b>appsettings.json</b> file in <b>TodoTemplate.Api</b> project.
         </div>
-        <pre class="code-box">"ConnectionStrings": {
-    "SqlServerConnectionString": "Data Source=.; Initial Catalog=TodoTemplateDb;Integrated Security=true;Application Name=Todo;"
-}</pre>
+
         <div class="section-card-txt">
-            For Other Entity Framework supported databases, you need to configure the context that provides your preferred database. with change
-            <b>UseSqlServer</b> method on <b>Api\Startup\Services.cs</b> file.
+            If you have selected 'Other' for the database parameter while building the project, install appropriate EntityFrameworkCore package for your intended database,
+            and then in the <b>Api\Startup\Services.cs</b> file, perform the relevant settings for the related package in the services.AddDbContext section.
         </div>
-        <pre class="code-box">services.AddDbContext@("<AppDbContext>")(options =>
-{
-    options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
-    {
-        sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-    });
-});</pre>
     </section>
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Migration</BitTypography>
         <div class="section-card-txt">
-            To create and migrate the database to the latest version. You can use Entity Framework's built-in tools for migrations.
-            Open <b>Package Manager Console</b> in Visual Studio set <b>TodoTemplate.Server.Api</b>
-            as the Default Project and run the Update-Database command as shown below:
+            Set <b>TodoTemplate.Api</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
         </div>
+        <div class="code-box">Add-Migration InitialSchema</div>
         <div class="code-box">Update-Database</div>
-        <div class="section-card-txt">Or</div>
+        <div class="section-card-txt">Or run these commands in your command line:</div>
+        <div class="code-box">dotnet ef migrations add InitialSchema</div>
         <div class="code-box">dotnet ef database update</div>
-
     </section>
 </div>
 

@@ -1,7 +1,11 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Bit Platform",
-    "classifications": [ "ASP.NET Core", "Blazor", "MAUI" ],
+    "classifications": [
+        "ASP.NET Core",
+        "Blazor",
+        "MAUI"
+    ],
     "tags": {
         "language": "C#",
         "type": "solution"
@@ -12,13 +16,6 @@
     "sourceName": "TodoTemplate",
     "preferNameDirectory": true,
     "symbols": {
-        "skipRestore": {
-            "type": "parameter",
-            "datatype": "bool",
-            "description": "If specified, skips the automatic restore of the project on create.",
-            "defaultValue": "false"
-        },
-
         //Guid generator for App Id
         "ApplicationIdGuid": {
             "type": "generated",
@@ -32,26 +29,40 @@
                     "after": "<ApplicationIdGuid>"
                 }
             ]
-
+        },
+        "database": {
+            "displayName": "Database",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "SqlServer",
+            "choices": [
+                {
+                    "choice": "SqlServer",
+                    "description": "Sql Server"
+                },
+                {
+                    "choice": "Sqlite",
+                    "description": "Sqlite"
+                },
+                {
+                    "choice": "Other",
+                    "description": "Other"
+                }
+            ]
         }
-
     },
-    "postActions": [
-        {
-            "condition": "(!skipRestore)",
-            "description": "Restore NuGet packages required by this project.",
-            "manualInstructions": [
-                { "text": "Run 'dotnet restore'" }
-            ],
-            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
-            "continueOnError": true
-        }
-    ],
+    "postActions": [],
     "sources": [
         {
             "modifiers": [
                 {
-                    "copyOnly": [ "global.json", "**.Web/Pages/Home.razor", "**/*.scss", "**/*.svg", "**/*.png" ],
+                    "copyOnly": [
+                        "global.json",
+                        "**.Web/Pages/Home.razor",
+                        "**/*.scss",
+                        "**/*.svg",
+                        "**/*.png"
+                    ],
                     "exclude": [
                         ".vs/**",
                         "**/[Bb]in/**",
@@ -61,8 +72,8 @@
                         "**/*.user",
                         "**/*.lock.json",
                         "**/.git/**",
-                        "**/*.nuspec"
-
+                        "**/*.nuspec",
+                        "**/Migrations/**"
                     ]
                 }
             ]

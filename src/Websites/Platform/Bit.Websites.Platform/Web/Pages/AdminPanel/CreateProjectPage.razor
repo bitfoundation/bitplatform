@@ -25,9 +25,9 @@
         </div>
         <div class="code-box">dotnet new bit-admin</div>
         <div class="section-card-txt">
-            <b>Note</b>: By default, the current folder name will be considered as the project name. If you want to choose another name, use the switch -n as below.
+            <b>Note</b>: bit AdminPanel accepts project name with --name (default is current folder name) and --database default to 'SqlServer' among following options: 'SqlServer', 'Sqlite' and 'Other'
         </div>
-        <div class="code-box">dotnet new bit-admin -n [YourProjectName]</div>
+        <div class="code-box">dotnet new bit-admin --name MyProject --database Sqlite</div>
         @* <div class="section-card-txt">
             During the project construction, you will be prompted to install the LibSassBuilder global tool and generate CSS from SCSS files. Select "Yes" to both requests.
             CSS files will automatically be generated from SCSS files after each build, and the
