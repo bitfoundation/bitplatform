@@ -231,4 +231,4 @@ custom.aprof
 
 /src/Client/Core/wwwroot/scripts/app*.js
 
-/src/Server/TodoTemplate.Api/TodoTemplateDb.db*
+/src/Server/Api/TodoTemplateDb.db*
