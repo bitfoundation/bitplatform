@@ -230,3 +230,5 @@ custom.aprof
 /src/Server/Api/Attachments/**/*.*
 
 /src/Client/Core/wwwroot/scripts/app*.js
+
+/src/AdminPanel.Api/AdminPanel.db
