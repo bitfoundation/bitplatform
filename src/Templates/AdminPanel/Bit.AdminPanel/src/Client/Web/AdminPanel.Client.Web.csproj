@@ -82,8 +82,8 @@
     </Target>
 
     <Target Name="ValidateWebAppDeploymentTypeAndBlazorMode" BeforeTargets="Build">
-        <Error Text="Pwa is not supported in blazor server." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
-        <Error Text="In order to use blazor web assembly, change project's sdk from Microsoft.NET.Sdk.Web to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
+        <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
+        <Error Text="To run in BlazorWebAssembly mode, change the sdk of the AdminPanel.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
     </Target>
     
 </Project>
