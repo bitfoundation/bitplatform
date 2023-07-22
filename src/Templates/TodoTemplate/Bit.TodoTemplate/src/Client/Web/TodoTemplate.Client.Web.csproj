@@ -75,4 +75,9 @@
         <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
     </Target>
 
+    <Target Name="ValidateWebAppDeploymentTypeAndBlazorMode" BeforeTargets="Build">
+        <Error Text="Pwa is not supported in blazor server." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
+        <Error Text="In order to use blazor web assembly, you need to change sdk of web project from Web to BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
+    </Target>
+
 </Project>

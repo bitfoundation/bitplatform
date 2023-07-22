@@ -102,5 +102,10 @@
         <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
+
+    <Target Name="ValidateWebAppDeploymentTypeAndBlazorMode" BeforeTargets="Build">
+        <Error Text="Pwa is not supported in blazor server." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
+        <Error Text="In order to use blazor web assembly, you need to change sdk of web project from Web to BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
+    </Target>
     
 </Project>
