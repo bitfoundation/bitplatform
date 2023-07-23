@@ -59,25 +59,25 @@
         {
             <span class="bit-ntf-act">
                 <button @ref="_buttonIncrement"
-                @onpointerup="HandleOnPointerUpOrOut"
-                @onpointerout="HandleOnPointerUpOrOut"
-                @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Increment, e)"
-                type="button"
-                tabindex="-1"
-                class="bit-ntf-aup"
-                date-is-focusable="false"
-                aria-label="@IncrementAriaLabel"
-                disabled="@(IsEnabled is false)"
-                aria-disabled="@(IsEnabled is false)">
+                        @onpointerup="HandleOnPointerUpOrOut"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Increment, e)"
+                        type="button"
+                        tabindex="-1"
+                        class="bit-ntf-aup"
+                        date-is-focusable="false"
+                        aria-label="@IncrementAriaLabel"
+                        disabled="@(IsEnabled is false)"
+                        aria-disabled="@(IsEnabled is false)">
                     <span class="bit-ntf-aic">
                         <i class="bit-icon bit-icon--@IncrementIconName.GetName() bit-icon--s" />
                     </span>
                 </button>
 
                 <button @ref="_buttonDecrement"
-                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
-                        @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerup="HandleOnPointerUpOrOut"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
                         type="button"
                         tabindex="-1"
                         class="bit-ntf-adn"

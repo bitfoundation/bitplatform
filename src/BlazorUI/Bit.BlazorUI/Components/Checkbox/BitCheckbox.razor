@@ -1,8 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<bool>
 
-<div @ref="RootElement"
-@attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <input @ref="_checkboxElement" @attributes="InputHtmlAttributes" @onclick="@HandleCheckboxClick"

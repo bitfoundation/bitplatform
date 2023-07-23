@@ -23,9 +23,9 @@
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button id="@_overflowDropdownId"
-                        type="button"
-                        class="bit-brc-obt"
-                        aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
+                                type="button"
+                                class="bit-brc-obt"
+                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="bit-brc-oic">
                                 <i class="bit-icon bit-icon--@(OverflowIcon.GetName())" />
                             </span>
