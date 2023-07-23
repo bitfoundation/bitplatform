@@ -32,6 +32,33 @@
         <BitTypography Variant="BitTypographyVariant.Body1">
             Or add the package to the project from the Visual Nuget Package Manager.
         </BitTypography>
+
+        <br /><br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you want to use the Extra components (like <b>BitChart</b>) you need to add the Bit.BlazorUI.Extras package:
+        </BitTypography>
+        <div class="code-box">dotnet add package Bit.BlazorUI.Extras</div>
+        or
+        <div class="code-box">Install-Package Bit.BlazorUI.Extras</div>
+
+        <br /><br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you need the asset files of the bit BlazorUI (like <b>Segoe UI</b> for non-Windows clients) you need to add the Bit.BlazorUI.Assets package:
+        </BitTypography>
+        <div class="code-box">dotnet add package Bit.BlazorUI.Assets</div>
+        or
+        <div class="code-box">Install-Package Bit.BlazorUI.Assets</div>
+
+        <br /><br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you want to use the Fabric Icons of the bit BlazorUI (using <b>BitIconName</b> enum) you need to add the Bit.BlazorUI.Icons package:
+        </BitTypography>
+        <div class="code-box">dotnet add package Bit.BlazorUI.Icons</div>
+        or
+        <div class="code-box">Install-Package Bit.BlazorUI.Icons</div>
     </section>
 
     <section class="page-section">
@@ -52,6 +79,28 @@
             then include the script file by adding this snippet:
         </BitTypography>
         <div class="code-box">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js">&lt;/script></div>
+
+        <br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you are using the Extras package you also need to add these resources:
+        </BitTypography>
+        <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" rel="stylesheet" /></div>
+        <div class="code-box">&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js">&lt;/script></div>
+
+        <br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you are using the Assets package you also need to add this resource:
+        </BitTypography>
+        <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" rel="stylesheet" /></div>
+
+        <br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            If you are using the Icons package you also need to add this resource:
+        </BitTypography>
+        <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" rel="stylesheet" /></div>
     </section>
 
     <section class="page-section">

@@ -3,8 +3,7 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        aria-label="@AriaLabel"
@@ -13,8 +12,7 @@
        title="@Title"
        target="@Target"
        href="@Href"
-       tabindex="@_tabIndex"
-       @onclick="HandleOnClick">
+       tabindex="@_tabIndex">
         <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
             @if (IconName.HasValue)
             {
@@ -30,8 +28,7 @@
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="button"
@@ -39,8 +36,7 @@ else
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
             tabindex="@_tabIndex"
-            title="@Title"
-            @onclick="HandleOnClick">
+            title="@Title">
         <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
             @if (IconName.HasValue)
             {

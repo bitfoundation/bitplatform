@@ -23,11 +23,11 @@
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button id="@_overflowDropdownId"
-                                type="button"
-                                class="bit-brc-obt"
-                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
+                        type="button"
+                        class="bit-brc-obt"
+                        aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="bit-brc-oic">
-                                <i class="bit-icon bit-icon--@(OverflowIcon.GetName())"></i>
+                                <i class="bit-icon bit-icon--@(OverflowIcon.GetName())" />
                             </span>
                         </button>
                     }
@@ -55,7 +55,7 @@
 
                 @if (index != _displayItems.Count - 1)
                 {
-                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIcon.GetName())"></i>
+                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIcon.GetName())" />
                 }
             }
         </ul>

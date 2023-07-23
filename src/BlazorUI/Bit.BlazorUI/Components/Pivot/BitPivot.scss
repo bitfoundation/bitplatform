@@ -109,10 +109,12 @@
 
 .bit-pvt-scroll {
     .bit-pvt-hct {
-        overflow-X: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: spacing(0.5);
 
         &::-webkit-scrollbar {
-            height: spacing(0.425);
+            height: spacing(0.625);
         }
 
         &::-webkit-scrollbar-track {

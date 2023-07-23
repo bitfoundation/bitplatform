@@ -11,13 +11,13 @@
 }
 
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+@attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        
+
         <label class="bit-chg-lbl" id="@_labelId" disabled="@(IsEnabled is false)">
             @if (LabelTemplate is not null)
             {
@@ -34,8 +34,8 @@
             {
                 <div class="@GetDivClassNameItem(item)">
                     <input @attributes="InputHtmlAttributes"
-                           @onclick="HandleClick"
-                           @onchange="() => HandleChange(new ChangeEventArgs { Value = GetValue(item) })"
+                    @onclick="HandleClick"
+                    @onchange="() => HandleChange(new ChangeEventArgs { Value = GetValue(item) })"
                            id="@GetInputId(item)"
                            class="bit-chgi-input"
                            aria-label="@GetAriaLabel(item)"
@@ -71,27 +71,27 @@
                                             </div>
                                         </div>
                                     }
-                                    @if (GetIconName(item).HasValue)
+
+                                    var iconName = GetIconName(item);
+
+                                    @if (iconName.HasValue)
                                     {
                                         <div class="bit-chgi-ico-cnt">
                                             <div class="bit-chgi-ico-wrp">
-                                                <i aria-hidden="true" class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                                <i aria-hidden="true" class="bit-icon bit-icon--@iconName.GetName()" />
                                             </div>
                                         </div>
                                     }
-                                    @if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
+
+                                    @if (GetImageSrc(item).HasValue() || iconName.HasValue)
                                     {
                                         <div class="bit-chgi-wrp">
-                                            <span class="bit-chgi-txt">
-                                                @GetText(item)
-                                            </span>
+                                            <span class="bit-chgi-txt">@GetText(item)</span>
                                         </div>
                                     }
                                     else
                                     {
-                                        <span class="bit-chgi-txt">
-                                            @GetText(item)
-                                        </span>
+                                        <span class="bit-chgi-txt">@GetText(item)</span>
                                     }
                                 }
                             </div>

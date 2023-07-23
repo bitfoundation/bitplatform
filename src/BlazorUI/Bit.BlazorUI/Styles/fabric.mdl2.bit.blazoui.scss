@@ -1,0 +1,43 @@
+﻿@font-face {
+    font-style: normal;
+    font-display: swap;
+    font-weight: normal;
+    font-family: 'Fabric MDL2 bit BlazorUI';
+    src: url('../fonts/fabric.mdl2.bit.BlazorUI.woff2?14020431') format("woff2");
+}
+
+
+.bit-icon {
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI' !important;
+}
+
+.bit-icon--ChevronDown:before { content: '\e70d'; } /* '' */
+.bit-icon--Cancel:before { content: '\e711'; } /* '' */
+.bit-icon--More:before { content: '\e712'; } /* '' */
+.bit-icon--Search:before { content: '\e721'; } /* '' */
+.bit-icon--FavoriteStar:before { content: '\e734'; } /* '' */
+.bit-icon--FavoriteStarFill:before { content: '\e735'; } /* '' */
+.bit-icon--Up:before { content: '\e74a'; } /* '' */
+.bit-icon--Down:before { content: '\e74b'; } /* '' */
+.bit-icon--Delete:before { content: '\e74d'; } /* '' */
+.bit-icon--Play:before { content: '\e768'; } /* '' */
+.bit-icon--Pause:before { content: '\e769'; } /* '' */
+.bit-icon--ChevronLeft:before { content: '\e76b'; } /* '' */
+.bit-icon--ChevronRight:before { content: '\e76c'; } /* '' */
+.bit-icon--Warning:before { content: '\e7ba'; } /* '' */
+.bit-icon--View:before { content: '\e890'; } /* '' */
+.bit-icon--Accept:before { content: '\e8fb'; } /* '' */
+.bit-icon--Clock:before { content: '\e917'; } /* '' */
+.bit-icon--Completed:before { content: '\e930'; } /* '' */
+.bit-icon--Info:before { content: '\e946'; } /* '' */
+.bit-icon--ChevronUpSmall:before { content: '\e96d'; } /* '' */
+.bit-icon--ChevronDownSmall:before { content: '\e96e'; } /* '' */
+.bit-icon--ErrorBadge:before { content: '\ea39'; } /* '' */
+.bit-icon--Blocked2:before { content: '\ece4'; } /* '' */
+.bit-icon--CalendarMirrored:before { content: '\ed28'; } /* '' */
+.bit-icon--DoubleChevronUp:before { content: '\edbd'; } /* '' */
+.bit-icon--DoubleChevronDown:before { content: '\ee04'; } /* '' */
+.bit-icon--Hide3:before { content: '\f6ac'; } /* '' */
