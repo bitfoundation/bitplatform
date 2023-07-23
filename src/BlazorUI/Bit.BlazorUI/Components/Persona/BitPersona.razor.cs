@@ -138,7 +138,7 @@ public partial class BitPersona
     /// <summary>
     /// Icon name for the icon button of the custom action.
     /// </summary>
-    [Parameter] public BitIconName ActionIconName { get; set; } = BitIconName.Edit;
+    [Parameter] public BitIconName? ActionIconName { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.

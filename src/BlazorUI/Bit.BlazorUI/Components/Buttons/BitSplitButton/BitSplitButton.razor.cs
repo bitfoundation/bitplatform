@@ -219,8 +219,10 @@ public partial class BitSplitButton<TItem> where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    private BitIconName? GetIconName(TItem item)
+    private BitIconName? GetIconName(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitSplitButtonItem splitButtonItem)
         {
             return splitButtonItem.IconName;

@@ -1,9 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement" 
-        @onclick="HandleOnClick"
-        @attributes="HtmlAttributes"
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
         role="tab"
         type="button"
         name="@HeaderText"
@@ -13,13 +11,12 @@
         class="@ClassBuilder.Value"
         id="@Parent?.GetPivotItemId(this)"
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
-        aria-selected="@(IsSelected ? "true": "false")"
->
+        aria-selected="@(IsSelected ? "true": "false")">
     <span>
         @if (@IconName.HasValue)
         {
             <span>
-                <i class="bit-icon bit-icon--@(IconName.Value.GetName())"></i>
+                <i class="bit-icon bit-icon--@(IconName.Value.GetName())" />
             </span>
         }
 

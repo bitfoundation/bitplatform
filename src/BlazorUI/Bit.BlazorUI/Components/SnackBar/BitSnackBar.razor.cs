@@ -26,7 +26,7 @@ public partial class BitSnackBar
     /// <summary>
     /// Dismiss Icon in SnackBar.
     /// </summary>
-    [Parameter] public BitIconName? DismissIconName { get; set; }
+    [Parameter] public BitIconName DismissIconName { get; set; } = BitIconName.Cancel;
 
     /// <summary>
     /// Callback for when the Dismissed.

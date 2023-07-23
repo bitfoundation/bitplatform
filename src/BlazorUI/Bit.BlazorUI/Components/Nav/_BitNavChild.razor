@@ -16,7 +16,7 @@
             }
             else
             {
-                <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true"></i>
+                <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true" />
                 <span class="bit-nav-ghd">@Nav.GetText(Item)</span>
             }
         </button>
@@ -36,7 +36,7 @@
                         class="bit-nav-cbt @Nav.ClassStyles?.ToggleButton?.Class"
                         aria-expanded="@(Nav.GetItemExpanded(Item) ? "true" : "false")"
                         aria-label="@(Nav.GetItemExpanded(Item) ? Nav.GetCollapseAriaLabel(Item) : Nav.GetExpandAriaLabel(Item))">
-                    <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true"></i>
+                    <i class="bit-icon bit-icon--ChevronDown @(Nav.GetItemExpanded(Item) ? "bit-nav-exp" : "")" aria-hidden="true" />
                 </button>
             }
 
@@ -60,9 +60,10 @@
                     }
                     else
                     {
-                        @if (Nav.GetIconName(Item).HasValue)
+                        var iconName = Nav.GetIconName(Item);
+                        @if (iconName.HasValue)
                         {
-                            <i class="bit-nav-iic bit-icon bit-icon--@(Nav.GetIconName(Item).GetName())" aria-hidden="true"></i>
+                            <i class="bit-nav-iic bit-icon bit-icon--@(iconName.GetName())" aria-hidden="true" />
                         }
                         <span>@Nav.GetText(Item)</span>
                     }
@@ -86,9 +87,10 @@
                     }
                     else
                     {
-                        @if (Nav.GetIconName(Item).HasValue)
+                        var iconName = Nav.GetIconName(Item);
+                        @if (iconName.HasValue)
                         {
-                            <i class="bit-nav-iic bit-icon bit-icon--@(Nav.GetIconName(Item).GetName())" aria-hidden="true"></i>
+                            <i class="bit-nav-iic bit-icon bit-icon--@(iconName.GetName())" aria-hidden="true" />
                         }
                         <span>@Nav.GetText(Item)</span>
                     }

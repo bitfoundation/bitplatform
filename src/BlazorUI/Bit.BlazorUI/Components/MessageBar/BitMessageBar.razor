@@ -12,7 +12,7 @@
         <div class="bit-msb-mul">
             <div class="bit-msb-con">
                 <div class="bit-msb-ict" aria-hidden="true">
-                    <i class="bit-icon bit-icon--@messageBarIcon.GetName()"></i>
+                    <i class="bit-icon bit-icon--@_messageBarIcon.GetName()" />
                 </div>
 
                 <div class="bit-msb-txt"
@@ -32,7 +32,7 @@
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
-                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true" />
                             </span>
                         </button>
                     </div>
@@ -50,12 +50,12 @@
         <div class="bit-msb-sin">
             <div class="bit-msb-con">
                 <div class="bit-msb-ict" aria-hidden="true">
-                    <i class="bit-icon bit-icon--@messageBarIcon"></i>
+                    <i class="bit-icon bit-icon--@_messageBarIcon.GetName()" />
                 </div>
                 <div id="@LabelId"
                      aria-live="@GetAnnouncementPriority()"
                      role="@(Role is not null ? Role : GetTextRole())"
-                     class="bit-msb-txt @(ExpandSingleLine ? "bit-msb-opn": string.Empty)">
+                     class="bit-msb-txt @(_isExpanded ? "bit-msb-opn": string.Empty)">
                     <span class="bit-msb-itx">
                         <span>@ChildContent</span>
                     </span>
@@ -68,11 +68,13 @@
                 else if (Truncated)
                 {
                     <div class="bit-msb-trn">
-                        <button @onclick="ToggleExpandSingleLine"
+                        <button @onclick="ToggleExpand"
                                 type="button"
-                                aria-expanded="@(ExpandSingleLine ? "true" : "false")"
+                                aria-expanded="@(_isExpanded ? "true" : "false")"
                                 aria-label="@(OverflowButtonAriaLabel.HasValue()? OverflowButtonAriaLabel : null)">
-                            <i class="bit-icon bit-icon--@((ExpandSingleLine ? BitIconName.DoubleChevronUp : BitIconName.DoubleChevronDown).GetName())" aria-hidden="true"></i>
+                            <span>
+                                <i class="bit-icon bit-icon--@(_isExpanded ? "DoubleChevronUp" : "DoubleChevronDown")" aria-hidden="true" />
+                            </span>
                         </button>
                     </div>
                 }
@@ -85,7 +87,7 @@
                                 title="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)"
                                 aria-label="@(DismissButtonAriaLabel.HasValue() ? DismissButtonAriaLabel : null)">
                             <span>
-                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--@DismissIconName.GetName()" aria-hidden="true" />
                             </span>
                         </button>
                     </div>

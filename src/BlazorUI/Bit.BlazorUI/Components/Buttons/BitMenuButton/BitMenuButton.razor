@@ -30,10 +30,10 @@
         {
             @if (IconName.HasValue)
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                <i class="bit-icon bit-icon--@IconName.GetName()" />
             }
             <span class="bit-mnb-txt">@Text</span>
-            <i class="bit-icon bit-icon--ChevronDown"></i>
+            <i class="bit-icon bit-icon--ChevronDown" />
         }
     </button>
     <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
@@ -54,13 +54,12 @@
                         }
                         else
                         {
-                            @if (GetIconName(item).HasValue)
+                            var iconName = GetIconName(item);
+                            @if (iconName.HasValue)
                             {
-                                <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                <i class="bit-icon bit-icon--@iconName.GetName()" />
                             }
-                            <span class="bit-mnb-txt">
-                                @GetText(item)
-                            </span>
+                            <span class="bit-mnb-txt">@GetText(item)</span>
                         }
                     </button>
                 </li>
