@@ -89,16 +89,17 @@ public class BitMessageBarTests : BunitTestContext
         if (isMultiline is false && truncated)
         {
             var truncateButton = component.Find(".bit-msb-trn > button");
+            var icon = component.Find(".bit-msb-trn button span i");
 
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
-
-            truncateButton.Click();
-
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronUp"));
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
 
             truncateButton.Click();
 
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronUp"));
+
+            truncateButton.Click();
+
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
         }
     }
 
