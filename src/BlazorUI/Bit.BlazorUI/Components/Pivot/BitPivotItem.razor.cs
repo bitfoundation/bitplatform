@@ -31,7 +31,7 @@ public partial class BitPivotItem : IDisposable
     /// <summary>
     /// The icon name for the icon shown next to the pivot link.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Defines an optional item count displayed in parentheses just after the link text.

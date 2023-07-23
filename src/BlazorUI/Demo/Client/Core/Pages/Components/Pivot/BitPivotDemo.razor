@@ -37,7 +37,7 @@
     <ComponentExampleBox Title="Count and Icon" HTMLSourceCode="@example2HtmlCode" ExampleId="example2">
         <ExamplePreview>
             <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
-                <BitPivotItem HeaderText="Files" IconName="BitIconName.Info">
+                <BitPivotItem HeaderText="Files" IconName="@BitIconName.Info">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Files</h1>
                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
@@ -49,19 +49,19 @@
                         <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
                     </div>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Recent" IconName="BitIconName.Info" ItemCount="12">
+                <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Info" ItemCount="12">
                     <div style="margin-top:10px">
                         <h1>Pivot #3: Recent</h1>
                         <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
                     </div>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Some tab" IconName="BitIconName.Info" ItemCount="6">
+                <BitPivotItem HeaderText="Some tab" IconName="@BitIconName.Info" ItemCount="6">
                     <div style="margin-top:10px">
                         <h1>Pivot #4: Some tab</h1>
                         <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan.</p>
                     </div>
                 </BitPivotItem>
-                <BitPivotItem HeaderText="Latest" IconName="BitIconName.Info" ItemCount="8">
+                <BitPivotItem HeaderText="Latest" IconName="@BitIconName.Info" ItemCount="8">
                     <div style="margin-top:10px">
                         <h1>Pivot #5: Latest</h1>
                         <p>Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus. Suspendisse blandit erat ac lobortis pulvinar.</p>
@@ -178,13 +178,13 @@
                 <BitButton IsEnabled="@(OverridePivotSelectedKey != "1")" ButtonStyle="BitButtonStyle.Standard"
                            OnClick="(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) - 1).ToString())">
                     <div style="display:flex;gap:2px">
-                        <BitIcon IconName="BitIconName.CaretSolidLeft" /> Prev
+                        <BitIcon IconName="@BitIconName.CaretSolidLeft" /> Prev
                     </div>
                 </BitButton>
                 <BitButton IsEnabled="@(OverridePivotSelectedKey != "4")" ButtonStyle="BitButtonStyle.Standard"
                            OnClick="(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) + 1).ToString())">
                     <div style="display:flex;gap:2px">
-                        Next <BitIcon IconName="BitIconName.CaretSolidRight" />
+                        Next <BitIcon IconName="@BitIconName.CaretSolidRight" />
                     </div>
                 </BitButton>
             </div>
@@ -323,7 +323,7 @@
                         </div>
                     </Body>
                 </BitPivotItem>
-                <BitPivotItem IconName="BitIconName.Inbox">
+                <BitPivotItem IconName="@BitIconName.Inbox">
                     <Header>
                         <div>
                             <span style="color:rebeccapurple">Header <i style="color:purple" class="bit-icon bit-icon--HeartFill"></i> #3</span>

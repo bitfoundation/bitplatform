@@ -9,10 +9,10 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitActionButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitIconName.AddFriend, "title"),
-        DataRow(false, BitIconName.AddFriend, "title")
+        DataRow(true, "AddFriend", "title"),
+        DataRow(false, "AddFriend", "title")
     ]
-    public void BitActionButtonTest(bool isEnabled, BitIconName iconName, string title)
+    public void BitActionButtonTest(bool isEnabled, string iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitActionButton>(parameters =>
@@ -35,7 +35,7 @@ public class BitActionButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
 

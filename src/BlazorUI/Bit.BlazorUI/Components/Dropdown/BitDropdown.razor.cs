@@ -203,7 +203,7 @@ public partial class BitDropdown
     /// <summary>
     /// Optional chevron icon
     /// </summary>
-    [Parameter] public BitIconName CaretDownIconName { get; set; } = BitIconName.ChevronDown;
+    [Parameter] public string CaretDownIconName { get; set; } = "ChevronDown";
 
     /// <summary>
     /// Optional custom template for dropdown item

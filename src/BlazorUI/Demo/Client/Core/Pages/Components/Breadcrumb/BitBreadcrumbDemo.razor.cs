@@ -29,10 +29,10 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "DividerIcon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronRight",
-            Description = "The divider icon name. The default value is BitIconName.ChevronRight."
+            Name = "DividerIconName",
+            Type = "string",
+            DefaultValue = "ChevronRight",
+            Description = "The divider icon name."
         },
         new()
         {
@@ -106,10 +106,10 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "OverflowIcon",
-            Type = "BitIconName",
-            DefaultValue= "BitIconName.More",
-            Description = "The overflow icon name. The default value is BitIconName.More."
+            Name = "OverflowIconName",
+            Type = "string",
+            DefaultValue= "More",
+            Description = "The overflow icon name."
         },
         new()
         {
@@ -665,14 +665,14 @@ public partial class BitBreadcrumbDemo
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OverflowIcon=""BitIconName.ChevronDown"" />
+                   OverflowIcon=""@BitIconName.ChevronDown"" />
 </div>
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
                    MaxDisplayedItems=""3""
                    OverflowIndex=""2""
-                   OverflowIcon=""BitIconName.CollapseMenu"" />
+                   OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
     private readonly string example3CustomItemHTMLCode = @"
@@ -686,7 +686,7 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                     MaxDisplayedItems=""3""
                     OverflowIndex=""2""
-                    OverflowIcon=""BitIconName.ChevronDown"" />
+                    OverflowIcon=""@BitIconName.ChevronDown"" />
 </div>
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
@@ -698,13 +698,13 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                     MaxDisplayedItems=""3""
                     OverflowIndex=""2""
-                    OverflowIcon=""BitIconName.CollapseMenu"" />
+                    OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
     private readonly string example3BreadcrumbOptionHTMLCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""BitIconName.ChevronDown"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""@BitIconName.ChevronDown"">
         <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
@@ -714,7 +714,7 @@ public partial class BitBreadcrumbDemo
 
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""BitIconName.CollapseMenu"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""@BitIconName.CollapseMenu"">
         <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />

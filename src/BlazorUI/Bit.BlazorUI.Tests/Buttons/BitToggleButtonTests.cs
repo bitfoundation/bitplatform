@@ -7,12 +7,12 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitToggleButtonTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(true, true, "Button label", BitIconName.Volume0, "title"),
-       DataRow(true, false, "Button label", BitIconName.Volume1, "title"),
-       DataRow(false, true, "Button label", BitIconName.Volume2, "title"),
-       DataRow(false, false, "Button label", BitIconName.Volume3, "title")
+       DataRow(true, true, "Button label", "Volume0", "title"),
+       DataRow(true, false, "Button label", "Volume1", "title"),
+       DataRow(false, true, "Button label", "Volume2", "title"),
+       DataRow(false, false, "Button label", "Volume3", "title")
     ]
-    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, BitIconName? iconName, string title)
+    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, string? iconName, string title)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
@@ -40,7 +40,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.AreEqual(bitToggleButton.GetAttribute("title"), title);
 
-        Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
     [DataTestMethod,

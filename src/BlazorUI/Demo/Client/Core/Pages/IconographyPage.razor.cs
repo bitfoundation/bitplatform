@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages;
+﻿using System.Reflection;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class IconographyPage
 {
@@ -8,11 +10,9 @@ public partial class IconographyPage
 
     protected override void OnInitialized()
     {
-        allIcons = Enum.GetValues(typeof(BitIconName))
-                        .Cast<BitIconName>()
-                        .Select(i => i.GetName()!)
-                        .Where(n => n is not null)
-                        .ToList();
+        allIcons = typeof(BitIconName).GetFields(BindingFlags.Static | BindingFlags.Public)
+                                      .Select(m => m.GetValue(null)?.ToString()!)
+                                      .ToList();
         HandleClear();
         base.OnInitialized();
     }

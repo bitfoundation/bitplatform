@@ -14,9 +14,9 @@
        href="@Href"
        tabindex="@_tabIndex">
         <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName.GetName() @ClassStyles?.Icon?.Class" />
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())
@@ -38,9 +38,9 @@ else
             tabindex="@_tabIndex"
             title="@Title">
         <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName.GetName() @ClassStyles?.Icon?.Class" />
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())

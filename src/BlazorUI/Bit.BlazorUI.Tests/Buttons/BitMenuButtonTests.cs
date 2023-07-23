@@ -53,10 +53,10 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("A", BitIconName.Add),
-        DataRow("B", BitIconName.Edit)
+        DataRow("A", "Add"),
+        DataRow("B", "Edit")
     ]
-    public void BitMenuButtonShouldHasTextAndIcon(string text, BitIconName iconName)
+    public void BitMenuButtonShouldHasTextAndIcon(string text, string iconName)
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
@@ -65,7 +65,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.IconName, iconName);
         });
 
-        var iconNameClass = $"bit-icon--{iconName.GetName()}";
+        var iconNameClass = $"bit-icon--{iconName}";
 
         var menuButtonIcon = com.Find(".bit-mnb-mbt .bit-icon");
 
@@ -77,10 +77,10 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("A", BitIconName.Add),
-        DataRow("B", BitIconName.Edit)
+        DataRow("A", "Add"),
+        DataRow("B", "Edit")
     ]
-    public void BitMenuButtonShouldHasTextAndIconInItem(string itemText, BitIconName itemIconName)
+    public void BitMenuButtonShouldHasTextAndIconInItem(string itemText, string itemIconName)
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
@@ -94,7 +94,7 @@ public class BitMenuButtonTests : BunitTestContext
             });
         });
 
-        var itemIconNameClass = $"bit-icon--{itemIconName.GetName()}";
+        var itemIconNameClass = $"bit-icon--{itemIconName}";
 
         var menuButtonItemIcon = com.Find("li .bit-mnb-itm .bit-icon");
 

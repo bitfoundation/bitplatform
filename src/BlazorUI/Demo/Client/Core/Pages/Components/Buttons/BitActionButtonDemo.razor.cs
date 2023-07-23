@@ -63,8 +63,8 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.NotSet",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name for the icon shown in the action button.",
         },
         new()
@@ -150,9 +150,9 @@ public partial class BitActionButtonDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitActionButton IconName=""BitIconName.AddFriend"">Create account</BitActionButton>
+<BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
 
-<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""BitIconName.UserRemove"">Remove user</BitActionButton>";
+<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user</BitActionButton>";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -167,52 +167,52 @@ public partial class BitActionButtonDemo
     }
 </style>
 
-<BitActionButton IconName=""BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
+<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
     Styled Action Button
 </BitActionButton>
 
-<BitActionButton IconName=""BitIconName.ThisPC"" Class=""custom-action-button"">
+<BitActionButton IconName=""@BitIconName.ThisPC"" Class=""custom-action-button"">
     Classed Action Button
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-    <BitActionButton IconName=""BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+    <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
 
     <div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
 
     <div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
 
     private readonly string example4HTMLCode = @"
-<BitActionButton IconName=""BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
+<BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
     Action Button with Aria Description
 </BitActionButton>
 
-<BitActionButton IconName=""BitIconName.Library"" AriaHidden=""true"">
+<BitActionButton IconName=""@BitIconName.Library"" AriaHidden=""true"">
     Action Button with Aria Hidden
 </BitActionButton>";
 
     private readonly string example5HTMLCode = @"
-<BitActionButton IconName=""BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+<BitActionButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitActionButton>
 
-<BitActionButton IconName=""BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
 </BitActionButton>
 
-<BitActionButton IconName=""BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
+<BitActionButton IconName=""@BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
     <span>Bit Platform From Span</span>
 </BitActionButton>";
 
     private readonly string example6HTMLCode = @"
 <BitLabel>Small size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
 
 <BitLabel>Medium size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
 
 <BitLabel>Large size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>";
+<BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
 
     private readonly string example7HTMLCode = @"
 <style>
@@ -239,11 +239,11 @@ public partial class BitActionButtonDemo
 </style>
 
 <BitLabel>Small size</BitLabel>
-<BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
     
 <BitLabel>Medium size</BitLabel>
-<BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
 
 <BitLabel>Large size</BitLabel>
-<BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""BitIconName.AddFriend"">Button</BitActionButton>";
+<BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
 }

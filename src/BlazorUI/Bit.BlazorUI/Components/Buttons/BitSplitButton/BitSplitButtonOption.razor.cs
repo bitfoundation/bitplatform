@@ -12,7 +12,7 @@ public partial class BitSplitButtonOption : IDisposable
     /// <summary>
     /// Name of an icon to render next to the option text
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Text to render in the option

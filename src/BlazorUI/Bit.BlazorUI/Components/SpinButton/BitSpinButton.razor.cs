@@ -73,12 +73,12 @@ public partial class BitSpinButton
     /// <summary>
     /// Custom icon name for the decrement button
     /// </summary>
-    [Parameter] public BitIconName DecrementButtonIconName { get; set; } = BitIconName.ChevronDownSmall;
+    [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
     /// Icon name for an icon to display alongside the spin button's label
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers
@@ -93,7 +93,7 @@ public partial class BitSpinButton
     /// <summary>
     /// Custom icon name for the increment button
     /// </summary>
-    [Parameter] public BitIconName IncrementButtonIconName { get; set; } = BitIconName.ChevronUpSmall;
+    [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
     /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers

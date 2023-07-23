@@ -65,14 +65,14 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "DecrementButtonIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDownSmall",
+            Type = "string",
+            DefaultValue = "ChevronDownSmall",
             Description = "Custom icon name for the decrement button.",
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "Icon name for an icon to display alongside the spin button's label.",
         },
@@ -93,8 +93,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "IncrementButtonIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronUpSmall",
+            Type = "string",
+            DefaultValue = "ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
         },
         new()
@@ -259,22 +259,22 @@ public partial class BitSpinButtonDemo
 
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
 
-<BitSpinButton Label=""Label & Icon"" IconName=""BitIconName.Lightbulb"" />
+<BitSpinButton Label=""Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
 
-<BitSpinButton Label=""Left Label"" IconName=""BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
+<BitSpinButton Label=""Left Label"" IconName=""@BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
 
     private readonly string example2HTMLCode = @"
 <BitSpinButton>
     <LabelTemplate>
         <label style=""color: green;"">This is custom Label</label>
-        <BitIcon IconName=""BitIconName.Filter"" />
+        <BitIcon IconName=""@BitIconName.Filter"" />
     </LabelTemplate>
 </BitSpinButton>";
 
     private readonly string example3HTMLCode = @"
 <BitSpinButton Label=""Like and Dislike""
-               IncrementButtonIconName=""BitIconName.LikeSolid""
-               DecrementButtonIconName=""BitIconName.DislikeSolid"" />";
+               IncrementButtonIconName=""@BitIconName.LikeSolid""
+               DecrementButtonIconName=""@BitIconName.DislikeSolid"" />";
 
     private readonly string example4HTMLCode = @"
 <BitSpinButton Label=""Min: -10, Max: 10""
@@ -293,12 +293,12 @@ public partial class BitSpinButtonDemo
 
     private readonly string example5HTMLCode = @"
 <BitSpinButton Label=""Height""
-               IconName=""BitIconName.AutoHeight""
+               IconName=""@BitIconName.AutoHeight""
                DefaultValue=""150""
                Suffix="" cm"" />
 
 <BitSpinButton Label=""Weight""
-               IconName=""BitIconName.Weights""
+               IconName=""@BitIconName.Weights""
                DefaultValue=""50""
                Step=""0.5""
                Suffix="" kg"" />";

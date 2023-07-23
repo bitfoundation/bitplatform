@@ -89,7 +89,7 @@ public partial class BitToggleButton
     /// <summary>
     /// The icon that shows in the button.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The text that shows in the label.

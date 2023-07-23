@@ -29,9 +29,9 @@
             else
             {
                 var iconName = GetIconName(_currentItem);
-                @if (iconName.HasValue)
+                @if (iconName.HasValue())
                 {
-                    <i class="bit-icon bit-icon--@iconName.GetName()" />
+                    <i class="bit-icon bit-icon--@iconName" />
                 }
                 <span class="bit-spl-txt">@(_currentItem is not null ? GetText(_currentItem) : string.Empty)</span>
             }
@@ -57,9 +57,9 @@
                             @if (ItemTemplate is null)
                             {
                                 var iconName = GetIconName(item);
-                                @if (iconName.HasValue)
+                                @if (iconName.HasValue())
                                 {
-                                    <i class="bit-icon bit-icon--@iconName.GetName()" />
+                                    <i class="bit-icon bit-icon--@iconName" />
                                 }
                                 <span class="bit-spl-itc">@GetText(item)</span>
                             }

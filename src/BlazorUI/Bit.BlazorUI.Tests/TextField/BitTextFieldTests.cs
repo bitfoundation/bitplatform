@@ -104,8 +104,8 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isReadOnly, bitTextField.HasAttribute("readonly"));
     }
 
-    [DataTestMethod, DataRow(BitIconName.Emoji2)]
-    public void BitTextFieldShouldAcceptIcon(BitIconName iconName)
+    [DataTestMethod, DataRow("Emoji2")]
+    public void BitTextFieldShouldAcceptIcon(string iconName)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {

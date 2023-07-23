@@ -22,7 +22,7 @@ public class BitChoiceGroupItem<TValue>
     /// <summary>
     /// The icon to show as Option content.
     /// </summary>
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
 
     /// <summary>
     /// The image address to show as Option content.

@@ -98,9 +98,9 @@
                 </button>
             }
 
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true" />
+                <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
             }
 
             @if (SuffixTemplate is not null)

@@ -145,7 +145,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Name of an icon to render next to the item button.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// Whether or not the group is in an expanded state.
@@ -421,7 +421,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty<string?>(_internalAriaLabelField);
     }
 
-    internal BitIconName? GetIconName(TItem item)
+    internal string? GetIconName(TItem item)
     {
         if (item is BitNavItem navItem)
         {
@@ -433,7 +433,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.IconName;
         }
 
-        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
+        return item.GetValueFromProperty<string?>(_internalIconNameField);
     }
 
     private bool? GetIsExpanded(TItem item)

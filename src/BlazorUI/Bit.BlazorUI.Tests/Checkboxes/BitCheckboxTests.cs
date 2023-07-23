@@ -254,10 +254,10 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2),
-        DataRow(BitIconName.MicrosoftFlowLogo),
+        DataRow("Emoji2"),
+        DataRow("MicrosoftFlowLogo"),
     ]
-    public void BitCheckboxCustomCheckmarkIconTest(BitIconName checkmarkIconName)
+    public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
@@ -266,7 +266,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var icon = component.Find(".bit-chb-ctn i.bit-icon");
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
     }
 
     [DataTestMethod,

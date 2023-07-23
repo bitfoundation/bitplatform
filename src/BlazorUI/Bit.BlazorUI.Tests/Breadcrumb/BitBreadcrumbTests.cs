@@ -8,14 +8,14 @@ namespace Bit.BlazorUI.Tests.Breadcrumb;
 public class BitBreadcrumbTests : BunitTestContext
 {
     [DataTestMethod,
-      DataRow(BitIconName.Separator)
+      DataRow("Separator")
     ]
-    public void BitBreadcrumbShouldTakeDividerIcon(BitIconName icon)
+    public void BitBreadcrumbShouldTakeDividerIcon(string icon)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
-            parameters.Add(p => p.DividerIcon, icon);
+            parameters.Add(p => p.DividerIconName, icon);
         });
 
         var breadcrumbDividerIcon = component.Find(".bit-brc ul i");
@@ -50,16 +50,16 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitIconName.ChevronDown, (uint)2, (uint)0),
-      DataRow(BitIconName.ChevronDown, (uint)3, (uint)1)
+      DataRow("ChevronDown", (uint)2, (uint)0),
+      DataRow("ChevronDown", (uint)3, (uint)1)
     ]
-    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
+    public void BitBreadcrumbShouldRespectOverflowChanges(string icon, uint maxDisplayedItems, uint overflowIndex)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
-            parameters.Add(p => p.OverflowIcon, icon);
+            parameters.Add(p => p.OverflowIconName, icon);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 

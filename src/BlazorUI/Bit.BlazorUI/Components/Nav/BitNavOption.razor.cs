@@ -40,7 +40,7 @@ public partial class BitNavOption : IDisposable
     /// <summary>
     /// Name of an icon to render next to this link button
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Whether or not the link is in an expanded state

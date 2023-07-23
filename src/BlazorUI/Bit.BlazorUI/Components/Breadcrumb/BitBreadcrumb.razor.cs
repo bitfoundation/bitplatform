@@ -54,7 +54,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Render a custom divider in place of the default chevron >
     /// </summary>
-    [Parameter] public BitIconName DividerIcon { get; set; } = BitIconName.ChevronRight;
+    [Parameter] public string DividerIconName { get; set; } = "ChevronRight";
 
     /// <summary>
     /// URL to navigate to when this BreadList item is clicked.
@@ -113,7 +113,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
     /// </summary>
-    [Parameter] public BitIconName OverflowIcon { get; set; } = BitIconName.More;
+    [Parameter] public string OverflowIconName { get; set; } = "More";
 
     /// <summary>
     /// Callback for when the BreadList item clicked.

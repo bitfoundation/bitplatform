@@ -7,13 +7,13 @@
             <BitToggleButton @bind-IsChecked="showCode"
                              Class="header-btn show-code"
                              ClassStyles="@(new() { Label = new() { Class = "show-code-lbl" } })"
-                             IconName="BitIconName.CodeEdit"
+                             IconName="@BitIconName.CodeEdit"
                              ButtonStyle="BitButtonStyle.Standard"
                              Label="@(showCode ? "Hide code" : "Show code")"
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
             <BitIconButton Class="header-btn copy-link"
-                           IconName="BitIconName.Link"
+                           IconName="@BitIconName.Link"
                            Title="Copy link"
                            OnClick="@CopyLinkToClipboard">
             </BitIconButton>
@@ -25,7 +25,7 @@
         {
             <BitIconButton Class="copy-btn"
                            OnClick=CopyCodeToClipboard
-                           IconName="BitIconName.Copy"
+                           IconName="@BitIconName.Copy"
                            Title="Copy source">
             </BitIconButton>
 

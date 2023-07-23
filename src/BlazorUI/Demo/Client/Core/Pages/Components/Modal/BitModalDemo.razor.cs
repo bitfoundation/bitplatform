@@ -206,7 +206,7 @@ public partial class BitModalDemo
 <BitModal @bind-IsOpen=""IsOpen"">
     <div class=""modal-header"">
         <span>Lorem Ipsum</span>
-        <BitIconButton OnClick=@(() => IsOpen = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -264,7 +264,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen1"" IsBlocking=""true"">
     <div class=""modal-header"">
         <span>IsBlocking = true</span>
-        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -283,7 +283,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen2"" AutoToggleScroll=""false"">
     <div class=""modal-header"">
         <span>AutoToggleScroll = false</span>
-        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -339,7 +339,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen3"" AbsolutePosition=""true"" AutoToggleScroll=""false"" IsModeless=""true"">
         <div class=""modal-header"">
             <span>AbsolutePosition=true & IsModeless=true</span>
-            <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+            <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -357,7 +357,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen4"" AbsolutePosition=""true"" ScrollerSelector="".relative-container"">
         <div class=""modal-header"">
             <span>ScrollerSelector</span>
-            <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+            <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -447,7 +447,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
     <div class=""modal-header"">
         <span>Modal positioning</span>
-        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -489,7 +489,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen5"" IsDraggable=""IsDraggable"">
     <div class=""modal-header"">
         <span>Draggble Modal</span>
-        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -509,7 +509,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen6"" IsDraggable=""true"" DragElementSelector="".modal-header-drag"">
     <div class=""modal-header modal-header-drag"">
         <span>Draggble Modal with custom drag element</span>
-        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>

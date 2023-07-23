@@ -114,7 +114,7 @@ private bool DefaultTextValue;";
 <BitToggle @bind-Value=""LabelTemplateValue"">
     <LabelTemplate>
         <span style=""color: green;"">This is custom Label</span>
-        <BitIcon IconName=""BitIconName.Filter"" />
+        <BitIcon IconName=""@BitIconName.Filter"" />
     </LabelTemplate>
 </BitToggle>";
     private readonly string example2CSharpCode = @"

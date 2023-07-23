@@ -135,8 +135,8 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "ActionIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Edit",
+            Type = "string",
+            DefaultValue = "Edit",
             Description = "Icon name for the icon button of the custom action.",
         },
         new()
@@ -495,7 +495,7 @@ public bool IsDetailsHidden { get; set; } = true;";
             Size=@BitPersonaSize.Size120
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.None
-            ActionIconName=""BitIconName.Edit""
+            ActionIconName=""@BitIconName.Edit""
             OnActionClick=""() => ActionClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ActionClickCount: @ActionClickCount</p>";

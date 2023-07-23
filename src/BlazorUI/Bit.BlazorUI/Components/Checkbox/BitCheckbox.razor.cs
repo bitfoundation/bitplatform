@@ -51,7 +51,7 @@ public partial class BitCheckbox
     /// <summary>
     /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
     /// </summary>
-    [Parameter] public BitIconName CheckmarkIconName { get; set; } = BitIconName.Accept;
+    [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
 
     /// <summary>
     /// he aria label of the icon for the benefit of screen readers

@@ -194,7 +194,7 @@ public partial class BitDatePicker
     /// <summary>
     /// Optional DatePicker icon
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; } = BitIconName.CalendarMirrored;
+    [Parameter] public string IconName { get; set; } = "CalendarMirrored";
 
     /// <summary>
     /// The custom validation error message for the invalid value.
