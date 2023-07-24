@@ -33,9 +33,9 @@
                 <span class="color-box" style="background-color:@(category!.Color)"></span>
             </BitDataGridTemplateColumn>
             <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Action)]" Align="BitDataGridAlign.Center" Context="category">
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Edit" Title="@Localizer[(nameof(AppStrings.Edit))]"
+                <BitIconButton Style="color:#605E5C;" IconName="@BitIconName.Edit" Title="@Localizer[(nameof(AppStrings.Edit))]"
                                OnClick="() => EditCategory(category!)" />
-                <BitIconButton Style="color:#605E5C;" IconName="BitIconName.Delete" Title="@Localizer[(nameof(AppStrings.Delete))]"
+                <BitIconButton Style="color:#605E5C;" IconName="@BitIconName.Delete" Title="@Localizer[(nameof(AppStrings.Delete))]"
                                OnClick="WrapHandled(() => DeleteCategory(category!))" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>

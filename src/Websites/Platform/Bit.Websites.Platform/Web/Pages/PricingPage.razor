@@ -94,7 +94,7 @@
             <BitTypography Variant="BitTypographyVariant.H4" Gutter>
                 @_selectedPackagePrice<BitTypography Variant="BitTypographyVariant.H6" Class="grey-txt"> /month /developer</BitTypography>
             </BitTypography>
-            <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="BitIconName.ChromeClose" />
+            <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" />
             <BitTextField @bind-Value="@_buyPackageModel.Email"
                           Label="Email"
                           IsRequired="true"

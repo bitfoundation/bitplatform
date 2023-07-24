@@ -7,7 +7,7 @@
         <div class="header-content-container">
             @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
             {
-                <BitIconButton Class="header-menu-btn" IconName=BitIconName.CollapseMenu OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
+                <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
@@ -97,7 +97,7 @@
 @if (IsHeaderMenuOpen)
 {
     <nav class="header-nav">
-        <BitIconButton Class="header-nav-close-btn" IconName="BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
+        <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@WrapHandled(ToggleHeaderMenu)>Home</a>
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products & Services

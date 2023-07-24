@@ -42,7 +42,7 @@
                                      DefaultValue="@_sortItems[0].Value"
                                      IsResponsiveModeEnabled="true">
                             <CaretDownTemplate>
-                                <BitActionButton IconName="BitIconName.Sort" Style="height:unset"/>
+                                <BitActionButton IconName="@BitIconName.Sort" Style="height:unset"/>
                             </CaretDownTemplate>
                         </BitDropdown>
                     </div>
@@ -102,12 +102,12 @@
                                             </div>
 
                                             <div class="todo-btn-group">
-                                                <BitIconButton IconName="BitIconName.Edit"
+                                                <BitIconButton IconName="@BitIconName.Edit"
                                                                Title="@Localizer[nameof(AppStrings.Edit)]"
                                                                AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
                                                                OnClick="WrapHandled(() => ToggleToEditMode(todo))" />
 
-                                                <BitIconButton IconName="BitIconName.Delete"
+                                                <BitIconButton IconName="@BitIconName.Delete"
                                                                Title="@Localizer[nameof(AppStrings.Remove)]"
                                                                AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
                                                                OnClick="WrapHandled(() => DeleteTodoItem(todo))" />

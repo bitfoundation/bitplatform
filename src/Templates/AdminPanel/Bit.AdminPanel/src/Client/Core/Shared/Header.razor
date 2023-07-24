@@ -4,7 +4,7 @@
 <header class="main-header">
     <div class="header-main-container">
         <div class="header-content-container">
-            <BitIconButton Class="header-menu-btn" IconName="BitIconName.CollapseMenu" OnClick="WrapHandled(ToggleMenu)" AriaLabel="Header menu button" />
+            <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick="WrapHandled(ToggleMenu)" AriaLabel="Header menu button" />
             <a class="header-logo" href="/" aria-label="Homepage"></a>
             <BitBreadcrumb Items="_currentBreadcrumbItems" Class="header-breadcrumb" />
         </div>
@@ -29,11 +29,11 @@
                                     Presence="BitPersonaPresenceStatus.Online" />
                     </div>
                     
-                    <BitActionButton Class="edit-profile-btn" IconName="BitIconName.Edit" AriaLabel="EditProfile" OnClick="WrapHandled(OpenEditProfilePage)">
+                    <BitActionButton Class="edit-profile-btn" IconName="@BitIconName.Edit" AriaLabel="EditProfile" OnClick="WrapHandled(OpenEditProfilePage)">
                         @Localizer[nameof(AppStrings.EditProfileTitle)]
                     </BitActionButton>
                     
-                    <BitActionButton Class="sign-out-btn" IconName="BitIconName.OutOfOffice" AriaLabel="SignOut" OnClick="WrapHandled(OpenSignOutModal)">
+                    <BitActionButton Class="sign-out-btn" IconName="@BitIconName.OutOfOffice" AriaLabel="SignOut" OnClick="WrapHandled(OpenSignOutModal)">
                         @Localizer[nameof(AppStrings.SignOut)]
                     </BitActionButton>
                 </section>
