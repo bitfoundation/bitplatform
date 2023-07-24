@@ -28,9 +28,9 @@
         }
         else
         {
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()" />
+                <i class="bit-icon bit-icon--@IconName" />
             }
             <span class="bit-mnb-txt">@Text</span>
             <i class="bit-icon bit-icon--ChevronDown" />
@@ -55,9 +55,9 @@
                         else
                         {
                             var iconName = GetIconName(item);
-                            @if (iconName.HasValue)
+                            @if (iconName.HasValue())
                             {
-                                <i class="bit-icon bit-icon--@iconName.GetName()" />
+                                <i class="bit-icon bit-icon--@iconName" />
                             }
                             <span class="bit-mnb-txt">@GetText(item)</span>
                         }

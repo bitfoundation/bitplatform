@@ -14,8 +14,8 @@
         <ExamplePreview>
             <div class="example-desc">To create a icon button you can use a BitIconButton component.</div>
             <div>
-                <BitIconButton IconName="BitIconName.Emoji" />
-                <BitIconButton IconName="BitIconName.EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
+                <BitIconButton IconName="@BitIconName.Emoji" />
+                <BitIconButton IconName="@BitIconName.EmojiDisappointed" AllowDisabledFocus="false" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -24,8 +24,8 @@
         <ExamplePreview>
             <div class="example-desc">BitIconButton can directly get css class or inline style.</div>
             <div>
-                <BitIconButton IconName="BitIconName.Home" Style="border-radius: 5px; padding: 23px; border: #555 solid 2px;" />
-                <BitIconButton IconName="BitIconName.FileImage" Class="custom-icon-button" />
+                <BitIconButton IconName="@BitIconName.Home" Style="border-radius: 5px; padding: 23px; border: #555 solid 2px;" />
+                <BitIconButton IconName="@BitIconName.FileImage" Class="custom-icon-button" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -34,7 +34,7 @@
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitIconButton can be Visible, Hidden or Collapsed.</div>
             <div class="buttons-container-grid">
-                <BitIconButton IconName="BitIconName.List" Visibility="BitComponentVisibility.Visible">Visible Button</BitIconButton>
+                <BitIconButton IconName="@BitIconName.List" Visibility="BitComponentVisibility.Visible">Visible Button</BitIconButton>
                 <div><span>Hidden Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitIconButton>]</div>
                 <div><span>Collapsed Button: </span>[<BitIconButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitIconButton>]</div>
             </div>
@@ -45,10 +45,10 @@
         <ExamplePreview>
             <div class="example-desc">Aria attribues can also set for a BitIconButton.</div>
             <div>
-                <BitIconButton IconName="BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
+                <BitIconButton IconName="@BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
                     Button with Aria Description
                 </BitIconButton>
-                <BitIconButton IconName="BitIconName.Library" AriaHidden="true">
+                <BitIconButton IconName="@BitIconName.Library" AriaHidden="true">
                     Button with Aria Hidden
                 </BitIconButton>
             </div>
@@ -59,13 +59,13 @@
         <ExamplePreview>
             <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
             <div>
-                <BitIconButton IconName="BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
+                <BitIconButton IconName="@BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
                     Open Bit Platform In New Tab
                 </BitIconButton>
-                <BitIconButton IconName="BitIconName.Website" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
+                <BitIconButton IconName="@BitIconName.Website" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitIconButton>
-                <BitIconButton IconName="BitIconName.Website" Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
+                <BitIconButton IconName="@BitIconName.Website" Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
                     <span>Bit Platform From Span</span>
                 </BitIconButton>
             </div>
@@ -74,7 +74,7 @@
 
     <ComponentExampleBox Title="Icon Button with Tooltip" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
-            <BitIconButton IconName="BitIconName.Emoji2" Title="I'm Happy" />
+            <BitIconButton IconName="@BitIconName.Emoji2" Title="I'm Happy" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -84,17 +84,17 @@
             <div class="buttons-container-grid">
                 <div>
                     <BitLabel>Small size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Small" IconName="BitIconName.Emoji" />
+                    <BitIconButton ButtonSize="BitButtonSize.Small" IconName="@BitIconName.Emoji" />
 
                 </div>
                 <div>
                     <BitLabel>Medium size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Medium" IconName="BitIconName.Emoji" />
+                    <BitIconButton ButtonSize="BitButtonSize.Medium" IconName="@BitIconName.Emoji" />
 
                 </div>
                 <div>
                     <BitLabel>Large size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Large" IconName="BitIconName.Emoji" />
+                    <BitIconButton ButtonSize="BitButtonSize.Large" IconName="@BitIconName.Emoji" />
                 </div>
             </div>
         </ExamplePreview>
@@ -107,19 +107,19 @@
                 <div>
                     <BitLabel>Small size</BitLabel>
                     <BitIconButton Class="custom-btn-sm"
-                                   ButtonSize="BitButtonSize.Small" IconName="BitIconName.Emoji" />
+                                   ButtonSize="BitButtonSize.Small" IconName="@BitIconName.Emoji" />
 
                 </div>
                 <div>
                     <BitLabel>Medium size</BitLabel>
                     <BitIconButton Class="custom-btn-md"
-                                   ButtonSize="BitButtonSize.Medium" IconName="BitIconName.Emoji" />
+                                   ButtonSize="BitButtonSize.Medium" IconName="@BitIconName.Emoji" />
 
                 </div>
                 <div>
                     <BitLabel>Large size</BitLabel>
                     <BitIconButton Class="custom-btn-lg"
-                                   ButtonSize="BitButtonSize.Large" IconName="BitIconName.Emoji" />
+                                   ButtonSize="BitButtonSize.Large" IconName="@BitIconName.Emoji" />
 
                 </div>
             </div>

@@ -47,14 +47,14 @@ public partial class BitMessageBarDemo
         new()
         {
             Name = "DismissIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Clear",
+            Type = "string",
+            DefaultValue = "Clear",
             Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
         },
         new()
         {
             Name = "MessageBarIconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.",
         },

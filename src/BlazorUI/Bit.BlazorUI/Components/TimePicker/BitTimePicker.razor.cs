@@ -97,7 +97,7 @@ public partial class BitTimePicker
     /// <summary>
     /// Optional TimePicker icon
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; } = BitIconName.Clock;
+    [Parameter] public string IconName { get; set; } = "Clock";
 
     /// <summary>
     /// Whether or not this TimePicker is open

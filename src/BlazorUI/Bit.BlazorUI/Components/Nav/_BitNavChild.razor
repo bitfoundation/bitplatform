@@ -61,9 +61,9 @@
                     else
                     {
                         var iconName = Nav.GetIconName(Item);
-                        @if (iconName.HasValue)
+                        @if (iconName.HasValue())
                         {
-                            <i class="bit-nav-iic bit-icon bit-icon--@(iconName.GetName())" aria-hidden="true" />
+                            <i class="bit-nav-iic bit-icon bit-icon--@iconName" aria-hidden="true" />
                         }
                         <span>@Nav.GetText(Item)</span>
                     }
@@ -88,9 +88,9 @@
                     else
                     {
                         var iconName = Nav.GetIconName(Item);
-                        @if (iconName.HasValue)
+                        @if (iconName.HasValue())
                         {
-                            <i class="bit-nav-iic bit-icon bit-icon--@(iconName.GetName())" aria-hidden="true" />
+                            <i class="bit-nav-iic bit-icon bit-icon--@iconName" aria-hidden="true" />
                         }
                         <span>@Nav.GetText(Item)</span>
                     }

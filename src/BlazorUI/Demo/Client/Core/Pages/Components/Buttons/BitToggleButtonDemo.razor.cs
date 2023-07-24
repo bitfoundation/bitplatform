@@ -72,7 +72,7 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "The icon that shows in the toggle button.",
         },

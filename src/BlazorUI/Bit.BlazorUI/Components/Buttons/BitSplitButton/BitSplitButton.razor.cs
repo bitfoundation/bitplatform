@@ -112,7 +112,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     /// <summary>
     /// Name of an icon to render next to the item text.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// The callback is called when the button or button item is clicked.
@@ -219,7 +219,7 @@ public partial class BitSplitButton<TItem> where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    private BitIconName? GetIconName(TItem? item)
+    private string? GetIconName(TItem? item)
     {
         if (item is null) return null;
 
@@ -233,7 +233,7 @@ public partial class BitSplitButton<TItem> where TItem : class
             return menuButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
+        return item.GetValueFromProperty<string?>(_internalIconNameField);
     }
 
     private string? GetText(TItem item)

@@ -13,10 +13,10 @@
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
         aria-selected="@(IsSelected ? "true": "false")">
     <span>
-        @if (@IconName.HasValue)
+        @if (@IconName.HasValue())
         {
             <span>
-                <i class="bit-icon bit-icon--@(IconName.Value.GetName())" />
+                <i class="bit-icon bit-icon--@IconName" />
             </span>
         }
 

@@ -2,18 +2,18 @@
 
 public partial class BitMessageBar
 {
-    private static Dictionary<BitMessageBarType, BitIconName> _IconMap = new()
+    private static Dictionary<BitMessageBarType, string> _IconMap = new()
     {
-        [BitMessageBarType.Info] = BitIconName.Info,
-        [BitMessageBarType.Warning] = BitIconName.Info,
-        [BitMessageBarType.Error] = BitIconName.ErrorBadge,
-        [BitMessageBarType.Blocked] = BitIconName.Blocked2,
-        [BitMessageBarType.SevereWarning] = BitIconName.Warning,
-        [BitMessageBarType.Success] = BitIconName.Completed
+        [BitMessageBarType.Info] = "Info",
+        [BitMessageBarType.Warning] = "Info",
+        [BitMessageBarType.Error] = "ErrorBadge",
+        [BitMessageBarType.Blocked] = "Blocked2",
+        [BitMessageBarType.SevereWarning] = "Warning",
+        [BitMessageBarType.Success] = "Completed",
     };
 
     private bool _isExpanded;
-    private BitIconName? _messageBarIcon;
+    private string? _messageBarIconName;
     private BitMessageBarType _messageBarType = BitMessageBarType.Info;
 
     /// <summary>
@@ -38,12 +38,12 @@ public partial class BitMessageBar
     /// <summary>
     /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon
     /// </summary>
-    [Parameter] public BitIconName DismissIconName { get; set; } = BitIconName.Cancel;
+    [Parameter] public string DismissIconName { get; set; } = "Cancel";
 
     /// <summary>
     /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
     /// </summary>
-    [Parameter] public BitIconName? MessageBarIconName { get; set; }
+    [Parameter] public string? MessageBarIconName { get; set; }
 
     /// <summary>
     /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
@@ -103,7 +103,7 @@ public partial class BitMessageBar
 
     protected override Task OnParametersSetAsync()
     {
-        _messageBarIcon = MessageBarIconName ?? _IconMap[MessageBarType];
+        _messageBarIconName = MessageBarIconName ?? _IconMap[MessageBarType];
 
         return base.OnParametersSetAsync();
     }

@@ -65,14 +65,14 @@ public partial class BitNumericTextFieldDemo
         new()
         {
             Name = "DecrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDownSmall",
+            Type = "string",
+            DefaultValue = "ChevronDownSmall",
             Description = "Custom icon name for the decrement button.",
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "Icon name for an icon to display alongside the numeric text field's label.",
         },
@@ -93,8 +93,8 @@ public partial class BitNumericTextFieldDemo
         new()
         {
             Name = "IncrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronUpSmall",
+            Type = "string",
+            DefaultValue = "ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
         },
         new()
@@ -354,7 +354,7 @@ public partial class BitNumericTextFieldDemo
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
                      Label=""Label & Icon""
-                     IconName=""BitIconName.Lightbulb"" />
+                     IconName=""@BitIconName.Lightbulb"" />
 
 <BitNumericTextField @bind-Value=""LabelLeftValue""
                      Placeholder=""Enter a number...""
@@ -371,7 +371,7 @@ private int LabelLeftValue;";
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
     <LabelTemplate>
         <label style=""color: green;"">This is custom Label</label>
-        <BitIcon IconName=""BitIconName.Filter"" />
+        <BitIcon IconName=""@BitIconName.Filter"" />
     </LabelTemplate>
 </BitNumericTextField>";
     private readonly string example2CSharpCode = @"
@@ -389,8 +389,8 @@ private int LabelTemplateValue;";
                      Step=""@(1)""
                      Label=""Increment & Decrement Icon""
                      ShowArrows=""true""
-                     IncrementIconName=""BitIconName.LikeSolid""
-                     DecrementIconName=""BitIconName.DislikeSolid"" />";
+                     IncrementIconName=""@BitIconName.LikeSolid""
+                     DecrementIconName=""@BitIconName.DislikeSolid"" />";
     private readonly string example3CSharpCode = @"
 private int SpinArrowValue;
 private int SpinArrowWithIconValue;";
@@ -426,7 +426,7 @@ private decimal MinMaxValue3;";
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
                      Label=""Height""
-                     IconName=""BitIconName.AutoHeight""
+                     IconName=""@BitIconName.AutoHeight""
                      DefaultValue=""150""
                      Suffix="" cm"" />
 
@@ -434,7 +434,7 @@ private decimal MinMaxValue3;";
                      Placeholder=""Enter a number...""
                      Step=""@(0.5M)""
                      Label=""Weight""
-                     IconName=""BitIconName.Weights""
+                     IconName=""@BitIconName.Weights""
                      DefaultValue=""50""
                      Suffix="" kg"" />";
     private readonly string example5CSharpCode = @"

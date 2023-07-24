@@ -16,8 +16,8 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "CaretDownIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDown",
+            Type = "string",
+            DefaultValue = "ChevronDown",
             Description = "Optional chevron icon.",
         },
         new()
@@ -904,7 +904,7 @@ private List<BitDropdownItem> GetDropdownItems()
              Placeholder=""Select an option""
              Label=""Custom CaretDownIconName""
              AriaLabel=""Custom dropdown chevron icon with icon name""
-             CaretDownIconName=""BitIconName.ScrollUpDown""
+             CaretDownIconName=""@BitIconName.ScrollUpDown""
              Style=""width: 100%; max-width: 290px"">
 </BitDropdown>";
     private readonly string example4CSharpCode = @"

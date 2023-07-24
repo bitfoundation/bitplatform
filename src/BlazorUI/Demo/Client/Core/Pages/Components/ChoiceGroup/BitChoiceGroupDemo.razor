@@ -50,7 +50,7 @@
 
                 <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example4BitChoiceGroupItemCSharpCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
+                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
                         <BitChoiceGroup Label="Pick one icon" Items="ChoiceGroupIconItems" DefaultValue="@("Day")" />
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -61,7 +61,7 @@
                         <BitChoiceGroup Items="ChoiceGroupBasicItems" DefaultValue="@("A")">
                             <LabelTemplate>
                                 <div class="custom-label">
-                                    Custom label <BitIcon IconName="BitIconName.Filter" />
+                                    Custom label <BitIcon IconName="@BitIconName.Filter" />
                                 </div>
                             </LabelTemplate>
                         </BitChoiceGroup>
@@ -78,7 +78,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -88,7 +88,7 @@
                             @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -130,7 +130,7 @@
                             <BitChoiceGroup Items="ChoiceGroupBasicItems" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                             </BitChoiceGroup>
@@ -140,7 +140,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -159,7 +159,7 @@
                             <BitChoiceGroup Items="ChoiceGroupBasicItems" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                             </BitChoiceGroup>
@@ -170,7 +170,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -260,7 +260,7 @@
 
                 <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4CustomItemHtmlCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
+                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
                         <BitChoiceGroup Label="Pick one icon"
                                         Items="CustomChoiceGroupIconItems"
                                         TextField="@nameof(ChoiceModel.Name)"
@@ -279,7 +279,7 @@
                                         DefaultValue="@("A")">
                             <LabelTemplate>
                                 <div class="custom-label">
-                                    Custom label <BitIcon IconName="BitIconName.Filter" />
+                                    Custom label <BitIcon IconName="@BitIconName.Filter" />
                                 </div>
                             </LabelTemplate>
                         </BitChoiceGroup>
@@ -299,7 +299,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.ItemValue ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -312,7 +312,7 @@
                             @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.ItemValue ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -391,7 +391,7 @@
                                             LayoutFlow="BitLayoutFlow.Horizontal">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                             </BitChoiceGroup>
@@ -406,7 +406,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.ItemValue ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -462,7 +462,7 @@
                                             IsRtl="true">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                             </BitChoiceGroup>
@@ -477,7 +477,7 @@
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.ItemValue ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Name</span>
                                     </div>
                                 </ItemTemplate>
@@ -587,14 +587,14 @@
 
                 <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4BitChoiceGroupOptionHtmlCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">by BitIconName Interface you can select an icon name for showing in your option.</div>
+                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
                         <BitChoiceGroup Label="Pick one icon"
                                         TItem="BitChoiceGroupOption<string>"
                                         TValue="string"
                                         DefaultValue="@("Day")">
-                            <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                            <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                            <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" IsEnabled="false" />
+                            <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                            <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                            <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
                         </BitChoiceGroup>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -605,7 +605,7 @@
                         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
                             <LabelTemplate>
                                 <div class="custom-label">
-                                    Custom label <BitIcon IconName="BitIconName.Filter" />
+                                    Custom label <BitIcon IconName="@BitIconName.Filter" />
                                 </div>
                             </LabelTemplate>
                             <ChildContent>
@@ -627,14 +627,14 @@
                                             TValue="string"
                             @bind-Value="ChoiceGroupWithOptionTemplateValue">
                                 <ChildContent>
-                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" />
+                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                                 </ChildContent>
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? "selected-option" : string.Empty)">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -644,13 +644,13 @@
                                             TValue="string"
                             @bind-Value="ChoiceGroupWithOptionLabelTemplateValue">
                                 <ChildContent>
-                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" />
+                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                                 </ChildContent>
                                 <ItemLabelTemplate Context="option">
                                     <div style="margin-left: 27px;" class="custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemLabelTemplate>
@@ -728,15 +728,15 @@
                             </BitChoiceGroup>
 
                             <BitChoiceGroup Label="Icon" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Day")" LayoutFlow="BitLayoutFlow.Horizontal">
-                                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" IsEnabled="false" />
+                                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
                             </BitChoiceGroup>
 
                             <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                                 <ChildContent>
@@ -752,14 +752,14 @@
                                             TValue="string"
                                             LayoutFlow="BitLayoutFlow.Horizontal">
                                 <ChildContent>
-                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" />
+                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                                 </ChildContent>
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>
@@ -801,15 +801,15 @@
                             </BitChoiceGroup>
 
                             <BitChoiceGroup Label="Icon" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Day")" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
-                                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" IsEnabled="false" />
+                                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
                             </BitChoiceGroup>
 
                             <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" IsRtl="true">
                                 <LabelTemplate>
                                     <div class="custom-label">
-                                        Label Template <BitIcon IconName="BitIconName.Filter" />
+                                        Label Template <BitIcon IconName="@BitIconName.Filter" />
                                     </div>
                                 </LabelTemplate>
                                 <ChildContent>
@@ -826,14 +826,14 @@
                                             LayoutFlow="BitLayoutFlow.Horizontal"
                                             IsRtl="true">
                                 <ChildContent>
-                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="BitIconName.CalendarDay" />
-                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="BitIconName.CalendarWeek" />
-                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="BitIconName.Calendar" />
+                                    <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                    <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                    <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                                 </ChildContent>
                                 <ItemTemplate Context="option">
                                     <div class="custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? "selected-option" : "")">
                                         <div class="option-pointer"></div>
-                                        <BitIcon IconName="@option.IconName!.Value" />
+                                        <BitIcon IconName="@option.IconName" />
                                         <span>@option.Text</span>
                                     </div>
                                 </ItemTemplate>

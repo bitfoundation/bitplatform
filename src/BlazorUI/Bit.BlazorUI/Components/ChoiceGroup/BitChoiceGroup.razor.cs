@@ -112,14 +112,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public Expression<Func<TItem, string>>? IdFieldSelector { get; set; }
 
     /// <summary>
-    /// The name of the field from the model that will be the BitIconName.
+    /// The name of the field from the model.
     /// </summary>
     [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
 
     /// <summary>
-    /// The field from the model that will be the BitIconName.
+    /// The field selector from the model.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// The name of the field from the model that will be the image src.
@@ -375,7 +375,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty(_internalImageSizeField, new Size(0, 0));
     }
 
-    private BitIconName? GetIconName(TItem item)
+    private string? GetIconName(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
@@ -477,7 +477,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
                     .Append("-dis");
         }
 
-        if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
+        if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
         {
             cssClass.Append(' ')
                     .Append(itemRootElementClass)
@@ -488,7 +488,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     }
 
     private string GetLabelClassNameItem(TItem item) =>
-        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue) && ItemLabelTemplate is null 
+        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue()) && ItemLabelTemplate is null 
         ? "bit-chgi-lbl-img" 
         : "bit-chgi-lbl";
 

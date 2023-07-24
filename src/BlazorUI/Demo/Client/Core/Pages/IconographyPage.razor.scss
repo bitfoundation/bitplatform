@@ -6,7 +6,8 @@
 .icon-list {
     width: 100%;
     display: flex;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     height: rem(369px);
     flex-flow: row wrap;
     align-items: flex-start;
@@ -27,7 +28,7 @@
     display: flex;
     width: rem(80px);
     margin: rem(10px);
-    overflow: visible;
+    overflow: hidden;
     align-items: center;
     flex-flow: column nowrap;
     justify-content: flex-start;

@@ -68,7 +68,7 @@
                                 <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Text</span>
                                         </div>
                                     </HeaderTemplate>
@@ -81,9 +81,9 @@
                                     <ItemTemplate Context="item">
                                         <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
                                             <BitCheckbox IsEnabled="@(item.IsEnabled)" />
-                                            @if (item.IconName.HasValue)
+                                            @if (item.IconName.HasValue())
                                             {
-                                                <BitIcon IconName="@item.IconName.Value" />
+                                                <BitIcon IconName="@item.IconName" />
                                             }
                                             <span>@item.Text</span>
                                         </div>
@@ -212,7 +212,7 @@
 
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Name</span>
                                         </div>
                                     </HeaderTemplate>
@@ -362,7 +362,7 @@
                                 <BitLabel>Basic</BitLabel>
                                 <BitNav TItem="BitNavOption"
                                         Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods" IconName="BitIconName.HeartBroken">
+                                    <BitNavOption Text="Fast-Foods" IconName="@BitIconName.HeartBroken">
                                         <BitNavOption Text="Burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
@@ -395,7 +395,7 @@
                                 <BitLabel>Two-Way Bind</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
                                     <BitNavOption Text="Fast-Foods"
-                                                  IconName="BitIconName.HeartBroken"
+                                                  IconName="@BitIconName.HeartBroken"
                                                   IsExpanded="true">
                                         <BitNavOption Text="Burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
@@ -437,7 +437,7 @@
                                 <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Text</span>
                                         </div>
                                     </HeaderTemplate>
@@ -523,7 +523,7 @@
                                     OnSelectItem="(BitNavOption option) => SelectedOption = option"
                                     OnItemToggle="(BitNavOption option) => ToggledOption = option">
                                 <BitNavOption Text="Fast-Foods"
-                                              IconName="BitIconName.HeartBroken"
+                                              IconName="@BitIconName.HeartBroken"
                                               IsExpanded="true">
                                     <BitNavOption Text="Burgers">
                                         <BitNavOption Text="Beef Burger" Key="Beef Burger" />

@@ -221,6 +221,6 @@ public class BitNavTests : BunitTestContext
         new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
         new BitNavItem { Text = "Notebook", Url = "http://msn.com", IsEnabled = false },
         new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = "News", Target = "_self" },
     };
 }

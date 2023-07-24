@@ -110,8 +110,8 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.CalendarMirrored",
+            Type = "string",
+            DefaultValue = "CalendarMirrored",
             Description = "Optional DateRangePicker icon."
         },
         new()
@@ -400,7 +400,7 @@ public partial class BitDateRangePickerDemo
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."">
     <LabelTemplate>
-        Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
+        Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitDateRangePicker>";
     private readonly string example6CSharpCode = @"
@@ -538,7 +538,7 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
     private readonly string example11HTMLCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
-                    IconName=""BitIconName.Airplane""
+                    IconName=""@BitIconName.Airplane""
                     Placeholder=""Select dates..."" />";
 
     private readonly string example12HTMLCode = @"

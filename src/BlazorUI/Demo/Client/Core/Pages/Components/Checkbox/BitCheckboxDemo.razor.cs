@@ -47,9 +47,9 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "CheckmarkIconName",
-            Type = "BitIconName",
+            Type = "string",
             DefaultValue = "Accept",
-            Description = "Custom icon for the check mark rendered by the checkbox instade of default check mark icon.",
+            Description = "Custom icon for the check mark rendered by the checkbox instead of default check mark icon.",
         },
         new()
         {
@@ -199,7 +199,7 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""One-way Checked Checkbox (Fixed)"" Value=""true"" />
 <BitCheckbox Label=""Disable Checkbox"" IsEnabled=""false"" />
 <BitCheckbox Label=""Disable Checked Checkbox"" IsEnabled=""false"" Value=""true"" />
-<BitCheckbox Label=""Custom checkmark Checkbox"" CheckmarkIconName=""BitIconName.Heart"" />";
+<BitCheckbox Label=""Custom checkmark Checkbox"" CheckmarkIconName=""@BitIconName.Heart"" />";
 
     private readonly string example2TMLCode = @"
 <BitCheckbox Label=""Reversed - Basic Checkbox"" BoxSide=""@BitCheckBoxSide.End"" />
@@ -279,7 +279,7 @@ private bool IsCheckedLabelTemplate;
 <BitCheckbox @bind-Value=""IsCheckedCustomCheckBox"">
     <div class=""custom-checkbox"">
         <div class=""checked-box"">
-            <BitIcon IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
+            <BitIcon IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : null)"" />
         </div>
         <span>
             Customized Basic Checkbox
@@ -290,7 +290,7 @@ private bool IsCheckedLabelTemplate;
 <BitCheckbox @bind-Value=""IsCheckedCustomIndeterminateCheckBox"" @bind-IsIndeterminate=""IsIndeterminateCustomCheckBox"">
     <div class=""custom-checkbox"">
         <div class=""checked-box"">
-            <BitIcon IconName=""IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : BitIconName.NotSet)"" />
+            <BitIcon IconName=""@(IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : null))"" />
         </div>
         <span>
             Customized Indeterminate checkbox

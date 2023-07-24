@@ -31,7 +31,7 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "DismissIconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "Dismiss Icon in SnackBar.",
         },
@@ -190,7 +190,7 @@ private async Task OpenBasicSnackBar()
 }";
 
     private readonly string example2HTMLCode = @"
-<BitSnackBar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
+<BitSnackBar @ref=""DismissIconName"" DismissIconName=""@BitIconName.Go"" />
 <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 
 <BitSnackBar @ref=""TitleTemplate"" AutoDismiss=""false"">

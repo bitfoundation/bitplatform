@@ -44,13 +44,6 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "Icon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.FavoriteStarFill",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
-        },
-        new()
-        {
             Name = "Max",
             Type = "int",
             DefaultValue = "5",
@@ -64,10 +57,10 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "Value",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.",
+            Name = "SelectedIconName",
+            Type = "string",
+            DefaultValue = "FavoriteStarFill",
+            Description = "Custom icon name for selected rating elements.",
         },
         new()
         {
@@ -80,10 +73,10 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "UnselectedIcon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.FavoriteStar",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
+            Name = "UnselectedIconName",
+            Type = "string",
+            DefaultValue = "FavoriteStar",
+            Description = "Custom icon name for unselected rating elements.",
         }
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -186,15 +179,15 @@ private double RatingMaxValue3 = 15;";
 
     private readonly string example3HTMLCode = @"
 <BitLabel>Heart:</BitLabel>
-<BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
+<BitRating Icon=""@BitIconName.HeartFill"" UnselectedIcon=""@BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
 <span>Rate: @RatingCustomIconValue1</span>
     
 <BitLabel>Checkbox:</BitLabel>
-<BitRating Icon=""BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
+<BitRating Icon=""@BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""@BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
 <span>Rate: @RatingCustomIconValue2</span>
 
 <BitLabel>Like:</BitLabel>
-<BitRating Icon=""BitIconName.LikeSolid"" UnselectedIcon=""BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
+<BitRating Icon=""@BitIconName.LikeSolid"" UnselectedIcon=""@BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
 <span>Rate: @RatingCustomIconValue3</span>";
     private readonly string example3CSharpCode = @"
 private double RatingCustomIconValue1 = 1.5;

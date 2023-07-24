@@ -84,12 +84,12 @@ public partial class BitNumericTextField<TValue>
     /// <summary>
     /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public BitIconName DecrementIconName { get; set; } = BitIconName.ChevronDownSmall;
+    [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
     /// Icon name for an icon to display alongside the numeric text field's label.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
@@ -104,7 +104,7 @@ public partial class BitNumericTextField<TValue>
     /// <summary>
     /// Custom icon name for the increment button.
     /// </summary>
-    [Parameter] public BitIconName IncrementIconName { get; set; } = BitIconName.ChevronUpSmall;
+    [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
     /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.

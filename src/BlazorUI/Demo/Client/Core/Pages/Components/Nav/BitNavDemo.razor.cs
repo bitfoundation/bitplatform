@@ -132,7 +132,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "IconNameFieldSelector",
-            Type = "Expression<Func<TItem, BitIconName>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Name of an icon to render next to the item button."
         },
@@ -357,7 +357,7 @@ public partial class BitNavDemo
                new()
                {
                    Name = "IconName",
-                   Type = "BitIconName?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Name of an icon to render next to this link button.",
                },
@@ -458,7 +458,7 @@ public partial class BitNavDemo
                new()
                {
                    Name = "IconName",
-                   Type = "BitIconName?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Name of an icon to render next to this link button.",
                },
@@ -941,7 +941,7 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Text</span>
         </div>
     </HeaderTemplate>
@@ -1356,7 +1356,7 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1520,7 +1520,7 @@ private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
 
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Name</span>
         </div>
     </HeaderTemplate>
@@ -1558,7 +1558,7 @@ public class CarMenu
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1689,7 +1689,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1881,7 +1881,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken"">
+                  IconName=""@BitIconName.HeartBroken"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
@@ -1909,7 +1909,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken""
+                  IconName=""@BitIconName.HeartBroken""
                   IsExpanded=""true"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
@@ -1946,7 +1946,7 @@ private string SelectedOptionKey;";
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Text</span>
         </div>
     </HeaderTemplate>
@@ -2024,7 +2024,7 @@ private string SelectedOptionKey;";
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
         OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken""
+                  IconName=""@BitIconName.HeartBroken""
                   IsExpanded=""true"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />

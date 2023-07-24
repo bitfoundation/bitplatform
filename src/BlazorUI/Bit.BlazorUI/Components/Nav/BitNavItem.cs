@@ -39,7 +39,7 @@ public class BitNavItem
     /// <summary>
     /// Name of an icon to render next to this link button
     /// </summary>
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
 
     /// <summary>
     /// Whether or not the link is in an expanded state

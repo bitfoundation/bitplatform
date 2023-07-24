@@ -89,7 +89,7 @@ public partial class BitSearchBox
     /// <summary>
     /// The icon name for the icon shown at the beginning of the search box.
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; } = BitIconName.Search;
+    [Parameter] public string IconName { get; set; } = "Search";
 
     /// <summary>
     /// Callback for when the input value changes.

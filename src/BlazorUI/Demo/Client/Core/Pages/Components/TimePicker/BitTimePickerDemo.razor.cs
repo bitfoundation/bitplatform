@@ -77,8 +77,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Clock",
+            Type = "string",
+            DefaultValue = "Clock",
             Description = "Optional TimePicker icon."
         },
         new()
@@ -392,7 +392,7 @@ private void HandleInvalidSubmit()
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."">
     <LabelTemplate>
-        Custom label <BitIconButton IconName=""BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
+        Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitTimePicker>";
     private readonly string example8CSharpCode = @"
@@ -425,7 +425,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
     private readonly string example11HTMLCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
-               IconName=""BitIconName.Airplane""
+               IconName=""@BitIconName.Airplane""
                Placeholder=""Select a time..."" />";
 
     private readonly string example12HTMLCode = @"

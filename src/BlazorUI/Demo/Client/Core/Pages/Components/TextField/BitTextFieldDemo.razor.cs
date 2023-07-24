@@ -87,7 +87,7 @@ public partial class BitTextFieldDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "The icon name for the icon shown in the far right end of the text field.",
         },
@@ -416,9 +416,9 @@ public partial class BitTextFieldDemo
 <BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />";
 
     private readonly string example5HTMLCode = @"
-<BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""BitIconName.EditMail"" />
+<BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""@BitIconName.EditMail"" />
 
-<BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""BitIconName.Calendar"" />";
+<BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""@BitIconName.Calendar"" />";
 
     private readonly string example6HTMLCode = @"
 <BitTextField Label=""With Prefix"" Prefix=""https://"" />

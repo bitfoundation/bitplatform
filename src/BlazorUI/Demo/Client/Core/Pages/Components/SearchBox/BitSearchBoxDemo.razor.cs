@@ -44,8 +44,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Search",
+            Type = "string",
+            DefaultValue = "Search",
             Description = "The icon name for the icon shown at the beginning of the search box.",
         },
         new()
@@ -112,7 +112,7 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
 
 <BitLabel>SearchBox with custom icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" IconName=""BitIconName.Filter"" />";
+<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
     private readonly string example4HTMLCode = @"
 <BitLabel>Two-way Bind</BitLabel>

@@ -56,7 +56,7 @@ public partial class BitIconButton
     /// <summary>
     /// The icon name for the icon shown in the button
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Callback for when the button clicked

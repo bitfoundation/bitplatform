@@ -43,10 +43,10 @@ public class BitSpinButtonTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(null, null),
-        DataRow(BitIconName.IncreaseIndentLegacy, null),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon")
+        DataRow("IncreaseIndentLegacy", null),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon")
     ]
-    public void BitSpinButtonShouldRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
+    public void BitSpinButtonShouldRenderCorrectIcon(string iconName, string iconAriaLabel)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
@@ -54,10 +54,10 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
         });
 
-        if (iconName.HasValue)
+        if (iconName.HasValue())
         {
             var icon = component.FindAll(".bit-icon")[0];
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
 
             if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
         }
@@ -68,13 +68,13 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-        DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+        DataRow("IncreaseIndentLegacy", null, true),
+        DataRow("IncreaseIndentLegacy", null, false),
 
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
     ]
-    public void BitSpinButtonShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+    public void BitSpinButtonShouldRenderCorrectIncrementButton(string iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
@@ -86,7 +86,7 @@ public class BitSpinButtonTests : BunitTestContext
         var button = component.Find("button");
         var icon = component.Find("button > span > i");
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("aria-disabled"));
 
@@ -97,13 +97,13 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-        DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+        DataRow("IncreaseIndentLegacy", null, true),
+        DataRow("IncreaseIndentLegacy", null, false),
 
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
     ]
-    public void BitSpinButtonShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+    public void BitSpinButtonShouldRenderCorrectDecrementButton(string iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
@@ -115,7 +115,7 @@ public class BitSpinButtonTests : BunitTestContext
         var button = component.Find("button:last-child");
         var icon = component.Find("button:last-child > span > i");
 
-        Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName}"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("aria-disabled"));
 

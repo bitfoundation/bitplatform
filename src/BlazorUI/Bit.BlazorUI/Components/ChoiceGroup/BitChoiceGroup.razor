@@ -70,16 +70,16 @@
 
                                     var iconName = GetIconName(item);
 
-                                    @if (iconName.HasValue)
+                                    @if (iconName.HasValue())
                                     {
                                         <div class="bit-chgi-ico-cnt">
                                             <div class="bit-chgi-ico-wrp">
-                                                <i aria-hidden="true" class="bit-icon bit-icon--@iconName.GetName()" />
+                                                <i aria-hidden="true" class="bit-icon bit-icon--@iconName" />
                                             </div>
                                         </div>
                                     }
 
-                                    @if (GetImageSrc(item).HasValue() || iconName.HasValue)
+                                    @if (GetImageSrc(item).HasValue() || iconName.HasValue())
                                     {
                                         <div class="bit-chgi-wrp">
                                             <span class="bit-chgi-txt">@GetText(item)</span>

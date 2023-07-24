@@ -27,7 +27,7 @@
                                 class="bit-brc-obt"
                                 aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
                             <span class="bit-brc-oic">
-                                <i class="bit-icon bit-icon--@(OverflowIcon.GetName())" />
+                                <i class="bit-icon bit-icon--@OverflowIconName" />
                             </span>
                         </button>
                     }
@@ -55,7 +55,7 @@
 
                 @if (index != _displayItems.Count - 1)
                 {
-                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIcon.GetName())" />
+                    <i class="bit-brc-sep bit-icon bit-icon--@DividerIconName" />
                 }
             }
         </ul>

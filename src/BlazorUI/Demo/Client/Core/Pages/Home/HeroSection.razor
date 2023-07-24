@@ -7,7 +7,7 @@
     <br />
     <BitButton Href="/getting-started">
         <BitTypography Variant="BitTypographyVariant.H6" Style="display: flex">
-            Get started &nbsp; <BitIcon IconName="BitIconName.ChevronRightSmall" />
+            Get started &nbsp; <BitIcon IconName="@BitIconName.ChevronRightSmall" />
         </BitTypography>
     </BitButton>
 </div>
@@ -33,9 +33,9 @@
             <div class="component-box--transparent">
                 <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
                                 LayoutFlow="BitLayoutFlow.Horizontal" Label="Select an item" DefaultValue=@("pie")>
-                    <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="BitIconName.BarChart4" />
-                    <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="BitIconName.DonutChart" />
-                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="BitIconName.BarChartVerticalFill" />
+                    <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="@BitIconName.BarChart4" />
+                    <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="@BitIconName.DonutChart" />
+                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
             <div class="component-box @BitCss.Class.Color.Background.Primary">

@@ -61,19 +61,19 @@
             <div class="example-box">
                 <div>
                     <BitLabel>Heart:</BitLabel>
-                    <BitRating Icon="BitIconName.HeartFill" UnselectedIcon="BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
+                    <BitRating SelectedIconName="@BitIconName.HeartFill" UnselectedIconName="@BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
                     <span>Value: @RatingCustomIconValue1</span>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Checkbox:</BitLabel>
-                    <BitRating Icon="BitIconName.CheckboxCompositeReversed" UnselectedIcon="BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
+                    <BitRating SelectedIconName="@BitIconName.CheckboxCompositeReversed" UnselectedIconName="@BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
                     <span>Value: @RatingCustomIconValue2</span>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Like:</BitLabel>
-                    <BitRating Icon="BitIconName.LikeSolid" UnselectedIcon="BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
+                    <BitRating SelectedIconName="@BitIconName.LikeSolid" UnselectedIconName="@BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
                     <span>Value: @RatingCustomIconValue3</span>
                 </div>
             </div>

@@ -11,7 +11,7 @@
         <div class="bit-snb-itm @GetItemClasses(item)">
             <div class="bit-snb-hdr">
                 <button class="bit-snb-cbt" @onclick="() => Dismiss(item)">
-                    <i class="bit-icon bit-icon--@(DismissIconName.GetName())" />
+                    <i class="bit-icon bit-icon--@DismissIconName" />
                 </button>
 
                 @if (TitleTemplate is not null)

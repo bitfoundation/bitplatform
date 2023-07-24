@@ -239,7 +239,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Female",
-                IconName = BitIconName.ContactHeart,
+                IconName = "ContactHeart",
                 ImageSrc = "https://bit.com/female_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-female_icon.svg.png",
                 ImageAlt = "female-icon",
@@ -247,7 +247,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Male",
-                IconName = BitIconName.FrontCamera,
+                IconName = "FrontCamera",
                 ImageSrc = "https://bit.com/male_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-male_icon.svg.png",
                 ImageAlt = "male-icon",
@@ -255,7 +255,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Other",
-                IconName = BitIconName.Group,
+                IconName = "Group",
                 ImageSrc = "https://bit.com/other_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-other_icon.svg.png",
                 ImageAlt = "other-icon",
@@ -263,7 +263,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Prefer not to say",
-                IconName = BitIconName.Emoji2,
+                IconName = "Emoji2",
                 ImageSrc = "https://bit.com/nottosay_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-nottosay_icon.svg.png",
                 ImageAlt = "nottosay-icon",
