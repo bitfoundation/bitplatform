@@ -1,5 +1,4 @@
-﻿
-namespace BlazorDual.Shared.Dtos.Account;
+﻿namespace BlazorDual.Shared.Dtos.Account;
 
 [DtoResourceType(typeof(AppStrings))]
 public class SignUpRequestDto
