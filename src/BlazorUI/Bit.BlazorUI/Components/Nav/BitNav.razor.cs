@@ -19,6 +19,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     private const string IS_ENABLED_FIELD = nameof(BitNavItem.IsEnabled);
     private const string STYLE_FIELD = nameof(BitNavItem.Style);
     private const string TARGET_FIELD = nameof(BitNavItem.Target);
+    private const string TEMPLATE_FIELD = nameof(BitNavItem.Template);
+    private const string TEMPLATE_RENDER_MODE_FIELD = nameof(BitNavItem.TemplateRenderMode);
     private const string CHILD_ITEMS_FIELD = nameof(BitNavItem.ChildItems);
 
     private bool SelectedItemHasBeenSet;
@@ -38,6 +40,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalStyleField = STYLE_FIELD;
     private string _internalTargetField = TARGET_FIELD;
+    private string _internalTemplateField = TEMPLATE_FIELD;
+    private string _internalTemplateRenderModeField = TEMPLATE_RENDER_MODE_FIELD;
     private string _internalChildItemsField = CHILD_ITEMS_FIELD;
 
     internal List<TItem> _items = new();
@@ -138,6 +142,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
+    /// The render mode of the custom HeaderTemplate.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
     /// Name of an icon to render next to the item button.
     /// </summary>
     [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
@@ -176,6 +185,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// The render mode of the custom ItemTemplate.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
     /// A unique value to use as a key or id of the item.
@@ -253,6 +267,26 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Link target, specifies how to open the item link.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? TargetFieldSelector { get; set; }
+
+    /// <summary>
+    /// The field name of the Template property in the nav item class.
+    /// </summary>
+    [Parameter] public string TemplateField { get; set; } = TEMPLATE_FIELD;
+
+    /// <summary>
+    /// The field selector of the Template property in the nav item class.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, RenderFragment>>? TemplateFieldSelector { get; set; }
+
+    /// <summary>
+    /// The field name of the TemplateRenderMode property in the nav item class.
+    /// </summary>
+    [Parameter] public string TemplateRenderModeField { get; set; } = TEMPLATE_RENDER_MODE_FIELD;
+
+    /// <summary>
+    /// The field selector of the TemplateRenderMode property in the nav item class.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, BitNavItemTemplateRenderMode>>? TemplateRenderModeFieldSelector { get; set; }
 
     /// <summary>
     /// Text to render for the item.
@@ -511,6 +545,36 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty<string?>(_internalTargetField);
     }
 
+    internal RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Template as RenderFragment<TItem>;
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(_internalTemplateField);
+    }
+
+    internal BitNavItemTemplateRenderMode GetTemplateRenderMode(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.TemplateRenderMode;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.TemplateRenderMode;
+        }
+
+        return item.GetValueFromProperty<BitNavItemTemplateRenderMode>(_internalTemplateRenderModeField);
+    }
+
     internal List<TItem> GetChildItems(TItem item)
     {
         if (item is BitNavItem navItem)
@@ -596,6 +660,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
         _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
         _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
+        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TargetField;
+        _internalTemplateRenderModeField = TargetFieldSelector?.GetName() ?? TargetField;
         _internalChildItemsField = ChildItemsFieldSelector?.GetName() ?? ChildItemsField;
         _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
