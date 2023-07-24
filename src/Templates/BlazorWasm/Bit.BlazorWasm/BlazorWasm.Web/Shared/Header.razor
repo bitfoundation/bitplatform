@@ -10,7 +10,7 @@
         </div>
 
         <div class="right-section">
-            <BitIconButton OnClick="ToggleTheme" IconName="@_toggleThemeIcon" />
+            <BitIconButton OnClick="ToggleTheme" IconName="Clock" />
         </div>
     </div>
 </header>
@@ -18,7 +18,6 @@
 
 @code {
     private string _currentUrl = string.Empty;
-    private string _toggleThemeIcon = BitIconName.ClearNight;
 
     protected override void OnInitialized()
     {
@@ -36,8 +35,6 @@
 
     private async Task ToggleTheme()
     {
-        var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
-        var isDark = newTheme.Contains("dark");
-        _toggleThemeIcon = isDark ? BitIconName.Sunny : BitIconName.ClearNight;
+        await _bitThemeManager.ToggleDarkLightAsync();
     }
 }
