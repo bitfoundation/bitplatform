@@ -1,4 +1,5 @@
-﻿namespace BlazorDual.Shared.Dtos.Account;
+﻿
+namespace BlazorDual.Shared.Dtos.Account;
 
 [DtoResourceType(typeof(AppStrings))]
 public class SignUpRequestDto
@@ -9,7 +10,7 @@ public class SignUpRequestDto
 
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Display(Name = nameof(AppStrings.UserName))]
+    [Display(Name = nameof(AppStrings.Email))]
     public string? UserName { get; set; }
 
     [Display(Name = nameof(AppStrings.PhoneNumber))]

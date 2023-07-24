@@ -6,7 +6,6 @@ namespace Bit.Websites.Platform.Web;
 
 public partial class Header : IDisposable
 {
-    private BitIconName _toggleThemeIcon = BitIconName.ClearNight;
     private string CurrentUrl = string.Empty;
     private bool IsHeaderMenuOpen;
 
@@ -77,7 +76,6 @@ public partial class Header : IDisposable
     {
         var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
         var isDark = newTheme.Contains("dark");
-        _toggleThemeIcon = isDark ? BitIconName.Sunny : BitIconName.ClearNight;
     }
 
 

@@ -10,7 +10,7 @@
         </div>
 
         <div class="right-section">
-            <BitIconButton OnClick="ToggleTheme" IconName="_toggleThemeIcon" />
+            <BitIconButton OnClick="ToggleTheme" IconName="@_toggleThemeIcon" />
         </div>
     </div>
 </header>
@@ -18,7 +18,7 @@
 
 @code {
     private string _currentUrl = string.Empty;
-    private BitIconName _toggleThemeIcon = BitIconName.ClearNight;
+    private string _toggleThemeIcon = BitIconName.ClearNight;
 
     protected override void OnInitialized()
     {

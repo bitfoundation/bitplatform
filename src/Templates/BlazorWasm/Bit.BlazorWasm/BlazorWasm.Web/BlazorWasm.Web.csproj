@@ -18,6 +18,8 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.BlazorUI" Version="5.2.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.2.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.2.0-pre-02" />
 
         <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
