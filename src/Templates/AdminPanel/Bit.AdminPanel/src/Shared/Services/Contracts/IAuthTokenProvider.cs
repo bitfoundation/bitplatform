@@ -2,5 +2,5 @@
 
 public interface IAuthTokenProvider
 {
-    Task<string?> GetAcccessTokenAsync();
+    Task<string?> GetAccessTokenAsync();
 }
