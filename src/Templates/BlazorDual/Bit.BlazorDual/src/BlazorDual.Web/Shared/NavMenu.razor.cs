@@ -55,7 +55,7 @@ public partial class NavMenu : IDisposable
         _user = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
+        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
 
         SetProfileImageUrl();
