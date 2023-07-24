@@ -70,7 +70,7 @@ public partial class BitNavOption : IDisposable
     /// <summary>
     /// The custom template for the BitNavOption to render.
     /// </summary>
-    [Parameter] public RenderFragment<BitNavItem>? Template { get; set; }
+    [Parameter] public RenderFragment<BitNavOption>? Template { get; set; }
 
     /// <summary>
     /// The render mode of the BitNavOption's custom template.
