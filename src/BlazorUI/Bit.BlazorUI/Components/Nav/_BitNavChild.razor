@@ -30,7 +30,11 @@
                     class="bit-nav-gcb"
                     aria-expanded="@(isExpanded ? "true" : "false")"
                     aria-label="@(isEnabled ? colAriaLabel : expAriaLabel)">
-                @if (Nav.HeaderTemplate is not null)
+                @if (template is not null)
+                {
+                    @template(Item)
+                }
+                else if (Nav.HeaderTemplate is not null)
                 {
                     @Nav.HeaderTemplate(Item)
                 }
@@ -88,8 +92,11 @@
                        title="@(title is not null ? title : text)"
                        aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                        rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
-
-                        @if (Nav.ItemTemplate is not null)
+                        @if (template is not null)
+                        {
+                            @template(Item)
+                        }
+                        else if (Nav.ItemTemplate is not null)
                         {
                             @Nav.ItemTemplate(Item)
                         }
@@ -115,8 +122,11 @@
                             disabled="@(isEnabled is false)"
                             title="@(title is not null ? title : text)"
                             aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)">
-
-                        @if (Nav.ItemTemplate is not null)
+                        @if (template is not null)
+                        {
+                            @template(Item)
+                        }
+                        else if (Nav.ItemTemplate is not null)
                         {
                             @Nav.ItemTemplate(Item)
                         }

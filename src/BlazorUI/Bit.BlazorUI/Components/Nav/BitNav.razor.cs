@@ -660,8 +660,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
         _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
         _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
-        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TargetField;
-        _internalTemplateRenderModeField = TargetFieldSelector?.GetName() ?? TargetField;
+        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TemplateField;
+        _internalTemplateRenderModeField = TargetFieldSelector?.GetName() ?? TemplateRenderModeField;
         _internalChildItemsField = ChildItemsFieldSelector?.GetName() ?? ChildItemsField;
         _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
