@@ -33,6 +33,11 @@
         <div class="footer-contact">info@bitplatform.dev</div>
         <div class="footer-copyright">Made with <span class="text--red">♥</span> by bit platform</div>
 
-        <BitIconButton IconName="@BitIconName.ColorSolid" Style="position:absolute;right:4px;bottom:4px" OnClick="ToggleTheme" Title="Toggle theme"/>
+        <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
+            <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
+        </button>
+        <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
+            <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
+        </button>
     </div>
 </footer>

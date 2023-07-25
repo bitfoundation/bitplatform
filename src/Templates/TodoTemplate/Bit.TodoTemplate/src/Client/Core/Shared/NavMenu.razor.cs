@@ -43,8 +43,9 @@ public partial class NavMenu : IDisposable
             },
             new BitNavItem
             {
-                Text = Localizer[nameof(AppStrings.SignOut)],
-                IconName = BitIconName.SignOut,
+                Text = Localizer[nameof(AppStrings.TermsTitle)],
+                IconName = BitIconName.EntityExtraction,
+                Url = "/terms",
             }
         };
 
@@ -73,14 +74,17 @@ public partial class NavMenu : IDisposable
         _profileImageUrl = _user.ProfileImageName is not null ? _profileImageUrlBase + _user.ProfileImageName : null;
     }
 
-    private async Task HandleOnItemClick(BitNavItem item)
+    private async Task DoSignOut()
     {
-        if (item.Text == Localizer[nameof(AppStrings.SignOut)])
-        {
-            _isSignOutModalOpen = true;
-        }
+        _isSignOutModalOpen = true;
 
         await CloseMenu();
+    }
+
+    private async Task GoToEditProfile()
+    {
+        await CloseMenu();
+        _navManager.NavigateTo("edit-profile");
     }
 
     private async Task CloseMenu()

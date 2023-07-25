@@ -4,6 +4,7 @@ namespace TodoTemplate.Client.Core;
 public partial class Footer
 {
     [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
 #if MultilingualEnabled
     protected async override Task OnAfterFirstRenderAsync()
@@ -41,6 +42,6 @@ public partial class Footer
 
     private async Task ToggleTheme()
     {
-        await _bitThemeManager.ToggleDarkLightAsync();
+        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
     }
 }

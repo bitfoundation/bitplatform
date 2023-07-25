@@ -14,12 +14,20 @@
                     Size=@BitPersonaSize.Size48
                     SecondaryText="@_user.UserName"
                     Presence="BitPersonaPresenceStatus.Online"
-                    OnImageClick="@(() => _navManager.NavigateTo("edit-profile"))" />
+                    OnImageClick=GoToEditProfile>
+            <ImageOverlayFragment>
+                <span>@Localizer[nameof(AppStrings.Edit)]</span>
+            </ImageOverlayFragment>
+        </BitPersona>
+        <br />
+        <BitActionButton IconName="@BitIconName.SignOut" OnClick=DoSignOut>
+            @Localizer[nameof(AppStrings.SignOut)]
+        </BitActionButton>
     </div>
     <BitNav Items="_navItems"
             AriaLabel="NavMenu"
             DefaultSelectedItem="_navItems[0]"
-            OnItemClick="(BitNavItem item) => HandleOnItemClick(item)">
+            OnItemClick="(BitNavItem item) => CloseMenu()">
     </BitNav>
 </section>
 
