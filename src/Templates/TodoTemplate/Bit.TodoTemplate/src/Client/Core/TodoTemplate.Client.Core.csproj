@@ -40,16 +40,16 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
-        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
-        <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
-        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
-        <Using Include="TodoTemplate.Client.Core.Components" />
-        <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="TodoTemplate.Client.Core.Components" />
+        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
+        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

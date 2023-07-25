@@ -64,3 +64,27 @@
         width: rem(280px);
     }
 }
+
+::deep {
+    .form-checkbox {
+        width: 100%;
+        max-width: rem(340px);
+
+        .label {
+            text-align: start;
+            align-items: start;
+        }
+
+        @include lt-xl {
+            max-width: rem(300px);
+        }
+
+        @include sm {
+            max-width: 100%;
+        }
+    }
+
+    .form-input-container--no-margin {
+        margin-bottom: 0;
+    }
+}

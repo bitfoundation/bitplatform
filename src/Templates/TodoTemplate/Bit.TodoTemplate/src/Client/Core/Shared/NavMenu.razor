@@ -3,21 +3,17 @@
 
 @if (IsMenuOpen)
 {
-    <div class="menu-shadow" @onclick=CloseMenu></div>
+    <div class="menu-overlay" @onclick=CloseMenu></div>
 }
 
 <section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
     <div class="top-container">
-        <BitPersona ImageUrl="@_profileImageUrl"
-                    Size=@BitPersonaSize.Size48
+        <BitPersona Class="persona"
                     Text="@_user.FullName"
+                    ImageUrl="@_profileImageUrl"
+                    Size=@BitPersonaSize.Size48
                     SecondaryText="@_user.UserName"
                     Presence="BitPersonaPresenceStatus.Online" />
-        <BitActionButton IconName="@BitIconName.Edit"
-                         Href="/edit-profile"
-                         OnClick=CloseMenu>
-            @Localizer[nameof(AppStrings.EditProfileTitle)]
-        </BitActionButton>
     </div>
     <BitNav Items="_navItems"
             AriaLabel="NavMenu"

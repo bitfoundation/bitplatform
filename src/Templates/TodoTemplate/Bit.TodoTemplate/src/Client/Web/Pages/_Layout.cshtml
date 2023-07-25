@@ -1,4 +1,5 @@
-﻿@using TodoTemplate.Shared.Infra
+﻿@using Bit.BlazorUI
+@using TodoTemplate.Shared.Infra
 @using Microsoft.AspNetCore.Components.Web
 @using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 
@@ -42,7 +43,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html use-system-theme>
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
@@ -72,7 +73,7 @@
         </style>
     }
 </head>
-<body>
+<body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
     <div id="app-container">
         @if (isSpa || isPwa || noPrerender)
         {

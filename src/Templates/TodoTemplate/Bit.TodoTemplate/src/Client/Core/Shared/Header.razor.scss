@@ -1,28 +1,24 @@
-﻿@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .header {
-    position: fixed;
     top: 0;
     width: 100%;
     z-index: 100;
     display: flex;
+    position: fixed;
     align-items: center;
     flex-flow: row nowrap;
     min-height: rem(48px);
     box-sizing: border-box;
-    background-color: $Gray5;
-    justify-content: space-between;
-    padding-left: rem(32px);
-    padding-right: rem(32px);
+    padding-left: rem(16px);
+    padding-right: rem(16px);
     padding-bottom: rem(7px);
+    justify-content: space-between;
+    background-color: $bit-color-background-primary;
     padding-top: calc(rem(7px) + var(--bit-status-bar-height));
-
-    @media all and (max-width: #{em(370px)}) {
-        padding-left: rem(16px);
-        padding-right: rem(16px);
-    }
 }
 
 .bit-ios {
@@ -32,39 +28,41 @@
 }
 
 .logo-lnk {
+    cursor: pointer;
     width: rem(24px);
-    min-width: rem(24px);
     height: rem(24px);
+    min-width: rem(24px);
     border-radius: rem(4px);
-    background-image: url('images/bit-logo.svg');
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain;
-    cursor: pointer;
+    background-image: url('images/bit-logo.svg');
 }
 
 .header-contact {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: flex-start;
-    align-items: center;
 }
 
-::deep .header-item {
-    margin-left: rem(12px);
-}
+::deep {
+    .header-menu {
+        display: none;
+        margin-right: rem(12px);
 
-::deep .header-menu {
-    display: none;
-    margin-right: rem(12px);
+        span {
+            i {
+                color: $PrimaryColor;
+            }
+        }
 
-    span {
-        i {
-            color: $PrimaryColor;
+        @include lt-lg {
+            display: block;
         }
     }
 
-    @include lt-lg {
-        display: block;
+    .header-item {
+        padding: rem(4px) rem(8px);
     }
 }

@@ -3,8 +3,8 @@
 .main {
     flex-grow: 1;
     display: flex;
-    flex-direction: column;
     padding: rem(10px);
+    flex-direction: column;
 }
 
 .header {
@@ -16,11 +16,11 @@
 }
 
 .body {
-    display: flex;
     flex-grow: 1;
-    margin: rem(10px) 0;
-    white-space: pre;
+    display: flex;
     overflow: auto;
+    white-space: pre;
+    margin: rem(10px) 0;
     max-width: rem(960px);
 }
 

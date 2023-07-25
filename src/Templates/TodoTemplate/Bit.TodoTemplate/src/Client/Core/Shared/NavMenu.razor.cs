@@ -36,6 +36,12 @@ public partial class NavMenu : IDisposable
             },
             new BitNavItem
             {
+                Text = Localizer[nameof(AppStrings.EditProfileTitle)],
+                IconName = BitIconName.EditContact,
+                Url = "/edit-profile",
+            },
+            new BitNavItem
+            {
                 Text = Localizer[nameof(AppStrings.SignOut)],
                 IconName = BitIconName.SignOut,
             }
