@@ -11,8 +11,9 @@ public partial class NavMenu : IDisposable
     private string? _profileImageUrlBase;
     private UserDto _user = new();
     private List<BitNavItem> _navItems = new();
-
     private Action _unsubscribe = default!;
+
+    [AutoInject] private NavigationManager _navManager { get; set; } = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 

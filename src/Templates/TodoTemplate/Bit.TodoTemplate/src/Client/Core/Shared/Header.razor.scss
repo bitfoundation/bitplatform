@@ -19,6 +19,7 @@
     justify-content: space-between;
     background-color: $bit-color-background-primary;
     padding-top: calc(rem(7px) + var(--bit-status-bar-height));
+    box-shadow: $bit-box-shadow-callout;
 }
 
 .bit-ios {

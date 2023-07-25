@@ -13,7 +13,8 @@
                     ImageUrl="@_profileImageUrl"
                     Size=@BitPersonaSize.Size48
                     SecondaryText="@_user.UserName"
-                    Presence="BitPersonaPresenceStatus.Online" />
+                    Presence="BitPersonaPresenceStatus.Online"
+                    OnImageClick="@(() => _navManager.NavigateTo("edit-profile"))" />
     </div>
     <BitNav Items="_navItems"
             AriaLabel="NavMenu"

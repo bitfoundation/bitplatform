@@ -94,6 +94,7 @@
     margin-top: rem(4px);
     flex-flow: column nowrap;
     justify-content: flex-start;
+    background-color: $bit-color-background-primary;
     border: rem(1px) solid $bit-color-border-secondary;
 
     @include lt-lg {

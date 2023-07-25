@@ -61,5 +61,6 @@
 
     .persona {
         margin: auto;
+        max-width: rem(calc($navMenuWidth - 20px));
     }
 }
