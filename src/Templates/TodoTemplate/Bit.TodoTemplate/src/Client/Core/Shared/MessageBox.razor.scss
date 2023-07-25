@@ -1,4 +1,5 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .main {
     flex-grow: 1;
@@ -21,7 +22,7 @@
     overflow: auto;
     white-space: pre;
     margin: rem(10px) 0;
-    max-width: rem(960px);
+    max-width: 90vw;
 }
 
 .footer {
