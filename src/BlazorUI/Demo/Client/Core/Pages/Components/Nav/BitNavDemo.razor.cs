@@ -17,7 +17,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "AriaCurrentFieldSelector",
-            Type = "Expression<Func<TItem, BitNavListItemAriaCurrent>>?",
+            Type = "Expression<Func<TItem, BitNavAriaCurrent>>?",
             Href = "nav-item-aria-current",
             LinkType = LinkType.Link,
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
@@ -32,7 +32,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "AriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
         },
@@ -76,7 +76,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "CollapseAriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Aria label when group is collapsed."
         },
@@ -97,7 +97,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "ExpandAriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Aria label when group is expanded."
         },
@@ -111,7 +111,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "ForceAnchorFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, bool>>?",
             DefaultValue = "null",
             Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
         },
@@ -182,6 +182,15 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "ItemTemplateRenderMode",
+            Type = "BitNavItemTemplateRenderMode",
+            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+            Href = "nav-itemtemplate-rendermode",
+            LinkType = LinkType.Link,
+            Description = "The render mode of the custom ItemTemplate."
+        },
+        new()
+        {
             Name = "KeyField",
             Type = "string",
             DefaultValue = "Key",
@@ -190,7 +199,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "KeyFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "A unique value to use as a key or id of the item."
         },
@@ -247,7 +256,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "StyleFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Custom style for the each item element."
         },
@@ -261,7 +270,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "TextFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Text to render for the item."
         },
@@ -275,7 +284,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "TitleFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Text for the item tooltip."
         },
@@ -289,9 +298,37 @@ public partial class BitNavDemo
         new()
         {
             Name = "TargetFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Link target, specifies how to open the item link."
+        },
+        new()
+        {
+            Name = "TemplateField",
+            Type = "string",
+            DefaultValue = "Template",
+            Description = "The field name of the Template property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateFieldSelector",
+            Type = "Expression<Func<TItem, RenderFragment>>?",
+            DefaultValue = "null",
+            Description = "The field selector of the Template property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateRenderModeField",
+            Type = "string",
+            DefaultValue = "TemplateRenderMode",
+            Description = "The field name of the TemplateRenderMode property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateRenderModeFieldSelector",
+            Type = "Expression<Func<TItem, BitNavItemTemplateRenderMode>>?",
+            DefaultValue = "null",
+            Description = "The field selector of the TemplateRenderMode property in the nav item class."
         },
         new()
         {
@@ -412,6 +449,20 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Template",
+                   Type = "RenderFragment<BitNavItem>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the BitNavItem to render",
+               },
+               new()
+               {
+                   Name = "TemplateRenderMode",
+                   Type = "BitNavItemTemplateRenderMode",
+                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+                   Description = "The render mode of the BitNavItem's custom template.",
+               },
+               new()
+               {
                    Name = "Url",
                    Type = "string?",
                    DefaultValue = "null",
@@ -419,7 +470,7 @@ public partial class BitNavDemo
                }
             }
         },
-        new ()
+        new()
         {
             Id = "nav-option",
             Title = "BitNavOption",
@@ -660,6 +711,26 @@ public partial class BitNavDemo
                     Value = "5",
                 },
 
+            }
+        },
+        new()
+        {
+            Id = "nav-itemtemplate-rendermode",
+            Name = "BitNavItemTemplateRenderMode",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "Normal",
+                    Description = "Renders the template inside the button/anchor root element of the item.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Replace",
+                    Description = "Replaces the button/anchor root element of the item.",
+                    Value = "1",
+                }
             }
         },
     };

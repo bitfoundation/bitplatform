@@ -68,6 +68,16 @@ public partial class BitNavOption : IDisposable
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
+    /// The custom template for the BitNavOption to render.
+    /// </summary>
+    [Parameter] public RenderFragment<BitNavOption>? Template { get; set; }
+
+    /// <summary>
+    /// The render mode of the BitNavOption's custom template.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
     /// URL to navigate to for this link
     /// </summary>
     [Parameter] public string? Url { get; set; }
