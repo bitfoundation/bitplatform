@@ -3,6 +3,9 @@ namespace TodoTemplate.Client.Core;
 
 public partial class Footer
 {
+    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+
 #if MultilingualEnabled
     protected async override Task OnAfterFirstRenderAsync()
     {
@@ -34,6 +37,11 @@ public partial class Footer
         NavigationManager.ForceReload();
     }
 
-    private static List<BitDropdownItem> GetCultures() => 
+    private static List<BitDropdownItem> GetCultures() =>
         CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem { Value = sc.code, Text = sc.name }).ToList();
+
+    private async Task ToggleTheme()
+    {
+        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
+    }
 }

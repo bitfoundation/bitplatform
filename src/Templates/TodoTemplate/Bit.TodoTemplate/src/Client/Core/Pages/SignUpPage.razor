@@ -4,7 +4,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
         <AppDataAnnotationsValidator />
 
         @if (string.IsNullOrEmpty(_signUpMessage) is false)
