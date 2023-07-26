@@ -1,0 +1,63 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (IsOpen)
+{
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value">
+
+        <div role="dialog"
+             aria-modal="@((IsModeless is false).ToString())"
+             aria-labelledby="@TitleAriaId"
+             aria-describedby="@SubtitleAriaId">
+            @if (IsModeless is false)
+            {
+                <div class="bit-pnl-ovl" aria-hidden="true" @onclick="OnOverlayClicked" />
+            }
+            <div id="@_containerId" style="@SetPanelSize() @ClassStyles?.Container?.Style" class="bit-pnl-wrp @GetPositionClass() @ClassStyles?.Container?.Class">
+                <div style="@ClassStyles?.ScrollContainer?.Style" class="bit-pnl-scr-ctn @ClassStyles?.ScrollContainer?.Class">
+                    @if (ShowHeader)
+                    {
+                        <div style="@ClassStyles?.Header?.Style" class="bit-pnl-hdr-ctn @ClassStyles?.Header?.Class">
+                            @if (HeaderTemplate is not null)
+                            {
+                                @HeaderTemplate
+                            }
+                            else if (Title.HasValue())
+                            {
+                                <label class="bit-pnl-ttl">@Title</label>
+                            }
+
+                            @if (ShowCloseButton)
+                            {
+                                <button @onclick="OnCloseButtonClicked"
+                                        class="bit-pnl-cls"
+                                        type="button"
+                                        aria-label="Close"
+                                        aria-describedby="Close"
+                                        aria-hidden="Close"
+                                        title="Close">
+                                    <span>
+                                        <i class="bit-icon bit-icon--Cancel" />
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    <div style="@ClassStyles?.Content?.Style" class="bit-pnl-ctn @ClassStyles?.Content?.Class">
+                        @ChildContent
+                    </div>
+                    
+                    @if (FooterTemplate is not null)
+                    {
+                        <div style="@ClassStyles?.Footer?.Style" class="bit-pnl-ftr-ctn @ClassStyles?.Footer?.Class">
+                            @FooterTemplate
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
