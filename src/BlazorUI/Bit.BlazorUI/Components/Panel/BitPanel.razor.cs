@@ -71,19 +71,14 @@ public partial class BitPanel
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
-    /// Position of the modal on the screen.
-    /// </summary>
-    [Parameter] public BitPanelPosition Position { get; set; } = BitPanelPosition.Right;
-
-    /// <summary>
     /// A callback function for when the Panel is dismissed light dismiss, before the animation completes.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// Shows or hides the close button of the Panel.
+    /// Position of the modal on the screen.
     /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public BitPanelPosition Position { get; set; } = BitPanelPosition.Right;
 
     /// <summary>
     /// Provides Height or Width for the Panel.
@@ -105,14 +100,19 @@ public partial class BitPanel
     [Parameter] public EventCallback<double> PanelSizeChanged { get; set; }
 
     /// <summary>
-    /// Shows or hides the header of the Panel.
-    /// </summary>
-    [Parameter] public bool ShowHeader { get; set; } = true;
-
-    /// <summary>
     /// Set the element selector for which the Panel disables its scroll if applicable.
     /// </summary>
     [Parameter] public string ScrollerSelector { get; set; } = "body";
+
+    /// <summary>
+    /// Shows or hides the close button of the Panel.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// Shows or hides the header of the Panel.
+    /// </summary>
+    [Parameter] public bool ShowHeader { get; set; } = true;
 
     /// <summary>
     /// ARIA id for the subtitle of the Panel, if any.
