@@ -16,8 +16,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Watch Include="..\Shared\**\*.razor" />
-        <Watch Include="..\Shared\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+        <Watch Include="..\Core\**\*.razor" />
+        <Watch Include="..\Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
     </ItemGroup>
 
     <ItemGroup>
