@@ -224,7 +224,7 @@ ModelManifest.xml
 
 profile.arm.json
 
-# Bit Platform
+# bit
 *.map
 _book
 *yarn.lock
