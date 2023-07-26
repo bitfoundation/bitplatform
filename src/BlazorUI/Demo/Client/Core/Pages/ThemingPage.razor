@@ -10,7 +10,7 @@
 
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
+            In bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
             the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br />
             <br />
@@ -26,9 +26,9 @@
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Quick setup</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            To get started with Bit BlazorUI Theme as fast as possible, you can try the system theme feature of it.
+            To get started with bit BlazorUI Theme as fast as possible, you can try the system theme feature of it.
             <br />
-            First you need to register the Bit BlazorUI services as follows:
+            First you need to register the bit BlazorUI services as follows:
         </BitTypography>
         <br />
         <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
@@ -47,7 +47,7 @@
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS variables</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            All CSS variables defined in the Theme system of the Bit BlazorUI are attached to the root element like this:
+            All CSS variables defined in the Theme system of the bit BlazorUI are attached to the root element like this:
         </BitTypography>
         <br />
         <pre class="code"><code class="language-css">:root,
@@ -75,7 +75,7 @@
         <BitTypography Variant="BitTypographyVariant.Body1">
             The source code of these CSS variables is available in the
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" Target="_blank">
-                Bit BlazorUI GitHub repo
+                bit BlazorUI GitHub repo
             </BitLink>.
             <br />
             You can simply override these values to customize the UI.
@@ -92,9 +92,9 @@
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeManager</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI the <code>BitThemeManager</code> class is available to customize the Theme.
+            In bit BlazorUI the <code>BitThemeManager</code> class is available to customize the Theme.
             <br />
-            To start using the BitThemeManager, you first need to register Bit BlazorUI services like this:
+            To start using the BitThemeManager, you first need to register bit BlazorUI services like this:
         </BitTypography>
         <br />
         <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
@@ -151,7 +151,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">System Theme</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI you can use the system theme as the default theme when the app starts up.
+            In bit BlazorUI you can use the system theme as the default theme when the app starts up.
             <br />
             In order to enable this feature a specific attribute named
             <code>use-system-theme</code> should be added to the <code>html</code> tag:
@@ -163,7 +163,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS in C#</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
+            In bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
             <br />
             You can use different properties of this class to further customize your UI:
         </BitTypography>
@@ -187,7 +187,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeProvider</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            In Bit BlazorUI the <code>BitThemeProvider</code> component is available to further customize the Theme.
+            In bit BlazorUI the <code>BitThemeProvider</code> component is available to further customize the Theme.
             <br />
             You can wrap any elements with the <code>BitThemeProvider</code> component and assign an instance of <code>BitTheme</code> to it:
         </BitTypography>
@@ -236,7 +236,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1">
-            Bit BlazorUI also has a JavaScript API through <code>BitTheme</code> javascript object
+            bit BlazorUI also has a JavaScript API through <code>BitTheme</code> javascript object
             to customize the UI of the app even further.
             <br />
             The differnet functions available in this object are as follows:

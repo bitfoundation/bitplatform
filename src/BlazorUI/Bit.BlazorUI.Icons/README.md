@@ -1,1 +1,1 @@
-﻿### Bit BlazorUI Icons
+﻿### bit BlazorUI Icons
