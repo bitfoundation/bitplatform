@@ -1,17 +1,19 @@
-﻿using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
+﻿using System.Timers;
+using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
 namespace Bit.Websites.Platform.Web.Pages;
 
 public partial class PricingPage
 {
+    private bool _isSent;
+    private bool _isSending;
+    private bool _isBuyModalOpen;
     private string _selectedPackageTitle = string.Empty;
     private string _selectedPackagePrice = string.Empty;
 
     private BuyPackageDto _buyPackageModel { get; set; } = new();
 
-    private bool _isBuyModalOpen { get; set; }
 
-    private bool _isSending { get; set; }
 
     private void ShowBuyModal(string title, string price)
     {
@@ -24,6 +26,11 @@ public partial class PricingPage
     private void CloseModal()
     {
         _isBuyModalOpen = false;
+        _isSent = false;
+
+        _buyPackageModel.Email = "";
+        _buyPackageModel.Message = "";
+        _buyPackageModel.SalePackageTitle = "";
     }
 
     private async Task SendMessage()
@@ -34,16 +41,13 @@ public partial class PricingPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+            //await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
 
-            _buyPackageModel.Email = "";
-            _buyPackageModel.Message = "";
-            _buyPackageModel.SalePackageTitle = "";
         }
         finally
         {
             _isSending = false;
-            CloseModal();
+            _isSent = true;
         }
     }
 }

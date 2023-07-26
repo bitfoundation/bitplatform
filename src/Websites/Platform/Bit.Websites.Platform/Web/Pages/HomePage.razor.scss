@@ -119,71 +119,16 @@
 }
 
 .intro-section {
-    padding: 10rem 0;
+    margin: 5rem 0;
+    padding: 5rem 0;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
-    }
-}
-
-.tech-section {
-    padding: 10rem 0;
-    text-align: center;
-
-    @include lt-md {
-        padding: 5rem 0;
-    }
-
-    .tech-list {
-        width: 100%;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .tech-item {
-        width: rem(70px);
-        height: rem(70px);
-        margin: rem(20px);
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
-
-    .blazor-item {
-        background-image: url('/images/home/tech/blazor-logo.webp');
-    }
-
-    .csharp-item {
-        background-image: url('/images/home/tech/csharp-logo.webp');
-    }
-
-    .dotnet-item {
-        background-image: url('/images/home/tech/dotnet-logo.webp');
-    }
-
-    .sass-item {
-        background-image: url('/images/home/tech/sass-logo.webp');
-    }
-
-    .vs-item {
-        background-image: url('/images/home/tech/visual-studio-logo.webp');
-    }
-
-    .git-item {
-        background-image: url('/images/home/tech/git-logo.webp');
-    }
-
-    .github-item {
-        background-image: url('/images/home/tech/github-logo.webp');
     }
 }
 
 .components-section {
-    background-color: $bit-color-background-secondary;
-
     .components-container {
         gap: 1rem;
         width: 100%;
@@ -306,6 +251,85 @@
 }
 
 .templates-section {
+    .template-terminal {
+        gap: rem(12px);
+        display: flex;
+        flex-wrap: wrap;
+        padding: rem(50px);
+        margin: rem(50px) 0;
+        align-items: center;
+        border-radius: rem(4px);
+        color: #f0f0f0;
+        border: 1px solid #001234;
+        background-color: #012456;
+
+        span {
+            white-space: nowrap;
+            font-size: rem(18px);
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        }
+
+        .animation-container {
+            display: flex;
+            position: relative;
+
+            * {
+            }
+        }
+
+        .animated {
+            animation-name: terminal-animation;
+            animation-iteration-count: infinite;
+            animation-timing-function: cubic-bezier(0, 1, 0, 1);
+        }
+
+        .delayed {
+            left: 0;
+            position: absolute;
+        }
+
+        .a-1 {
+            animation-duration: 8s;
+        }
+
+        .d-1 {
+            animation-delay: 4s;
+        }
+
+        .a-2 {
+            animation-duration: 6s;
+        }
+
+        .d-2 {
+            animation-delay: 3s;
+        }
+
+        .a-3 {
+            animation-duration: 12s;
+        }
+
+        .d-3 {
+            animation-delay: 6s;
+        }
+
+        @keyframes terminal-animation {
+            0%, 100% {
+                opacity: 1;
+                transform: translateY(0px);
+            }
+
+            48% {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            52% {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+        }
+    }
+
     .template-card-list {
         display: flex;
         flex-flow: row wrap;
@@ -384,6 +408,65 @@
         flex-flow: row wrap;
         margin-top: rem(4px);
         justify-content: space-between;
+    }
+}
+
+.tech-section {
+    margin: 5rem 0;
+    padding: 5rem 0;
+    text-align: center;
+    background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        padding: 5rem 0;
+    }
+
+    .tech-list {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tech-item {
+        width: rem(70px);
+        height: rem(70px);
+        margin: rem(20px);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .blazor-item {
+        background-image: url('/images/home/tech/blazor-logo.webp');
+    }
+
+    .csharp-item {
+        background-image: url('/images/home/tech/csharp-logo.webp');
+    }
+
+    .dotnet-item {
+        background-image: url('/images/home/tech/dotnet-logo.webp');
+    }
+
+    .sass-item {
+        background-image: url('/images/home/tech/sass-logo.webp');
+    }
+
+    .vs-item {
+        background-image: url('/images/home/tech/visual-studio-logo.webp');
+    }
+
+    .git-item {
+        background-image: url('/images/home/tech/git-logo.webp');
+    }
+
+    .github-item {
+        /*background-image: url('/images/home/tech/github-logo.webp');*/
+        svg path {
+            fill: $bit-color-foreground-primary;
+        }
     }
 }
 

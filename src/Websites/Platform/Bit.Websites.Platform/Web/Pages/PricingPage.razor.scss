@@ -53,7 +53,7 @@
 
     .plan-card-list {
         display: flex;
-        gap: rem(20px);
+        gap: rem(40px);
         flex-flow: row wrap;
         justify-content: center;
         width: calc(100% + 20px);
@@ -62,12 +62,8 @@
     .plan-card {
         display: flex;
         padding: rem(20px);
-        align-items: center;
-        min-width: rem(275px);
-        min-height: rem(275px);
         border-radius: rem(4px);
         flex-flow: column nowrap;
-        justify-content: space-between;
         box-shadow: $bit-box-shadow-callout;
     }
 
@@ -113,4 +109,9 @@
         right: rem(16px);
         position: absolute;
     }
+}
+
+.modal-message-container {
+    text-align: center;
+    padding: rem(48px) rem(32px);
 }
