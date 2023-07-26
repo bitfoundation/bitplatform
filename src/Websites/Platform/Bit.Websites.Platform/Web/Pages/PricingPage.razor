@@ -9,7 +9,7 @@
     <section class="page-section main-section">
         <div class="page-section-content">
             <BitTypography Variant="BitTypographyVariant.H1" Gutter>Pricing</BitTypography>
-            <br/>
+            <br />
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>
                 bit platform is open source and using it is truly free.
             </BitTypography>
@@ -23,93 +23,85 @@
         <div class="page-section-content">
             <div class="mid-container">
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="blue-txt">
-                    Get the features and support you need today
-                </BitTypography>
-                <hr style="width:100%"/>
-                <BitTypography Variant="BitTypographyVariant.H5">
-                    Easily upgrade as your needs evolve
-                </BitTypography>
-            </div>
-        </div>
-    </section>
+                     Get the features and support you need today
+                 </BitTypography>
+                 <hr style="width:100%" />
+                 <BitTypography Variant="BitTypographyVariant.H5">
+                     Easily upgrade as your needs evolve
+                 </BitTypography>
+             </div>
+         </div>
+     </section>
 
-    <section class="page-section plans-section">
-        <div class="page-section-content">
-            <div class="plan-card-list">
-                <div class="plan-card">
-                    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Free</BitTypography>
+     <section class="page-section plans-section">
+         <div class="page-section-content">
+             <div class="plan-card-list">
+                 <div class="plan-card">
+                     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Free</BitTypography>
                     <BitTypography Variant="BitTypographyVariant.H5" Gutter>€0</BitTypography>
                     <div class="plan-card-desc">
-                        <BitTypography Variant="BitTypographyVariant.Body2">Access to all components</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">Unlimited apps</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">Open-source support</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">(GitHub issues)</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter><b>MIT</b> License</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Unlimited apps</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Access to all components</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Access to all project templates</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Open-source support (GitHub issues)</BitTypography>
                     </div>
                 </div>
 
                 <div class="plan-card">
-                    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Pro</BitTypography>
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
-                        €300 <BitTypography Variant="BitTypographyVariant.H6" Class="grey-txt"> /month /developer</BitTypography>
-                    </BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Paid</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>€1200</BitTypography>
                     <div class="plan-card-desc">
-                        <BitTypography Variant="BitTypographyVariant.Body2">All from Free package</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">Pro support</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">48 hours response time</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>All from Free package</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter><b>40</b> hours Commercial support</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>through Email, Phone, Online meeting</BitTypography>
+                        <br />
+                        <BitTypography Variant="BitTypographyVariant.H6">Architecting, Debugging, Code review</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6">for bit components & project templates</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6">and their dependencies such as</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter><b>ASP.NET Core</b>, <b>EF</b>, <b>MAUI</b>, <b>Blazor</b></BitTypography>
+                        <br />
                     </div>
-                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Pro", "€300")))>Buy</BitButton>
-                </div>
-
-                <div class="plan-card">
-                    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Ultimate</BitTypography>
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
-                        €1200<BitTypography Variant="BitTypographyVariant.H6" Class="grey-txt"> /month /developer</BitTypography>
-                    </BitTypography>
-                    <div class="plan-card-desc">
-                        <BitTypography Variant="BitTypographyVariant.Body2">All from Pro package</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">Priority support with core dev team</BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body2">24 hours response time</BitTypography>
-                    </div>
-                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Ultimate", "€1200")))>Buy</BitButton>
-                </div>
-
-                <div class="plan-card">
-                    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Custom</BitTypography>
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
-                        ?<BitTypography Variant="BitTypographyVariant.H6" Class="grey-txt"> /month /developer</BitTypography>
-                    </BitTypography>
-                    <div class="plan-card-desc">
-                        <BitTypography Variant="BitTypographyVariant.H6">needs contact</BitTypography>
-                    </div>
-                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Custom", "?")))>Buy</BitButton>
+                    <BitButton OnClick=@(WrapHandled(() => ShowBuyModal("Paid", "€1200")))>Buy</BitButton>
                 </div>
             </div>
         </div>
     </section>
 
     <BitModal IsOpen=@_isBuyModalOpen ClassStyles="@(new() { Container = new() { Class = "modal-container" } })">
-        <EditForm Model="_buyPackageModel" OnValidSubmit="SendMessage" class="form">
-            <DataAnnotationsValidator />
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@_selectedPackageTitle</span> Package</BitTypography>
-            <BitTypography Variant="BitTypographyVariant.H4" Gutter>
-                @_selectedPackagePrice<BitTypography Variant="BitTypographyVariant.H6" Class="grey-txt"> /month /developer</BitTypography>
-            </BitTypography>
-            <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" />
-            <BitTextField @bind-Value="@_buyPackageModel.Email"
-                          Label="Email"
-                          IsRequired="true"
-                          Class="modal-text-field"
-                          Placeholder="Enter your email address" />
-            <ValidationMessage For="() => _buyPackageModel.Email" />
+        <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" />
+        @if (_isSent)
+        {
+            <div class="modal-message-container">
+                <BitTypography Variant="BitTypographyVariant.H3" Gutter>Thanks</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Your request has been sent</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1">We will contact you soon</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1"><b>@_buyPackageModel.Email</b></BitTypography>
+             </div>
+        }
+        else
+        {
 
-            <BitTextField @bind-Value="@_buyPackageModel.Message"
-                          Label="Message"
-                          IsMultiline="true"
-                          Class="modal-text-field"
-                          Placeholder="Enter your message" />
-            <ValidationMessage For="() => _buyPackageModel.Message" />
-            
-            <BitLoadingButton ButtonType="BitButtonType.Submit" IsLoading="_isSending">Send</BitLoadingButton>
-        </EditForm>
+            <EditForm Model="_buyPackageModel" OnValidSubmit="SendMessage" class="form">
+                <DataAnnotationsValidator />
+                <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@_selectedPackageTitle</span> Package</BitTypography>
+             <BitTypography Variant="BitTypographyVariant.H4" Gutter>@_selectedPackagePrice</BitTypography>
+             <BitTextField @bind-Value="@_buyPackageModel.Email"
+                           Label="Email"
+                           IsRequired="true"
+                           Class="modal-text-field"
+                           Placeholder="Enter your email address" />
+             <ValidationMessage For="() => _buyPackageModel.Email" />
+
+             <BitTextField @bind-Value="@_buyPackageModel.Message"
+                           Label="Message"
+                           IsMultiline="true"
+                           Class="modal-text-field"
+                           Placeholder="Enter your message" />
+             <ValidationMessage For="() => _buyPackageModel.Message" />
+
+             <BitLoadingButton ButtonType="BitButtonType.Submit" IsLoading="_isSending">Send</BitLoadingButton>
+         </EditForm>
+        }
     </BitModal>
 </div>
