@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
@@ -13,6 +13,10 @@
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <!--/+:msbuild-conditional:noEmit -->
+        <ResolveStaticWebAssetsInputsDependsOn>
+            InstallElectronDotNet;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -68,7 +72,7 @@
       <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
-    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+    <Target Name="InstallElectronDotNet" AfterTargets="CoreCompile">
         <Exec Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
