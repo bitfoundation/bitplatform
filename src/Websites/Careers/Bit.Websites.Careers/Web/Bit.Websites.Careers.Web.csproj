@@ -7,6 +7,10 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileScssFiles;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,18 +42,10 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="DartSassBuilder" Version="1.0.0" Watch="false">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
         <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
         <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.5">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -68,5 +64,23 @@
     <ItemGroup>
         <ProjectReference Include="..\Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
+
+    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+        <Exec Command="npx sass --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
+        </Exec>
+        <Exec Command="npx tsc --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
+        </Exec>
+        <Exec Command="npx esbuild --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
+        <Exec Command="npx sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx tsc" />
+        <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" />
+    </Target>
 
 </Project>

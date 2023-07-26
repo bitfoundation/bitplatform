@@ -4,6 +4,10 @@
 
     <PropertyGroup>
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            CompileStaticFiles;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,14 +17,6 @@
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.5">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
@@ -29,9 +25,19 @@
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        
-        <Content Remove="bundleconfig.json" />
-        <None Include="bundleconfig.json" />
     </ItemGroup>
+
+    <Target Name="CompileStaticFiles" AfterTargets="CoreCompile">
+        <Exec Command="npx tsc --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
+        </Exec>
+        <Exec Command="npx esbuild --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
+        <Exec Command="npx tsc" />
+        <Exec Command="npx esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" />
+    </Target>
 
 </Project>

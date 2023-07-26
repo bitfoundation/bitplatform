@@ -6,8 +6,8 @@
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net7.0'">
+            CompileStaticFiles;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -20,7 +20,7 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+    <Target Name="CompileStaticFiles" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>

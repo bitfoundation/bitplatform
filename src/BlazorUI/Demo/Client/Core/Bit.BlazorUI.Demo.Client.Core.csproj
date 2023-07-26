@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+            CompileStaticFiles;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -32,10 +32,6 @@
         </PackageReference>
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.5">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
 
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
@@ -76,13 +72,23 @@
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
-    
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+
+    <Target Name="CompileStaticFiles" AfterTargets="CoreCompile">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
+        <Exec Command="npx tsc --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
+        </Exec>
+        <Exec Command="npx esbuild --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
+        </Exec>
         <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx tsc" />
+        <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" />
     </Target>
 
 </Project>
