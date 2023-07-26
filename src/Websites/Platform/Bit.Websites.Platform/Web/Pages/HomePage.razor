@@ -10,43 +10,28 @@
         <div class="page-section-content">
             <div class="hero-section-content">
                 <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">bit platform</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H5" Gutter Style="font-weight: 300">
+                 <BitTypography Variant="BitTypographyVariant.H5" Gutter Style="font-weight: 300">
                      Create everything for everywhere using what you already know and love
-                </BitTypography>
-                @* <BitTypography Variant="BitTypographyVariant.Subtitle1">
-                    Using what you already know with feature-rich project templates and high-performance components.
+                 </BitTypography>
+                 @* <BitTypography Variant="BitTypographyVariant.Subtitle1">
+                Using what you already know with feature-rich project templates and high-performance components.
                 </BitTypography> *@
-            </div>
-            <div class="hero-section-banner-container">
-                <div class="hero-section-banner">
-                    <img src="/images/home/banner.webp" />
-                </div>
-            </div>
-        </div>
-    </section>
+             </div>
+             <div class="hero-section-banner-container">
+                 <div class="hero-section-banner">
+                     <img src="/images/home/banner.webp" />
+                 </div>
+             </div>
+         </div>
+     </section>
 
-    <section class="page-section intro-section">
-        <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>What is bit platform?</BitTypography>
+     <section class="page-section intro-section">
+         <div class="page-section-content">
+             <BitTypography Variant="BitTypographyVariant.H3" Gutter>What is bit platform?</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1">
-                bit is a platform for <b>.NET</b> developers to easily <b>Code, Build & Deploy</b> their projects across <span class="blue-txt">multiple platforms</span>.<br />
+                bit platform is a set of tools for <b>.NET</b> developers to easily <b>Code, Build & Deploy</b> their projects across <span class="blue-txt"><b>multiple platforms</b></span>.<br />
                 Our mission is to make development easier.
             </BitTypography>
-        </div>
-    </section>
-
-    <section class="page-section tech-section">
-        <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Tech we use</BitTypography>
-            <div class="tech-list">
-                @* <a target="_blank" title=".NET" class="tech-item dotnet-item" href="https://dotnet.microsoft.com/en-us/"></a> *@
-                <a target="_blank" title="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
-                <a target="_blank" title="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
-                <a target="_blank" title="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
-                <a target="_blank" title="git" class="tech-item git-item" href="https://git-scm.com/"></a>
-                <a target="_blank" title="GitHub" class="tech-item github-item" href="https://github.com"></a>
-                <a target="_blank" title="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
-            </div>
         </div>
     </section>
 
@@ -85,41 +70,75 @@
         <div class="page-section-content">
             <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project templates</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                Coding templates based on .Net MAUI/Blazor that enable high-quality, speedy cross-platform development for Web, Android, iOS, macOS, Windows and Linux with pixel-perfect, ready-to-use UIs.
+                .NET project templates that enable high-quality, speedy cross-platform development for Web, Android, iOS, macOS, Windows and Linux.
             </BitTypography>
+            <div class="template-terminal">
+                <BitIcon IconName="@BitIconName.ChevronRightSmall" /> <span>dotnet</span> <span>new</span>
+                <span class="animation-container"><span class="animated a-1">bit-todo&nbsp;</span> <span class="animated a-1 delayed d-1">bit-admin</span></span>
+                <span>--database</span>
+                <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
+                <span>--pipeline</span>
+                <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
+                <span>--name</span> <span>MyAwesomeProject</span>
+            </div>
             <div class="template-card-list">
                 <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>TodoTemplate</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                        <BitLink Href="@Urls.AdminPanel">TodoTemplate</BitLink>
+                    </BitTypography>
+                    <br />
                     <div class="template-img-container">
                         <a href="@Urls.TodoTemplate">
                             <img class="template-img" src="/images/home/todotemplate.webp" alt="TodoTemplate" />
                         </a>
                     </div>
                     <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        The TodoTemplate is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side.<br />
-                        It allows you to build Android, iOS, macOS, Windows, Linux, and Web applications from a single codebase.
+                        The TodoTemplate is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side.
                     </BitTypography>
+                    <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.TodoTemplate">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Live</BitButton>
                     </div>
                 </div>
                 <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>AdminPanel</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                        <BitLink Href="@Urls.AdminPanel">AdminPanel</BitLink>
+                    </BitTypography>
+                    <br />
                     <div class="template-img-container">
                         <a href="@Urls.AdminPanel">
                             <img class="template-img" src="/images/home/adminpanel.webp" alt="AdminPanel" />
                         </a>
                     </div>
                     <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        The AdminPanel is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side.<br />
-                        It allows you to build Android, iOS, macOS, Windows, Linux and Web applications from a single codebase
+                        The AdminPanel is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side.
                     </BitTypography>
+                    <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.AdminPanel">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Live</BitButton>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section tech-section">
+        <div class="page-section-content">
+            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Tech we use</BitTypography>
+            <div class="tech-list">
+                @* <a target="_blank" title=".NET" class="tech-item dotnet-item" href="https://dotnet.microsoft.com/en-us/"></a> *@
+                <a target="_blank" title="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
+                <a target="_blank" title="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
+                <a target="_blank" title="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
+                <a target="_blank" title="git" class="tech-item git-item" href="https://git-scm.com/"></a>
+                <a target="_blank" title="GitHub" class="tech-item github-item" href="https://github.com">
+                    <svg height="70" width="70" viewBox="0 0 16 16">
+                        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+                    </svg>
+                </a>
+                <a target="_blank" title="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
             </div>
         </div>
     </section>

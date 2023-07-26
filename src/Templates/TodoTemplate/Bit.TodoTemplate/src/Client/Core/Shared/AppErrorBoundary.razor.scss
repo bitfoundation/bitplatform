@@ -1,16 +1,17 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
     width: 100%;
+    display: flex;
+    padding: rem(8px);
+    text-align: center;
     max-width: rem(800px);
     max-height: rem(600px);
-    background-color: $White;
+    flex-direction: column;
     border-radius: rem(4px);
-    padding: rem(8px);
+    background-color: $bit-color-background-primary;
 }
 
 .header {
@@ -18,14 +19,13 @@
 }
 
 .title {
-    color: $Red;
+    color: $bit-color-state-error;
 }
 
 .exception {
-    color: $Black;
-    white-space: pre;
     overflow: auto;
     text-align: left;
+    white-space: pre;
     margin: rem(24px);
 }
 

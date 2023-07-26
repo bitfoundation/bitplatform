@@ -1,6 +1,7 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
     display: flex;
@@ -13,7 +14,6 @@
     font-weight: 600;
     font-size: rem(120px);
     line-height: rem(168px);
-    color: $White;
 
     @include lt-xl {
         font-size: rem(100px);
@@ -24,7 +24,6 @@
     font-weight: 400;
     font-size: rem(18px);
     line-height: rem(28px);
-    color: $White;
 
     @include lt-xl {
         font-size: rem(16px);

@@ -1,1 +1,1 @@
-﻿### Bit BlazorUI Assets
+﻿### bit BlazorUI Assets

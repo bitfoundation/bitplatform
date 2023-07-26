@@ -22,10 +22,9 @@
 }
 
 .form-forgot-password {
-    margin-bottom: rem(20px);
     font-size: rem(14px);
     line-height: rem(24px);
-    color: $PrimaryColor;
+    margin-bottom: rem(20px);
 
     @include lt-xl {
         margin-bottom: rem(16px);
