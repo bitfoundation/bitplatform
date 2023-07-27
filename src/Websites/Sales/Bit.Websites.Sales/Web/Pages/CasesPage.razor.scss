@@ -40,10 +40,10 @@
 }
 
 .sec-title-underline {
-    background-color: $Y1;
-    width: rem(240px);
     height: rem(4px);
+    width: rem(300px);
     margin-bottom: 2rem;
+    background-color: $Y1;
 
     @include lg {
         width: rem(200px);
