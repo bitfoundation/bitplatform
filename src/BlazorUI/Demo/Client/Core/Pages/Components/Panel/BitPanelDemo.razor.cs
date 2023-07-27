@@ -46,6 +46,13 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "HeaderText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Header text of Panel.",
+        },
+        new()
+        {
             Name = "IsBlocking",
             Type = "bool",
             DefaultValue = "false",
@@ -82,7 +89,7 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "PanelSize",
+            Name = "Size",
             Type = "double",
             DefaultValue = "320",
             Description = "Provides Height or Width for the Panel.",
@@ -103,13 +110,6 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "ShowHeader",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the header of the Panel.",
-        },
-        new()
-        {
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
@@ -122,13 +122,6 @@ public partial class BitPanelDemo
             DefaultValue = "null",
             Description = "ARIA id for the title of the Panel, if any.",
         },
-        new()
-        {
-            Name = "Title",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Title in the header of Panel.",
-        }
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -165,9 +158,9 @@ public partial class BitPanelDemo
                },
                new()
                {
-                   Name = "Content",
+                   Name = "Body",
                    Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel content.",
+                   Description = "Custom CSS classes/styles for the panel body.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },
@@ -223,63 +216,37 @@ public partial class BitPanelDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitButton OnClick=@(() => IsOpen = true)>Open Panel</BitButton>
-<BitPanel Title=""Sample panel"" @bind-IsOpen=""IsOpen"">
+<BitButton OnClick=@(() => IsBasicPanelOpen = true)>Open Panel</BitButton>
+
+<BitPanel @bind-IsOpen=""IsBasicPanelOpen"">
     Content goes here.
 </BitPanel>";
     private readonly string example1CSharpCode = @"
-private bool IsOpen = false;";
+private bool IsBasicPanelOpen = false;";
 
     private readonly string example2HTMLCode = @"
-<BitButton OnClick=@(() => IsOpen1 = true)>Open Panel (IsBlocking = true)</BitButton>
-<BitButton OnClick=@(() => IsOpen2 = true)>Open Panel (IsModeless = true)</BitButton>
-<BitButton OnClick=@(() => IsOpen3 = true)>Open Panel (AutoToggleScroll = false)</BitButton>
+<BitLabel>Panel with header text</BitLabel>
+<BitButton OnClick=@(() => IsPanelWithHeaderTextOpen = true)>Open Panel</BitButton>
 
-<BitPanel Title=""IsBlocking = true"" @bind-IsOpen=""IsOpen1"" IsBlocking=""true"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
+<BitLabel>Panel with custom header content</BitLabel>
+<BitButton OnClick=@(() => IsPanelWithCustomHeaderOpen = true)>Open Panel</BitButton>
+
+<BitPanel HeaderText=""Simple header"" @bind-IsOpen=""IsPanelWithHeaderTextOpen"">
+    <ChildContent>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </ChildContent>
 </BitPanel>
-<BitPanel Title=""IsModeless = true"" @bind-IsOpen=""IsOpen2"" IsModeless=""true"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-</BitPanel>
-<BitPanel Title=""AutoToggleScroll = false"" @bind-IsOpen=""IsOpen3"" AutoToggleScroll=""false"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-</BitPanel>";
-    private readonly string example2CSharpCode = @"
-private bool IsOpen1 = false;
-private bool IsOpen2 = false;
-private bool IsOpen3 = false;";
 
-    private readonly string example3HTMLCode = @"
-<BitButton OnClick=@(() => IsOpen4 = true)>Open Panel</BitButton>
-
-<BitPanel @bind-IsOpen=""IsOpen4"">
+<BitPanel @bind-IsOpen=""IsPanelWithCustomHeaderOpen"">
     <HeaderTemplate>
         <div>
             <BitSearchBox Placeholder=""Search here..."" />
@@ -301,38 +268,14 @@ private bool IsOpen3 = false;";
         </p>
     </ChildContent>
 </BitPanel>";
-    private readonly string example3CSharpCode = @"
-private bool IsOpen4 = false;";
+    private readonly string example2CSharpCode = @"
+private bool IsPanelWithHeaderTextOpen = false;
+private bool IsPanelWithCustomHeaderOpen = false;";
 
-    private readonly string example4HTMLCode = @"
-<BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
+    private readonly string example3HTMLCode = @"
+<BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
 
-<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Left)"">Left</BitButton>
-<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Right)"">Right</BitButton>
-<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Top)"">Top</BitButton>
-<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Bottom)"">Bottom</BitButton>
-
-<BitPanel @bind-PanelSize=""CustomPanelSize"" Title=""Panel types"" @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
-    <p>
-        BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    </p>
-    <BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
-</BitPanel>";
-    private readonly string example4CSharpCode = @"
-private bool IsOpenInPosition = false;
-private double CustomPanelSize = 320;
-private BitPanelPosition position;
-
-private void OpenPanelInPosition(BitPanelPosition positionValue)
-{
-    IsOpenInPosition = true;
-    position = positionValue;
-}";
-
-    private readonly string example5HTMLCode = @"
-<BitButton OnClick=@(() => IsOpen5 = true)>Open Panel</BitButton>
-
-<BitPanel Title=""BitPanel with custom footer content"" @bind-IsOpen=""IsOpen5"">
+<BitPanel Title=""BitPanel with custom footer content"" @bind-IsOpen=""IsPanelWithFooterOpen"">
     <ChildContent>
         <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -346,10 +289,83 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
         </p>
     </ChildContent>
     <FooterTemplate>
-        <BitButton OnClick=@(() => IsOpen5 = false)>Save</BitButton>
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=@(() => IsOpen5 = false)>Close</BitButton>
+        <BitButton OnClick=@(() => IsPanelWithFooterOpen = false)>Save</BitButton>
+        <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=@(() => IsPanelWithFooterOpen = false)>Close</BitButton>
     </FooterTemplate>
 </BitPanel>";
+    private readonly string example3CSharpCode = @"
+private bool IsPanelWithFooterOpen = false;";
+    
+    private readonly string example4HTMLCode = @"
+<BitLabel>Panel with IsBlocking = true</BitLabel>
+<BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
+
+<BitLabel>Panel with IsModeless = true</BitLabel>
+<BitButton OnClick=@(() => IsModelessPanelOpen = true)>Open Panel</BitButton>
+
+<BitLabel>Panel with AutoToggleScroll = false</BitLabel>
+<BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
+
+<BitLabel>Panel with ShowCloseButton = false</BitLabel>
+<BitButton OnClick=@(() => IsPanelWithoutCloseButtonOpen = true)>Open Panel</BitButton>
+
+<BitPanel HeaderText=""IsBlocking = true"" @bind-IsOpen=""IsBlockingPanelOpen"" IsBlocking=""true"">
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </p>
+</BitPanel>
+<BitPanel HeaderText=""IsModeless = true"" @bind-IsOpen=""IsModelessPanelOpen"" IsModeless=""true"">
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </p>
+</BitPanel>
+<BitPanel HeaderText=""AutoToggleScroll = false"" @bind-IsOpen=""IsAutoToggleScrollPanelOpen"" AutoToggleScroll=""false"">
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </p>
+</BitPanel>
+<BitPanel HeaderText=""ShowCloseButton = false"" @bind-IsOpen=""IsPanelWithoutCloseButtonOpen"" ShowCloseButton=""false"">
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </p>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=@(() => IsPanelWithoutCloseButtonOpen = false)>Close</BitButton>
+</BitPanel>";
+    private readonly string example4CSharpCode = @"
+private bool IsBlockingPanelOpen = false;
+private bool IsModelessPanelOpen = false;
+private bool IsAutoToggleScrollPanelOpen = false;
+private bool IsPanelWithoutCloseButtonOpen = false;";
+
+    private readonly string example5HTMLCode = @"
+<BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
+
+<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Left)"">Left</BitButton>
+<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Right)"">Right</BitButton>
+<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Top)"">Top</BitButton>
+<BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Bottom)"">Bottom</BitButton>
+
+<BitPanel @bind-Size=""CustomPanelSize"" Title=""Panel types"" @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
+    <p>
+        BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    </p>
+    <BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
+</BitPanel>";
     private readonly string example5CSharpCode = @"
-private bool IsOpen5 = false;";
+private bool IsOpenInPosition = false;
+private double CustomPanelSize = 320;
+private BitPanelPosition position;
+
+private void OpenPanelInPosition(BitPanelPosition positionValue)
+{
+    IsOpenInPosition = true;
+    position = positionValue;
+}";
 }
