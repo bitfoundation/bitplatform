@@ -89,8 +89,8 @@
         <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx -p typescript tsc" />
-        <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" />
+        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

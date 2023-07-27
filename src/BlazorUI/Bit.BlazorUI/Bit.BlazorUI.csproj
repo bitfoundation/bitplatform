@@ -61,8 +61,8 @@
         <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
         <Exec Command="npx sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx -p typescript tsc" />
-        <Exec Command="npx esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.min.js" />
+        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

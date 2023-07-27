@@ -37,10 +37,10 @@
         </Exec>
         <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
-        <Exec Command="npx -p typescript tsc" />
-        <Exec Command="npx esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.min.js" />
-        <Exec Command="npx esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.min.js" />
-        <Exec Command="npx esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.min.css" />
+        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.min.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
