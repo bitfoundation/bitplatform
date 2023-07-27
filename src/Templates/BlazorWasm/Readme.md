@@ -1,1 +1,1 @@
-# Bit BlazorWasm Template
+# bit BlazorWasm Template

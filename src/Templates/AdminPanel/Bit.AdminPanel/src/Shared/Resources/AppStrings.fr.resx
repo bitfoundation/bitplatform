@@ -238,10 +238,10 @@
     <value>Trier par</value>
   </data>
   <data name="StartupPageDescription" xml:space="preserve">
-    <value>Le panneau d'administration est un modèle de projet qui fournit des fonctionnalités communes telles que l'inscription et la connexion. Ce modèle est alimenté par les composants Bit BlazorUI.</value>
+    <value>Le panneau d'administration est un modèle de projet qui fournit des fonctionnalités communes telles que l'inscription et la connexion. Ce modèle est alimenté par les composants bit BlazorUI.</value>
   </data>
   <data name="StartupPageTitle" xml:space="preserve">
-    <value>Bit AdminPanel</value>
+    <value>bit AdminPanel</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
     <value>Catégories totales</value>

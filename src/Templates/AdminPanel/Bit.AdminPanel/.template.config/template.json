@@ -1,6 +1,6 @@
 {
     "$schema": "http://json.schemastore.org/template",
-    "author": "Bit Platform",
+    "author": "bit platform",
     "classifications": [
         "ASP.NET Core",
         "Blazor",
@@ -11,7 +11,7 @@
         "type": "solution"
     },
     "identity": "Bit.AdminPanel",
-    "name": "Bit AdminPanel",
+    "name": "bit AdminPanel",
     "shortName": "bit-admin",
     "sourceName": "AdminPanel",
     "preferNameDirectory": true,

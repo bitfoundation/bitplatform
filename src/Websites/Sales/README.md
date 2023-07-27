@@ -1,3 +1,3 @@
-# Bit Services Web Site
+# bit Services Web Site
 
 https://bitservices.company/
