@@ -56,6 +56,10 @@
 .example-container {
     padding: rem(24px);
 
+    @include lt-lg {
+        padding: rem(24px) 0;
+    }
+
     &::-webkit-scrollbar {
         width: rem(10px);
     }
