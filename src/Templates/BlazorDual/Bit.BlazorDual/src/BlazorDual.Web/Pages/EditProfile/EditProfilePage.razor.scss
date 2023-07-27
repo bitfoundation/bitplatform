@@ -1,22 +1,17 @@
 ﻿@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .page-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
     width: 100%;
     height: 100%;
-    padding: rem(56px) rem(16px);
-    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+    padding: rem(48px) rem(16px);
 
-    @include lg {
-        padding: rem(48px) rem(16px);
-    }
-
-    @include sm {
+    @include lt-lg {
         padding: rem(16px);
     }
 }
@@ -27,83 +22,51 @@
     position: relative;
     align-items: center;
     max-width: rem(608px);
-    box-sizing: border-box;
     border-radius: rem(4px);
     flex-flow: column nowrap;
     padding: rem(32px) rem(14px);
-    background-color: $Gray6;
+    background-color: $bit-color-background-primary;
 
     &.profile-panel {
+        box-shadow: $bit-box-shadow-callout;
     }
 
     &.danger-panel {
         border: 2px solid darkred;
     }
-
-    @include lg {
-        max-width: rem(524px);
-        padding: rem(32px) rem(14px);
-    }
-
-    @include md {
-        max-width: rem(572px);
-        padding: rem(40px) rem(14px);
-    }
-
-    @include sm {
-        max-width: 100%;
-        padding: rem(16px) rem(14px);
-    }
 }
 
 .loading-container {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
     height: 100%;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
 }
 
 .form-message-bar {
-    position: absolute;
     top: 0;
     left: 0;
+    position: absolute;
     border-radius: rem(4px) rem(4px) 0 0;
 }
 
 .page-title {
-    margin-bottom: rem(16px);
     font-weight: 600;
     font-size: rem(28px);
     line-height: rem(44px);
-    color: $SecondaryColor;
-
-    @include lg {
-        margin-bottom: rem(8px);
-        font-size: rem(24px);
-        line-height: rem(36px);
-    }
-
-    @include md {
-        font-size: rem(22px);
-    }
-
-    @include sm {
-        margin-bottom: rem(12px);
-        font-size: rem(18px);
-        line-height: rem(24px);
-    }
+    margin-bottom: rem(16px);
 }
 
 .form-profile-container {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
     width: 100%;
+    display: flex;
+    align-items: center;
     max-width: rem(340px);
+    flex-flow: row nowrap;
     margin-bottom: rem(17px);
+    justify-content: flex-start;
 
     @include lt-xl {
         max-width: rem(300px);
@@ -117,79 +80,21 @@
     @include sm {
         max-width: 100%;
         margin-bottom: rem(13px);
-    }
-}
-
-.form-profile-img {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: rem(56px);
-    height: rem(56px);
-    border-radius: 50%;
-    margin-right: rem(8px);
-    color: $Gray6;
-    background-color: $S2Color;
-
-    @include sm {
-        width: rem(40px);
-        height: rem(40px);
-        margin-right: rem(4px);
-    }
-}
-
-.profile-img {
-    width: rem(56px);
-    height: rem(56px);
-    border-radius: 50%;
-
-    @include sm {
-        width: rem(40px);
-        height: rem(40px);
-    }
-}
-
-.form-profile-email {
-    font-size: rem(14px);
-    line-height: rem(24px);
-    color: $Gray2;
-
-    @include lt-xl {
-        font-size: rem(12px);
-        line-height: rem(20px);
-    }
-
-    @include sm {
-        font-size: rem(10px);
-        line-height: rem(16px);
     }
 }
 
 .form-input-container {
-    display: flex;
-    flex-flow: column nowrap;
     width: 100%;
+    display: flex;
     max-width: rem(340px);
+    flex-flow: column nowrap;
     margin-bottom: rem(17px);
-
-    @include lt-xl {
-        max-width: rem(300px);
-        margin-bottom: rem(13px);
-    }
-
-    @include md {
-        margin-bottom: rem(21px);
-    }
-
-    @include sm {
-        max-width: 100%;
-    }
 }
 
 .form-input-error {
     font-size: rem(12px);
     line-height: rem(16px);
-    color: $Red;
+    color: $bit-color-state-error;
 }
 
 .form-choice-container {
@@ -226,10 +131,9 @@
 }
 
 ::deep .edit-profile-form {
+    width: 100%;
     display: flex;
+    align-items: center;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: center;
-    width: 100%;
 }
-

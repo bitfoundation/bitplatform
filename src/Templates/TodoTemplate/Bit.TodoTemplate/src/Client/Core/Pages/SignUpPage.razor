@@ -25,17 +25,17 @@
             <div class="form-description">
                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
             </div>
-
-            <div class="form-link">
+            <br />
+            <div class="form-description">
                 @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
             </div>
-
-            <div class="form-note">
+            <div class="form-description">
                 @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                <br />
                 <br />
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
-
+            <br />
             <BitLoadingButton IsLoading="_isLoading"
                               Class="form-submit-button"
                               ButtonStyle="BitButtonStyle.Primary"

@@ -7,16 +7,13 @@
     <section class="page-section hero-section">
         <h1 class="hero-section-title">@Localizer[nameof(AppStrings.HomeTitle)]</h1>
 
-        <div class="hero-section-desc">
-            @Localizer[nameof(AppStrings.HomeMessage)]
-        </div>
+        <div class="hero-section-desc">@Localizer[nameof(AppStrings.HomeMessage)]</div>
 
-        <BitButton Class="hero-section-cta"
-                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/BlazorDual/Bit.BlazorDual"
+        <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/BlazorDual/Bit.BlazorDual"
                    Target="_blank"
+                   ButtonStyle="BitButtonStyle.Standard"
                    Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
-                   AriaLabel="@Localizer[nameof(AppStrings.GitHubRepo)]"
-                   ButtonStyle="BitButtonStyle.Standard">
+                   AriaLabel="@Localizer[nameof(AppStrings.GitHubRepo)]">
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
     </section>

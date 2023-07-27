@@ -1,13 +1,11 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
 }
 
 .title {

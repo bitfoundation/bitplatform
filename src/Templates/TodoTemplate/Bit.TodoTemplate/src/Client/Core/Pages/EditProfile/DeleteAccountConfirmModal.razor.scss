@@ -1,12 +1,10 @@
-﻿@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 
 .modal-body {
     display: flex;
     position: relative;
     align-items: center;
-    box-sizing: border-box;
     justify-content: center;
     flex-flow: column nowrap;
     padding: rem(28px) rem(110px);

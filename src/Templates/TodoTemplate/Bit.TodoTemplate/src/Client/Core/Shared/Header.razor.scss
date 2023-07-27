@@ -1,5 +1,4 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -12,14 +11,13 @@
     align-items: center;
     flex-flow: row nowrap;
     min-height: rem(48px);
-    box-sizing: border-box;
     padding-left: rem(16px);
     padding-right: rem(16px);
     padding-bottom: rem(7px);
     justify-content: space-between;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
     padding-top: calc(rem(7px) + var(--bit-status-bar-height));
-    box-shadow: $bit-box-shadow-callout;
 }
 
 .bit-ios {
@@ -52,18 +50,20 @@
         display: none;
         margin-right: rem(12px);
 
-        span {
-            i {
-                color: $PrimaryColor;
-            }
-        }
-
         @include lt-lg {
             display: block;
         }
     }
 
     .header-item {
-        padding: rem(4px) rem(8px);
+        padding: rem(4px) rem(16px);
+
+        @include lt-lg {
+            padding: rem(4px) rem(8px);
+        }
+
+        @include lt-md {
+            padding: rem(4px) rem(4px);
+        }
     }
 }
