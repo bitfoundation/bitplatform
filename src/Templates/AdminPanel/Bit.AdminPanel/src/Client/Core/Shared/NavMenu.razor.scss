@@ -68,7 +68,7 @@
 
 .menu-top-row {
     width: 100%;
-    height: rem($HeaderHeight);
+    height: rem(calc($HeaderHeight + 1px));
     background-repeat: no-repeat;
     background-size: rem(30px) rem(20px);
     background-image: url('images/bit-logo.svg');

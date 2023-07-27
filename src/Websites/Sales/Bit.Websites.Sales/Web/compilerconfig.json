@@ -56,7 +56,15 @@
         "inputFile": "Shared/Footer.razor.scss"
     },
     {
+        "outputFile": "Shared/LoadingComponent.razor.css",
+        "inputFile": "Shared/LoadingComponent.razor.scss"
+    },
+    {
         "outputFile": "Components/ProcessAccordion.razor.css",
         "inputFile": "Components/ProcessAccordion.razor.scss"
+    },
+    {
+        "outputFile": "Components/PageNotFound.razor.css",
+        "inputFile": "Components/PageNotFound.razor.scss"
     }
 ]

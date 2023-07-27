@@ -54,6 +54,7 @@
     font-weight: 400;
     font-size: rem(10px);
     line-height: rem(12px);
+    color: $bit-color-primary-main;
 
     @include sm {
         display: none;

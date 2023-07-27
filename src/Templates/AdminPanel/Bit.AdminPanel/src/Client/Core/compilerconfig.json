@@ -80,12 +80,12 @@
         "inputFile": "Pages/Products/ProductsPage.razor.scss"
     },
     {
-        "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss",
-        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css"
+        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css",
+        "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss"
     },
     {
-        "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
-        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css"
+        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss"
     },
     {
         "outputFile": "Pages/EmailConfirmationPage.razor.css",
@@ -110,5 +110,9 @@
     {
         "outputFile": "Pages/TermsPage.razor.css",
         "inputFile": "Pages/TermsPage.razor.scss"
+    },
+    {
+        "outputFile": "wwwroot/styles/app.min.css",
+        "inputFile": "Styles/app.scss"
     }
 ]

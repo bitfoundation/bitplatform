@@ -136,6 +136,11 @@
         align-items: stretch;
         flex-flow: row nowrap;
         justify-content: space-between;
+
+        @include lt-lg {
+            flex-flow: column;
+            align-items: center;
+        }
     }
 
     .components-content-container {
@@ -236,16 +241,17 @@
         justify-content: center;
 
         @include lt-lg {
-            display: none;
+            width: 100%;
         }
 
         .image-link {
-            width: rem(480px);
-            height: rem(320px);
-            background-size: contain;
+            width: rem(500px);
+            height: rem(338px);
             background-repeat: no-repeat;
             background-position: center left;
             background-image: url('/images/home/balzorui-bg.webp');
+            border-radius: rem(6px);
+            box-shadow: $bit-box-shadow-callout;
         }
     }
 }
@@ -401,6 +407,7 @@
         width: 100%;
         position: absolute;
         border-radius: rem(6px);
+        box-shadow: $bit-box-shadow-callout;
     }
 
     .links-container {

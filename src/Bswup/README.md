@@ -1,4 +1,4 @@
-## Bit Blazor Service Worker Update Progress (Bit Bswup)
+## bit Blazor Service Worker Update Progress (bit Bswup)
 
 To use BitBswup, please follow these steps:
 

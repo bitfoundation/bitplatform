@@ -26,12 +26,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
 
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -93,12 +93,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -141,12 +141,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -199,12 +199,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json

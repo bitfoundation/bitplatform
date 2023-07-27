@@ -40,6 +40,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.ProductCategory)],
                 IconName = BitIconName.Product,
+                IsExpanded = true,
                 ChildItems = new List<BitNavItem>
                 {
                     new BitNavItem
