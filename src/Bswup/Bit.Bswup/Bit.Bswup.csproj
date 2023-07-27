@@ -6,7 +6,7 @@
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileStaticFiles;
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -28,7 +28,7 @@
         </Content>
     </ItemGroup>
 
-    <Target Name="CompileStaticFiles" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
         </Exec>

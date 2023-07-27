@@ -16,7 +16,7 @@
         <!--/+:msbuild-conditional:noEmit -->
 
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -93,7 +93,7 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
@@ -109,9 +109,6 @@
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-    </Target>
-
-    <Target Name="ValidateWebAppDeploymentTypeAndBlazorMode" BeforeTargets="Build">
         <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the BlazorDual.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
     </Target>
