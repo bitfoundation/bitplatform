@@ -24,6 +24,10 @@
         "outputFile": "Shared/NavMenu.razor.css"
     },
     {
+        "outputFile": "Shared/NotAuthorizedComponent.razor.css",
+        "inputFile": "Shared/NotAuthorizedComponent.razor.scss"
+    },
+    {
         "inputFile": "Shared/SignOutConfirmModal.razor.scss",
         "outputFile": "Shared/SignOutConfirmModal.razor.css"
     },
@@ -70,5 +74,9 @@
     {
         "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
         "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css"
+    },
+    {
+        "outputFile": "wwwroot/styles/app.min.css",
+        "inputFile": "Styles/app.scss"
     }
 ]
