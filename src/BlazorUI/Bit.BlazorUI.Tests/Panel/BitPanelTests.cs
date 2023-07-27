@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Panel;
@@ -135,6 +136,38 @@ public class BitPanelTests : BunitTestContext
         var elementContent = com.Find(".bit-pnl-bdy");
 
         elementContent.MarkupMatches("<div class=\"bit-pnl-bdy\"><div>Test Content</div></div>");
+    }
+
+    [TestMethod]
+    public void BitPanelFooterContentTest()
+    {
+        var footerContent = "<div>Test Footer Content</div>";
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.FooterTemplate, footerContent);
+        });
+
+        var elementContent = com.Find(".bit-pnl-fcn :first-child");
+
+        elementContent.MarkupMatches(footerContent);
+    }
+
+    [TestMethod]
+    public void BitPanelHeaderContentTest()
+    {
+        const string headerContent = "<div>Test Header Content</div>";
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderTemplate, headerContent);
+        });
+
+        var elementContent = com.Find(".bit-pnl-hcn :first-child");
+
+        elementContent.MarkupMatches(headerContent);
     }
 
     [TestMethod]
