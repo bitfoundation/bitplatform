@@ -35,7 +35,7 @@
         <Exec Command="npx esbuild --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
         </Exec>
-        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript -g"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
         <Exec Command="npx tsc" />
         <Exec Command="npx esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.min.js" />

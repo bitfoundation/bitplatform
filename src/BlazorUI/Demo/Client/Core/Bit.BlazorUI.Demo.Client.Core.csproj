@@ -84,7 +84,7 @@
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
         </Exec>
         <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
-        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript -g"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx tsc" />

@@ -58,7 +58,7 @@
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
         </Exec>
         <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
-        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install tsc"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript -g"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild"></Exec>
         <Exec Command="npx sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx tsc" />
