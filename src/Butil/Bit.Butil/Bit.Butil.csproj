@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <Target Name="CompileStaticFiles" AfterTargets="CoreCompile">
-        <Exec Command="npx tsc --version" ContinueOnError="true">
+        <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
         </Exec>
         <Exec Command="npx esbuild --version" ContinueOnError="true">
@@ -36,7 +36,7 @@
         </Exec>
         <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
         <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
-        <Exec Command="npx tsc" />
+        <Exec Command="npx -p typescript tsc" />
         <Exec Command="npx esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" />
     </Target>
 
