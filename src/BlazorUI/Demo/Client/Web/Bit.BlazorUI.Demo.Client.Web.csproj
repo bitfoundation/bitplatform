@@ -13,7 +13,7 @@
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <ResolveStaticWebAssetsInputsDependsOn>
-            InstallElectronDotNet;
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -71,7 +71,7 @@
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
-    <Target Name="InstallElectronDotNet" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
