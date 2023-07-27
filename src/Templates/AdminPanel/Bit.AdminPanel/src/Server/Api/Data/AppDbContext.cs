@@ -52,8 +52,11 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
     //#if (database == "Sqlite")
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
-        configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        {
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        }
     }
     //#endif
 

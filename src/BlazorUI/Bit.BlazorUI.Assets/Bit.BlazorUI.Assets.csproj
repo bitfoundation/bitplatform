@@ -6,8 +6,8 @@
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net7.0'">
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -20,11 +20,11 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
-        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass --no-save"></Exec>
         <Exec Command="npx sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 

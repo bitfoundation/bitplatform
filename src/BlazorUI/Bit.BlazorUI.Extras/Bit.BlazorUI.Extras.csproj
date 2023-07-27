@@ -8,8 +8,8 @@
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net7.0'">
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -19,14 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.5">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
@@ -35,9 +27,6 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Remove="bundleconfig.json" />
-        <None Include="bundleconfig.json" />
-
         <Watch Remove="*.scss" />
     </ItemGroup>
 
@@ -61,12 +50,22 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
-        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
+        </Exec>
+        <Exec Command="npx esbuild --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass --no-save"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
+        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
         <Exec Command="npx sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

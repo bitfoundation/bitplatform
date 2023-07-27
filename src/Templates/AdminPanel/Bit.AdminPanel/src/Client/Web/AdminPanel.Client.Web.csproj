@@ -13,11 +13,15 @@
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <!--/+:msbuild-conditional:noEmit -->
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
-        <Watch Include="..\Shared\**\*.razor" />
-        <Watch Include="..\Shared\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+        <Watch Include="..\Core\**\*.razor" />
+        <Watch Include="..\Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
     </ItemGroup>
 
     <ItemGroup>
@@ -74,14 +78,11 @@
       <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
-    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
         <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
-    </Target>
-
-    <Target Name="ValidateWebAppDeploymentTypeAndBlazorMode" BeforeTargets="Build">
         <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the AdminPanel.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
     </Target>

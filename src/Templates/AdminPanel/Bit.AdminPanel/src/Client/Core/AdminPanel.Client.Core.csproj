@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -35,10 +35,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.5">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
 
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
@@ -85,12 +81,22 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="npx sass --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
         </Exec>
-        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
+        <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
+        </Exec>
+        <Exec Command="npx esbuild --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
+        </Exec>
+        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass --no-save"></Exec>
+        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
+        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
         <Exec Command="npx sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

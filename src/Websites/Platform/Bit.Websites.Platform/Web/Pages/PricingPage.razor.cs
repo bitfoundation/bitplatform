@@ -41,8 +41,7 @@ public partial class PricingPage
 
         try
         {
-            //await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
-
+            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
         }
         finally
         {
