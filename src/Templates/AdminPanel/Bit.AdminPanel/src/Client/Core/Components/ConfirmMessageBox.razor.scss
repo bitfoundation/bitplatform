@@ -1,16 +1,15 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
     display: flex;
     width: rem(560px);
     align-items: center;
-    box-sizing: border-box;
     flex-flow: column nowrap;
-    background-color: $White;
     justify-content: flex-start;
     padding: rem(16px) rem(24px);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));
@@ -35,7 +34,6 @@
 }
 
 .title {
-    color: $Gray190;
     font-weight: 600;
     font-size: rem(20px);
     line-height: rem(28px);
@@ -43,7 +41,6 @@
 
 .body {
     width: 100%;
-    color: $Gray130;
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(20px);
@@ -53,7 +50,7 @@
 .btn-group {
     width: 100%;
     display: flex;
-    flex-flow: row nowrap;
     align-items: center;
+    flex-flow: row nowrap;
     justify-content: flex-end;
 }

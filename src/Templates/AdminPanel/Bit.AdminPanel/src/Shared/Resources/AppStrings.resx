@@ -130,7 +130,7 @@
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!</value>
   </data>
   <data name="HomeTitle" xml:space="preserve">
-    <value>Bit Admin Panel</value>
+    <value>bit Admin Panel</value>
   </data>
   <data name="AppTitle" xml:space="preserve">
     <value>Admin Panel</value>
@@ -238,10 +238,10 @@
     <value>Sort by</value>
   </data>
   <data name="StartupPageDescription" xml:space="preserve">
-    <value>Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components.</value>
+    <value>Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by bit BlazorUI components.</value>
   </data>
   <data name="StartupPageTitle" xml:space="preserve">
-    <value>Bit Admin Panel</value>
+    <value>bit Admin Panel</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
     <value>Total categories</value>

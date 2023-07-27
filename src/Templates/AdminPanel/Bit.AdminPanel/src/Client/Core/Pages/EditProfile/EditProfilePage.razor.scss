@@ -1,15 +1,14 @@
-﻿@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_colors.scss';
-@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .page-container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
 }
 
 .page-header {
@@ -23,11 +22,11 @@
 }
 
 .loading-contianer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .page-title {
@@ -35,7 +34,6 @@
     font-weight: 700;
     font-size: rem(24px);
     line-height: rem(32px);
-    color: $Gray190;
 
     @include md {
         font-weight: 600;
@@ -57,64 +55,25 @@
 }
 
 .form-message-bar {
-    position: absolute;
     top: 0;
     left: 0;
+    position: absolute;
     border-radius: rem(4px) rem(4px) 0 0;
 }
 
 .form-profile-container {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-items: center;
     width: 100%;
-    margin-bottom: rem(33px);
-}
-
-.form-profile-img {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: rem(48px);
-    height: rem(48px);
-    border-radius: 50%;
-    margin-right: rem(20px);
-    color: $Gray6;
-    background-color: $S2Color;
-
-    @include sm {
-        margin-right: rem(12px);
-    }
-}
-
-.profile-img {
-    width: rem(48px);
-    height: rem(48px);
-    border-radius: 50%;
-}
-
-.form-profile-email {
-    font-weight: 400;
-    font-size: rem(12px);
-    line-height: rem(16px);
-    color: $Gray110;
-
-    @include lt-xl {
-        font-size: rem(12px);
-        line-height: rem(20px);
-    }
-
-    @include sm {
-        font-size: rem(10px);
-        line-height: rem(16px);
-    }
+    flex-flow: row nowrap;
+    margin-bottom: rem(33px);
+    justify-content: flex-start;
 }
 
 .form-input-error {
     font-size: rem(12px);
     line-height: rem(16px);
-    color: $Red;
+    color: $bit-color-state-error;
 }
 
 .form-choice-container {
@@ -137,24 +96,10 @@
     }
 
     .back-btn {
-        color: #212121;
+        margin-right: rem(10px);
     }
 
     .validation-message {
-        color: $StatusErrorColor;
-    }
-
-    .edit-profile-dtp {
-        .bit-dtp-wrapper {
-            z-index: 5;
-        }
-
-        .bit-dtp-overlay {
-            z-index: 4;
-        }
-
-        .bit-dtp-callout {
-            z-index: 6;
-        }
+        color: $bit-color-state-error;
     }
 }

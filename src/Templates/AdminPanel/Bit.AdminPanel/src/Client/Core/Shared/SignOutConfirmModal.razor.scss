@@ -1,44 +1,42 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
     display: flex;
     width: rem(560px);
     align-items: center;
-    box-sizing: border-box;
     flex-flow: column nowrap;
-    background-color: $White;
     justify-content: flex-start;
     padding: rem(16px) rem(24px);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));
     }
 
     @include sm {
-        position: fixed;
-        bottom: 0;
         left: 0;
+        bottom: 0;
         width: 100%;
+        position: fixed;
         border-radius: rem(8px) rem(8px) 0 0;
     }
 }
 
 .header {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
     margin-bottom: rem(20px);
+    justify-content: space-between;
 }
 
 .title {
     font-weight: 600;
     font-size: rem(20px);
     line-height: rem(28px);
-    color: $Gray190;
 }
 
 .body {
@@ -46,12 +44,12 @@
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(20px);
-    color: $Gray130;
     margin-bottom: rem(16px);
 }
 
 .btn-group {
     width: 100%;
+    gap: rem(8px);
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-end;

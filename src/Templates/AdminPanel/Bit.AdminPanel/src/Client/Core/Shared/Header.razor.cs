@@ -21,8 +21,11 @@ public partial class Header : IDisposable
     private bool _isSignOutModalOpen;
     private string _currentUrl = string.Empty;
     private List<BitBreadcrumbItem> _currentBreadcrumbItems = default!;
-
     private Action _unsubscribe = default!;
+
+    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+
 
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
@@ -199,6 +202,11 @@ public partial class Header : IDisposable
     {
         ToggleHeaderDropdown();
         NavigationManager.NavigateTo("/edit-profile");
+    }
+
+    private async Task ToggleTheme()
+    {
+        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
     }
 
     public void Dispose()
