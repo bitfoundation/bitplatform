@@ -91,7 +91,7 @@ public partial class BitPanelDemo
         {
             Name = "Size",
             Type = "double",
-            DefaultValue = "320",
+            DefaultValue = "0",
             Description = "Provides Height or Width for the Panel.",
         },
         new()
@@ -232,18 +232,16 @@ private bool IsBasicPanelOpen = false;";
 <BitButton OnClick=@(() => IsPanelWithCustomHeaderOpen = true)>Open Panel</BitButton>
 
 <BitPanel HeaderText=""Simple header"" @bind-IsOpen=""IsPanelWithHeaderTextOpen"">
-    <ChildContent>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-            efficitur.
-        </p>
-    </ChildContent>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </p>
 </BitPanel>
 
 <BitPanel @bind-IsOpen=""IsPanelWithCustomHeaderOpen"">
@@ -273,6 +271,7 @@ private bool IsPanelWithHeaderTextOpen = false;
 private bool IsPanelWithCustomHeaderOpen = false;";
 
     private readonly string example3HTMLCode = @"
+<BitLabel>Panel with custom footer content</BitLabel>
 <BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
 
 <BitPanel Title=""BitPanel with custom footer content"" @bind-IsOpen=""IsPanelWithFooterOpen"">
@@ -307,7 +306,7 @@ private bool IsPanelWithFooterOpen = false;";
 <BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
 
 <BitLabel>Panel with ShowCloseButton = false</BitLabel>
-<BitButton OnClick=@(() => IsPanelWithoutCloseButtonOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => bitPanelRef.Open()"">Open Panel</BitButton>
 
 <BitPanel HeaderText=""IsBlocking = true"" @bind-IsOpen=""IsBlockingPanelOpen"" IsBlocking=""true"">
     <p>
@@ -330,19 +329,20 @@ private bool IsPanelWithFooterOpen = false;";
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
 </BitPanel>
-<BitPanel HeaderText=""ShowCloseButton = false"" @bind-IsOpen=""IsPanelWithoutCloseButtonOpen"" ShowCloseButton=""false"">
+<BitPanel @ref=""bitPanelRef"" HeaderText=""ShowCloseButton = false"" ShowCloseButton=""false"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=@(() => IsPanelWithoutCloseButtonOpen = false)>Close</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => bitPanelRef.Close()"">Close</BitButton>
 </BitPanel>";
     private readonly string example4CSharpCode = @"
 private bool IsBlockingPanelOpen = false;
 private bool IsModelessPanelOpen = false;
 private bool IsAutoToggleScrollPanelOpen = false;
-private bool IsPanelWithoutCloseButtonOpen = false;";
+
+private BitPanel bitPanelRef = default!;";
 
     private readonly string example5HTMLCode = @"
 <BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
