@@ -87,7 +87,7 @@ public partial class BitPanel
     /// Provides Height or Width for the Panel.
     /// </summary>
     [Parameter]
-    public double Size { get; set; } = 320;
+    public double Size { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Panel disables its scroll if applicable.
@@ -114,6 +114,12 @@ public partial class BitPanel
     public void Open()
     {
         IsOpen = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        IsOpen = false;
         StateHasChanged();
     }
 
@@ -185,5 +191,10 @@ public partial class BitPanel
         _ => $"{RootElementClass}-right"
     };
 
-    private string GetPanelSizeStyle() => $"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px";
+    private string GetPanelSizeStyle()
+    {
+        if (Size == 0) return string.Empty;
+
+        return $"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px";
+    }
 }
