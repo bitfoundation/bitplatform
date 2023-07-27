@@ -1,25 +1,27 @@
 ﻿@import "../../Styles/abstracts/_functions.scss";
 @import "../../Styles/abstracts/_media-queries.scss";
-@import "../../Styles/abstracts/_colors.scss";
+@import "../../Styles/abstracts/_bit-css-variables.scss";
 
 .card {
     width: 100%;
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
     min-height: rem(376px);
-    background-color: $White;
-    border: rem(1px) solid $ThemeLightColor;
+    align-items: flex-start;
     border-radius: rem(2px);
+    flex-flow: column nowrap;
+    margin-bottom: rem(24px);
+    justify-content: flex-start;
     padding: rem(24px) rem(16px) rem(58px);
-    box-sizing: border-box;
+    background-color: $bit-color-background-secondary;
+    border: rem(1px) solid $bit-color-border-secondary;
 
     @include md {
         padding: rem(24px) rem(16px) rem(36px);
     }
 
     @include sm {
+        width: 100%;
+        margin-bottom: rem(16px);
         padding: rem(24px) rem(8px) rem(32px);
     }
 }
@@ -31,7 +33,7 @@
     flex-flow: column nowrap;
     padding-bottom: rem(16px);
     justify-content: flex-start;
-    border-bottom: rem(1px) solid $ThemeLightColor;
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     @include md {
         padding-bottom: rem(12px);
@@ -42,7 +44,6 @@
     font-weight: 600;
     font-size: rem(18px);
     line-height: rem(24px);
-    color: $Blue1;
     margin-bottom: rem(4px);
 
     @include md {
@@ -60,7 +61,6 @@
     font-weight: 400;
     font-size: rem(14px);
     line-height: rem(20px);
-    color: $Blue2;
 
     @include md {
         font-size: rem(12px);
@@ -74,12 +74,11 @@
 }
 
 .card-body {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
     width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
     padding: rem(32px) rem(16px) 0;
-    box-sizing: border-box;
 
     @include md {
         padding: rem(32px) rem(8px) 0;

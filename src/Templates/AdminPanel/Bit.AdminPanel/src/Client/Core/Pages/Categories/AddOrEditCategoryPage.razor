@@ -62,10 +62,12 @@
                             style="background-color: @color"
                             type="button" />
                 }
-                <button class="custom-color-btn" @onclick=@ToggleColorPicker type="button">
-                    <div class="btn-color" style="background-color: @_category.Color"></div>
-                    @Localizer[(nameof(AppStrings.CustomColor))]
-                </button>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
+                    <div class="custom-color-container">
+                        <div class="color-square" style="background-color: @_category.Color"></div>
+                        @Localizer[(nameof(AppStrings.CustomColor))]
+                    </div>
+                </BitButton>
             </div>
             @if (_isColorPickerOpen)
             {

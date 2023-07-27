@@ -13,13 +13,7 @@
                 Class="bit-nav-menu"
                 AriaLabel="NavMenu"
                 DefaultSelectedItem="_navItems[0]"
-                OnItemClick="(BitNavItem item) => HandleOnItemClick(item)"
-                ClassStyles="@(new() { ToggleButton = new() { Class="toggle-button" },
-                                       ItemContainer = new() { Class="item-container" },
-                                       Item = new() { Class="item" },
-                                       SelectedItemContainer = new() { Class="selected-item-container" },
-                                       SelectedItem = new() { Class="selected-item" } })">
-        </BitNav>
+                OnItemClick="(BitNavItem item) => HandleOnItemClick(item)" 
+                ClassStyles="@(new() { SelectedItemContainer = new() { Class = "selected-item-cnt" } })"/>
     </div>
-    <a class=" menu-banner" href="https://todo.bitplatform.dev" target="_blank"></a>
 </section>

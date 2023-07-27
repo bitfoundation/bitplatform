@@ -6,7 +6,7 @@
         <div class="footer-txt-group">
             @if (SelectedCulture is not null)
             {
-                <BitDropdown Items="GetCultures()" Class="culture-drp" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
+                <BitDropdown Items="GetCultures()" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
             }
         </div>
         <div class="footer-social-lnk-grp">

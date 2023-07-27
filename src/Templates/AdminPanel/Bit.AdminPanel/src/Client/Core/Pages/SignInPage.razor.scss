@@ -1,27 +1,25 @@
 ﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_colors.scss';
 
 .page-container {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: center;
-    align-items: flex-start;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    justify-content: center;
 
     @include md {
+        align-items: center;
         flex-flow: column nowrap;
         justify-content: flex-start;
-        align-items: center;
     }
 }
 
 .page-section {
-    position: relative;
     width: 50%;
     height: 100%;
-    box-sizing: border-box;
+    position: relative;
 
     @include lt-lg {
         width: 100%;
@@ -30,17 +28,16 @@
 
     &:first-child {
         display: flex;
-        flex-flow: column nowrap;
         justify-content: center;
         align-items: flex-start;
+        flex-flow: column nowrap;
         padding: rem(135px) rem(76px) rem(40px);
-        background-color: $Blue1;
 
         @include md {
-            flex-flow: row-reverse nowrap;
-            justify-content: space-between;
             align-items: flex-end;
             padding: rem(25px) rem(32px);
+            flex-flow: row-reverse nowrap;
+            justify-content: space-between;
         }
 
         @include sm {
@@ -54,9 +51,8 @@
 
     &:last-child {
         display: flex;
-        justify-content: center;
         align-items: center;
-        background-color: $BackgroundColor;
+        justify-content: center;
 
         @include lt-lg {
             height: 100%;
@@ -68,49 +64,15 @@
     }
 }
 
-.bit-logo--white {
-    position: absolute;
-    top: rem(40px);
-    left: rem(76px);
-    width: rem(40px);
-    height: rem(26px);
-    background-image: url('images/bit-white-logo.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-
-    @include md {
-        top: rem(32px);
-        left: rem(32px);
-    }
-}
-
-.bit-logo--blue {
-    display: none;
-    position: absolute;
-    top: rem(24px);
-    left: rem(16px);
-    width: rem(30px);
-    height: rem(20px);
-    background-image: url('images/bit-logo.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-
-    @include sm {
-        display: block;
-    }
-}
-
 .bg-img {
-    flex-shrink: 0;
     width: 100%;
+    flex-shrink: 0;
     height: rem(348px);
-    background-image: url('images/sign-in-up-bg.webp');
+    margin-bottom: rem(48px);
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: contain;
-    margin-bottom: rem(48px);
+    background-image: url('images/sign-in-up-bg.webp');
 
     @include md {
         width: rem(287px);
@@ -122,19 +84,18 @@
 
 .section-content {
     width: 100%;
-    max-width: rem(357px);
     display: flex;
+    max-width: rem(357px);
+    align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: flex-start;
 
     .section-title {
         margin: 0;
-        margin-bottom: rem(12px);
         font-weight: 600;
         font-size: rem(28px);
         line-height: rem(36px);
-        color: $White;
+        margin-bottom: rem(12px);
 
         @include md {
             font-size: rem(20px);
@@ -146,7 +107,6 @@
         font-weight: 400;
         font-size: rem(16px);
         line-height: rem(24px);
-        color: $BackgroundColor;
 
         @include md {
             font-size: rem(14px);
@@ -160,21 +120,20 @@
 }
 
 ::deep .form {
+    width: 100%;
     display: flex;
+    align-items: center;
+    max-width: rem(384px);
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    max-width: rem(384px);
 }
 
 .form-title {
     margin: 0;
-    margin-bottom: rem(60px);
     font-weight: 600;
     font-size: rem(42px);
     line-height: rem(52px);
-    color: $Gray190;
+    margin-bottom: rem(60px);
 
     @include md {
         font-size: rem(32px);
@@ -193,16 +152,16 @@
 }
 
 .sign-up-row {
-    margin-top: rem(24px);
     font-weight: 400;
     font-size: rem(14px);
+    margin-top: rem(24px);
     line-height: rem(20px);
 }
 
 .form-forgot-password {
-    margin-top: rem(24px);
     font-weight: 400;
     font-size: rem(14px);
+    margin-top: rem(24px);
     line-height: rem(20px);
 }
 
