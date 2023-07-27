@@ -9,6 +9,7 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     padding: rem(16px) rem(24px);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));

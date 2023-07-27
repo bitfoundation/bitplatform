@@ -61,10 +61,10 @@
     }
 
     @include md {
-        padding-bottom: rem(32px);
         padding: 0 rem($MediumScreenPadding);
         max-width: rem($MediumScreenMaxWidth);
         padding-top: calc(rem(32px) + var(--bit-status-bar-height));
+        padding-bottom: rem(32px);
 
         .bit-ios & {
             padding-top: calc(rem(32px) + env(safe-area-inset-top));
@@ -72,10 +72,10 @@
     }
 
     @include sm {
-        padding-bottom: rem(16px);
         padding: 0 rem($SmallScreenPadding);
         max-width: rem($SmallScreenMaxWidth);
         padding-top: calc(rem(16px) + var(--bit-status-bar-height));
+        padding-bottom: rem(16px);
 
         .bit-ios & {
             padding-top: calc(rem(16px) + env(safe-area-inset-top));

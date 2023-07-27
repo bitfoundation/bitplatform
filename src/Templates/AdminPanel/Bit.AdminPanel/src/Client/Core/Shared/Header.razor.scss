@@ -32,6 +32,7 @@
     margin-right: auto;
     align-items: center;
     flex-flow: row nowrap;
+    min-height: rem($HeaderHeight);
     justify-content: space-between;
     padding: 0 rem($LargeScreenPadding);
     max-width: rem($LargeScreenMaxWidth);

@@ -11,6 +11,7 @@
     border-radius: rem(2px);
     justify-content: flex-start;
     padding: rem(16px) rem(24px);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding: rem(16px) rem(24px) calc(rem(16px) + env(safe-area-inset-bottom));
