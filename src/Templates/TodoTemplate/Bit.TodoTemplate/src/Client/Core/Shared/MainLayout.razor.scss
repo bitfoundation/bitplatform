@@ -1,17 +1,14 @@
 ﻿@import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_fonts.scss';
-@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
     width: 100%;
-    min-height: 100vh;
     display: flex;
+    min-height: 100vh;
     flex-flow: column;
     position: relative;
-    box-sizing: border-box;
     background-color: $bit-color-background-secondary;
     padding-top: calc(rem(48px) + var(--bit-status-bar-height));
 
@@ -47,7 +44,6 @@
         text-align: center;
         align-items: center;
         max-width: rem(608px);
-        box-sizing: border-box;
         border-radius: rem(4px);
         justify-content: center;
         flex-flow: column nowrap;
@@ -65,11 +61,6 @@
 
         @include sm {
             padding: rem(32px) rem(14px);
-        }
-
-        .bit-lbl-fluent,
-        .bit-txt-label {
-            text-align: left;
         }
     }
 

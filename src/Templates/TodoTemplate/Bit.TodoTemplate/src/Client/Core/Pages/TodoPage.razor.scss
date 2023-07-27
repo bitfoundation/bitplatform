@@ -1,5 +1,4 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -9,7 +8,6 @@
     display: flex;
     align-items: center;
     max-width: rem(900px);
-    box-sizing: border-box;
     justify-content: center;
     flex-flow: column nowrap;
     padding: rem(48px) rem(16px);
@@ -33,7 +31,6 @@
     display: flex;
     position: relative;
     max-width: rem(608px);
-    box-sizing: border-box;
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
@@ -110,7 +107,6 @@
     flex-flow: row nowrap;
     min-height: rem(80px);
     min-width: fit-content;
-    box-sizing: border-box;
     justify-content: space-between;
     border-bottom: rem(1px) solid $bit-color-border-secondary;
 

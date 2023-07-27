@@ -1,5 +1,4 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -23,7 +22,6 @@
     padding: rem(4px) 0;
     align-items: center;
     min-height: rem(54px);
-    box-sizing: border-box;
     justify-content: center;
     flex-flow: column nowrap;
 
@@ -62,7 +60,7 @@
 }
 
 .text--red {
-    color: $Red;
+    color: $bit-color-state-required;
 }
 
 ::deep {
