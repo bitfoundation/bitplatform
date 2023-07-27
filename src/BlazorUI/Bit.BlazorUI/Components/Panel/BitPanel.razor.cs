@@ -6,11 +6,9 @@ public partial class BitPanel
 {
     private bool isOpen;
     private bool IsOpenHasBeenSet;
-    private bool PanelSizeHasBeenSet;
 
     private int _offsetTop;
     private bool _internalIsOpen;
-    private double panelSize = 320;
     private string _containerId = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -40,6 +38,11 @@ public partial class BitPanel
     /// Used to customize how the header inside the Panel is rendered.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// Header text of Panel.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// Whether the Panel can be light dismissed by clicking outside the Panel (on the overlay).
@@ -84,20 +87,7 @@ public partial class BitPanel
     /// Provides Height or Width for the Panel.
     /// </summary>
     [Parameter]
-    public double PanelSize
-    {
-        get => panelSize;
-        set
-        {
-            if (value == panelSize) return;
-
-            panelSize = value;
-
-            _ = PanelSizeChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<double> PanelSizeChanged { get; set; }
+    public double Size { get; set; } = 320;
 
     /// <summary>
     /// Set the element selector for which the Panel disables its scroll if applicable.
@@ -110,11 +100,6 @@ public partial class BitPanel
     [Parameter] public bool ShowCloseButton { get; set; } = true;
 
     /// <summary>
-    /// Shows or hides the header of the Panel.
-    /// </summary>
-    [Parameter] public bool ShowHeader { get; set; } = true;
-
-    /// <summary>
     /// ARIA id for the subtitle of the Panel, if any.
     /// </summary>
     [Parameter] public string? SubtitleAriaId { get; set; }
@@ -124,10 +109,15 @@ public partial class BitPanel
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
 
-    /// <summary>
-    /// Title in the header of Panel.
-    /// </summary>
-    [Parameter] public string? Title { get; set; }
+
+
+    public void Open()
+    {
+        IsOpen = true;
+        StateHasChanged();
+    }
+
+
 
     protected override string RootElementClass => "bit-pnl";
 
@@ -161,12 +151,16 @@ public partial class BitPanel
         StateHasChanged();
     }
 
+
+
     private void ClosePanel(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+
+        _ = OnDismiss.InvokeAsync(e);
     }
 
     private void OnOverlayClicked(MouseEventArgs e)
@@ -174,8 +168,6 @@ public partial class BitPanel
         if (IsBlocking is not false) return;
 
         ClosePanel(e);
-
-        _ = OnDismiss.InvokeAsync(e);
     }
 
     private void OnCloseButtonClicked(MouseEventArgs e)
@@ -193,13 +185,5 @@ public partial class BitPanel
         _ => $"{RootElementClass}-right"
     };
 
-    private string SetPanelSize() => Position switch
-    {
-        BitPanelPosition.Right => $"width:{PanelSize}px;",
-        BitPanelPosition.Left => $"width:{PanelSize}px;",
-        BitPanelPosition.Top => $"height:{PanelSize}px;",
-        BitPanelPosition.Bottom => $"height:{PanelSize}px;",
-
-        _ => $"width:{PanelSize}px;"
-    };
+    private string GetPanelSizeStyle() => $"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px";
 }

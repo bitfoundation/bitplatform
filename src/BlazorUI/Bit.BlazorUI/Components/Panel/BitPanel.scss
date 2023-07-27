@@ -72,7 +72,7 @@
     background: $color-background-overlay;
 }
 
-.bit-pnl-wrp {
+.bit-pnl-cnt {
     top: 0;
     height: 100%;
     display: flex;
@@ -92,14 +92,14 @@
     border-radius: 0 0 spacing(0.25) spacing(0.25);
 }
 
-.bit-pnl-scr-ctn {
+.bit-pnl-scn {
     flex-grow: 1;
     display: flex;
     outline: none;
     flex-direction: column;
 }
 
-.bit-pnl-hdr-ctn {
+.bit-pnl-hcn {
     top: 0;
     z-index: 1;
     display: flex;
@@ -165,7 +165,7 @@
     }
 }
 
-.bit-pnl-ctn {
+.bit-pnl-bdy {
     flex-grow: 1;
     font-size: spacing(2);
     padding-left: spacing(3);
@@ -173,7 +173,7 @@
     padding-bottom: spacing(2.5);
 }
 
-.bit-pnl-ftr-ctn {
+.bit-pnl-fcn {
     bottom: 0;
     z-index: 1;
     position: sticky;
@@ -183,13 +183,13 @@
 
 .bit-pnl-right {
     right: 0;
-    width: spacing(42.5);
+    width: spacing(40);
     animation-name: opacity, bit-pnl-trans-x;
 }
 
 .bit-pnl-left {
     left: 0;
-    width: spacing(42.5);
+    width: spacing(40);
     animation-name: opacity, bit-pnl-trans-x-reverse;
 }
 
@@ -198,7 +198,7 @@
     left: 0;
     right: 0;
     width: 100%;
-    height: spacing(42.5);
+    height: spacing(40);
     animation-name: opacity, bit-pnl-trans-y-reverse;
 }
 
@@ -208,6 +208,6 @@
     bottom: 0;
     top: unset;
     width: 100%;
-    height: spacing(42.5);
+    height: spacing(40);
     animation-name: opacity, bit-pnl-trans-y;
 }

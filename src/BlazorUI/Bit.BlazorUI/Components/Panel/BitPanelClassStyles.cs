@@ -17,9 +17,9 @@ public class BitPanelClassStyles
     public BitClassStylePair? Header { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the panel content.
+    /// Custom CSS classes/styles for the panel body.
     /// </summary>
-    public BitClassStylePair? Content { get; set; }
+    public BitClassStylePair? Body { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the panel footer.
