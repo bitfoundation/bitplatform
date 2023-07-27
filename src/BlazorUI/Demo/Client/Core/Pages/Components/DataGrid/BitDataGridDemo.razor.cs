@@ -372,7 +372,7 @@ public partial class BitDataGridDemo
 
     .grid th:nth-child(1) .col-options-button:before {
         display: inline-block;
-        font-family: ""Fabric MDL2 Assets"";
+        font-family: ""Fabric MDL2"";
         font-style: normal;
         font-weight: normal;
         content: ""\e721"";
@@ -382,7 +382,7 @@ public partial class BitDataGridDemo
 
     .grid th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
         display: inline-block;
-        font-family: ""Fabric MDL2 Assets"";
+        font-family: ""Fabric MDL2"";
         font-style: normal;
         font-weight: normal;
         content: ""⇅"";
