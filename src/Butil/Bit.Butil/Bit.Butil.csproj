@@ -28,16 +28,8 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
-        </Exec>
-        <Exec Command="npx esbuild --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
-        </Exec>
-        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
-        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
-        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

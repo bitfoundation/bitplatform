@@ -48,21 +48,9 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
-        <Exec Command="npx sass --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
-        </Exec>
-        <Exec Command="npx -p typescript tsc --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeTsc" />
-        </Exec>
-        <Exec Command="npx esbuild --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeEsbuild" />
-        </Exec>
-        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass --no-save"></Exec>
-        <Exec Condition="'$(ErrorCodeTsc)' != '0'" Command="npm install typescript --no-save"></Exec>
-        <Exec Condition="'$(ErrorCodeEsbuild)' != '0'" Command="npm install esbuild --no-save"></Exec>
-        <Exec Command="npx sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
