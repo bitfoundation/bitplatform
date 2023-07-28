@@ -12,11 +12,15 @@
 
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
-        <Watch Include="..\Shared\**\*.razor" />
-        <Watch Include="..\Shared\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+        <Watch Include="..\Core\**\*.razor" />
+        <Watch Include="..\Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
     </ItemGroup>
 
     <ItemGroup>
@@ -28,14 +32,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bup" Version="5.1.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
+        <PackageReference Include="Bit.Bup" Version="5.2.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.2.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
@@ -44,9 +48,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.SourceGenerators\Bit.BlazorUI.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
@@ -67,7 +71,7 @@
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
-    <Target Name="InstallElectronDotNet" BeforeTargets="BeforeBuild">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>

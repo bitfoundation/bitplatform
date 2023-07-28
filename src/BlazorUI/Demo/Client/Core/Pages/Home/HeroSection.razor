@@ -2,12 +2,12 @@
 @inherits AppComponentBase
 
 <div class="hero-section-content">
-    <BitTypography Variant="BitTypographyVariant.H1">Bit BlazorUI</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H1">bit BlazorUI</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>bit Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
     <br />
     <BitButton Href="/getting-started">
         <BitTypography Variant="BitTypographyVariant.H6" Style="display: flex">
-            Get started &nbsp; <BitIcon IconName="BitIconName.ChevronRightSmall" />
+            Get started &nbsp; <BitIcon IconName="@BitIconName.ChevronRightSmall" />
         </BitTypography>
     </BitButton>
 </div>
@@ -15,7 +15,7 @@
     <div class="hero-section-components @BitCss.Class.Color.Background.Secondary">
         <div class="hero-section-components-col">
             <div class="component-box @BitCss.Class.Color.Background.Primary">
-                <BitDropdown Label="Select two ptoducts"
+                <BitDropdown Label="Select multiple products"
                              Items="_productDropdownItems"
                              IsMultiSelect="true"
                              Placeholder="Select an option"
@@ -33,9 +33,9 @@
             <div class="component-box--transparent">
                 <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
                                 LayoutFlow="BitLayoutFlow.Horizontal" Label="Select an item" DefaultValue=@("pie")>
-                    <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="BitIconName.BarChart4" />
-                    <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="BitIconName.DonutChart" />
-                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="BitIconName.BarChartVerticalFill" />
+                    <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="@BitIconName.BarChart4" />
+                    <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="@BitIconName.DonutChart" />
+                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
             <div class="component-box @BitCss.Class.Color.Background.Primary">
@@ -63,7 +63,7 @@
                 </BitCompoundButton>
             </div>
             <BitProgressIndicator BarHeight="20" Style="margin-bottom: 30px" />
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Links"
                       DefaultSelectedKey="Overview"
                       LinkSize="@BitPivotLinkSize.Large"
                       HeadersOnly="true"

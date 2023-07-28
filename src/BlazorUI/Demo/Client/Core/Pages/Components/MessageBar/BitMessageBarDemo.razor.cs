@@ -10,36 +10,29 @@ public partial class BitMessageBarDemo
         new()
         {
             Name = "Actions",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the action to show on the message bar.",
         },
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of message bar.",
         },
         new()
         {
             Name = "DismissButtonAriaLabel",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Aria label on dismiss button if onDismiss is defined.",
-        },
-        new()
-        {
-            Name = "DismissIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Clear",
-            Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
         },
         new()
         {
             Name = "IsMultiline",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.",
         },
         new()
@@ -53,23 +46,36 @@ public partial class BitMessageBarDemo
         },
         new()
         {
+            Name = "DismissIconName",
+            Type = "string",
+            DefaultValue = "Clear",
+            Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon.",
+        },
+        new()
+        {
+            Name = "MessageBarIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.",
+        },
+        new()
+        {
             Name = "OnDismiss",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show.",
         },
         new()
         {
             Name = "OverflowButtonAriaLabel",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Aria label on overflow button if truncated is true.",
         },
         new()
         {
             Name = "Role",
-            Type = "string",
-            DefaultValue = "Browse",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom role to apply to the message bar.",
         },
         new()

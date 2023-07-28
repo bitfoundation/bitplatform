@@ -11,6 +11,7 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IStateService, StateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
+        services.AddBitBlazorUIServices();
 
         services.AddTransient<AppHttpClientHandler>();
 

@@ -1,8 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="@RootElement"
-     @attributes="@HtmlAttributes"
+<div @ref="@RootElement" @attributes="@HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @if (LabelTemplate is not null)
@@ -14,20 +13,18 @@
     else if (Label.HasValue())
     {
         <label class="bit-upl-lbl" for="@_inputId">
-            <i class="bit-icon bit-icon--CloudUpload"></i>
             @Label
         </label>
     }
 
-    <input @ref="inputFileElement"
+    <input @ref="inputFileElement" @onchange="HandleOnChange"
            class="bit-upl-fi"
            id="@_inputId"
            type="file"
            disabled="@(IsEnabled is false)"
            aria-labelledby="@(Label.HasValue() ? Label : null)"
            multiple="@IsMultiSelect"
-           accept="@(Accept ?? string.Join(",", AllowedExtensions))"
-           @onchange="HandleOnChange" />
+           accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
 
     @if (Files is not null)
     {
@@ -41,10 +38,6 @@
                     <li class="bit-upl-itm @GetFileElClass(file.Status)">
                         <div class="bit-upl-fic">
                             <div title="@file.Name" class="bit-upl-fnc">
-                                @if (GetFileIcon(file.Name.ToLower()).HasValue())
-                                {
-                                    <i class="bit-icon bit-icon--@GetFileIcon(file.Name.ToLower())"></i>
-                                }
                                 <div class="bit-upl-fn">@file.Name</div>
                             </div>
                             <div class="bit-upl-fsc">
@@ -65,27 +58,27 @@
                         @if (file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
                         {
                             <div class="bit-upl-usi" @onclick="() => Upload(index)">
-                                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true"></i>
+                                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true" />
                             </div>
                         }
 
                         @if (file.Status == BitFileUploadStatus.InProgress)
                         {
                             <div class="bit-upl-usi" @onclick="() => PauseUpload(index)">
-                                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true"></i>
+                                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true" />
                             </div>
                         }
 
                         @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
                         {
                             <div class="bit-upl-usi" @onclick="() => CancelUpload(index)">
-                                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true"></i>
+                                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true" />
                             </div>
                         }
                         else if (ShowRemoveButton)
                         {
                             <div class="bit-upl-usi" @onclick="() => RemoveFile(index)">
-                                <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true"></i>
+                                <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
                             </div>
                         }
                     </li>

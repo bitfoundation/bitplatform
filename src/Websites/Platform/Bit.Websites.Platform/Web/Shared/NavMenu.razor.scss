@@ -1,26 +1,24 @@
-﻿@import '../Styles/abstracts/_colors.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
 
 .nav-menu {
-    position: sticky;
-    z-index: 1000;
     left: 0;
-    top: rem($HeaderHeight);
+    outline: 0;
+    z-index: 10;
     display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
     flex: 1 0 auto;
+    flex-shrink: 0;
+    overflow-y: auto;
+    position: sticky;
+    flex-direction: column;
+    top: rem($HeaderHeight);
     width: rem($NavMenuWidth);
     max-width: rem($NavMenuWidth);
     height: calc(100vh - rem($HeaderHeight));
-    border-right: rem(1px) solid rgb(231, 235, 240);
-    outline: 0;
-    box-shadow: none;
-    background-color: $White;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    overflow-y: auto;
+    background-color: $bit-color-background-primary;
 
     @include lt-lg {
         height: 100vh;

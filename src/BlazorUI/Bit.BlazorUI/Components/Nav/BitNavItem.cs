@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitNavItem
 {
@@ -39,7 +38,7 @@ public class BitNavItem
     /// <summary>
     /// Name of an icon to render next to this link button
     /// </summary>
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
 
     /// <summary>
     /// Whether or not the link is in an expanded state
@@ -72,12 +71,22 @@ public class BitNavItem
     public string? Title { get; set; }
 
     /// <summary>
-    /// Link target, specifies how to open the link
+    /// Link target, specifies how to open the link.
     /// </summary>
     public string? Target { get; set; }
 
     /// <summary>
-    /// URL to navigate to for this link
+    /// The custom template for the BitNavItem to render.
+    /// </summary>
+    public RenderFragment<BitNavItem>? Template { get; set; }
+
+    /// <summary>
+    /// The render mode of the BitNavItem's custom template.
+    /// </summary>
+    public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
+    /// URL to navigate to for this link.
     /// </summary>
     public string? Url { get; set; }
 }

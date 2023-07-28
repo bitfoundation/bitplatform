@@ -11,14 +11,14 @@ public partial class BitCompoundButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the compound button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the compound button for the benefit of screen readers.",
         },
         new()
@@ -58,43 +58,42 @@ public partial class BitCompoundButtonDemo
         new()
         {
             Name = "Href",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL the link points to, if provided, compound button renders as an anchor.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the compound button clicked.",
         },
         new()
         {
             Name = "SecondaryText",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Description of the action compound button takes.",
         },
         new()
         {
             Name = "Target",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
         },
         new()
         {
             Name = "Text",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The text of compound button.",
         },
         new()
         {
             Name = "Title",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the compound button.",
         }
     };

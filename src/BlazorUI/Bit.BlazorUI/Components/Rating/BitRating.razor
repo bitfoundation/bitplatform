@@ -32,10 +32,10 @@
 
             <div class="bit-rtg-ict">
                 <i aria-hidden="true"
-                   class="@($"bit-icon bit-icon--{(percentage == 100 ? Icon : UnselectedIcon).GetName()} bit-rtg-iem")">
+                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName)">
                 </i>
                 <i aria-hidden="true"
-                   class="@($"bit-icon bit-icon--{(percentage > 0 ? Icon : UnselectedIcon).GetName()} bit-rtg-ifl")"
+                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName)"
                    Style=@($"width:{percentage}%;")>
                 </i>
             </div>

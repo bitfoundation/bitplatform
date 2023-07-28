@@ -9,15 +9,15 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "Autocomplete",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Specifies the value of the autocomplete attribute of the input component.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The default value of the text in the SearchBox, in the case of an uncontrolled component.",
         },
         new()
@@ -44,42 +44,39 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
+            Type = "string",
+            DefaultValue = "Search",
             Description = "The icon name for the icon shown at the beginning of the search box.",
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<string?>",
-            DefaultValue = "",
             Description = "Callback for when the input value changes.",
         },
         new()
         {
             Name = "OnClear",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback executed when the user clears the search box by either clicking 'X' or hitting escape.",
         },
         new()
         {
             Name = "OnEscape",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback executed when the user presses escape in the search box.",
         },
         new()
         {
             Name = "OnSearch",
-            Type = "EventCallback<string?> ",
-            DefaultValue = "",
+            Type = "EventCallback<string?>",
             Description = "Callback executed when the user presses enter in the search box.",
         },
         new()
         {
             Name = "Placeholder",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Placeholder for the search box.",
         },
     };
@@ -115,7 +112,7 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
 
 <BitLabel>SearchBox with custom icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" IconName=""BitIconName.Filter"" />";
+<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
     private readonly string example4HTMLCode = @"
 <BitLabel>Two-way Bind</BitLabel>

@@ -11,19 +11,29 @@ public partial class BitTypographyDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the Typography.",
         },
         new()
         {
             Name = "Component",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The component used for the root node.",
         },
         new()
         {
             Name = "NoWrap",
             Type = "bool",
+            DefaultValue = "false",
             Description = "If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.",
+        },
+        new()
+        {
+            Name = "Gutter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the text will have a bottom margin.",
         },
         new()
         {

@@ -39,21 +39,21 @@ public partial class BitPersonaDemo
         {
             Name = "ImageUrl",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.",
         },
         new()
         {
             Name = "ImageAlt",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Alt text for the image to use. default is empty string.",
         },
         new()
         {
             Name = "ImageInitials",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The user's initials to display in the image area when there is no image.",
         },
         new()
@@ -62,14 +62,14 @@ public partial class BitPersonaDemo
             Type = "BitPersonaInitialsColor?",
             LinkType = LinkType.Link,
             Href = "#bitpersona-initial-color",
-            DefaultValue = "0",
+            DefaultValue = "null",
             Description = "The background color when the user's initials are displayed.",
         },
         new()
         {
             Name = "OptionalText",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional text to display, usually a custom message set. The optional text will only be shown when using size100.",
         },
         new()
@@ -85,14 +85,14 @@ public partial class BitPersonaDemo
         {
             Name = "PresenceTitle",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Presence title to be shown as a tooltip on hover over the presence icon.",
         },
         new()
         {
             Name = "SecondaryText",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Secondary text to display, usually the role of the user.",
         },
         new()
@@ -113,7 +113,7 @@ public partial class BitPersonaDemo
         {
             Name = "Size",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#bitpersona-size",
             Description = "Decides the size of the control.",
@@ -122,49 +122,49 @@ public partial class BitPersonaDemo
         {
             Name = "Text",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Primary text to display, usually the name of the person.",
         },
         new()
         {
             Name = "TertiaryText",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72 or size100.",
         },
         new()
         {
             Name = "ActionIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.Edit",
+            Type = "string",
+            DefaultValue = "Edit",
             Description = "Icon name for the icon button of the custom action.",
         },
         new()
         {
             Name = "OnActionClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Callback for the persona custom action.",
         },
         new()
         {
             Name = "ActionFragment",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional Custom template for the custom action element.",
         },
         new()
         {
             Name = "OnImageClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Callback for when the image clicked.",
         },
         new()
         {
             Name = "ImageOverlayFragment",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Optional Custom template for the image overlay.",
         }
     };
@@ -495,7 +495,7 @@ public bool IsDetailsHidden { get; set; } = true;";
             Size=@BitPersonaSize.Size120
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.None
-            ActionIconName=""BitIconName.Edit""
+            ActionIconName=""@BitIconName.Edit""
             OnActionClick=""() => ActionClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ActionClickCount: @ActionClickCount</p>";

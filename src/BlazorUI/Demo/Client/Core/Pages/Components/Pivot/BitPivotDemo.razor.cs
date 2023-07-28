@@ -10,14 +10,15 @@ public partial class BitPivotDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of pivot, It can be Any custom tag.",
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitPivotClassStyles",
-            DefaultValue = "",
+            Type = "BitPivotClassStyles?",
+            DefaultValue = "null",
             Href = "class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitPivot component."
@@ -25,14 +26,22 @@ public partial class BitPivotDemo
         new()
         {
             Name = "DefaultSelectedKey",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Default selected key for the pivot.",
         },
         new()
         {
+            Name = "HeadersOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to skip rendering the tabpanel with the content of the selected tab.",
+        },
+        new()
+        {
             Name = "LinkFormat",
-            Type = "BitLinkFormat",
-            DefaultValue = "BitLinkFormat.Tabs",
+            Type = "BitPivotLinkFormat",
+            DefaultValue = "BitPivotLinkFormat.Links",
             LinkType = LinkType.Link,
             Href = "#linkFormat-enum",
             Description = "Pivot link format, display mode for the pivot links.",
@@ -40,19 +49,11 @@ public partial class BitPivotDemo
         new()
         {
             Name = "LinkSize",
-            Type = "BitLinkSize",
-            DefaultValue = "BitLinkSize.Normal",
+            Type = "BitPivotLinkSize",
+            DefaultValue = "BitPivotLinkSize.Normal",
             LinkType = LinkType.Link,
             Href = "#linkSize-enum",
             Description = "Pivot link size.",
-        },
-        new()
-        {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitPivotItem>",
-            LinkType = LinkType.Link,
-            Href = "#pivotItem",
-            Description = "Callback for when the a pivot item is clicked.",
         },
         new()
         {
@@ -65,8 +66,26 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitPivotItem>",
+            LinkType = LinkType.Link,
+            Href = "#pivotItem",
+            Description = "Callback for when the a pivot item is clicked.",
+        },
+        new()
+        {
+            Name = "Position",
+            Type = "BitPivotPosition",
+            DefaultValue = "BitPivotPosition.Top",
+            LinkType = LinkType.Link,
+            Href = "#pivotPosition-enum",
+            Description = "Position of the pivot header.",
+        },
+        new()
+        {
             Name = "SelectedKey",
-            Type = "string",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
         },
     };
@@ -82,31 +101,36 @@ public partial class BitPivotDemo
                 new()
                 {
                     Name = "Body",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).",
                 },
                 new()
                 {
                     Name = "ChildContent",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item, It can be Any custom tag or a text.",
                 },
                 new()
                 {
                     Name = "Header",
-                    Type = "RenderFragment",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
                     Description = "The content of the pivot item header, It can be Any custom tag or a text.",
                 },
                 new()
                 {
                     Name = "HeaderText",
-                    Type = "string",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "The text of the pivot item header, The text displayed of each pivot link.",
                 },
                 new()
                 {
                     Name = "IconName",
-                    Type = "BitIconName",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "The icon name for the icon shown next to the pivot link.",
                 },
                 new()
@@ -119,7 +143,8 @@ public partial class BitPivotDemo
                 new()
                 {
                     Name = "Key",
-                    Type = "string",
+                    Type = "string?",
+                    DefaultValue = "null",
                     Description = "A required key to uniquely identify a pivot item.",
                 }
             }
@@ -134,6 +159,7 @@ public partial class BitPivotDemo
                {
                    Name = "Container",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the modal container.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -150,12 +176,14 @@ public partial class BitPivotDemo
                {
                    Name = "Class",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS class."
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS style."
                }
             }
@@ -233,6 +261,39 @@ public partial class BitPivotDemo
                 },
             }
         },
+        new()
+        {
+            Id = "pivotPosition-enum",
+            Name = "BitPivotPosition",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="Display header at the top.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="Display header at the Bottom.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Left",
+                    Description="Display header at the Left.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Right",
+                    Description="Display header at the Right.",
+                    Value="3",
+                },
+            }
+        },
     };
 
 
@@ -261,7 +322,7 @@ public partial class BitPivotDemo
 
     private readonly string example2HtmlCode = @"
 <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
-    <BitPivotItem HeaderText=""Files"" IconName=""BitIconName.Info"">
+    <BitPivotItem HeaderText=""Files"" IconName=""@BitIconName.Info"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Files</h1>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
@@ -273,19 +334,19 @@ public partial class BitPivotDemo
             <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"" IconName=""BitIconName.Info"" ItemCount=""12"">
+    <BitPivotItem HeaderText=""Recent"" IconName=""@BitIconName.Info"" ItemCount=""12"">
         <div style=""margin-top:10px"">
             <h1>Pivot #3: Recent</h1>
             <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Some tab"" IconName=""BitIconName.Info"" ItemCount=""6"">
+    <BitPivotItem HeaderText=""Some tab"" IconName=""@BitIconName.Info"" ItemCount=""6"">
         <div style=""margin-top:10px"">
             <h1>Pivot #4: Some tab</h1>
             <p>Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi.</p>
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Latest"" IconName=""BitIconName.Info"" ItemCount=""8"">
+    <BitPivotItem HeaderText=""Latest"" IconName=""@BitIconName.Info"" ItemCount=""8"">
         <div style=""margin-top:10px"">
             <h1>Pivot #5: Latest</h1>
             <p>Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus. Suspendisse blandit erat ac lobortis pulvinar.</p>
@@ -391,13 +452,13 @@ public partial class BitPivotDemo
     <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")"" ButtonStyle=""BitButtonStyle.Standard""
                 OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) - 1).ToString())"">
         <div style=""display:flex;gap:2px"">
-            <BitIcon IconName=""BitIconName.CaretSolidLeft"" /> Prev
+            <BitIcon IconName=""@BitIconName.CaretSolidLeft"" /> Prev
         </div>
     </BitButton>
     <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""4"")"" ButtonStyle=""BitButtonStyle.Standard""
                 OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) + 1).ToString())"">
         <div style=""display:flex;gap:2px"">
-            Next <BitIcon IconName=""BitIconName.CaretSolidRight"" />
+            Next <BitIcon IconName=""@BitIconName.CaretSolidRight"" />
         </div>
     </BitButton>
 </div>";
@@ -539,7 +600,7 @@ private void TogglePivotItemVisibility()
             </div>
         </Body>
     </BitPivotItem>
-    <BitPivotItem IconName=""BitIconName.Inbox"">
+    <BitPivotItem IconName=""@BitIconName.Inbox"">
         <Header>
             <div>
                 <span style=""color:rebeccapurple"">Header <i style=""color:purple"" class=""bit-icon bit-icon--HeartFill""></i> #3</span>

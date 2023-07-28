@@ -98,7 +98,7 @@ public partial class BitMenuButton<TItem> where TItem : class
     /// <summary>
     /// The icon to show inside the header of MenuButton.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     ///  List of BitMenuButtonItem to show as a item in MenuButton.
@@ -123,7 +123,7 @@ public partial class BitMenuButton<TItem> where TItem : class
     /// <summary>
     /// Name of an icon to render next to the item text.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, BitIconName>>? IconNameFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// The content inside the MenuButton-item can be customized.
@@ -236,7 +236,7 @@ public partial class BitMenuButton<TItem> where TItem : class
                                        : string.Empty);
     }
 
-    private BitIconName? GetIconName(TItem item) 
+    private string? GetIconName(TItem item) 
     {
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
@@ -248,7 +248,7 @@ public partial class BitMenuButton<TItem> where TItem : class
             return menuButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<BitIconName?>(_internalIconNameField);
+        return item.GetValueFromProperty<string?>(_internalIconNameField);
     } 
 
     private string? GetText(TItem item) 

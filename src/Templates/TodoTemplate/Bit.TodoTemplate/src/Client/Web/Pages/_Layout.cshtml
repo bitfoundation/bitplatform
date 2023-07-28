@@ -1,4 +1,5 @@
-﻿@using TodoTemplate.Shared.Infra
+﻿@using Bit.BlazorUI
+@using TodoTemplate.Shared.Infra
 @using Microsoft.AspNetCore.Components.Web
 @using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 
@@ -42,10 +43,11 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
+    <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The TodoTemplate is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build Android, iOS, Windows, and Web applications from a single codebase." />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@useAspAppendVersion">
@@ -72,13 +74,15 @@
         </style>
     }
 </head>
-<body>
+<body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
     <div id="app-container">
         @if (isSpa || isPwa || noPrerender)
         {
             <component type="typeof(TodoTemplate.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@useAspAppendVersion" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" asp-append-version="@useAspAppendVersion" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" asp-append-version="@useAspAppendVersion" />
         <link rel="stylesheet" href="_content/TodoTemplate.Client.Core/styles/app.min.css" asp-append-version="@useAspAppendVersion" />
         <link href="_content/TodoTemplate.Client.Core/TodoTemplate.Client.Core.bundle.scp.css" rel="stylesheet" asp-append-version="@useAspAppendVersion" />
         @RenderBody()

@@ -10,6 +10,7 @@ public partial class BitColorPickerDemo
         {
             Name = "Alpha",
             Type = "double",
+            DefaultValue = "1",
             Description = "Indicates the Alpha value.",
         },
         new()

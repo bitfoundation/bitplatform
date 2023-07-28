@@ -2,13 +2,13 @@
 
 <PageOutlet Url="getting-started"
             Title="Getting started"
-            Description="getting started of the bit blazorui components" />
+            Description="getting started of the bit BlazorUI components" />
 
 <div class="page-container">
     <BitTypography Variant="BitTypographyVariant.H3" Class="title">Getting started</BitTypography>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.Body1">
-            This tutorial shows how to install and use Bit BlazorUI Components in blazor projects.
+            This tutorial shows how to install and use bit BlazorUI Components in blazor projects.
         </BitTypography>
     </section>
 
@@ -16,7 +16,7 @@
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Install</BitTypography>
 
         <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-            Bit's Blazor UI Components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI nuget package</BitLink>. You can add them to your project in one of the following ways:
+            Bit's Blazor UI Components are distributed as the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI</BitLink> NuGet package. You can add them to your project in one of the following ways:
         </BitTypography>
 
         <BitTypography Variant="BitTypographyVariant.Body1">
@@ -30,8 +30,34 @@
         <div class="code-box">Install-Package Bit.BlazorUI</div>
 
         <BitTypography Variant="BitTypographyVariant.Body1">
-            Or add the package to the project from the Visual Nuget Package Manager.
+            Or add the package to the project from the Visual Studio's Nuget Package Manager.
         </BitTypography>
+
+        <br /><br />
+
+        <BitAccordion Title="Optional steps">
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you want to use the Extra components (like <b>BitChart</b>) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/" Target="_blank">Bit.BlazorUI.Extras</BitLink> package:
+            </BitTypography>
+            <div class="code-box">dotnet add package Bit.BlazorUI.Extras</div>
+            <div class="code-box">Install-Package Bit.BlazorUI.Extras</div>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you need the asset files of the bit BlazorUI (like <b>Segoe UI</b> font for non-Windows clients) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink> package:
+            </BitTypography>
+            <div class="code-box">dotnet add package Bit.BlazorUI.Assets</div>
+            <div class="code-box">Install-Package Bit.BlazorUI.Assets</div>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you want to use the Fabric Icons of the bit BlazorUI (using <b>BitIconName</b> class) you need to add the <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/" Target="_blank">Bit.BlazorUI.Icons</BitLink> package:
+            </BitTypography>
+            <div class="code-box">dotnet add package Bit.BlazorUI.Icons</div>
+            <div class="code-box">Install-Package Bit.BlazorUI.Icons</div>
+        </BitAccordion>
     </section>
 
     <section class="page-section">
@@ -52,6 +78,30 @@
             then include the script file by adding this snippet:
         </BitTypography>
         <div class="code-box">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js">&lt;/script></div>
+
+        <br />
+
+        <BitAccordion Title="Optional steps">
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you are using the <span class="txt--blue">Extras</span> package you also need to add these resources:
+            </BitTypography>
+            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" rel="stylesheet" /></div>
+            <div class="code-box">&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js">&lt;/script></div>
+
+            <br />
+
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you are using the <span class="txt--blue">Assets</span> package you also need to add this resource:
+            </BitTypography>
+            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" rel="stylesheet" /></div>
+
+            <br />
+
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                <b>Note:</b> If you are using the <span class="txt--blue">Icons</span> package you also need to add this resource:
+            </BitTypography>
+            <div class="code-box">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" rel="stylesheet" /></div>
+        </BitAccordion>
     </section>
 
     <section class="page-section">
@@ -70,6 +120,8 @@
         </BitTypography>
         <div class="code-box">dotnet new install Bit.BlazorWasm</div>
 
+        <br />
+
         <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
             Then you can create a new project using one of these commands:
         </BitTypography>
@@ -84,12 +136,15 @@
             <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Play on GitHub Codespaces</BitTypography>
         </div>
         <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-            With <a href="https://github.com/features/codespaces" target="_blank">GitHub Codespaces</a>, you can access the ultimate online development platform, right in your browser - no downloads or installations required!
+            With GitHub Codespaces, you can access the ultimate online development platform, right in your browser - no downloads or installations required.
         </BitTypography>
         <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-            Experience lightning-fast speeds and seamless integration as you dive into the world of Bit BlazorUI, and elevate your web development game to new heights.
+            Experience lightning-fast speeds and seamless integration as you dive into the world of bit BlazorUI, and elevate your web development game to new heights.
         </BitTypography>
         <br />
-        <BitLink Target="_blank" Href="https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/dev">Open Bit BlazorUI playground</BitLink>
+        <BitLink Target="_blank" Href="https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/dev">
+            Open bit BlazorUI playground
+            <BitIcon IconName="@BitIconName.ChevronRight" Style="font-size:12px;font-weight:bold" />
+        </BitLink>
     </section>
 </div>

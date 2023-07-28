@@ -3,9 +3,10 @@
 }
 
 * {
+    box-sizing: border-box;
     overscroll-behavior: none;
-    font-family: "Segoe UI";
     -webkit-tap-highlight-color: transparent;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
 
 html, body, #app-container {
@@ -13,6 +14,9 @@ html, body, #app-container {
     padding: 0;
     width: 100%;
     height: 100%;
-    background: #FBFCFF;
     -webkit-font-smoothing: antialiased;
+}
+
+ul {
+    margin: 0;
 }

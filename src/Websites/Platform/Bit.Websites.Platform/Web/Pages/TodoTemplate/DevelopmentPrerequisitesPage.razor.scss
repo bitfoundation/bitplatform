@@ -19,10 +19,10 @@
     @include SectionCard;
 }
 
-.section-card-title {
-    @include SectionCardTitle;
-}
-
 .section-card-txt {
     @include SectionCardText;
+}
+
+::deep a {
+    color: $bit-color-primary-main;
 }

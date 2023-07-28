@@ -59,7 +59,7 @@
         @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
         {
             <button type="button" @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
-                <i class="bit-icon bit-icon--ChromeClose"></i>
+                <i class="bit-icon bit-icon--Cancel" />
             </button>
         }
         <span class="bit-drp-icn">
@@ -69,7 +69,7 @@
             }
             else
             {
-                <i class="@($"bit-icon bit-icon--{CaretDownIconName.GetName()}")" aria-hidden="true"></i>
+                <i class="bit-icon bit-icon--@CaretDownIconName" aria-hidden="true" />
             }
         </span>
     </div>
@@ -86,14 +86,15 @@
                 {
                     <label class="bit-drp-lbl">@Label</label>
                 }
-                <button class="bit-drp-cls"
+                <button @onclick="CloseCallout"
+                        class="bit-drp-cls"
                         type="button"
                         aria-label="Close"
                         aria-describedby="Close"
                         aria-hidden="Close"
-                        title="Close" @onclick="CloseCallout">
+                        title="Close">
                     <span>
-                        <i class="bit-icon bit-icon--ChromeClose"></i>
+                        <i class="bit-icon bit-icon--Cancel" />
                     </span>
                 </button>
             </div>
@@ -102,7 +103,7 @@
         {
             <div class="@GetSearchBoxClasses()">
                 <div class="bit-drp-sic" aria-hidden="true">
-                    <i class="bit-icon bit-icon--Search" aria-hidden="true"></i>
+                    <i class="bit-icon bit-icon--Search" aria-hidden="true" />
                 </div>
                 <input @ref="_searchInputElement"
                        @onfocusin="HandleSearchBoxFocusIn"
@@ -124,7 +125,7 @@
                                 disabled="@(_searchText.HasNoValue())"
                                 @onclick="HandleSearchBoxOnClear">
                             <span>
-                                <i class="bit-icon bit-icon--Clear" aria-hidden="true"></i>
+                                <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
                             </span>
                         </button>
                     </div>
@@ -190,9 +191,7 @@
                 <div style="@(dropdownItem.item.IsHidden ? "display: none" : string.Empty)" class="@GetCssClassForItem(dropdownItem.item)">
                     <label class="bit-drp-chb-ctn" @onclick="@((e) => HandleOnItemClick(dropdownItem.item))">
                         <div class="bit-drp-chb">
-                            <i class="bit-drp-chm bit-icon bit-icon--Accept"
-                               aria-hidden="true"
-                               aria-label="@dropdownItem.item.Text"></i>
+                            <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@dropdownItem.item.Text" />
                         </div>
 
                         <span class="bit-drp-txt bit-nts">

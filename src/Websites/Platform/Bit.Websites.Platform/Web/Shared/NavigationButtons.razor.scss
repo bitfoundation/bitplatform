@@ -1,38 +1,38 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
 .container {
+    height: 3rem;
     display: flex;
+    padding: 1rem 0;
     align-content: center;
     justify-content: space-between;
-    height: 3rem;
-    padding: 1rem 0;
 }
 
 .button {
     display: flex;
     align-items: center;
-    border-radius: 0.5rem;
     transition: all 0.2s;
+    border-radius: 0.5rem;
 
     &:hover {
         padding: 0.5rem;
-        background-color: $B10Color;
     }
 }
 
 .link {
-    display: flex;
-    align-items: center;
     height: 100%;
     outline: none;
-    color: $B4Color;
+    display: flex;
+    align-items: center;
+    color: $bit-color-primary-main;
 
     .right {
-        margin-right: 0.5rem;
+        padding-right: 0.5rem;
     }
 
     .left {
-        margin-left: 0.5rem;
+        padding-left: 0.5rem;
     }
 }

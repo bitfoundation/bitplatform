@@ -1,6 +1,8 @@
-﻿using AdminPanel.Server.Api.Models.Account;
+﻿//+:cnd:noEmit
+using AdminPanel.Server.Api.Models.Account;
 using AdminPanel.Server.Api.Models.Categories;
 using AdminPanel.Server.Api.Models.Products;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AdminPanel.Server.Api.Data;
 
@@ -46,6 +48,17 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
             throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
         }
     }
+
+    //#if (database == "Sqlite")
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        {
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        }
+    }
+    //#endif
 
     private void ConfigIdentityTables(ModelBuilder builder)
     {

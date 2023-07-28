@@ -156,7 +156,7 @@ public partial class BitTextField
     /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Specifies whether to remove any leading or trailing whitespace from the value.

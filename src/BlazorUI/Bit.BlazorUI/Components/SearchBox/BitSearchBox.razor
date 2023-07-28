@@ -5,7 +5,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div class="bit-srb-ict" aria-hidden="true">
-        <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true" />
+        <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
     </div>
     <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
            class="bit-srb-inp"
@@ -27,7 +27,7 @@
                     aria-hidden="true"
                     disabled="@(CurrentValue.HasNoValue())">
                 <span>
-                    <i class="bit-icon bit-icon--Clear" aria-hidden="true" />
+                    <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
                 </span>
             </button>
         </div>

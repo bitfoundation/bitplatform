@@ -27,7 +27,7 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
+            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
 
             _profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
             _profileImageUrl = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";

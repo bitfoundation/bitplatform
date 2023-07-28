@@ -10,14 +10,12 @@
     </CascadingValue>
 }
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
     <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        
         <label class="bit-chg-lbl" id="@_labelId" disabled="@(IsEnabled is false)">
             @if (LabelTemplate is not null)
             {
@@ -33,19 +31,17 @@
             @foreach (var item in _items)
             {
                 <div class="@GetDivClassNameItem(item)">
-                    <input @attributes="InputHtmlAttributes"
-                           @onclick="HandleClick"
-                           @onchange="() => HandleChange(new ChangeEventArgs { Value = GetValue(item) })"
-                           id="@GetInputId(item)"
-                           class="bit-chgi-input"
-                           aria-label="@GetAriaLabel(item)"
+                    <input @attributes="InputHtmlAttributes" @onclick="HandleClick" @onchange="() => HandleChange(new() { Value = GetValue(item) })"
+                           hidden
                            type="radio"
-                           checked=@GetIsCheckedItem(item)
                            name="@Name"
-                           value="@GetValue(item)?.ToString()"
+                           class="bit-chgi-input"
                            required="@IsRequired"
-                           disabled="@(GetIsEnabled(item) is false)"
-                           hidden />
+                           id="@GetInputId(item)"
+                           aria-label="@GetAriaLabel(item)"
+                           checked=@GetIsCheckedItem(item)
+                           value="@GetValue(item)?.ToString()"
+                           disabled="@(GetIsEnabled(item) is false)" />
 
                     <label for="@GetInputId(item)">
                         @if (ItemTemplate is not null)
@@ -71,27 +67,27 @@
                                             </div>
                                         </div>
                                     }
-                                    @if (GetIconName(item).HasValue)
+
+                                    var iconName = GetIconName(item);
+
+                                    @if (iconName.HasValue())
                                     {
                                         <div class="bit-chgi-ico-cnt">
                                             <div class="bit-chgi-ico-wrp">
-                                                <i aria-hidden="true" class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                                <i aria-hidden="true" class="bit-icon bit-icon--@iconName" />
                                             </div>
                                         </div>
                                     }
-                                    @if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue)
+
+                                    @if (GetImageSrc(item).HasValue() || iconName.HasValue())
                                     {
                                         <div class="bit-chgi-wrp">
-                                            <span class="bit-chgi-txt">
-                                                @GetText(item)
-                                            </span>
+                                            <span class="bit-chgi-txt">@GetText(item)</span>
                                         </div>
                                     }
                                     else
                                     {
-                                        <span class="bit-chgi-txt">
-                                            @GetText(item)
-                                        </span>
+                                        <span class="bit-chgi-txt">@GetText(item)</span>
                                     }
                                 }
                             </div>

@@ -11,8 +11,9 @@ public partial class NavMenu : IDisposable
     private string? _profileImageUrlBase;
     private UserDto _user = new();
     private List<BitNavItem> _navItems = new();
-
     private Action _unsubscribe = default!;
+
+    [AutoInject] private NavigationManager _navManager { get; set; } = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 
@@ -36,8 +37,15 @@ public partial class NavMenu : IDisposable
             },
             new BitNavItem
             {
-                Text = Localizer[nameof(AppStrings.SignOut)],
-                IconName = BitIconName.SignOut,
+                Text = Localizer[nameof(AppStrings.EditProfileTitle)],
+                IconName = BitIconName.EditContact,
+                Url = "/edit-profile",
+            },
+            new BitNavItem
+            {
+                Text = Localizer[nameof(AppStrings.TermsTitle)],
+                IconName = BitIconName.EntityExtraction,
+                Url = "/terms",
             }
         };
 
@@ -55,7 +63,7 @@ public partial class NavMenu : IDisposable
         _user = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
+        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
 
         SetProfileImageUrl();
@@ -66,14 +74,17 @@ public partial class NavMenu : IDisposable
         _profileImageUrl = _user.ProfileImageName is not null ? _profileImageUrlBase + _user.ProfileImageName : null;
     }
 
-    private async Task HandleOnItemClick(BitNavItem item)
+    private async Task DoSignOut()
     {
-        if (item.Text == Localizer[nameof(AppStrings.SignOut)])
-        {
-            _isSignOutModalOpen = true;
-        }
+        _isSignOutModalOpen = true;
 
         await CloseMenu();
+    }
+
+    private async Task GoToEditProfile()
+    {
+        await CloseMenu();
+        _navManager.NavigateTo("edit-profile");
     }
 
     private async Task CloseMenu()

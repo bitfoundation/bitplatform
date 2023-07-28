@@ -125,15 +125,15 @@ public class BitRatingTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.HeartFill, BitIconName.Heart),
-        DataRow(BitIconName.HeartFill, BitIconName.Heart),
+        DataRow("HeartFill", "Heart"),
+        DataRow("HeartFill", "Heart"),
     ]
-    public void BitRatingShouldTakeCustomIcon(BitIconName icon, BitIconName unselectedIcon)
+    public void BitRatingShouldTakeCustomIcon(string icon, string unselectedIcon)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.Icon, icon);
-            parameters.Add(p => p.UnselectedIcon, unselectedIcon);
+            parameters.Add(p => p.SelectedIconName, icon);
+            parameters.Add(p => p.UnselectedIconName, unselectedIcon);
         });
 
         var ratingIcon = component.Find(".bit-rtg-btn i");
@@ -199,12 +199,12 @@ public class BitRatingTests : BunitTestContext
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
-          DataRow(5, 2, BitIconName.HeartFill, BitIconName.Heart),
-          DataRow(5, 3, BitIconName.HeartFill, BitIconName.Heart),
-          DataRow(5, 1.25, BitIconName.HeartFill, BitIconName.Heart),
-          DataRow(5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
+          DataRow(5, 2, "HeartFill", "Heart"),
+          DataRow(5, 3, "HeartFill", "Heart"),
+          DataRow(5, 1.25, "HeartFill", "Heart"),
+          DataRow(5, 2.5, "HeartFill", "Heart")
     ]
-    public void BitRatingShouldRespectRatingValue(int max, double value, BitIconName icon, BitIconName unselectedIcon)
+    public void BitRatingShouldRespectRatingValue(int max, double value, string icon, string unselectedIcon)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
@@ -214,8 +214,8 @@ public class BitRatingTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-rating button i:nth-child(2)");
 
-        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}"));
-        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}"));
+        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon}"));
+        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}"));
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
         Assert.AreEqual(filledBitRatingIconCount, value);
@@ -224,16 +224,16 @@ public class BitRatingTests : BunitTestContext
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
     [DataTestMethod,
-         DataRow(5, 0, 2, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 0, 3, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 0, 1.25, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 0, 2.5, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 3, 2, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 5, 3, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 2.25, 1.25, BitIconName.HeartFill, BitIconName.Heart),
-         DataRow(5, 1.5, 2.5, BitIconName.HeartFill, BitIconName.Heart)
+         DataRow(5, 0, 2, "HeartFill", "Heart"),
+         DataRow(5, 0, 3, "HeartFill", "Heart"),
+         DataRow(5, 0, 1.25, "HeartFill", "Heart"),
+         DataRow(5, 0, 2.5, "HeartFill", "Heart"),
+         DataRow(5, 3, 2, "HeartFill", "Heart"),
+         DataRow(5, 5, 3, "HeartFill", "Heart"),
+         DataRow(5, 2.25, 1.25, "HeartFill", "Heart"),
+         DataRow(5, 1.5, 2.5, "HeartFill", "Heart")
     ]
-    public void BitRatingShouldRespectDefaultRatingValue(int max, double value, double defaultValue, BitIconName icon, BitIconName unselectedIcon)
+    public void BitRatingShouldRespectDefaultRatingValue(int max, double value, double defaultValue, string icon, string unselectedIcon)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
@@ -244,8 +244,8 @@ public class BitRatingTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-rtg-btn i:nth-child(2)");
 
-        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon.GetName()}"));
-        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon.GetName()}"));
+        var filledBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{icon}"));
+        var unselectedBitRatingIconCount = buttons.Count(s => s.ClassList.Contains($"bit-icon--{unselectedIcon}"));
 
         var actualValue = value == default ? defaultValue : value;
 

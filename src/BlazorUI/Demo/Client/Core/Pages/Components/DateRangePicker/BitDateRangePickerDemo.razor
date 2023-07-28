@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/daterangepicker"
             Title="DateRangePicker"
-            Description="daterangepicker component of the bit blazorui components" />
+            Description="daterangepicker component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="DateRangePicker"
                ComponentDescription="Picking a date range can be tough without context. A BitDateRangePicker offers a drop-down control that’s optimized for picking two dates from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
@@ -99,7 +99,7 @@
                                 AriaLabel="Select dates"
                                 Placeholder="Select dates...">
                 <LabelTemplate>
-                    Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
+                    Custom label <BitIconButton IconName="@BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
                 </LabelTemplate>
             </BitDateRangePicker>
         </ExamplePreview>
@@ -196,7 +196,7 @@
         <ExamplePreview>
             <BitDateRangePicker Style="max-width: 300px"
                                 AriaLabel="Select dates"
-                                IconName="BitIconName.Airplane"
+                                IconName="@BitIconName.Airplane"
                                 Placeholder="Select dates..." />
         </ExamplePreview>
     </ComponentExampleBox>

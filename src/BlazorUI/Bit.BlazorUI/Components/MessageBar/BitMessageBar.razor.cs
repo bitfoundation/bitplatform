@@ -2,19 +2,19 @@
 
 public partial class BitMessageBar
 {
-    private static Dictionary<BitMessageBarType, BitIconName> IconMap = new()
+    private static Dictionary<BitMessageBarType, string> _IconMap = new()
     {
-        [BitMessageBarType.Info] = BitIconName.Info,
-        [BitMessageBarType.Warning] = BitIconName.Info,
-        [BitMessageBarType.Error] = BitIconName.ErrorBadge,
-        [BitMessageBarType.Blocked] = BitIconName.Blocked2,
-        [BitMessageBarType.SevereWarning] = BitIconName.Warning,
-        [BitMessageBarType.Success] = BitIconName.Completed
+        [BitMessageBarType.Info] = "Info",
+        [BitMessageBarType.Warning] = "Info",
+        [BitMessageBarType.Error] = "ErrorBadge",
+        [BitMessageBarType.Blocked] = "Blocked2",
+        [BitMessageBarType.SevereWarning] = "Warning",
+        [BitMessageBarType.Success] = "Completed",
     };
 
-    private bool ExpandSingleLine;
-    private BitIconName? messageBarIcon;
-    private BitMessageBarType messageBarType = BitMessageBarType.Info;
+    private bool _isExpanded;
+    private string? _messageBarIconName;
+    private BitMessageBarType _messageBarType = BitMessageBarType.Info;
 
     /// <summary>
     /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
@@ -27,10 +27,10 @@ public partial class BitMessageBar
     [Parameter]
     public BitMessageBarType MessageBarType
     {
-        get => messageBarType;
+        get => _messageBarType;
         set
         {
-            messageBarType = value;
+            _messageBarType = value;
             ClassBuilder.Reset();
         }
     }
@@ -38,12 +38,12 @@ public partial class BitMessageBar
     /// <summary>
     /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Clear icon
     /// </summary>
-    [Parameter] public BitIconName DismissIconName { get; set; } = BitIconName.Clear;
+    [Parameter] public string DismissIconName { get; set; } = "Cancel";
 
     /// <summary>
     /// Custom icon to replace the message bar icon. If unset, default will be the icon set by messageBarType.
     /// </summary>
-    [Parameter] public BitIconName? MessageBarIconName { get; set; }
+    [Parameter] public string? MessageBarIconName { get; set; }
 
     /// <summary>
     /// Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario
@@ -103,16 +103,16 @@ public partial class BitMessageBar
 
     protected override Task OnParametersSetAsync()
     {
-        messageBarIcon = MessageBarIconName ?? IconMap[MessageBarType];
+        _messageBarIconName = MessageBarIconName ?? _IconMap[MessageBarType];
 
         return base.OnParametersSetAsync();
     }
 
-    private void ToggleExpandSingleLine() => ExpandSingleLine = !ExpandSingleLine;
+    private void ToggleExpand() => _isExpanded = !_isExpanded;
 
     private string GetTextRole()
     {
-        return messageBarType switch
+        return _messageBarType switch
         {
             BitMessageBarType.Error or BitMessageBarType.Blocked or BitMessageBarType.SevereWarning => "alert",
             _ => "status",
@@ -121,7 +121,7 @@ public partial class BitMessageBar
 
     private string GetAnnouncementPriority()
     {
-        return messageBarType switch
+        return _messageBarType switch
         {
             BitMessageBarType.Blocked or BitMessageBarType.Error or BitMessageBarType.SevereWarning => "assertive",
             _ => "polite",

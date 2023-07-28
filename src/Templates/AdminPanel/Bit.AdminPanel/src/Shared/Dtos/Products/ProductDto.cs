@@ -23,4 +23,6 @@ public class ProductDto
     [Display(Name = nameof(AppStrings.Category))]
     public int? CategoryId { get; set; }
 
+    [Display(Name = nameof(AppStrings.Category))]
+    public string? CategoryName { get; set; }
 }

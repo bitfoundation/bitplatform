@@ -9,7 +9,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "AriaLabelledBy",
-            Type = "string?",
+            Type = "string",
+            DefaultValue = "string.Empty",
             Description = "Id of an element to use as the aria label for the ChoiceGroup."
         },
         new()
@@ -23,18 +24,21 @@ public partial class BitChoiceGroupDemo
         {
             Name = "AriaLabelFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be enable item."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of the ChoiceGroup, a list of BitChoiceGroupOption components."
         },
         new()
         {
             Name = "DefaultValue",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Default selected Value for ChoiceGroup."
         },
         new()
@@ -48,6 +52,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "Used to customize the label for the Item content."
         },
         new()
@@ -74,6 +79,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be enable item."
         },
         new()
@@ -87,6 +93,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "IdFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be the id."
         },
         new()
@@ -94,13 +101,14 @@ public partial class BitChoiceGroupDemo
             Name = "IconNameField",
             Type = "string",
             DefaultValue = "IconName",
-            Description = "The field from the model that will be the BitIconName."
+            Description = "The field from the model that will be the name of the icon."
         },
         new()
         {
             Name = "IconNameFieldSelector",
-            Type = "Expression<Func<TItem, BitIconName>>?",
-            Description = "The field from the model that will be the BitIconName."
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
+            Description = "The field selector from the model that will be the icon name."
         },
         new()
         {
@@ -113,6 +121,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageSrcFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the image src."
         },
         new()
@@ -126,6 +135,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageAltFieldSelector",
             Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the image alternate text."
         },
         new()
@@ -139,6 +149,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ImageSizeFieldSelector",
             Type = "Expression<Func<TItem, Size>>?",
+            DefaultValue = "null",
             Description = "The name of the field from the model that will be the image alternate text."
         },
         new()
@@ -152,25 +163,28 @@ public partial class BitChoiceGroupDemo
         {
             Name = "Label",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The label for the ChoiceGroup."
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Custom RenderFragment for the label of the ChoiceGroup."
         },
         new()
         {
             Name = "LayoutFlow",
             Type = "BitLayoutFlow?",
+            DefaultValue = "null",
             Description = "The render flow of the items in the ChoiceGroup, Horizontal or Vertical."
         },
         new()
         {
             Name = "Name",
             Type = "string",
-            DefaultValue = "a Guid",
+            DefaultValue = "Guid.NewGuid().ToString()",
             Description = "Name of the ChoiceGroup, this name is used to group each item into the same logical component."
         },
         new()
@@ -222,6 +236,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "ValueFieldSelector",
             Type = "Expression<Func<TItem, TValue>>?",
+            DefaultValue = "null",
             Description = "The field from the model that will be the underlying value."
         },
     };
@@ -235,63 +250,58 @@ public partial class BitChoiceGroupDemo
             {
                new()
                {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "AriaLabel attribute for the GroupOption Option input.",
-               },
-               new()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the GroupOption Option is enabled.",
-               },
-               new()
-               {
                    Name = "IconName",
-                   Type = "BitIconName?",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "The icon to show as Option content.",
                },
                new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "The image address to show as Option content.",
                },
                new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides alternative information for the Option image.",
                },
                new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
+                   DefaultValue = "null",
                    Description = "Provides Height and Width for the Option image.",
                },
                new()
                {
                    Name = "Id",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
                new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to show as content of GroupOption Option.",
                },
                new()
                {
                    Name = "Value",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "This value is returned when GroupOption Option is Clicked.",
                }
             }
@@ -304,63 +314,58 @@ public partial class BitChoiceGroupDemo
             {
                new()
                {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "AriaLabel attribute for the GroupOption Option input.",
-               },
-               new()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the GroupOption Option is enabled.",
-               },
-               new()
-               {
                    Name = "IconName",
-                   Type = "BitIconName?",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "The icon to show as Option content.",
                },
                new()
                {
                    Name = "ImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "The image address to show as Option content.",
                },
                new()
                {
                    Name = "ImageAlt",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides alternative information for the Option image.",
                },
                new()
                {
                    Name = "ImageSize",
                    Type = "Size?",
+                   DefaultValue = "null",
                    Description = "Provides Height and Width for the Option image.",
                },
                new()
                {
                    Name = "Id",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Set attribute of Id for the GroupOption Option input.",
                },
                new()
                {
                    Name = "SelectedImageSrc",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Provides a new image for the selected Option in the Image-GroupOption.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to show as content of GroupOption Option.",
                },
                new()
                {
                    Name = "Value",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "This value is returned when GroupOption Option is Clicked.",
                }
             }
@@ -568,7 +573,7 @@ private readonly List<BitChoiceGroupItem> ChoiceGroupIconItems<string> = new()
 <BitChoiceGroup Items=""ChoiceGroupBasicItems"" DefaultValue=""@(""A"")"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Custom label <BitIcon IconName=""BitIconName.Filter"" />
+            Custom label <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>";
@@ -679,7 +684,7 @@ private string ChoiceGroupTwoWayValue = ""A"";";
 <BitChoiceGroup Items=""ChoiceGroupBasicItems"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>
@@ -749,7 +754,7 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";";
 <BitChoiceGroup Items=""ChoiceGroupBasicItems"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>
@@ -879,7 +884,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -913,7 +918,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -951,7 +956,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -993,7 +998,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1018,7 +1023,7 @@ private readonly List<ChoiceModel> CustomChoiceGroupIconItems = new()
                 DefaultValue=""@(""A"")"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Custom label <BitIcon IconName=""BitIconName.Filter"" />
+            Custom label <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>";
@@ -1031,7 +1036,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1115,7 +1120,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1152,7 +1157,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1208,7 +1213,7 @@ private string ChoiceGroupTwoWayValue = ""A"";";
                 LayoutFlow=""BitLayoutFlow.Horizontal"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>
@@ -1237,7 +1242,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1332,7 +1337,7 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";";
                 IsRtl=""true"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitChoiceGroup>
@@ -1361,7 +1366,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1446,7 +1451,7 @@ public class ChoiceModel
     public string ImageDescription { get; set; }
     public Size? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
@@ -1532,9 +1537,9 @@ private void HandleInvalidSubmit()
                 TItem=""BitChoiceGroupOption<string>""
                 TValue=""string""
                 DefaultValue=""@(""Day"")"">
-    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>";
 
     private readonly string example5BitChoiceGroupOptionHtmlCode = @"
@@ -1548,7 +1553,7 @@ private void HandleInvalidSubmit()
 <BitChoiceGroup TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Custom label <BitIcon IconName=""BitIconName.Filter"" />
+            Custom label <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
     <ChildContent>
@@ -1599,9 +1604,9 @@ private void HandleInvalidSubmit()
                 TValue=""string""
                 @bind-Value=""ChoiceGroupWithOptionTemplateValue"">
     <ChildContent>
-        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" />
+        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </ChildContent>
     <ItemTemplate Context=""option"">
         <div class=""custom-option @(ChoiceGroupWithOptionTemplateValue == option.Value ? ""selected-option"" : string.Empty)"">
@@ -1617,9 +1622,9 @@ private void HandleInvalidSubmit()
                 TValue=""string""
                 @bind-Value=""ChoiceGroupWithOptionLabelTemplateValue"">
     <ChildContent>
-        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" />
+        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </ChildContent>
     <ItemLabelTemplate Context=""option"">
         <div style=""margin-left: 27px;"" class=""custom-option @(ChoiceGroupWithOptionLabelTemplateValue == option.Value ? ""selected-option"" : string.Empty)"">
@@ -1689,15 +1694,15 @@ private string ChoiceGroupTwoWayValue = ""A"";";
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
-    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
     <ChildContent>
@@ -1713,9 +1718,9 @@ private string ChoiceGroupTwoWayValue = ""A"";";
                 TValue=""string""
                 LayoutFlow=""BitLayoutFlow.Horizontal"">
     <ChildContent>
-        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" />
+        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </ChildContent>
     <ItemTemplate Context=""option"">
         <div class=""custom-option @(ChoiceGroupLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? ""selected-option"" : """")"">
@@ -1759,15 +1764,15 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";";
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
-    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" IsRtl=""true"">
     <LabelTemplate>
         <div class=""custom-label"">
-            Label Template <BitIcon IconName=""BitIconName.Filter"" />
+            Label Template <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
     <ChildContent>
@@ -1784,9 +1789,9 @@ private string ChoiceGroupLayoutFlowWithOptionTemplateValue = ""Day"";";
                 LayoutFlow=""BitLayoutFlow.Horizontal""
                 IsRtl=""true"">
     <ChildContent>
-        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""BitIconName.CalendarDay"" />
-        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""BitIconName.CalendarWeek"" />
-        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""BitIconName.Calendar"" />
+        <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+        <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+        <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </ChildContent>
     <ItemTemplate Context=""option"">
         <div class=""custom-option @(ChoiceGroupRtlLayoutFlowWithOptionTemplateValue == option.Value?.ToString() ? ""selected-option"" : """")"">

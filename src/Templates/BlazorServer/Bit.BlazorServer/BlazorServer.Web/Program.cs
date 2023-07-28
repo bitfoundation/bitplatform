@@ -15,7 +15,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (builder.Environment.IsDevelopment() is false)
+{
+    app.UseHttpsRedirection();
+    app.UseResponseCompression();
+}
 
 app.UseStaticFiles();
 

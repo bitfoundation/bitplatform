@@ -12,12 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4E161D50-92DD-4C12-B284-E1EB62406F15}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
-		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FullDemo", "FullDemo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bup", "Bit.Bup\Bit.Bup.csproj", "{8A02B000-7C7F-4ACC-9B69-4395ADB87C40}"
@@ -55,7 +49,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4E161D50-92DD-4C12-B284-E1EB62406F15} = {2983E1DE-C69B-4355-A832-A13D3346AD3A}
 		{58D8CA4D-D48C-43E6-BDC9-8E8D68823519} = {264F406E-4839-4FC0-997B-325DFF0049E9}
 		{D0C63B4A-B809-4E2F-8608-7C762889C3EC} = {264F406E-4839-4FC0-997B-325DFF0049E9}
 	EndGlobalSection

@@ -503,40 +503,6 @@ public partial class BitFileUpload : IDisposable
         }
     }
 
-    private static string GetFileIcon(string fileName)
-    {
-        var fileSections = fileName.Split('.').ToList();
-        var extension = fileSections.Last();
-
-        return extension switch
-        {
-            "jpg" => "FileImage",
-            "gif" => "FileImage",
-            "png" => "FileImage",
-            "bmp" => "FileImage",
-            "webp" => "FileImage",
-
-            "mp4" => "Video",
-            "mov" => "Video",
-            "wmv" => "Video",
-            "avi" => "Video",
-            "avchd" => "Video",
-            "flv" => "Video",
-            "f4v" => "Video",
-            "swf" => "Video",
-            "mkv" => "Video",
-            "webm" => "Video",
-
-            "zip" => "Zip",
-            "rar" => "Zip",
-
-            "pdf" => "PDF",
-            "txt" => "InsertTextBox",
-
-            _ => string.Empty
-        };
-    }
-
     private async Task CancelUploadOneFile(int index)
     {
         if (Files is null) return;

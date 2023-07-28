@@ -224,7 +224,7 @@ ModelManifest.xml
 
 profile.arm.json
 
-# Bit Platform
+# bit
 *.map
 _book
 *yarn.lock
@@ -240,6 +240,14 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Extras/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
+
+/src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/**/*.css.gz
+
+/src/BlazorUI/Bit.BlazorUI.Icons/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/**/*.css.gz
 
 /src/Bup/Bit.Bup/wwwroot/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.css

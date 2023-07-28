@@ -252,7 +252,7 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Optional DateRangePicker icon
     /// </summary>
-    [Parameter] public BitIconName IconName { get; set; } = BitIconName.CalendarMirrored;
+    [Parameter] public string IconName { get; set; } = "CalendarMirrored";
 
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.

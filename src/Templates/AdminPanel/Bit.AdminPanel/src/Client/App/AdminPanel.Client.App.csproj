@@ -57,16 +57,19 @@
 
     <ItemGroup>
 
-        <Using Include="AdminPanel.Client.Core.Components" />
-        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <Using Include="AdminPanel.Client.Core.Components" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
+        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
 
     </ItemGroup>
 
     <ItemGroup>
-        <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#002A66" />
+        <!-- App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Include="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68"/>
+
+        <!-- App icon for all other platforms -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF"/>
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#002A66" BaseSize="128,128" />
@@ -83,12 +86,14 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Bit.BlazorUI" Version="5.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.2.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

@@ -1,1 +1,1 @@
-﻿### Bit BlazorUI Extras
+﻿### bit BlazorUI Extras

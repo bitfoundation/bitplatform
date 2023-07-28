@@ -11,7 +11,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var access_token = await _tokenProvider.GetAcccessTokenAsync();
+        var access_token = await _tokenProvider.GetAccessTokenAsync();
 
         if (string.IsNullOrWhiteSpace(access_token))
         {

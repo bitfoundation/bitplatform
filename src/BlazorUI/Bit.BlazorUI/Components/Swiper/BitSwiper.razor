@@ -20,11 +20,11 @@
     @if (ShowNextPrev)
     {
         <div class="bit-swp-rbt" @onclick="async() => await Go(true)" style="@_rightButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-icon bit-icon--ChevronRight"></i>
+            <i class="bit-icon bit-icon--ChevronRight" />
         </div>
 
         <div class="bit-swp-lbt" @onclick="async () => await Go(false)" style="@_leftButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-icon bit-icon--ChevronLeft"></i>
+            <i class="bit-icon bit-icon--ChevronLeft" />
         </div>
     }
 

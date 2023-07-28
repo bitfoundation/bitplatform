@@ -97,6 +97,7 @@ public partial class NavMenu
             {
                 new() { Text = "Accordion (Expander)", Url = "/components/accordion" },
                 new() { Text = "Modal", Url = "/components/modal" },
+                new() { Text = "Panel", Url = "/components/panel" },
                 new() { Text = "Typography", Url = "/components/typography" },
             },
         },

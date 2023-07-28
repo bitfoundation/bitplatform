@@ -39,24 +39,24 @@ public class BitMessageBarTests : BunitTestContext
 
         var icon = component.Find(".bit-msb-ict > i");
 
-        Dictionary<BitMessageBarType, BitIconName> IconMap = new()
+        Dictionary<BitMessageBarType, string> IconMap = new()
         {
-            [BitMessageBarType.Info] = BitIconName.Info,
-            [BitMessageBarType.Warning] = BitIconName.Info,
-            [BitMessageBarType.Error] = BitIconName.ErrorBadge,
-            [BitMessageBarType.Blocked] = BitIconName.Blocked2,
-            [BitMessageBarType.SevereWarning] = BitIconName.Warning,
-            [BitMessageBarType.Success] = BitIconName.Completed
+            [BitMessageBarType.Info] = "Info",
+            [BitMessageBarType.Warning] = "Info",
+            [BitMessageBarType.Error] = "ErrorBadge",
+            [BitMessageBarType.Blocked] = "Blocked2",
+            [BitMessageBarType.SevereWarning] = "Warning",
+            [BitMessageBarType.Success] = "Completed"
         };
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType].GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[messageBarType]}"));
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2),
-        DataRow(BitIconName.WordLogo)
+        DataRow("Emoji2"),
+        DataRow("WordLogo")
     ]
-    public void BitMessageBarShouldRespectCustomIcon(BitIconName iconName)
+    public void BitMessageBarShouldRespectCustomIcon(string iconName)
     {
         var component = RenderComponent<BitMessageBar>(parameters =>
         {
@@ -64,7 +64,7 @@ public class BitMessageBarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-msb-ict > i");
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
     [DataTestMethod,
@@ -89,16 +89,17 @@ public class BitMessageBarTests : BunitTestContext
         if (isMultiline is false && truncated)
         {
             var truncateButton = component.Find(".bit-msb-trn > button");
+            var icon = component.Find(".bit-msb-trn button span i");
 
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
-
-            truncateButton.Click();
-
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronUp"));
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
 
             truncateButton.Click();
 
-            Assert.IsTrue(truncateButton.FirstElementChild.ClassList.Contains("bit-icon--DoubleChevronDown"));
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronUp"));
+
+            truncateButton.Click();
+
+            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
         }
     }
 
@@ -119,10 +120,10 @@ public class BitMessageBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2),
-        DataRow(BitIconName.WordLogo)
+        DataRow("Emoji2"),
+        DataRow("WordLogo")
     ]
-    public void BitMessageBarShouldRespectCustomDismissIcon(BitIconName iconName)
+    public void BitMessageBarShouldRespectCustomDismissIcon(string iconName)
     {
         var component = RenderComponent<BitMessageBar>(parameters =>
         {
@@ -132,7 +133,7 @@ public class BitMessageBarTests : BunitTestContext
 
         var icon = component.Find(".bit-msb-dim button span i");
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
     [DataTestMethod,

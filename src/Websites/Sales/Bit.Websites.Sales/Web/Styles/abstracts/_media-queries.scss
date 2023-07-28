@@ -46,6 +46,12 @@ $screen-sm-max: em(360px);
     }
 }
 
+@mixin lt-xl {
+    @media screen and (max-width: #{$screen-lg-max}) {
+        @content;
+    }
+}
+
 @mixin gt-sm {
     @media screen and (min-width: #{$screen-md-min}) {
         @content;

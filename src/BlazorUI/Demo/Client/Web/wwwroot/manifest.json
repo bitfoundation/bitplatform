@@ -1,10 +1,8 @@
 {
-    "name": "Bit BlazorUI Demo",
-    "short_name": "Bit BlazorUI Demo",
+    "name": "bit BlazorUI Demo",
+    "short_name": "bit BlazorUI Demo",
     "start_url": "./",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
     "icons": [
         {
             "src": "images/icons/bit-icon-512.png",

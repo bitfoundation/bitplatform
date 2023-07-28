@@ -48,11 +48,6 @@ public partial class BitRating
     }
 
     /// <summary>
-    /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
-    /// </summary>
-    [Parameter] public BitIconName Icon { get; set; } = BitIconName.FavoriteStarFill;
-
-    /// <summary>
     /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise).
     /// </summary>
     [Parameter] public int Max { get; set; } = 5;
@@ -63,6 +58,11 @@ public partial class BitRating
     [Parameter] public EventCallback<double> OnChange { get; set; }
 
     /// <summary>
+    /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
+    /// </summary>
+    [Parameter] public string SelectedIconName { get; set; } = "FavoriteStarFill";
+
+    /// <summary>
     /// Size of rating.
     /// </summary>
     [Parameter] public BitRatingSize Size { get; set; }
@@ -70,7 +70,7 @@ public partial class BitRating
     /// <summary>
     /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.
     /// </summary>
-    [Parameter] public BitIconName UnselectedIcon { get; set; } = BitIconName.FavoriteStar;
+    [Parameter] public string UnselectedIconName { get; set; } = "FavoriteStar";
 
 
     protected override async Task OnInitializedAsync()

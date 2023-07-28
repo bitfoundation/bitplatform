@@ -1,15 +1,15 @@
 ﻿@import "../../Styles/abstracts/_functions.scss";
 @import "../../Styles/abstracts/_media-queries.scss";
-@import "../../Styles/abstracts/_colors.scss";
+@import "../../Styles/abstracts/_bit-css-variables.scss";
 
 .card-container {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    align-items: flex-start;
     width: 100%;
+    display: flex;
     gap: rem(24px);
+    flex-flow: row wrap;
+    align-items: flex-start;
     margin-bottom: rem(56px);
+    justify-content: space-between;
 
     @include md {
         margin-bottom: rem(40px);
@@ -22,35 +22,33 @@
 }
 
 .card {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: calc(25% - 18px);
-    min-height: rem(168px);
     height: 100%;
-    background-color: $White;
-    border: rem(1px) solid $ThemeLightColor;
-    border-radius: rem(8px);
+    display: flex;
     padding: rem(24px);
-    box-sizing: border-box;
-    background-image: url('images/stat-card-bg.svg');
-    background-position: center right;
+    min-height: rem(168px);
+    width: calc(25% - 18px);
+    align-items: flex-start;
+    border-radius: rem(8px);
+    flex-flow: column nowrap;
+    transition: 0.3s all linear;
+    justify-content: flex-start;
     background-repeat: no-repeat;
     background-size: rem(84px) 100%;
-    transition: 0.3s all linear;
+    background-position: center right;
+    background-image: url('images/stat-card-bg.svg');
+    background-color: $bit-color-background-primary;
+    border: rem(1px) solid $bit-color-border-secondary;
 
     @include sm {
         height: 204px;
     }
 
     .card-num {
-        margin-bottom: rem(24px);
         font-weight: 600;
         font-size: rem(32px);
         line-height: rem(40px);
-        color: $ThemePrimaryColor;
-        border-bottom: rem(2px) solid #FFE25E;
+        margin-bottom: rem(24px);
+        color: $bit-color-primary-main;
 
         @include md {
             font-size: rem(28px);
@@ -71,7 +69,6 @@
         font-weight: 400;
         font-size: rem(20px);
         line-height: rem(28px);
-        color: $Gray160;
 
         @include md {
             font-size: rem(18px);
@@ -85,22 +82,22 @@
     }
 
     &:hover {
-        background-color: $ThemePrimaryColor;
         background-size: rem(128px) 100%;
+        background-color: $bit-color-primary-main;
         background-image: url('images/stat-card-bg-hover.svg');
 
         .card-num {
-            color: $White;
+            color: $bit-color-secondary-main;
         }
 
         .card-title {
-            color: $Gray30;
+            color: $bit-color-secondary-main;
         }
     }
 
     @include md {
-        padding: rem(24px) rem(16px);
         min-height: rem(160px);
+        padding: rem(24px) rem(16px);
         background-position: center right rem(-3px);
 
         &:hover {

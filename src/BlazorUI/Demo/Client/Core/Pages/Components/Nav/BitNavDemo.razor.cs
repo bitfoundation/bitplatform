@@ -17,7 +17,7 @@ public partial class BitNavDemo
         new()
         {
             Name = "AriaCurrentFieldSelector",
-            Type = "Expression<Func<TItem, BitNavListItemAriaCurrent>>?",
+            Type = "Expression<Func<TItem, BitNavAriaCurrent>>?",
             Href = "nav-item-aria-current",
             LinkType = LinkType.Link,
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
@@ -32,32 +32,35 @@ public partial class BitNavDemo
         new()
         {
             Name = "AriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Aria label for the item. Ignored if collapseAriaLabel or expandAriaLabel is provided."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Items to render as children.",
         },
         new()
         {
             Name = "ChildItemsField",
             Type = "string",
-            DefaultValue = "Items",
+            DefaultValue = "ChildItems",
             Description = "A list of items to render as children of the current item."
         },
         new()
         {
             Name = "ChildItemsFieldSelector",
             Type = "Expression<Func<TItem, IList<TItem>>>?",
+            DefaultValue = "null",
             Description = "A list of items to render as children of the current item."
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitNavClassStyles",
+            Type = "BitNavClassStyles?",
             DefaultValue = "",
             Href = "class-styles",
             LinkType = LinkType.Link,
@@ -73,13 +76,15 @@ public partial class BitNavDemo
         new()
         {
             Name = "CollapseAriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Aria label when group is collapsed."
         },
         new()
         {
             Name = "DefaultSelectedItem",
             Type = "TItem?",
+            DefaultValue = "null",
             Description = "The initially selected item in manual mode."
         },
         new()
@@ -92,7 +97,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "ExpandAriaLabelFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Aria label when group is expanded."
         },
         new()
@@ -105,13 +111,15 @@ public partial class BitNavDemo
         new()
         {
             Name = "ForceAnchorFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)"
         },
         new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the group header is rendered."
         },
         new()
@@ -124,7 +132,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "IconNameFieldSelector",
-            Type = "Expression<Func<TItem, BitIconName>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Name of an icon to render next to the item button."
         },
         new()
@@ -138,6 +147,7 @@ public partial class BitNavDemo
         {
             Name = "IsExpandedFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Whether or not the group is in an expanded state."
         },
         new()
@@ -151,6 +161,7 @@ public partial class BitNavDemo
         {
             Name = "IsEnabledFieldSelector",
             Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
             Description = "Whether or not the item is disabled."
         },
         new()
@@ -166,7 +177,17 @@ public partial class BitNavDemo
         {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the item is rendered."
+        },
+        new()
+        {
+            Name = "ItemTemplateRenderMode",
+            Type = "BitNavItemTemplateRenderMode",
+            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+            Href = "nav-itemtemplate-rendermode",
+            LinkType = LinkType.Link,
+            Description = "The render mode of the custom ItemTemplate."
         },
         new()
         {
@@ -178,7 +199,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "KeyFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "A unique value to use as a key or id of the item."
         },
         new()
@@ -221,6 +243,7 @@ public partial class BitNavDemo
         {
             Name = "SelectedItem",
             Type = "TItem?",
+            DefaultValue = "null",
             Description = "Selected item to show in Nav."
         },
         new()
@@ -233,7 +256,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "StyleFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Custom style for the each item element."
         },
         new()
@@ -246,7 +270,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "TextFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Text to render for the item."
         },
         new()
@@ -259,7 +284,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "TitleFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Text for the item tooltip."
         },
         new()
@@ -272,8 +298,37 @@ public partial class BitNavDemo
         new()
         {
             Name = "TargetFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
             Description = "Link target, specifies how to open the item link."
+        },
+        new()
+        {
+            Name = "TemplateField",
+            Type = "string",
+            DefaultValue = "Template",
+            Description = "The field name of the Template property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateFieldSelector",
+            Type = "Expression<Func<TItem, RenderFragment>>?",
+            DefaultValue = "null",
+            Description = "The field selector of the Template property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateRenderModeField",
+            Type = "string",
+            DefaultValue = "TemplateRenderMode",
+            Description = "The field name of the TemplateRenderMode property in the nav item class."
+        },
+        new()
+        {
+            Name = "TemplateRenderModeFieldSelector",
+            Type = "Expression<Func<TItem, BitNavItemTemplateRenderMode>>?",
+            DefaultValue = "null",
+            Description = "The field selector of the TemplateRenderMode property in the nav item class."
         },
         new()
         {
@@ -286,6 +341,7 @@ public partial class BitNavDemo
         {
             Name = "UrlFieldSelector",
             Type = "Expression<Func<TItem, object>>?",
+            DefaultValue = "null",
             Description = "URL to navigate for the item link."
         }
     };
@@ -300,12 +356,6 @@ public partial class BitNavDemo
             {
                new()
                {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
-               },
-               new()
-               {
                    Name = "AriaCurrent",
                    Type = "BitNavLinkItemAriaCurrent",
                    DefaultValue = "BitNavItemAriaCurrent.Page",
@@ -317,18 +367,21 @@ public partial class BitNavDemo
                {
                    Name = "CollapseAriaLabel",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Aria label when items is collapsed and can be expanded.",
                },
                new()
                {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Aria label when group is collapsed and can be expanded.",
                },
                new()
                {
                    Name = "ForceAnchor",
                    Type = "bool",
+                   DefaultValue = "false",
                    Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
                },
                new()
@@ -341,31 +394,36 @@ public partial class BitNavDemo
                new()
                {
                    Name = "IconName",
-                   Type = "BitIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Name of an icon to render next to this link button.",
                },
                new()
                {
                    Name = "IsExpanded",
                    Type = "bool",
+                   DefaultValue = "false",
                    Description = "Whether or not the link is in an expanded state.",
                },
                new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
+                   DefaultValue = "true",
                    Description = "Whether or not the link is enabled.",
                },
                new()
                {
                    Name = "Key",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "A unique value to use as a key or id of the item.",
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom style for the each item element.",
                },
                new()
@@ -379,34 +437,45 @@ public partial class BitNavDemo
                {
                    Name = "Title",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text for title tooltip.",
                },
                new()
                {
                    Name = "Target",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Link target, specifies how to open the link.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitNavItem>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the BitNavItem to render",
+               },
+               new()
+               {
+                   Name = "TemplateRenderMode",
+                   Type = "BitNavItemTemplateRenderMode",
+                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+                   Description = "The render mode of the BitNavItem's custom template.",
                },
                new()
                {
                    Name = "Url",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "URL to navigate to for this link.",
                }
             }
         },
-        new ()
+        new()
         {
             Id = "nav-option",
             Title = "BitNavOption",
             Parameters = new()
             {
-               new()
-               {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   Description = "Aria label for nav link. Ignored if collapseAriaLabel or expandAriaLabel is provided",
-               },
                new()
                {
                    Name = "AriaCurrent",
@@ -420,49 +489,43 @@ public partial class BitNavDemo
                {
                    Name = "CollapseAriaLabel",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Aria label when items is collapsed and can be expanded.",
                },
                new()
                {
                    Name = "ExpandAriaLabel",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Aria label when group is collapsed and can be expanded.",
                },
                new()
                {
                    Name = "ForceAnchor",
                    Type = "bool",
+                   DefaultValue = "false",
                    Description = "(Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)",
                },
                new()
                {
                    Name = "IconName",
-                   Type = "BitIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Name of an icon to render next to this link button.",
                },
                new()
                {
                    Name = "IsExpanded",
                    Type = "bool",
+                   DefaultValue = "false",
                    Description = "Whether or not the link is in an expanded state.",
-               },
-               new()
-               {
-                   Name = "IsEnabled",
-                   Type = "bool",
-                   Description = "Whether or not the link is enabled.",
                },
                new()
                {
                    Name = "Key",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "A unique value to use as a key or id of the item.",
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Custom style for the each item element.",
                },
                new()
                {
@@ -475,18 +538,21 @@ public partial class BitNavDemo
                {
                    Name = "Title",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text for title tooltip.",
                },
                new()
                {
                    Name = "Target",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Link target, specifies how to open the link.",
                },
                new()
                {
                    Name = "Url",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "URL to navigate to for this link.",
                }
             }
@@ -501,6 +567,7 @@ public partial class BitNavDemo
                {
                    Name = "Item",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for item.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -509,6 +576,7 @@ public partial class BitNavDemo
                {
                    Name = "SelectedItem",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for selected item.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -517,6 +585,7 @@ public partial class BitNavDemo
                {
                    Name = "ItemContainer",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for item container.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link,
@@ -525,6 +594,7 @@ public partial class BitNavDemo
                {
                    Name = "SelectedItemContainer",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for selected item container.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -533,6 +603,7 @@ public partial class BitNavDemo
                {
                    Name = "ToggleButton",
                    Type = "BitClassStylePair?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for toggle button.",
                    Href = "class-style-pair",
                    LinkType = LinkType.Link
@@ -549,12 +620,14 @@ public partial class BitNavDemo
                {
                    Name = "Class",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS class."
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS style."
                }
             }
@@ -638,6 +711,26 @@ public partial class BitNavDemo
                     Value = "5",
                 },
 
+            }
+        },
+        new()
+        {
+            Id = "nav-itemtemplate-rendermode",
+            Name = "BitNavItemTemplateRenderMode",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "Normal",
+                    Description = "Renders the template inside the button/anchor root element of the item.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Replace",
+                    Description = "Replaces the button/anchor root element of the item.",
+                    Value = "1",
+                }
             }
         },
     };
@@ -919,7 +1012,7 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Text</span>
         </div>
     </HeaderTemplate>
@@ -1334,7 +1427,7 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1498,7 +1591,7 @@ private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
 
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Name</span>
         </div>
     </HeaderTemplate>
@@ -1536,7 +1629,7 @@ public class CarMenu
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1667,7 +1760,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public BitIconName Icon { get; set; }
+    public string Icon { get; set; }
     public bool IsExpanded { get; set; }
     public List<FoodMenu> Childs { get; set; } = new();
 }
@@ -1859,7 +1952,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken"">
+                  IconName=""@BitIconName.HeartBroken"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
@@ -1887,7 +1980,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken""
+                  IconName=""@BitIconName.HeartBroken""
                   IsExpanded=""true"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
@@ -1924,7 +2017,7 @@ private string SelectedOptionKey;";
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
-            <BitIcon IconName=""BitIconName.FavoriteStarFill"" />
+            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" />
             <span>@item.Text</span>
         </div>
     </HeaderTemplate>
@@ -2002,7 +2095,7 @@ private string SelectedOptionKey;";
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
         OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
     <BitNavOption Text=""Fast-Foods""
-                  IconName=""BitIconName.HeartBroken""
+                  IconName=""@BitIconName.HeartBroken""
                   IsExpanded=""true"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />

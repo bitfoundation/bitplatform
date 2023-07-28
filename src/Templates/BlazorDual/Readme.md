@@ -1,1 +1,1 @@
-# Bit BlazorDual Template
+# bit BlazorDual Template

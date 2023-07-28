@@ -9,7 +9,7 @@
     {
         <NavMenu />
     }
-    <div class="site-content">
+    <div class="site-content @(CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel") ? "docs-content" : "")">
         <AppErrorBoundary>
                 @Body
         </AppErrorBoundary>

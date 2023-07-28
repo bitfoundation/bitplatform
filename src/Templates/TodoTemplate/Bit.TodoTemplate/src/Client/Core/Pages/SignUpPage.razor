@@ -4,7 +4,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form--white">
+    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
         <AppDataAnnotationsValidator />
 
         @if (string.IsNullOrEmpty(_signUpMessage) is false)
@@ -25,17 +25,16 @@
             <div class="form-description">
                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
             </div>
-
-            <div class="form-link">
+            <br />
+            <div class="form-description">
                 @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
             </div>
-
-            <div class="form-note">
+            <div class="form-description">
                 @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                <br />
                 <br />
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
-
             <BitLoadingButton IsLoading="_isLoading"
                               Class="form-submit-button"
                               ButtonStyle="BitButtonStyle.Primary"
@@ -44,6 +43,10 @@
                               OnClick="WrapHandled(DoResendLink)">
                 @Localizer[nameof(AppStrings.ResendEmail)]
             </BitLoadingButton>
+            <br />
+            <div>
+                <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+            </div>
         }
         else
         {

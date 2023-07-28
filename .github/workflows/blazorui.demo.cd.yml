@@ -26,12 +26,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
 
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -93,12 +93,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -141,12 +141,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -190,7 +190,6 @@ jobs:
         name: android-bundle
         path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-android/*-Signed.*
 
-
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
     runs-on: macos-latest
@@ -200,12 +199,12 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (Bit Blazor UI)
+    - name: Setup .NET (bit Blazor UI)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
     
-    - name: Setup .NET (Bit Blazor UI Demo)
+    - name: Setup .NET (bit Blazor UI Demo)
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/BlazorUI/Demo/global.json
@@ -260,6 +259,49 @@ jobs:
         name: ios-bundle
         path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa
 
+  build_blazor_hybrid_maccatalyst:
+     name: build blazor hybrid (maccatalyst)
+     runs-on: macos-latest
+   
+     steps:
+      
+     - name: Checkout source code
+       uses: actions/checkout@v3
+      
+     - name: Setup .NET
+       uses: actions/setup-dotnet@v3
+       with:
+         global-json-file: src/BlazorUI/Demo/global.json
+
+     - uses: actions/setup-node@v3
+       with:
+         node-version: latest
+   
+     - name: Update appsettings.json api server address
+       uses: microsoft/variable-substitution@v1 
+       with:
+         files: 'src/BlazorUI/Demo/Client/Core/appsettings.json'
+       env:
+         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+   
+     - name: Install Maui
+       run: dotnet workload install maui
+
+     - name: Restore workloads
+       run: dotnet workload restore src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+   
+     - name: Build (To generate CSS/JS files)
+       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst
+   
+     - name: Build pkg
+       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-maccatalyst
+   
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: mac-pkg-bundle
+         path: src/BlazorUI/Demo/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+
   build_blazor_electron_linux:
      name: build blazor electron (linux)
      runs-on: ubuntu-latest
@@ -290,17 +332,20 @@ jobs:
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
+     - name: Switch to BlazorElectron
+       run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/BlazorUI/Demo/Directory.Build.props > temp.xml && mv temp.xml src/BlazorUI/Demo/Directory.Build.props
+
      - name: Restore workloads
-       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron
+       run: dotnet workload restore src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release
+       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
-       run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron
+       run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: linux-app-image
-         path: src/BlazorUI/Demo/Client/Web/bin/Desktop/linux-unpacked/*.*
+         path: src/BlazorUI/Demo/Client/Web/bin/Desktop/linux-unpacked

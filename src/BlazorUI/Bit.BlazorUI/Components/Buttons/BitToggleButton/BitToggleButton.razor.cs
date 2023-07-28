@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitToggleButton
 {
@@ -55,6 +54,11 @@ public partial class BitToggleButton
     }
 
     /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitToggleButton component.
+    /// </summary>
+    [Parameter] public BitToggleButtonClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
     /// Default value of the IsChecked.
     /// </summary>
     [Parameter] public bool? DefaultIsChecked { get; set; }
@@ -85,7 +89,7 @@ public partial class BitToggleButton
     /// <summary>
     /// The icon that shows in the button.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The text that shows in the label.

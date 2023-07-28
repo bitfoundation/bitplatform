@@ -11,7 +11,7 @@
     }
 
     <div class="page-header">
-        <BitIconButton Class="back-btn" OnClick=@GoBack IconName="BitIconName.Back" Title="Back" />
+        <BitIconButton Class="back-btn" OnClick=@GoBack IconName="@BitIconName.Back" Title="Back" />
         <h1 class="page-title">@Localizer[nameof(AppStrings.EditProfileTitle)]</h1>
     </div>
 
@@ -115,6 +115,7 @@
                OnClick="() => _isDeleteAccountConfirmModalOpen = true">
         @Localizer[nameof(AppStrings.DeleteAccount)]
     </BitButton>
+    <br />
 </div>
 
 <DeleteAccountConfirmModal @bind-IsOpen="_isDeleteAccountConfirmModalOpen" />

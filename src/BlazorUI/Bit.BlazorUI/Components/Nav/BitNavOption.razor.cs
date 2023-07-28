@@ -40,7 +40,7 @@ public partial class BitNavOption : IDisposable
     /// <summary>
     /// Name of an icon to render next to this link button
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Whether or not the link is in an expanded state
@@ -66,6 +66,16 @@ public partial class BitNavOption : IDisposable
     /// Link target, specifies how to open the link
     /// </summary>
     [Parameter] public string? Target { get; set; }
+
+    /// <summary>
+    /// The custom template for the BitNavOption to render.
+    /// </summary>
+    [Parameter] public RenderFragment<BitNavOption>? Template { get; set; }
+
+    /// <summary>
+    /// The render mode of the BitNavOption's custom template.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
     /// URL to navigate to for this link

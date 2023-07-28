@@ -2,6 +2,7 @@
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .nav-menu {
     top: 0;
@@ -16,14 +17,13 @@
     box-shadow: none;
     overflow-y: auto;
     align-items: center;
-    box-sizing: border-box;
     flex-direction: column;
-    background-color: $Blue1;
     width: rem($NavMenuWidth);
     padding-bottom: rem(24px);
     max-width: rem($NavMenuWidth);
     justify-content: space-between;
     padding-top: var(--bit-status-bar-height);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-top: env(safe-area-inset-top);
@@ -67,51 +67,16 @@
 
 .menu-top-row {
     width: 100%;
-    height: rem($HeaderHeight);
+    height: rem(calc($HeaderHeight + 1px));
     background-repeat: no-repeat;
-    border-bottom: rem(1px) solid $Blue2;
     background-size: rem(30px) rem(20px);
+    background-image: url('images/bit-logo.svg');
     background-position: top rem(16px) left rem(16px);
-    background-image: url('images/bit-white-logo.svg');
+    border-bottom: rem(1px) solid $bit-color-border-secondary;
 }
 
-.menu-banner {
-    width: rem(190px);
-    height: rem(296px);
-    background-size: cover;
-    border-radius: rem(6px);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-image: url('images/menu-banner.webp');
-}
-
-::deep .bit-nav-menu {
-    width: 100%;
-    padding-top: rem(24px);
-
-    .toggle-button {
-        color: $ThemeLightColor;
-    }
-
-    .item-container {
-        &:hover {
-            background-color: $Blue2;
-        }
-    }
-
-    .item {
-        color: $ThemeLightColor;
-
-        i, span {
-            color: $ThemeLightColor;
-        }
-    }
-
-    .selected-item-container {
-        background-color: $Blue2;
-    }
-
-    .selected-item {
-        background-color: $Blue2;
+::deep {
+    .bit-nav-menu {
+        padding-top: rem(32px);
     }
 }

@@ -9,20 +9,6 @@ public partial class BitCarouselDemo
     {
         new()
         {
-            Name = "AriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The aria-label of the control for the benefit of screen readers."
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Custom CSS class for the root element of the component."
-        },
-        new()
-        {
             Name = "InfiniteScrolling",
             Type = "bool",
             DefaultValue = "false",
@@ -32,15 +18,8 @@ public partial class BitCarouselDemo
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Items of the carousel."
-        },
-        new()
-        {
-            Name = "SelectedKey",
-            Type = "string",
-            DefaultValue = "",
-            Description = "The Key of the current item of the carousel."
         },
         new()
         {
@@ -55,6 +34,20 @@ public partial class BitCarouselDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
+        },
+        new()  
+        {
+            Name = "VisibleItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is visible in the carousel"
+        },
+        new()
+        {
+            Name = "ScrollItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is going to be changed on navigation"
         },
         new()
         {
@@ -74,21 +67,20 @@ public partial class BitCarouselDemo
         {
             Name = "AnimationDuration",
             Type = "double",
-            DefaultValue = "2000",
+            DefaultValue = "0.5",
             Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
         },
         new()
         {
             Name = "Direction",
-            Type = "Direction",
-            DefaultValue = "Direction.LeftToRight",
+            Type = "BitDirection",
+            DefaultValue = "BitDirection.LeftToRight",
             Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<int>",
-            DefaultValue = "null",
             Description = "The event that will be called on carousel page navigation."
         }
     };

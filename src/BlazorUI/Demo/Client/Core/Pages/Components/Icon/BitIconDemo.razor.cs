@@ -8,45 +8,23 @@ public partial class BitIconDemo
     {
         new()
         {
-            Name = "AriaLabel",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Aria label for the root element of the component"
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Custom CSS class for the root element of the component."
-        },
-        new()
-        {
-            Name = "Style",
-            Type = "string",
-            DefaultValue = "",
-            Description = "Custom style for the root element of the component",
-        },
-        new()
-        {
             Name = "IconName",
-            Type = "BitIconName",
+            Type = "string",
             LinkType = LinkType.Link,
             Href = "/iconography",
-            DefaultValue = "",
             Description = "The icon name for the icon shown in the button"
         }
     };
 
 
 
-    private BitIconName iconName = BitIconName.Accept;
+    private string iconName = BitIconName.Accept;
 
 
     private readonly string example1HTMLCode = @"
-<BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" />
-<BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" />
-<BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" />";
+<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" />
+<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" />
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" />";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -55,18 +33,18 @@ public partial class BitIconDemo
         margin: 1rem 2rem;
     }
 </style>
-<BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" Class=""icon-class"" />
-<BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" Class=""icon-class"" />
-<BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />";
+<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Class=""icon-class"" />
+<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Class=""icon-class"" />
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />";
 
     private readonly string example3HTMLCode = @"
-<BitIcon IconName=""BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 2rem; margin: 1rem 2rem; color: red;"" />
-<BitIcon IconName=""BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 2rem; margin: 1rem 2rem; color: green;"" />
-<BitIcon IconName=""BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
+<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 2rem; margin: 1rem 2rem; color: red;"" />
+<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 2rem; margin: 1rem 2rem; color: green;"" />
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
 
     private readonly string example4HTMLCode = @"
-< BitIcon IconName=""iconName"" AriaLabel=""accept"" Class=""icon-class"" />
-<BitToggleButton IconName=""iconName"" OnChange=""() => iconName = iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
+< BitIcon IconName=""@iconName"" AriaLabel=""accept"" Class=""icon-class"" />
+<BitToggleButton IconName=""@iconName"" OnChange=""() => iconName = iconName == BitIconName.Accept ? BitIconName.ChromeClose : BitIconName.Accept"" />";
     private readonly string example4CSharpCode = @"
-private BitIconName iconName = BitIconName.Accept;";
+private string iconName = BitIconName.Accept;";
 }

@@ -3,40 +3,51 @@
 
 <PageOutlet Url="todo-template/run"
             Title="Run - TodoTemplate"
-            Description="run the todo template of the bit platform" />
+            Description="run the TodoTemplate of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">Run</h1>
-    <div class="page-desc">
-        To run the apps built with the Bit TodoTemplate use the following instructions.
-    </div>
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Run</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        To run the apps built with the bit TodoTemplate use the following instructions.
+    </BitTypography>
+    <br />
+
     <section class="section-card">
-        <h2 class="section-card-title">Run</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>How?</BitTypography>
         <div class="section-card-txt">
             After you've done the configuration, you can run the application. Set Api project as startup and run, you can see the swagger dashboard in the first view.
         </div>
         <div class="image-container">
-            <img class="image" alt="Swagger dashboard" width="887" height="886" src="/images/demo/swagger-todo.webp" />
+            <img class="image small" alt="Swagger dashboard" src="/images/templates/todo/swagger-todo.webp" />
         </div>
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">SignUp</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>SignUp</BitTypography>
         <div class="section-card-txt">
-            With the help of <span class="bold-txt">Swagger</span>, you can call the <span class="bold-txt">SignUp</span> API and Start the registration process, navigate to <span class="high-light-text">Auth/SignUp</span> API and press the <span class="high-light-text">Try it Out</span> button, in the <span class="high-light-text">Request body</span> Enter SignUp data, and press Execute button.
+            With the help of <b>Swagger</b>, you can call the <b>SignUp</b> API and Start the registration process, navigate to <b>Auth/SignUp</b>
+            API and press the <b>Try it Out</b> button, in the <b>Request body</b> Enter SignUp data, and press Execute button.
         </div>
         <div class="image-container">
-            <img class="image" alt="Swagger Sign Up" width="916" height="907" src="/images/demo/swagger-signup.webp" />
+            <img class="image" alt="Swagger Sign Up" src="/images/templates/swagger-signup.webp" />
         </div>
+        <br />
         <div class="section-card-txt">
-            In <span class="bold-txt">SignUp</span> Process after call API, a confirmation email send to your email, In the development, Bit saves sent emails as a .eml file in the <span class="high-light-text">./TodoTemplate/Api/bin/Debug/net7.0/sent-emails</span> path, and developers can easily handle them.
+            In <b>SignUp</b> Process after call API, a confirmation email send to your email, In the development, bit saves the sent emails as a .eml file in the
+            <b>./TodoTemplate/Api/bin/Debug/net7.0/sent-emails</b> path, and developers can easily handle them.
         </div>
         <div class="image-container">
-            <img class="image" alt="Confirm email" width="907" height="926" src="/images/demo/confirm-email-todo.webp" />
+            <img class="image small" alt="Confirm email" src="/images/templates/todo/confirm-email-todo.webp" />
         </div>
-        <div class="section-card-txt">By pressing the <span class="high-light-text">Confirm email</span> button, the ConfirmEmail Api calls and registration process complete. After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.</div>
+        <br />
+        <div class="section-card-txt">
+            By pressing the <b>Confirm email</b> button, the ConfirmEmail Api calls and registration process complete.
+            After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.
+        </div>
         <div class="image-container">
-            <img class="image" alt="Swagger Sign In" width="757" height="207" src="/images/demo/swagger-login-todo.webp" />
+            <img class="image small" alt="Swagger Sign In" src="/images/templates/todo/swagger-login-todo.webp" />
         </div>
     </section>
 </div>

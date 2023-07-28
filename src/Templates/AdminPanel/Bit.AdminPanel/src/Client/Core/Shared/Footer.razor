@@ -6,7 +6,7 @@
         <div class="footer-txt-group">
             @if (SelectedCulture is not null)
             {
-                <BitDropdown Items="GetCultures()" Class="culture-drp" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
+                <BitDropdown Items="GetCultures()" @bind-Value="SelectedCulture" OnSelectItem="WrapHandled(OnCultureChanged)" />
             }
         </div>
         <div class="footer-social-lnk-grp">
@@ -15,6 +15,6 @@
             <BitLink Href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog" Target="_blank"><div class="social-lnk youtube-lnk"></div></BitLink>
             <BitLink Href="https://twitter.com/bitplatformhq" Target="_blank"><div class="social-lnk twitter-lnk"></div></BitLink>
         </div>
-        <div class="footer-copyright">@Localizer[nameof(AppStrings.MadeWith)] <span class="text--red">♥</span> @Localizer[nameof(AppStrings.UsingBitPlatform)]</div>
+        <a class="footer-copyright" href="https://bitplatform.dev">@Localizer[nameof(AppStrings.MadeWith)] <span class="text--red">♥</span> @Localizer[nameof(AppStrings.UsingBitPlatform)]</a>
     </div>
 </footer>

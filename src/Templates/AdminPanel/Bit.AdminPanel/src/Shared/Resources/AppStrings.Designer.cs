@@ -142,7 +142,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Admin Panel.
+        ///   Looks up a localized string similar to Admin​Panel.
         /// </summary>
         public static string AppTitle {
             get {
@@ -917,7 +917,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor admin panel easily in the shortest time ever!.
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor Admin​Panel easily in the shortest time ever!.
         /// </summary>
         public static string HomeMessage {
             get {
@@ -926,7 +926,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bit Admin Panel.
+        ///   Looks up a localized string similar to bit Admin​Panel.
         /// </summary>
         public static string HomeTitle {
             get {
@@ -1736,7 +1736,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Admin Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by Bit BlazorUI components..
+        ///   Looks up a localized string similar to Admin​Panel is a project template that provides common features such as Sign-up &amp; Sign-in. This template is powered by bit BlazorUI components..
         /// </summary>
         public static string StartupPageDescription {
             get {
@@ -1745,7 +1745,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bit Admin Panel.
+        ///   Looks up a localized string similar to bit Admin​Panel.
         /// </summary>
         public static string StartupPageTitle {
             get {

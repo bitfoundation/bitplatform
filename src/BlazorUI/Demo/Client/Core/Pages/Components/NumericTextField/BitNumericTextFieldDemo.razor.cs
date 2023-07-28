@@ -11,30 +11,35 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "AriaDescription",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the input for the benefit of screen readers.",
         },
         new()
         {
             Name = "AriaPositionInSet",
             Type = "int?",
+            DefaultValue = "null",
             Description = "The position in the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaSetSize",
             Type = "int?",
+            DefaultValue = "null",
             Description = "The total size of the parent set (if in a set).",
         },
         new()
         {
             Name = "AriaValueNow",
             Type = "TValue?",
+            DefaultValue = "null",
             Description = "Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.",
         },
         new()
         {
             Name = "AriaValueText",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Sets the control's aria-valuetext.",
         },
         new()
@@ -47,25 +52,28 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "DefaultValue",
             Type = "TValue?",
+            DefaultValue = "null",
             Description = "Initial value of the numeric text field.",
         },
         new()
         {
             Name = "DecrementAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new()
         {
             Name = "DecrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronDownSmall",
+            Type = "string",
+            DefaultValue = "ChevronDownSmall",
             Description = "Custom icon name for the decrement button.",
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIconName?",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Icon name for an icon to display alongside the numeric text field's label.",
         },
         new()
@@ -79,13 +87,14 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "IncrementAriaLabel",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new()
         {
             Name = "IncrementIconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.ChevronUpSmall",
+            Type = "string",
+            DefaultValue = "ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
         },
         new()
@@ -99,6 +108,7 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
         },
         new()
@@ -114,12 +124,14 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "Min",
             Type = "TValue?",
+            DefaultValue = "null",
             Description = "Min value of the numeric text field. If not provided, the numeric text field has minimum value.",
         },
         new()
         {
             Name = "Max",
             Type = "TValue?",
+            DefaultValue = "null",
             Description = "Max value of the numeric text field. If not provided, the numeric text field has max value.",
         },
         new()
@@ -160,18 +172,21 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "Precision",
             Type = "int?",
+            DefaultValue = "null",
             Description = "How many decimal places the value should be rounded to.",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
+            DefaultValue = "null",
             Description = "Input placeholder text.",
         },
         new()
         {
             Name = "Step",
             Type = "TValue?",
+            DefaultValue = "null",
             Description = "Difference between two adjacent values of the numeric text field.",
         },
         new()
@@ -185,12 +200,14 @@ public partial class BitNumericTextFieldDemo
         {
             Name = "ShowArrows",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Whether to show the up/down spinner arrows (buttons).",
         },
         new()
         {
             Name = "Title",
             Type = "string?",
+            DefaultValue = "null",
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
         new()
@@ -337,7 +354,7 @@ public partial class BitNumericTextFieldDemo
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
                      Label=""Label & Icon""
-                     IconName=""BitIconName.Lightbulb"" />
+                     IconName=""@BitIconName.Lightbulb"" />
 
 <BitNumericTextField @bind-Value=""LabelLeftValue""
                      Placeholder=""Enter a number...""
@@ -354,7 +371,7 @@ private int LabelLeftValue;";
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
     <LabelTemplate>
         <label style=""color: green;"">This is custom Label</label>
-        <BitIcon IconName=""BitIconName.Filter"" />
+        <BitIcon IconName=""@BitIconName.Filter"" />
     </LabelTemplate>
 </BitNumericTextField>";
     private readonly string example2CSharpCode = @"
@@ -372,8 +389,8 @@ private int LabelTemplateValue;";
                      Step=""@(1)""
                      Label=""Increment & Decrement Icon""
                      ShowArrows=""true""
-                     IncrementIconName=""BitIconName.LikeSolid""
-                     DecrementIconName=""BitIconName.DislikeSolid"" />";
+                     IncrementIconName=""@BitIconName.LikeSolid""
+                     DecrementIconName=""@BitIconName.DislikeSolid"" />";
     private readonly string example3CSharpCode = @"
 private int SpinArrowValue;
 private int SpinArrowWithIconValue;";
@@ -409,7 +426,7 @@ private decimal MinMaxValue3;";
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
                      Label=""Height""
-                     IconName=""BitIconName.AutoHeight""
+                     IconName=""@BitIconName.AutoHeight""
                      DefaultValue=""150""
                      Suffix="" cm"" />
 
@@ -417,7 +434,7 @@ private decimal MinMaxValue3;";
                      Placeholder=""Enter a number...""
                      Step=""@(0.5M)""
                      Label=""Weight""
-                     IconName=""BitIconName.Weights""
+                     IconName=""@BitIconName.Weights""
                      DefaultValue=""50""
                      Suffix="" kg"" />";
     private readonly string example5CSharpCode = @"

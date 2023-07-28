@@ -18,7 +18,7 @@ public partial class BitDatePickerDemo
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
-            DefaultValue = "",
+            DefaultValue = "new Dictionary<string, object>()",
             Description = "Capture and render additional attributes in addition to the main callout's parameters."
         },
         new()
@@ -31,15 +31,15 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "DateFormat",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
         },
         new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the day cell is rendered."
         },
         new()
@@ -53,14 +53,14 @@ public partial class BitDatePickerDemo
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to previous month",
             Description = "The title of the Go to previous month button.",
         },
         new()
         {
             Name = "GoToNextMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
+            DefaultValue = "Go to next month",
             Description = "The title of the Go to next month button.",
         },
         new()
@@ -88,7 +88,7 @@ public partial class BitDatePickerDemo
         {
             Name = "IconTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Custom DatePicker icon template."
         },
         new()
@@ -97,28 +97,28 @@ public partial class BitDatePickerDemo
             Type = "BitIconLocation",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Left",
+            DefaultValue = "BitIconLocation.Right",
             Description = "DatePicker icon location."
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.CalendarMirrored",
+            Type = "string",
+            DefaultValue = "CalendarMirrored",
             Description = "Optional DatePicker icon."
         },
         new()
         {
             Name = "InvalidErrorMessage",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The custom validation error message for the invalid value."
         },
         new()
         {
             Name = "IsMonthPickerVisible",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the month picker is shown beside the day picker or hidden.",
         },
         new()
@@ -145,8 +145,8 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Label for the DatePicker.",
         },
         new()
@@ -160,49 +160,45 @@ public partial class BitDatePickerDemo
         {
             Name = "MaxDate",
             Type = "DateTimeOffset",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The maximum allowable date.",
         },
         new()
         {
             Name = "MinDate",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
             Description = "The minimum allowable date.",
         },
         new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the month cell is rendered."
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when focus moves into the DatePicker input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            DefaultValue = "",
             Description = "Callback for when clicking on DatePicker input.",
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
             Description = "Callback for when the on selected date changed.",
         },
         new()
@@ -216,14 +212,14 @@ public partial class BitDatePickerDemo
         {
             Name = "Placeholder",
             Type = "string",
-            DefaultValue = "",
+            DefaultValue = "string.Empty",
             Description = "Placeholder text for the DatePicker.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Whether the CalendarDay close button should be shown or not."
         },
         new()
@@ -244,7 +240,7 @@ public partial class BitDatePickerDemo
         {
             Name = "ShowWeekNumbers",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Show week number in the year.",
         },
         new()
@@ -257,22 +253,21 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "Value",
-            Type = "DateTimeOffset",
-            DefaultValue = "",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
             Description = "The value of DatePicker.",
         },
         new()
         {
             Name = "ValueChanged",
             Type = "EventCallback<DateTimeOffset?>",
-            DefaultValue = "",
             Description = "Callback for when the on date value changed.",
         },
         new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the year cell is rendered."
         },
         new()
@@ -453,7 +448,7 @@ private void HandleInvalidSubmit()
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."">
     <LabelTemplate>
-        Custom label <BitIconButton IconName=""BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
+        Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitDatePicker>";
     private readonly string example8CSharpCode = @"
@@ -581,7 +576,7 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
     private readonly string example12HTMLCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
-               IconName=""BitIconName.Airplane""
+               IconName=""@BitIconName.Airplane""
                Placeholder=""Select a date..."" />";
 
     private readonly string example13HTMLCode = @"

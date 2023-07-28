@@ -10,14 +10,13 @@ internal static class ObjectExtensions
         return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
     }
 
-    internal static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
+    internal static string? GetBitIconNameFromProperty(this object? obj, string propertyName)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
         if (value is null) return null;
 
-        if (value is BitIconName bitIconName)
-            return bitIconName;
+        if (value is string bitIconName) return bitIconName;
 
         return null;
     }

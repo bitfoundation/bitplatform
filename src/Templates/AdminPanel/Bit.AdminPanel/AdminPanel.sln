@@ -5,6 +5,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		Clean.bat = Clean.bat
 		src\Directory.Build.props = src\Directory.Build.props
 		global.json = global.json
 	EndProjectSection
@@ -28,14 +29,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.Web", "src\Client\Web\AdminPanel.Client.Web.csproj", "{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.Client.App", "src\Client\App\AdminPanel.Client.App.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{D66B7377-367F-4D57-B176-6F172DFD9ABC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{423403B0-D47A-49BF-91EA-4A1280DD8608}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\cd.yml = .github\workflows\cd.yml
-		.github\workflows\ci.yml = .github\workflows\ci.yml
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"
 EndProject
@@ -88,8 +81,6 @@ Global
 		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
-		{D66B7377-367F-4D57-B176-6F172DFD9ABC} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-		{423403B0-D47A-49BF-91EA-4A1280DD8608} = {D66B7377-367F-4D57-B176-6F172DFD9ABC}
 		{AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 		{28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
 	EndGlobalSection

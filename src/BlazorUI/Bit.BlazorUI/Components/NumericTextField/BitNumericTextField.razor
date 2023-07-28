@@ -5,15 +5,15 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue || Label.HasValue() || LabelTemplate != null)
+    @if (IconName.HasValue() || Label.HasValue() || LabelTemplate != null)
     {
         <div class="bit-ntf-lct">
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
+                <i class="bit-icon bit-icon--@IconName bit-icon--l"
                    aria-hidden="true"
                    role="@GetIconRole"
-                   aria-label="@IconAriaLabel"></i>
+                   aria-label="@IconAriaLabel" />
             }
 
             @if (LabelTemplate != null)
@@ -70,14 +70,14 @@
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)">
                     <span class="bit-ntf-aic">
-                        <i class="bit-icon bit-icon--@IncrementIconName.GetName() bit-icon--s"></i>
+                        <i class="bit-icon bit-icon--@IncrementIconName bit-icon--s" />
                     </span>
                 </button>
 
                 <button @ref="_buttonDecrement"
-                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
-                        @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerup="HandleOnPointerUpOrOut"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
                         type="button"
                         tabindex="-1"
                         class="bit-ntf-adn"
@@ -86,7 +86,7 @@
                         aria-label="@DecrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
                     <span class="bit-ntf-aic">
-                        <i class="bit-icon bit-icon--@DecrementIconName.GetName() bit-icon--s"></i>
+                        <i class="bit-icon bit-icon--@DecrementIconName bit-icon--s" />
                     </span>
                 </button>
             </span>

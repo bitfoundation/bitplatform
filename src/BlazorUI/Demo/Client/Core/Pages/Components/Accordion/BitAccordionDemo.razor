@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/accordion"
             Title="Accordion"
-            Description="accordion component of the bit blazorui components" />
+            Description="accordion component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Accordion"
                ComponentDescription="The Accordion component allows the user to show and hide sections of related content on a page."
@@ -100,7 +100,7 @@
             <div class="example-box">
                 <BitAccordion>
                     <HeaderTemplate Context="isExpanded">
-                        <BitIconButton IconName="isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight" />
+                        <BitIconButton IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
                         <div class="custom-header">
                             <span class="custom-title">Accordion 1</span>
                             <span>I am an accordion</span>

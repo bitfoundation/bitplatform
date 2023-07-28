@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/spinbutton"
             Title="SpinButton"
-            Description="spinbutton component of the bit blazorui components" />
+            Description="spinbutton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="SpinButton"
                ComponentDescription="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
@@ -16,9 +16,9 @@
                 <br />
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
                 <br />
-                <BitSpinButton Label="Label & Icon" IconName="BitIconName.Lightbulb" />
+                <BitSpinButton Label="Label & Icon" IconName="@BitIconName.Lightbulb" />
                 <br />
-                <BitSpinButton Label="Left Label" IconName="BitIconName.Lightbulb" LabelPosition="BitSpinButtonLabelPosition.Left" />
+                <BitSpinButton Label="Left Label" IconName="@BitIconName.Lightbulb" LabelPosition="BitSpinButtonLabelPosition.Left" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -29,7 +29,7 @@
                 <BitSpinButton>
                     <LabelTemplate>
                         <label style="color: green;">This is custom Label</label>
-                        <BitIcon IconName="BitIconName.Filter" />
+                        <BitIcon IconName="@BitIconName.Filter" />
                     </LabelTemplate>
                 </BitSpinButton>
             </div>
@@ -40,8 +40,8 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Like and Dislike"
-                               IncrementButtonIconName="BitIconName.LikeSolid"
-                               DecrementButtonIconName="BitIconName.DislikeSolid" />
+                               IncrementButtonIconName="@BitIconName.LikeSolid"
+                               DecrementButtonIconName="@BitIconName.DislikeSolid" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -65,13 +65,13 @@
                 <BitSpinButton Label="Height"
                                Suffix=" cm"
                                DefaultValue="150"
-                               IconName="BitIconName.AutoHeight" />
+                               IconName="@BitIconName.AutoHeight" />
                 <br />
                 <BitSpinButton Label="Weight"
                                Step="0.5"
                                Suffix=" kg"
                                DefaultValue="50"
-                               IconName="BitIconName.Weights" />
+                               IconName="@BitIconName.Weights" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

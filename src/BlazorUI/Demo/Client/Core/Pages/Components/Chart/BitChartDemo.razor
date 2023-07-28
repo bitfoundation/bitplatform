@@ -2,19 +2,21 @@
 
 <PageOutlet Url="components/chart"
             Title="Chart"
-            Description="chart component of the bit blazorui components" />
+            Description="chart component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Chart"
                ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-               Notes="You need to install the `Bit.BlazorUI.Extras` nuget package in order to use this component."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="Bar Chart" CSharpSourceCode="@example1CSharpCode" HTMLSourceCode="@example1HTMLCode" ExampleId="Example1">
         <ExamplePreview>
             <div class="example-desc">
                 A bar chart provides a way of showing data values represented as vertical bars. It is sometimes used to show trend data, and the comparison of multiple data sets side by side.
             </div>
-            <div>
-                <BitChart Config="_barChartConfigExample" @ref="_barChartExample1" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_barChartConfigExample" @ref="_barChartExample1" />
+                </div>
             </div>
             <div>
                 <BitButton Style="margin:5px" ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizeBarData">Randomize Data</BitButton>
@@ -31,8 +33,10 @@
             <div class="example-desc">
                 A horizontal bar chart is a variation on a vertical bar chart. It is sometimes used to show trend data, and the comparison of multiple data sets side by side. To achieve this you will have to set the horizontal param in the BitChartBarConfig constructor to 'true'. The default for this property is 'false' and thus will show vertical bars.
             </div>
-            <div>
-                <BitChart Config="_horizontalBarChartConfigExample" @ref="_horizontalBarChartExample" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_horizontalBarChartConfigExample" @ref="_horizontalBarChartExample" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -42,10 +46,11 @@
             <div class="example-desc">
                 Bar charts can be configured into stacked bar charts by changing the settings on the X and Y axes to enable stacking. Stacked bar charts can be used to show how one data series is made up of a number of smaller pieces.
             </div>
-            <div>
-                <BitChart Config="_stackedBarChartConfigExample" @ref="_stackedBarChartExample" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_stackedBarChartConfigExample" @ref="_stackedBarChartExample" />
+                </div>
             </div>
-
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -54,8 +59,10 @@
             <div class="example-desc">
                 A line chart is a way of plotting data points on a line. Often, it is used to show trend data, or the comparison of two data sets.
             </div>
-            <div>
-                <BitChart Config="_lineChartConfigExample" @ref="_lineChartExample" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_lineChartConfigExample" @ref="_lineChartExample" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -65,8 +72,10 @@
             <div class="example-desc">
                 Pie and doughnut charts are probably the most commonly used charts. They are divided into segments, the arc of each segment shows the proportional value of each piece of data.They are excellent at showing the relational proportions between data.
             </div>
-            <div>
-                <BitChart Config="_pieChartConfigExample" @ref="_pieChartExample" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_pieChartConfigExample" @ref="_pieChartExample" />
+                </div>
             </div>
             <div>
                 <BitButton Style="margin:5px" ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizePieData">Randomize Data</BitButton>
@@ -83,8 +92,10 @@
             <div class="example-desc">
                 The doughnut chart is the same as the Pie chart. To achieve this you will have to set the useDoughnutType param in the BitChartPieConfig constructor to 'true'.
             </div>
-            <div>
-                <BitChart Config="_doughnutChartConfigExample" @ref="_doughnutChartExample" />
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <BitChart Config="_doughnutChartConfigExample" @ref="_doughnutChartExample" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

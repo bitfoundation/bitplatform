@@ -10,6 +10,10 @@
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,28 +30,22 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.1.0" />
-        <PackageReference Include="Bit.Bup" Version="5.1.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.2.0" />
+        <PackageReference Include="Bit.Bup" Version="5.2.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.2.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="BuildWebCompiler2022" Version="1.14.10">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.5.23302.2" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.5.23302.2" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.5.23302.2" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.6.23329.11" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.6.23329.11" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.6.23329.11" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -76,4 +74,11 @@
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
 </Project>

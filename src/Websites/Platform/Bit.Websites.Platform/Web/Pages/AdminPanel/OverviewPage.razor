@@ -4,28 +4,29 @@
 
 <PageOutlet Url="admin-panel/overview"
             Title="Overview - AdminPanel"
-            Description="overview of the admin panel template of the bit platform" />
+            Description="overview of the AdminPanel template of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">AdminPanel</h1>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>AdminPanel</BitTypography>
     <div class="page-flex-container">
-        <div class="page-conent-container">
+        <div class="page-content-container">
             <div class="image-container">
-                <img class="template-img" src="/images/templates/admin-panel.webp" alt="AdminPanel" />
-                <a class="preview-btn-shadow" href="@Urls.AdminPanelMultiLingual" target="_blank">
-                    <div class="preview-btn">Demo</div>
+                <img class="template-img" src="/images/templates/admin/adminpanel.webp" alt="AdminPanel" />
+                <a class="demo-btn-shadow" href="@Urls.AdminPanelMultiLingual" target="_blank">
+                    <div class="demo-btn">Demo</div>
                 </a>
             </div>
-            <div class="content-title">Description</div>
-            <div>
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Description</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Body1">
                 The AdminPanel is a project template that includes all the necessary parts to create a fully-featured admin/management website.
-                This guide aims to help you create and run a Bit Platform admin panel project in a short time.
-            </div>
+                This guide aims to help you create and run a bit AdminPanel project in a short time.
+            </BitTypography>
         </div>
 
-        <div class="page-conent-container">
-            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="Spa">Multi-lingual Demo</a>
+        <div class="page-content-container">
+            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="SPA">SPA demo</a>
             <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>Apple Store</a>
             <a class="secondary-btn" href="@Urls.AdminPanelNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
             <a class="secondary-btn" href="@Urls.AdminPanelFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>
         </div>

@@ -217,7 +217,7 @@ jobs:
        run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:MultilingualEnabled=false -f net7.0-maccatalyst
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:MultilingualEnabled=false -f net7.0-maccatalyst
+       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:MultilingualEnabled=false -f net7.0-maccatalyst
    
      - name: Build pkg
        run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:MultilingualEnabled=false -f net7.0-maccatalyst
@@ -322,17 +322,23 @@ jobs:
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
+     - name: Switch to BlazorElectron
+       run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Directory.Build.props > temp.xml && mv temp.xml src/Templates/TodoTemplate/Bit.TodoTemplate/src/Directory.Build.props
+
+     - name: Disable Multilingual
+       run: awk '/<MultilingualEnabled>/{sub(">.*</", ">false</")}1' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Directory.Build.props > temp.xml && mv temp.xml src/Templates/TodoTemplate/Bit.TodoTemplate/src/Directory.Build.props
+
      - name: Restore workloads
-       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:MultilingualEnabled=false
+       run: dotnet workload restore src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorElectron -p:Configuration=Release -p:MultilingualEnabled=false
+       run: dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
-       run: cd src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/ && dotnet electronize build /target linux /p:BlazorMode=BlazorElectron /p:MultilingualEnabled=false
+       run: cd src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/ && dotnet electronize build /target linux
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: linux-app-image
-         path: src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/bin/Desktop/linux-unpacked/*.*
+         path: src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/bin/Desktop/linux-unpacked

@@ -45,9 +45,10 @@ public partial class MainLayout : IDisposable
             _exceptionHandler.Handle(exp);
         }
 
-        _unsubscribe = _pubSubService.Sub(PubSubMessages.PAGE_TITLE_CHANGED, payload =>
+        _unsubscribe = _pubSubService.Sub(PubSubMessages.PAGE_TITLE_CHANGED, async payload =>
         {
             _pageTitle = payload?.ToString();
+            await Task.Yield();
             StateHasChanged();
         });
     }

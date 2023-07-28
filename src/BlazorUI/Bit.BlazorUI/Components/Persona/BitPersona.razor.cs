@@ -18,7 +18,7 @@ public partial class BitPersona
 
     private bool _isLoaded;
     private bool _hasError;
-    private bool _renderIcon;
+    private bool _shouldRenderIcon;
     private string? _iconStyle = string.Empty;
     private string? _presenceStyle = string.Empty;
     private string _internalInitials = string.Empty;
@@ -138,7 +138,7 @@ public partial class BitPersona
     /// <summary>
     /// Icon name for the icon button of the custom action.
     /// </summary>
-    [Parameter] public BitIconName ActionIconName { get; set; } = BitIconName.Edit;
+    [Parameter] public string? ActionIconName { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.
@@ -187,7 +187,7 @@ public partial class BitPersona
                 : PRESENCE_MAX_SIZE + "px";
         }
 
-        _renderIcon = (Size != BitPersonaSize.Size20 && Size != BitPersonaSize.Size24 && Size != BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
+        _shouldRenderIcon = (Size != BitPersonaSize.Size20 && Size != BitPersonaSize.Size24 && Size != BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
 
         _internalInitials = ImageInitials ?? GetInitials();
 

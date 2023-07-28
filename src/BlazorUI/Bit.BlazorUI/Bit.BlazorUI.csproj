@@ -6,8 +6,8 @@
         <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            CompileScssFiles;
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net7.0'">
+            BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
@@ -17,14 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
     </ItemGroup>
@@ -32,9 +24,6 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Remove="bundleconfig.json" />
-        <None Include="bundleconfig.json" />
-
         <Watch Remove="*.scss" />
     </ItemGroup>
 
@@ -58,12 +47,10 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="CompileScssFiles" AfterTargets="CoreCompile">
-        <Exec Command="npx sass --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeSass" />
-        </Exec>
-        <Exec Condition="'$(ErrorCodeSass)' != '0'" Command="npm install sass"></Exec>
-        <Exec Command="npx sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
+        <Exec Command="npx --yes sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.min.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.min.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.min.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

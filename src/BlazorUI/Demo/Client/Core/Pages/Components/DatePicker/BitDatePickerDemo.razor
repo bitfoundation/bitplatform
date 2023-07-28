@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/datepicker"
             Title="DatePicker"
-            Description="datepicker component of the bit blazorui components" />
+            Description="datepicker component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="DatePicker"
                ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
@@ -149,7 +149,7 @@
                            AriaLabel="Select a date"
                            Placeholder="Select a date...">
                 <LabelTemplate>
-                    Custom label <BitIconButton IconName="BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
+                    Custom label <BitIconButton IconName="@BitIconName.Calendar" OnClick="OpenCallout"></BitIconButton>
                 </LabelTemplate>
             </BitDatePicker>
         </ExamplePreview>
@@ -236,7 +236,7 @@
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
-                           IconName="BitIconName.Airplane"
+                           IconName="@BitIconName.Airplane"
                            Placeholder="Select a date..." />
         </ExamplePreview>
     </ComponentExampleBox>

@@ -3,14 +3,15 @@
 
 <PageOutlet Url="components/splitbutton"
             Title="SplitButton"
-            Description="splitbutton component of the bit blazorui components" />
+            Description="splitbutton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="SplitButton"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
-    <BitPivot OnItemClick="OnTabClick">
+               ComponentSubEnums="componentSubEnums"
+               Notes="The BitSplitButton is a Multi-API component which can accept the list of Items in 3 different ways: BitSplitButtonItem class, a custom Generic class, and BitSplitButtonOption component.">
+    <BitPivot OnItemClick="OnTabClick" ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
         <BitPivotItem HeaderText="Item">
             <ComponentExampleBox Title="Basic SplitButton" HTMLSourceCode="@example1BitSplitButtonItemHTMLCode" CSharpSourceCode="@example1BitSplitButtonItemCSharpCode" ExampleId="example1">
                 <ExamplePreview>
@@ -111,7 +112,7 @@
                                     @if (item.Key == "add-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Add" />&nbsp;
+                                            <BitIcon IconName="@BitIconName.Add" />&nbsp;
                                             <span style="color: green;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -120,7 +121,7 @@
                                     else if (item.Key == "edit-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Edit" />&nbsp;
+                                            <BitIcon IconName="@BitIconName.Edit" />&nbsp;
                                             <span style="color: yellow;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -129,7 +130,7 @@
                                     else if (item.Key == "delete-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Delete" />&nbsp;
+                                            <BitIcon IconName="@BitIconName.Delete" />&nbsp;
                                             <span style="color: red;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -333,7 +334,7 @@
                                     @if (item.Id == "add-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Add" />
+                                            <BitIcon IconName="@BitIconName.Add" />
                                             <span style="color: green;">
                                                 @item.Name (@item.Id)
                                             </span>
@@ -342,7 +343,7 @@
                                     else if (item.Id == "edit-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Edit" />
+                                            <BitIcon IconName="@BitIconName.Edit" />
                                             <span style="color: yellow;">
                                                 @item.Name (@item.Id)
                                             </span>
@@ -351,7 +352,7 @@
                                     else if (item.Id == "delete-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Delete" />
+                                            <BitIcon IconName="@BitIconName.Delete" />
                                             <span style="color: red;">
                                                 @item.Name (@item.Id)
                                             </span>
@@ -455,8 +456,8 @@
                             <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -464,8 +465,8 @@
                             <BitSplitButton ButtonStyle="BitButtonStyle.Standard"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -473,8 +474,8 @@
                             <BitSplitButton IsEnabled="false"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                     </div>
@@ -491,9 +492,9 @@
                             <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
                                             IsSticky="true"
                                             OnClick="(BitSplitButtonOption item) => IsStickyClickedItem = item.Text">
-                                <BitSplitButtonOption Text="Add" Key="add-key" IconName="BitIconName.Add" />
-                                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="BitIconName.Edit" />
-                                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
+                                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -501,9 +502,9 @@
                             <BitSplitButton ButtonStyle="BitButtonStyle.Standard"
                                             IsSticky="true"
                                             OnClick="(BitSplitButtonOption item) => IsStickyClickedItem = item.Text">
-                                <BitSplitButtonOption Text="Add" Key="add-key" IconName="BitIconName.Add" />
-                                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="BitIconName.Edit" />
-                                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
+                                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
                             </BitSplitButton>
                         </div>
                     </div>
@@ -520,20 +521,20 @@
                             <BitSplitButton ButtonStyle="BitButtonStyle.Primary"
                                             IsSticky="true"
                                             OnClick="(BitSplitButtonOption item) => DisabledClickedItem = item.Text">
-                                <BitSplitButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji2" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item D" Key="D" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item D" Key="D" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
                             <BitLabel>Basic Standard</BitLabel>
                             <BitSplitButton ButtonStyle="BitButtonStyle.Standard"
                                             OnClick="(BitSplitButtonOption item) => DisabledClickedItem = item.Text">
-                                <BitSplitButtonOption Text="Item A" Key="A" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji2" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item D" Key="D" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item D" Key="D" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                     </div>
@@ -558,9 +559,9 @@
                                     </div>
                                 </ItemTemplate>
                                 <ChildContent>
-                                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="BitIconName.Add" />
-                                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="BitIconName.Edit" />
-                                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
+                                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
                                 </ChildContent>
                             </BitSplitButton>
                         </div>
@@ -573,7 +574,7 @@
                                     @if (item.Key == "add-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Add" />
+                                            <BitIcon IconName="@BitIconName.Add" />
                                             <span style="color: green;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -582,7 +583,7 @@
                                     else if (item.Key == "edit-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Edit" />
+                                            <BitIcon IconName="@BitIconName.Edit" />
                                             <span style="color: yellow;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -591,7 +592,7 @@
                                     else if (item.Key == "delete-key")
                                     {
                                         <div class="item-template-box">
-                                            <BitIcon IconName="BitIconName.Delete" />
+                                            <BitIcon IconName="@BitIconName.Delete" />
                                             <span style="color: red;">
                                                 @item.Text (@item.Key)
                                             </span>
@@ -599,8 +600,8 @@
                                     }
                                 </ItemTemplate>
                                 <ChildContent>
-                                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="BitIconName.Add" />
-                                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="BitIconName.Edit" />
+                                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
                                     <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
                                 </ChildContent>
                             </BitSplitButton>
@@ -620,8 +621,8 @@
                                             ButtonSize="BitButtonSize.Small"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -630,8 +631,8 @@
                                             ButtonSize="BitButtonSize.Medium"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -640,8 +641,8 @@
                                             ButtonSize="BitButtonSize.Large"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                     </div>
@@ -659,8 +660,8 @@
                                             ButtonSize="BitButtonSize.Small"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -670,8 +671,8 @@
                                             ButtonSize="BitButtonSize.Medium"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                         <div>
@@ -681,8 +682,8 @@
                                             ButtonSize="BitButtonSize.Large"
                                             OnClick="(BitSplitButtonOption item) => BasicClickedItem = item.Text">
                                 <BitSplitButtonOption Text="Item A" Key="A" />
-                                <BitSplitButtonOption Text="Item B" Key="B" IconName="BitIconName.Emoji" />
-                                <BitSplitButtonOption Text="Item C" Key="C" IconName="BitIconName.Emoji2" />
+                                <BitSplitButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                                <BitSplitButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                             </BitSplitButton>
                         </div>
                     </div>

@@ -25,12 +25,14 @@ public partial class BitSnackBarDemo
         {
             Name = "BodyTemplate",
             Type = "RenderFragment<string>?",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the Body is rendered.",
         },
         new()
         {
             Name = "DismissIconName",
-            Type = "BitIconName?",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Dismiss Icon in SnackBar.",
         },
         new()
@@ -52,6 +54,7 @@ public partial class BitSnackBarDemo
         {
             Name = "TitleTemplate",
             Type = "RenderFragment<string>?",
+            DefaultValue = "null",
             Description = "Used to customize how content inside the Title is rendered. ",
         },
     };
@@ -187,7 +190,7 @@ private async Task OpenBasicSnackBar()
 }";
 
     private readonly string example2HTMLCode = @"
-<BitSnackBar @ref=""DismissIconName"" DismissIconName=""BitIconName.Go"" />
+<BitSnackBar @ref=""DismissIconName"" DismissIconName=""@BitIconName.Go"" />
 <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 
 <BitSnackBar @ref=""TitleTemplate"" AutoDismiss=""false"">

@@ -130,10 +130,10 @@
     <value>Créez facilement votre application Blazor multi-mode (WASM, serveur, hybride, pré-rendu) dans les plus brefs délais !</value>
   </data>
   <data name="HomeTitle" xml:space="preserve">
-    <value>AdminPanel Accueil</value>
+    <value>Admin​Panel Accueil</value>
   </data>
   <data name="AppTitle" xml:space="preserve">
-    <value>Admin Panel</value>
+    <value>Admin​Panel</value>
   </data>
   <data name="All" xml:space="preserve">
     <value>Toute</value>
@@ -238,10 +238,10 @@
     <value>Trier par</value>
   </data>
   <data name="StartupPageDescription" xml:space="preserve">
-    <value>Le panneau d'administration est un modèle de projet qui fournit des fonctionnalités communes telles que l'inscription et la connexion. Ce modèle est alimenté par les composants Bit BlazorUI.</value>
+    <value>Le panneau d'administration est un modèle de projet qui fournit des fonctionnalités communes telles que l'inscription et la connexion. Ce modèle est alimenté par les composants bit BlazorUI.</value>
   </data>
   <data name="StartupPageTitle" xml:space="preserve">
-    <value>Bit Admin Panel</value>
+    <value>bit Admin​Panel</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
     <value>Catégories totales</value>

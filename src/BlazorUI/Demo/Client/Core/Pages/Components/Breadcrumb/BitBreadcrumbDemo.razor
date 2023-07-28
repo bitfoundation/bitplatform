@@ -2,13 +2,14 @@
 
 <PageOutlet Url="components/breadcrumb"
             Title="Breadcrumb"
-            Description="breadcrumb component of the bit blazorui components" />
+            Description="breadcrumb component of the bit BlazorUI components" />
 
 <div>
     <ComponentDemo ComponentName="Breadcrumb"
                    ComponentDescription="Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy. They also afford one-click access to higher levels of that hierarchy."
                    ComponentParameters="componentParameters"
-                   ComponentSubClasses="componentSubClasses">
+                   ComponentSubClasses="componentSubClasses"
+                   Notes="The BitBreadcrumb is a Multi-API component which can accept the list of Items in 3 different ways: BitBreadcrumbItem class, a custom Generic class, and BitBreadcrumbOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
                 <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BreadcrumbItemHTMLCode" CSharpSourceCode="@example1BreadcrumbItemCSharpCode" ExampleId="example1">
@@ -73,14 +74,14 @@
                                 <BitBreadcrumb Items="BreadcrumbItems"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
-                                               OverflowIcon="BitIconName.ChevronDown" />
+                                               OverflowIconName="@BitIconName.ChevronDown" />
                             </div>
                             <div>
                                 <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                                 <BitBreadcrumb Items="BreadcrumbItems"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
-                                               OverflowIcon="BitIconName.CollapseMenu" />
+                                               OverflowIconName="@BitIconName.CollapseMenu" />
                             </div>
                         </div>
                     </ExamplePreview>
@@ -271,7 +272,7 @@
                                                StyleField="@nameof(PageInfoModel.HtmlStyle)"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
-                                               OverflowIcon="BitIconName.ChevronDown" />
+                                               OverflowIconName="@BitIconName.ChevronDown" />
                             </div>
                             <div>
                                 <BitLabel>BitIconName (CollapseMenu)</BitLabel>
@@ -283,7 +284,7 @@
                                                StyleField="@nameof(PageInfoModel.HtmlStyle)"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
-                                               OverflowIcon="BitIconName.CollapseMenu" />
+                                               OverflowIconName="@BitIconName.CollapseMenu" />
                             </div>
                         </div>
                     </ExamplePreview>
@@ -488,7 +489,7 @@
                         <div class="example-box">
                             <div>
                                 <BitLabel>BitIconName (ChevronDown)</BitLabel>
-                                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIcon="BitIconName.ChevronDown">
+                                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.ChevronDown">
                                     <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                                     <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                                     <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
@@ -498,7 +499,7 @@
 
                             <div>
                                 <BitLabel>BitIconName (CollapseMenu)</BitLabel>
-                                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIcon="BitIconName.CollapseMenu">
+                                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.CollapseMenu">
                                     <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                                     <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                                     <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />

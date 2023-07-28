@@ -3,11 +3,12 @@
 
 <PageOutlet Url="components/togglebutton"
             Title="ToggleButton"
-            Description="togglebutton component of the bit blazorui components" />
+            Description="togglebutton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="ToggleButton"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="BitToggleButton" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
@@ -20,26 +21,26 @@
                 <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
                                  Class="tgl-btn"
                                  Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
-                                 IconName=@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
+                                 IconName="@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  ButtonStyle="BitButtonStyle.Primary">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
                                  Class="tgl-btn"
                                  Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
-                                 IconName=@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
+                                 IconName="@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  ButtonStyle="BitButtonStyle.Standard">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
                                  Class="tgl-btn"
                                  IsEnabled="false"
                                  Label="@(ToggleDisabledButtonChecked ? "Primary disabled Mute" : "Primary disabled Unmute")"
-                                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)>
+                                 IconName="@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)">
                 </BitToggleButton>
                 <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
                                  Class="tgl-btn"
                                  IsEnabled="false"
                                  Label="@(ToggleDisabledButtonChecked ? "Standard disabled Mute" : "Standard disabled Unmute")"
-                                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
+                                 IconName="@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  ButtonStyle="BitButtonStyle.Standard">
                 </BitToggleButton>
             </div>
@@ -52,7 +53,7 @@
             <div class="example-box">
                 <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
                                  Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)
+                                 IconName="@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)"
                                  OnChange="ToggleButtonChanged">
                 </BitToggleButton>
             </div>
@@ -64,7 +65,7 @@
             <div class="example-box">
                 <BitToggleButton @bind-IsChecked="ToggleButtonTwoWayValue"
                                  Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                 IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                 </BitToggleButton>
                 <BitCheckbox Label="Checked Toggle Button" @bind-Value="ToggleButtonTwoWayValue" />
             </div>
@@ -78,7 +79,7 @@
                 <BitToggleButton OnChange="((e) => ToggleButtonValue = e)"
                                  DefaultIsChecked="true"
                                  Label="@(ToggleButtonValue ? "Mute" : "Unmute")"
-                                 IconName=@(ToggleButtonValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                 IconName="@(ToggleButtonValue ? BitIconName.MicOff : BitIconName.Microphone)">
                 </BitToggleButton>
             </div>
         </ExamplePreview>
@@ -111,21 +112,21 @@
                     <BitLabel>Small size</BitLabel>
                     <BitToggleButton ButtonSize=BitButtonSize.Small @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
                 <div>
                     <BitLabel>Medium size</BitLabel>
                     <BitToggleButton ButtonSize=BitButtonSize.Medium @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
                 <div>
                     <BitLabel>Large size</BitLabel>
                     <BitToggleButton ButtonSize=BitButtonSize.Large @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
             </div>
@@ -140,21 +141,21 @@
                     <BitLabel>Small size</BitLabel>
                     <BitToggleButton Class="custom-btn-sm" ButtonSize=BitButtonSize.Small @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
                 <div>
                     <BitLabel>Medium size</BitLabel>
                     <BitToggleButton Class="custom-btn-md" ButtonSize=BitButtonSize.Medium @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
                 <div>
                     <BitLabel>Large size</BitLabel>
                     <BitToggleButton Class="custom-btn-lg" ButtonSize=BitButtonSize.Large @bind-IsChecked="ToggleButtonTwoWayValue"
                                      Label="@(ToggleButtonTwoWayValue ? "Mute" : "Unmute")"
-                                     IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
+                                     IconName="@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)">
                     </BitToggleButton>
                 </div>
             </div>

@@ -2,14 +2,15 @@
 
 <PageOutlet Url="components/nav"
             Title="Nav"
-            Description="nav component of the bit blazorui components" />
+            Description="nav component of the bit BlazorUI components" />
 
 <div>
     <ComponentDemo ComponentName="Nav"
                    ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
                    ComponentParameters="componentParameters"
                    ComponentSubClasses="componentSubClasses"
-                   ComponentSubEnums="componentSubEnums">
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
                 <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1NavItemHTMLCode" CSharpSourceCode="@example1NavItemCSharpCode" ExampleId="example1">
@@ -67,7 +68,7 @@
                                 <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Text</span>
                                         </div>
                                     </HeaderTemplate>
@@ -80,9 +81,9 @@
                                     <ItemTemplate Context="item">
                                         <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
                                             <BitCheckbox IsEnabled="@(item.IsEnabled)" />
-                                            @if (item.IconName.HasValue)
+                                            @if (item.IconName.HasValue())
                                             {
-                                                <BitIcon IconName="@item.IconName.Value" />
+                                                <BitIcon IconName="@item.IconName" />
                                             }
                                             <span>@item.Text</span>
                                         </div>
@@ -211,7 +212,7 @@
 
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Name</span>
                                         </div>
                                     </HeaderTemplate>
@@ -361,7 +362,7 @@
                                 <BitLabel>Basic</BitLabel>
                                 <BitNav TItem="BitNavOption"
                                         Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods" IconName="BitIconName.HeartBroken">
+                                    <BitNavOption Text="Fast-Foods" IconName="@BitIconName.HeartBroken">
                                         <BitNavOption Text="Burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
@@ -394,7 +395,7 @@
                                 <BitLabel>Two-Way Bind</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
                                     <BitNavOption Text="Fast-Foods"
-                                                  IconName="BitIconName.HeartBroken"
+                                                  IconName="@BitIconName.HeartBroken"
                                                   IsExpanded="true">
                                         <BitNavOption Text="Burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
@@ -436,7 +437,7 @@
                                 <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
-                                            <BitIcon IconName="BitIconName.FavoriteStarFill" />
+                                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
                                             <span>@item.Text</span>
                                         </div>
                                     </HeaderTemplate>
@@ -522,7 +523,7 @@
                                     OnSelectItem="(BitNavOption option) => SelectedOption = option"
                                     OnItemToggle="(BitNavOption option) => ToggledOption = option">
                                 <BitNavOption Text="Fast-Foods"
-                                              IconName="BitIconName.HeartBroken"
+                                              IconName="@BitIconName.HeartBroken"
                                               IsExpanded="true">
                                     <BitNavOption Text="Burgers">
                                         <BitNavOption Text="Beef Burger" Key="Beef Burger" />

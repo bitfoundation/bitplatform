@@ -1,6 +1,5 @@
 ﻿@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_fonts.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
@@ -49,7 +48,6 @@ main {
 
     .page-section {
         width: 100%;
-        /*overflow: hidden;*/
         padding: rem(28px);
         position: relative;
         box-sizing: border-box;
@@ -61,6 +59,7 @@ main {
     }
 
     .title {
+        overflow-wrap: anywhere;
         margin-bottom: rem(50px);
     }
 
@@ -70,7 +69,15 @@ main {
     }
 
     .section-title {
+        bottom: rem(8px);
+        position: absolute;
+        margin-right: rem(175px);
         color: $bit-color-foreground-primary;
+
+        @include lt-lg {
+            overflow-wrap: anywhere;
+            margin-right: rem(90px);
+        }
     }
 }
 

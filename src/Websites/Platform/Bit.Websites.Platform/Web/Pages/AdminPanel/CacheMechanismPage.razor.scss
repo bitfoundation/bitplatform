@@ -35,3 +35,7 @@
 .bold-txt {
     font-weight: bold;
 }
+
+::deep a {
+    color: $bit-color-primary-main;
+}

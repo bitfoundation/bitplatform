@@ -7,6 +7,10 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,30 +28,24 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.1.0" />
-        <PackageReference Include="Bit.Bup" Version="5.1.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.2.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.2.0" />
+        <PackageReference Include="Bit.Bup" Version="5.2.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.2.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="DartSassBuilder" Version="1.0.0" Watch="false">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.8" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.8" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.1.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -66,5 +64,11 @@
     <ItemGroup>
         <ProjectReference Include="..\Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <Exec Command="npx --yes sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
 </Project>

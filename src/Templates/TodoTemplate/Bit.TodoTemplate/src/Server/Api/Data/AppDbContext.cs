@@ -1,4 +1,6 @@
-﻿using TodoTemplate.Server.Api.Models.Account;
+﻿//+:cnd:noEmit
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using TodoTemplate.Server.Api.Models.Account;
 using TodoTemplate.Server.Api.Models.TodoItem;
 
 namespace TodoTemplate.Server.Api.Data;
@@ -9,6 +11,8 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
         : base(options)
     {
     }
+
+    public DbSet<TodoItem> TodoItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -43,7 +47,16 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
         }
     }
 
-    public DbSet<TodoItem> TodoItems { get; set; }
+    //#if (database == "Sqlite")
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        {
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        }
+    }
+    //#endif
 
     private void ConfigIdentityTables(ModelBuilder builder)
     {

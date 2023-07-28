@@ -11,14 +11,14 @@ public partial class BitToggleButtonDemo
         {
             Name = "AllowDisabledFocus",
             Type = "bool",
-            DefaultValue = "false",
+            DefaultValue = "true",
             Description = "Whether the toggle button can have focus in disabled mode.",
         },
         new()
         {
             Name = "AriaDescription",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Detailed description of the toggle button for the benefit of screen readers.",
         },
         new()
@@ -48,66 +48,134 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitToggleButtonClassStyles?",
+            DefaultValue = "null",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS classes/styles for different parts of the component."
+        },
+        new()
+        {
             Name = "DefaultIsChecked",
             Type = "bool?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Default value of the IsChecked.",
         },
         new()
         {
             Name = "Href",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL the link points to, if provided, button renders as an anchor.",
         },
         new()
         {
             Name = "IconName",
-            Type = "BitIcon",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon that shows in the toggle button.",
         },
         new()
         {
             Name = "IsChecked",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Determine if the toggle button is in checked state, default is true.",
         },
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The text that shows in the label.",
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<bool>",
-            DefaultValue = "",
             Description = "Callback that is called when the IsChecked value has changed.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "Callback for when the button clicked.",
         },
         new()
         {
             Name = "Target",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
         },
         new()
         {
             Name = "Title",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the toggle button.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitToggleButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Icon",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon element.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon and label container.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               },
+               new()
+               {
+                   Name = "Label",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label element.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS class."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS style."
+               }
+            }
         }
     };
 

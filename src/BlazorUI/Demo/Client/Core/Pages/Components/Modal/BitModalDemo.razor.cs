@@ -24,15 +24,15 @@ public partial class BitModalDemo
         new()
         {
             Name = "ChildContent",
-            Type = "RenderFragment",
-            DefaultValue = "",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
             Description = "The content of Modal, It can be Any custom tag or a text.",
         },
         new()
         {
             Name = "ClassStyles",
-            Type = "BitModalClassStyles",
-            DefaultValue = "",
+            Type = "BitModalClassStyles?",
+            DefaultValue = "null",
             Href = "class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitModal component."
@@ -41,14 +41,14 @@ public partial class BitModalDemo
         {
             Name = "DragElementSelector",
             Type = "string?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "The CSS selector of the drag element. by default the Modal container is the drag element.",
         },
         new()
         {
             Name = "IsAlert",
             Type = "bool?",
-            DefaultValue = "",
+            DefaultValue = "null",
             Description = "Determines the ARIA role of the dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.",
         },
         new()
@@ -83,7 +83,6 @@ public partial class BitModalDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
             Description = "A callback function for when the Modal is dismissed.",
         },
         new()
@@ -105,15 +104,15 @@ public partial class BitModalDemo
         new()
         {
             Name = "SubtitleAriaId",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "ARIA id for the subtitle of the Modal, if any.",
         },
         new()
         {
             Name = "TitleAriaId",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "ARIA id for the title of the Modal, if any.",
         }
     };
@@ -207,7 +206,7 @@ public partial class BitModalDemo
 <BitModal @bind-IsOpen=""IsOpen"">
     <div class=""modal-header"">
         <span>Lorem Ipsum</span>
-        <BitIconButton OnClick=@(() => IsOpen = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -265,7 +264,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen1"" IsBlocking=""true"">
     <div class=""modal-header"">
         <span>IsBlocking = true</span>
-        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -284,7 +283,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen2"" AutoToggleScroll=""false"">
     <div class=""modal-header"">
         <span>AutoToggleScroll = false</span>
-        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -340,7 +339,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen3"" AbsolutePosition=""true"" AutoToggleScroll=""false"" IsModeless=""true"">
         <div class=""modal-header"">
             <span>AbsolutePosition=true & IsModeless=true</span>
-            <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+            <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -358,7 +357,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen4"" AbsolutePosition=""true"" ScrollerSelector="".relative-container"">
         <div class=""modal-header"">
             <span>ScrollerSelector</span>
-            <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+            <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -448,7 +447,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
     <div class=""modal-header"">
         <span>Modal positioning</span>
-        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -490,7 +489,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen5"" IsDraggable=""IsDraggable"">
     <div class=""modal-header"">
         <span>Draggble Modal</span>
-        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -510,7 +509,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen6"" IsDraggable=""true"" DragElementSelector="".modal-header-drag"">
     <div class=""modal-header modal-header-drag"">
         <span>Draggble Modal with custom drag element</span>
-        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""BitIconName.ChromeClose"" Title=""Close"" />
+        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>

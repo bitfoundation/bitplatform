@@ -65,7 +65,7 @@
                     {
                         <button @onclick="HandleActionClick" class="bit-prs-abt" title="Edit image">
                             <span class="icon-container">
-                                <i class="bit-icon bit-icon--@ActionIconName.GetName()"></i>
+                                <i class="bit-icon bit-icon--@ActionIconName" />
                             </span>
                         </button>
                     }
@@ -73,7 +73,7 @@
                 else if (Presence != BitPersonaPresenceStatus.None)
                 {
                     <div title=@PresenceTitle class="bit-prs-pre">
-                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation"></i>
+                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation" />
                     </div>
                 }
             </div>
@@ -83,15 +83,15 @@
             if (Presence != BitPersonaPresenceStatus.None)
             {
                 <div title=@PresenceTitle class="bit-prs-pre" style="@_presenceStyle">
-                    @if (_renderIcon)
+                    @if (_shouldRenderIcon)
                     {
-                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation" style="@_iconStyle"></i>
+                        <i class="bit-icon bit-icon--@DetermineIcon()" role="presentation" style="@_iconStyle" />
                     }
                 </div>
             }
             else
             {
-                <i class="bit-icon bit-icon--person"></i>
+                <i class="bit-icon bit-icon--person" />
             }
         }
     </div>

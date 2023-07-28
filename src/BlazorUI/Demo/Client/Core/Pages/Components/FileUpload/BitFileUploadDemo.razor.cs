@@ -11,6 +11,7 @@ public partial class BitFileUploadDemo
         {
             Name = "Accept",
             Type = "string?",
+            DefaultValue = "null",
             Description = "The value of the accept attribute of the input element.",
         },
         new()
@@ -38,14 +39,14 @@ public partial class BitFileUploadDemo
         {
             Name = "ChunkedUploadEnabled",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "true",
             Description = "Enables or disables the chunked upload feature."
         },
         new()
         {
             Name = "ChunkSize",
-            Type = "long",
-            DefaultValue = "10485760 (10 MB)",
+            Type = "long?",
+            DefaultValue = "null",
             Description = "The size of each chunk of file upload in bytes."
         },
         new()
@@ -65,16 +66,16 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "LabelTemplate",
-            Type = "RenderFragment",
+            Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "A custom razor fragment for select button."
         },
         new()
         {
-            Name = "MaxSize (byte)",
+            Name = "MaxSize",
             Type = "long",
             DefaultValue = "0",
-            Description = "Specifies the maximum size of the file (0 for unlimited)."
+            Description = "Specifies the maximum size (byte) of the file (0 for unlimited)."
         },
         new()
         {
@@ -94,49 +95,42 @@ public partial class BitFileUploadDemo
         {
             Name = "OnAllUploadsComplete",
             Type = "EventCallback<BitFileInfo[]>",
-            DefaultValue = "null",
             Description = "Callback for when all files are uploaded."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<BitFileInfo[]>",
-            DefaultValue = "null",
             Description = "Callback for when file or files status change."
         },
         new()
         {
             Name = "OnProgress",
             Type = "EventCallback<BitFileInfo>",
-            DefaultValue = "null",
             Description = "Callback for when the file upload is progressed."
         },
         new()
         {
             Name = "OnRemoveComplete",
             Type = "EventCallback<BitFileInfo>",
-            DefaultValue = "null",
             Description = "Callback for when a remove file is done."
         },
         new()
         {
             Name = "OnRemoveFailed",
             Type = "EventCallback<BitFileInfo>",
-            DefaultValue = "null",
             Description = "Callback for when a remove file is failed."
         },
         new()
         {
             Name = "OnUploadComplete",
             Type = "EventCallback<BitFileInfo>",
-            DefaultValue = "null",
             Description = "Callback for when a file upload is done."
         },
         new()
         {
             Name = "OnUploadFailed",
             Type = "EventCallback<BitFileInfo>",
-            DefaultValue = "null",
             Description = "Callback for when an upload file is failed."
         },
         new()
@@ -156,7 +150,7 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "RemoveUrl",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "null",
             Description = "URL of the server endpoint removing the files."
         },
@@ -198,8 +192,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "UploadUrl",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL of the server endpoint receiving the files."
         }
     };

@@ -20,6 +20,13 @@
 }
 
 .bit-spl-pri {
+    &.bit-spl-omn {
+        .bit-spl-chb {
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
+        }
+    }
+
     .bit-spl-opb,
     .bit-spl-chb {
         color: $color-primary-text;
@@ -39,20 +46,23 @@
         }
     }
 
-    &.bit-spl-omn {
-        .bit-spl-chb {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
+    .bit-spl-spb {
+        width: spacing(0.125);
     }
 
-    .bit-spl-spb {
-        width: spacing(0.0625);
-        background-color: $color-border-secondary;
+    .bit-spl-cbo {
+        background-color: $color-action-active-primary;
     }
 }
 
 .bit-spl-std {
+    &.bit-spl-omn {
+        .bit-spl-chb {
+            border-color: $color-action-active-border-primary;
+            background-color: $color-action-active-background-primary;
+        }
+    }
+
     .bit-spl-opb,
     .bit-spl-chb {
         color: $color-secondary-text;
@@ -70,16 +80,13 @@
         }
     }
 
-    &.bit-spl-omn {
-        .bit-spl-chb {
-            border-color: $color-action-active-border-primary;
-            background-color: $color-action-active-background-primary;
-        }
+    .bit-spl-spb {
+        width: spacing(0.125);
+        background-color: $color-border-primary;
     }
 
-    .bit-spl-spb {
-        width: spacing(0.0625);
-        background-color: $color-border-primary;
+    .bit-spl-cbo {
+        background-color: $color-action-active-secondary;
     }
 }
 

@@ -45,7 +45,7 @@
             }
             else
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()" aria-hidden="true"></i>
+                <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
             }
         </div>
     </div>
@@ -89,7 +89,7 @@
                                         title="@GoToPrevMonthTitle"
                                         disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
-                                    <i class="bit-icon" aria-hidden="true"></i>
+                                    <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                 </button>
                                 <button @onclick="() => HandleOnMonthChange(ChangeDirection.Next)"
                                         type="button"
@@ -97,7 +97,7 @@
                                         title="@GoToNextMonthTitle"
                                         disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)">
-                                    <i class="bit-icon" aria-hidden="true"></i>
+                                    <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                                 </button>
                                 @if (ShowCloseButton)
                                 {
@@ -105,7 +105,7 @@
                                             type="button"
                                             class="bit-dtrp-nav-btn bit-dtrp-cbtn"
                                             title="Close date-range picker">
-                                        <i class="bit-icon" aria-hidden="true">&#xE8BB;</i>
+                                        <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
                                     </button>
                                 }
                             </div>
@@ -271,7 +271,7 @@
                                             title="Go to previous year @(_displayYear - 1)"
                                             disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
                                     <button @onclick="() => HandleOnYearChange(ChangeDirection.Next)"
                                             type="button"
@@ -279,7 +279,7 @@
                                             title="Go to next year @(_displayYear + 1)"
                                             disabled="@(CanYearChange(ChangeDirection.Next) is false)"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>
@@ -334,7 +334,7 @@
                                             disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
                                     <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)"
                                             type="button"
@@ -342,7 +342,7 @@
                                             disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)">
-                                        <i class="bit-icon" aria-hidden="true"></i>
+                                        <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

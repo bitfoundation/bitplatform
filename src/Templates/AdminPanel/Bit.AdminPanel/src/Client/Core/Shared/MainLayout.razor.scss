@@ -1,20 +1,18 @@
 ﻿@import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_fonts.scss';
-@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main {
     width: 100%;
     display: flex;
     min-height: 100vh;
     position: relative;
-    box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    background: $BackgroundColor;
     padding-top: rem($HeaderHeight);
     padding-left: rem($NavMenuWidth);
+    background-color: $bit-color-background-secondary;
 
     @include lt-lg {
         padding-left: 0;
@@ -39,7 +37,7 @@
             align-items: center;
             height: unset !important;
             min-height: calc(100vh - 49px - var(--bit-status-bar-height));
-    
+
             .bit-ios & {
                 min-height: calc(100vh - 49px - env(safe-area-inset-bottom));
             }
@@ -51,12 +49,11 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
+    min-height: calc(100vh - 103px);
     padding: 0 rem($LargeScreenPadding);
     max-width: rem($LargeScreenMaxWidth);
-    box-sizing: border-box;
-    padding-bottom: rem(32px);
-    min-height: calc(100vh - 103px);
     padding-top: calc(rem(32px) + var(--bit-status-bar-height));
+    padding-bottom: rem(32px);
 
     .bit-ios & {
         padding-top: calc(rem(32px) + env(safe-area-inset-top));
@@ -79,39 +76,21 @@
         max-width: rem($SmallScreenMaxWidth);
         padding-top: calc(rem(16px) + var(--bit-status-bar-height));
         padding-bottom: rem(16px);
-        
+
         .bit-ios & {
             padding-top: calc(rem(16px) + env(safe-area-inset-top));
         }
     }
 }
 
-::deep a {
-    text-decoration: none;
-}
-
-::deep ::-webkit-scrollbar-track {
-    background-color: #fff;
-}
-
-::deep ::-webkit-scrollbar-thumb {
-    background-color: $Gray90;
-    border-radius: 16px;
-    border: 4px solid $Gray90;
-}
-
-::deep .bit-btn-fluent {
-    border-radius: rem(2px);
-}
-
-::deep .bit-mdl-fluent {
-    .bit-mdl-container {
-        min-height: unset !important;
+::deep {
+    a {
+        text-decoration: none;
     }
-}
 
-::deep .validation-message {
-    color: $StatusErrorColor;
+    .validation-message {
+        color: $bit-color-state-error;
+    }
 }
 
 .status-bar {
@@ -123,16 +102,15 @@
     text-align: center;
     align-items: center;
     font-size: rem(14px);
-    color: $PrimaryColor;
     justify-content: center;
-    background-color: $Gray5;
+    color: $bit-color-primary-main;
 }
 
 .bit-windows, .bit-macos {
     .status-bar {
         display: flex;
-        color: $PrimaryColor;
         background-color: transparent;
+        color: $bit-color-primary-main;
         height: var(--bit-status-bar-height);
     }
 }

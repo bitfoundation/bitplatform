@@ -51,6 +51,24 @@ jobs:
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
       
+    - name: dotnet restore BlazorUI.Assets
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Assets (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Assets (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Assets
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output . --configuration Release
+
+    - name: dotnet restore BlazorUI.Icons
+      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Icons (1)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet msbuild BlazorUI.Icons (2)
+      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Icons
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
+      
     - name: dotnet restore Bswup
       run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet msbuild Bswup (1)

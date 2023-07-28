@@ -21,8 +21,11 @@ public partial class Header : IDisposable
     private bool _isSignOutModalOpen;
     private string _currentUrl = string.Empty;
     private List<BitBreadcrumbItem> _currentBreadcrumbItems = default!;
-
     private Action _unsubscribe = default!;
+
+    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+
 
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
@@ -51,7 +54,7 @@ public partial class Header : IDisposable
 
         _isUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-IsUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
 
-        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAcccessTokenAsync);
+        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
         
         SetProfileImageUrl();
@@ -199,6 +202,11 @@ public partial class Header : IDisposable
     {
         ToggleHeaderDropdown();
         NavigationManager.NavigateTo("/edit-profile");
+    }
+
+    private async Task ToggleTheme()
+    {
+        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
     }
 
     public void Dispose()

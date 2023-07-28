@@ -17,30 +17,23 @@ public partial class BitRatingDemo
         new()
         {
             Name = "AriaLabelFormat",
-            Type = "string",
-            DefaultValue = "",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.",
         },
         new()
         {
             Name = "DefaultValue",
-            Type = "double",
-            DefaultValue = "0",
+            Type = "double?",
+            DefaultValue = "null",
             Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
         },
         new()
         {
             Name = "GetAriaLabel",
-            Type = "Func<double, double, string>",
-            DefaultValue = "",
+            Type = "Func<double, double, string>?",
+            DefaultValue = "null",
             Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.",
-        },
-        new()
-        {
-            Name = "Icon",
-            Type = "BitIcon",
-            DefaultValue = "FavoriteStarFill",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
         },
         new()
         {
@@ -60,31 +53,30 @@ public partial class BitRatingDemo
         {
             Name = "OnChange",
             Type = "EventCallback<double>",
-            DefaultValue = "",
             Description = "Callback that is called when the rating has changed.",
         },
         new()
         {
-            Name = "Value",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Current rating value. Must be a number between min (0 if AllowZeroStars is true, 1 otherwise) and max.",
+            Name = "SelectedIconName",
+            Type = "string",
+            DefaultValue = "FavoriteStarFill",
+            Description = "Custom icon name for selected rating elements.",
         },
         new()
         {
             Name = "Size",
             Type = "BitRatingSize",
-            DefaultValue = "BitRatingSize.small",
+            DefaultValue = "BitRatingSize.Small",
             LinkType = LinkType.Link,
             Href = "#rating-size-enum",
             Description = "Size of rating.",
         },
         new()
         {
-            Name = "UnselectedIcon",
-            Type = "BitIconName",
-            DefaultValue = "BitIconName.FavoriteStar",
-            Description = "Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.",
+            Name = "UnselectedIconName",
+            Type = "string",
+            DefaultValue = "FavoriteStar",
+            Description = "Custom icon name for unselected rating elements.",
         }
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -187,15 +179,15 @@ private double RatingMaxValue3 = 15;";
 
     private readonly string example3HTMLCode = @"
 <BitLabel>Heart:</BitLabel>
-<BitRating Icon=""BitIconName.HeartFill"" UnselectedIcon=""BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
+<BitRating Icon=""@BitIconName.HeartFill"" UnselectedIcon=""@BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
 <span>Rate: @RatingCustomIconValue1</span>
     
 <BitLabel>Checkbox:</BitLabel>
-<BitRating Icon=""BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
+<BitRating Icon=""@BitIconName.CheckboxCompositeReversed"" UnselectedIcon=""@BitIconName.Checkbox"" @bind-Value=""RatingCustomIconValue2"" />
 <span>Rate: @RatingCustomIconValue2</span>
 
 <BitLabel>Like:</BitLabel>
-<BitRating Icon=""BitIconName.LikeSolid"" UnselectedIcon=""BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
+<BitRating Icon=""@BitIconName.LikeSolid"" UnselectedIcon=""@BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
 <span>Rate: @RatingCustomIconValue3</span>";
     private readonly string example3CSharpCode = @"
 private double RatingCustomIconValue1 = 1.5;

@@ -3,85 +3,100 @@
 
 <PageOutlet Url="todo-template/hosting-models"
             Title="Hosting models - TodoTemplate"
-            Description="hosting models of the todo template of the bit platform" />
+            Description="hosting models of the TodoTemplate of the bit platform" />
 
 <div class="page-container">
-    <h1 class="page-main-title">Hosting models (Blazor Mode)</h1>
-    <div class="page-desc">
-        Bit TodoTemplate uses Blazor for building UI. Blazor is a web framework for building web UI components that uses modern technologies to host different models. <br />Blazor can be hosted on server-side in ASP.NET Core (Blazor Server), on client-side in the browser on a WebAssembly-based .NET runtime (Blazor WebAssembly, Blazor WASM), and in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid).<br />Additionally, Bit AdminPanel has added support for a new mode, Blazor Electron, which allows for building desktop apps with Blazor.<br />Regardless of the hosting model, the approach and tools used to build Blazor apps are the same and the same Blazor source code can be used for any of the hosting models.
+    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Hosting models (Blazor Mode)</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit TodoTemplate uses Blazor for building UI. Blazor is a web framework for building web UI components that uses modern technologies to host different models.
         <br />
-    </div>
+        Blazor can be hosted on server-side in ASP.NET Core (Blazor Server), on client-side in the browser on a WebAssembly-based .NET runtime (Blazor WebAssembly, Blazor WASM),
+        and in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid).
+        <br />
+        Additionally, bit TodoTemplate has added support for a new mode, Blazor Electron, which allows for building desktop apps with Blazor.
+        <br />
+        Regardless of the hosting model, the approach and tools used to build Blazor apps are the same and the same Blazor source code can be used for any of the hosting models.
+    </BitTypography>
+    <br />
+
     <section class="section-card">
-        <h2 class="section-card-title">Blazor Server</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Server</BitTypography>
         <div class="section-card-txt">
-            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
-            <br />To switch to Blazor server mode:
+            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling,
+            and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
+            <br />
+            To switch to Blazor server mode:
         </div>
         <div class="section-card-txt">
-            1. Change value of <span class="bold-txt"> @("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span>  file in <span class="bold-txt">Solution Items</span> root folder.
+            1. Change value of <b>@("<BlazorMode>")</b> on <b>Directory.build.props</b> file in <b>Solution Items</b> root folder.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<BlazorMode>BlazorServer</BlazorMode>")</code></pre>
-        </div>
+        <div class="code-box">@("<BlazorMode>BlazorServer</BlazorMode>")</div>
 
         <div class="section-card-txt">
             2. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
         </div>
         <div class="image-container">
-            <img class="image" alt="Multi-startup solution" width="696" height="241" src="/images/demo/multi-startup.webp" />
+            <img class="image small" alt="Multi-startup solution" src="/images/templates/multi-startup.webp" />
+        </div>
+        <br />
+        <div class="section-card-txt">
+            3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
+        </div>
+        <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor WebAssembly</BitTypography>
+        <div class="section-card-txt">
+            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies,
+            and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
+            The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
+            <br />
+            To switch to Blazor WebAssembly mode:
         </div>
         <div class="section-card-txt">
-            3. Make sure the first line in the <span class="high-light-text">TodoTemplate.Client.Web.csproj</span> file contains the following value.
+            1. Change value of <b>@("<BlazorMode>")</b> on <b>Directory.build.props</b> file in <b>Solution Items</b> root folder.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</code></pre>
+        <div class="code-box">@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</div>
+        <div class="section-card-txt">
+            2. Set <b>Api</b> project as the only startup project.
+        </div>
+        <div class="section-card-txt">
+            3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
+        </div>
+        <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</div>
+        <br />
+        <div class="section-card-txt">
+            <b>Note</b>: When you run the project, the swagger page will open in a browser by default. Simply remove the swagger url from the browser's address bar to access the app.
         </div>
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">Blazor WebAssembly</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Hybrid</BitTypography>
         <div class="section-card-txt">
-            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process. The app's assets are deployed as static files to a web server or service capable of serving static content to clients.
-            <br />To switch to Blazor WebAssembly mode:
-        </div>
-        <div class="section-card-txt">
-            1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
-        </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<BlazorMode>BlazorWebAssembly</BlazorMode>")</code></pre>
-        </div>
-        <div class="section-card-txt">
-            2. Set <span class="bold-txt">Api</span> project as startup project.
+            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality.
+            In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS
+            to an embedded Web View control through a local interop channel.
+            <br />
+            Blazor Hybrid is on top of .NET MAUI and has access to all native features of supported platforms (Android, iOS, macOS and Windows)
+            <br />
+            To switch to Blazor Hybrid mode:
         </div>
         <div class="section-card-txt">
-            3. Make sure the first line in the <span class="high-light-text">TodoTemplate.Client.Web.csproj</span> file contains the following value.
+            1. Change value of <b>@("<BlazorMode>")</b> on <b>Directory.build.props</b> file in <b>Solution Items</b> root folder.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</code></pre>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-card-title">Blazor Hybrid</h2>
+        <div class="code-box">@("<BlazorMode>BlazorHybrid</BlazorMode>")</div>
         <div class="section-card-txt">
-            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly) along with any other .NET code and render web UI based on HTML and CSS to an embedded Web View control through a local interop channel.
-            <br />Blazor Hybrid is on top of .NET MAUI and has access to all native features of supported platforms (Android, iOS, macOS and Windows)
-            <br />To switch to Blazor Hybrid mode:
-        </div>
-        <div class="section-card-txt">
-            1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
-        </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<BlazorMode>BlazorHybrid</BlazorMode>")</code></pre>
-        </div>
-        <div class="section-card-txt">
-            2. Set <span class="bold-txt">App</span> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+            2. Set <b>App</b> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
         </div>
         <div class="image-container">
-            <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/debug-target.webp" />
+            <img class="image small" alt="Debug target" src="/images/templates/debug-target.webp" />
         </div>
+        <br />
         <div>
-            3. Change <span class="bold-txt">ApiServerAddress</span> in Client/Core/appsettings.json to make sure your Android / iOS device can reach the server.
+            3. Change <b>ApiServerAddress</b> in <b>Client/Core/appsettings.json</b> to make sure your Android / iOS device can reach the server.
         </div>
         <br />
         <div>
@@ -90,29 +105,29 @@
     </section>
 
     <section class="section-card">
-        <h2 class="section-card-title">Blazor Electron</h2>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Electron</BitTypography>
         <div class="section-card-txt">
             Blazor can also be used to build native client apps using another approach similar to Blazor Hybrid with different supported platforms (Windows, macOS and Linux)
-            <br />To switch to Blazor Electron mode:
+            <br />
+            To switch to Blazor Electron mode:
         </div>
         <div class="section-card-txt">
-            1. Change value of <span class="bold-txt">@("<BlazorMode>")</span> on <span class="high-light-text">Directory.build.props </span> file in <span class="bold-txt">Solution Items</span> root folder.
+            1. Change value of <b>@("<BlazorMode>")</b> on <b>Directory.build.props</b> file in <b>Solution Items</b> root folder.
         </div>
-        <div class="code-box">
-            <pre class="code"><code>@("<BlazorMode>BlazorElectron</BlazorMode>")</code></pre>
-        </div>
+        <div class="code-box">@("<BlazorMode>BlazorElectron</BlazorMode>")</div>
         <div class="section-card-txt">
-            2. Set <span class="bold-txt">Web</span> as the startup project, choose electron as run target.
+            2. Set <b>Web</b> as the startup project, choose electron as run target.
         </div>
         <div class="image-container">
-            <img class="image" alt="Debug target" width="1014" height="350" src="/images/demo/electron-target.webp" />
+            <img class="image small" alt="Debug target" src="/images/templates/electron-target.webp" />
         </div>
         <br />
         <div>
             3. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
         </div>
         <div class="section-card-txt">
-            <span class="bold-txt">Note</span>: This only runs the project. To debug the project, switch to other modes or consult the <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET </a> documentation.
+            <b>Note</b>: This only runs the project. To debug the project, switch to other modes or consult the
+            <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET</a> documentation.
         </div>
     </section>
 </div>

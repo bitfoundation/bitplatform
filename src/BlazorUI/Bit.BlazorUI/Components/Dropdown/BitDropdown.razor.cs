@@ -203,7 +203,7 @@ public partial class BitDropdown
     /// <summary>
     /// Optional chevron icon
     /// </summary>
-    [Parameter] public BitIconName CaretDownIconName { get; set; } = BitIconName.ChevronDown;
+    [Parameter] public string CaretDownIconName { get; set; } = "ChevronDown";
 
     /// <summary>
     /// Optional custom template for dropdown item
@@ -721,7 +721,7 @@ public partial class BitDropdown
     {
         await _js.InvokeVoidAsync("BitDropdown.toggleDropdownCallout",
             _dotnetObj, UniqueId, _dropdownId, _dropdownCalloutId, _dropdownOverlayId, _scrollWrapperElement,
-            DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl);
+            DropDirection, IsOpen, IsResponsiveModeEnabled, IsRtl, ShowSearchBox);
     }
 
 

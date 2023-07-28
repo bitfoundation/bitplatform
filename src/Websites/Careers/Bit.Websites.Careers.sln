@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		.gitignore = .gitignore
 		Bit.Websites.Careers\Directory.Build.props = Bit.Websites.Careers\Directory.Build.props
 		global.json = global.json
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Shared", "Bit.Websites.Careers\Shared\Bit.Websites.Careers.Shared.csproj", "{96AD9FD3-0E03-4E35-8157-89E854AA407F}"

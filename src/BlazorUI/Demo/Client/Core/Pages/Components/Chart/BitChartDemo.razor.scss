@@ -1,0 +1,15 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.chart-wrapper {
+    overflow: auto;
+
+    .chart-container {
+        width: 100%;
+        height: 100%;
+        display: inline-grid;
+        min-width: rem(400px);
+        min-height: rem(250px);
+        box-sizing: border-box;
+    }
+}

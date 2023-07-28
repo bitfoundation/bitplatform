@@ -1,0 +1,16 @@
+﻿.btn-container {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column;
+}
+
+.position-btn {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}

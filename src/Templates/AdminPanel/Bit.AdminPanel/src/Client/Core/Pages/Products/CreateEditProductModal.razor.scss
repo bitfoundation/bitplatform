@@ -1,6 +1,6 @@
 ﻿@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
     display: flex;
@@ -8,11 +8,10 @@
     align-items: center;
     flex-direction: column;
     min-height: rem(378px);
-    box-sizing: border-box;
     border-radius: rem(2px);
-    background-color: $White;
     justify-content: flex-start;
     padding: rem(16px) rem(24px);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding: rem(16px) rem(24px) calc(rem(16px) + env(safe-area-inset-bottom));
@@ -30,17 +29,16 @@
 .header {
     width: 100%;
     display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
     align-items: center;
+    flex-flow: row nowrap;
     margin-bottom: rem(24px);
+    justify-content: space-between;
 }
 
 .title {
     font-weight: 600;
     font-size: rem(20px);
     line-height: rem(28px);
-    color: $Gray190;
 }
 
 .form-input-container {
@@ -49,5 +47,5 @@
 }
 
 ::deep .validation-message {
-    color: $StatusErrorColor;
+    color: $bit-color-state-error;
 }

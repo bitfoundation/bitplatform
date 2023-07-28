@@ -52,11 +52,13 @@ public static class Services
         services.AddMvcCore();
 #endif
 
+        //+:cnd:noEmit
+
         services.AddCors();
 
         services
             .AddControllers()
-            .AddOData()
+            .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -88,11 +90,21 @@ public static class Services
 
         services.AddDbContext<AppDbContext>(options =>
         {
-            options
-            .UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), sqlOpt =>
+            //#if (database == "SqlServer")
+            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                sqlOpt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            return;
+            //#endif
+            //#if (database == "Sqlite")
+            options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
+            {
+                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
+            //#endif
         });
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));

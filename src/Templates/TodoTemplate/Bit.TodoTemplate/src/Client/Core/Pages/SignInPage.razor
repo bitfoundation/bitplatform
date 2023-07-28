@@ -4,7 +4,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
 
 <div class="page-container">
-    <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form--white" Model="_signInModel">
+    <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="_signInModel">
         <AppDataAnnotationsValidator />
 
         @if (string.IsNullOrEmpty(_signInMessage) is false)

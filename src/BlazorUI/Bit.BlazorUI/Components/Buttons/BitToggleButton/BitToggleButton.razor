@@ -3,8 +3,7 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        aria-label="@AriaLabel"
@@ -13,25 +12,23 @@
        title="@Title"
        target="@Target"
        href="@Href"
-       tabindex="@_tabIndex"
-       @onclick="HandleOnClick">
-        <span class="bit-tgb-con">
-            @if (IconName.HasValue)
+       tabindex="@_tabIndex">
+        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())
             {
-                <span class="bit-tgb-txt">@Label</span>
+                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
             }
         </span>
     </a>
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="button"
@@ -39,17 +36,16 @@ else
             aria-describedby="@AriaDescription"
             aria-hidden="@AriaHidden"
             tabindex="@_tabIndex"
-            title="@Title"
-            @onclick="HandleOnClick">
-        <span class="bit-tgb-con">
-            @if (IconName.HasValue)
+            title="@Title">
+        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
             }
 
             @if (Label.HasValue())
             {
-                <span class="bit-tgb-txt">@Label</span>
+                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
             }
         </span>
     </button>

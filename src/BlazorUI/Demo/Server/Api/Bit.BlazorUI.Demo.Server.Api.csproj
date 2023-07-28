@@ -9,15 +9,15 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.8" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.9" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.1.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.1.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

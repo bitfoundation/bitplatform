@@ -6,7 +6,7 @@ public class BitMenuButtonItem
     /// <summary>
     /// Name of an icon to render next to the item text
     /// </summary>
-    public BitIconName? IconName { get; set; }
+    public string? IconName { get; set; }
 
     /// <summary>
     /// Text to render in the item

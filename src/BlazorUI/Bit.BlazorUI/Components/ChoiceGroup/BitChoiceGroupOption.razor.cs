@@ -21,7 +21,7 @@ public partial class BitChoiceGroupOption<TValue> : IDisposable
     /// <summary>
     /// The icon to show as Option content.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The image address to show as Option content.

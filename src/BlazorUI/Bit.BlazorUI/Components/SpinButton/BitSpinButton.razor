@@ -4,16 +4,15 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue || Label.HasValue() || LabelTemplate is not null)
+    @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)
     {
         <div class="bit-spb-lct">
-            @if (IconName.HasValue)
+            @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName.GetName() bit-icon--l"
+                <i class="bit-icon bit-icon--@IconName bit-icon--l"
                    aria-hidden="true"
                    role="@GetIconRole"
-                   aria-label="@IconAriaLabel">
-                </i>
+                   aria-label="@IconAriaLabel" />
             }
 
             @if (LabelTemplate is not null)
@@ -69,7 +68,7 @@
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@IncrementButtonAriaLabel">
                 <span class="bit-spb-iwp">
-                    <i class="bit-icon bit-icon--@IncrementButtonIconName.GetName() bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@IncrementButtonIconName bit-icon--s" />
                 </span>
             </button>
 
@@ -85,7 +84,7 @@
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@DecrementButtonAriaLabel">
                 <span class="bit-spb-iwp">
-                    <i class="bit-icon bit-icon--@DecrementButtonIconName.GetName() bit-icon--s"></i>
+                    <i class="bit-icon bit-icon--@DecrementButtonIconName bit-icon--s" />
                 </span>
             </button>
         </span>

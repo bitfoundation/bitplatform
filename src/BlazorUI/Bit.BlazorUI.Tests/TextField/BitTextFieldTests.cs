@@ -104,8 +104,8 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isReadOnly, bitTextField.HasAttribute("readonly"));
     }
 
-    [DataTestMethod, DataRow(BitIconName.Emoji2)]
-    public void BitTextFieldShouldAcceptIcon(BitIconName iconName)
+    [DataTestMethod, DataRow("Emoji2")]
+    public void BitTextFieldShouldAcceptIcon(string iconName)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -135,12 +135,12 @@ public class BitTextFieldTests : BunitTestContext
         var revealPasswordIcon = component.Find(".bit-txt-prb > span > i");
 
         Assert.AreEqual("password", textField.GetAttribute("type"));
-        Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--RedEye"));
+        Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--View"));
 
         revealPasswordBtn.Click();
 
         Assert.AreEqual("text", textField.GetAttribute("type"));
-        Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--Hide"));
+        Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--Hide3"));
     }
 
     [DataTestMethod,

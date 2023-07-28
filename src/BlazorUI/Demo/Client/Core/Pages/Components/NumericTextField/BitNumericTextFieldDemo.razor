@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/numerictextfield"
             Title="NumericTextField"
-            Description="numerictextfield component of the bit blazorui components" />
+            Description="numerictextfield component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="NumericTextField"
                ComponentDescription="A NumericTextField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
@@ -28,7 +28,7 @@
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
                                      Label="Label & Icon"
-                                     IconName="BitIconName.Lightbulb" />
+                                     IconName="@BitIconName.Lightbulb" />
                 <br />
                 <BitNumericTextField @bind-Value="LabelLeftValue"
                                      Placeholder="Enter a number..."
@@ -45,7 +45,7 @@
                 <BitNumericTextField @bind-Value="LabelTemplateValue" Placeholder="Enter a number..." Step="@(1)">
                     <LabelTemplate>
                         <label style="color: green;">This is custom Label</label>
-                        <BitIcon IconName="BitIconName.Filter" />
+                        <BitIcon IconName="@BitIconName.Filter" />
                     </LabelTemplate>
                 </BitNumericTextField>
             </div>
@@ -66,8 +66,8 @@
                                      Step="@(1)"
                                      Label="Increment & Decrement Icon"
                                      ShowArrows="true"
-                                     IncrementIconName="BitIconName.LikeSolid"
-                                     DecrementIconName="BitIconName.DislikeSolid" />
+                                     IncrementIconName="@BitIconName.LikeSolid"
+                                     DecrementIconName="@BitIconName.DislikeSolid" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -106,7 +106,7 @@
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
                                      Label="Height"
-                                     IconName="BitIconName.AutoHeight"
+                                     IconName="@BitIconName.AutoHeight"
                                      DefaultValue="150"
                                      Suffix=" cm" />
                 <br />
@@ -114,7 +114,7 @@
                                      Placeholder="Enter a number..."
                                      Step="@(0.5M)"
                                      Label="Weight"
-                                     IconName="BitIconName.Weights"
+                                     IconName="@BitIconName.Weights"
                                      DefaultValue="50"
                                      Suffix=" kg" />
             </div>

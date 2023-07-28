@@ -7,6 +7,8 @@ public class ProductMapperConfiguration : Profile
 {
     public ProductMapperConfiguration()
     {
-        CreateMap<Product, ProductDto>().ReverseMap();
+        CreateMap<Product, ProductDto>()
+            .ReverseMap()
+            .ForMember(p => p.Category, config => config.Ignore());
     }
 }

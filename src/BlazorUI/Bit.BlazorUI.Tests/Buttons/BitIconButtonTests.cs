@@ -9,12 +9,12 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitIconButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitIconName.Emoji2, null),
-        DataRow(false, BitIconName.Emoji2, null),
-        DataRow(true, BitIconName.Emoji2, "I'm Happy"),
-        DataRow(false, BitIconName.Emoji2, "I'm Happy")
+        DataRow(true, "Emoji2", null),
+        DataRow(false, "Emoji2", null),
+        DataRow(true, "Emoji2", "I'm Happy"),
+        DataRow(false, "Emoji2", "I'm Happy")
     ]
-    public void BitIconButtonTest(bool isEnabled, BitIconName iconName, string title)
+    public void BitIconButtonTest(bool isEnabled, string iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitIconButton>(parameters =>
@@ -37,7 +37,7 @@ public class BitIconButtonTests : BunitTestContext
         }
 
         var bitIconITag = com.Find(".bit-icb > span.bit-icb-ict > i.bit-icon");
-        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
         if (title.HasValue())
         {
