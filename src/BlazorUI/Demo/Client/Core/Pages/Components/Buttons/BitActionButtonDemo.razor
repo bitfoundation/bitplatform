@@ -101,38 +101,40 @@
 
     <ComponentExampleBox Title="Types" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
-            @if (formIsValidSubmit is false)
-            {
-                <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+            <div class="form-container">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
 
-                    <ValidationSummary />
+                        <ValidationSummary />
 
-                    <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
-                    <ValidationMessage For="() => validationButtonModel.RequiredText" />
-                    <br />
-                    <BitTextField Label="Nonrequired" @bind-Value="validationButtonModel.NonrequiredText" />
-                    <ValidationMessage For="() => validationButtonModel.NonrequiredText" />
-                    <br />
-                    <div>
-                        <BitActionButton IconName="@BitIconName.Completed" ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitActionButton>
-                        <BitActionButton IconName="@BitIconName.Refresh"  ButtonType="BitButtonType.Reset">
-                            Reset
-                        </BitActionButton>
-                        <BitActionButton IconName="@BitIconName.Touch" ButtonType="BitButtonType.Button">
-                            Button
-                        </BitActionButton>
-                    </div>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    The form is valid to submit successfully.
-                </BitMessageBar>
-            }
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <br />
+                        <BitTextField Label="Nonrequired" @bind-Value="validationButtonModel.NonRequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <br />
+                        <div>
+                            <BitActionButton IconName="@BitIconName.Completed" ButtonType="BitButtonType.Submit">
+                                Submit
+                            </BitActionButton>
+                            <BitActionButton IconName="@BitIconName.Refresh"  ButtonType="BitButtonType.Reset">
+                                Reset
+                            </BitActionButton>
+                            <BitActionButton IconName="@BitIconName.Touch" ButtonType="BitButtonType.Button">
+                                Button
+                            </BitActionButton>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -143,7 +145,7 @@
     private int ptandardCounter;
 
     private bool formIsValidSubmit;
-    private ValidationButtonModel validationButtonModel = new();
+    private ButtonValidationModel validationButtonModel = new();
 
     private async Task HandleValidSubmit()
     {

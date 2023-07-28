@@ -2,6 +2,10 @@
     line-height: 3.125rem;
 }
 
+.form-container {
+    max-width: 20rem;
+}
+
 ::deep {
     .custom-action-button {
         color: #111;
