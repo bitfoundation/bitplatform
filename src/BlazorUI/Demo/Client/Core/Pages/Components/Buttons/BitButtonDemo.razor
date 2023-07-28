@@ -12,11 +12,11 @@
         <ExamplePreview>
             <div class="example-desc">To create a button you can use a BitButton component.</div>
             <div class="buttons-container">
-                <BitButton IsEnabled="true" OnClick="() => PrimaryCounter++">
-                    Primary (@PrimaryCounter)
+                <BitButton OnClick="() => primaryCounter++">
+                    Primary (@primaryCounter)
                 </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="true" OnClick="() => StandardCounter++">
-                    Standard (@StandardCounter)
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => ptandardCounter++">
+                    Standard (@ptandardCounter)
                 </BitButton>
                 <BitButton IsEnabled="false" AllowDisabledFocus="false">
                     Disabled
@@ -29,7 +29,7 @@
         <ExamplePreview>
             <div class="example-desc">BitButton can directly get css class or inline style.</div>
             <div class="buttons-container">
-                <BitButton Style="height: 40px;width: 166px;font-size: 16px;">
+                <BitButton Style="border-radius: 1.25rem; font-weight: bold">
                     Styled Button
                 </BitButton>
                 <BitButton Class="custom-button">
@@ -50,15 +50,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">Aria attribues can also set for a BitButton.</div>
+            <div class="example-desc">ARIA attribues can also set for a BitButton.</div>
             <div class="buttons-container">
                 <BitButton AriaDescription="Detailed description used for screen reader.">
-                    Button with Aria Description
+                    Button with ARIA Description
                 </BitButton>
                 <BitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
-                    Button with Aria Hidden
+                    Button with ARIA Hidden
                 </BitButton>
             </div>
         </ExamplePreview>
@@ -111,7 +111,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+</ComponentDemo>
+
 @code {
-    public int PrimaryCounter;
-    public int StandardCounter;
+    private int primaryCounter;
+    private int ptandardCounter;
 }

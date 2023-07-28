@@ -173,20 +173,16 @@ public partial class BitButtonDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
-    Primary (@PrimaryCounter)
-</BitButton>
+<BitButton OnClick=""() => PrimaryCounter++"">Primary (@PrimaryCounter)</BitButton>
 
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => StandardCounter++"">
     Standard (@StandardCounter)
 </BitButton>
 
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
-    Disabled
-</BitButton>";
+<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">Disabled</BitButton>";
     private readonly string example1CSharpCode = @"
-public int PrimaryCounter;
-public int StandardCounter;";
+private int primaryCounter;
+private int standardCounter;";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -211,7 +207,7 @@ public int StandardCounter;";
     }
 </style>
 
-<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
+<BitButton Style=""border-radius: 1.25rem; font-weight: bold"">
     Styled Button
 </BitButton>
 
@@ -245,18 +241,14 @@ public int StandardCounter;";
 </BitButton>";
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
-</div>";
+<BitLabel>Small size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+
+<BitLabel>Medium size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+
+<BitLabel>Large size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>";
 
     private readonly string example7HTMLCode = @"
 <style>
