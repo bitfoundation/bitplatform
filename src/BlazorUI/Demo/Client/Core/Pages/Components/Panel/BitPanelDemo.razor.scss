@@ -1,16 +1,34 @@
-﻿.btn-container {
-    gap: 1rem;
+﻿@import "../../../Styles/abstracts/functions";
+
+.btn-container {
+    gap: rem(16px);
     display: flex;
     flex-flow: column;
 }
 
 .position-btn {
-    gap: 1rem;
+    gap: rem(16px);
     display: flex;
     flex-flow: column nowrap;
 
     div {
         display: flex;
         justify-content: space-between;
+    }
+}
+
+::deep {
+    .header-padding {
+        padding-top: var(--bit-status-bar-height);
+
+        @supports (-webkit-touch-callout: none) {
+            padding-top: env(safe-area-inset-top);
+        }
+    }
+
+    .footer-padding {
+        @supports (-webkit-touch-callout: none) {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     }
 }
