@@ -21,9 +21,6 @@
                 <BitButton IsEnabled="false" AllowDisabledFocus="false">
                     Disabled
                 </BitButton>
-                <BitButton Class="label-btn" IsEnabled="true">
-                    <label>A Text from label element</label>
-                </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -46,9 +43,9 @@
         <ExamplePreview>
             <div class="example-desc">By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.</div>
             <div class="buttons-container-grid">
-                <div><BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton></div>
-                <div>Hidden Button: [<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]</div>
-                <div>Collapsed Button: [<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]</div>
+                <div>Visible Button: [ <BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton> ]</div>
+                <div>Hidden Button: [ <BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton> ]</div>
+                <div>Collapsed Button: [ <BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -67,7 +64,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
             <div class="buttons-container">
@@ -77,14 +74,11 @@
                 <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitButton>
-                <BitButton Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
-                    <span>Bit Platform From Span</span>
-                </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">BitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
             <div class="buttons-container-grid">
@@ -103,24 +97,21 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Customized BitButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
-            <div class="example-desc">BitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
-            <div class="buttons-container-grid">
-                <div>
-                    <div>Small size</div>
-                    <BitButton Class="custom-btn-sm" ButtonSize="BitButtonSize.Small">Button</BitButton>
-                </div>
-                <div>
-                    <div>Medium size</div>
-                    <BitButton Class="custom-btn-md" ButtonSize="BitButtonSize.Medium">Button</BitButton>
-                </div>
-                <div>
-                    <div>Large size</div>
-                    <BitButton Class="custom-btn-lg" ButtonSize="BitButtonSize.Large">Button</BitButton>
-                </div>
+            <div class="example-desc">To create a button you can use a BitButton component.</div>
+            <div class="buttons-container">
+                <BitButton Class="custom-btn-ctn" IsEnabled="true">
+                    <BitIcon IconName="@BitIconName.Airplane" />
+                    <BitLabel>A Text from BitLabel</BitLabel>
+                    <BitRippleLoading Size="30"/>
+                </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-</ComponentDemo>
+
+@code {
+    public int PrimaryCounter;
+    public int StandardCounter;
+}
