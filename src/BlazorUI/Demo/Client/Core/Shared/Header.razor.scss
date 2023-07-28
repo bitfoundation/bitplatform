@@ -82,8 +82,8 @@
 }
 
 .link--active {
-    color: $B2Color;
     font-weight: 600;
+    color: $bit-color-primary-main;
 }
 
 .right-section {
@@ -97,11 +97,14 @@
     width: rem(40px);
     height: rem(40px);
     border-radius: 50%;
-    margin-left: rem(10px);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-image: url('images/github-icon.webp');
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
 }
 
 .toggle-theme-btn {
