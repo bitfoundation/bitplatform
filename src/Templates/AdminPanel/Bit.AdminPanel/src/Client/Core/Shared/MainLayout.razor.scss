@@ -12,7 +12,7 @@
     justify-content: flex-start;
     padding-top: rem($HeaderHeight);
     padding-left: rem($NavMenuWidth);
-    background-color: $bit-color-background-primary;
+    background-color: $bit-color-background-secondary;
 
     @include lt-lg {
         padding-left: 0;

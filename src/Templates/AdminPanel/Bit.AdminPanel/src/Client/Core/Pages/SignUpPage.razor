@@ -43,7 +43,11 @@
                                   AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
                                   OnClick="WrapHandled(DoResendLink)">
                     <span>@Localizer[nameof(AppStrings.ResendEmail)]</span>
-                </BitLoadingButton>
+                    </BitLoadingButton>
+                <br />
+                <div>
+                    <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                </div>
             }
             else
             {

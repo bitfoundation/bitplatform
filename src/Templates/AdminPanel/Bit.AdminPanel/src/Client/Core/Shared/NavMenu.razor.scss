@@ -23,8 +23,7 @@
     max-width: rem($NavMenuWidth);
     justify-content: space-between;
     padding-top: var(--bit-status-bar-height);
-    background-color: $bit-color-background-secondary;
-    border-right: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-top: env(safe-area-inset-top);
@@ -79,9 +78,5 @@
 ::deep {
     .bit-nav-menu {
         padding-top: rem(32px);
-    }
-
-    .selected-item-cnt {
-       background-color: $bit-color-action-active-background-secondary;
     }
 }

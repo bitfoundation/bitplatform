@@ -21,15 +21,9 @@
 
 .form-description {
     font-weight: 600;
-    height: rem(48px);
-    font-size: rem(16px);
+    line-height: 1.5;
+    font-size: rem(14px);
     max-width: rem(432px);
-    line-height: rem(24px);
-
-    @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(20px);
-    }
 }
 
 ::deep {

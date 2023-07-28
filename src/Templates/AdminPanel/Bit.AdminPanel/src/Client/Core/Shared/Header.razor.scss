@@ -12,7 +12,7 @@
     min-height: rem($HeaderHeight);
     width: calc(100% - $NavMenuWidth);
     padding-top: var(--bit-status-bar-height);
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-primary;
     border-bottom: rem(1px) solid $bit-color-border-secondary;
 
     @include lt-lg {
