@@ -298,6 +298,14 @@ else
     </BitMessageBar>
 }";
     private readonly string example8CSharpCode = @"
+public class ValidationButtonModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
+
+    public string? NonrequiredText { get; set; }
+}
+
 private bool formIsValidSubmit;
 private ValidationButtonModel validationButtonModel = new();
 
