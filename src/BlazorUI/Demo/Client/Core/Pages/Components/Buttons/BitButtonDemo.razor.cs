@@ -263,4 +263,60 @@ private int standardCounter;";
     <BitLabel>A Text from BitLabel</BitLabel>
     <BitRippleLoading Size=""30""/>
 </BitButton>";
+
+    private readonly string example8HTMLCode = @"
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+
+        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonrequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.NonrequiredText"" />
+
+        <div>
+            <BitButton ButtonType=""BitButtonType.Submit"">
+                Submit
+            </BitButton>
+            <BitButton ButtonType=""BitButtonType.Reset"">
+                Reset
+            </BitButton>
+            <BitButton ButtonType=""BitButtonType.Button"">
+                Button
+            </BitButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}";
+    private readonly string example8CSharpCode = @"
+private bool formIsValidSubmit;
+private ValidationButtonModel validationButtonModel = new();
+
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(2000);
+
+    validationButtonModel = new();
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}";
+
 }
