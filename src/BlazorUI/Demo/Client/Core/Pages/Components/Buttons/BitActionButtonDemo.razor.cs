@@ -152,7 +152,7 @@ public partial class BitActionButtonDemo
     private readonly string example1HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
 
-<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user</BitActionButton>";
+<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user (Disabled)</BitActionButton>";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -176,11 +176,11 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-    <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+    <div>Visible Button: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Visible Action Button</BitActionButton> ]</div>
 
-    <div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
+    <div>Hidden Button: [ <BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton> ]</div>
 
-    <div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
+    <div>Collapsed Button: [ <BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]</div>";
 
     private readonly string example4HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
@@ -198,10 +198,6 @@ public partial class BitActionButtonDemo
 
 <BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
-</BitActionButton>
-
-<BitActionButton IconName=""@BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Platform From Span</span>
 </BitActionButton>";
 
     private readonly string example6HTMLCode = @"
@@ -216,34 +212,80 @@ public partial class BitActionButtonDemo
 
     private readonly string example7HTMLCode = @"
 <style>
-    .custom-btn-sm.bit-acb-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-    
-    .custom-btn-md.bit-acb-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-    
-    .custom-btn-lg.bit-acb-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
+    .custom-btn-ctn {
+        gap: 0.5rem;
+        display: flex;
     }
 </style>
 
-<BitLabel>Small size</BitLabel>
-<BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-    
-<BitLabel>Medium size</BitLabel>
-<BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton IconName=""@BitIconName.AddFriend"">
+    <div class=""custom-btn-ctn"">
+        <BitLabel>A Text from BitLabel</BitLabel>
+        <BitSpinnerLoading Size=""30"" />
+    </div>
+</BitActionButton>";
 
-<BitLabel>Large size</BitLabel>
-<BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
+    private readonly string example8HTMLCode = @"
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+
+        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonrequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.NonrequiredText"" />
+
+        <div>
+            <BitActionButton IconName=""@BitIconName.Completed"" ButtonType=""BitButtonType.Submit"">
+                Submit
+            </BitActionButton>
+            <BitActionButton IconName=""@BitIconName.Refresh""  ButtonType=""BitButtonType.Reset"">
+                Reset
+            </BitActionButton>
+            <BitActionButton IconName=""@BitIconName.Touch"" ButtonType=""BitButtonType.Button"">
+                Button
+            </BitActionButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}";
+    private readonly string example8CSharpCode = @"
+public class ValidationButtonModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
+
+    public string? NonrequiredText { get; set; }
+}
+
+private bool formIsValidSubmit;
+private ValidationButtonModel validationButtonModel = new();
+
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(2000);
+
+    validationButtonModel = new();
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}";
+
 }
