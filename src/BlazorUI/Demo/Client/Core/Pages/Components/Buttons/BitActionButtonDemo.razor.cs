@@ -236,8 +236,8 @@ public partial class BitActionButtonDemo
         <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
         <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
 
-        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonrequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.NonrequiredText"" />
+        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
 
         <div>
             <BitActionButton IconName=""@BitIconName.Completed"" ButtonType=""BitButtonType.Submit"">
@@ -264,7 +264,7 @@ public class ButtonValidationModel
     [Required]
     public string RequiredText { get; set; } = string.Empty;
 
-    public string? NonrequiredText { get; set; }
+    public string? NonRequiredText { get; set; }
 }
 
 private bool formIsValidSubmit;
