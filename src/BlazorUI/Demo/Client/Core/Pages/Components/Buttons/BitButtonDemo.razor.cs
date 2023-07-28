@@ -30,15 +30,6 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             LinkType = LinkType.Link,
@@ -95,33 +86,6 @@ public partial class BitButtonDemo
     {
         new()
         {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
-        new()
-        {
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",
@@ -173,10 +137,10 @@ public partial class BitButtonDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitButton OnClick=""() => PrimaryCounter++"">Primary (@PrimaryCounter)</BitButton>
+<BitButton OnClick=""() => primaryCounter++"">Primary (@primaryCounter)</BitButton>
 
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => StandardCounter++"">
-    Standard (@StandardCounter)
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => standardCounter++"">
+    Standard (@standardCounter)
 </BitButton>
 
 <BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">Disabled</BitButton>";
@@ -186,41 +150,22 @@ private int standardCounter;";
 
     private readonly string example2HTMLCode = @"
 <style>
-    .custom-button {
-        color: white;
-        height: 2.5rem;
-        font-size: 1rem;
-        width: 10.375rem;
-        border-radius: 1.25rem;
-        border-color: orangered;
-        background-color: orangered;
-    }
-
-    .custom-button:hover {
-        border-color: darkorange;
-        background-color: darkorange;
-    }
-
-    .custom-button:active {
-        border-color: orange;
-        background-color: orange;
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
     }
 </style>
 
-<BitButton Style=""border-radius: 1.25rem; font-weight: bold"">
-    Styled Button
-</BitButton>
+<BitButton Style=""color:darkblue; font-weight:bold"">Styled Button</BitButton>
 
-<BitButton Class=""custom-button"">
-    Classed Button
-</BitButton>";
+<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
     private readonly string example3HTMLCode = @"
-<div>Visible Button: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]</div>
+Visible Button: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]
 
-<div>Hidden Button: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]</div>
+Hidden Button: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]
 
-<div>Collapsed Button: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]</div>";
+Collapsed Button: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
@@ -232,62 +177,51 @@ private int standardCounter;";
 </BitButton>";
 
     private readonly string example5HTMLCode = @"
-<BitButton Title=""Primary"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+<BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
     Open Bit Platform In New Tab
 </BitButton>
 
-<BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitButton Title=""Standard"" Href=""https://bitplatform.dev"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
 </BitButton>";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-
-<BitLabel>Medium size</BitLabel>
-<BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-
-<BitLabel>Large size</BitLabel>
-<BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>";
-
-    private readonly string example7HTMLCode = @"
 <style>
-    .custom-btn-ctn {
+    .custom-button {
         gap: 0.5rem;
         display: flex;
+        align-items: center;
     }
 </style>
 
-<BitButton Class=""custom-btn-ctn"" IsEnabled=""true"">
+<BitButton Class=""custom-button"">
     <BitIcon IconName=""@BitIconName.Airplane"" />
-    <BitLabel>A Text from BitLabel</BitLabel>
+    <span>A custom text</span>
     <BitRippleLoading Size=""30""/>
+</BitButton>
+
+<BitButton Class=""custom-button"" ButtonStyle=""BitButtonStyle.Standard"">
+    <BitIcon IconName=""@BitIconName.Accept"" />
+    <span>A Standard custom text</span>
+    <BitRollerLoading Size=""30"" />
 </BitButton>";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
 {
-    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
         <DataAnnotationsValidator />
 
-        <ValidationSummary />
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
 
-        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
-
-        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonrequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.NonrequiredText"" />
+        <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
 
         <div>
-            <BitButton ButtonType=""BitButtonType.Submit"">
-                Submit
-            </BitButton>
-            <BitButton ButtonType=""BitButtonType.Reset"">
-                Reset
-            </BitButton>
-            <BitButton ButtonType=""BitButtonType.Button"">
-                Button
-            </BitButton>
+            <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+            <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
+            <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
         </div>
     </EditForm>
 }
@@ -297,17 +231,17 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example8CSharpCode = @"
-public class ValidationButtonModel
+    private readonly string example7CSharpCode = @"
+public class ButtonValidationModel
 {
     [Required]
     public string RequiredText { get; set; } = string.Empty;
 
-    public string? NonrequiredText { get; set; }
+    public string? NonRequiredText { get; set; }
 }
 
 private bool formIsValidSubmit;
-private ValidationButtonModel validationButtonModel = new();
+private ButtonValidationModel buttonValidationModel = new();
 
 private async Task HandleValidSubmit()
 {
@@ -315,7 +249,7 @@ private async Task HandleValidSubmit()
 
     await Task.Delay(2000);
 
-    validationButtonModel = new();
+    buttonValidationModel = new();
 
     formIsValidSubmit = false;
 
@@ -326,5 +260,4 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
-
 }

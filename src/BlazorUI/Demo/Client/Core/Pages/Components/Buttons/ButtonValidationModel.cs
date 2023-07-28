@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
-public class ValidationButtonModel
+public class ButtonValidationModel
 {
     [Required]
     public string RequiredText { get; set; } = string.Empty;
 
-    public string? NonrequiredText { get; set; }
+    public string? NonRequiredText { get; set; }
 }

@@ -39,10 +39,6 @@
     min-height: rem(70px);
     box-sizing: border-box;
     line-height: rem(24px);
-    /*pre {
-        margin: 0;
-        background-color: $White;
-    }*/
 
     &::-webkit-scrollbar {
         width: rem(6px);
@@ -102,17 +98,17 @@
             z-index: 1;
             width: rem(42px);
             padding: 0 rem(20px);
-            background-color: $bit-color-secondary-main;
         }
     }
 
     .copy-btn {
         z-index: 1;
         top: rem(16px);
-        right: rem(24px);
+        right: rem(10px);
         width: rem(34px);
         height: rem(34px);
         position: absolute;
         border-radius: 50%;
+        background-color: $bit-color-background-secondary;
     }
 }
