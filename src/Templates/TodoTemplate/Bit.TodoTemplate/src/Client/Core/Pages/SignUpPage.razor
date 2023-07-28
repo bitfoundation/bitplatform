@@ -35,7 +35,6 @@
                 <br />
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
-            <br />
             <BitLoadingButton IsLoading="_isLoading"
                               Class="form-submit-button"
                               ButtonStyle="BitButtonStyle.Primary"
@@ -44,6 +43,10 @@
                               OnClick="WrapHandled(DoResendLink)">
                 @Localizer[nameof(AppStrings.ResendEmail)]
             </BitLoadingButton>
+            <br />
+            <div>
+                <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+            </div>
         }
         else
         {

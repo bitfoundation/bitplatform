@@ -36,7 +36,7 @@
     background-size: rem(84px) 100%;
     background-position: center right;
     background-image: url('images/stat-card-bg.svg');
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-primary;
     border: rem(1px) solid $bit-color-border-secondary;
 
     @include sm {
