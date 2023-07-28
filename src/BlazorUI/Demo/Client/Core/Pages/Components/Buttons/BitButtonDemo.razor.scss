@@ -9,29 +9,23 @@
     display: grid;
 }
 
+.form-container {
+    max-width: 20rem;
+}
+
 ::deep {
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
+    }
+
     .custom-button {
-        color: white;
-        height: 2.5rem;
-        font-size: 1rem;
-        width: 10.375rem;
-        border-radius: 1.25rem;
-        border-color: orangered;
-        background-color: orangered;
-    }
-
-    .custom-button:hover {
-        border-color: darkorange;
-        background-color: darkorange;
-    }
-
-    .custom-button:active {
-        border-color: orange;
-        background-color: orange;
-    }
-
-    .custom-btn-ctn {
         gap: 0.5rem;
         display: flex;
+        align-items: center;
+    }
+
+    .validation-message {
+        color: red;
     }
 }

@@ -14,8 +14,8 @@
                 <BitButton OnClick="() => primaryCounter++">
                     Primary (@primaryCounter)
                 </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => ptandardCounter++">
-                    Standard (@ptandardCounter)
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
+                    Standard (@standardCounter)
                 </BitButton>
                 <BitButton IsEnabled="false" AllowDisabledFocus="false">
                     Disabled
@@ -27,10 +27,10 @@
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton Style="border-radius: 1.25rem; font-weight: bold">
+                <BitButton Style="color:darkblue; font-weight:bold">
                     Styled Button
                 </BitButton>
-                <BitButton Class="custom-button">
+                <BitButton Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
                     Classed Button
                 </BitButton>
             </div>
@@ -63,81 +63,62 @@
     <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
+                <BitButton Title="Primary" Target="_blank" Href="https://bitplatform.dev">
                     Open Bit Platform In New Tab
                 </BitButton>
-                <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
+                <BitButton Title="Standard" Href="https://bitplatform.dev" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
-        <ExamplePreview>
-            <div class="buttons-container-grid">
-                <div>
-                    <div>Small size</div>
-                    <BitButton ButtonSize="BitButtonSize.Small">Button</BitButton>
-                </div>
-                <div>
-                    <div>Medium size</div>
-                    <BitButton ButtonSize="BitButtonSize.Medium">Button</BitButton>
-                </div>
-                <div>
-                    <div>Large size</div>
-                    <BitButton ButtonSize="BitButtonSize.Large">Button</BitButton>
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton Class="custom-btn-ctn" IsEnabled="true">
+                <BitButton Class="custom-button">
                     <BitIcon IconName="@BitIconName.Airplane" />
-                    <BitLabel>A Text from BitLabel</BitLabel>
-                    <BitRippleLoading Size="30" />
+                    <span>A Primary custom text</span>
+                    <BitRippleLoading Size="20" />
+                </BitButton>
+
+                <BitButton Class="custom-button" ButtonStyle="BitButtonStyle.Standard">
+                    <BitIcon IconName="@BitIconName.Accept" />
+                    <span>A Standard custom text</span>
+                    <BitRollerLoading Size="20" />
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Types" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="Type" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
-            @if (formIsValidSubmit is false)
-            {
-                <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+            <div class="form-container">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                        <DataAnnotationsValidator />
 
-                    <ValidationSummary />
-
-                    <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
-                    <ValidationMessage For="() => validationButtonModel.RequiredText" />
-                    <br />
-                    <BitTextField Label="Nonrequired" @bind-Value="validationButtonModel.NonrequiredText" />
-                    <ValidationMessage For="() => validationButtonModel.NonrequiredText" />
-                    <br />
-                    <div>
-                        <BitButton ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
-                        <BitButton ButtonType="BitButtonType.Reset">
-                            Reset
-                        </BitButton>
-                        <BitButton ButtonType="BitButtonType.Button">
-                            Button
-                        </BitButton>
-                    </div>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    The form is valid to submit successfully.
-                </BitMessageBar>
-            }
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <br />
+                        <BitTextField Label="Non Required" @bind-Value="validationButtonModel.NonRequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <br />
+                        <div>
+                            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                            <BitButton ButtonType="BitButtonType.Reset">Reset</BitButton>
+                            <BitButton ButtonType="BitButtonType.Button">Button</BitButton>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -145,10 +126,10 @@
 
 @code {
     private int primaryCounter;
-    private int ptandardCounter;
+    private int standardCounter;
 
     private bool formIsValidSubmit;
-    private ValidationButtonModel validationButtonModel = new();
+    private ButtonValidationModel validationButtonModel = new();
 
     private async Task HandleValidSubmit()
     {
