@@ -2,11 +2,13 @@
 
 .bit-btn {
     cursor: pointer;
+    height: spacing(4);
     position: relative;
-    text-align: center;
-    text-decoration: none;
     min-width: spacing(8);
+    text-decoration: none;
     box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
@@ -54,22 +56,4 @@
     &:active {
         background-color: $color-action-active-secondary;
     }
-}
-
-.bit-btn-sm {
-    font-size: spacing(1.5);
-    line-height: spacing(2.75);
-    padding: spacing(0.25) spacing(1.25);
-}
-
-.bit-btn-md {
-    font-size: spacing(1.75);
-    padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height;
-}
-
-.bit-btn-lg {
-    font-size: spacing(2);
-    line-height: spacing(3.75);
-    padding: spacing(0.75) spacing(2.75);
 }
