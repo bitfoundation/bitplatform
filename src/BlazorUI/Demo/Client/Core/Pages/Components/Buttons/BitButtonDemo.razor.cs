@@ -172,46 +172,42 @@ public partial class BitButtonDemo
 
 
 
-    public int PrimaryCounter;
-    public int StandardCounter;
-
     private readonly string example1HTMLCode = @"
-<BitButton IsEnabled=""true"" OnClick=""() => PrimaryCounter++"">
-    Primary (@PrimaryCounter)
-</BitButton>
+<BitButton OnClick=""() => PrimaryCounter++"">Primary (@PrimaryCounter)</BitButton>
 
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""true"" OnClick=""() => StandardCounter++"">
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => StandardCounter++"">
     Standard (@StandardCounter)
 </BitButton>
 
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">
-    Disabled
-</BitButton>
-
-<BitButton Class=""label-btn"" IsEnabled=""true"">
-    <label>A Text from label element</label>
-</BitButton>";
+<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">Disabled</BitButton>";
     private readonly string example1CSharpCode = @"
-public int PrimaryCounter;
-public int StandardCounter;";
+private int primaryCounter;
+private int standardCounter;";
 
     private readonly string example2HTMLCode = @"
 <style>
     .custom-button {
+        color: white;
         height: 2.5rem;
-        width: 10.375rem;
         font-size: 1rem;
-        background-color: #0054C6;
-        border-color: #0054C6;
+        width: 10.375rem;
+        border-radius: 1.25rem;
+        border-color: orangered;
+        background-color: orangered;
     }
 
     .custom-button:hover {
-        background-color: #01367e;
-        border-color: #01367e;
+        border-color: darkorange;
+        background-color: darkorange;
+    }
+
+    .custom-button:active {
+        border-color: orange;
+        background-color: orange;
     }
 </style>
 
-<BitButton Style=""height: 40px;width: 166px;font-size: 16px;"">
+<BitButton Style=""border-radius: 1.25rem; font-weight: bold"">
     Styled Button
 </BitButton>
 
@@ -220,11 +216,11 @@ public int StandardCounter;";
 </BitButton>";
 
     private readonly string example3HTMLCode = @"
-<div><BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton></div>
+<div>Visible Button: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]</div>
 
-<div>Hidden Button: [<BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton>]</div>
+<div>Hidden Button: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]</div>
 
-<div>Collapsed Button: [<BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton>]</div>";
+<div>Collapsed Button: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]</div>";
 
     private readonly string example4HTMLCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
@@ -242,60 +238,93 @@ public int StandardCounter;";
 
 <BitButton Title=""Standard"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
-</BitButton>
-
-<BitButton Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Platform From Span</span>
 </BitButton>";
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>
-</div>";
+<BitLabel>Small size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Small"">Button</BitButton>
+
+<BitLabel>Medium size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
+
+<BitLabel>Large size</BitLabel>
+<BitButton ButtonSize=""BitButtonSize.Large"">Button</BitButton>";
 
     private readonly string example7HTMLCode = @"
-<style>    
-    .custom-btn-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-    
-    .custom-btn-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-    
-    .custom-btn-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
+<style>
+    .custom-btn-ctn {
+        gap: 0.5rem;
+        display: flex;
     }
 </style>
 
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"">Button</BitButton>
-</div>
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"">Button</BitButton>
-</div>";
+<BitButton Class=""custom-btn-ctn"" IsEnabled=""true"">
+    <BitIcon IconName=""@BitIconName.Airplane"" />
+    <BitLabel>A Text from BitLabel</BitLabel>
+    <BitRippleLoading Size=""30""/>
+</BitButton>";
+
+    private readonly string example8HTMLCode = @"
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+
+        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonrequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.NonrequiredText"" />
+
+        <div>
+            <BitButton ButtonType=""BitButtonType.Submit"">
+                Submit
+            </BitButton>
+            <BitButton ButtonType=""BitButtonType.Reset"">
+                Reset
+            </BitButton>
+            <BitButton ButtonType=""BitButtonType.Button"">
+                Button
+            </BitButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}";
+    private readonly string example8CSharpCode = @"
+public class ValidationButtonModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
+
+    public string? NonrequiredText { get; set; }
+}
+
+private bool formIsValidSubmit;
+private ValidationButtonModel validationButtonModel = new();
+
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(2000);
+
+    validationButtonModel = new();
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}";
+
 }
