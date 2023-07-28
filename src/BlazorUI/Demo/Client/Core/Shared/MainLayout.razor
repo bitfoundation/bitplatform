@@ -5,7 +5,7 @@
 
 <Header />
 
-<main class="@(CurrentUrl == "/" ? "full-page" : "")  @BitCss.Class.Color.Background.Primary">
+<main class="@($"{BitCss.Class.Color.Background.Primary}{(CurrentUrl == "/" ? " full-page" : "")}")">
     @if (CurrentUrl != "/")
     {
         <NavMenu />

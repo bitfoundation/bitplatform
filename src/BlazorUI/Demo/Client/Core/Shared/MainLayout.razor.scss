@@ -114,7 +114,7 @@ main {
     font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
     &::-webkit-scrollbar {
-        width: rem(6.5px);
+        width: rem(8px);
     }
 
     &::-webkit-scrollbar-thumb {
@@ -127,12 +127,12 @@ main {
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        border: rem(4px) solid $B3Color;
         border-radius: rem(8px);
+        border: rem(4px) solid $B3Color;
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(6px);
+        height: rem(8);
     }
 }
 
@@ -143,12 +143,6 @@ main {
     span {
         font-family: inherit;
     }
-}
-
-::deep .hljs {
-    overflow-x: unset !important;
-    padding: 0 !important;
-    background-color: transparent !important;
 }
 
 ::deep ::-webkit-scrollbar-thumb {
