@@ -10,10 +10,6 @@
     display: inline-grid;
     box-sizing: border-box;
     margin-bottom: rem(40px);
-
-    @include lt-xl {
-        border-radius: rem(8px);
-    }
 }
 
 .th-row {
@@ -104,13 +100,5 @@
         &:nth-child(3) {
             width: 36%;
         }
-    }
-}
-
-::deep .param-table-link {
-    a {
-        cursor: pointer;
-        font-size: rem(11px);
-        line-height: rem(24px);
     }
 }
