@@ -4,10 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
-    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private int? _tabIndex;
+    private BitButtonType _buttonType;
 
 
     /// <summary>
@@ -94,7 +94,7 @@ public partial class BitButton
             _tabIndex = AllowDisabledFocus ? null : -1;
         }
 
-        ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
+        _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         base.OnParametersSet();
     }
