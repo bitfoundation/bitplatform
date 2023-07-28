@@ -259,7 +259,7 @@ else
     </BitMessageBar>
 }";
     private readonly string example8CSharpCode = @"
-public class ValidationButtonModel
+public class ButtonValidationModel
 {
     [Required]
     public string RequiredText { get; set; } = string.Empty;
@@ -268,7 +268,7 @@ public class ValidationButtonModel
 }
 
 private bool formIsValidSubmit;
-private ValidationButtonModel validationButtonModel = new();
+private ButtonValidationModel validationButtonModel = new();
 
 private async Task HandleValidSubmit()
 {
