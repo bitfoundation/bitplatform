@@ -1,8 +1,4 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
-@import '../../../Styles/abstracts/_media-queries.scss';
-
-.buttons-container {
+﻿.buttons-container {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
@@ -13,38 +9,13 @@
     display: grid;
 }
 
+.form-container {
+    max-width: 25rem;
+}
+
 ::deep {
-    .custom-compound-button {
-        width: 15rem;
-        color: #FFFFFF;
-        font-size: 1rem;
-        border-color: #0054C6;
-        background-color: #0054C6;
-
-        &:hover {
-            border-color: #0065EF;
-            background-color: #0065EF;
-        }
-    }
-
-    .custom-btn-sm {
-        font-size: 8px;
-        padding: 4px 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-
-    .custom-btn-md {
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-        padding: 12px 24px;
-    }
-
-    .custom-btn-lg {
-        font-size: 32px;
-        line-height: 1.33;
-        padding: 20px 32px;
-        border-radius: 6px;
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
     }
 }
