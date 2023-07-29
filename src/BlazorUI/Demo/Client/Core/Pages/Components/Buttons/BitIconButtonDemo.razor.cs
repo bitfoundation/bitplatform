@@ -220,20 +220,12 @@ Hidden Button: <BitIconButton Visibility=""BitComponentVisibility.Hidden"" /> ]
 Collapsed Button: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"" /> ]";
 
     private readonly string example4HTMLCode = @"
-<BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
-    Button with Aria Description
-</BitIconButton>
-<BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"">
-    Button with Aria Hidden
-</BitIconButton>";
+<BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with Aria Description"" />
+<BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with Aria Hidden"" />";
 
     private readonly string example5HTMLCode = @"
-<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Open Bit Platform In New Tab
-</BitIconButton>
-<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To Bit Platform
-</BitIconButton>";
+<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open Bit Platform In New Tab"" />
+<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To Bit Platform"" />";
 
     private readonly string example6HTMLCode = @"
 <BitLabel>Small size</BitLabel>
