@@ -2,41 +2,21 @@
     line-height: 3.125rem;
 }
 
+.form-container {
+    max-width: 20rem;
+}
+
 ::deep {
     .custom-action-button {
         color: #111;
-        width: 14.5rem;
         font-size: 1rem;
-        margin-top: 0.625rem;
+        border-radius: 1rem;
         border-color: #D7D7D7;
         background-color: #CCC;
-        justify-content: center;
     }
 
-    .custom-btn-sm {
-        &.bit-acb-sm {
-            font-size: 8px;
-            line-height: 1.5;
-            padding: 4px 8px;
-            border-radius: 3px;
-        }
-    }
-
-    .custom-btn-md {
-        &.bit-acb-md {
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-            padding: 12px 24px;
-        }
-    }
-
-    .custom-btn-lg {
-        &.bit-acb-lg {
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-            padding: 20px 32px;
-        }
+    .custom-btn-ctn {
+        gap: 0.5rem;
+        display: flex;
     }
 }

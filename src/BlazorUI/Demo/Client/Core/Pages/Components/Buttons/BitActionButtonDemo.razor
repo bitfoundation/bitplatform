@@ -7,23 +7,21 @@
 
 <ComponentDemo ComponentName="ActionButton"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
-               ComponentParameters="componentParameters" 
+               ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="BitActionButton" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">BitActionButton component is a button that acts as a link.</div>
             <div>
                 <BitActionButton IconName="@BitIconName.AddFriend">Create account</BitActionButton>
-                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="@BitIconName.UserRemove">Remove user</BitActionButton>
+                <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="@BitIconName.UserRemove">Remove user (Disabled)</BitActionButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">BitActionButton can directly get css class or inline style.</div>
             <div>
-                <BitActionButton IconName="@BitIconName.ThisPC" Style="font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;">
+                <BitActionButton IconName="@BitIconName.ThisPC" Style="font-size:16px; border:2px solid #32385B; border-radius: 1rem;">
                     Styled Action Button
                 </BitActionButton>
                 <BitActionButton IconName="@BitIconName.ThisPC" Class="custom-action-button">
@@ -35,18 +33,16 @@
 
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">By setting Visibility attribute, BitActionButton can be Visible, Hidden or Collapsed.</div>
             <div class="buttons-container">
-                <BitActionButton IconName="@BitIconName.AddEvent" Visibility="BitComponentVisibility.Visible">Add Event</BitActionButton>
-                <div><span>Hidden Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton>]</div>
-                <div><span>Collapsed Button: </span>[<BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton>]</div>
+                <div>Visible Button: [ <BitActionButton IconName="@BitIconName.AddEvent" Visibility="BitComponentVisibility.Visible">Visible Action Button</BitActionButton> ]</div>
+                <div>Hidden Button: [ <BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton> ]</div>
+                <div>Collapsed Button: [ <BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">Aria attribues can also set for a BitActionButton.</div>
             <div>
                 <BitActionButton IconName="@BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
                     Action Button with Aria Description
@@ -58,9 +54,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ActionButton-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">BitActionButton can act as a link by setting Href and Target attribute, you define how to open your link.</div>
             <div>
                 <BitActionButton IconName="@BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
                     Open Bit Platform In New Tab
@@ -68,16 +63,12 @@
                 <BitActionButton IconName="@BitIconName.Website" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitActionButton>
-                <BitActionButton IconName="@BitIconName.Website" Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
-                    <span>Bit Platform From Span</span>
-                </BitActionButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitActionButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
-            <div class="example-desc">BitActionButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
             <div class="buttons-container-grid">
                 <div>
                     <BitLabel>Small size</BitLabel>
@@ -95,23 +86,82 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized BitActionButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
-            <div class="example-desc">BitActionButton can be customized easily in different sizes by overriding a certain CSS class.</div>
-            <div class="buttons-container-grid">
-                <div>
-                    <BitLabel>Small size</BitLabel>
-                    <BitActionButton Class="custom-btn-sm" ButtonSize=BitButtonSize.Small IconName="@BitIconName.AddFriend">Button</BitActionButton>
-                </div>
-                <div>
-                    <BitLabel>Medium size</BitLabel>
-                    <BitActionButton Class="custom-btn-md" ButtonSize=BitButtonSize.Medium IconName="@BitIconName.AddFriend">Button</BitActionButton>
-                </div>
-                <div>
-                    <BitLabel>Large size</BitLabel>
-                    <BitActionButton Class="custom-btn-lg" ButtonSize=BitButtonSize.Large IconName="@BitIconName.AddFriend">Button</BitActionButton>
-                </div>
+            <div>
+                <BitActionButton IconName="@BitIconName.AddFriend">
+                    <div class="custom-btn-ctn">
+                        <BitLabel>A Text from BitLabel</BitLabel>
+                        <BitSpinnerLoading Size="30" />
+                    </div>
+                </BitActionButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Types" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div class="form-container">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+
+                        <ValidationSummary />
+
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <br />
+                        <BitTextField Label="Nonrequired" @bind-Value="validationButtonModel.NonRequiredText" />
+                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <br />
+                        <div>
+                            <BitActionButton IconName="@BitIconName.Completed" ButtonType="BitButtonType.Submit">
+                                Submit
+                            </BitActionButton>
+                            <BitActionButton IconName="@BitIconName.Refresh"  ButtonType="BitButtonType.Reset">
+                                Reset
+                            </BitActionButton>
+                            <BitActionButton IconName="@BitIconName.Touch" ButtonType="BitButtonType.Button">
+                                Button
+                            </BitActionButton>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
+
+@code {
+    private int primaryCounter;
+    private int ptandardCounter;
+
+    private bool formIsValidSubmit;
+    private ButtonValidationModel validationButtonModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        validationButtonModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+}
