@@ -193,21 +193,21 @@ public partial class BitIconButtonDemo
 
     private readonly string example1HTMLCode = @"
 <BitIconButton IconName=""@BitIconName.Emoji"" />
-<BitIconButton IconName=""@BitIconName.EmojiDisappointed"" AllowDisabledFocus=""false"" IsEnabled=""false"" />";
+<BitIconButton IconName=""@BitIconName.EmojiDisappointed"" IsEnabled=""false"" />";
 
     private readonly string example2HTMLCode = @"
 <style>
     .custom-icon-button {
-        height: 3rem;
         width: 3rem;
-        border-radius: 0.375rem;
-        background-color: #D7D7D7;
+        height: 3rem;
         border-color: #D7D7D7;
+        background-color: #CCC;
+        border-radius: 0.375rem;
     }
 
     .custom-icon-button:hover {
-        background-color: #E9E9E9;
         border-color: #E9E9E9;
+        background-color: #E9E9E9;
     }
 </style>
 
@@ -215,18 +215,9 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""@BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
     private readonly string example3HTMLCode = @"
-<style>
-    .buttons-container-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-</style>
-
-<div class=""buttons-container-grid"">
-    <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitComponentVisibility.Visible"">Visible Button</BitIconButton>
-    <div><span>Hidden Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitIconButton>]</div>
-    <div><span>Collapsed Button: </span>[<BitIconButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitIconButton>]</div>
-</div>";
+Visible Button: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitComponentVisibility.Visible"" /> ]
+Hidden Button: <BitIconButton Visibility=""BitComponentVisibility.Hidden"" /> ]
+Collapsed Button: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"" /> ]";
 
     private readonly string example4HTMLCode = @"
 <BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
@@ -242,79 +233,68 @@ public partial class BitIconButtonDemo
 </BitIconButton>
 <BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
-</BitIconButton>
-<BitIconButton IconName=""@BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Platform From Span</span>
 </BitIconButton>";
 
     private readonly string example6HTMLCode = @"
-<BitIconButton IconName=""@BitIconName.Emoji2"" Title=""I'm Happy"" />";
+<BitLabel>Small size</BitLabel>
+<BitIconButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.Emoji"" />
+
+<BitLabel>Medium size</BitLabel>
+<BitIconButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.Emoji"" />
+
+<BitLabel>Large size</BitLabel>
+<BitIconButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.Emoji"" />";
 
     private readonly string example7HTMLCode = @"
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitIconButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.Emoji"" />
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
+        <DataAnnotationsValidator />
 
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitIconButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.Emoji"" />
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
 
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitIconButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.Emoji"" />
-    </div>
-</div>";
+        <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
 
-    private readonly string example8HTMLCode = @"
-<style>
-    .buttons-container-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-    
-    .custom-btn-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-    
-    .custom-btn-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-    
-    .custom-btn-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
-    }
-</style>
+        <BitIconButton IconName=""@BitIconName.Completed"" ButtonType=""BitButtonType.Submit"" Title=""Submit"" />
+        <BitIconButton IconName=""@BitIconName.Refresh"" ButtonType=""BitButtonType.Reset"" Title=""Reset"" />
+        <BitIconButton IconName=""@BitIconName.Touch"" ButtonType=""BitButtonType.Button"" Title=""Button"" />
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form is valid to submit successfully.
+    </BitMessageBar>
+}";
+    private readonly string example7CSharpCode = @"
+public class ButtonValidationModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
 
-<div class=""buttons-container-grid"">
-    <div>
-        <BitLabel>Small size</BitLabel>
-        <BitIconButton Class=""custom-btn-sm""
-                       ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.Emoji"" />
+    public string? NonRequiredText { get; set; }
+}
 
-    </div>
-    <div>
-        <BitLabel>Medium size</BitLabel>
-        <BitIconButton Class=""custom-btn-md""
-                       ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.Emoji"" />
+private bool formIsValidSubmit;
+private ButtonValidationModel buttonValidationModel = new();
 
-    </div>
-    <div>
-        <BitLabel>Large size</BitLabel>
-        <BitIconButton Class=""custom-btn-lg""
-                       ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.Emoji"" />
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
 
-    </div>
-</div>";
+    await Task.Delay(2000);
+
+    buttonValidationModel = new();
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}";
 }
