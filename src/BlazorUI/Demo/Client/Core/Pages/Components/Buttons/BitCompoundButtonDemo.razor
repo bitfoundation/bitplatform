@@ -12,23 +12,9 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton IsEnabled="true"
-                                   Text="Primary"
-                                   SecondaryText="This Button is a compound button">
-                </BitCompoundButton>
-                <BitCompoundButton IsEnabled="true"
-                                   Text="Standard"
-                                   AriaHidden="true"
-                                   SecondaryText="This Button is a compound button"
-                                   ButtonStyle="BitButtonStyle.Standard">
-                </BitCompoundButton>
-                <BitCompoundButton IsEnabled="false"
-                                   AllowDisabledFocus="false"
-                                   Text="Disabled"
-                                   Class="disable-cmp-btn"
-                                   AriaDescription="Detailed description used for screen reader."
-                                   SecondaryText="This Button is a disabled compound button">
-                </BitCompoundButton>
+                <BitCompoundButton Text="Primary" SecondaryText="This Button is a compound button" />
+                <BitCompoundButton Text="Standard" SecondaryText="This Button is a compound button" ButtonStyle="BitButtonStyle.Standard" />
+                <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is a disabled compound button" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -36,8 +22,8 @@
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton Style="color:darkblue; font-weight:bold" Text="Styled" SecondaryText="This is styled compound button"></BitCompoundButton>
-                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-class" Text="Classed" SecondaryText="This is classed compound button"></BitCompoundButton>
+                <BitCompoundButton Style="color:darkblue; font-weight:bold" Text="Styled" SecondaryText="This is styled compound button" />
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-class" Text="Classed" SecondaryText="This is classed compound button" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -45,9 +31,9 @@
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="buttons-container-grid">
-                <div>Visible Button: [ <BitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button"></BitCompoundButton> ]</div>
-                <div>Hidden Button: [ <BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden"></BitCompoundButton> ]</div>
-                <div>Collapsed Button: [ <BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed"></BitCompoundButton> ]</div>
+                <div>Visible Button: [ <BitCompoundButton Visibility="BitComponentVisibility.Visible" Text="Visible" SecondaryText="This Button is a visible compound button" /> ]</div>
+                <div>Hidden Button: [ <BitCompoundButton Text="Hidden" SecondaryText="This Button is a hidden compound button" Visibility="BitComponentVisibility.Hidden" /> ]</div>
+                <div>Collapsed Button: [ <BitCompoundButton Text="Collapsed" SecondaryText="This Button is a collapsed compound button" Visibility="BitComponentVisibility.Collapsed" /> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -55,8 +41,8 @@
     <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description"></BitCompoundButton>
-                <BitCompoundButton Text="AriaHidden" SecondaryText="This is a compound button with aria hidden" AriaHidden="true"></BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Text="AriaDescription" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description" />
+                <BitCompoundButton Text="AriaHidden" SecondaryText="This is a compound button with aria hidden" AriaHidden="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -64,8 +50,8 @@
     <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitplatform" Text="Open the site" SecondaryText="Open Bit Platform In New Tab"></BitCompoundButton>
-                <BitCompoundButton Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Platform"></BitCompoundButton>
+                <BitCompoundButton Target="_blank" Href="https://github.com/bitfoundation/bitplatform" Text="Open the site" SecondaryText="Open Bit Platform In New Tab" />
+                <BitCompoundButton Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard" Text="Open the site" SecondaryText="Go To Bit Platform" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -75,24 +61,15 @@
             <div class="buttons-container-grid">
                 <div>
                     <BitLabel>Small size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Small
-                                       Text="Primary"
-                                       SecondaryText="This Button is a compound button">
-                    </BitCompoundButton>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Small Text="Primary"SecondaryText="This Button is a compound button" />
                 </div>
                 <div>
                     <BitLabel>Medium size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Medium
-                                       Text="Primary"
-                                       SecondaryText="This Button is a compound button">
-                    </BitCompoundButton>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Medium Text="Primary" SecondaryText="This Button is a compound button" />
                 </div>
                 <div>
                     <BitLabel>Large size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Large
-                                       Text="Primary"
-                                       SecondaryText="This Button is a compound button">
-                    </BitCompoundButton>
+                    <BitCompoundButton ButtonSize=BitButtonSize.Large Text="Primary" SecondaryText="This Button is a compound button" />
                 </div>
             </div>
         </ExamplePreview>
@@ -113,18 +90,9 @@
                         <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
                         <br />
                         <div class="buttons-container">
-                            <BitCompoundButton ButtonType=BitButtonType.Submit
-                                               Text="Submit"
-                                               SecondaryText="This is a Submit button">
-                            </BitCompoundButton>
-                            <BitCompoundButton ButtonType=BitButtonType.Reset
-                                               Text="Reset"
-                                               SecondaryText="This is a Reset button">
-                            </BitCompoundButton>
-                            <BitCompoundButton ButtonType=BitButtonType.Button
-                                               Text="Button"
-                                               SecondaryText="This is just a button">
-                            </BitCompoundButton>
+                            <BitCompoundButton ButtonType=BitButtonType.Submit Text="Submit" SecondaryText="This is a Submit button" />
+                            <BitCompoundButton ButtonType=BitButtonType.Reset Text="Reset" SecondaryText="This is a Reset button" />
+                            <BitCompoundButton ButtonType=BitButtonType.Button Text="Button" SecondaryText="This is just a button" />
                         </div>
                     </EditForm>
                 }

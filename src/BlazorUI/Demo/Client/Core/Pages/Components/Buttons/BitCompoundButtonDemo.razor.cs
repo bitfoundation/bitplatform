@@ -180,25 +180,9 @@ public partial class BitCompoundButtonDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitCompoundButton IsEnabled=""true""
-                   Text=""Primary""
-                   SecondaryText=""This Button is a compound button"">
-</BitCompoundButton>
-
-<BitCompoundButton IsEnabled=""true""
-                   Text=""Standard""
-                   AriaHidden=""true""
-                   SecondaryText=""This Button is a compound button""
-                   ButtonStyle=""BitButtonStyle.Standard"">
-</BitCompoundButton>
-
-<BitCompoundButton IsEnabled=""false""
-                   AllowDisabledFocus=""false""
-                   Text=""Disabled""
-                   Class=""disable-cmp-btn""
-                   AriaDescription=""Detailed description used for screen reader.""
-                   SecondaryText=""This Button is a disabled compound button"">
-</BitCompoundButton>";
+<BitCompoundButton Text=""Primary"" SecondaryText=""This Button is a compound button"" />
+<BitCompoundButton Text=""Standard"" SecondaryText=""This Button is a compound button"" ButtonStyle=""BitButtonStyle.Standard"" />
+<BitCompoundButton IsEnabled=""false"" Text=""Disabled"" SecondaryText=""This Button is a disabled compound button"" />";
 
     private readonly string example2HTMLCode = @"
 <style>
@@ -208,56 +192,33 @@ public partial class BitCompoundButtonDemo
     }
 </style>
 
-<BitCompoundButton Style=""color:darkblue; font-weight:bold""
-                   Text=""Styled""
-                   SecondaryText=""This is styled compound button"">
-</BitCompoundButton>
-
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard""
-                   Class=""custom-class""
-                   Text=""Classed"" 
-                   SecondaryText=""This is classed compound button"">
-</BitCompoundButton>";
+<BitCompoundButton Style=""color:darkblue; font-weight:bold"" Text=""Styled"" SecondaryText=""This is styled compound button"" />
+<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Class=""custom-class"" Text=""Classed"" SecondaryText=""This is classed compound button"" />";
 
     private readonly string example3HTMLCode = @"
-<div>Visible Button: [ <BitCompoundButton Visibility=""BitComponentVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton> ]</div>
-<div>Hidden Button: [ <BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitComponentVisibility.Hidden""></BitCompoundButton> ]</div>
-<div>Collapsed Button: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitComponentVisibility.Collapsed""></BitCompoundButton> ]</div>";
+Visible Button: [ <BitCompoundButton Visibility=""BitComponentVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton> ]
+Hidden Button: [ <BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitComponentVisibility.Hidden""></BitCompoundButton> ]
+Collapsed Button: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitComponentVisibility.Collapsed""></BitCompoundButton> ]";
 
     private readonly string example4HTMLCode = @"
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description""></BitCompoundButton>
+<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Text=""AriaDescription"" SecondaryText=""This is a compound button with aria description"" AriaDescription=""Button with Aria Description"" />
 
-<BitCompoundButton Text=""AriaHidden"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true""></BitCompoundButton>";
+<BitCompoundButton Text=""AriaHidden"" SecondaryText=""This is a compound button with aria hidden"" AriaHidden=""true"" />";
 
     private readonly string example5HTMLCode = @"
-<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab""></BitCompoundButton>
+<BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab"" />
 
-<BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform""></BitCompoundButton>";
+<BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform"" />";
 
     private readonly string example6HTMLCode = @"
-<div>
-    <BitLabel>Small size</BitLabel>
-    <BitCompoundButton ButtonSize=""BitButtonSize.Small""
-                       Text=""Primary""
-                       SecondaryText=""This Button is a compound button"">
-    </BitCompoundButton>
-</div>
+<BitLabel>Small size</BitLabel>
+<BitCompoundButton ButtonSize=BitButtonSize.Small Text=""Primary""SecondaryText=""This Button is a compound button"" />
 
-<div>
-    <BitLabel>Medium size</BitLabel>
-    <BitCompoundButton ButtonSize=""BitButtonSize.Medium""
-                       Text=""Primary""
-                       SecondaryText=""This Button is a compound button"">
-    </BitCompoundButton>
-</div>
+<BitLabel>Medium size</BitLabel>
+<BitCompoundButton ButtonSize=BitButtonSize.Medium Text=""Primary"" SecondaryText=""This Button is a compound button"" />
 
-<div>
-    <BitLabel>Large size</BitLabel>
-    <BitCompoundButton ButtonSize=""BitButtonSize.Large""
-                       Text=""Primary""
-                       SecondaryText=""This Button is a compound button"">
-    </BitCompoundButton>
-</div>";
+<BitLabel>Large size</BitLabel>
+<BitCompoundButton ButtonSize=BitButtonSize.Large Text=""Primary"" SecondaryText=""This Button is a compound button"" />";
 
     private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
@@ -271,19 +232,10 @@ public partial class BitCompoundButtonDemo
         <BitTextField Label=""Non Required"" @bind-Value=""validationButtonModel.NonRequiredText"" />
         <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
         <br />
-        <div>
-            <BitCompoundButton ButtonType=BitButtonType.Submit
-                               Text=""Submit""
-                               SecondaryText=""This is a Submit button"">
-            </BitCompoundButton>
-            <BitCompoundButton ButtonType=BitButtonType.Reset
-                               Text=""Reset""
-                               SecondaryText=""This is a Reset button"">
-            </BitCompoundButton>
-            <BitCompoundButton ButtonType=BitButtonType.Button
-                               Text=""Button""
-                               SecondaryText=""This is just a button"">
-            </BitCompoundButton>
+        <div class=""buttons-container"">
+            <BitCompoundButton ButtonType=BitButtonType.Submit Text=""Submit"" SecondaryText=""This is a Submit button"" />
+            <BitCompoundButton ButtonType=BitButtonType.Reset Text=""Reset"" SecondaryText=""This is a Reset button"" />
+            <BitCompoundButton ButtonType=BitButtonType.Button Text=""Button"" SecondaryText=""This is just a button"" />
         </div>
     </EditForm>
 }
