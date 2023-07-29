@@ -32,9 +32,9 @@ public partial class BitActionButtonDemo
         {
             Name = "ButtonType",
             Type = "BitButtonType",
-            DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
+            DefaultValue = "null",
             Description = "The type of the button.",
         },
         new()
