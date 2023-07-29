@@ -18,14 +18,14 @@
     justify-content: center;
 }
 
-.homepage-section-contnet {
+.homepage-section-content {
     width: 100%;
-    max-width: rem(1200px);
     margin-left: auto;
     margin-right: auto;
+    max-width: rem(1200px);
+    box-sizing: border-box;
     padding-left: rem(20px);
     padding-right: rem(20px);
-    box-sizing: border-box;
 
     @include md {
         padding-left: rem(30px);
@@ -36,7 +36,7 @@
 .hero-section {
     overflow: hidden;
 
-    .homepage-section-contnet {
+    .homepage-section-content {
         display: flex;
         flex-flow: row nowrap;
         justify-content: center;
@@ -97,7 +97,7 @@
         margin-bottom: rem(20px);
     }
 
-    .homepage-section-contnet {
+    .homepage-section-content {
         display: flex;
         flex-flow: column nowrap;
     }
@@ -117,7 +117,7 @@
         padding-bottom: rem(40px);
     }
 
-    .homepage-section-contnet {
+    .homepage-section-content {
         display: flex;
         align-items: flex-start;
         flex-flow: column nowrap;

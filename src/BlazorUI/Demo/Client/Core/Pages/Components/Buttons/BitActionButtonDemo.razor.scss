@@ -8,15 +8,16 @@
 
 ::deep {
     .custom-action-button {
-        color: #111;
-        font-size: 1rem;
         border-radius: 1rem;
-        border-color: #D7D7D7;
-        background-color: #CCC;
+        border: 2px solid #777;
     }
 
     .custom-btn-ctn {
         gap: 0.5rem;
         display: flex;
+    }
+
+    .validation-message {
+        color: red;
     }
 }
