@@ -19,7 +19,7 @@
 
 ::deep {
     .header-padding {
-        padding-top: var(--bit-status-bar-height);
+        padding-top: calc(rem(18px) + var(--bit-status-bar-height));
 
         @supports (-webkit-touch-callout: none) {
             padding-top: env(safe-area-inset-top);
