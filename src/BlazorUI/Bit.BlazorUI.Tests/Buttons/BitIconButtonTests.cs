@@ -141,34 +141,6 @@ public class BitIconButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitIconButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitIconButton>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var bitIconButton = com.Find(".bit-icb");
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-icb-sm",
-            BitButtonSize.Medium or null => "bit-icb-md",
-            BitButtonSize.Large => "bit-icb-lg",
-            _ => throw new NotSupportedException()
-        };
-
-        Assert.IsTrue(bitIconButton.ClassList.Contains(sizeClass));
-    }
-
-    [DataTestMethod,
         DataRow(BitButtonType.Button),
         DataRow(BitButtonType.Submit),
         DataRow(BitButtonType.Reset)

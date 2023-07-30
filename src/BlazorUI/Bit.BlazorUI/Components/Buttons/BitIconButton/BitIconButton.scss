@@ -3,15 +3,16 @@
 .bit-icb {
     border: none;
     cursor: pointer;
-    text-align: center;
-    text-decoration: none;
+    width: spacing(4);
+    height: spacing(4);
     display: inline-block;
+    text-decoration: none;
     box-sizing: border-box;
+    font-size: spacing(1.75);
     color: $color-primary-main;
     background-color: transparent;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
 
     @media (hover: hover) {
         &:hover {
@@ -46,25 +47,4 @@
     .bit-icon {
         margin: 0 spacing(0.5);
     }
-}
-
-.bit-icb-sm {
-    width: spacing(3.5);
-    height: spacing(3.5);
-    font-size: spacing(1.5);
-    line-height: spacing(2.75);
-}
-
-.bit-icb-md {
-    width: spacing(4.5);
-    height: spacing(4.5);
-    font-size: spacing(1.75);
-    line-height: $typography-line-height;
-}
-
-.bit-icb-lg {
-    width: spacing(5.5);
-    height: spacing(5.5);
-    font-size: spacing(2);
-    line-height: spacing(3.75);
 }

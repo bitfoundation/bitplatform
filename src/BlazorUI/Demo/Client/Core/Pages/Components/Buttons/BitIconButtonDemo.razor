@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/iconbutton"
             Title="IconButton"
-            Description="iconbutton component of the bit BlazorUI components" />
+            Description="IconButton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="IconButton"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
@@ -50,49 +50,30 @@
     <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div>
-                <BitIconButton IconName="@BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform" Title="Open Bit Platform In New Tab" />
-                <BitIconButton IconName="@BitIconName.Website" Href="https://github.com/bitfoundation/bitplatform" Title="Go To Bit Platform" />
+                <BitIconButton IconName="@BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform" Title="Open bit platform In New Tab" />
+                <BitIconButton IconName="@BitIconName.Website" Href="https://github.com/bitfoundation/bitplatform" Title="Go To bit platform" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
-        <ExamplePreview>
-            <div class="buttons-container-grid">
-                <div>
-                    <BitLabel>Small size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Small" IconName="@BitIconName.Emoji" />
-                </div>
-                <div>
-                    <BitLabel>Medium size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Medium" IconName="@BitIconName.Emoji" />
-                </div>
-                <div>
-                    <BitLabel>Large size</BitLabel>
-                    <BitIconButton ButtonSize="BitButtonSize.Large" IconName="@BitIconName.Emoji" />
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Types" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Button Type" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="form-container">
                 @if (formIsValidSubmit is false)
                 {
-                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                         <DataAnnotationsValidator />
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText" />
                         <br />
-                        <BitTextField Label="Non Required" @bind-Value="validationButtonModel.NonRequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText" />
                         <br />
                         <div class="buttons-container">
-                            <BitIconButton IconName="@BitIconName.Completed" ButtonType="BitButtonType.Submit" Title="Submit" />
-                            <BitIconButton IconName="@BitIconName.Refresh" ButtonType="BitButtonType.Reset" Title="Reset" />
-                            <BitIconButton IconName="@BitIconName.Touch" ButtonType="BitButtonType.Button" Title="Button" />
+                            <BitIconButton IconName="@BitIconName.SendMirrored" ButtonType="BitButtonType.Submit" Title="Submit" />
+                            <BitIconButton IconName="@BitIconName.Reset" ButtonType="BitButtonType.Reset" Title="Reset" />
+                            <BitIconButton IconName="@BitIconName.ButtonControl" ButtonType="BitButtonType.Button" Title="Button" />
                         </div>
                     </EditForm>
                 }
@@ -109,7 +90,7 @@
 
 @code {
     private bool formIsValidSubmit;
-    private ButtonValidationModel validationButtonModel = new();
+    private ButtonValidationModel buttonValidationModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -117,7 +98,7 @@
 
         await Task.Delay(2000);
 
-        validationButtonModel = new();
+        buttonValidationModel = new();
 
         formIsValidSubmit = false;
 
