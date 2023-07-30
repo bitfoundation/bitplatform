@@ -56,38 +56,19 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
-        <ExamplePreview>
-            <div class="buttons-container-grid">
-                <div>
-                    <BitLabel>Small size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Small Text="Primary"SecondaryText="This Button is a compound button" />
-                </div>
-                <div>
-                    <BitLabel>Medium size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Medium Text="Primary" SecondaryText="This Button is a compound button" />
-                </div>
-                <div>
-                    <BitLabel>Large size</BitLabel>
-                    <BitCompoundButton ButtonSize=BitButtonSize.Large Text="Primary" SecondaryText="This Button is a compound button" />
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Type" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Button Type" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="form-container">
                 @if (formIsValidSubmit is false)
                 {
-                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                         <DataAnnotationsValidator />
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText" />
                         <br />
-                        <BitTextField Label="Non Required" @bind-Value="validationButtonModel.NonRequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText" />
                         <br />
                         <div class="buttons-container">
                             <BitCompoundButton ButtonType=BitButtonType.Submit Text="Submit" SecondaryText="This is a Submit button" />
@@ -110,7 +91,7 @@
 
 @code {
     private bool formIsValidSubmit;
-    private ButtonValidationModel validationButtonModel = new();
+    private ButtonValidationModel buttonValidationModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -118,7 +99,7 @@
 
         await Task.Delay(2000);
 
-        validationButtonModel = new();
+        buttonValidationModel = new();
 
         formIsValidSubmit = false;
 

@@ -3,58 +3,49 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
        href="@Href"
-       target="@Target"
        title="@Title"
-       tabindex="@_tabIndex">
+       target="@Target"
+       tabindex="@_tabIndex"
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       aria-describedby="@AriaDescription">
         <span class="bit-cmb-tcn">
             @if (Text.HasValue())
             {
-                <span class="bit-cmb-prt">
-                    @Text
-                </span>
+                <span class="bit-cmb-prt">@Text</span>
             }
+
             @if (SecondaryText.HasValue())
             {
-                <span class="bit-cmb-sct">
-                    @SecondaryText
-                </span>
+                <span class="bit-cmb-sct">@SecondaryText</span>
             }
         </span>
     </a>
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@_tabIndex"
-            type="@ButtonType?.GetValue()"
             title="@Title"
-            @onclick="HandleOnClick">
+            tabindex="@_tabIndex"
+            type="@_buttonType.GetValue()"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription">
         <span class="bit-cmb-tcn">
             @if (Text.HasValue())
             {
-                <span class="bit-cmb-prt">
-                    @Text
-                </span>
+                <span class="bit-cmb-prt">@Text</span>
             }
+
             @if (SecondaryText.HasValue())
             {
-                <span class="bit-cmb-sct">
-                    @SecondaryText
-                </span>
+                <span class="bit-cmb-sct">@SecondaryText</span>
             }
         </span>
     </button>

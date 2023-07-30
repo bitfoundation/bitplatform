@@ -11,7 +11,7 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div>
+            <div class="buttons-container">
                 <BitActionButton IconName="@BitIconName.AddFriend">Create account</BitActionButton>
                 <BitActionButton AllowDisabledFocus="false" IsEnabled="false" IconName="@BitIconName.UserRemove">Remove user (Disabled)</BitActionButton>
             </div>
@@ -20,7 +20,7 @@
 
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div>
+            <div class="buttons-container">
                 <BitActionButton IconName="@BitIconName.ThisPC" Style="border:2px solid #777">
                     Styled Action Button
                 </BitActionButton>
@@ -33,7 +33,7 @@
 
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="buttons-container">
+            <div class="buttons-container-grid">
                 <div>Visible Button: [ <BitActionButton IconName="@BitIconName.AddEvent" Visibility="BitComponentVisibility.Visible">Visible Action Button</BitActionButton> ]</div>
                 <div>Hidden Button: [ <BitActionButton Visibility="BitComponentVisibility.Hidden">Hidden Action Button</BitActionButton> ]</div>
                 <div>Collapsed Button: [ <BitActionButton Visibility="BitComponentVisibility.Collapsed">Collapsed Action Button</BitActionButton> ]</div>
@@ -43,7 +43,7 @@
 
     <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div>
+            <div class="buttons-container">
                 <BitActionButton IconName="@BitIconName.Library" AriaDescription="Detailed description used for screen reader.">
                     Action Button with Aria Description
                 </BitActionButton>
@@ -56,7 +56,7 @@
 
     <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <div>
+            <div class="buttons-container">
                 <BitActionButton IconName="@BitIconName.Website" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
                     Open Bit Platform In New Tab
                 </BitActionButton>
@@ -69,7 +69,7 @@
 
     <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
-            <div>
+            <div class="buttons-container">
                 <BitActionButton IconName="@BitIconName.AddFriend">
                     <div class="custom-btn-ctn">
                         <span>A Text from BitLabel</span>

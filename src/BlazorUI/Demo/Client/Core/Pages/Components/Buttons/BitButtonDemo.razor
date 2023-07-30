@@ -11,15 +11,11 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton OnClick="() => primaryCounter++">
-                    Primary (@primaryCounter)
-                </BitButton>
+                <BitButton OnClick="() => primaryCounter++">Primary (@primaryCounter)</BitButton>
                 <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
                     Standard (@standardCounter)
                 </BitButton>
-                <BitButton IsEnabled="false" AllowDisabledFocus="false">
-                    Disabled
-                </BitButton>
+                <BitButton IsEnabled="false">Disabled</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
