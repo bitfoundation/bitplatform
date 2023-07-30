@@ -72,13 +72,13 @@
     <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton Class="custom-button">
+                <BitButton Class="custom-content">
                     <BitIcon IconName="@BitIconName.Airplane" />
                     <span>A Primary custom text</span>
                     <BitRippleLoading Size="20" />
                 </BitButton>
 
-                <BitButton Class="custom-button" ButtonStyle="BitButtonStyle.Standard">
+                <BitButton Class="custom-content" ButtonStyle="BitButtonStyle.Standard">
                     <BitIcon IconName="@BitIconName.Accept" />
                     <span>A Standard custom text</span>
                     <BitRollerLoading Size="20" />
@@ -92,14 +92,14 @@
             <div class="form-container">
                 @if (formIsValidSubmit is false)
                 {
-                    <EditForm Model="validationButtonModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                         <DataAnnotationsValidator />
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="validationButtonModel.RequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.RequiredText" />
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText" />
                         <br />
-                        <BitTextField Label="Non Required" @bind-Value="validationButtonModel.NonRequiredText" />
-                        <ValidationMessage For="() => validationButtonModel.NonRequiredText" />
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText" />
                         <br />
                         <div>
                             <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
@@ -111,7 +111,7 @@
                 else
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        The form is valid to submit successfully.
+                        The form submitted successfully.
                     </BitMessageBar>
                 }
             </div>
@@ -125,7 +125,7 @@
     private int standardCounter;
 
     private bool formIsValidSubmit;
-    private ButtonValidationModel validationButtonModel = new();
+    private ButtonValidationModel buttonValidationModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -133,7 +133,7 @@
 
         await Task.Delay(2000);
 
-        validationButtonModel = new();
+        buttonValidationModel = new();
 
         formIsValidSubmit = false;
 
