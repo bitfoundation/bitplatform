@@ -13,15 +13,17 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        <span class="bit-cmb-tcn">
-            @if (Text.HasValue())
-            {
-                <span class="bit-cmb-prt">@Text</span>
-            }
+        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
 
-            @if (SecondaryText.HasValue())
+            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
+
+            @if (SecondaryTemplate is not null)
             {
-                <span class="bit-cmb-sct">@SecondaryText</span>
+                @SecondaryTemplate
+            }
+            else
+            {
+                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
             }
         </span>
     </a>
@@ -37,15 +39,15 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        <span class="bit-cmb-tcn">
-            @if (Text.HasValue())
+        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
+            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
+            @if (SecondaryTemplate is not null)
             {
-                <span class="bit-cmb-prt">@Text</span>
+                @SecondaryTemplate
             }
-
-            @if (SecondaryText.HasValue())
+            else
             {
-                <span class="bit-cmb-sct">@SecondaryText</span>
+                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
             }
         </span>
     </button>
