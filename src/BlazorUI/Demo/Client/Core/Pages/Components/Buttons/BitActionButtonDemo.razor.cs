@@ -30,20 +30,11 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
+            DefaultValue = "null",
             Description = "The type of the button.",
         },
         new()
@@ -91,33 +82,6 @@ public partial class BitActionButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new()
-        {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
         new()
         {
             Id = "button-type-enum",
@@ -199,16 +163,6 @@ Collapsed Button: [ <BitActionButton Visibility=""BitComponentVisibility.Collaps
 </BitActionButton>";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-
-<BitLabel>Medium size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-
-<BitLabel>Large size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
-
-    private readonly string example7HTMLCode = @"
 <style>
     .custom-btn-ctn {
         gap: 0.5rem;
@@ -223,7 +177,7 @@ Collapsed Button: [ <BitActionButton Visibility=""BitComponentVisibility.Collaps
     </div>
 </BitActionButton>";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -256,7 +210,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example8CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 public class ButtonValidationModel
 {
     [Required]

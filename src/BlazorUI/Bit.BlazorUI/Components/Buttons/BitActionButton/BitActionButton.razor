@@ -3,18 +3,16 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
+       href="@Href"
        title="@Title"
        target="@Target"
-       href="@Href"
        tabindex="@_tabIndex"
-       @onclick="HandleOnClick">
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       aria-describedby="@AriaDescription">
         <span class="bit-acb-ictn">
             <i class="bit-icon bit-icon--@IconName" />
             <span class="bit-acb-con">
@@ -25,17 +23,15 @@
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            type="@ButtonType?.GetValue()"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@_tabIndex"
             title="@Title"
-            @onclick="HandleOnClick">
+            tabindex="@_tabIndex"
+            type="@_buttonType.GetValue()"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription">
         <span class="bit-acb-ictn">
             <i class="bit-icon bit-icon--@IconName" />
             <span class="bit-acb-con">
