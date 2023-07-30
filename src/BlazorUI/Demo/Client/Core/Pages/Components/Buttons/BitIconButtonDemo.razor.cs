@@ -203,15 +203,15 @@ Collapsed Button: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"
         <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
         <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
 
-        <BitIconButton IconName=""@BitIconName.Completed"" ButtonType=""BitButtonType.Submit"" Title=""Submit"" />
-        <BitIconButton IconName=""@BitIconName.Refresh"" ButtonType=""BitButtonType.Reset"" Title=""Reset"" />
-        <BitIconButton IconName=""@BitIconName.Touch"" ButtonType=""BitButtonType.Button"" Title=""Button"" />
+        <BitIconButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"" Title=""Submit"" />
+        <BitIconButton IconName=""@BitIconName.Reset"" ButtonType=""BitButtonType.Reset"" Title=""Reset"" />
+        <BitIconButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"" Title=""Button"" />
     </EditForm>
 }
 else
 {
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        The form is valid to submit successfully.
+        The form submitted successfully.
     </BitMessageBar>
 }";
     private readonly string example6CSharpCode = @"

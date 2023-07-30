@@ -4,9 +4,17 @@ namespace Bit.BlazorUI;
 
 public partial class BitLoadingButton
 {
-    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+
     private int? _tabIndex;
+    private BitButtonType _buttonType;
+
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
+
 
     /// <summary>
     /// Whether the icon button can have focus in disabled mode.
@@ -24,27 +32,6 @@ public partial class BitLoadingButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The type of the button.
-    /// </summary>
-    [Parameter] public BitButtonType? ButtonType { get; set; }
-
-    /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large.
-    /// </summary>
-    [Parameter]
-    public BitButtonSize ButtonSize
-    {
-        get => buttonSize;
-        set
-        {
-            if (buttonSize == value) return;
-
-            buttonSize = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The style of button, Possible values: Primary | Standard.
     /// </summary>
     [Parameter]
@@ -59,30 +46,24 @@ public partial class BitLoadingButton
     }
 
     /// <summary>
+    /// The type of the button
+    /// </summary>
+    [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
     /// The content of button, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
-    /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
-
-    /// <summary>
     /// Determine whether the button is in loading mode or not.
     /// </summary>        
-    [Parameter]
-    public bool IsLoading { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
     /// The loading label to show next to the spinner.
     /// </summary>
     [Parameter] public string? LoadingLabel { get; set; }
-
-    /// <summary>
-    /// The size of loading spinner to render.
-    /// </summary>
-    [Parameter] public BitSpinnerSize LoadingSpinnerSize { get; set; } = BitSpinnerSize.Small;
 
     /// <summary>
     /// The position of the loading Label in regards to the spinner animation.
@@ -104,45 +85,28 @@ public partial class BitLoadingButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+
     protected override string RootElementClass => "bit-ldb";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnParametersSet()
     {
         if (IsEnabled is false)
         {
             _tabIndex = AllowDisabledFocus ? null : -1;
         }
+        
+        _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
-        ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
-
-        await base.OnInitializedAsync();
+        base.OnParametersSet();
     }
 
     protected override void RegisterComponentClasses()
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                       ? string.Empty
-                                       : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-pri"
-                                           : $"{RootElementClass}-std");
-
-        ClassBuilder.Register(() => ButtonSize switch
-        {
-            BitButtonSize.Small => $"{RootElementClass}-sm",
-            BitButtonSize.Large => $"{RootElementClass}-lg",
-            _ => $"{RootElementClass}-md"
-        });
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
+                                    ? $"{RootElementClass}-pri"
+                                    : $"{RootElementClass}-std");
     }
 
-    private string GetSpinnerSizeClass()
-        => LoadingSpinnerSize switch
-        {
-            BitSpinnerSize.XSmall => $"{RootElementClass}-spn-xs",
-            BitSpinnerSize.Small => $"{RootElementClass}-spn-sm",
-            BitSpinnerSize.Medium => $"{RootElementClass}-spn-md",
-            BitSpinnerSize.Large => $"{RootElementClass}-spn-lg",
-            _ => $"{RootElementClass}-sm"
-        };
 
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
@@ -156,8 +120,9 @@ public partial class BitLoadingButton
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-
-        await OnClick.InvokeAsync(e);
+        if (IsEnabled)
+        {
+            await OnClick.InvokeAsync(e);
+        }
     }
 }

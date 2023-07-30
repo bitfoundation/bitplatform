@@ -228,7 +228,7 @@ Collapsed Button: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">C
 else
 {
     <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        The form is valid to submit successfully.
+        The form submitted successfully.
     </BitMessageBar>
 }";
     private readonly string example7CSharpCode = @"
