@@ -30,15 +30,6 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             LinkType = LinkType.Link,
@@ -52,7 +43,7 @@ public partial class BitCompoundButtonDemo
             Type = "BitButtonType",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
+            DefaultValue = "null",
             Description = "The type of the button.",
         },
         new()
@@ -100,33 +91,6 @@ public partial class BitCompoundButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new()
-        {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
         new()
         {
             Id = "button-style-enum",
@@ -211,16 +175,6 @@ Collapsed Button: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This B
 <BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform"" />";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitCompoundButton ButtonSize=BitButtonSize.Small Text=""Primary""SecondaryText=""This Button is a compound button"" />
-
-<BitLabel>Medium size</BitLabel>
-<BitCompoundButton ButtonSize=BitButtonSize.Medium Text=""Primary"" SecondaryText=""This Button is a compound button"" />
-
-<BitLabel>Large size</BitLabel>
-<BitCompoundButton ButtonSize=BitButtonSize.Large Text=""Primary"" SecondaryText=""This Button is a compound button"" />";
-
-    private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -245,7 +199,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example7CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 public class ButtonValidationModel
 {
     [Required]

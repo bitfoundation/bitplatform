@@ -19,7 +19,7 @@
     width: 100%;
 }
 
-.page-section-contnet {
+.page-section-content {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -40,7 +40,7 @@
 }
 
 .main-section {
-    .page-section-contnet {
+    .page-section-content {
         padding-top: rem(120px);
 
         @include lt-lg {

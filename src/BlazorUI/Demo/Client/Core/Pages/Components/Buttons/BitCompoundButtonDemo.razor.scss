@@ -10,12 +10,16 @@
 }
 
 .form-container {
-    max-width: 25rem;
+    max-width: 30rem;
 }
 
 ::deep {
     .custom-class {
-        color: aqua;
+        color: blueviolet;
         border-radius: 1rem;
+    }
+
+    .validation-message {
+        color: red;
     }
 }

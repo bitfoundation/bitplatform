@@ -143,7 +143,7 @@ public partial class BitButtonDemo
     Standard (@standardCounter)
 </BitButton>
 
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"">Disabled</BitButton>";
+<BitButton IsEnabled=""false"">Disabled</BitButton>";
     private readonly string example1CSharpCode = @"
 private int primaryCounter;
 private int standardCounter;";
