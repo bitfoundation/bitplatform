@@ -30,20 +30,11 @@ public partial class BitIconButtonDemo
         },
         new()
         {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
+            DefaultValue = "null",
             Description = "The type of the button.",
         },
         new()
@@ -135,33 +126,6 @@ public partial class BitIconButtonDemo
     {
         new()
         {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
-        new()
-        {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
@@ -228,16 +192,6 @@ Collapsed Button: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"
 <BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To Bit Platform"" />";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitIconButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.Emoji"" />
-
-<BitLabel>Medium size</BitLabel>
-<BitIconButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.Emoji"" />
-
-<BitLabel>Large size</BitLabel>
-<BitIconButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.Emoji"" />";
-
-    private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -260,7 +214,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example7CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
