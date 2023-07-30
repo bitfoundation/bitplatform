@@ -1,5 +1,12 @@
 ﻿.buttons-container {
-    line-height: 3.125rem;
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.buttons-container-grid {
+    gap: 0.5rem;
+    display: grid;
 }
 
 .form-container {
