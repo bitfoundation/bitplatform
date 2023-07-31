@@ -31,8 +31,6 @@ const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/servi
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
-const CACHE_NAME_PREFIX = 'bit-bswup-';
-//const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
 const CACHE_NAME = 'bit-bswup';
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
@@ -155,7 +153,7 @@ function handleMessage(e) {
     }
 }
 
-// ====================================================================================
+// ============================================================================
 
 async function createNewCache() {
     const bitBswupCache = await caches.open(CACHE_NAME);
@@ -231,12 +229,6 @@ function unique(array) {
         uniques[array[i]] = 1;
     }
     return distinct;
-}
-
-async function deleteOldCaches() {
-    const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME).map(key => caches.delete(key));
-    return Promise.all(promises);
 }
 
 function sendMessage(message) {
