@@ -233,64 +233,53 @@ public partial class BitToggleButtonDemo
 
 
 
-    private bool TogglePrimaryButtonChecked;
-    private bool ToggleStandardButtonChecked;
-    private bool ToggleDisabledButtonChecked;
-    private bool ToggleButtonChecked;
-
-    private bool ToggleButtonForOnChange = true;
-    private bool OnToggleButtonChanged = true;
-
-    private bool ToggleButtonValue = true;
-
-    private bool ToggleButtonTwoWayValue = true;
-
-    private void ToggleButtonChanged(bool newValue)
-    {
-        OnToggleButtonChanged = newValue;
-    }
-
-
     private readonly string example1HTMLCode = @"
 <BitToggleButton @bind-IsChecked=""TogglePrimaryButtonChecked""
-                 Class=""tgl-btn""
                  Label=""@(TogglePrimaryButtonChecked ? ""Primary Mute"":""Primary Unmute"")""
-                 IconName=@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
-                 ButtonStyle=""BitButtonStyle.Primary"">
-</BitToggleButton>
+                 IconName=""@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 ButtonStyle=""BitButtonStyle.Primary"" />
 <BitToggleButton @bind-IsChecked=""ToggleStandardButtonChecked""
-                 Class=""tgl-btn""
                  Label=""@(ToggleStandardButtonChecked ? ""Standard Mute"":""Standard Unmute"")""
-                 IconName=@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
-                 ButtonStyle=""BitButtonStyle.Standard"">
-</BitToggleButton>
+                 IconName=""@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 ButtonStyle=""BitButtonStyle.Standard"" />
 <BitToggleButton @bind-IsChecked=""ToggleDisabledButtonChecked""
-                 Class=""tgl-btn""
                  IsEnabled=""false""
-                 Label=""@(ToggleDisabledButtonChecked ? ""Primary disabled Mute"" : ""Primary disabled Unmute"")""
-                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)>
-</BitToggleButton>
-<BitToggleButton @bind-IsChecked=""ToggleDisabledButtonChecked""
-                 Class=""tgl-btn""
-                 IsEnabled=""false""
-                 Label=""@(ToggleDisabledButtonChecked ? ""Standard disabled Mute"" : ""Standard disabled Unmute"")""
-                 IconName=@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)
-                 ButtonStyle=""BitButtonStyle.Standard"">
-</BitToggleButton>";
+                 Label=""@(ToggleDisabledButtonChecked ? ""Disabled Mute"" : ""Disabled Unmute"")""
+                 IconName=""@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"" />";
     private readonly string example1CSharpCode = @"
+private bool TogglePrimaryButtonChecked;
 private bool ToggleStandardButtonChecked;
-private bool ToggleDisabledButtonChecked;
-private bool TogglePrimaryButtonChecked;";
+private bool ToggleDisabledButtonChecked;";
 
     private readonly string example2HTMLCode = @"
-<div>Check status is: <strong>@OnToggleButtonChanged</strong></div>
+<style>
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
+    }
+</style>
+
+<BitToggleButton @bind-IsChecked=""ToggleStyleButtonChecked""
+                 Style=""color:darkblue; font-weight:bold""
+                 Label=""@(ToggleStyleButtonChecked ? ""Styled Button : Mute"" : ""Styled Button : Unmute"")""
+                 IconName=""@(ToggleStyleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"" />
+<BitToggleButton @bind-IsChecked=""ToggleClassButtonChecked""
+                 Class=""custom-class""
+                 ButtonStyle=""BitButtonStyle.Standard""
+                 Label=""@(ToggleClassButtonChecked ? ""Classed Button : Mute"" : ""Classed Button : Unmute"")""
+                 IconName=""@(ToggleClassButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"" />"; 
+    private readonly string example2CSharpCode = @"
+private bool ToggleStyleButtonChecked;
+private bool ToggleClassButtonChecked;";
+
+    private readonly string example3HTMLCode = @"
+<BitLabel>Check status is: @OnToggleButtonChanged</BitLabel>
 
 <BitToggleButton @bind-IsChecked=""ToggleButtonForOnChange""
                  Label=""@(ToggleButtonForOnChange ? ""Mute"" : ""Unmute"")""
                  IconName=@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)
-                 OnChange=""ToggleButtonChanged"">
-</BitToggleButton>";
-    private readonly string example2CSharpCode = @"
+                 OnChange=""ToggleButtonChanged"" />";
+    private readonly string example3CSharpCode = @"
 private bool ToggleButtonForOnChange = true;
 private bool OnToggleButtonChanged = true;
 
@@ -299,99 +288,52 @@ private void ToggleButtonChanged(bool newValue)
     OnToggleButtonChanged = newValue;
 }";
 
-    private readonly string example3HTMLCode = @"
-<BitToggleButton @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)>
-</BitToggleButton>
-
-<BitCheckbox Label=""Checked Toggle Button"" @bind-Value=""ToggleButtonTwoWayValue"" />";
-    private readonly string example3CSharpCode = @"
-private bool ToggleButtonTwoWayValue = true;";
-
     private readonly string example4HTMLCode = @"
-<BitToggleButton OnChange=""((e) => ToggleButtonDefaultValue = e)""
-                 DefaultIsChecked=""ToggleButtonDefaultValue""
-                 Label=""@(ToggleButtonDefaultValue ? ""Mute"" : ""Unmute"")""
-                 IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone)>
-</BitToggleButton>";
+<BitCheckbox Label=""Checked Toggle Button"" @bind-Value=""ToggleTwoWayButtonValue"" />
+
+<BitToggleButton @bind-IsChecked=""ToggleTwoWayButtonValue""
+                 Label=""@(ToggleTwoWayButtonValue ? ""Mute"" : ""Unmute"")""
+                 IconName=@(ToggleTwoWayButtonValue ? BitIconName.MicOff : BitIconName.Microphone) />";
     private readonly string example4CSharpCode = @"
-private bool ToggleButtonDefaultValue = true;";
+private bool ToggleTwoWayButtonValue = true;";
 
     private readonly string example5HTMLCode = @"
-<BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
-                 Label=""@(ToggleButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
-                 IconName=""@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
-                 AriaDescription=""Detailed description used for screen reader"">
-</BitToggleButton>
-
-<BitToggleButton @bind-IsChecked=""ToggleButtonChecked""
-                 Class=""aria-hidden-tgl-btn""
-                 Label=""@(ToggleButtonChecked ? ""Aria Hidden Mute"" : ""Aria Hidden Unmute"")""
-                 IconName=""@(ToggleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
-                 AriaHidden=""true"">
-</BitToggleButton>";
+<BitToggleButton OnChange=""((e) => ToggleButtonDefaultValue = e)""
+                 DefaultIsChecked=""true""
+                 Label=""@(ToggleButtonDefaultValue ? ""Mute"" : ""Unmute"")""
+                 IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone) />";
     private readonly string example5CSharpCode = @"
-private bool ToggleButtonChecked = false;";
+private bool ToggleButtonDefaultValue = true;";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitToggleButton ButtonSize=""BitButtonSize.Small"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>
-
-<BitLabel>Medium size</BitLabel>
-<BitToggleButton ButtonSize=""BitButtonSize.Medium"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>
-
-<BitLabel>Large size</BitLabel>
-<BitToggleButton ButtonSize=""BitButtonSize.Large"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>";
+<BitToggleButton @bind-IsChecked=""ToggleAriaButtonChecked""
+                 Label=""@(ToggleAriaButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
+                 IconName=""@(ToggleAriaButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 AriaDescription=""Detailed description used for screen reader"" />
+<BitToggleButton @bind-IsChecked=""ToggleAriaHiddenButtonChecked""
+                 ButtonStyle=""BitButtonStyle.Standard""
+                 Label=""@(ToggleAriaHiddenButtonChecked ? ""Aria Hidden Mute"" : ""Aria Hidden Unmute"")""
+                 IconName=""@(ToggleAriaHiddenButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 AriaHidden=""true"" />";
+    private readonly string example6CSharpCode = @"
+private bool ToggleAriaButtonChecked = false;
+private bool ToggleAriaHiddenButtonChecked = false;";
 
     private readonly string example7HTMLCode = @"
-<style>
-    .custom-btn-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-    
-    .custom-btn-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-    
-    .custom-btn-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
-    }
-</style>
-
 <BitLabel>Small size</BitLabel>
-<BitToggleButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>
+<BitToggleButton ButtonSize=BitButtonSize.Small @bind-IsChecked=""ToggleTwoWayButtonSizeValue""
+                 Label=""@(ToggleTwoWayButtonSizeValue ? ""Mute"" : ""Unmute"")""
+                 IconName=""@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)"" />
 
 <BitLabel>Medium size</BitLabel>
-<BitToggleButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>
-        
+<BitToggleButton ButtonSize=BitButtonSize.Medium @bind-IsChecked=""ToggleTwoWayButtonSizeValue""
+                 Label=""@(ToggleTwoWayButtonSizeValue ? ""Mute"" : ""Unmute"")""
+                 IconName=""@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)"" />
+
 <BitLabel>Large size</BitLabel>
-<BitToggleButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" @bind-IsChecked=""ToggleButtonTwoWayValue""
-                 Label=""@(ToggleButtonTwoWayValue ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(ToggleButtonTwoWayValue ? BitIconName.MicOff : BitIconName.Microphone)"">
-</BitToggleButton>";
+<BitToggleButton ButtonSize=BitButtonSize.Large @bind-IsChecked=""ToggleTwoWayButtonSizeValue""
+                 Label=""@(ToggleTwoWayButtonSizeValue ? ""Mute"" : ""Unmute"")""
+                 IconName=""@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)"" />";
+    private readonly string example7CSharpCode = @"
+private bool ToggleTwoWayButtonSizeValue = true;";
 }
