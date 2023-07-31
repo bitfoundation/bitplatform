@@ -130,7 +130,7 @@ public partial class BitModalDemo
                    Name = "Container",
                    Type = "BitClassStylePair?",
                    Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                }
             }

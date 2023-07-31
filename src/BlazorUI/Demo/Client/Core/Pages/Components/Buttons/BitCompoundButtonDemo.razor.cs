@@ -57,6 +57,8 @@ public partial class BitCompoundButtonDemo
         {
             Name = "ClassStyles",
             Type = "BitCompoundButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
             DefaultValue = "null",
             Description = "Custom CSS classes/styles for different parts of the BitCompoundButton.",
         },
@@ -64,8 +66,6 @@ public partial class BitCompoundButtonDemo
         {
             Name = "Href",
             Type = "string?",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
             DefaultValue = "null",
             Description = "The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.",
         },
@@ -124,7 +124,7 @@ public partial class BitCompoundButtonDemo
                {
                    Name = "Container",
                    Type = "BitClassStylePair?",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link,
                    Description = "Custom CSS classes/styles for the internal container of the BitCompoundButton."
                },
@@ -132,7 +132,7 @@ public partial class BitCompoundButtonDemo
                {
                    Name = "Primary",
                    Type = "BitClassStylePair?",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link,
                    Description = "Custom CSS classes/styles for the primary section of the BitCompoundButton."
                },
@@ -140,7 +140,7 @@ public partial class BitCompoundButtonDemo
                {
                    Name = "Secondary",
                    Type = "BitClassStylePair?",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link,
                    Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
                },

@@ -161,7 +161,7 @@ public partial class BitPivotDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                }
             }
