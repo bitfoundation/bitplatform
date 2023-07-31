@@ -19,7 +19,7 @@ public partial class BitPivotDemo
             Name = "ClassStyles",
             Type = "BitPivotClassStyles?",
             DefaultValue = "null",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitPivot component."
         },
@@ -161,7 +161,7 @@ public partial class BitPivotDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                }
             }

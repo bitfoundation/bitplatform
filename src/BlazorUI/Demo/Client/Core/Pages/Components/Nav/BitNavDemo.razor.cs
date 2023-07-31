@@ -62,7 +62,7 @@ public partial class BitNavDemo
             Name = "ClassStyles",
             Type = "BitNavClassStyles?",
             DefaultValue = "",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the component."
         },
@@ -569,7 +569,7 @@ public partial class BitNavDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for item.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },
                new()
@@ -578,7 +578,7 @@ public partial class BitNavDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for selected item.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },
                new()
@@ -587,7 +587,7 @@ public partial class BitNavDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for item container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link,
                },
                new()
@@ -596,7 +596,7 @@ public partial class BitNavDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for selected item container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },
                new()
@@ -605,7 +605,7 @@ public partial class BitNavDemo
                    Type = "BitClassStylePair?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for toggle button.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },
             }
