@@ -1,23 +1,6 @@
-
-self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
-self.defaultUrl = "index.html";
-self.prohibitedUrls = [];
-self.assetsUrl = '/service-worker-assets.js';
-self.externalAssets = [
-    //{
-    //    "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
-    //    "url": "css/app.css"
-    //},
-    {
-        "url": "/"
-    },
-];
-
 self.caseInsensitiveUrl = true;
-
-self.serverHandledUrls = [/\/api\//];
-self.serverRenderedUrls = [/\/privacy$/];
+self.isPassive = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 

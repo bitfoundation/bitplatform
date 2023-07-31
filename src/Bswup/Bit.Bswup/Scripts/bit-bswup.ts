@@ -76,7 +76,6 @@
         }
 
         function handleMessage(e) {
-
             if (e.data === 'WAITING_SKIPPED') {
                 window.location.reload();
                 return;
@@ -87,11 +86,17 @@
                 return;
             }
 
+            if (e.data === 'PASSIVE_READY') {
+                const firstInstall = !(navigator.serviceWorker.controller);
+                handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                return;
+            }
+
             const message = JSON.parse(e.data);
             const type = message.type;
             const data = message.data;
 
-            if (type === 'install') {
+            if (type === 'install' && !data.isPassive) {
                 handle(BswupMessage.downloadStarted, data);
             }
 

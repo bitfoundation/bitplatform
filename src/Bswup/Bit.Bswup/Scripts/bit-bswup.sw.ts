@@ -14,6 +14,9 @@
     assetsExclude: any
     externalAssets: any
     noPrerenderQuery: any
+    ignoreDefaultInclude: any
+    ignoreDefaultExclude: any
+    isPassive: any
 }
 
 interface Event {
@@ -26,7 +29,8 @@ self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
 const CACHE_NAME_PREFIX = 'bit-bswup-';
-const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
+//const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
+const CACHE_NAME = 'bit-bswup';
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -35,7 +39,8 @@ self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
-    sendMessage({ type: 'install', data: { version: VERSION } });
+
+    sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
     createNewCache();
 }
@@ -43,9 +48,9 @@ async function handleInstall(e) {
 async function handleActivate(e) {
     log(`activate version (${VERSION})`);
 
-    await deleteOldCaches();
+    sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
 
-    sendMessage({ type: 'activate', data: { version: VERSION } });
+    //await deleteOldCaches();
 }
 
 // ============================================================================
@@ -59,11 +64,11 @@ const USER_ASSETS_INCLUDE = prepareRegExpArray(self.assetsInclude);
 const USER_ASSETS_EXCLUDE = prepareRegExpArray(self.assetsExclude);
 const EXTERNAL_ASSETS = prepareExternalAssetsArray(self.externalAssets);
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/, /^service-worker\.js$/, /^service-worker\.min\.js$/];
 
-const ASSETS_INCLUDE = DEFAULT_ASSETS_INCLUDE.concat(USER_ASSETS_INCLUDE);
-const ASSETS_EXCLUDE = DEFAULT_ASSETS_EXCLUDE.concat(USER_ASSETS_EXCLUDE);
+const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
+const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE).concat(USER_ASSETS_EXCLUDE);
 
 const ALL_ASSETS = self.assetsManifest.assets
     .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
@@ -98,15 +103,34 @@ async function handleFetch(e) {
 
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
-    const cache = await caches.open(CACHE_NAME);
-    const cachedResponse = await cache.match(cacheUrl || requestUrl);
+    const bitBswupCache = await caches.open(CACHE_NAME);
+    const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
-    return cachedResponse || fetch(e.request);
+    if (!self.isPassive) return cachedResponse || fetch(e.request);
+
+    if (cachedResponse) return cachedResponse;
+
+    if (!asset?.url) return fetch(e.request);
+
+    //const oldUrls = (await bitBswupCache.keys()).map(k => k?.url).filter(u => !!u);
+    //const oldUrl = oldUrls.find(u => u.substring(0, u.lastIndexOf('.')).endsWith(asset.url))
+    //if (oldUrl) {
+    //    console.log('oldUrl:', oldUrl, asset);
+    //    bitBswupCache.delete(oldUrl);
+    //}
+
+    console.log('fetch');
+
+    const request = createNewAssetRequest(asset);
+    const response = await fetch(request);
+    bitBswupCache.put(cacheUrl, response.clone());
+
+    return response;
 }
 
 function handleMessage(e) {
     if (e.data === 'SKIP_WAITING') {
-        self.skipWaiting().then(() => e.source.postMessage('WAITING_SKIPPED'));
+        self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
@@ -117,43 +141,36 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createNewCache() {
+    const bitBswupCache = await caches.open(CACHE_NAME);
+
+    const cachedUrls = (await bitBswupCache.keys()).map(k => k?.url).filter(u => !!u);
+    const toBeRemovedUrls = cachedUrls.filter(u => !UNIQUE_ASSETS.find(a => u.endsWith(`${a.url}.${a.hash || ''}`)));
+    console.log('toBeRemovedUrls:', toBeRemovedUrls);
+    toBeRemovedUrls.forEach(u => bitBswupCache.delete(u));
+
+    if (self.isPassive) return sendMessage('PASSIVE_READY');
+
     let current = 0;
     const total = UNIQUE_ASSETS.length;
-
-    const cacheKeys = await caches.keys();
-    const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
-    let oldCache;
-    if (oldCacheKey) {
-        oldCache = await caches.open(oldCacheKey);
-    }
-
-    const cache = await caches.open(CACHE_NAME);
     UNIQUE_ASSETS.map(addCache);
 
     async function addCache(asset, index) {
-        let assetUrl = asset.url;
-        if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
-            assetUrl = asset.url + '?' + self.noPrerenderQuery;
-        }
-        const request = new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
-        if (oldCache && asset.hash) {
-            const oldResponse = await oldCache.match(cacheUrl);
-            if (oldResponse) {
-                cache.put(cacheUrl, oldResponse);
-                current++;
-                return Promise.resolve();
-            }
+        const oldResponse = await bitBswupCache.match(cacheUrl);
+        if (oldResponse) {
+            current++;
+            return Promise.resolve();
         }
 
+        const request = createNewAssetRequest(asset);
         try {
             const responsePromise = fetch(request);
             responsePromise.then(response => {
                 if (!response.ok) {
                     return Promise.reject(response.statusText);
                 }
-                cache.put(cacheUrl, response);
+                bitBswupCache.put(cacheUrl, response);
                 const percent = (++current) / total * 100;
                 sendMessage({ type: 'progress', data: { asset, percent, index: current } });
                 Promise.resolve(null);
@@ -163,6 +180,14 @@ async function createNewCache() {
             Promise.reject(err);
         }
     }
+}
+
+function createNewAssetRequest(asset) {
+    let assetUrl = asset.url;
+    if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+        assetUrl = asset.url + '?' + self.noPrerenderQuery;
+    }
+    return new Request(asset.url, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
 }
 
 function unique(assets) {
@@ -185,9 +210,7 @@ async function deleteOldCaches() {
 function sendMessage(message) {
     self.clients
         .matchAll({ includeUncontrolled: true })
-        .then(function (clients) {
-            (clients || []).forEach(function (client) { client.postMessage(JSON.stringify(message)); });
-        });
+        .then(clients => (clients || []).forEach(client => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
 function log(value) {
