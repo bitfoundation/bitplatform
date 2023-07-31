@@ -14,6 +14,12 @@
     assetsExclude: any
     externalAssets: any
     noPrerenderQuery: any
+    ignoreDefaultInclude: any
+    ignoreDefaultExclude: any
+    isPassive: any
+    precachedAssetsInclude: any
+    precachedAssetsExclude: any
+    precachedExternalAssets: any
 }
 
 interface Event {
@@ -25,8 +31,7 @@ const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/servi
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
-const CACHE_NAME_PREFIX = 'bit-bswup-';
-const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
+const CACHE_NAME = 'bit-bswup';
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -35,7 +40,8 @@ self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
     log(`installing version (${VERSION})...`);
-    sendMessage({ type: 'install', data: { version: VERSION } });
+
+    sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
     createNewCache();
 }
@@ -43,9 +49,7 @@ async function handleInstall(e) {
 async function handleActivate(e) {
     log(`activate version (${VERSION})`);
 
-    await deleteOldCaches();
-
-    sendMessage({ type: 'activate', data: { version: VERSION } });
+    sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
 }
 
 // ============================================================================
@@ -55,22 +59,47 @@ const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
 const SERVER_HANDLED_URLS = prepareRegExpArray(self.serverHandledUrls);
 const SERVER_RENDERED_URLS = prepareRegExpArray(self.serverRenderedUrls);
 
+// ==================== ASSETS ====================
+
 const USER_ASSETS_INCLUDE = prepareRegExpArray(self.assetsInclude);
 const USER_ASSETS_EXCLUDE = prepareRegExpArray(self.assetsExclude);
 const EXTERNAL_ASSETS = prepareExternalAssetsArray(self.externalAssets);
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/];
-const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/, /^service-worker\.js$/, /^service-worker\.min\.js$/];
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
+const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
 
-const ASSETS_INCLUDE = DEFAULT_ASSETS_INCLUDE.concat(USER_ASSETS_INCLUDE);
-const ASSETS_EXCLUDE = DEFAULT_ASSETS_EXCLUDE.concat(USER_ASSETS_EXCLUDE);
+const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
+const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE).concat(USER_ASSETS_EXCLUDE);
 
 const ALL_ASSETS = self.assetsManifest.assets
     .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
     .filter(asset => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
     .concat(EXTERNAL_ASSETS);
 
-const UNIQUE_ASSETS = unique(ALL_ASSETS);
+const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
+
+// ==================== PRE CACHED ====================
+
+let PRE_CACHED_UNIQUE_ASSETS = [];
+
+if (self.isPassive) {
+    const USER_PRE_CACHED_ASSETS_INCLUDE = prepareRegExpArray(self.precachedAssetsInclude);
+    const USER_PRE_CACHED_ASSETS_EXCLUDE = prepareRegExpArray(self.precachedAssetsExclude);
+    const PRE_CACHED_EXTERNAL_ASSETS = prepareExternalAssetsArray(self.precachedExternalAssets);
+
+    const DEFAULT_PRE_CACHED_ASSETS_INCLUDE = [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/];
+    const DEFAULT_PRE_CACHED_ASSETS_EXCLUDE = [];
+
+    const PRE_CACHED_ASSETS_INCLUDE = DEFAULT_PRE_CACHED_ASSETS_INCLUDE.concat(USER_PRE_CACHED_ASSETS_INCLUDE);
+    const PRE_CACHED_ASSETS_EXCLUDE = DEFAULT_PRE_CACHED_ASSETS_EXCLUDE.concat(USER_PRE_CACHED_ASSETS_EXCLUDE);
+
+    const ALL_PRE_CACHED_ASSETS = self.assetsManifest.assets
+        .filter(asset => PRE_CACHED_ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
+        .filter(asset => !PRE_CACHED_ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
+        .concat(PRE_CACHED_EXTERNAL_ASSETS);
+
+    PRE_CACHED_UNIQUE_ASSETS = uniqueAssets(ALL_PRE_CACHED_ASSETS);
+}
 
 async function handleFetch(e) {
     if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
@@ -98,15 +127,25 @@ async function handleFetch(e) {
 
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
 
-    const cache = await caches.open(CACHE_NAME);
-    const cachedResponse = await cache.match(cacheUrl || requestUrl);
+    const bitBswupCache = await caches.open(CACHE_NAME);
+    const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
-    return cachedResponse || fetch(e.request);
+    if (!self.isPassive) return cachedResponse || fetch(e.request);
+
+    if (cachedResponse) return cachedResponse;
+
+    if (!asset?.url) return fetch(e.request);
+
+    const request = createNewAssetRequest(asset);
+    const response = await fetch(request);
+    bitBswupCache.put(cacheUrl, response.clone());
+
+    return response;
 }
 
 function handleMessage(e) {
     if (e.data === 'SKIP_WAITING') {
-        self.skipWaiting().then(() => e.source.postMessage('WAITING_SKIPPED'));
+        self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
@@ -117,45 +156,42 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createNewCache() {
-    let current = 0;
-    const total = UNIQUE_ASSETS.length;
+    const bitBswupCache = await caches.open(CACHE_NAME);
 
-    const cacheKeys = await caches.keys();
-    const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
-    let oldCache;
-    if (oldCacheKey) {
-        oldCache = await caches.open(oldCacheKey);
+    const cachedUrls = (await bitBswupCache.keys()).map(k => k?.url).filter(u => !!u);
+    const toBeRemovedUrls = cachedUrls.filter(u => !UNIQUE_ASSETS.find(a => u.endsWith(`${a.url}.${a.hash || ''}`)));
+    toBeRemovedUrls.forEach(u => bitBswupCache.delete(u));
+
+    if (self.isPassive) {
+        sendMessage('PASSIVE_READY');
+        return PRE_CACHED_UNIQUE_ASSETS.forEach(addCache.bind(null, false));
     }
 
-    const cache = await caches.open(CACHE_NAME);
-    UNIQUE_ASSETS.map(addCache);
+    let current = 0;
+    const total = UNIQUE_ASSETS.length;
+    UNIQUE_ASSETS.forEach(addCache.bind(null, true));
 
-    async function addCache(asset, index) {
-        let assetUrl = asset.url;
-        if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
-            assetUrl = asset.url + '?' + self.noPrerenderQuery;
-        }
-        const request = new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
+    async function addCache(report, asset) {
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
-        if (oldCache && asset.hash) {
-            const oldResponse = await oldCache.match(cacheUrl);
-            if (oldResponse) {
-                cache.put(cacheUrl, oldResponse);
-                current++;
-                return Promise.resolve();
-            }
+        const oldResponse = await bitBswupCache.match(cacheUrl);
+        if (oldResponse) {
+            current++;
+            return Promise.resolve();
         }
 
+        const request = createNewAssetRequest(asset);
         try {
             const responsePromise = fetch(request);
             responsePromise.then(response => {
                 if (!response.ok) {
                     return Promise.reject(response.statusText);
                 }
-                cache.put(cacheUrl, response);
-                const percent = (++current) / total * 100;
-                sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                bitBswupCache.put(cacheUrl, response);
+                if (report) {
+                    const percent = (++current) / total * 100;
+                    sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                }
                 Promise.resolve(null);
             });
             return responsePromise;
@@ -165,7 +201,15 @@ async function createNewCache() {
     }
 }
 
-function unique(assets) {
+function createNewAssetRequest(asset) {
+    let assetUrl = asset.url;
+    if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+        assetUrl = asset.url + '?' + self.noPrerenderQuery;
+    }
+    return new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
+}
+
+function uniqueAssets(assets) {
     const unique = {};
     const distinct = [];
     for (let i = 0; i < assets.length; i++) {
@@ -176,18 +220,21 @@ function unique(assets) {
     return distinct;
 }
 
-async function deleteOldCaches() {
-    const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME).map(key => caches.delete(key));
-    return Promise.all(promises);
+function unique(array) {
+    const uniques = {};
+    const distinct = [];
+    for (let i = 0; i < array.length; i++) {
+        if (uniques[array[i]]) continue;
+        distinct.push(array[i]);
+        uniques[array[i]] = 1;
+    }
+    return distinct;
 }
 
 function sendMessage(message) {
     self.clients
         .matchAll({ includeUncontrolled: true })
-        .then(function (clients) {
-            (clients || []).forEach(function (client) { client.postMessage(JSON.stringify(message)); });
-        });
+        .then(clients => (clients || []).forEach(client => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
 function log(value) {

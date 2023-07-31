@@ -251,8 +251,11 @@ _book
 
 /src/Bup/Bit.Bup/wwwroot/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.css
+
+/src/Bswup/Bit.Bswup/Scripts/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
+
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
 custom.aprof
