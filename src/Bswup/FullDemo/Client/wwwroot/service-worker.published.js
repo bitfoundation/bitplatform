@@ -1,4 +1,3 @@
-
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.defaultUrl = "/";

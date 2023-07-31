@@ -206,7 +206,7 @@ function createNewAssetRequest(asset) {
     if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
         assetUrl = asset.url + '?' + self.noPrerenderQuery;
     }
-    return new Request(asset.url, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
+    return new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
 }
 
 function uniqueAssets(assets) {
