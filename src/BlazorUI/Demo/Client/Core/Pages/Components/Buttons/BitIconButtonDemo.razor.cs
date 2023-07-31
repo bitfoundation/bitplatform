@@ -42,7 +42,7 @@ public partial class BitIconButtonDemo
             Name = "ClassStyles",
             Type = "BitIconButtonClassStyles",
             DefaultValue = "",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the component."
         },

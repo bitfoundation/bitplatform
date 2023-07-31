@@ -62,7 +62,7 @@ public partial class BitNavDemo
             Name = "ClassStyles",
             Type = "BitNavClassStyles?",
             DefaultValue = "",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the component."
         },

@@ -33,7 +33,7 @@ public partial class BitModalDemo
             Name = "ClassStyles",
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitModal component."
         },
