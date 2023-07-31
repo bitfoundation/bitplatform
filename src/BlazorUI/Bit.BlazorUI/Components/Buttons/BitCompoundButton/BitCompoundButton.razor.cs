@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Bit.BlazorUI.Components.Buttons.BitCompoundButton;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -17,22 +18,22 @@ public partial class BitCompoundButton
 
 
     /// <summary>
-    /// Whether the compound button can have focus in disabled mode
+    /// Whether the BitCompoundButton can have focus in disabled mode.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
     /// <summary>
-    /// Detailed description of the compound button for the benefit of screen readers
+    /// Detailed description of the BitCompoundButton for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
+    /// If true, adds an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of compound button, Possible values: Primary | Standard
+    /// The style of the BitCompoundButton.
     /// </summary>
     [Parameter]
     public BitButtonStyle ButtonStyle
@@ -46,39 +47,55 @@ public partial class BitCompoundButton
     }
 
     /// <summary>
-    /// The type of the button
+    /// The value of the type attribute of the button rendered by the BitCompoundButton.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor
+    /// The content of primary section of the BitCompoundButton.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitCompoundButton.
+    /// </summary>
+    [Parameter] public BitCompoundButtonClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
+    /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
     /// </summary>
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
-    /// Callback for when the compound button clicked
+    /// The callback for the click event of the BitCompoundButton.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Description of the action compound button takes
+    /// The content of primary section of the BitCompoundButton (alias of the ChildContent).
+    /// </summary>
+    [Parameter] public RenderFragment? PrimaryTemplate { get; set; }
+
+    /// <summary>
+    /// The text of the secondary section of the BitCompoundButton.
     /// </summary>
     [Parameter] public string? SecondaryText { get; set; }
 
     /// <summary>
-    /// The text of compound button
+    /// The RenderFragment for the secondary section of the BitCompoundButton.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
+    [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
-    /// If Href provided, specifies how to open the link
+    /// Specifies target attribute of the link when the BitComponentButton renders as an anchor.
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// The title to show when the mouse is placed on the button
+    /// The tooltip to show when the mouse is placed on the button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
 
     protected override string RootElementClass => "bit-cmb";
 
