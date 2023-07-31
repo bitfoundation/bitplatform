@@ -235,17 +235,17 @@ public partial class BitToggleButtonDemo
 
     private readonly string example1HTMLCode = @"
 <BitToggleButton @bind-IsChecked=""TogglePrimaryButtonChecked""
-                    Label=""@(TogglePrimaryButtonChecked ? ""Primary Mute"":""Primary Unmute"")""
-                    IconName=""@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
-                    ButtonStyle=""BitButtonStyle.Primary"" />
+                 Label=""@(TogglePrimaryButtonChecked ? ""Primary Mute"":""Primary Unmute"")""
+                 IconName=""@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 ButtonStyle=""BitButtonStyle.Primary"" />
 <BitToggleButton @bind-IsChecked=""ToggleStandardButtonChecked""
-                    Label=""@(ToggleStandardButtonChecked ? ""Standard Mute"":""Standard Unmute"")""
-                    IconName=""@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
-                    ButtonStyle=""BitButtonStyle.Standard"" />
+                 Label=""@(ToggleStandardButtonChecked ? ""Standard Mute"":""Standard Unmute"")""
+                 IconName=""@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
+                 ButtonStyle=""BitButtonStyle.Standard"" />
 <BitToggleButton @bind-IsChecked=""ToggleDisabledButtonChecked""
-                    IsEnabled=""false""
-                    Label=""@(ToggleDisabledButtonChecked ? ""Disabled Mute"" : ""Disabled Unmute"")""
-                    IconName=""@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"" />";
+                 IsEnabled=""false""
+                 Label=""@(ToggleDisabledButtonChecked ? ""Disabled Mute"" : ""Disabled Unmute"")""
+                 IconName=""@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"" />";
     private readonly string example1CSharpCode = @"
 private bool TogglePrimaryButtonChecked;
 private bool ToggleStandardButtonChecked;
@@ -299,7 +299,7 @@ private bool ToggleTwoWayButtonValue = true;";
 
     private readonly string example5HTMLCode = @"
 <BitToggleButton OnChange=""((e) => ToggleButtonDefaultValue = e)""
-                 DefaultIsChecked=""ToggleButtonDefaultValue""
+                 DefaultIsChecked=""true""
                  Label=""@(ToggleButtonDefaultValue ? ""Mute"" : ""Unmute"")""
                  IconName=@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone) />";
     private readonly string example5CSharpCode = @"
