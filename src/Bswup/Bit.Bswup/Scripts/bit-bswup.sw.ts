@@ -2,17 +2,17 @@
     clients: any
     skipWaiting: any
     importScripts: any
-
-    assetsUrl: any
     assetsManifest: any
-    defaultUrl: any
-    prohibitedUrls: any
-    serverHandledUrls: any
-    serverRenderedUrls: any
-    caseInsensitiveUrl: any
+
     assetsInclude: any
     assetsExclude: any
     externalAssets: any
+    defaultUrl: any
+    assetsUrl: any
+    prohibitedUrls: any
+    caseInsensitiveUrl: any
+    serverHandledUrls: any
+    serverRenderedUrls: any
     noPrerenderQuery: any
     ignoreDefaultInclude: any
     ignoreDefaultExclude: any
