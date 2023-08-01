@@ -73,7 +73,6 @@
             width: 100%;
             max-width: 100%;
             padding-top: 10rem;
-            align-items: center;
         }
 
         @include lt-md {
@@ -84,7 +83,6 @@
             }
         }
     }
-
 
     .hero-section-banner-container {
         width: 50%;
@@ -114,6 +112,24 @@
 
         @include lt-lg {
             display: none;
+        }
+    }
+
+    ::deep .hero-quickstart-button {
+        padding: 0;
+        height: rem(50px);
+
+        .hero-quickstart-link {
+            height: 100%;
+            display: flex;
+            color: inherit;
+            padding: 1rem 2rem;
+            text-decoration: none;
+
+            .hero-quickstart-text {
+                display: flex;
+                align-items: center;
+            }
         }
     }
 }
@@ -570,5 +586,41 @@
         width: rem(64px);
         border-radius: 50%;
         margin-right: rem(10px);
+    }
+}
+
+.quickstart-section {
+    margin: 5rem 0;
+    padding: 5rem 0;
+    text-align: center;
+    scroll-margin: 7rem;
+    background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        padding: 5rem 0;
+    }
+
+    .quickstart-links {
+        gap: 1rem;
+        display: flex;
+        margin-top: 2rem;
+        justify-content: center;
+
+        @include lt-xl {
+            flex-flow: column;
+            align-items: center;
+        }
+
+        ::deep a {
+            min-width: rem(360px);
+        }
+
+        @include xs {
+            align-items: stretch;
+
+            ::deep a {
+                min-width: unset;
+            }
+        }
     }
 }
