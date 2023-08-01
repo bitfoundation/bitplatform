@@ -13,9 +13,12 @@
                  <BitTypography Variant="BitTypographyVariant.H5" Gutter Style="font-weight: 300">
                      Create everything for everywhere using what you already know and love
                  </BitTypography>
-                 @* <BitTypography Variant="BitTypographyVariant.Subtitle1">
-                Using what you already know with feature-rich project templates and high-performance components.
-                </BitTypography> *@
+                 <br /><br />
+                 <BitButton Class="hero-quickstart-button">
+                     <a Class="hero-quickstart-link" href="#quick-start">
+                         <BitTypography Variant="BitTypographyVariant.H6" Class="hero-quickstart-text">Quick start &nbsp; <BitIcon IconName="@BitIconName.ChevronRightSmall" /></BitTypography>
+                     </a>
+                 </BitButton>
              </div>
              <div class="hero-section-banner-container">
                  <div class="hero-section-banner">
@@ -212,6 +215,45 @@
             <a href="https://www.trustpilot.com/review/bitplatform.dev" target="_blank" rel="noopener">Trustpilot</a>
             </div>*@
             <!-- End TrustBox widget -->
+        </div>
+    </section>
+
+    <section class="page-section quickstart-section" id="quick-start">
+        <div class="page-section-content">
+            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Quick start</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Quickly start with the bit platform products & tools</BitTypography>
+            <div class="quickstart-links">
+                <BitCompoundButton Href="https://components.bitplatform.dev/getting-started">
+                    <PrimaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.H5">BlazorUI</BitTypography>
+                    </PrimaryTemplate>
+                    <SecondaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.Body2" Style="display:flex;align-items:center">
+                            Utilize bit BlazorUI components for your new project
+                        </BitTypography>
+                    </SecondaryTemplate>
+                </BitCompoundButton>
+                <BitCompoundButton Href="https://bitplatform.dev/todo-template/create-project">
+                    <PrimaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.H5">TodoTemplate</BitTypography>
+                    </PrimaryTemplate>
+                    <SecondaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.Body2" Style="display:flex;align-items:center">
+                            Build your multilingual, dark/light themed project
+                        </BitTypography>
+                    </SecondaryTemplate>
+                </BitCompoundButton>
+                <BitCompoundButton Href="https://bitplatform.dev/admin-panel/create-project">
+                    <PrimaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.H5">AdminPanel</BitTypography>
+                    </PrimaryTemplate>
+                    <SecondaryTemplate>
+                        <BitTypography Variant="BitTypographyVariant.Body2" Style="display:flex;align-items:center">
+                            Build your next admin panel with a full-featured template
+                        </BitTypography>
+                    </SecondaryTemplate>
+                </BitCompoundButton>
+            </div>
         </div>
     </section>
 </div>

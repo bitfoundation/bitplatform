@@ -105,11 +105,15 @@
     width: rem(40px);
     height: rem(40px);
     border-radius: 50%;
-    margin-left: rem(3px);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-image: url('images/github-icon.webp');
+    margin-left: rem(5px);
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
 }
 
 .toggle-theme-btn {
