@@ -28,11 +28,15 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.min.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit-bup.js --minify --outfile=wwwroot/bit-bup.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

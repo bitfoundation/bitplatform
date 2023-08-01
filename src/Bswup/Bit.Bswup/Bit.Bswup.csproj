@@ -37,6 +37,7 @@
         <Exec Command="npx --yes esbuild Scripts/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes esbuild Scripts/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes esbuild Scripts/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
     
 </Project>
