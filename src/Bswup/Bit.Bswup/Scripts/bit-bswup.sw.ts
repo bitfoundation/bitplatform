@@ -94,12 +94,10 @@ if (self.isPassive) {
     const PRE_CACHED_ASSETS_INCLUDE = (self.ignoreDefaultPrecach ? [] : DEFAULT_PRE_CACHED_ASSETS_INCLUDE).concat(USER_PRE_CACHED_ASSETS_INCLUDE);
     const PRE_CACHED_ASSETS_EXCLUDE = DEFAULT_PRE_CACHED_ASSETS_EXCLUDE.concat(USER_PRE_CACHED_ASSETS_EXCLUDE);
 
-    const ALL_PRE_CACHED_ASSETS = self.assetsManifest.assets
+    PRE_CACHED_UNIQUE_ASSETS = UNIQUE_ASSETS
         .filter(asset => PRE_CACHED_ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
         .filter(asset => !PRE_CACHED_ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
         .concat(PRE_CACHED_EXTERNAL_ASSETS);
-
-    PRE_CACHED_UNIQUE_ASSETS = uniqueAssets(ALL_PRE_CACHED_ASSETS);
 }
 
 async function handleFetch(e) {
