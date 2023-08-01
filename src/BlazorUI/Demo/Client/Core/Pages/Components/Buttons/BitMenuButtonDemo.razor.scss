@@ -4,6 +4,11 @@
     flex-flow: row wrap;
     align-items: center;
     margin-bottom: 30px;
+
+    &.column {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .clicked-item {
@@ -18,36 +23,8 @@
 }
 
 ::deep {
-    .custom-menu-btn {
-        height: 2.5rem;
-        width: 10.5rem;
-        border-color: black;
-        background-color: #515151;
-
-        &:hover {
-            border-color: black;
-            background-color: #403f3f;
-        }
-    }
-
-    .custom-btn-sm {
-        font-size: 8px;
-        padding: 4px 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-
-    .custom-btn-md {
-        font-size: 16px;
-        line-height: 1.4;
-        padding: 12px 24px;
-        border-radius: 4px;
-    }
-
-    .custom-btn-lg {
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
-        padding: 20px 32px;
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
     }
 }
