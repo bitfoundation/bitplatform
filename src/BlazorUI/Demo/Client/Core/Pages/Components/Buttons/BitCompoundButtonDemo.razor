@@ -32,9 +32,9 @@
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="buttons-container-grid">
-                <div>Visible Button: [ <BitCompoundButton Visibility="BitComponentVisibility.Visible" SecondaryText="This Button is a visible compound button">Visible</BitCompoundButton> ]</div>
-                <div>Hidden Button: [ <BitCompoundButton Visibility="BitComponentVisibility.Hidden" SecondaryText="This Button is a hidden compound button">Hidden</BitCompoundButton> ]</div>
-                <div>Collapsed Button: [ <BitCompoundButton Visibility="BitComponentVisibility.Collapsed" SecondaryText="This Button is a collapsed compound button">Collapsed</BitCompoundButton> ]</div>
+                <div>Visible: [ <BitCompoundButton Visibility="BitComponentVisibility.Visible" SecondaryText="This is a visible compound button">Visible</BitCompoundButton> ]</div>
+                <div>Hidden: [<BitCompoundButton Visibility="BitComponentVisibility.Hidden" SecondaryText="This is a hidden compound button">Hidden</BitCompoundButton>]</div>
+                <div>Collapsed: [ <BitCompoundButton Visibility="BitComponentVisibility.Collapsed" SecondaryText="This is a collapsed compound button">Collapsed</BitCompoundButton> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -42,10 +42,10 @@
     <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is a compound button with aria description" AriaDescription="Button with Aria Description">
+                <BitCompoundButton SecondaryText="This is a compound button with AriaDescription" AriaDescription="Button with AriaDescription">
                     AriaDescription
                 </BitCompoundButton>
-                <BitCompoundButton SecondaryText="This is a compound button with aria hidden" AriaHidden="true">AriaHidden</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is a compound button with AriaHidden" ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">AriaHidden</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

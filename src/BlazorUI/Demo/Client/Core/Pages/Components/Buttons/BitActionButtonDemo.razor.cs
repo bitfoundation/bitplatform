@@ -138,19 +138,19 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-Visible Button: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Visible Action Button</BitActionButton> ]
+Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Visible Action Button</BitActionButton> ]
 
-Hidden Button: [ <BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
+Hidden: [ <BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
 
-Collapsed Button: [ <BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
+Collapsed: [ <BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
-    Action Button with Aria Description
+    Action Button with AriaDescription
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.Library"" AriaHidden=""true"">
-    Action Button with Aria Hidden
+    Action Button with AriaHidden
 </BitActionButton>";
 
     private readonly string example5HTMLCode = @"

@@ -307,12 +307,12 @@ private bool ToggleButtonDefaultValue = true;";
 
     private readonly string example6HTMLCode = @"
 <BitToggleButton @bind-IsChecked=""ToggleAriaButtonChecked""
-                 Label=""@(ToggleAriaButtonChecked ? ""Aria Description Mute"" : ""Aria Description Unmute"")""
+                 Label=""@(ToggleAriaButtonChecked ? ""AriaDescription Mute"" : ""AriaDescription Unmute"")""
                  IconName=""@(ToggleAriaButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
                  AriaDescription=""Detailed description used for screen reader"" />
 <BitToggleButton @bind-IsChecked=""ToggleAriaHiddenButtonChecked""
                  ButtonStyle=""BitButtonStyle.Standard""
-                 Label=""@(ToggleAriaHiddenButtonChecked ? ""Aria Hidden Mute"" : ""Aria Hidden Unmute"")""
+                 Label=""@(ToggleAriaHiddenButtonChecked ? ""AriaHidden Mute"" : ""AriaHidden Unmute"")""
                  IconName=""@(ToggleAriaHiddenButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)""
                  AriaHidden=""true"" />";
     private readonly string example6CSharpCode = @"

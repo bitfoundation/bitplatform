@@ -161,19 +161,19 @@ private int standardCounter;";
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
     private readonly string example3HTMLCode = @"
-Visible Button: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]
+Visible: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]
 
-Hidden Button: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]
+Hidden: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]
 
-Collapsed Button: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]";
+Collapsed: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
-    Button with Aria Description
+    Button with AriaDescription
 </BitButton>
 
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
-    Button with Aria Hidden
+    Button with AriaHidden
 </BitButton>";
 
     private readonly string example5HTMLCode = @"
