@@ -1,7 +1,5 @@
 ﻿// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
-self.assetsInclude = [];
-self.assetsExclude = [];
 self.externalAssets = [
     {
         "url": "/"

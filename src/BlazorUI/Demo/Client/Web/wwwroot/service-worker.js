@@ -2,8 +2,6 @@
 
 // Make sure to apply all changes you make here to the service-worker.published.js file too (if required).
 
-self.assetsInclude = [];
-self.assetsExclude = [];
 self.externalAssets = [
     {
         "url": "/"
