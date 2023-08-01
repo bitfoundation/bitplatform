@@ -26,7 +26,7 @@
             reload = () => {
                 if (navigator.serviceWorker.controller) {
                     reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
-                    return;
+                    return Promise.resolve();
                 }
 
                 if (reg.active) {
