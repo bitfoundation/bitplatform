@@ -11,6 +11,11 @@
 
 .form-container {
     max-width: 20rem;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
 }
 
 ::deep {

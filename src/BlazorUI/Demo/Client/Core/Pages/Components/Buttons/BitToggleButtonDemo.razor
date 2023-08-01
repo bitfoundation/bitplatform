@@ -31,7 +31,7 @@
 
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="buttons-container">
+            <div class="example-box">
                 <BitToggleButton @bind-IsChecked="ToggleStyleButtonChecked"
                                  Style="color:darkblue; font-weight:bold"
                                  Label="@(ToggleStyleButtonChecked ? "Styled Button : Mute" : "Styled Button : Unmute")"
@@ -83,12 +83,12 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitToggleButton @bind-IsChecked="ToggleAriaButtonChecked"
-                                 Label="@(ToggleAriaButtonChecked ? "Aria Description Mute" : "Aria Description Unmute")"
+                                 Label="@(ToggleAriaButtonChecked ? "AriaDescription Mute" : "AriaDescription Unmute")"
                                  IconName="@(ToggleAriaButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  AriaDescription="Detailed description used for screen reader" />
                 <BitToggleButton @bind-IsChecked="ToggleAriaHiddenButtonChecked"
                                  ButtonStyle="BitButtonStyle.Standard"
-                                 Label="@(ToggleAriaHiddenButtonChecked ? "Aria Hidden Mute" : "Aria Hidden Unmute")"
+                                 Label="@(ToggleAriaHiddenButtonChecked ? "AriaHidden Mute" : "AriaHidden Unmute")"
                                  IconName="@(ToggleAriaHiddenButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
                                  AriaHidden="true" />
             </div>

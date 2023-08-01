@@ -179,13 +179,13 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""@BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
     private readonly string example3HTMLCode = @"
-Visible Button: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitComponentVisibility.Visible"" /> ]
-Hidden Button: <BitIconButton Visibility=""BitComponentVisibility.Hidden"" /> ]
-Collapsed Button: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"" /> ]";
+Visible: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitComponentVisibility.Visible"" /> ]
+Hidden: [ <BitIconButton Visibility=""BitComponentVisibility.Hidden"" /> ]
+Collapsed: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"" /> ]";
 
     private readonly string example4HTMLCode = @"
-<BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with Aria Description"" />
-<BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with Aria Hidden"" />";
+<BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with AriaDescription"" />
+<BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with AriaHidden"" />";
 
     private readonly string example5HTMLCode = @"
 <BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open Bit Platform In New Tab"" />

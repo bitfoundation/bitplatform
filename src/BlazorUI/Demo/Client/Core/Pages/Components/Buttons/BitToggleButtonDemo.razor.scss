@@ -1,8 +1,8 @@
 ﻿.example-box {
     gap: 0.5rem;
     display: flex;
-    flex-flow: row;
     width: fit-content;
+    flex-flow: row wrap;
     align-items: center;
 
     &.column {
