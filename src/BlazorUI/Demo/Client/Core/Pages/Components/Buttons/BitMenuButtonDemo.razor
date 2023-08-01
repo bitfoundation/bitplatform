@@ -577,3 +577,150 @@
         </BitPivotItem>
     </BitPivot>
 </ComponentDemo>
+
+@code {
+    private string example1SelectedItem;
+    private string example2SelectedItem;
+    private string example3SelectedItem;
+    private string example4SelectedItem;
+    private string example5SelectedItem;
+
+    private List<BitMenuButtonItem> basicMenuButton = new()
+    {
+        new()
+        {
+            Text = "Item A",
+            Key = "A",
+            IconName = BitIconName.Emoji
+        },
+        new()
+        {
+            Text = "Item B",
+            Key = "B",
+            IconName = BitIconName.Emoji
+        },
+        new()
+        {
+            Text = "Item C",
+            Key = "C",
+            IconName = BitIconName.Emoji2
+        }
+    };
+    private List<BitMenuButtonItem> disabledItemMenuButton = new()
+    {
+        new()
+        {
+            Text = "Item A",
+            Key = "A",
+            IconName = BitIconName.Emoji
+        },
+        new()
+        {
+            Text = "Item B",
+            Key = "B",
+            IconName = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new()
+        {
+            Text = "Item C",
+            Key = "C",
+            IconName = BitIconName.Emoji2
+        }
+    };
+    private List<BitMenuButtonItem> itemTemplateMenuButton = new()
+    {
+        new()
+        {
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add
+        },
+        new()
+        {
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit
+        },
+        new()
+        {
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete
+        }
+    };
+
+    private List<MenuActionItem> basicMenuButtonWithCustomType = new()
+    {
+        new()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<MenuActionItem> disabledItemMenuButtonWithCustomType = new()
+    {
+        new()
+        {
+            Name = "Item A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "Item B",
+            Id = "B",
+            Icon = BitIconName.Emoji,
+            IsEnabled = false
+        },
+        new()
+        {
+            Name = "Item C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+    private List<MenuActionItem> itemTemplateMenuButtonWithCustomType = new()
+    {
+        new()
+        {
+            Name = "Add",
+            Id = "add-key",
+            Icon = BitIconName.Add
+        },
+        new()
+        {
+            Name = "Edit",
+            Id = "edit-key",
+            Icon = BitIconName.Edit
+        },
+        new()
+        {
+            Name = "Delete",
+            Id = "delete-key",
+            Icon = BitIconName.Delete
+        }
+    };
+
+    private void OnTabClick()
+    {
+        example1SelectedItem = string.Empty;
+        example2SelectedItem = string.Empty;
+        example3SelectedItem = string.Empty;
+        example4SelectedItem = string.Empty;
+        example5SelectedItem = string.Empty;
+    }
+}
