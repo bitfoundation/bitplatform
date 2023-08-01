@@ -121,7 +121,7 @@
             {
                 <script src="_framework/blazor.webassembly.js" autostart=false></script>
                 <script src="_content/Bit.Bswup/bit-bswup.js" log="none"></script>
-                <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="@useAspAppendVersion"></script>
+                <script src="_content/Bit.Bswup/bit-bswup.progress.js" asp-append-version="@useAspAppendVersion"></script>
 
                 @if (isPwaPrerendered)
                 {
@@ -129,7 +129,7 @@
                 }
                 else
                 {
-                    <link href="_content/Bit.Bswup/bit-bswup.progress.min.css" rel="stylesheet" asp-append-version="@useAspAppendVersion">
+                    <link href="_content/Bit.Bswup/bit-bswup.progress.css" rel="stylesheet" asp-append-version="@useAspAppendVersion">
                     <component type="typeof(Bit.Bswup.BswupProgress)"
                                param-AutoReload="true"
                                param-HideApp="true"
@@ -149,7 +149,7 @@
                 }
                 else
                 {
-                    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@useAspAppendVersion">
+                    @* <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="@useAspAppendVersion"> *@
                     <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                                param-AutoHide="true"
                                param-HideApp="true"
