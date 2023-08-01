@@ -20,6 +20,7 @@
     precachedAssetsInclude: any
     precachedAssetsExclude: any
     precachedExternalAssets: any
+    ignoreDefaultPrecach: any
 }
 
 interface Event {
@@ -90,7 +91,7 @@ if (self.isPassive) {
     const DEFAULT_PRE_CACHED_ASSETS_INCLUDE = [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/];
     const DEFAULT_PRE_CACHED_ASSETS_EXCLUDE = [];
 
-    const PRE_CACHED_ASSETS_INCLUDE = DEFAULT_PRE_CACHED_ASSETS_INCLUDE.concat(USER_PRE_CACHED_ASSETS_INCLUDE);
+    const PRE_CACHED_ASSETS_INCLUDE = (self.ignoreDefaultPrecach ? [] : DEFAULT_PRE_CACHED_ASSETS_INCLUDE).concat(USER_PRE_CACHED_ASSETS_INCLUDE);
     const PRE_CACHED_ASSETS_EXCLUDE = DEFAULT_PRE_CACHED_ASSETS_EXCLUDE.concat(USER_PRE_CACHED_ASSETS_EXCLUDE);
 
     const ALL_PRE_CACHED_ASSETS = self.assetsManifest.assets

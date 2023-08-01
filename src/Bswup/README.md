@@ -1,8 +1,11 @@
 ## bit Blazor Service-Worker Update Progress (bit Bswup)
 
-To use BitBswup, please follow these steps:
+To use the bit Bswup, please follow these steps:
 
-1. Install the `Bit.Bswup` nuget package.
+1. Install the `Bit.Bswup` nuget package:
+```bat
+dotnet add package Bit.Bswup
+```
 
 2. Disable static file caching. You can follow the below code in the `Startup.cs` file:
 
@@ -146,3 +149,7 @@ The other settings are:
 - `self.precachedAssetsInclude`: The list of file names from the assets list to be **included** in the precache process of the passive mode (regex supported).
 - `self.precachedAssetsExclude`: The list of file names from the assets list to be **excluded** from the precache process of the passive mode (regex supported).
 - `self.precachedExternalAssets`: The list of external assets to store in the precache phase of the passive mode that are not included in the auto-generated assets file.
+- `self.ignoreDefaultPrecach`: Ignores the default assets includes for precaching in passive mode. the default value is like this:
+    ```js
+    [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/]
+    ```
