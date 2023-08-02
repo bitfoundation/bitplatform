@@ -86,17 +86,11 @@
                 return;
             }
 
-            if (e.data === 'PASSIVE_READY') {
-                const firstInstall = !(navigator.serviceWorker.controller);
-                handle(BswupMessage.downloadFinished, { reload, firstInstall });
-                return;
-            }
-
             const message = JSON.parse(e.data);
             const type = message.type;
             const data = message.data;
 
-            if (type === 'install' && !data.isPassive) {
+            if (type === 'install') {
                 handle(BswupMessage.downloadStarted, data);
             }
 
