@@ -81,14 +81,50 @@
                 return;
             }
 
-            if (e.data === 'CLIENTS_CLAIMED') {
-                Blazor.start().then(() => blazorStartResolver(undefined));
-                return;
-            }
-
             const message = JSON.parse(e.data);
-            const type = message.type;
-            const data = message.data;
+            const { type, data } = message;
+
+            if (type === 'CLIENTS_CLAIMED') {
+                if (!data.isPassive) {
+                    Blazor.start().then(() => blazorStartResolver(undefined));
+                    return;
+                }
+
+                let counter = 0;
+                const fetchPromises = [];
+                const totalAssets = data.totalAssets;
+                Blazor.start({ loadBootResource });
+
+                return;
+
+                function loadBootResource(type, name, url, integrity) {
+                    if (type === 'dotnetjs') return url; // blazor itself handles this specific resource and needs to have its url
+                    if (type === 'manifest') return url; // since this is the file containing the resources list lets the blazor itself handle it
+
+                    const response = fetch(url);
+
+                    fetchPromises.push(response);
+
+                    response.then(_ => {
+                        if (counter === 0) {
+                            handle(BswupMessage.downloadStarted, {});
+                        }
+
+                        const internalPercent = 100 * (++counter) / fetchPromises.length;
+
+                        const percent = 100 * (counter + 2) / totalAssets;
+
+                        handle(BswupMessage.downloadProgress, { index: counter + 2, asset: { url, integrity }, percent });
+
+                        if (internalPercent >= 100) {
+                            //handle(BswupMessage.downloadFinished, { reload, firstInstall: true });
+                            e.source.postMessage(JSON.stringify({ type: 'BLAZOR_ASSETS_DOWNLOADED', data: { totalBlazorAssets: counter + 2 } }));
+                        }
+                    });
+
+                    return response;
+                }
+            }
 
             if (type === 'install') {
                 handle(BswupMessage.downloadStarted, data);
@@ -97,6 +133,10 @@
             if (type === 'progress') {
                 handle(BswupMessage.downloadProgress, data);
                 if (data.percent >= 100) {
+                    if (data.firstTimePassive) {
+                        handle(BswupMessage.downloadFinished, { firstTimePassive: true });
+                        return;
+                    }
                     const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
                 }

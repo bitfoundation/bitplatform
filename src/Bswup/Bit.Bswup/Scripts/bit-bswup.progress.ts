@@ -42,7 +42,10 @@
                     return showLogs ? console.log('asset downloaded:', data) : undefined;
 
                 case BswupMessage.downloadFinished:
-                    if (autoReload || data.firstInstall) {
+                    if (data.firstTimePassive) {
+                        hideApp && appEl && (appEl.style.display = 'block');
+                        bswupEl && (bswupEl.style.display = 'none');
+                    } else if (autoReload || data.firstInstall) {
                         data.reload().then(() => {
                             hideApp && appEl && (appEl.style.display = 'block');
                             bswupEl && (bswupEl.style.display = 'none');

@@ -146,40 +146,38 @@ async function handleFetch(e) {
 
 function handleMessage(e) {
     if (e.data === 'SKIP_WAITING') {
-        self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
+        return self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
-        self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
+        return self.clients.claim().then(() =>
+            e.source.postMessage(JSON.stringify({
+                type: 'CLIENTS_CLAIMED',
+                data: {
+                    isPassive: self.isPassive,
+                    totalAssets: UNIQUE_ASSETS.length
+                }
+            }))
+        );
+    }
+
+    const message = JSON.parse(e.data);
+    const { type, data } = message;
+
+    if (type === 'BLAZOR_ASSETS_DOWNLOADED') {
+        createNewCache(data.totalBlazorAssets);
     }
 }
 
 // ============================================================================
 
-async function createNewCache() {
+async function createNewCache(downloadedAssets = 0) {
     const bitBswupCache = await caches.open(CACHE_NAME);
-
-    //const cachedUrls = (await bitBswupCache.keys()).map(k => k?.url).filter(u => !!u);
-    //const toBeRemovedUrls = cachedUrls.filter(u => !UNIQUE_ASSETS.find(a => u.endsWith(`${a.url}.${a.hash || ''}`)));
-    //toBeRemovedUrls.forEach(u => bitBswupCache.delete(u));
-    //if (self.isPassive) {
-    //    sendMessage({ type: 'progress', data: { percent: 100 } });
-    //    return PRE_CACHED_UNIQUE_ASSETS.forEach(addCache.bind(null, false));
-    //}
-
     const keys = await bitBswupCache.keys();
     const firstTime = keys.length === 0;
 
-    let total = 0;
-    let current = 0;
-
     if (self.isPassive && firstTime) {
-        if (PRE_CACHED_UNIQUE_ASSETS.length > 0) {
-            total = PRE_CACHED_UNIQUE_ASSETS.length;
-            PRE_CACHED_UNIQUE_ASSETS.forEach(addCache);
-        } else {
-            sendMessage({ type: 'progress', data: { percent: 100, asset: {} } });
-        }
+        sendMessage({ type: 'progress', data: { percent: 100, asset: {} } });
         return;
     }
 
@@ -202,10 +200,10 @@ async function createNewCache() {
         }
     }
 
-    const assetsToCache = updatedAssets.concat(self.isPassive ? [] : UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
+    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
 
-    current = 0;
-    total = assetsToCache.length;
+    let current = downloadedAssets;
+    const total = downloadedAssets > 0 ? UNIQUE_ASSETS.length : assetsToCache.length;
     assetsToCache.forEach(addCache);
 
     async function addCache(asset) {
@@ -219,7 +217,7 @@ async function createNewCache() {
                 }
                 bitBswupCache.put(cacheUrl, response);
                 const percent = (++current) / total * 100;
-                sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                sendMessage({ type: 'progress', data: { asset, percent, index: current, firstTimePassive: downloadedAssets > 0 } });
                 Promise.resolve(null);
             });
             return responsePromise;
