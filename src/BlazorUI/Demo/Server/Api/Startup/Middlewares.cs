@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using System.Net.Mime;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
 
@@ -23,6 +24,18 @@ public class Middlewares
         }
 
 #if BlazorWebAssembly
+        app.Use(async (context, next) =>
+        {
+            context.Response.OnStarting(async () =>
+            {
+                // DLLs' compression is lost via CDNs like Cloud flare. We use 'no-transform' in the cache header, ensuring the CDN returns the original, compressed response to the client.
+                if (context.Request?.Path.Value?.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) is true)
+                    context.Response.Headers.Append(HeaderNames.CacheControl, "no-transform");
+            });
+
+            await next.Invoke(context);
+        });
+
         app.UseBlazorFrameworkFiles();
 #endif
 
@@ -92,7 +105,7 @@ public class Middlewares
         }
 
 #if BlazorWebAssembly
-            app.MapFallbackToPage("/_Host");
+        app.MapFallbackToPage("/_Host");
 #endif
     }
 }
