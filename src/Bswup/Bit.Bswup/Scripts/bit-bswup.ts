@@ -113,11 +113,9 @@
                         const internalPercent = 100 * (++counter) / fetchPromises.length;
 
                         const percent = 100 * (counter + 2) / totalAssets;
-
                         handle(BswupMessage.downloadProgress, { index: counter + 2, asset: { url, integrity }, percent });
 
                         if (internalPercent >= 100) {
-                            //handle(BswupMessage.downloadFinished, { reload, firstInstall: true });
                             e.source.postMessage(JSON.stringify({ type: 'BLAZOR_ASSETS_DOWNLOADED', data: { totalBlazorAssets: counter + 2 } }));
                         }
                     });
@@ -131,7 +129,9 @@
             }
 
             if (type === 'progress') {
-                handle(BswupMessage.downloadProgress, data);
+                if (!data.isPassive) {
+                    handle(BswupMessage.downloadProgress, data);
+                }
                 if (data.percent >= 100) {
                     if (data.firstTimePassive) {
                         handle(BswupMessage.downloadFinished, { firstTimePassive: true });

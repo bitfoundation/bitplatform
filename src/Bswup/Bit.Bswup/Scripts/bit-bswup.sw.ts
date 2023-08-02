@@ -165,19 +165,19 @@ function handleMessage(e) {
     const { type, data } = message;
 
     if (type === 'BLAZOR_ASSETS_DOWNLOADED') {
-        createNewCache(data.totalBlazorAssets);
+        createNewCache(true);
     }
 }
 
 // ============================================================================
 
-async function createNewCache(downloadedAssets = 0) {
+async function createNewCache(blazorAssetsDownloaded = false) {
     const bitBswupCache = await caches.open(CACHE_NAME);
     const keys = await bitBswupCache.keys();
     const firstTime = keys.length === 0;
 
     if (self.isPassive && firstTime) {
-        sendMessage({ type: 'progress', data: { percent: 100, asset: {} } });
+        sendMessage({ type: 'progress', data: { percent: 100, asset: {}, isPassive: true } });
         return;
     }
 
@@ -202,8 +202,8 @@ async function createNewCache(downloadedAssets = 0) {
 
     const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
 
-    let current = downloadedAssets;
-    const total = downloadedAssets > 0 ? UNIQUE_ASSETS.length : assetsToCache.length;
+    let current = blazorAssetsDownloaded ? oldUrls.length : 0;
+    const total = blazorAssetsDownloaded ? UNIQUE_ASSETS.length : assetsToCache.length;
     assetsToCache.forEach(addCache);
 
     async function addCache(asset) {
@@ -217,7 +217,7 @@ async function createNewCache(downloadedAssets = 0) {
                 }
                 bitBswupCache.put(cacheUrl, response);
                 const percent = (++current) / total * 100;
-                sendMessage({ type: 'progress', data: { asset, percent, index: current, firstTimePassive: downloadedAssets > 0 } });
+                sendMessage({ type: 'progress', data: { asset, percent, index: current, firstTimePassive: blazorAssetsDownloaded } });
                 Promise.resolve(null);
             });
             return responsePromise;
