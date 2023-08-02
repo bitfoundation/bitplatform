@@ -3,18 +3,19 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
 
 .example-content {
-    display: flex;
-    flex-flow: column wrap;
     gap: 0.5rem;
+    display: flex;
     width: fit-content;
+    flex-flow: column wrap;
     align-items: flex-start;
 }
 
 .validation-summary {
-    border-left: 0.25rem solid $Red10;
-    background-color: $ErrorBlockRed;
+    color: $Red20;
     overflow: hidden;
     margin-bottom: 0.8rem;
+    background-color: $ErrorBlockRed;
+    border-left: 0.25rem solid $Red10;
 
     .validation-errors {
         margin: 0.25rem;
@@ -27,10 +28,10 @@
 }
 
 .controlled-box {
-    display: flex;
-    flex-direction: row;
     gap: 1rem;
+    display: flex;
     width: fit-content;
+    flex-direction: row;
 
     @include sm {
         flex-direction: column;
@@ -38,9 +39,10 @@
 }
 
 .custom-checkbox {
+    gap: 0.5rem;
     display: flex;
-    justify-content: center;
     cursor: pointer;
+    flex-wrap: wrap;
     user-select: none;
     align-items: center;
 

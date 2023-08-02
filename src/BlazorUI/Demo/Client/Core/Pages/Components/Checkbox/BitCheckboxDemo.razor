@@ -9,9 +9,8 @@
                ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="BitCheckbox" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a checkbox you can use a BitCheckbox component.</div>
             <div class="example-content">
                 <BitCheckbox Label="Basic Checkbox" />
                 <BitCheckbox Label="One-way Checked Checkbox (Fixed)" Value="true" />
@@ -43,7 +42,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled BitCheckbox" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-content">
                 <div class="controlled-box">
@@ -74,7 +73,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Checkbox with LabelTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div>
                 <BitCheckbox @bind-Value="IsCheckedLabelTemplate">
@@ -88,9 +87,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Checkbox" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            <div class="example-desc">You can customize the Checkbox content.</div>
             <div class="example-content">
                 <BitCheckbox @bind-Value="IsCheckedCustomCheckBox">
                     <div class="custom-checkbox">
@@ -98,7 +96,7 @@
                             <BitIcon IconName="@(IsCheckedCustomCheckBox ? BitIconName.Accept : null)" />
                         </div>
                         <span>
-                            Customized Basic Checkbox
+                            Custom Basic Checkbox
                         </span>
                     </div>
                 </BitCheckbox>
@@ -109,17 +107,16 @@
                             <BitIcon IconName="@(IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : null))" />
                         </div>
                         <span>
-                            Customized Indeterminate checkbox
+                            Custom Indeterminate checkbox
                         </span>
+                        <BitButton OnClick="() => IsIndeterminateCustomCheckBox = true">Make Indeterminate</BitButton>
                     </div>
-                    &nbsp;
-                    <BitButton ButtonSize="BitButtonSize.Small" OnClick="() => IsIndeterminateCustomCheckBox = true">Make Indeterminate</BitButton>
                 </BitCheckbox>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Checkbox validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))
