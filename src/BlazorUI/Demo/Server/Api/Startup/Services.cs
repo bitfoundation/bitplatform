@@ -74,11 +74,10 @@ public static class Services
         {
             opts.EnableForHttps = true;
             opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.Providers.Clear();
             opts.Providers.Add<BrotliCompressionProvider>();
-            opts.Providers.Add<GzipCompressionProvider>();
         })
-            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
-            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
