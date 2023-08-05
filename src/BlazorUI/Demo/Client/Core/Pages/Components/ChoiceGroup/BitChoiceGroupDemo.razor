@@ -15,16 +15,14 @@
                    Notes="The BitChoiceGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitChoiceGroupItem class, a custom Generic class, and BitChoiceGroupOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
-                <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example1BitChoiceGroupItemCSharpCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example1BitChoiceGroupItemCSharpCode" ExampleId="example1">
                     <ExamplePreview>
-                        <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
                         <BitChoiceGroup Label="Pick one" Items="ChoiceGroupBasicItems" DefaultValue="@("A")" />
                     </ExamplePreview>
                 </ComponentExampleBox>
 
                 <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example2BitChoiceGroupItemCSharpCode" ExampleId="example2">
                     <ExamplePreview>
-                        <div class="example-desc">you can disable ChoiceGroup or ChoiceGroupOption.</div>
                         <div class="chg-box">
                             <BitChoiceGroup Label="Disabled ChoiceGroup"
                                             Items="ChoiceGroupBasicItems"
@@ -38,26 +36,17 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with images" HTMLSourceCode="@example3BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example3BitChoiceGroupItemCSharpCode" ExampleId="example3">
+                <ComponentExampleBox Title="Images and Icons" HTMLSourceCode="@example3BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example3BitChoiceGroupItemCSharpCode" ExampleId="example3">
                     <ExamplePreview>
-                        <div class="example-desc">
-                            ChoiceGroup with images also you can set the selected image src for selected mode.
-                            in addition, image size style and img tag alt attribute are settable.
+                        <div class="chg-box">
+                            <BitChoiceGroup Label="Pick one image" Items="ChoiceGroupImageItems" DefaultValue="@("Bar")" />
+                            <BitChoiceGroup Label="Pick one icon" Items="ChoiceGroupIconItems" DefaultValue="@("Day")" />
                         </div>
-                        <BitChoiceGroup Label="Pick one image" Items="ChoiceGroupImageItems" DefaultValue="@("Bar")" />
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example4BitChoiceGroupItemCSharpCode" ExampleId="example4">
+                <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example4BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example4BitChoiceGroupItemCSharpCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
-                        <BitChoiceGroup Label="Pick one icon" Items="ChoiceGroupIconItems" DefaultValue="@("Day")" />
-                    </ExamplePreview>
-                </ComponentExampleBox>
-
-                <ComponentExampleBox Title="ChoiceGroup with LabelTemplate" HTMLSourceCode="@example5BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example5BitChoiceGroupItemCSharpCode" ExampleId="example5">
-                    <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Label content.</div>
                         <BitChoiceGroup Items="ChoiceGroupBasicItems" DefaultValue="@("A")">
                             <LabelTemplate>
                                 <div class="custom-label">
@@ -68,9 +57,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Option Templates" HTMLSourceCode="@example6BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example6BitChoiceGroupItemCSharpCode" ExampleId="example6">
+                <ComponentExampleBox Title="OptionTemplate" HTMLSourceCode="@example5BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example5BitChoiceGroupItemCSharpCode" ExampleId="example5">
                     <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Option content.</div>
                         <div class="chg-box">
                             <BitChoiceGroup Label="Option Template"
                                             Items="ChoiceGroupItemsTemplate"
@@ -97,7 +85,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup Binding" HTMLSourceCode="@example7BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example7BitChoiceGroupItemCSharpCode" ExampleId="example7">
+                <ComponentExampleBox Title="Two-way Binding" HTMLSourceCode="@example6BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example6BitChoiceGroupItemCSharpCode" ExampleId="example6">
                     <ExamplePreview>
                         <div class="chg-box">
                             <div>
@@ -120,7 +108,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Horizotal LayoutFlow" HTMLSourceCode="@example8BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example8BitChoiceGroupItemCSharpCode" ExampleId="example8">
+                <ComponentExampleBox Title="Horizotal LayoutFlow" HTMLSourceCode="@example7BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example7BitChoiceGroupItemCSharpCode" ExampleId="example7">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic" Items="ChoiceGroupBasicItems" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" />
@@ -149,7 +137,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example9BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example9BitChoiceGroupItemCSharpCode" ExampleId="example9">
+                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example8BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example8BitChoiceGroupItemCSharpCode" ExampleId="example8">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic" Items="ChoiceGroupBasicItems" DefaultValue="@("A")" IsRtl="true" />
@@ -179,9 +167,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup validation" HTMLSourceCode="@example10BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example10BitChoiceGroupItemCSharpCode" ExampleId="example10">
+                <ComponentExampleBox Title="Validation" HTMLSourceCode="@example9BitChoiceGroupItemHtmlCode" CSharpSourceCode="@example9BitChoiceGroupItemCSharpCode" ExampleId="example9">
                     <ExamplePreview>
-                        <div class="example-desc">ChoiceGroup validation in form (Required pick one)</div>
                         @if (string.IsNullOrEmpty(SuccessMessage))
                         {
                             <EditForm Model="@ValidationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
@@ -209,9 +196,8 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1CustomItemHtmlCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1CustomItemHtmlCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
                     <ExamplePreview>
-                        <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
                         <BitChoiceGroup Label="Pick one"
                                         Items="CustomChoiceGroupBasicItems"
                                         TextField="@nameof(ChoiceModel.Name)"
@@ -222,7 +208,6 @@
 
                 <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2CustomItemHtmlCode" CSharpSourceCode="@example2CustomItemCSharpCode" ExampleId="example2">
                     <ExamplePreview>
-                        <div class="example-desc">you can disable ChoiceGroup or ChoiceGroupOption.</div>
                         <div class="chg-box">
                             <BitChoiceGroup Label="Disabled ChoiceGroup"
                                             Items="CustomChoiceGroupBasicItems"
@@ -240,39 +225,31 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with images" HTMLSourceCode="@example3CustomItemHtmlCode" CSharpSourceCode="@example3CustomItemCSharpCode" ExampleId="example3">
+                <ComponentExampleBox Title="Images and Icons" HTMLSourceCode="@example3CustomItemHtmlCode" CSharpSourceCode="@example3CustomItemCSharpCode" ExampleId="example3">
                     <ExamplePreview>
-                        <div class="example-desc">
-                            ChoiceGroup with images also you can set the selected image src for selected mode.
-                            in addition, image size style and img tag alt attribute are settable.
+                        <div class="chg-box">
+                            <BitChoiceGroup Label="Pick one image"
+                                            Items="CustomChoiceGroupImageItems"
+                                            TextField="@nameof(ChoiceModel.Name)"
+                                            ValueField="@nameof(ChoiceModel.ItemValue)"
+                                            ImageSrcField="@nameof(ChoiceModel.ImageAddress)"
+                                            ImageAltField="@nameof(ChoiceModel.ImageDescription)"
+                                            ImageSizeField="@nameof(ChoiceModel.ImageSize)"
+                                            SelectedImageSrcField="@nameof(ChoiceModel.SelectedImageAddress)"
+                                            DefaultValue="@("Bar")" />
+
+                            <BitChoiceGroup Label="Pick one icon"
+                                            Items="CustomChoiceGroupIconItems"
+                                            TextField="@nameof(ChoiceModel.Name)"
+                                            ValueField="@nameof(ChoiceModel.ItemValue)"
+                                            IconNameField="@nameof(ChoiceModel.IconName)"
+                                            DefaultValue="@("Day")" />
                         </div>
-                        <BitChoiceGroup Label="Pick one image"
-                                        Items="CustomChoiceGroupImageItems"
-                                        TextField="@nameof(ChoiceModel.Name)"
-                                        ValueField="@nameof(ChoiceModel.ItemValue)"
-                                        ImageSrcField="@nameof(ChoiceModel.ImageAddress)"
-                                        ImageAltField="@nameof(ChoiceModel.ImageDescription)"
-                                        ImageSizeField="@nameof(ChoiceModel.ImageSize)"
-                                        SelectedImageSrcField="@nameof(ChoiceModel.SelectedImageAddress)"
-                                        DefaultValue="@("Bar")" />
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4CustomItemHtmlCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example4">
+                <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example4CustomItemHtmlCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
-                        <BitChoiceGroup Label="Pick one icon"
-                                        Items="CustomChoiceGroupIconItems"
-                                        TextField="@nameof(ChoiceModel.Name)"
-                                        ValueField="@nameof(ChoiceModel.ItemValue)"
-                                        IconNameField="@nameof(ChoiceModel.IconName)"
-                                        DefaultValue="@("Day")" />
-                    </ExamplePreview>
-                </ComponentExampleBox>
-
-                <ComponentExampleBox Title="ChoiceGroup with LabelTemplate" HTMLSourceCode="@example5CustomItemHtmlCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example5">
-                    <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Label content.</div>
                         <BitChoiceGroup Items="CustomChoiceGroupBasicItems"
                                         TextField="@nameof(ChoiceModel.Name)"
                                         ValueField="@nameof(ChoiceModel.ItemValue)"
@@ -286,9 +263,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Option Templates" HTMLSourceCode="@example6CustomItemHtmlCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
+                <ComponentExampleBox Title="OptionTemplate" HTMLSourceCode="@example5CustomItemHtmlCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example5">
                     <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Option content.</div>
                         <div class="chg-box">
                             <BitChoiceGroup Label="Option Template"
                                             Items="CustomChoiceGroupItemsTemplate"
@@ -321,7 +297,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup Binding" HTMLSourceCode="@example7CustomItemHtmlCode" CSharpSourceCode="@example7CustomItemCSharpCode" ExampleId="example7">
+                <ComponentExampleBox Title="Two-way Binding" HTMLSourceCode="@example6CustomItemHtmlCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
                     <ExamplePreview>
                         <div class="chg-box">
                             <div>
@@ -348,7 +324,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Horizotal LayoutFlow" HTMLSourceCode="@example8CustomItemHtmlCode" CSharpSourceCode="@example8CustomItemCSharpCode" ExampleId="example8">
+                <ComponentExampleBox Title="Horizotal LayoutFlow" HTMLSourceCode="@example7CustomItemHtmlCode" CSharpSourceCode="@example7CustomItemCSharpCode" ExampleId="example7">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic"
@@ -415,7 +391,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example9CustomItemHtmlCode" CSharpSourceCode="@example9CustomItemCSharpCode" ExampleId="example9">
+                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example8CustomItemHtmlCode" CSharpSourceCode="@example8CustomItemCSharpCode" ExampleId="example8">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic"
@@ -486,9 +462,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup validation" HTMLSourceCode="@example10CustomItemHtmlCode" CSharpSourceCode="@example10CustomItemCSharpCode" ExampleId="example10">
+                <ComponentExampleBox Title="Validation" HTMLSourceCode="@example9CustomItemHtmlCode" CSharpSourceCode="@example9CustomItemCSharpCode" ExampleId="example9">
                     <ExamplePreview>
-                        <div class="example-desc">ChoiceGroup validation in form (Required pick one)</div>
                         @if (string.IsNullOrEmpty(SuccessMessage))
                         {
                             <EditForm Model="@ValidationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
@@ -519,9 +494,8 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <ComponentExampleBox Title="Basic ChoiceGroup" HTMLSourceCode="@example1BitChoiceGroupOptionHtmlCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitChoiceGroupOptionHtmlCode" ExampleId="example1">
                     <ExamplePreview>
-                        <div class="example-desc">To create a ChoiceGroup you can use a BitChoiceGroup component</div>
                         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" Label="Pick one" DefaultValue="@("A")">
                             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
                             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
@@ -533,7 +507,6 @@
 
                 <ComponentExampleBox Title="Disabled" HTMLSourceCode="@example2BitChoiceGroupOptionHtmlCode" ExampleId="example2">
                     <ExamplePreview>
-                        <div class="example-desc">you can disable ChoiceGroup or ChoiceGroupOption.</div>
                         <div class="chg-box">
                             <BitChoiceGroup TItem="BitChoiceGroupOption<string>"
                                             TValue="string"
@@ -559,49 +532,40 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with images" HTMLSourceCode="@example3BitChoiceGroupOptionHtmlCode" ExampleId="example3">
+                <ComponentExampleBox Title="Images and Icons" HTMLSourceCode="@example3BitChoiceGroupOptionHtmlCode" ExampleId="example3">
                     <ExamplePreview>
-                        <div class="example-desc">
-                            ChoiceGroup with images also you can set the selected image src for selected mode.
-                            in addition, image size style and img tag alt attribute are settable.
+                        <div class="chg-box">
+                            <BitChoiceGroup Label="Pick one image"
+                                            TItem="BitChoiceGroupOption<string>"
+                                            TValue="string"
+                                            DefaultValue="@("Bar")">
+                                <BitChoiceGroupOption Text="Bar"
+                                                      Value="@("Bar")"
+                                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
+                                                      ImageAlt="Alt for Bar image"
+                                                      ImageSize="@(new Size(32, 32))" />
+                                <BitChoiceGroupOption Text="Pie"
+                                                      Value="@("Pie")"
+                                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
+                                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"
+                                                      ImageAlt="Alt for Pie image"
+                                                      ImageSize="@(new Size(32, 32))" />
+                            </BitChoiceGroup>
+                            <BitChoiceGroup Label="Pick one icon"
+                                            TItem="BitChoiceGroupOption<string>"
+                                            TValue="string"
+                                            DefaultValue="@("Day")">
+                                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
+                            </BitChoiceGroup>
                         </div>
-                        <BitChoiceGroup Label="Pick one image"
-                                        TItem="BitChoiceGroupOption<string>"
-                                        TValue="string"
-                                        DefaultValue="@("Bar")">
-                            <BitChoiceGroupOption Text="Bar"
-                                                  Value="@("Bar")"
-                                                  ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
-                                                  SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"
-                                                  ImageAlt="Alt for Bar image"
-                                                  ImageSize="@(new Size(32, 32))" />
-                            <BitChoiceGroupOption Text="Pie"
-                                                  Value="@("Pie")"
-                                                  ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
-                                                  SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"
-                                                  ImageAlt="Alt for Pie image"
-                                                  ImageSize="@(new Size(32, 32))" />
-                        </BitChoiceGroup>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with icons" HTMLSourceCode="@example4BitChoiceGroupOptionHtmlCode" ExampleId="example4">
+                <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example4BitChoiceGroupOptionHtmlCode" ExampleId="example4">
                     <ExamplePreview>
-                        <div class="example-desc">using BitIconName class, you can easily select an icon name for showing in your option.</div>
-                        <BitChoiceGroup Label="Pick one icon"
-                                        TItem="BitChoiceGroupOption<string>"
-                                        TValue="string"
-                                        DefaultValue="@("Day")">
-                            <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
-                            <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
-                            <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
-                        </BitChoiceGroup>
-                    </ExamplePreview>
-                </ComponentExampleBox>
-
-                <ComponentExampleBox Title="ChoiceGroup with LabelTemplate" HTMLSourceCode="@example5BitChoiceGroupOptionHtmlCode" ExampleId="example5">
-                    <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Label content.</div>
                         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
                             <LabelTemplate>
                                 <div class="custom-label">
@@ -618,9 +582,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Option Templates" HTMLSourceCode="@example6BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example6BitChoiceGroupOptionCSharpCode" ExampleId="example6">
+                <ComponentExampleBox Title="OptionTemplate" HTMLSourceCode="@example5BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example5BitChoiceGroupOptionCSharpCode" ExampleId="example5">
                     <ExamplePreview>
-                        <div class="example-desc">Customize the ChoiceGroup Option content.</div>
                         <div class="chg-box">
                             <BitChoiceGroup Label="Option Template"
                                             TItem="BitChoiceGroupOption<string>"
@@ -659,7 +622,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup Binding" HTMLSourceCode="@example7BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example7BitChoiceGroupOptionCSharpCode" ExampleId="example7">
+                <ComponentExampleBox Title="Two-way Binding" HTMLSourceCode="@example6BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example6BitChoiceGroupOptionCSharpCode" ExampleId="example6">
                     <ExamplePreview>
                         <div class="chg-box">
                             <div>
@@ -695,7 +658,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup with Horizotal LayoutFlow" HTMLSourceCode="@example8BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example8BitChoiceGroupOptionCSharpCode" ExampleId="example8">
+                <ComponentExampleBox Title="Horizotal LayoutFlow" HTMLSourceCode="@example7BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example7BitChoiceGroupOptionCSharpCode" ExampleId="example7">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
@@ -768,7 +731,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example9BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example9BitChoiceGroupOptionCSharpCode" ExampleId="example9">
+                <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example8BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example8BitChoiceGroupOptionCSharpCode" ExampleId="example8">
                     <ExamplePreview>
                         <div class="chg-box column">
                             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
@@ -842,9 +805,8 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="ChoiceGroup validation" HTMLSourceCode="@example10BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example10BitChoiceGroupOptionCSharpCode" ExampleId="example10">
+                <ComponentExampleBox Title="Validation" HTMLSourceCode="@example9BitChoiceGroupOptionHtmlCode" CSharpSourceCode="@example9BitChoiceGroupOptionCSharpCode" ExampleId="example9">
                     <ExamplePreview>
-                        <div class="example-desc">ChoiceGroup validation in form (Required pick one)</div>
                         @if (string.IsNullOrEmpty(SuccessMessage))
                         {
                             <EditForm Model="@ValidationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
