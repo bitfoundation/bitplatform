@@ -1,6 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
+        "target": "es6",
         "allowJs": true,
         "lib": [ "DOM", "ESNext" ]
     },

@@ -21,6 +21,7 @@
     precachedAssetsExclude: any
     precachedExternalAssets: any
     ignoreDefaultPrecach: any
+    enableIntegrityCheck: any
 }
 
 interface Event {
@@ -50,7 +51,7 @@ async function handleInstall(e) {
 async function handleActivate(e) {
     log(`activate version (${VERSION})`);
 
-    await deleteOldVersionCaches();
+    await deleteOldCaches();
 
     sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
 }
@@ -150,35 +151,31 @@ function handleMessage(e) {
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
-        return self.clients.claim().then(() =>
-            e.source.postMessage(JSON.stringify({
-                type: 'CLIENTS_CLAIMED',
-                data: {
-                    isPassive: self.isPassive,
-                    totalAssets: UNIQUE_ASSETS.length
-                }
-            }))
-        );
-    }
-
-    const message = JSON.parse(e.data);
-    const { type, data } = message;
-
-    if (type === 'BLAZOR_ASSETS_DOWNLOADED') {
-        createNewCache(true);
+        return self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 }
 
 // ============================================================================
 
-async function createNewCache(blazorAssetsDownloaded = false) {
+async function createNewCache() {
     const bitBswupCache = await caches.open(CACHE_NAME);
-    const keys = await bitBswupCache.keys();
+    let keys = await bitBswupCache.keys();
     const firstTime = keys.length === 0;
+    const passiveFirstTime = self.isPassive && firstTime
 
-    if (self.isPassive && firstTime) {
-        sendMessage({ type: 'progress', data: { percent: 100, asset: {}, isPassive: true } });
-        return;
+    let current = 0;
+    let total = UNIQUE_ASSETS.length;
+
+    if (passiveFirstTime) {
+        const blazorBootAsset = UNIQUE_ASSETS.find(a => a.url.includes('blazor.boot.json'));
+        const blazorBoot = await (await fetch(`${blazorBootAsset.url}?v=${blazorBootAsset.hash || self.assetsManifest.version}`)).json();
+        const blazorResources = Object.keys(blazorBoot.resources.assembly).concat(Object.keys(blazorBoot.resources.runtime));
+        const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(r))).filter(a => !!a);
+
+        total = blazorAssets.length;
+        const promises = blazorAssets.map(addCache.bind(null, true));
+        await Promise.all(promises);
+        keys = await bitBswupCache.keys();
     }
 
     const oldUrls = [];
@@ -202,11 +199,10 @@ async function createNewCache(blazorAssetsDownloaded = false) {
 
     const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
 
-    let current = blazorAssetsDownloaded ? oldUrls.length : 0;
-    const total = blazorAssetsDownloaded ? UNIQUE_ASSETS.length : assetsToCache.length;
-    assetsToCache.forEach(addCache);
+    total = assetsToCache.length;
+    const promises = assetsToCache.map(addCache.bind(null, passiveFirstTime ? false : true));
 
-    async function addCache(asset) {
+    async function addCache(report, asset) {
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
         const request = createNewAssetRequest(asset);
         try {
@@ -216,13 +212,15 @@ async function createNewCache(blazorAssetsDownloaded = false) {
                     return Promise.reject(response.statusText);
                 }
                 bitBswupCache.put(cacheUrl, response);
-                const percent = (++current) / total * 100;
-                sendMessage({ type: 'progress', data: { asset, percent, index: current, firstTimePassive: blazorAssetsDownloaded } });
+                if (report) {
+                    const percent = (++current) / total * 100;
+                    sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+                }
                 Promise.resolve(null);
             });
             return responsePromise;
         } catch (err) {
-            Promise.reject(err);
+            return Promise.reject(err);
         }
     }
 }
@@ -234,7 +232,7 @@ function createNewAssetRequest(asset) {
     } else {
         assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}`;
     }
-    const requestInit: RequestInit = asset.hash
+    const requestInit: RequestInit = asset.hash && self.enableIntegrityCheck
         ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }
         : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
 
@@ -242,9 +240,9 @@ function createNewAssetRequest(asset) {
     //return new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
 }
 
-async function deleteOldVersionCaches() {
+async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith('bit-bswup-')).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(key => key.startsWith('bit-bswup-') || key.startsWith('blazor-resources-')).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 
