@@ -19,6 +19,8 @@
                         li.innerHTML = `${data.index}: <b>[${data.type}] ${data.name}</b>: ${data.url} (${data.integrity})`
                         assetsEl.prepend(li);
                     }
+                    if (data.percent > 100) return;
+
                     const percent = Math.round(data.percent);
                     const perStr = `${percent}%`;
                     bupEl && bupEl.style.setProperty('--bit-bup-percent', perStr)
