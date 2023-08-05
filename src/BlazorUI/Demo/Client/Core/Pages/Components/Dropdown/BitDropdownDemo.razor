@@ -10,220 +10,190 @@
 <ComponentDemo ComponentName="Dropdown"
                ComponentParameters="componentParameters"
                ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.">
-    <ComponentExampleBox Title="Basic Dropdown" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a dropdown you can use a BitDropdown component.</div>
-            <div>
-                <BitDropdown Label="Basic Uncontrolled"
+            <div class="example-content">
+                <BitDropdown Label="Single-select"
                              Items="GetDropdownItems()"
-                             Placeholder="Select an option"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
+                             Placeholder="Select an option" />
                 <BitDropdown Label="Disabled with defaultValue"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsEnabled="false"
-                             DefaultValue="v-bro"
-                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
-                </BitDropdown>
-                <BitDropdown Label="Multi-select uncontrolled"
+                             DefaultValue="v-bro" />
+                <BitDropdown Label="Multi-select"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
-                             IsMultiSelect="true"
-                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
-                </BitDropdown>
+                             IsMultiSelect="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled Dropdown" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
-            <div>
+            <div class="example-content">
                 <BitDropdown @bind-Value="ControlledValue"
                              Label="Single-select Controlled"
                              Items="GetDropdownItems()"
-                             Placeholder="Select an option"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
-            </div>
-            <div>
+                             Placeholder="Select an option" />
                 <BitLabel>Selected Value: @ControlledValue</BitLabel>
-            </div>
-            <br />
-            <div>
-            <BitDropdown @bind-Values="ControlledValues"
-                         Label="Multi-select controlled"
-                         Items="GetDropdownItems()"
-                         Placeholder="Select options"
-                         IsMultiSelect="true"
-                         Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
-                </BitDropdown>
-            </div>
-            <div>
+                <br />
+                <BitDropdown @bind-Values="ControlledValues"
+                             Label="Multi-select controlled"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true" />
                 <BitLabel>Selected Value: @string.Join(",", ControlledValues)</BitLabel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized Dropdown" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Customization" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
-            <BitDropdown Label="Custom Controlled"
-                         Items="GetCustomDropdownItems()"
-                         Placeholder="Select an option"
-                         AriaLabel="Custom dropdown"
-                         Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
-                <TextTemplate>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <i class="bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)"
-                           aria-hidden="true"
-                           title="@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)"></i>
-                        <span>@context.Items.Find(i => i.Value == context.Value).Text</span>
-                    </div>
-                </TextTemplate>
-                <PlaceholderTemplate>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <i class="bit-icon bit-icon--MessageFill" aria-hidden="true"></i>
-                        <span>@context.Placeholder</span>
-                    </div>
-                </PlaceholderTemplate>
-                <CaretDownTemplate>
-                    <i class="bit-icon bit-icon--CirclePlus"></i>
-                </CaretDownTemplate>
-                <ItemTemplate>
-                    <div style="display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center; gap: 10px;">
-                        <i class="bit-icon bit-icon--@((context.Data as DropdownItemData).IconName)"
-                           aria-hidden="true"
-                           title="@((context.Data as DropdownItemData).IconName)"></i>
-                        <span>@context.Text</span>
-                    </div>
-                </ItemTemplate>
-            </BitDropdown>
+            <div class="example-content">
+                <BitDropdown Label="Custom Items"
+                             Items="GetCustomDropdownItems()"
+                             Placeholder="Select an option"
+                             AriaLabel="Custom dropdown">
+                    <TextTemplate>
+                        <div class="custom-drp custom-drp-txt">
+                            <BitIcon IconName="@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)" />
+                            <BitLabel>@context.Items.Find(i => i.Value == context.Value).Text</BitLabel>
+                        </div>
+                    </TextTemplate>
+                    <PlaceholderTemplate>
+                        <div class="custom-drp custom-drp-ph">
+                            <BitIcon IconName="@BitIconName.MessageFill" />
+                            <BitLabel>@context.Placeholder</BitLabel>
+                        </div>
+                    </PlaceholderTemplate>
+                    <CaretDownTemplate>
+                        <div class="custom-drp">
+                            <BitIcon IconName="@BitIconName.CirclePlus" />
+                        </div>
+                    </CaretDownTemplate>
+                    <ItemTemplate>
+                        <div class="custom-drp custom-drp-item">
+                            <BitIcon IconName="@((context.Data as DropdownItemData).IconName)" />
+                            <BitLabel>@context.Text</BitLabel>
+                        </div>
+                    </ItemTemplate>
+                </BitDropdown>
 
-            <BitDropdown Items="GetCustomDropdownItems()"
-                         Placeholder="Select an option"
-                         Label="Custom Label"
-                         AriaLabel="Custom dropdown label"
-                         Style="width: 100%; max-width: 290px; margin:0 0 20px 0">
-                <LabelTemplate>
-                    <label>Custom label</label>
-                    <button type="button" title="Info" aria-label="Info" class="custom-drp-lbl-ic">
-                        <i class="bit-icon bit-icon--Info"></i>
-                    </button>
-                </LabelTemplate>
-            </BitDropdown>
+                <BitDropdown Items="GetCustomDropdownItems()"
+                             Placeholder="Select an option"
+                             Label="Custom Label"
+                             IsMultiSelect="true"
+                             AriaLabel="Custom dropdown label">
+                    <LabelTemplate>
+                        <div class="custom-drp custom-drp-lbl">
+                            <BitLabel>Custom label</BitLabel>
+                            <BitIcon IconName="@BitIconName.Info" AriaLabel="Info" />
+                        </div>
+                    </LabelTemplate>
+                </BitDropdown>
 
-            <BitDropdown Items="GetCustomDropdownItems()"
-                         Placeholder="Select an option"
-                         Label="Custom CaretDownIconName"
-                         AriaLabel="Custom dropdown chevron icon with icon name"
-                         CaretDownIconName="@BitIconName.ScrollUpDown"
-                         Style="width: 100%; max-width: 290px">
-            </BitDropdown>
+                <BitDropdown Items="GetCustomDropdownItems()"
+                             Placeholder="Select an option"
+                             Label="Custom CaretDownIconName"
+                             AriaLabel="Custom dropdown chevron icon with icon name"
+                             CaretDownIconName="@BitIconName.ScrollUpDown" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Cascading Dropdowns" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="grid-wrap">
-                <div>
+                <div class="example-content">
                     <BitDropdown @bind-Value="@CurrentCategory"
                                  Label="Category"
                                  Items="Categories"
-                                 Placeholder="Select options"
-                                 Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
-                    </BitDropdown>
+                                 Placeholder="Select options" />
 
                     <BitDropdown @bind-Value="@CurrentProduct"
                                  Label="Product"
                                  Items="@(Products.Where(p => p.Value.StartsWith($"{CurrentCategory}-")).ToList())"
                                  Placeholder="Select options"
-                                 IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false"
-                                 Style="width: 100%; max-width: 290px; margin:20px 0 20px 0">
-                    </BitDropdown>
+                                 IsEnabled="string.IsNullOrEmpty(CurrentCategory) is false" />
                 </div>
 
                 <div class="cascading-dropdowns-info">
-                    <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? "-")</h5>
-                    <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? "-")</h5>
+                    <BitLabel>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? "-")</BitLabel>
+                    <BitLabel>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? "-")</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dropdown with validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            @if (string.IsNullOrEmpty(SuccessMessage))
-            {
-                <EditForm Model="formValidationDropdownModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+            <div class="example-content">
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm style="width: 100%" Model="formValidationDropdownModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
 
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
+                        <div class="validation-summary">
+                            <ValidationSummary />
+                        </div>
 
-                    <div>
                         <BitDropdown @bind-Value="formValidationDropdownModel.Category"
                                      Label="Select category"
                                      Items="GetCategoryDropdownItems()"
                                      IsMultiSelect="false"
-                                     Placeholder="Select an option"
-                                     Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
+                                     Placeholder="Select an option" />
 
                         <ValidationMessage For="@(() => formValidationDropdownModel.Category)" />
-                    </div>
 
-                    <div>
+                        <br />
+
                         <BitDropdown @bind-Values="formValidationDropdownModel.Products"
                                      Label="Select two ptoducts"
                                      Items="GetProductDropdownItems()"
                                      IsMultiSelect="true"
-                                     Placeholder="Select an option"
-                                     Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0" />
+                                     Placeholder="Select an option" />
 
                         <ValidationMessage For="@(() => formValidationDropdownModel.Products)" />
-                    </div>
 
-                    <br />
+                        <br />
 
-                    <BitButton ButtonType="BitButtonType.Submit">
-                        Submit
-                    </BitButton>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                    @SuccessMessage
-                </BitMessageBar>
-            }
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Responsive Dropdown" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
-        <ExamplePreview>
-            <div class="example-desc">Using the IsResponsiveModeEnabled parameter, the drop down items will render in a side panel in small screen sizes.</div>
-            <div>
-                <BitDropdown Label="Responsive Dropdown"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select an option"
-                             IsResponsiveModeEnabled=true
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
+                        <BitButton ButtonType="BitButtonType.Submit">
+                            Submit
+                        </BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        @SuccessMessage
+                    </BitMessageBar>
+                }
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dropdown with search-box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="Responsive" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
-            <div>
+            <div class="example-desc">When the <strong>IsResponsiveModeEnabled</strong> parameter is true, the drop down items will render in a side panel in small screen sizes.</div>
+            <div class="example-content">
+                <BitDropdown Label="Responsive Dropdown"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled=true />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Search-box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+        <ExamplePreview>
+            <div class="example-content">
                 <BitDropdown Label="Single-select Controlled with search box"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsResponsiveModeEnabled="true"
                              ShowSearchBox="true"
-                             SearchBoxPlaceholder="Search item"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
+                             SearchBoxPlaceholder="Search item" />
 
                 <BitDropdown Label="Multi-select controlled with search box"
                              Items="GetDropdownItems()"
@@ -231,138 +201,499 @@
                              IsMultiSelect="true"
                              IsResponsiveModeEnabled="true"
                              ShowSearchBox="true"
-                             SearchBoxPlaceholder="Search items"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
+                             SearchBoxPlaceholder="Search items" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dropdown with virtualization" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
+    <ComponentExampleBox Title="Virtualization" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
-            <BitDropdown Label="Single-select Controlled with virtualization"
-                         Items="LargeListOfCategoriesForSingleSelect"
-                         Virtualize="true"
-                         Placeholder="Select an option"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search item"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+            <div class="example-content">
+                <BitDropdown Label="Single-select Controlled with virtualization"
+                             Items="LargeListOfCategoriesForSingleSelect"
+                             Virtualize="true"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search item" />
 
-            <BitDropdown Label="Multi-select controlled with virtualization"
-                         Items="LargeListOfCategoriesForMultiSelect"
-                         Virtualize="true"
-                         Placeholder="Select options"
-                         IsMultiSelect="true"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search items"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+                <BitDropdown Label="Multi-select controlled with virtualization"
+                             Items="LargeListOfCategoriesForMultiSelect"
+                             Virtualize="true"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search items" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dropdown with virtualization (ItemsProvider)" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example9">
+    <ComponentExampleBox Title="Virtualization (ItemsProvider)" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example9">
         <ExamplePreview>
-            <BitDropdown Label="Single-select Controlled with virtualization"
-                         ItemsProvider="LoadDropdownItems"
-                         Virtualize="true"
-                         Placeholder="Select an option"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search item"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+            <div class="example-content">
+                <BitDropdown Label="Single-select Controlled with virtualization"
+                             ItemsProvider="LoadDropdownItems"
+                             Virtualize="true"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search item" />
 
-            <BitDropdown Label="Multi-select controlled with virtualization"
-                         ItemsProvider="LoadDropdownItems"
-                         Virtualize="true"
-                         Placeholder="Select options"
-                         IsMultiSelect="true"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search items"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+                <BitDropdown Label="Multi-select controlled with virtualization"
+                             ItemsProvider="LoadDropdownItems"
+                             Virtualize="true"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search items" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL Dropdown" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
+    <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
         <ExamplePreview>
-            <BitDropdown Label="Single-select with Rtl direction"
-                         Items="GetArabicDropdownItems()"
-                         Placeholder="حدد اختيارا"
-                         IsResponsiveModeEnabled="true"
-                         IsRtl="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="عناصر البحث"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
-            <BitDropdown Label="Multi-select with Rtl direction"
-                         Items="GetArabicDropdownItems()"
-                         Placeholder="اشر على الخيارات"
-                         IsMultiSelect="true"
-                         IsResponsiveModeEnabled="true"
-                         IsRtl="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="عناصر البحث"
-                         Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
-            </BitDropdown>
+            <div class="example-content">
+                <BitDropdown Label="Single-select with Rtl direction"
+                             Items="GetArabicDropdownItems()"
+                             Placeholder="حدد اختيارا"
+                             IsResponsiveModeEnabled="true"
+                             IsRtl="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="عناصر البحث" />
+                <BitDropdown Label="Multi-select with Rtl direction"
+                             Items="GetArabicDropdownItems()"
+                             Placeholder="اشر على الخيارات"
+                             IsMultiSelect="true"
+                             IsResponsiveModeEnabled="true"
+                             IsRtl="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="عناصر البحث" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Drop Direction" HTMLSourceCode="@example12HTMLCode" CSharpSourceCode="@example12CSharpCode" ExampleId="example12">
         <ExamplePreview>
-            <BitDropdown Label="Single-select Controlled with auto drop direction"
-                         Items="LargeListOfCategoriesDropDirection"
-                         Virtualize="true"
-                         Placeholder="Select an option"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search item"
-                         DropDirection="BitDropDirection.Auto"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+            <div class="example-content">
+                <BitDropdown Label="Auto drop direction"
+                             Items="LargeListOfCategoriesDropDirection"
+                             Virtualize="true"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search item"
+                             DropDirection="BitDropDirection.Auto" />
 
-            <BitDropdown Label="Single-select Controlled with top and bottom drop direction"
-                         Items="LargeListOfCategoriesDropDirection"
-                         Virtualize="true"
-                         Placeholder="Select an option"
-                         IsResponsiveModeEnabled="true"
-                         ShowSearchBox="true"
-                         SearchBoxPlaceholder="Search item"
-                         DropDirection="BitDropDirection.TopAndBottom"
-                         Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-            </BitDropdown>
+                <BitDropdown Label="Top and bottom drop direction"
+                             Items="LargeListOfCategoriesDropDirection"
+                             Virtualize="true"
+                             Placeholder="Select an option"
+                             IsResponsiveModeEnabled="true"
+                             ShowSearchBox="true"
+                             SearchBoxPlaceholder="Search item"
+                             DropDirection="BitDropDirection.TopAndBottom" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Clear button" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
         <ExamplePreview>
-            <div class="example-desc">Select an item for the Clear button to show.</div>
-            <div>
+            <div class="example-content">
                 <BitDropdown @bind-Value="SelectedValue"
                              ShowClearButton="true"
-                             Label="Basic Uncontrolled"
+                             Label="Single-select dropdown"
                              Items="GetDropdownItems()"
-                             Placeholder="Select an option"
-                             Style="width: 100%; max-width: 290px; margin: 20px 0 20px 0">
-                </BitDropdown>
-                <div>Value: @SelectedValue</div>
-                <br>
-                <hr />
+                             Placeholder="Select an option" />
+                <BitLabel>Value: @SelectedValue</BitLabel>
                 <br>
                 <BitDropdown @bind-Values="SelectedValues"
                              ShowClearButton="true"
-                             Label="Multi-select uncontrolled"
+                             Label="Multi-select dropdown"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
-                             IsMultiSelect="true"
-                             Style="width: 100%; max-width: 290px; margin-bottom: 20px;">
-                </BitDropdown>
-                <div>Values: @string.Join(',', SelectedValues)</div>
+                             IsMultiSelect="true" />
+                <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private string ControlledValue = "Apple";
+    private List<string> ControlledValues = new() { "Apple", "Banana", "Grape" };
+    private FormValidationDropdownModel formValidationDropdownModel = new();
+    private string SuccessMessage = string.Empty;
+    private List<BitDropdownItem> Categories = new();
+    private List<BitDropdownItem> Products = new();
+    private List<BitDropdownItem> LargeListOfCategoriesForSingleSelect = new();
+    private List<BitDropdownItem> LargeListOfCategoriesForMultiSelect = new();
+    private List<BitDropdownItem> LargeListOfCategoriesDropDirection = new();
+    private string CurrentCategory = string.Empty;
+    private string CurrentProduct = string.Empty;
+    private string? SelectedValue;
+    private List<string> SelectedValues = new();
+
+
+    protected override void OnInitialized()
+    {
+        Categories = Enumerable.Range(1, 6).Select(c => new BitDropdownItem
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Value = c.ToString(),
+                Text = $"Category {c}"
+            }).ToList();
+
+        Products = Enumerable.Range(1, 50).Select(p => new BitDropdownItem
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = $"Product {p}",
+                Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
+            }).ToList();
+
+        LargeListOfCategoriesForSingleSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Value = c.ToString(),
+                Text = $"Category {c}"
+            }).ToList();
+
+        LargeListOfCategoriesForMultiSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Value = c.ToString(),
+                Text = $"Category {c}"
+            }).ToList();
+
+        LargeListOfCategoriesDropDirection = Enumerable.Range(1, 60).Select(c => new BitDropdownItem
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Value = c.ToString(),
+                Text = $"Category {c}"
+            }).ToList();
+
+        base.OnInitialized();
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+    private List<BitDropdownItem> GetCategoryDropdownItems()
+    {
+        return new()
+        {
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Fruits",
+                Value = "f"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Vegetables",
+                Value = "v"
+            }
+        };
+    }
+
+    private List<BitDropdownItem> GetProductDropdownItems()
+    {
+        return new()
+        {
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "Fruits"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Divider,
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "Vegetables"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            }
+        };
+    }
+
+    private List<BitDropdownItem> GetDropdownItems()
+    {
+        return new()
+        {
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "Fruits"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Apple",
+                Value = "f-app"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Banana",
+                Value = "f-ban"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Orange",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Grape",
+                Value = "f-gra",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Divider,
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "Vegetables"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Broccoli",
+                Value = "v-bro",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Carrot",
+                Value = "v-car",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Lettuce",
+                Value = "v-let",
+            }
+        };
+    }
+
+    private List<BitDropdownItem> GetArabicDropdownItems()
+    {
+        return new()
+        {
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "الفاكهة"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "تفاحة",
+                Value = "f-app"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "البرتقالي",
+                Value = "f-ora",
+                IsEnabled = false
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "موز",
+                Value = "f-ban",
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Divider,
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "خضروات"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "بروكلي",
+                Value = "v-bro",
+            }
+        };
+    }
+
+    private List<BitDropdownItem> GetCustomDropdownItems()
+    {
+        return new()
+        {
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "Options",
+                Value = "Header"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option a",
+                Value = "A",
+                Data = new DropdownItemData { IconName = "Memo" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option b",
+                Value = "B",
+                Data = new DropdownItemData { IconName = "Print" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option c",
+                Value = "C",
+                Data = new DropdownItemData { IconName = "ShoppingCart" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option d",
+                Value = "D",
+                Data = new DropdownItemData { IconName = "Train" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option e",
+                Value = "E",
+                Data = new DropdownItemData { IconName = "Repair" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Divider
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Header,
+                Text = "More options",
+                Value = "Header2"
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option f",
+                Value = "F",
+                Data = new DropdownItemData { IconName = "Running" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option g",
+                Value = "G",
+                Data = new DropdownItemData { IconName = "EmojiNeutral" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option h",
+                Value = "H",
+                Data = new DropdownItemData { IconName = "ChatInviteFriend" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option i",
+                Value = "I",
+                Data = new DropdownItemData { IconName = "SecurityGroup" }
+            },
+            new()
+            {
+                ItemType = BitDropdownItemType.Normal,
+                Text = "Option j",
+                Value = "J",
+                Data = new DropdownItemData { IconName = "AddGroup" }
+            }
+        };
+    }
+
+    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDropdownItems(BitDropdownItemsProviderRequest<BitDropdownItem> request)
+    {
+        try
+        {
+            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+            var query = new Dictionary<string, object>()
+            {
+                { "$top", request.Count == 0 ? 50 : request.Count },
+                { "$skip", request.StartIndex }
+            };
+
+            if (string.IsNullOrEmpty(request.Search) is false)
+            {
+                query.Add("$filter", $"contains(Name,'{request.Search}')");
+            }
+
+            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+            var items = data!.Items.Select(i => new BitDropdownItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString(),
+                    Data = i,
+                    AriaLabel = i.Name,
+                    IsEnabled = true,
+                    ItemType = BitDropdownItemType.Normal
+                }).ToList();
+
+            return BitDropdownItemsProviderResult.From(items, data!.TotalCount);
+        }
+        catch
+        {
+            return BitDropdownItemsProviderResult.From(new List<BitDropdownItem>(), 0);
+        }
+    }
+}

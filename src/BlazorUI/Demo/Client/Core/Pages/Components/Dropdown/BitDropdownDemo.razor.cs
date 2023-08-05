@@ -270,405 +270,21 @@ public partial class BitDropdownDemo
 
 
 
-    private string ControlledValue = "Apple";
-    private List<string> ControlledValues = new() { "Apple", "Banana", "Grape" };
-    private FormValidationDropdownModel formValidationDropdownModel = new();
-    private string SuccessMessage = string.Empty;
-    private List<BitDropdownItem> Categories = new();
-    private List<BitDropdownItem> Products = new();
-    private List<BitDropdownItem> LargeListOfCategoriesForSingleSelect = new();
-    private List<BitDropdownItem> LargeListOfCategoriesForMultiSelect = new();
-    private List<BitDropdownItem> LargeListOfCategoriesDropDirection = new();
-    private string CurrentCategory = string.Empty;
-    private string CurrentProduct = string.Empty;
-    private string? SelectedValue;
-    private List<string> SelectedValues = new();
-
-
-    protected override void OnInitialized()
-    {
-        Categories = Enumerable.Range(1, 6).Select(c => new BitDropdownItem
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Value = c.ToString(),
-            Text = $"Category {c}"
-        }).ToList();
-
-        Products = Enumerable.Range(1, 50).Select(p => new BitDropdownItem
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = $"Product {p}",
-            Value = $"{((int)Math.Ceiling((double)p % 7))}-{p}"
-        }).ToList();
-
-        LargeListOfCategoriesForSingleSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Value = c.ToString(),
-            Text = $"Category {c}"
-        }).ToList();
-
-        LargeListOfCategoriesForMultiSelect = Enumerable.Range(1, 4000).Select(c => new BitDropdownItem
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Value = c.ToString(),
-            Text = $"Category {c}"
-        }).ToList();
-
-        LargeListOfCategoriesDropDirection = Enumerable.Range(1, 60).Select(c => new BitDropdownItem
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Value = c.ToString(),
-            Text = $"Category {c}"
-        }).ToList();
-
-        base.OnInitialized();
-    }
-
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
-
-    private List<BitDropdownItem> GetCategoryDropdownItems()
-    {
-        return new()
-        {
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Fruits",
-                Value = "f"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Vegetables",
-                Value = "v"
-            }
-        };
-    }
-
-    private List<BitDropdownItem> GetProductDropdownItems()
-    {
-        return new()
-        {
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "Fruits"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Apple",
-                Value = "f-app"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Orange",
-                Value = "f-ora",
-                IsEnabled = false
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Banana",
-                Value = "f-ban",
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Divider,
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "Vegetables"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Broccoli",
-                Value = "v-bro",
-            }
-        };
-    }
-
-    private List<BitDropdownItem> GetDropdownItems()
-    {
-        return new()
-        {
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "Fruits"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Apple",
-                Value = "f-app"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Banana",
-                Value = "f-ban"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Orange",
-                Value = "f-ora",
-                IsEnabled = false
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Grape",
-                Value = "f-gra",
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Divider,
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "Vegetables"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Broccoli",
-                Value = "v-bro",
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Carrot",
-                Value = "v-car",
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Lettuce",
-                Value = "v-let",
-            }
-        };
-    }
-
-    private List<BitDropdownItem> GetArabicDropdownItems()
-    {
-        return new()
-        {
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "الفاكهة"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "تفاحة",
-                Value = "f-app"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "البرتقالي",
-                Value = "f-ora",
-                IsEnabled = false
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "موز",
-                Value = "f-ban",
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Divider,
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "خضروات"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "بروكلي",
-                Value = "v-bro",
-            }
-        };
-    }
-
-    private List<BitDropdownItem> GetCustomDropdownItems()
-    {
-        return new()
-        {
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "Options",
-                Value = "Header"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option a",
-                Value = "A",
-                Data = new DropdownItemData { IconName = "Memo" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option b",
-                Value = "B",
-                Data = new DropdownItemData { IconName = "Print" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option c",
-                Value = "C",
-                Data = new DropdownItemData { IconName = "ShoppingCart" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option d",
-                Value = "D",
-                Data = new DropdownItemData { IconName = "Train" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option e",
-                Value = "E",
-                Data = new DropdownItemData { IconName = "Repair" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Divider
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Header,
-                Text = "More options",
-                Value = "Header2"
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option f",
-                Value = "F",
-                Data = new DropdownItemData { IconName = "Running" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option g",
-                Value = "G",
-                Data = new DropdownItemData { IconName = "EmojiNeutral" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option h",
-                Value = "H",
-                Data = new DropdownItemData { IconName = "ChatInviteFriend" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option i",
-                Value = "I",
-                Data = new DropdownItemData { IconName = "SecurityGroup" }
-            },
-            new()
-            {
-                ItemType = BitDropdownItemType.Normal,
-                Text = "Option j",
-                Value = "J",
-                Data = new DropdownItemData { IconName = "AddGroup" }
-            }
-        };
-    }
-
-    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDropdownItems(BitDropdownItemsProviderRequest<BitDropdownItem> request)
-    {
-        try
-        {
-            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-            var query = new Dictionary<string, object>()
-            {
-                { "$top", request.Count == 0 ? 50 : request.Count },
-                { "$skip", request.StartIndex }
-            };
-
-            if (string.IsNullOrEmpty(request.Search) is false)
-            {
-                query.Add("$filter", $"contains(Name,'{request.Search}')");
-            }
-
-            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
-
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
-
-            var items = data!.Items.Select(i => new BitDropdownItem
-            {
-                Text = i.Name,
-                Value = i.Id.ToString(),
-                Data = i,
-                AriaLabel = i.Name,
-                IsEnabled = true,
-                ItemType = BitDropdownItemType.Normal
-            }).ToList();
-
-            return BitDropdownItemsProviderResult.From(items, data!.TotalCount);
-        }
-        catch
-        {
-            return BitDropdownItemsProviderResult.From(new List<BitDropdownItem>(), 0);
-        }
-    }
-
-
-
     private readonly string example1HTMLCode = @"
-<BitDropdown Label=""Basic Uncontrolled""
+<BitDropdown Label=""Single-select""
              Items=""GetDropdownItems()""
-             Placeholder=""Select an option""
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
+             Placeholder=""Select an option"" />
 
 <BitDropdown Label=""Disabled with defaultValue""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsEnabled=""false""
-             DefaultValue=""v-bro""
-             Style=""width: 100%; max-width: 290px; margin-bottom: 20px;"">
-</BitDropdown>
+             DefaultValue=""v-bro"" />
 
-<BitDropdown Label=""Multi-select uncontrolled""
+<BitDropdown Label=""Multi-select""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
-             IsMultiSelect=""true""
-             Style=""width: 100%; max-width: 290px; margin-bottom: 20px;"">
-</BitDropdown>";
+             IsMultiSelect=""true"" />";
     private readonly string example1CSharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -720,9 +336,15 @@ private List<BitDropdownItem> GetDropdownItems()
 <BitDropdown Label=""Single-select Controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
-             @bind-Value=""ControlledValue""
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+             @bind-Value=""ControlledValue"" />
+<BitLabel>Selected Value: @ControlledValue</BitLabel>
+
+<BitDropdown @bind-Values=""ControlledValues""
+             Label=""Multi-select controlled""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select options""
+             IsMultiSelect=""true"" />
+<BitLabel>Selected Value: @string.Join("","", ControlledValues)</BitLabel>";
     private readonly string example2CSharpCode = @"
 private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
@@ -776,9 +398,7 @@ private List<BitDropdownItem> GetDropdownItems()
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              @bind-Values=""ControlledValues""
-             IsMultiSelect=""true""
-             Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
-</BitDropdown>";
+             IsMultiSelect=""true"" />";
     private readonly string example3CSharpCode = @"
 private List<string> ControlledValues = new() { ""Apple"", ""Banana"", ""Grape"" };
 private List<BitDropdownItem> GetDropdownItems()
@@ -829,84 +449,79 @@ private List<BitDropdownItem> GetDropdownItems()
 
     private readonly string example4HTMLCode = @"
 <style>
-    .custom-drp-lbl-ic {
-        width: 32px;
-        height: 32px;
-        outline: transparent;
-        font-size: 14px;
-        font-weight: 400;
-        box-sizing: border-box;
-        border: none;
-        display: inline-block;
-        text-decoration: none;
-        text-align: center;
-        cursor: pointer;
-        padding: 0 4px;
-        border-radius: 2px;
-        background-color: transparent;
-        color: #0078d4;
-        margin-bottom: -8px;
-        user-select: none;
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
     }
 
-    .custom-drp-lbl-ic:hover {
-        color: #106EBE;
-        background-color: #f3f2f1;
+    custom-drp.custom-drp-lbl {
+        color: dodgerblue;
+    }
+
+    custom-drp.custom-drp-txt {
+        color: goldenrod;
+    }
+
+    custom-drp.custom-drp-ph {
+        color: orangered;
+    }
+
+    custom-drp.custom-drp-item {
+        width: 100%;
+        cursor: pointer;
     }
 </style>
 
-<BitDropdown Label=""Custom Controlled""
+<BitDropdown Label=""Custom Items""
              Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
-             AriaLabel=""Custom dropdown""
-             Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
-    <TextTemplate>
-        <div style=""display: flex; gap: 10px; align-items: center;"">
-            <i class=""bit-icon bit-icon--@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)""
-               aria-hidden=""true""
-               title=""@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)""></i>
-            <span>@context.Items.Find(i => i.Value == context.Value).Text</span>
-        </div>
-    </TextTemplate>
-    <PlaceholderTemplate>
-        <div style=""display: flex; gap: 10px; align-items: center;"">
-            <i class=""bit-icon bit-icon--MessageFill"" aria-hidden=""true""></i>
-            <span>@context.Placeholder</span>
-        </div>
-    </PlaceholderTemplate>
-    <CaretDownTemplate>
-        <i class=""bit-icon bit-icon--CirclePlus""></i>
-    </CaretDownTemplate>
-    <ItemTemplate>
-        <div style=""display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center; gap: 10px;"">
-            <i class=""bit-icon bit-icon--@((context.Data as DropdownItemData).IconName)""
-               aria-hidden=""true""
-               title=""@((context.Data as DropdownItemData).IconName)""></i>
-            <span>@context.Text</span>
-        </div>
-    </ItemTemplate>
+             AriaLabel=""Custom dropdown"">
+<TextTemplate>
+    <div class=""custom-drp custom-drp-txt"">
+        <BitIcon IconName=""@((context.Items.Find(i => i.Value == context.Value).Data as DropdownItemData).IconName)"" />
+        <BitLabel>@context.Items.Find(i => i.Value == context.Value).Text</BitLabel>
+    </div>
+</TextTemplate>
+<PlaceholderTemplate>
+    <div class=""custom-drp custom-drp-ph"">
+        <BitIcon IconName=""@BitIconName.MessageFill"" />
+        <BitLabel>@context.Placeholder</BitLabel>
+    </div>
+</PlaceholderTemplate>
+<CaretDownTemplate>
+    <div class=""custom-drp"">
+        <BitIcon IconName=""@BitIconName.CirclePlus"" />
+    </div>
+</CaretDownTemplate>
+<ItemTemplate>
+    <div class=""custom-drp custom-drp-item"">
+        <BitIcon IconName=""@((context.Data as DropdownItemData).IconName)"" />
+        <BitLabel>@context.Text</BitLabel>
+    </div>
+</ItemTemplate>
 </BitDropdown>
 
 <BitDropdown Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              Label=""Custom Label""
-             AriaLabel=""Custom dropdown label""
-             Style=""width: 100%; max-width: 290px; margin:0 0 20px 0"">
-    <LabelTemplate>
-        <label>Custom label</label>
-        <button type=""button"" title=""Info"" aria-label=""Info"" class=""custom-drp-lbl-ic"">
-            <i class=""bit-icon bit-icon--Info""></i>
-        </button>
-    </LabelTemplate>
+             IsMultiSelect=""true""
+             AriaLabel=""Custom dropdown label"">
+<LabelTemplate>
+    <div class=""custom-drp custom-drp-lbl"">
+        <BitLabel>Custom label</BitLabel>
+        <BitIcon IconName=""@BitIconName.Info"" AriaLabel=""Info"" />
+    </div>
+</LabelTemplate>
 </BitDropdown>
 
 <BitDropdown Items=""GetCustomDropdownItems()""
              Placeholder=""Select an option""
              Label=""Custom CaretDownIconName""
              AriaLabel=""Custom dropdown chevron icon with icon name""
-             CaretDownIconName=""@BitIconName.ScrollUpDown""
-             Style=""width: 100%; max-width: 290px"">
-</BitDropdown>";
+             CaretDownIconName=""@BitIconName.ScrollUpDown"" />";
     private readonly string example4CSharpCode = @"
 private List<BitDropdownItem> GetCustomDropdownItems()
 {
@@ -1002,51 +617,19 @@ private List<BitDropdownItem> GetCustomDropdownItems()
 }";
 
     private readonly string example5HTMLCode = @"
-<style>
-    .grid-wrap {
-        display: grid;
-        grid-template-columns: auto auto;
-    }
+<BitDropdown Label=""Category""
+             Items=""Categories""
+             Placeholder=""Select options""
+             @bind-Value=""@CurrentCategory"" />
 
-    .grid-wrap .cascading-dropdowns-info {
-        padding-top: 1.875rem;
-    }
+<BitDropdown Label=""Product""
+             Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())""
+             Placeholder=""Select options""
+             @bind-Value=""@CurrentProduct""
+             IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false"" />
 
-    @media screen and (max-width: 37.5em) {
-        .grid-wrap {
-            display: block;
-            grid-template-columns: none;
-        }
-
-        .grid-wrap .cascading-dropdowns-info {
-            padding-top: 0;
-        }
-    }
-</style>
-
-<div class=""grid-wrap"">
-    <div>
-        <BitDropdown Label=""Category""
-                        Items=""Categories""
-                        Placeholder=""Select options""
-                        @bind-Value=""@CurrentCategory""
-                        Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
-        </BitDropdown>
-
-        <BitDropdown Label=""Product""
-                        Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())""
-                        Placeholder=""Select options""
-                        @bind-Value=""@CurrentProduct""
-                        IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
-                        Style=""width: 100%; max-width: 290px; margin:20px 0 20px 0"">
-        </BitDropdown>
-    </div>
-
-    <div class=""cascading-dropdowns-info"">
-        <h5>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</h5>
-        <h5>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</h5>
-    </div>
-</div>";
+<BitLabel>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</BitLabel>
+<BitLabel>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</BitLabel>";
     private readonly string example5CSharpCode = @"
 private List<BitDropdownItem> Categories = new();
 private List<BitDropdownItem> Products = new();
@@ -1082,27 +665,23 @@ protected override void OnInitialized()
             <ValidationSummary />
         </div>
 
-        <div>
-            <BitDropdown Label=""Select category""
-                        Items=""GetCategoryDropdownItems()""
-                        IsMultiSelect=""false""
-                        @bind-Value=""formValidationDropdownModel.Category""
-                        Placeholder=""Select an option""
-                        Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"" />
+        <BitDropdown Label=""Select category""
+                     Items=""GetCategoryDropdownItems()""
+                     IsMultiSelect=""false""
+                     @bind-Value=""formValidationDropdownModel.Category""
+                     Placeholder=""Select an option"" />
 
-            <ValidationMessage For=""@(() => formValidationDropdownModel.Category)"" />
-        </div>
+        <ValidationMessage For=""@(() => formValidationDropdownModel.Category)"" />
 
-        <div>
-            <BitDropdown Label=""Select two ptoducts""
-                        Items=""GetProductDropdownItems()""
-                        IsMultiSelect=""true""
-                        @bind-Values=""formValidationDropdownModel.Products""
-                        Placeholder=""Select an option""
-                        Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"" />
+        <br />
 
-            <ValidationMessage For=""@(() => formValidationDropdownModel.Products)"" />
-        </div>
+        <BitDropdown Label=""Select two ptoducts""
+                     Items=""GetProductDropdownItems()""
+                     IsMultiSelect=""true""
+                     @bind-Values=""formValidationDropdownModel.Products""
+                     Placeholder=""Select an option"" />
+
+        <ValidationMessage For=""@(() => formValidationDropdownModel.Products)"" />
 
         <br />
 
@@ -1213,9 +792,7 @@ private List<BitDropdownItem> GetProductDropdownItems()
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
-             IsResponsiveModeEnabled=true
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+             IsResponsiveModeEnabled=true />";
     private readonly string example7CSharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -1264,24 +841,20 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example8HTMLCode = @"
-<BitDropdown Label=""Single-select Controlled with search box""
+<BitDropdown Label=""Single-select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select an option""
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search item""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
+                SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select controlled with search box""
+<BitDropdown Label=""Multi-select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select options""
                 IsMultiSelect=""true""
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search items""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+                SearchBoxPlaceholder=""Search items"" />";
     private readonly string example8CSharpCode = @"
 private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
@@ -1331,26 +904,22 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example9HTMLCode = @"
-<BitDropdown Label=""Single-select Controlled with virtualization""
-                Items=""LargeListOfCategoriesForSingleSelect""
-                Virtualize=""true""
-                Placeholder=""Select an option""
-                IsResponsiveModeEnabled=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search item""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
+<BitDropdown Label=""Single-select dropdown with virtualization""
+             Items=""LargeListOfCategoriesForSingleSelect""
+             Virtualize=""true""
+             Placeholder=""Select an option""
+             IsResponsiveModeEnabled=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select controlled with virtualization""
-                Items=""LargeListOfCategoriesForMultiSelect""
-                Virtualize=""true""
-                Placeholder=""Select options""
-                IsMultiSelect=""true""
-                IsResponsiveModeEnabled=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search items""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+<BitDropdown Label=""Multi-select dropdown with virtualization""
+             Items=""LargeListOfCategoriesForMultiSelect""
+             Virtualize=""true""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             IsResponsiveModeEnabled=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />";
     private readonly string example9CSharpCode = @"
 private List<BitDropdownItem> LargeListOfCategories = new ();
 
@@ -1374,26 +943,22 @@ protected override void OnInitialized()
 }";
 
     private readonly string example10HTMLCode = @"
-<BitDropdown Label=""Single-select Controlled with virtualization""
-                ItemsProvider=""LoadDropdownItems""
-                Virtualize=""true""
-                Placeholder=""Select an option""
-                IsResponsiveModeEnabled=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search item""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
+<BitDropdown Label=""Single-select dropdown with virtualization""
+             ItemsProvider=""LoadDropdownItems""
+             Virtualize=""true""
+             Placeholder=""Select an option""
+             IsResponsiveModeEnabled=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select controlled with virtualization""
-                ItemsProvider=""LoadDropdownItems""
-                Virtualize=""true""
-                Placeholder=""Select options""
-                IsMultiSelect=""true""
-                IsResponsiveModeEnabled=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""Search items""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+<BitDropdown Label=""Multi-select dropdown with virtualization""
+             ItemsProvider=""LoadDropdownItems""
+             Virtualize=""true""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             IsResponsiveModeEnabled=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />";
     private readonly string example10CSharpCode = @"
 private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDropdownItems(BitDropdownItemsProviderRequest<BitDropdownItem> request)
 {
@@ -1433,25 +998,21 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
 }";
 
     private readonly string example11HTMLCode = @"
-<BitDropdown Label=""Single-select with Rtl direction""
-                Items=""GetArabicDropdownItems()""
-                Placeholder=""حدد اختيارا""
-                IsResponsiveModeEnabled=""true""
-                IsRtl=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""عناصر البحث""
-                Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
-<BitDropdown Label=""Multi-select with Rtl direction""
-                Items=""GetArabicDropdownItems()""
-                Placeholder=""اشر على الخيارات""
-                IsMultiSelect=""true""
-                IsResponsiveModeEnabled=""true""
-                IsRtl=""true""
-                ShowSearchBox=""true""
-                SearchBoxPlaceholder=""عناصر البحث""
-                Style=""width: 100%; max-width: 290px; margin-bottom: 20px;"">
-</BitDropdown>";
+<BitDropdown Label=""Single-select dropdown with Rtl direction""
+             Items=""GetArabicDropdownItems()""
+             Placeholder=""حدد اختيارا""
+             IsResponsiveModeEnabled=""true""
+             IsRtl=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""عناصر البحث"" />
+<BitDropdown Label=""Multi-select dropdown with Rtl direction""
+             Items=""GetArabicDropdownItems()""
+             Placeholder=""اشر على الخيارات""
+             IsMultiSelect=""true""
+             IsResponsiveModeEnabled=""true""
+             IsRtl=""true""
+             ShowSearchBox=""true""
+             SearchBoxPlaceholder=""عناصر البحث"" />";
     private readonly string example11CSharpCode = @"
 private List<BitDropdownItem> GetArabicDropdownItems()
 {
@@ -1500,27 +1061,23 @@ private List<BitDropdownItem> GetArabicDropdownItems()
 }";
 
     private readonly string example12HTMLCode = @"
-<BitDropdown Label=""Single-select Controlled with auto drop direction""
+<BitDropdown Label=""Auto drop direction""
              Items=""LargeListOfCategoriesDropDirection""
              Virtualize=""true""
              Placeholder=""Select an option""
              IsResponsiveModeEnabled=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item""
-             DropDirection=""BitDropDirection.Auto""
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>
+             DropDirection=""BitDropDirection.Auto"" />
 
-<BitDropdown Label=""Single-select Controlled with top and bottom drop direction""
+<BitDropdown Label=""Top and bottom drop direction""
              Items=""LargeListOfCategoriesDropDirection""
              Virtualize=""true""
              Placeholder=""Select an option""
              IsResponsiveModeEnabled=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item""
-             DropDirection=""BitDropDirection.TopAndBottom""
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0"">
-</BitDropdown>";
+             DropDirection=""BitDropDirection.TopAndBottom"" />";
     private readonly string example12CSharpCode = @"
 private List<BitDropdownItem> LargeListOfCategoriesDropDirection = new();
 
@@ -1537,26 +1094,20 @@ protected override void OnInitialized()
 }";
 
     private readonly string example13HTMLCode = @"
-<BitDropdown ShowClearButton=""true""
-             Label=""Basic Uncontrolled""
+<BitDropdown @bind-Value=""SelectedValue""
+             ShowClearButton=""true""
+             Label=""Single-select dropdown""
              Items=""GetDropdownItems()""
-             Placeholder=""Select an option""
-             Style=""width: 100%; max-width: 290px; margin: 20px 0 20px 0""
-             @bind-Value=""SelectedValue"">
-</BitDropdown>
-<div>Value: @SelectedValue</div>
-<br>
-<hr />
-<br>
-<BitDropdown ShowClearButton=""true""
-             Label=""Multi-select uncontrolled""
+             Placeholder=""Select an option"" />
+<BitLabel>Value: @SelectedValue</BitLabel>
+
+<BitDropdown @bind-Values=""SelectedValues""
+             ShowClearButton=""true""
+             Label=""Multi-select dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
-             IsMultiSelect=""true""
-             Style=""width: 100%; max-width: 290px; margin-bottom: 20px;""
-             @bind-Values=""SelectedValues"">
-</BitDropdown>
-<div>Values: @string.Join(',', SelectedValues)</div>";
+             IsMultiSelect=""true"" />
+<BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>";
     private readonly string example13CSharpCode = @"
 private string? SelectedValue;
 private List<string> SelectedValues = new();
