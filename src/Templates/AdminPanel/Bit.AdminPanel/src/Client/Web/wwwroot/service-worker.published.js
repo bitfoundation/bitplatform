@@ -19,6 +19,7 @@ self.serverHandledUrls = [
     /\/swagger/
 ];
 
+self.isPassive = true;
 self.defaultUrl = "/";
 self.caseInsensitiveUrl = true;
 self.noPrerenderQuery = 'no-prerender=true';
