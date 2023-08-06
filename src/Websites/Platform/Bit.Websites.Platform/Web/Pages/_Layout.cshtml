@@ -12,7 +12,7 @@
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
-    var shoudAddAspAppendVersion = true;
+    
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
@@ -34,7 +34,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms." />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="@shoudAddAspAppendVersion">
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version=true>
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <style>
@@ -57,10 +57,10 @@
         }
 
     </style>
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" asp-append-version="@shoudAddAspAppendVersion" />
-    <link href="Bit.Websites.Platform.Web.styles.css" rel="stylesheet" asp-append-version="@shoudAddAspAppendVersion" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version=true />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" asp-append-version=true />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" asp-append-version=true />
+    <link href="Bit.Websites.Platform.Web.styles.css" rel="stylesheet" asp-append-version=true />
 </head>
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
     <!-- Google tag (gtag.js) -->
@@ -82,13 +82,13 @@
     {
         @if (isBlazorServer)
         {
-            <script src="_framework/blazor.server.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_framework/blazor.server.js" asp-append-version=true></script>
         }
         else
         {
-            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="@shoudAddAspAppendVersion"></script>
-            <script src="_content/Bit.Bup/bit-bup.progress.js" asp-append-version="@shoudAddAspAppendVersion"></script>
-            <script src="_content/Bit.Bup/bit-bup.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version=true></script>
+            <script src="_content/Bit.Bup/bit-bup.progress.js" asp-append-version=true></script>
+            <script src="_content/Bit.Bup/bit-bup.js" asp-append-version=true></script>
 
             @if (isSsr)
             {
@@ -96,16 +96,16 @@
             }
             else
             {
-                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version="@shoudAddAspAppendVersion">
+                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version=true>
                 <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                            param-AutoHide="true"
                            param-HideApp="true"
                            param-AppContainer="@("#app-container")" />
             }
         }
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version=true></script>
     }
-    <script src="scripts/app.js" asp-append-version="@shoudAddAspAppendVersion"></script>
+    <script src="scripts/app.js" asp-append-version=true></script>
 
     @if (isSsr)
     {
