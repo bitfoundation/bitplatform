@@ -1,11 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BiLoadingButtonClassStyles
+public class BitLoadingButtonClassStyles
 {
     /// <summary>
     /// Custom CSS classes/styles for the internal container of the BitLoadingButton.
     /// </summary>
-    public BitClassStylePair? Container { get; set; }
+    public BitClassStylePair? LoadingContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the Spinner of the BitLoadingButton.
@@ -15,5 +15,5 @@ public class BiLoadingButtonClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the Label of the BitLoadingButton.
     /// </summary>
-    public BitClassStylePair? Label { get; set; }
+    public BitClassStylePair? LoadingLabel { get; set; }
 }

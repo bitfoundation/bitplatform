@@ -8,6 +8,7 @@
 <ComponentDemo ComponentName="LoadingButton"
                ComponentDescription="LoadingButton are used to display a loading indicator inside of a button. In some cases, a button's action kicks off some event which requires a loading state. This component composed together the Button component and the Loader component in a way that is accessible and easy to use."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
@@ -176,6 +177,30 @@
                         The form submitted successfully.
                     </BitMessageBar>
                 }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ClassStyles" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitLoadingButton IsLoading="ClassStylesPrimaryIsLoading"
+                                  ButtonStyle="BitButtonStyle.Primary"
+                                  OnClick="ClassStylesPrimaryOnClick"
+                                  LoadingLabel="Loading..."
+                                  ClassStyles="@(new() { LoadingLabel = new() { Style = "color:red" } })">
+                    Primary (@ClassStylesPrimaryCounter)
+                </BitLoadingButton>
+
+                <BitLoadingButton IsLoading="ClassStylesStandardIsLoading"
+                                  ButtonStyle="BitButtonStyle.Standard"
+                                  OnClick="ClassStylesStandardOnClick"
+                                  LoadingLabel="Saving..."
+                                  ClassStyles="@(new() { LoadingLabel = new() { Style = "color:blue" } })">
+                    Standard (@ClassStylesStandardCounter)
+                </BitLoadingButton>
+
+                <BitToggle @bind-Value="Example7Toggle" OnChange="Example7ToggleOnChange" OnText="Turn Loading Off" OffText="Turn Loading On" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

@@ -89,8 +89,6 @@ public partial class BitActionButtonDemo
         }
     };
 
-
-
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()

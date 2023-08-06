@@ -54,6 +54,15 @@ public partial class BitLoadingButtonDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitLoadingButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes/styles for different parts of the BitLoadingButton.",
+        },
+        new()
+        {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
@@ -95,6 +104,62 @@ public partial class BitLoadingButtonDemo
             DefaultValue = "null",
             Description = "The tooltip to show when the mouse is placed on the icon button."
         },
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitLoadingButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the internal container of the BitLoadingButton."
+               },
+               new()
+               {
+                   Name = "Primary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the primary section of the BitLoadingButton."
+               },
+               new()
+               {
+                   Name = "Secondary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the secondary section of the BitLoadingButton."
+               },
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS classes."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS styles."
+               }
+            }
+        }
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -189,6 +254,7 @@ public partial class BitLoadingButtonDemo
     private bool Example3Toggle;
     private bool Example4Toggle;
     private bool Example5Toggle;
+    private bool Example7Toggle;
 
     private void Example1ToggleOnChange()
     {
@@ -220,6 +286,12 @@ public partial class BitLoadingButtonDemo
     {
         EllipsisIsLoading = Example5Toggle;
         RollerIsLoading = Example5Toggle;
+    }
+
+    private void Example7ToggleOnChange()
+    {
+        ClassStylesPrimaryIsLoading = Example7Toggle;
+        ClassStylesStandardIsLoading = Example7Toggle;
     }
 
 
@@ -360,6 +432,31 @@ public partial class BitLoadingButtonDemo
         RollerIsLoading = true;
         await Task.Delay(1000);
         RollerIsLoading = false;
+    }
+
+    #endregion
+
+    #region ClassStyles
+
+    private bool ClassStylesPrimaryIsLoading;
+    private int ClassStylesPrimaryCounter;
+    private bool ClassStylesStandardIsLoading;
+    private int ClassStylesStandardCounter;
+
+    private async Task ClassStylesPrimaryOnClick()
+    {
+        ClassStylesPrimaryIsLoading = true;
+        await Task.Delay(1000);
+        ClassStylesPrimaryCounter++;
+        ClassStylesPrimaryIsLoading = false;
+    }
+
+    private async Task ClassStylesStandardOnClick()
+    {
+        ClassStylesStandardIsLoading = true;
+        await Task.Delay(1000);
+        ClassStylesStandardCounter++;
+        ClassStylesStandardIsLoading = false;
     }
 
     #endregion
@@ -708,5 +805,52 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
+}";
+
+    private readonly string example7HTMLCode = @"
+<BitLoadingButton IsLoading=""ClassStylesPrimaryIsLoading""
+                  ButtonStyle=""BitButtonStyle.Primary""
+                  OnClick=""ClassStylesPrimaryOnClick""
+                  LoadingLabel=""Loading...""
+                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:red"" } })"">
+    Primary (@ClassStylesPrimaryCounter)
+</BitLoadingButton>
+
+<BitLoadingButton IsLoading=""ClassStylesStandardIsLoading""
+                  ButtonStyle=""BitButtonStyle.Standard""
+                  OnClick=""ClassStylesStandardOnClick""
+                  LoadingLabel=""Saving...""
+                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:blue"" } })"">
+    Standard (@ClassStylesStandardCounter)
+</BitLoadingButton>
+
+<BitToggle @bind-Value=""Example7Toggle"" OnChange=""Example7ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />";
+    private readonly string example7CSharpCode = @"
+private bool ClassStylesPrimaryIsLoading;
+private int ClassStylesPrimaryCounter;
+private bool ClassStylesStandardIsLoading;
+private int ClassStylesStandardCounter;
+private bool Example7Toggle;
+
+private async Task ClassStylesPrimaryOnClick()
+{
+    ClassStylesPrimaryIsLoading = true;
+    await Task.Delay(1000);
+    ClassStylesPrimaryCounter++;
+    ClassStylesPrimaryIsLoading = false;
+}
+
+private async Task ClassStylesStandardOnClick()
+{
+    ClassStylesStandardIsLoading = true;
+    await Task.Delay(1000);
+    ClassStylesStandardCounter++;
+    ClassStylesStandardIsLoading = false;
+}
+
+private void Example7ToggleOnChange()
+{
+    ClassStylesPrimaryIsLoading = Example7Toggle;
+    ClassStylesStandardIsLoading = Example7Toggle;
 }";
 }

@@ -56,6 +56,11 @@ public partial class BitLoadingButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitLoadingButton.
+    /// </summary>
+    [Parameter] public BitLoadingButtonClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
     /// Determine whether the button is in loading mode or not.
     /// </summary>        
     [Parameter] public bool IsLoading { get; set; }
