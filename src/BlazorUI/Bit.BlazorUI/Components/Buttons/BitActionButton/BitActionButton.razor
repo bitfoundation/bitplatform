@@ -13,9 +13,9 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        <span class="bit-acb-ictn">
-            <i class="bit-icon bit-icon--@IconName" />
-            <span class="bit-acb-con">
+        <span style="@ClassStyles?.Container?.Style" class="bit-acb-ictn @ClassStyles?.Container?.Class">
+            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
+            <span style="@ClassStyles?.Content?.Style" class="bit-acb-con @ClassStyles?.Content?.Class">
                 @ChildContent
             </span>
         </span>
@@ -32,9 +32,9 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        <span class="bit-acb-ictn">
-            <i class="bit-icon bit-icon--@IconName" />
-            <span class="bit-acb-con">
+        <span style="@ClassStyles?.Container?.Style" class="bit-acb-ictn @ClassStyles?.Container?.Class">
+            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
+            <span style="@ClassStyles?.Content?.Style" class="bit-acb-con @ClassStyles?.Content?.Class">
                 @ChildContent
             </span>
         </span>

@@ -32,4 +32,12 @@
     .validation-message {
         color: red;
     }
+
+    .custom-class {
+        gap: 5px;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        background-color: aqua;
+    }
 }

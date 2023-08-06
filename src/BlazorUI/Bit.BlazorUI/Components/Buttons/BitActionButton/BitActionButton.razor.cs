@@ -40,6 +40,11 @@ public partial class BitActionButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitActionButton.
+    /// </summary>
+    [Parameter] public BitActionButtonClassStyles? ClassStyles { get; set; }
+
+    /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -63,6 +68,7 @@ public partial class BitActionButton
     /// The title to show when the mouse is placed on the button
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
 
     protected override string RootElementClass => "bit-acb";
 
