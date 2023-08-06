@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Components.Buttons.BitCompoundButton;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 

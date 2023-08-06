@@ -46,6 +46,15 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "ClassStyles",
+            Type = "BitActionButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes/styles for different parts of the BitActionButton.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
@@ -77,6 +86,64 @@ public partial class BitActionButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the action button.",
+        }
+    };
+
+
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitCompoundButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the internal container of the BitCompoundButton."
+               },
+               new()
+               {
+                   Name = "Primary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the primary section of the BitCompoundButton."
+               },
+               new()
+               {
+                   Name = "Secondary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
+               },
+            }
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS classes."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS styles."
+               }
+            }
         }
     };
 
@@ -233,5 +300,23 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
+
+    private readonly string example8HTMLCode = @"
+<style>
+    .custom-class {
+        gap: 5px;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        background-color: aqua;
+    }
+</style>
+
+<BitActionButton IconName=""@BitIconName.AddFriend""
+                 ClassStyles=""@(new() { Container = new() { Class = ""custom-class"" },
+                                        Icon = new() { Style = ""color:green"" },
+                                        Content = new() { Style = ""color:blue"" } })"">
+    Create account
+</BitActionButton>";
 
 }

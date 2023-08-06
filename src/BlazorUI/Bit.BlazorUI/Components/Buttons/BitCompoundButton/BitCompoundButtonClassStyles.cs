@@ -1,4 +1,5 @@
-﻿namespace Bit.BlazorUI.Components.Buttons.BitCompoundButton;
+﻿namespace Bit.BlazorUI;
+
 public class BitCompoundButtonClassStyles
 {
     /// <summary>
