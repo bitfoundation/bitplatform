@@ -216,6 +216,10 @@
         "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss"
     },
     {
+        "outputFile": "Pages/Components/Label/BitLabelDemo.razor.css",
+        "inputFile": "Pages/Components/Label/BitLabelDemo.razor.scss"
+    },
+    {
         "outputFile": "Pages/Components/Link/BitLinkDemo.razor.css",
         "inputFile": "Pages/Components/Link/BitLinkDemo.razor.scss"
     },

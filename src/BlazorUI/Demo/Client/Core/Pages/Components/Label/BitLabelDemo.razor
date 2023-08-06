@@ -7,13 +7,35 @@
 <ComponentDemo ComponentName="Label"
                ComponentDescription="Labels give a name or title to a control or group of controls, including text fields, check boxes, combo boxes, radio buttons, and drop-down menus."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitLabel" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a label you can use a BitLabel component.</div>
             <div>
                 <BitLabel>I'm a Label</BitLabel>
                 <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style and Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div>
+                <BitLabel Style="color: dodgerblue; font-weight:bold">I'm a Label with Style</BitLabel>
+                <BitLabel Class="custom-class">I'm a Label with Class</BitLabel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="IsRequired" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div>
                 <BitLabel IsRequired="true">I'm a required Label</BitLabel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="For" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>
                 <BitLabel For="label-input">A Label for An Input</BitLabel>
                 <input type="text" name="label-input" id="label-input" />
             </div>
