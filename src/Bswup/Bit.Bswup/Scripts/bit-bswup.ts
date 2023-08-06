@@ -114,7 +114,10 @@ class BitBswup {
             }
 
             if (e.data === 'CLIENTS_CLAIMED') {
-                Blazor.start().then(() => blazorStartResolver(undefined));
+                Blazor.start().then(() => {
+                    blazorStartResolver(undefined);
+                    e.source.postMessage('BLAZOR_STARTED');
+                });
                 return;
             }
 

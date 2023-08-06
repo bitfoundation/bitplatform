@@ -153,6 +153,10 @@ function handleMessage(e) {
     if (e.data === 'CLAIM_CLIENTS') {
         return self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
+
+    if (e.data === 'BLAZOR_STARTED') {
+        createNewCache();
+    }
 }
 
 // ============================================================================
@@ -175,7 +179,7 @@ async function createNewCache() {
         total = blazorAssets.length;
         const promises = blazorAssets.map(addCache.bind(null, true));
         await Promise.all(promises);
-        keys = await bitBswupCache.keys();
+        return;
     }
 
     const oldUrls = [];
