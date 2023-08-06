@@ -271,20 +271,20 @@ public partial class BitDropdownDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitDropdown Label=""Single-select""
+<BitDropdown Label=""Single select""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option"" />
+
+<BitDropdown Label=""Multi select""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select options""
+             IsMultiSelect=""true"" />
 
 <BitDropdown Label=""Disabled with defaultValue""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsEnabled=""false""
-             DefaultValue=""v-bro"" />
-
-<BitDropdown Label=""Multi-select""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select options""
-             IsMultiSelect=""true"" />";
+             DefaultValue=""v-bro"" />";
     private readonly string example1CSharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -333,14 +333,14 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example2HTMLCode = @"
-<BitDropdown Label=""Single-select Controlled""
+<BitDropdown Label=""Single select""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              @bind-Value=""ControlledValue"" />
 <BitLabel>Selected Value: @ControlledValue</BitLabel>
 
 <BitDropdown @bind-Values=""ControlledValues""
-             Label=""Multi-select controlled""
+             Label=""Multi select""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              IsMultiSelect=""true"" />
@@ -394,7 +394,7 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example3HTMLCode = @"
-<BitDropdown Label=""Multi-select controlled""
+<BitDropdown Label=""Multi select controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              @bind-Values=""ControlledValues""
@@ -485,23 +485,24 @@ private List<BitDropdownItem> GetDropdownItems()
         <BitLabel>@context.Items.Find(i => i.Value == context.Value).Text</BitLabel>
     </div>
 </TextTemplate>
-<PlaceholderTemplate>
-    <div class=""custom-drp custom-drp-ph"">
-        <BitIcon IconName=""@BitIconName.MessageFill"" />
-        <BitLabel>@context.Placeholder</BitLabel>
-    </div>
-</PlaceholderTemplate>
-<CaretDownTemplate>
-    <div class=""custom-drp"">
-        <BitIcon IconName=""@BitIconName.CirclePlus"" />
-    </div>
-</CaretDownTemplate>
 <ItemTemplate>
     <div class=""custom-drp custom-drp-item"">
         <BitIcon IconName=""@((context.Data as DropdownItemData).IconName)"" />
         <BitLabel>@context.Text</BitLabel>
     </div>
 </ItemTemplate>
+</BitDropdown>
+                
+<BitDropdown Label=""Custom placeholder""
+             Items=""GetCustomDropdownItems()""
+             Placeholder=""Select an option""
+             AriaLabel=""Custom placeholder"">
+<PlaceholderTemplate>
+    <div class=""custom-drp custom-drp-ph"">
+        <BitIcon IconName=""@BitIconName.MessageFill"" />
+        <BitLabel>@context.Placeholder</BitLabel>
+    </div>
+</PlaceholderTemplate>
 </BitDropdown>
 
 <BitDropdown Items=""GetCustomDropdownItems()""
@@ -841,14 +842,14 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example8HTMLCode = @"
-<BitDropdown Label=""Single-select dropdown with search box""
+<BitDropdown Label=""Single select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select an option""
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
                 SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select dropdown with search box""
+<BitDropdown Label=""Multi select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select options""
                 IsMultiSelect=""true""
@@ -904,7 +905,7 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example9HTMLCode = @"
-<BitDropdown Label=""Single-select dropdown with virtualization""
+<BitDropdown Label=""Single select dropdown with virtualization""
              Items=""LargeListOfCategoriesForSingleSelect""
              Virtualize=""true""
              Placeholder=""Select an option""
@@ -912,7 +913,7 @@ private List<BitDropdownItem> GetDropdownItems()
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select dropdown with virtualization""
+<BitDropdown Label=""Multi select dropdown with virtualization""
              Items=""LargeListOfCategoriesForMultiSelect""
              Virtualize=""true""
              Placeholder=""Select options""
@@ -943,7 +944,7 @@ protected override void OnInitialized()
 }";
 
     private readonly string example10HTMLCode = @"
-<BitDropdown Label=""Single-select dropdown with virtualization""
+<BitDropdown Label=""Single select dropdown with virtualization""
              ItemsProvider=""LoadDropdownItems""
              Virtualize=""true""
              Placeholder=""Select an option""
@@ -951,7 +952,7 @@ protected override void OnInitialized()
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item"" />
 
-<BitDropdown Label=""Multi-select dropdown with virtualization""
+<BitDropdown Label=""Multi select dropdown with virtualization""
              ItemsProvider=""LoadDropdownItems""
              Virtualize=""true""
              Placeholder=""Select options""
@@ -998,14 +999,14 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
 }";
 
     private readonly string example11HTMLCode = @"
-<BitDropdown Label=""Single-select dropdown with Rtl direction""
+<BitDropdown Label=""Single select dropdown with Rtl direction""
              Items=""GetArabicDropdownItems()""
              Placeholder=""حدد اختيارا""
              IsResponsiveModeEnabled=""true""
              IsRtl=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""عناصر البحث"" />
-<BitDropdown Label=""Multi-select dropdown with Rtl direction""
+<BitDropdown Label=""Multi select dropdown with Rtl direction""
              Items=""GetArabicDropdownItems()""
              Placeholder=""اشر على الخيارات""
              IsMultiSelect=""true""
@@ -1096,14 +1097,14 @@ protected override void OnInitialized()
     private readonly string example13HTMLCode = @"
 <BitDropdown @bind-Value=""SelectedValue""
              ShowClearButton=""true""
-             Label=""Single-select dropdown""
+             Label=""Single select dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option"" />
 <BitLabel>Value: @SelectedValue</BitLabel>
 
 <BitDropdown @bind-Values=""SelectedValues""
              ShowClearButton=""true""
-             Label=""Multi-select dropdown""
+             Label=""Multi select dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              IsMultiSelect=""true"" />

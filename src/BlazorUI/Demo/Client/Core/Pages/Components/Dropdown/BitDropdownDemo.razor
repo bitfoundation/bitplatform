@@ -13,18 +13,18 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown Label="Single-select"
+                <BitDropdown Label="Single select"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option" />
+                <BitDropdown Label="Multi select"
+                             Items="GetDropdownItems()"
+                             Placeholder="Select options"
+                             IsMultiSelect="true" />
                 <BitDropdown Label="Disabled with defaultValue"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsEnabled="false"
                              DefaultValue="v-bro" />
-                <BitDropdown Label="Multi-select"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select options"
-                             IsMultiSelect="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -32,18 +32,22 @@
     <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown @bind-Value="ControlledValue"
-                             Label="Single-select Controlled"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select an option" />
-                <BitLabel>Selected Value: @ControlledValue</BitLabel>
+                <div>
+                    <BitDropdown @bind-Value="ControlledValue"
+                                 Label="Single select"
+                                 Items="GetDropdownItems()"
+                                 Placeholder="Select an option" />
+                    <BitLabel>Selected Value: @ControlledValue</BitLabel>
+                </div>
                 <br />
-                <BitDropdown @bind-Values="ControlledValues"
-                             Label="Multi-select controlled"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select options"
-                             IsMultiSelect="true" />
-                <BitLabel>Selected Value: @string.Join(",", ControlledValues)</BitLabel>
+                <div>
+                    <BitDropdown @bind-Values="ControlledValues"
+                                 Label="Multi select"
+                                 Items="GetDropdownItems()"
+                                 Placeholder="Select options"
+                                 IsMultiSelect="true" />
+                    <BitLabel>Selected Value: @string.Join(",", ControlledValues)</BitLabel>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -61,23 +65,24 @@
                             <BitLabel>@context.Items.Find(i => i.Value == context.Value).Text</BitLabel>
                         </div>
                     </TextTemplate>
-                    <PlaceholderTemplate>
-                        <div class="custom-drp custom-drp-ph">
-                            <BitIcon IconName="@BitIconName.MessageFill" />
-                            <BitLabel>@context.Placeholder</BitLabel>
-                        </div>
-                    </PlaceholderTemplate>
-                    <CaretDownTemplate>
-                        <div class="custom-drp">
-                            <BitIcon IconName="@BitIconName.CirclePlus" />
-                        </div>
-                    </CaretDownTemplate>
                     <ItemTemplate>
                         <div class="custom-drp custom-drp-item">
                             <BitIcon IconName="@((context.Data as DropdownItemData).IconName)" />
                             <BitLabel>@context.Text</BitLabel>
                         </div>
                     </ItemTemplate>
+                </BitDropdown>
+                
+                <BitDropdown Label="Custom placeholder"
+                             Items="GetCustomDropdownItems()"
+                             Placeholder="Select an option"
+                             AriaLabel="Custom placeholder">
+                    <PlaceholderTemplate>
+                        <div class="custom-drp custom-drp-ph">
+                            <BitIcon IconName="@BitIconName.MessageFill" />
+                            <BitLabel>@context.Placeholder</BitLabel>
+                        </div>
+                    </PlaceholderTemplate>
                 </BitDropdown>
 
                 <BitDropdown Items="GetCustomDropdownItems()"
@@ -188,14 +193,14 @@
     <ComponentExampleBox Title="Search-box" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown Label="Single-select Controlled with search box"
+                <BitDropdown Label="Single select dropdown with search box"
                              Items="GetDropdownItems()"
                              Placeholder="Select an option"
                              IsResponsiveModeEnabled="true"
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="Search item" />
 
-                <BitDropdown Label="Multi-select controlled with search box"
+                <BitDropdown Label="Multi select dropdown with search box"
                              Items="GetDropdownItems()"
                              Placeholder="Select options"
                              IsMultiSelect="true"
@@ -209,7 +214,7 @@
     <ComponentExampleBox Title="Virtualization" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown Label="Single-select Controlled with virtualization"
+                <BitDropdown Label="Single select Controlled with virtualization"
                              Items="LargeListOfCategoriesForSingleSelect"
                              Virtualize="true"
                              Placeholder="Select an option"
@@ -217,7 +222,7 @@
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="Search item" />
 
-                <BitDropdown Label="Multi-select controlled with virtualization"
+                <BitDropdown Label="Multi select controlled with virtualization"
                              Items="LargeListOfCategoriesForMultiSelect"
                              Virtualize="true"
                              Placeholder="Select options"
@@ -232,7 +237,7 @@
     <ComponentExampleBox Title="Virtualization (ItemsProvider)" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example9">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown Label="Single-select Controlled with virtualization"
+                <BitDropdown Label="Single select Controlled with virtualization"
                              ItemsProvider="LoadDropdownItems"
                              Virtualize="true"
                              Placeholder="Select an option"
@@ -240,7 +245,7 @@
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="Search item" />
 
-                <BitDropdown Label="Multi-select controlled with virtualization"
+                <BitDropdown Label="Multi select controlled with virtualization"
                              ItemsProvider="LoadDropdownItems"
                              Virtualize="true"
                              Placeholder="Select options"
@@ -255,14 +260,14 @@
     <ComponentExampleBox Title="RTL Direction" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown Label="Single-select with Rtl direction"
+                <BitDropdown Label="Single select with Rtl direction"
                              Items="GetArabicDropdownItems()"
                              Placeholder="حدد اختيارا"
                              IsResponsiveModeEnabled="true"
                              IsRtl="true"
                              ShowSearchBox="true"
                              SearchBoxPlaceholder="عناصر البحث" />
-                <BitDropdown Label="Multi-select with Rtl direction"
+                <BitDropdown Label="Multi select with Rtl direction"
                              Items="GetArabicDropdownItems()"
                              Placeholder="اشر على الخيارات"
                              IsMultiSelect="true"
@@ -301,20 +306,24 @@
     <ComponentExampleBox Title="Clear button" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
         <ExamplePreview>
             <div class="example-content">
-                <BitDropdown @bind-Value="SelectedValue"
-                             ShowClearButton="true"
-                             Label="Single-select dropdown"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select an option" />
-                <BitLabel>Value: @SelectedValue</BitLabel>
+                <div>
+                    <BitDropdown @bind-Value="SelectedValue"
+                                 ShowClearButton="true"
+                                 Label="Single select dropdown"
+                                 Items="GetDropdownItems()"
+                                 Placeholder="Select an option" />
+                    <BitLabel>Value: @SelectedValue</BitLabel>
+                </div>
                 <br>
-                <BitDropdown @bind-Values="SelectedValues"
-                             ShowClearButton="true"
-                             Label="Multi-select dropdown"
-                             Items="GetDropdownItems()"
-                             Placeholder="Select options"
-                             IsMultiSelect="true" />
-                <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>
+                <div>
+                    <BitDropdown @bind-Values="SelectedValues"
+                                 ShowClearButton="true"
+                                 Label="Multi select dropdown"
+                                 Items="GetDropdownItems()"
+                                 Placeholder="Select options"
+                                 IsMultiSelect="true" />
+                    <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

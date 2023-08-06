@@ -13,6 +13,10 @@
         flex-direction: column;
         align-items: flex-start;
     }
+
+    & > div {
+        width: 100%;
+    }
 }
 
 .validation-summary {
