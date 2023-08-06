@@ -44,26 +44,14 @@
             #bit-bswup .bswup-progress-text::after {
                 content: var(--bit-bswup-percent-text, "");
             }
-    #bit-bswup-reload {
-        top: 38px;
-        left: 50%;
-        display: none;
-        cursor: pointer;
-        position: fixed;
-        padding: 4px 8px;
-        z-index: 999999999;
-        border-radius: 2px;
-        transform: translateX(-50%);
-    }
 </style>
 
 <div>
-    <BswupProgress AppContainer="#app-container" HideApp=false AutoReload=false ShowLogs=false>
+    <BswupProgress AppContainer="#app-container" HideApp=false AutoReload=true ShowLogs=false>
         <div class="bswup-progress-text" />
         <svg class="bswup-container">
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
     </BswupProgress>
-    <button id="bit-bswup-reload">@Localizer[nameof(AppStrings.Update)]</button>
 </div>
