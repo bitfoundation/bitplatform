@@ -1,5 +1,37 @@
 ﻿declare const Blazor: any;
 
+class BitBswup {
+    public static async checkForUpdate() {
+        if (!('serviceWorker' in navigator)) {
+            return console.warn('no serviceWorker in navigator');
+        }
+
+        const reg = await navigator.serviceWorker.getRegistration();
+        const result = await reg.update();
+        return result;
+    }
+
+    public static async forceRefresh() {
+        if (!('serviceWorker' in navigator)) {
+            return console.warn('no serviceWorker in navigator');
+        }
+
+        await this.deleteOldCaches();
+
+        const regs = await navigator.serviceWorker.getRegistrations();
+        const promises = regs.map(r => r.unregister());
+        await Promise.all(promises);
+
+        window.location.reload();
+    }
+
+    private static async deleteOldCaches() {
+        const cacheKeys = await caches.keys();
+        const promises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
+        return Promise.all(promises);
+    }
+}
+
 ; (function () {
     const bitBswupScript = document.currentScript;
 
@@ -16,7 +48,7 @@
 
         startBlazor();
 
-        navigator.serviceWorker.register(options.sw, { scope: options.scope }).then(prepareRegistration);
+        navigator.serviceWorker.register(options.sw, { scope: options.scope, updateViaCache: 'none' }).then(prepareRegistration);
         navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
         navigator.serviceWorker.addEventListener('message', handleMessage);
 
@@ -82,21 +114,17 @@
             }
 
             if (e.data === 'CLIENTS_CLAIMED') {
-                Blazor.start().then(() => blazorStartResolver(undefined));
-                return;
-            }
-
-            if (e.data === 'PASSIVE_READY') {
-                const firstInstall = !(navigator.serviceWorker.controller);
-                handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                Blazor.start().then(() => {
+                    blazorStartResolver(undefined);
+                    e.source.postMessage('BLAZOR_STARTED');
+                });
                 return;
             }
 
             const message = JSON.parse(e.data);
-            const type = message.type;
-            const data = message.data;
+            const { type, data } = message;
 
-            if (type === 'install' && !data.isPassive) {
+            if (type === 'install') {
                 handle(BswupMessage.downloadStarted, data);
             }
 

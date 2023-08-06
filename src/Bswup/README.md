@@ -48,10 +48,10 @@ app.UseStaticFiles(new StaticFileOptions
 5. Add a handler function like the below code to handle multiple events of the Bswup, or you can follow the full sample code which is provided in the Demo projects of this repo.
 
 ```js
-var appEl = document.getElementById('app');
-var bswupEl = document.getElementById('bit-bswup');
-var progressBar = document.getElementById('bit-bswup-progress-bar');
-var reloadButton = document.getElementById('bit-bswup-reload');
+const appEl = document.getElementById('app');
+const bswupEl = document.getElementById('bit-bswup');
+const progressBar = document.getElementById('bit-bswup-progress-bar');
+const reloadButton = document.getElementById('bit-bswup-reload');
 
 function bitBswupHandler(type, data) {
     switch (type)
@@ -153,3 +153,4 @@ The other settings are:
     ```js
     [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/]
     ```
+- `self.enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.

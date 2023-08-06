@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>bit Bswup Demo</title>
     <base href="/" />
+    <meta charset="utf-8" />
+    <title>bit Bswup Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <style>
@@ -88,13 +88,13 @@
     <div id="app">Loading...</div>
 
     <script>
-        var appEl = document.getElementById('app');
-        var bswupEl = document.getElementById('bit-bswup');
-        var descriptionLabel = document.getElementById('bit-bswup-description');
-        var progressBar = document.getElementById('bit-bswup-progress-bar');
-        var percentLabel = document.getElementById('bit-bswup-percent');
-        var reloadButton = document.getElementById('bit-bswup-reload');
-        var assetsUl = document.getElementById('bit-bswup-assets');
+        const appEl = document.getElementById('app');
+        const bswupEl = document.getElementById('bit-bswup');
+        const descriptionLabel = document.getElementById('bit-bswup-description');
+        const progressBar = document.getElementById('bit-bswup-progress-bar');
+        const percentLabel = document.getElementById('bit-bswup-percent');
+        const reloadButton = document.getElementById('bit-bswup-reload');
+        const assetsUl = document.getElementById('bit-bswup-assets');
 
         function bitBswupHandler(type, data) {
             switch (type) {
