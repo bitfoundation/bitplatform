@@ -53,12 +53,8 @@ public class Middlewares
                 // https://bitplatform.dev/adminpanel/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-#if Pwa || PwaPrerendered
-                    NoCache = true
-#else
                     MaxAge = TimeSpan.FromDays(365),
                     Public = true
-#endif
                 };
             }
         });
