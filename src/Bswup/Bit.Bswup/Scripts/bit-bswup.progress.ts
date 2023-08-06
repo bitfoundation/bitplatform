@@ -13,7 +13,7 @@
         const assetsEl = document.getElementById('bit-bswup-assets');
         const reloadButton = document.getElementById('bit-bswup-reload');
         (window as any).bitBswupHandler = bitBswupHandler;
-        const handlerFn = handler && window[handler] as (message: any, data: any) => void;
+        const handlerFn = (handler ? window[handler] : undefined) as (message: any, data: any) => void;
 
         function bitBswupHandler(message, data) {
             handleInternal(message, data);
