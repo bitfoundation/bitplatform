@@ -96,7 +96,7 @@ public partial class BitActionButtonDemo
         new()
         {
             Id = "class-styles",
-            Title = "BitCompoundButtonClassStyles",
+            Title = "BitActionButtonClassStyles",
             Parameters = new()
             {
                new()
@@ -105,7 +105,7 @@ public partial class BitActionButtonDemo
                    Type = "BitClassStylePair?",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the internal container of the BitCompoundButton."
+                   Description = "Custom CSS classes/styles for the internal container of the BitActionButton."
                },
                new()
                {
@@ -113,7 +113,7 @@ public partial class BitActionButtonDemo
                    Type = "BitClassStylePair?",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the primary section of the BitCompoundButton."
+                   Description = "Custom CSS classes/styles for the primary section of the BitActionButton."
                },
                new()
                {
@@ -121,7 +121,7 @@ public partial class BitActionButtonDemo
                    Type = "BitClassStylePair?",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
+                   Description = "Custom CSS classes/styles for the secondary section of the BitActionButton."
                },
             }
         },
