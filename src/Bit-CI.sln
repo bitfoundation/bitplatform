@@ -115,7 +115,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{06
 	ProjectSection(SolutionItems) = preProject
 		Websites\Platform\.gitignore = Websites\Platform\.gitignore
 		Websites\Platform\Clean.bat = Websites\Platform\Clean.bat
-		Websites\Platform\Bit.Websites.Platform\Directory.Build.props = Websites\Platform\Bit.Websites.Platform\Directory.Build.props
+		Websites\Platform\src\Directory.Build.props = Websites\Platform\src\Directory.Build.props
 		Websites\Platform\global.json = Websites\Platform\global.json
 		Websites\Platform\README.md = Websites\Platform\README.md
 	EndProjectSection
@@ -124,7 +124,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{9FBD6994
 	ProjectSection(SolutionItems) = preProject
 		Websites\Sales\.gitignore = Websites\Sales\.gitignore
 		Websites\Sales\Clean.bat = Websites\Sales\Clean.bat
-		Websites\Sales\Bit.Websites.Sales\Directory.Build.props = Websites\Sales\Bit.Websites.Sales\Directory.Build.props
+		Websites\Sales\src\Directory.Build.props = Websites\Sales\src\Directory.Build.props
 		Websites\Sales\global.json = Websites\Sales\global.json
 		Websites\Sales\README.md = Websites\Sales\README.md
 	EndProjectSection
@@ -304,7 +304,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Careers", "Careers", "{E70A
 	ProjectSection(SolutionItems) = preProject
 		Websites\Careers\.gitignore = Websites\Careers\.gitignore
 		Websites\Careers\Clean.bat = Websites\Careers\Clean.bat
-		Websites\Careers\Bit.Websites.Careers\Directory.Build.props = Websites\Careers\Bit.Websites.Careers\Directory.Build.props
+		Websites\Careers\src\Directory.Build.props = Websites\Careers\src\Directory.Build.props
 		Websites\Careers\global.json = Websites\Careers\global.json
 		Websites\Careers\README.md = Websites\Careers\README.md
 	EndProjectSection
