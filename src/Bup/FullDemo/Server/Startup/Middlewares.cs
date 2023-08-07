@@ -6,6 +6,12 @@ public static class Middlewares
 {
     public static void Use(IApplicationBuilder app, IHostEnvironment env)
     {
+        //app.Use(async (context, next) =>
+        //{
+        //    await Task.Delay(new Random().Next(500, 800));
+        //    await next.Invoke(context);
+        //});
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
