@@ -12,6 +12,9 @@
         const percentEl = document.getElementById('bit-bswup-percent');
         const assetsEl = document.getElementById('bit-bswup-assets');
         const reloadButton = document.getElementById('bit-bswup-reload');
+
+        const appElOriginalDisplay = appEl && appEl.style.display;
+
         (window as any).bitBswupHandler = bitBswupHandler;
         const handlerFn = (handler ? window[handler] : undefined) as (message: any, data: any) => void;
 
@@ -38,6 +41,9 @@
                         return showLogs ? console.log('downloading assets started:', data?.version) : undefined;
 
                     case BswupMessage.downloadProgress:
+                        hideApp && appEl && (appEl.style.display = 'none');
+                        bswupEl && (bswupEl.style.display = 'block');
+
                         if (showAssets && assetsEl) {
                             const li = document.createElement('li');
                             li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
@@ -54,7 +60,7 @@
                     case BswupMessage.downloadFinished:
                         if (autoReload || data.firstInstall) {
                             data.reload().then(() => {
-                                hideApp && appEl && (appEl.style.display = 'block');
+                                hideApp && appEl && (appEl.style.display = appElOriginalDisplay);
                                 bswupEl && (bswupEl.style.display = 'none');
                             });
                         } else {
