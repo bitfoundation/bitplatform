@@ -229,4 +229,5 @@ custom.aprof
 /Server/Api/Properties/ServiceDependencies/*.*
 
 /Client/Core/**/*.css
-/Client/Core/wwwroot/scripts/app*.js
+/Client/Core/Scripts/*.js
+/Client/Core/wwwroot/scripts/*.js

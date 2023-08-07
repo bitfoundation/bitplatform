@@ -4,6 +4,6 @@
         "strict": true,
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/bit.blazorui.extras.js"
+        "outFile": "Scripts/bit.blazorui.extras.js"
     }
 }

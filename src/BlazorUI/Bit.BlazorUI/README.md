@@ -17,7 +17,7 @@ To use the bit BlazorUI components, please follow these steps:
 
 ```html
 
-<link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
+<link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
 
 ```
 
@@ -25,7 +25,7 @@ To use the bit BlazorUI components, please follow these steps:
 
 ```html
 
-<script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
+<script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
 
 ```
 

@@ -234,10 +234,12 @@ _book
 *.tsbuildinfo
 
 /src/BlazorUI/Bit.BlazorUI/**/*.css
+/src/BlazorUI/Bit.BlazorUI/Scripts/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 
 /src/BlazorUI/Bit.BlazorUI.Extras/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Extras/Scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
 
