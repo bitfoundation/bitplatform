@@ -44,26 +44,36 @@ public partial class BitLinkDemo
 
 
 
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-
-    private void LinkOnClick()
-    {
-        // Here you can do something else...
-
-        Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
-    }
-
-
     private readonly string example1HTMLCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled Link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank Target Link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>
-<BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>
 ";
-    private readonly string example1CSharpCode = @"
-@inject NavigationManager Navigation
+
+    private readonly string example2HTMLCode = @"
+<style>
+    .custom-class {
+        padding: 0 0.5rem;
+        border: 1px solid red;
+        max-width: max-content;
+    }
+</style>
+
+<BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
+<BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
+
+    private readonly string example3HTMLCode = @"
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>";
+
+    private readonly string example4HTMLCode = @"
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_parent"">Parent target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_self"">Self target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
+
+    private readonly string example5HTMLCode = @"
+<BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>";
+    private readonly string example5CSharpCode = @"
+[Inject] private NavigationManager Navigation { get; set; } = default!;
 
 private void LinkOnClick()
 {
@@ -73,7 +83,7 @@ private void LinkOnClick()
 }
 ";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example6HTMLCode = @"
 <BitLink Href=""#end-article"">Go To End of this Article</BitLink>
 
 <p id=""start-article"">
