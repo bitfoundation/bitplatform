@@ -256,7 +256,7 @@
         "inputFile": "Pages/Components/Chart/BitChartDemo.razor.scss"
     },
     {
-        "outputFile": "Styles/app.css",
+        "outputFile": "wwwroot/styles/app.css",
         "inputFile": "Styles/app.scss"
     }
 ]

@@ -1,7 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "outFile": "wwwroot/bit-butil.js",
+        "outFile": "Scripts/bit-butil.js",
         "allowJs": true,
         "lib": [ "DOM", "ESNext" ]
     },

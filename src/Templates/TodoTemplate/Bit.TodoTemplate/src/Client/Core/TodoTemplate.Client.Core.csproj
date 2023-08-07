@@ -81,10 +81,13 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\styles\" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

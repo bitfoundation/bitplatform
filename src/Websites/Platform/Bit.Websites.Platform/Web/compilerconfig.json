@@ -1,9 +1,5 @@
 [
     {
-        "outputFile": "wwwroot/scripts/app.min.js",
-        "inputFile": "wwwroot/scripts/app.js"
-    },
-    {
         "outputFile": "Shared/AppErrorBoundary.razor.css",
         "inputFile": "Shared/AppErrorBoundary.razor.scss"
     },

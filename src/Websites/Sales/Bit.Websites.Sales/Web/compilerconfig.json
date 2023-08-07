@@ -1,9 +1,5 @@
 [
     {
-        "outputFile": "wwwroot/styles/app.css",
-        "inputFile": "Styles/app.scss"
-    },
-    {
         "outputFile": "Pages/CasesPage.razor.css",
         "inputFile": "Pages/CasesPage.razor.scss"
     },
@@ -66,5 +62,9 @@
     {
         "outputFile": "Components/PageNotFound.razor.css",
         "inputFile": "Components/PageNotFound.razor.scss"
+    },
+    {
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss"
     }
 ]

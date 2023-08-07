@@ -112,7 +112,7 @@
         "inputFile": "Pages/TermsPage.razor.scss"
     },
     {
-        "outputFile": "wwwroot/styles/app.min.css",
+        "outputFile": "wwwroot/styles/app.css",
         "inputFile": "Styles/app.scss"
     }
 ]
