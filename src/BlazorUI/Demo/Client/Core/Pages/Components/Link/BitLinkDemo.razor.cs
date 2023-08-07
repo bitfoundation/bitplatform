@@ -80,13 +80,11 @@ private void LinkOnClick()
     // Here you can do something else...
 
     Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
-}
-";
+}";
 
     private readonly string example6HTMLCode = @"
-<BitLink Href=""#end-article"">Go To End of this Article</BitLink>
-
-<p id=""start-article"">
+<BitLink Style=""scroll-margin: 70px"" id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
+<p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -119,7 +117,7 @@ private void LinkOnClick()
     cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
     amet mauris quis, sollicitudin auctor est.
 </p>
-<p id=""end-article"">
+<p>
     Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
     varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
     vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
@@ -127,6 +125,6 @@ private void LinkOnClick()
     a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
 </p>
 
-<BitLink Href=""#start-article"">Go To Start of this Article</BitLink>
+<BitLink Style=""scroll-margin: 70px"" id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>
 ";
 }
