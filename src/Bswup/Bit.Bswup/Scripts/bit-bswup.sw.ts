@@ -45,7 +45,7 @@ async function handleInstall(e) {
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
-    createNewCache();
+    createAssetsCache();
 }
 
 async function handleActivate(e) {
@@ -155,13 +155,13 @@ function handleMessage(e) {
     }
 
     if (e.data === 'BLAZOR_STARTED') {
-        createNewCache();
+        setTimeout(() => createAssetsCache(true), 1000);
     }
 }
 
 // ============================================================================
 
-async function createNewCache() {
+async function createAssetsCache(ignoreProgressReport = false) {
     const bitBswupCache = await caches.open(CACHE_NAME);
     let keys = await bitBswupCache.keys();
     const firstTime = keys.length === 0;
@@ -172,14 +172,13 @@ async function createNewCache() {
 
     if (passiveFirstTime) {
         const blazorBootAsset = UNIQUE_ASSETS.find(a => a.url.includes('blazor.boot.json'));
-        const blazorBoot = await (await fetch(`${blazorBootAsset.url}?v=${blazorBootAsset.hash || self.assetsManifest.version}`)).json();
+        const blazorBoot = await (await addCache(false, blazorBootAsset)).json();
         const blazorResources = Object.keys(blazorBoot.resources.assembly).concat(Object.keys(blazorBoot.resources.runtime));
-        const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(r))).filter(a => !!a);
+        const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(`/${r}`))).filter(a => !!a);
 
         total = blazorAssets.length;
         const promises = blazorAssets.map(addCache.bind(null, true));
-        await Promise.all(promises);
-        return;
+        return await Promise.all(promises);
     }
 
     const oldUrls = [];
@@ -204,25 +203,24 @@ async function createNewCache() {
     const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
 
     total = assetsToCache.length;
-    const promises = assetsToCache.map(addCache.bind(null, passiveFirstTime ? false : true));
+    const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
 
     async function addCache(report, asset) {
         const cacheUrl = `${asset.url}.${asset.hash || ''}`;
         const request = createNewAssetRequest(asset);
         try {
             const responsePromise = fetch(request);
-            responsePromise.then(response => {
+            return responsePromise.then(response => {
                 if (!response.ok) {
                     return Promise.reject(response.statusText);
                 }
-                bitBswupCache.put(cacheUrl, response);
+                const cachePromise = bitBswupCache.put(cacheUrl, response.clone());
                 if (report) {
                     const percent = (++current) / total * 100;
                     sendMessage({ type: 'progress', data: { asset, percent, index: current } });
                 }
-                Promise.resolve(null);
+                return cachePromise.then(() => response);
             });
-            return responsePromise;
         } catch (err) {
             return Promise.reject(err);
         }
