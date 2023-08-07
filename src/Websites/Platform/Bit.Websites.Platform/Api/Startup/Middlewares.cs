@@ -8,6 +8,12 @@ public class Middlewares
 {
     public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
     {
+        //app.Use(async (context, next) =>
+        //{
+        //    await Task.Delay(new Random().Next(500, 800));
+        //    await next.Invoke(context);
+        //});
+
         app.UseForwardedHeaders();
 
         if (env.IsDevelopment())
