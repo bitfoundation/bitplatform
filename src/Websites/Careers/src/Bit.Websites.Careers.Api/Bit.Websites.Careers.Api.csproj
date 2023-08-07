@@ -69,7 +69,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shared\Bit.Websites.Careers.Shared.csproj" />
+        <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
 
 </Project>

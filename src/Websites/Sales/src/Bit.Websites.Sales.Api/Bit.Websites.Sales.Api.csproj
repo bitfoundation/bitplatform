@@ -46,7 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shared\Bit.Websites.Sales.Shared.csproj" />
+        <ProjectReference Include="..\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-        <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
-        <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
-        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
@@ -20,6 +17,7 @@
         <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
+        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
     </ItemGroup>
 
@@ -43,40 +41,32 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.6.23329.11" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.6.23329.11" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.6.23329.11" />
+        <PackageReference Include="jose-jwt" Version="4.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
-        <Using Include="Bit.Websites.Sales.Web.Components" />
-        <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
-        <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
+        <Using Include="Bit.Websites.Careers.Web.Components" />
+        <Using Include="Bit.Websites.Careers.Web.Services.Contracts" />
+        <Using Include="Bit.Websites.Careers.Web.Services.Implementations" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Shared\Bit.Websites.Sales.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
+        <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>

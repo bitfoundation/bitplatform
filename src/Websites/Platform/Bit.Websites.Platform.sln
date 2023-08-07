@@ -5,16 +5,16 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Bit.Websites.Platform\Directory.Build.props = Bit.Websites.Platform\Directory.Build.props
+		src\Directory.Build.props = src\Directory.Build.props
 		global.json = global.json
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "Bit.Websites.Platform\Shared\Bit.Websites.Platform.Shared.csproj", "{96AD9FD3-0E03-4E35-8157-89E854AA407F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Api", "src\Bit.Websites.Platform.Api\Bit.Websites.Platform.Api.csproj", "{9D2B1F53-42B3-4084-847D-BA6F061A5ACE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Web", "Bit.Websites.Platform\Web\Bit.Websites.Platform.Web.csproj", "{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "src\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj", "{82C21BB2-1F30-492B-B8CD-E1119028A7E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Api", "Bit.Websites.Platform\Api\Bit.Websites.Platform.Api.csproj", "{0AC1B4C6-4043-4F37-A146-E408B157409C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Web", "src\Bit.Websites.Platform.Web\Bit.Websites.Platform.Web.csproj", "{FBE4C6AD-1FD5-4A63-923E-44792FF0332B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,18 +22,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{96AD9FD3-0E03-4E35-8157-89E854AA407F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E18A3B5B-5AAF-4BBB-B8F4-2539278EE4C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0AC1B4C6-4043-4F37-A146-E408B157409C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D2B1F53-42B3-4084-847D-BA6F061A5ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D2B1F53-42B3-4084-847D-BA6F061A5ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D2B1F53-42B3-4084-847D-BA6F061A5ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D2B1F53-42B3-4084-847D-BA6F061A5ACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82C21BB2-1F30-492B-B8CD-E1119028A7E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C21BB2-1F30-492B-B8CD-E1119028A7E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82C21BB2-1F30-492B-B8CD-E1119028A7E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82C21BB2-1F30-492B-B8CD-E1119028A7E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBE4C6AD-1FD5-4A63-923E-44792FF0332B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBE4C6AD-1FD5-4A63-923E-44792FF0332B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBE4C6AD-1FD5-4A63-923E-44792FF0332B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBE4C6AD-1FD5-4A63-923E-44792FF0332B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

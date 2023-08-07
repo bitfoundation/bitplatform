@@ -223,5 +223,5 @@ profile.arm.json
 *Resource.designer.cs
 /**/*.css
 
-/Bit.Websites.Sales/Web/Scripts/app*.js
-/Bit.Websites.Sales/Web/wwwroot/scripts/app*.js
+/src/Bit.Websites.Sales.Web/Scripts/app*.js
+/src/Bit.Websites.Sales.Web/wwwroot/scripts/app*.js
