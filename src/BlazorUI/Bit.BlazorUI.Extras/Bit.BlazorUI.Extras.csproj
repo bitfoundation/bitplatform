@@ -51,9 +51,9 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
-        <Exec Command="npx --yes sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

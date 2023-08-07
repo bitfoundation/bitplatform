@@ -47,12 +47,14 @@
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
+    <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bit's Blazor UI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
-    <meta name="theme-color">
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version=true>
+
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+
     @if (isPwa || isPwaPrerendered)
     {
         <link rel="manifest" href="manifest.json">
@@ -93,21 +95,21 @@
             <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#444")" render-mode="@RenderMode.Static" />
         }
 
-        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.min.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" asp-append-version=true />
         <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" asp-append-version=true />
         @RenderBody()
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.min.css" />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
     </div>
 
     @if (isPrerenderedOnly is false)
     {
-        <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.min.js"></script>
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version=true></script>
-        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version=true></script>
+        <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js" asp-append-version=true></script>
+        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js" asp-append-version=true></script>
         <script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js" asp-append-version=true></script>
 
         @if (isBlazorServer)

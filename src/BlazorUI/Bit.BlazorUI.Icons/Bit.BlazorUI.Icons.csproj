@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
-        <Exec Command="npx --yes sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>
