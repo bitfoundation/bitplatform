@@ -77,3 +77,7 @@
         width: rem(0px);
     }
 }
+
+::deep a {
+    text-decoration: none;
+}
