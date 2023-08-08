@@ -75,7 +75,6 @@ diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
 diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
 diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
 
-
 const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
 
@@ -84,7 +83,6 @@ const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE)
 
 diag('ASSETS_INCLUDE:', ASSETS_INCLUDE);
 diag('ASSETS_EXCLUDE:', ASSETS_EXCLUDE);
-
 
 const ALL_ASSETS = self.assetsManifest.assets
     .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
@@ -98,10 +96,10 @@ const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
 async function handleFetch(e) {
-    diag('handleFetch:', e);
+    diag('-------------------- handleFetch:', e);
 
     if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
-        diag('handleFetch - skipped', e);
+        diag('-------------------- handleFetch ended - bypassed:', e);
 
         return fetch(e.request);
     }
@@ -116,7 +114,7 @@ async function handleFetch(e) {
 
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
-        diag('url prohibited:', requestUrl);
+        diag('-------------------- handleFetch ended - prohibited:', requestUrl);
 
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
@@ -132,13 +130,9 @@ async function handleFetch(e) {
 
     diag('asset:', asset);
 
-    //if (!asset) {
-    //    asset = EXTERNAL_ASSETS.find(a => a.url[caseMethod]() === requestUrl[caseMethod]());
-    //}
-
     if (!asset?.url) return fetch(e.request);
 
-    const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
+    const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
     diag('cacheUrl:', cacheUrl);
 
@@ -146,7 +140,7 @@ async function handleFetch(e) {
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
     if (cachedResponse || !self.isPassive) {
-        diag('handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.');
+        diag('-------------------- handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.');
         return cachedResponse || fetch(e.request);
     }
 
@@ -156,7 +150,7 @@ async function handleFetch(e) {
     const response = await fetch(request);
     bitBswupCache.put(cacheUrl, response.clone());
 
-    diag('handleFetch ended - passive');
+    diag('-------------------- handleFetch ended - passive');
 
     return response;
 }
@@ -173,14 +167,14 @@ function handleMessage(e) {
     }
 
     if (e.data === 'BLAZOR_STARTED') {
-        setTimeout(() => createAssetsCache(true), 1000);
+        setTimeout(() => createAssetsCache(true), 1984);
     }
 }
 
 // ============================================================================
 
 async function createAssetsCache(ignoreProgressReport = false) {
-    diag('createAssetsCache:', ignoreProgressReport);
+    diag('-------------------- createAssetsCache:', ignoreProgressReport);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     let keys = await bitBswupCache.keys();
@@ -210,7 +204,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
         await Promise.all(promises);
 
-        diag('createAssetsCache ended - passive firstTime');
+        diag('-------------------- createAssetsCache ended - passive firstTime');
 
         return;
     }
@@ -227,10 +221,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
         oldUrls.push({ url, hash });
         const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
         if (!foundAsset) {
-            diag('removed oldUrl:', key.url);
+            diag('>>>>>>>>>> removed oldUrl:', key.url);
             bitBswupCache.delete(key.url);
         } else if (hash && hash !== foundAsset.hash) {
-            diag('updated oldUrl:', key.url);
+            diag('>>>>>>>>>> updated oldUrl:', key.url);
             bitBswupCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
@@ -246,7 +240,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     total = assetsToCache.length;
     const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
 
-    diag('createAssetsCache ended.');
+    diag('-------------------- createAssetsCache ended.');
 
     async function addCache(report, asset) {
         const request = createNewAssetRequest(asset);
@@ -255,7 +249,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
             const responsePromise = fetch(request);
             return responsePromise.then(response => {
                 if (!response.ok) {
-                    diag('addCache - !response.ok:', request);
+                    diag('>>>>>>>>>> addCache - !response.ok:', request);
                     return Promise.reject(response.statusText);
                 }
 
@@ -270,7 +264,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 return cachePromise.then(() => response);
             });
         } catch (err) {
-            diag('addCache - catch err:', err);
+            diag('>>>>>>>>>> addCache - catch err:', err);
             return Promise.reject(err);
         }
     }
@@ -337,5 +331,5 @@ function prepareRegExpArray(value) {
 function diag(...args: any[]) {
     if (!self.enableDiagnostics) return;
 
-    console.info(...['bit bswup:', ...args]);
+    console.info(...['bit bswup:', ...args, new Date().toISOString()]);
 }
