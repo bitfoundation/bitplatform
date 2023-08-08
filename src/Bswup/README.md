@@ -146,11 +146,5 @@ The other settings are:
     ```
     #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
 - `self.isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
-- `self.precachedAssetsInclude`: The list of file names from the assets list to be **included** in the precache process of the passive mode (regex supported).
-- `self.precachedAssetsExclude`: The list of file names from the assets list to be **excluded** from the precache process of the passive mode (regex supported).
-- `self.precachedExternalAssets`: The list of external assets to store in the precache phase of the passive mode that are not included in the auto-generated assets file.
-- `self.ignoreDefaultPrecach`: Ignores the default assets includes for precaching in passive mode. the default value is like this:
-    ```js
-    [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/]
-    ```
 - `self.enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
+- `self.enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.

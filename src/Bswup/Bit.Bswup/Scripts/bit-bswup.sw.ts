@@ -17,11 +17,8 @@
     ignoreDefaultInclude: any
     ignoreDefaultExclude: any
     isPassive: any
-    precachedAssetsInclude: any
-    precachedAssetsExclude: any
-    precachedExternalAssets: any
-    ignoreDefaultPrecach: any
     enableIntegrityCheck: any
+    enableDiagnostics: any
 }
 
 interface Event {
@@ -41,7 +38,7 @@ self.addEventListener('fetch', e => e.respondWith(handleFetch(e)));
 self.addEventListener('message', handleMessage);
 
 async function handleInstall(e) {
-    log(`installing version (${VERSION})...`);
+    diag('installing version:', VERSION);
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
@@ -49,7 +46,7 @@ async function handleInstall(e) {
 }
 
 async function handleActivate(e) {
-    log(`activate version (${VERSION})`);
+    diag('activate version:', VERSION);
 
     await deleteOldCaches();
 
@@ -63,11 +60,21 @@ const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
 const SERVER_HANDLED_URLS = prepareRegExpArray(self.serverHandledUrls);
 const SERVER_RENDERED_URLS = prepareRegExpArray(self.serverRenderedUrls);
 
+diag('DEFAULT_URL:', DEFAULT_URL);
+diag('PROHIBITED_URLS:', PROHIBITED_URLS);
+diag('SERVER_HANDLED_URLS:', SERVER_HANDLED_URLS);
+diag('SERVER_RENDERED_URLS:', SERVER_RENDERED_URLS);
+
 // ==================== ASSETS ====================
 
 const USER_ASSETS_INCLUDE = prepareRegExpArray(self.assetsInclude);
 const USER_ASSETS_EXCLUDE = prepareRegExpArray(self.assetsExclude);
 const EXTERNAL_ASSETS = prepareExternalAssetsArray(self.externalAssets);
+
+diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
+diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
+diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
+
 
 const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
@@ -75,36 +82,27 @@ const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^s
 const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
 const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE).concat(USER_ASSETS_EXCLUDE);
 
+diag('ASSETS_INCLUDE:', ASSETS_INCLUDE);
+diag('ASSETS_EXCLUDE:', ASSETS_EXCLUDE);
+
+
 const ALL_ASSETS = self.assetsManifest.assets
     .filter(asset => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
     .filter(asset => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
     .concat(EXTERNAL_ASSETS);
 
+diag('ALL_ASSETS:', ALL_ASSETS);
+
 const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 
-// ==================== PRE CACHED ====================
-
-let PRE_CACHED_UNIQUE_ASSETS = [];
-
-if (self.isPassive) {
-    const USER_PRE_CACHED_ASSETS_INCLUDE = prepareRegExpArray(self.precachedAssetsInclude);
-    const USER_PRE_CACHED_ASSETS_EXCLUDE = prepareRegExpArray(self.precachedAssetsExclude);
-    const PRE_CACHED_EXTERNAL_ASSETS = prepareExternalAssetsArray(self.precachedExternalAssets);
-
-    const DEFAULT_PRE_CACHED_ASSETS_INCLUDE = [new RegExp(`${DEFAULT_URL}$`), /manifest\.json$/, /blazor\.webassembly\.js$/, /bit-bswup\.js$/];
-    const DEFAULT_PRE_CACHED_ASSETS_EXCLUDE = [];
-
-    const PRE_CACHED_ASSETS_INCLUDE = (self.ignoreDefaultPrecach ? [] : DEFAULT_PRE_CACHED_ASSETS_INCLUDE).concat(USER_PRE_CACHED_ASSETS_INCLUDE);
-    const PRE_CACHED_ASSETS_EXCLUDE = DEFAULT_PRE_CACHED_ASSETS_EXCLUDE.concat(USER_PRE_CACHED_ASSETS_EXCLUDE);
-
-    PRE_CACHED_UNIQUE_ASSETS = UNIQUE_ASSETS
-        .filter(asset => PRE_CACHED_ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
-        .filter(asset => !PRE_CACHED_ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
-        .concat(PRE_CACHED_EXTERNAL_ASSETS);
-}
+diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
 async function handleFetch(e) {
+    diag('handleFetch:', e);
+
     if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
+        diag('handleFetch - skipped', e);
+
         return fetch(e.request);
     }
 
@@ -112,40 +110,60 @@ async function handleFetch(e) {
     const shouldServeIndexHtml = (e.request.mode === 'navigate' && !isServerRendered);
     const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
 
+    diag('isServerRendered:', isServerRendered);
+    diag('shouldServeIndexHtml:', shouldServeIndexHtml);
+    diag('requestUrl:', requestUrl);
+
+
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
+        diag('url prohibited:', requestUrl);
+
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
+
+    diag('caseMethod:', caseMethod);
 
     let asset = UNIQUE_ASSETS.find(a => shouldServeIndexHtml
         ? a.url[caseMethod]() === requestUrl[caseMethod]()
         : new URL(requestUrl).pathname.endsWith(a.url)
     );
 
-    if (!asset) {
-        asset = EXTERNAL_ASSETS.find(a => a.url[caseMethod]() === requestUrl[caseMethod]());
-    }
+    diag('asset:', asset);
+
+    //if (!asset) {
+    //    asset = EXTERNAL_ASSETS.find(a => a.url[caseMethod]() === requestUrl[caseMethod]());
+    //}
+
+    if (!asset?.url) return fetch(e.request);
 
     const cacheUrl = asset && `${asset.url}.${asset.hash || ''}`;
+
+    diag('cacheUrl:', cacheUrl);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
-    if (!self.isPassive) return cachedResponse || fetch(e.request);
+    if (cachedResponse || !self.isPassive) {
+        diag('handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.');
+        return cachedResponse || fetch(e.request);
+    }
 
-    if (cachedResponse) return cachedResponse;
-
-    if (!asset?.url) return fetch(e.request);
+    diag('passive: handling not cached asset...');
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
     bitBswupCache.put(cacheUrl, response.clone());
 
+    diag('handleFetch ended - passive');
+
     return response;
 }
 
 function handleMessage(e) {
+    diag('handleMessage:', e);
+
     if (e.data === 'SKIP_WAITING') {
         return self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
     }
@@ -162,23 +180,39 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createAssetsCache(ignoreProgressReport = false) {
+    diag('createAssetsCache:', ignoreProgressReport);
+
     const bitBswupCache = await caches.open(CACHE_NAME);
     let keys = await bitBswupCache.keys();
     const firstTime = keys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
+
+    diag('passiveFirstTime:', passiveFirstTime);
 
     let current = 0;
     let total = UNIQUE_ASSETS.length;
 
     if (passiveFirstTime) {
         const blazorBootAsset = UNIQUE_ASSETS.find(a => a.url.includes('blazor.boot.json'));
-        const blazorBoot = await (await addCache(false, blazorBootAsset)).json();
-        const blazorResources = Object.keys(blazorBoot.resources.assembly).concat(Object.keys(blazorBoot.resources.runtime));
+        const blazorBootJson = await (await addCache(false, blazorBootAsset)).json();
+        const blazorResources = Object.keys(blazorBootJson.resources.assembly).concat(Object.keys(blazorBootJson.resources.runtime));
         const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(`/${r}`))).filter(a => !!a);
+
+        diag('blazorBootAsset:', blazorBootAsset);
+        diag('blazorBootJson:', blazorBootJson);
+        diag('blazorResources:', blazorResources);
+        diag('blazorAssets:', blazorAssets);
 
         total = blazorAssets.length;
         const promises = blazorAssets.map(addCache.bind(null, true));
-        return await Promise.all(promises);
+
+        diag('await Promise.all(promises)');
+
+        await Promise.all(promises);
+
+        diag('createAssetsCache ended - passive firstTime');
+
+        return;
     }
 
     const oldUrls = [];
@@ -193,35 +227,50 @@ async function createAssetsCache(ignoreProgressReport = false) {
         oldUrls.push({ url, hash });
         const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
         if (!foundAsset) {
+            diag('removed oldUrl:', key.url);
             bitBswupCache.delete(key.url);
         } else if (hash && hash !== foundAsset.hash) {
+            diag('updated oldUrl:', key.url);
             bitBswupCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
     }
 
+    diag('oldUrls:', oldUrls);
+    diag('updatedAssets:', updatedAssets);
+
     const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
+
+    diag('assetsToCache:', assetsToCache);
 
     total = assetsToCache.length;
     const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
 
+    diag('createAssetsCache ended.');
+
     async function addCache(report, asset) {
-        const cacheUrl = `${asset.url}.${asset.hash || ''}`;
         const request = createNewAssetRequest(asset);
+        
         try {
             const responsePromise = fetch(request);
             return responsePromise.then(response => {
                 if (!response.ok) {
+                    diag('addCache - !response.ok:', request);
                     return Promise.reject(response.statusText);
                 }
+
+                const cacheUrl = `${asset.url}.${asset.hash || ''}`;
                 const cachePromise = bitBswupCache.put(cacheUrl, response.clone());
+
                 if (report) {
                     const percent = (++current) / total * 100;
                     sendMessage({ type: 'progress', data: { asset, percent, index: current } });
                 }
+
                 return cachePromise.then(() => response);
             });
         } catch (err) {
+            diag('addCache - catch err:', err);
             return Promise.reject(err);
         }
     }
@@ -265,10 +314,6 @@ function sendMessage(message) {
         .then(clients => (clients || []).forEach(client => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
-function log(value) {
-    //console.info('BitBSWUP:sw:', value);
-}
-
 function prepareExternalAssetsArray(value) {
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
@@ -287,4 +332,10 @@ function prepareExternalAssetsArray(value) {
 
 function prepareRegExpArray(value) {
     return value ? (value instanceof Array ? value : [value]).filter(p => p instanceof RegExp) : [];
+}
+
+function diag(...args: any[]) {
+    if (!self.enableDiagnostics) return;
+
+    console.info(...['bit bswup:', ...args]);
 }
