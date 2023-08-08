@@ -107,7 +107,7 @@ async function handleFetch(e) {
     const req = e.request as Request;
 
     if (req.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url))) {
-        diagFetch('*** handleFetch ended - skipped:', e);
+        diagFetch('*** handleFetch ended - skipped:', e, req);
         return fetch(req);
     }
 
@@ -115,10 +115,10 @@ async function handleFetch(e) {
     const shouldServeIndexHtml = (req.mode === 'navigate' && !isServerRendered);
     const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : req.url;
 
-    diagFetch('--- handleFetch:', isServerRendered, shouldServeIndexHtml, requestUrl, e);
+    const start = new Date().toISOString();
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
-        diagFetch('+++ handleFetch ended - prohibited:', requestUrl, e);
+        diagFetch('+++ handleFetch ended - prohibited:', start, requestUrl, e, req);
 
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
@@ -131,7 +131,7 @@ async function handleFetch(e) {
     );
 
     if (!asset?.url) {
-        diagFetch('+++ handleFetch ended - invalid asset:', asset, requestUrl, e);
+        diagFetch('+++ handleFetch ended - invalid asset:', start, asset, requestUrl, e, req);
 
         return fetch(req);
     }
@@ -142,7 +142,7 @@ async function handleFetch(e) {
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
     if (cachedResponse || !self.isPassive) {
-        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', asset, e);
+        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset, e, req);
 
         return cachedResponse || fetch(req);
     }
@@ -151,7 +151,7 @@ async function handleFetch(e) {
     const response = await fetch(request);
     bitBswupCache.put(cacheUrl, response.clone());
 
-    diagFetch('+++ handleFetch ended - passive saving asset:', asset, e);
+    diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
 
     return response;
 }
