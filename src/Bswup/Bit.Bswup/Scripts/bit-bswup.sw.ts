@@ -142,7 +142,7 @@ async function handleFetch(e) {
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
     if (cachedResponse || !self.isPassive) {
-        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset, e, req);
+        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset);
 
         return cachedResponse || fetch(req);
     }
