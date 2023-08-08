@@ -80,13 +80,13 @@
         {
             <component type="typeof(AdminPanel.Client.Core.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
-        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" asp-append-version=true />
-        <link rel="stylesheet" href="_content/AdminPanel.Client.Core/styles/app.min.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/AdminPanel.Client.Core/styles/app.css" asp-append-version=true />
         <link rel="stylesheet" href="_content/AdminPanel.Client.Core/AdminPanel.Client.Core.bundle.scp.css" asp-append-version=true />
         @RenderBody()
-        <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.min.css" asp-append-version=true />
+        <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" asp-append-version=true />
     </div>
 
     @if (isPrerenderedOnly is false)
@@ -136,8 +136,8 @@
             }
         }
 
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js" asp-append-version=true></script>
-        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.min.js" asp-append-version=true></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js" asp-append-version=true></script>
+        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js" asp-append-version=true></script>
     }
 
     <script src="_content/AdminPanel.Client.Core/scripts/app.js" asp-append-version=true></script>

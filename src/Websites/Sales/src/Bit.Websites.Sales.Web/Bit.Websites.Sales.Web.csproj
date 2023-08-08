@@ -1,20 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-        <!--/-:msbuild-conditional:noEmit -->
-        <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
-        <!--/+:msbuild-conditional:noEmit -->
-
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -22,13 +17,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
-        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
-        <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
@@ -51,34 +43,24 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
-        <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
-        <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.6.23329.11" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.6.23329.11" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.6.23329.11" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
-        <Using Include="BlazorDual.Web.Components" />
-        <Using Include="BlazorDual.Web.Services.Contracts" />
-        <Using Include="BlazorDual.Web.Services.Implementations" />
+        <Using Include="Bit.Websites.Sales.Web.Components" />
+        <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
+        <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BlazorDual.Shared\BlazorDual.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ServiceWorker Condition="$(WebAppDeploymentType.Contains('Pwa'))" Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+        <ProjectReference Include="..\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -94,11 +76,9 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
-        <Error Text="To run in BlazorWebAssembly mode, change the sdk of the BlazorDual.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
     </Target>
-    
+
 </Project>

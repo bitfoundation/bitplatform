@@ -1,10 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
-        <TargetFrameworks>net7.0</TargetFrameworks>
-        <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
+        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -12,8 +14,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <SupportedPlatform Include="browser" />
+        <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
+        <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
+        <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
+        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
+    </ItemGroup>
 
+    <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
 
@@ -23,6 +31,8 @@
         <PackageReference Include="Bit.BlazorUI" Version="5.3.0-pre-05" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="5.3.0-pre-05" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="5.3.0-pre-05" />
+        <PackageReference Include="Bit.Bup" Version="5.3.0-pre-05" />
+        <PackageReference Include="Bit.Bswup" Version="5.3.0-pre-05" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -33,7 +43,8 @@
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
 
         <Using Include="System.Net.Http.Json" />
@@ -43,46 +54,20 @@
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
-        <Using Include="TodoTemplate.Client.Core.Components" />
-        <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
-        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="Bit.Websites.Careers.Web.Components" />
+        <Using Include="Bit.Websites.Careers.Web.Services.Contracts" />
+        <Using Include="Bit.Websites.Careers.Web.Services.Implementations" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
-        <Using Include="Microsoft.Maui" />
-        <Using Include="Microsoft.Maui.Graphics" />
-        <Using Include="Microsoft.Maui.Accessibility" />
-        <Using Include="Microsoft.Maui.ApplicationModel" />
-        <Using Include="Microsoft.Maui.ApplicationModel.Communication" />
-        <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" />
-        <Using Include="Microsoft.Maui.Authentication" />
-        <Using Include="Microsoft.Maui.Devices" />
-        <Using Include="Microsoft.Maui.Devices.Sensors" />
-        <Using Include="Microsoft.Maui.Media" />
-        <Using Include="Microsoft.Maui.Networking" />
-        <Using Include="Microsoft.Maui.Storage" />
-    </ItemGroup>
-
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\TodoTemplate.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
+        <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
