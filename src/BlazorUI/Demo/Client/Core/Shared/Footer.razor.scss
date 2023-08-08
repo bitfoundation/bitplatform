@@ -74,6 +74,10 @@ section {
     background-color: #888;
 }
 
+a {
+    text-decoration: none;
+}
+
 .address-info {
     display: flex;
     flex-flow: column nowrap;
@@ -81,10 +85,6 @@ section {
 
     @include sm {
         margin-bottom: rem(30px);
-    }
-
-    a {
-        text-decoration: none;
     }
 
     .address, .tel, .country {

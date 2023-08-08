@@ -2,6 +2,10 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
 
 ::deep {
+    a {
+        text-decoration: none;
+    }
+
     .nav-custom-header {
         color: green;
         font-size: 17px;
