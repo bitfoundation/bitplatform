@@ -8,99 +8,98 @@
                ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic BitRating" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic:</BitLabel>
                     <BitRating @bind-Value="RatingBasicValue" />
-                    <span>Rate: @RatingBasicValue</span>
+                    <BitLabel>Rate: @RatingBasicValue</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Disabled:</BitLabel>
                     <BitRating IsEnabled="false" @bind-Value="RatingDisabledValue" />
-                    <span>Rate: @RatingDisabledValue</span>
+                    <BitLabel>Rate: @RatingDisabledValue</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Readonly:</BitLabel>
                     <BitRating IsReadOnly="true" @bind-Value="RatingReadonlyValue" />
-                    <span>Rate: @RatingReadonlyValue</span>
+                    <BitLabel>Rate: @RatingReadonlyValue</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRating with Max Value" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="Max value" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Max is 6</BitLabel>
                     <BitRating Max="6" @bind-Value="RatingMaxValue1" />
-                    <span>Value: @RatingMaxValue1</span>
+                    <BitLabel>Value: @RatingMaxValue1</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Max is 10</BitLabel>
                     <BitRating Max="10" @bind-Value="RatingMaxValue2" />
-                    <span>Value: @RatingMaxValue2</span>
+                    <BitLabel>Value: @RatingMaxValue2</BitLabel>
                 </div>
                 <br />
                 <div style="width: 200px;">
                     <BitLabel>Max is 100</BitLabel>
                     <BitRating Max="100" @bind-Value="RatingMaxValue3" />
-                    <span>Value: @RatingMaxValue3</span>
+                    <BitLabel>Value: @RatingMaxValue3</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRating with Custom Icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Custom icon" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Heart:</BitLabel>
                     <BitRating SelectedIconName="@BitIconName.HeartFill" UnselectedIconName="@BitIconName.Heart" @bind-Value="RatingCustomIconValue1" />
-                    <span>Value: @RatingCustomIconValue1</span>
+                    <BitLabel>Value: @RatingCustomIconValue1</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Checkbox:</BitLabel>
                     <BitRating SelectedIconName="@BitIconName.CheckboxCompositeReversed" UnselectedIconName="@BitIconName.Checkbox" @bind-Value="RatingCustomIconValue2" />
-                    <span>Value: @RatingCustomIconValue2</span>
+                    <BitLabel>Value: @RatingCustomIconValue2</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Like:</BitLabel>
                     <BitRating SelectedIconName="@BitIconName.LikeSolid" UnselectedIconName="@BitIconName.Dislike" @bind-Value="RatingCustomIconValue3" />
-                    <span>Value: @RatingCustomIconValue3</span>
+                    <BitLabel>Value: @RatingCustomIconValue3</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRating Size" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
                     <BitLabel>Small:</BitLabel>
                     <BitRating Size="BitRatingSize.Small" @bind-Value="RatingSmallValue" />
-                    <span>Value: @RatingSmallValue</span>
+                    <BitLabel>Value: @RatingSmallValue</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>Large:</BitLabel>
                     <BitRating Size="BitRatingSize.Large" @bind-Value="RatingLargeValue" />
-                    <span>Value: @RatingLargeValue</span>
+                    <BitLabel>Value: @RatingLargeValue</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled BitRating" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">BitRating component support two-way binding as well.</div>
             <div class="example-box">
                 <div>
                     <BitLabel>One-way:</BitLabel>
@@ -117,15 +116,14 @@
                 <div>
                     <BitLabel>OnChange:</BitLabel>
                     <BitRating DefaultValue="2" OnChange="(v) => RatingControlledValue3 = v" />
-                    <span>Changed Value: @RatingControlledValue3</span>
+                    <BitLabel>Changed Value: @RatingControlledValue3</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitRating with validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
-            <div class="example-desc">BitRating component support validation as well.</div>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
                 <EditForm Model="ValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
@@ -151,3 +149,41 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private double RatingBasicValue;
+    private double RatingDisabledValue = 2;
+    private double RatingReadonlyValue = 3.5;
+
+    private double RatingMaxValue1 = 2.5;
+    private double RatingMaxValue2 = 5;
+    private double RatingMaxValue3 = 15;
+
+    private double RatingCustomIconValue1 = 1.5;
+    private double RatingCustomIconValue2 = 2;
+    private double RatingCustomIconValue3 = 3;
+
+    private double RatingSmallValue = 3;
+    private double RatingLargeValue = 3;
+
+    private double RatingControlledValue1 = 0;
+    private double RatingControlledValue2 = 3;
+    private double RatingControlledValue3 = 2;
+
+    public BitRatingDemoFormModel ValidationModel = new();
+    public string SuccessMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(2000);
+        SuccessMessage = string.Empty;
+        ValidationModel.Value = default;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+}
