@@ -148,3 +148,4 @@ The other settings are:
 - `self.isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
 - `self.enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
 - `self.enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
+- `self.enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.

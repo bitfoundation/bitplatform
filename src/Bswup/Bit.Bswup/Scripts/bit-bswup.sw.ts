@@ -19,6 +19,7 @@
     isPassive: any
     enableIntegrityCheck: any
     enableDiagnostics: any
+    enableFetchDiagnostics: any
 }
 
 interface Event {
@@ -26,7 +27,12 @@ interface Event {
     respondWith: any
 }
 
+console.group('bit-bswup');
+
 const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
+
+diag('ASSETS_URL:', ASSETS_URL);
+
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
@@ -95,62 +101,53 @@ const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 
 diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
+console.groupEnd();
+
 async function handleFetch(e) {
-    diag('-------------------- handleFetch:', e);
+    const req = e.request as Request;
 
-    if (e.request.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(e.request.url))) {
-        diag('-------------------- handleFetch ended - bypassed:', e);
-
-        return fetch(e.request);
+    if (req.method !== 'GET' || SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url))) {
+        diagFetch('*** handleFetch ended - skipped:', e);
+        return fetch(req);
     }
 
-    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(e.request.url))
-    const shouldServeIndexHtml = (e.request.mode === 'navigate' && !isServerRendered);
-    const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : e.request.url;
+    const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url))
+    const shouldServeIndexHtml = (req.mode === 'navigate' && !isServerRendered);
+    const requestUrl = shouldServeIndexHtml ? DEFAULT_URL : req.url;
 
-    diag('isServerRendered:', isServerRendered);
-    diag('shouldServeIndexHtml:', shouldServeIndexHtml);
-    diag('requestUrl:', requestUrl);
-
+    diagFetch('--- handleFetch:', isServerRendered, shouldServeIndexHtml, requestUrl, e);
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(requestUrl))) {
-        diag('-------------------- handleFetch ended - prohibited:', requestUrl);
+        diagFetch('+++ handleFetch ended - prohibited:', requestUrl, e);
 
         return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${requestUrl}` });
     }
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
 
-    diag('caseMethod:', caseMethod);
-
     let asset = UNIQUE_ASSETS.find(a => shouldServeIndexHtml
         ? a.url[caseMethod]() === requestUrl[caseMethod]()
         : new URL(requestUrl).pathname.endsWith(a.url)
     );
 
-    diag('asset:', asset);
-
-    if (!asset?.url) return fetch(e.request);
+    if (!asset?.url) return fetch(req);
 
     const cacheUrl = `${asset.url}.${asset.hash || ''}`;
-
-    diag('cacheUrl:', cacheUrl);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
 
     if (cachedResponse || !self.isPassive) {
-        diag('-------------------- handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.');
-        return cachedResponse || fetch(e.request);
-    }
+        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', asset, e);
 
-    diag('passive: handling not cached asset...');
+        return cachedResponse || fetch(req);
+    }
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
     bitBswupCache.put(cacheUrl, response.clone());
 
-    diag('-------------------- handleFetch ended - passive');
+    diagFetch('+++ handleFetch ended - passive saving asset:', asset, e);
 
     return response;
 }
@@ -167,14 +164,14 @@ function handleMessage(e) {
     }
 
     if (e.data === 'BLAZOR_STARTED') {
-        setTimeout(() => createAssetsCache(true), 1984);
+        createAssetsCache(true);
     }
 }
 
 // ============================================================================
 
 async function createAssetsCache(ignoreProgressReport = false) {
-    diag('-------------------- createAssetsCache:', ignoreProgressReport);
+    console.group('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     let keys = await bitBswupCache.keys();
@@ -204,7 +201,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
         await Promise.all(promises);
 
-        diag('-------------------- createAssetsCache ended - passive firstTime');
+        diag('createAssetsCache ended - passive firstTime');
+        console.groupEnd();
 
         return;
     }
@@ -221,10 +219,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
         oldUrls.push({ url, hash });
         const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
         if (!foundAsset) {
-            diag('>>>>>>>>>> removed oldUrl:', key.url);
+            diag('*** removed oldUrl:', key.url);
             bitBswupCache.delete(key.url);
         } else if (hash && hash !== foundAsset.hash) {
-            diag('>>>>>>>>>> updated oldUrl:', key.url);
+            diag('*** updated oldUrl:', key.url);
             bitBswupCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
@@ -240,16 +238,20 @@ async function createAssetsCache(ignoreProgressReport = false) {
     total = assetsToCache.length;
     const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
 
-    diag('-------------------- createAssetsCache ended.');
+    diag('createAssetsCache ended.');
+    console.groupEnd();
+
+    //await Promise.all(promises);
+    //self.addEventListener('fetch', e => e.respondWith(handleFetch(e)));
 
     async function addCache(report, asset) {
         const request = createNewAssetRequest(asset);
-        
+
         try {
             const responsePromise = fetch(request);
             return responsePromise.then(response => {
                 if (!response.ok) {
-                    diag('>>>>>>>>>> addCache - !response.ok:', request);
+                    diag('*** addCache - !response.ok:', request);
                     return Promise.reject(response.statusText);
                 }
 
@@ -264,7 +266,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 return cachePromise.then(() => response);
             });
         } catch (err) {
-            diag('>>>>>>>>>> addCache - catch err:', err);
+            diag('*** addCache - catch err:', err);
             return Promise.reject(err);
         }
     }
@@ -331,5 +333,11 @@ function prepareRegExpArray(value) {
 function diag(...args: any[]) {
     if (!self.enableDiagnostics) return;
 
-    console.info(...['bit bswup:', ...args, new Date().toISOString()]);
+    console.info(...[...args, `(${new Date().toISOString()})`]);
+}
+
+function diagFetch(...args: any[]) {
+    if (!self.enableFetchDiagnostics) return;
+
+    console.info(...[...args, `(${new Date().toISOString()})`]);
 }
