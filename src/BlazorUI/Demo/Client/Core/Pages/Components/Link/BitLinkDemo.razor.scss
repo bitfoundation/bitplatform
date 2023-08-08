@@ -6,3 +6,9 @@
     width: fit-content;
     flex-direction: column;
 }
+
+::deep .custom-class {
+    padding: 0 0.5rem;
+    border: 1px solid red;
+    max-width: max-content;
+}
