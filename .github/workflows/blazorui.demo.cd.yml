@@ -30,11 +30,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-    
-    - name: Setup .NET (bit Blazor UI Demo)
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/BlazorUI/Demo/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -94,15 +89,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (bit Blazor UI)
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-    
-    - name: Setup .NET (bit Blazor UI Demo)
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/BlazorUI/Demo/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -142,15 +132,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (bit Blazor UI)
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-    
-    - name: Setup .NET (bit Blazor UI Demo)
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/BlazorUI/Demo/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -200,15 +185,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET (bit Blazor UI)
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-    
-    - name: Setup .NET (bit Blazor UI Demo)
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/BlazorUI/Demo/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -272,7 +252,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/BlazorUI/Demo/global.json
+         global-json-file: src/global.json
 
      - uses: actions/setup-node@v3
        with:
@@ -315,7 +295,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/BlazorUI/Demo/global.json
+         global-json-file: src/global.json
 
      - name: Setup .NET for Electron.NET
        uses: actions/setup-dotnet@v3
