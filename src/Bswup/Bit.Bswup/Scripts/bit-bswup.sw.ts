@@ -27,7 +27,7 @@ interface Event {
     respondWith: any
 }
 
-console.group('bit-bswup');
+diagGroup('bit-bswup');
 
 const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
 
@@ -101,7 +101,7 @@ const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 
 diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
-console.groupEnd();
+diagGroupEnd();
 
 async function handleFetch(e) {
     const req = e.request as Request;
@@ -175,7 +175,7 @@ function handleMessage(e) {
 // ============================================================================
 
 async function createAssetsCache(ignoreProgressReport = false) {
-    console.group('bit-bswup:createAssetsCache:' + ignoreProgressReport);
+    diagGroup('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     let keys = await bitBswupCache.keys();
@@ -202,7 +202,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
         const promises = blazorAssets.map(addCache.bind(null, true));
 
         diag('createAssetsCache ended - passive firstTime');
-        console.groupEnd();
+        diagGroupEnd();
 
         return;
     }
@@ -239,7 +239,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
 
     diag('createAssetsCache ended.');
-    console.groupEnd();
+    diagGroupEnd();
 
     async function addCache(report, asset) {
         const request = createNewAssetRequest(asset);
@@ -326,6 +326,18 @@ function prepareExternalAssetsArray(value) {
 
 function prepareRegExpArray(value) {
     return value ? (value instanceof Array ? value : [value]).filter(p => p instanceof RegExp) : [];
+}
+
+function diagGroup(label: string) {
+    if (!self.enableDiagnostics) return;
+
+    console.group(label);
+}
+
+function diagGroupEnd() {
+    if (!self.enableDiagnostics) return;
+
+    console.groupEnd();
 }
 
 function diag(...args: any[]) {
