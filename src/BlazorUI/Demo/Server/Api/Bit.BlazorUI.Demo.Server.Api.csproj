@@ -9,7 +9,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.9" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.10" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
 
@@ -26,11 +26,11 @@
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.5" />
-        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="6.0.4" />
+        <PackageReference Include="AspNetCore.HealthChecks.System" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="7.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
