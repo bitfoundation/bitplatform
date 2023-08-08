@@ -16,19 +16,15 @@ class BitBswup {
             return console.warn('no serviceWorker in navigator');
         }
 
-        await this.deleteOldCaches();
+        const cacheKeys = await caches.keys();
+        const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
+        await Promise.all(cachePromises);
 
         const regs = await navigator.serviceWorker.getRegistrations();
-        const promises = regs.map(r => r.unregister());
-        await Promise.all(promises);
+        const regPromises = regs.map(r => r.unregister());
+        await Promise.all(regPromises);
 
         window.location.reload();
-    }
-
-    private static async deleteOldCaches() {
-        const cacheKeys = await caches.keys();
-        const promises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
-        return Promise.all(promises);
     }
 }
 
