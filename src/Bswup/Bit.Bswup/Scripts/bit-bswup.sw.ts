@@ -81,7 +81,7 @@ diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
 diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
 diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
 
 const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
@@ -130,7 +130,11 @@ async function handleFetch(e) {
         : new URL(requestUrl).pathname.endsWith(a.url)
     );
 
-    if (!asset?.url) return fetch(req);
+    if (!asset?.url) {
+        diagFetch('+++ handleFetch ended - invalid asset:', asset, requestUrl, e);
+
+        return fetch(req);
+    }
 
     const cacheUrl = `${asset.url}.${asset.hash || ''}`;
 
