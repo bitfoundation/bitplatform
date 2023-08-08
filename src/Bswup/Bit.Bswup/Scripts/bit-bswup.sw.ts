@@ -81,7 +81,7 @@ diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
 diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
 diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm/, /\.pdb/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
 
 const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
@@ -201,10 +201,6 @@ async function createAssetsCache(ignoreProgressReport = false) {
         total = blazorAssets.length;
         const promises = blazorAssets.map(addCache.bind(null, true));
 
-        diag('await Promise.all(promises)');
-
-        await Promise.all(promises);
-
         diag('createAssetsCache ended - passive firstTime');
         console.groupEnd();
 
@@ -245,32 +241,31 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diag('createAssetsCache ended.');
     console.groupEnd();
 
-    //await Promise.all(promises);
-    //self.addEventListener('fetch', e => e.respondWith(handleFetch(e)));
-
     async function addCache(report, asset) {
         const request = createNewAssetRequest(asset);
 
         try {
             const responsePromise = fetch(request);
-            return responsePromise.then(response => {
+            return responsePromise.then(async response => {
                 if (!response.ok) {
                     diag('*** addCache - !response.ok:', request);
+
                     return Promise.reject(response.statusText);
                 }
 
                 const cacheUrl = `${asset.url}.${asset.hash || ''}`;
-                const cachePromise = bitBswupCache.put(cacheUrl, response.clone());
+                await bitBswupCache.put(cacheUrl, response.clone());
 
                 if (report) {
                     const percent = (++current) / total * 100;
                     sendMessage({ type: 'progress', data: { asset, percent, index: current } });
                 }
 
-                return cachePromise.then(() => response);
+                return response;
             });
         } catch (err) {
             diag('*** addCache - catch err:', err);
+
             return Promise.reject(err);
         }
     }
@@ -288,7 +283,6 @@ function createNewAssetRequest(asset) {
         : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
 
     return new Request(assetUrl, requestInit);
-    //return new Request(assetUrl, asset.hash ? { cache: 'no-cache', integrity: asset.hash } : { cache: 'no-cache' });
 }
 
 async function deleteOldCaches() {
