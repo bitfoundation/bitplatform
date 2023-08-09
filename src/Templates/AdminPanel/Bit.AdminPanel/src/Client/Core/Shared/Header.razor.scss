@@ -9,11 +9,11 @@
     display: flex;
     position: fixed;
     flex-flow: column;
-    min-height: rem($HeaderHeight);
+    min-height: rem2($HeaderHeight);
     width: calc(100% - $NavMenuWidth);
     padding-top: var(--bit-status-bar-height);
     background-color: $bit-color-background-primary;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
     @include lt-lg {
         width: 100%;
@@ -32,19 +32,19 @@
     margin-right: auto;
     align-items: center;
     flex-flow: row nowrap;
-    min-height: rem($HeaderHeight);
+    min-height: rem2($HeaderHeight);
     justify-content: space-between;
-    padding: 0 rem($LargeScreenPadding);
-    max-width: rem($LargeScreenMaxWidth);
+    padding: 0 rem2($LargeScreenPadding);
+    max-width: rem2($LargeScreenMaxWidth);
 
     @include md {
-        padding: 0 rem($MediumScreenPadding);
-        max-width: rem($MediumScreenMaxWidth);
+        padding: 0 rem2($MediumScreenPadding);
+        max-width: rem2($MediumScreenMaxWidth);
     }
 
     @include sm {
-        padding: 0 rem($SmallScreenPadding);
-        max-width: rem($SmallScreenMaxWidth);
+        padding: 0 rem2($SmallScreenPadding);
+        max-width: rem2($SmallScreenMaxWidth);
     }
 }
 
@@ -63,9 +63,9 @@
 
 .header-logo {
     cursor: pointer;
-    width: rem(30px);
-    height: rem(20px);
-    margin-right: rem(24px);
+    width: rem2(30px);
+    height: rem2(20px);
+    margin-right: rem2(24px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -84,7 +84,7 @@
     }
 
     .header-menu-btn {
-        margin-right: rem(12px);
+        margin-right: rem2(12px);
 
         @include gt-md {
             display: none;
@@ -95,14 +95,14 @@
 .header-drp-wrapper {
     right: 0;
     display: flex;
-    top: rem(40px);
+    top: rem2(40px);
     cursor: default;
-    width: rem(224px);
-    height: rem(200px);
+    width: rem2(224px);
+    height: rem2(200px);
     position: absolute;
-    padding: 0 rem(8px);
+    padding: 0 rem2(8px);
     align-items: flex-start;
-    border-radius: rem(2px);
+    border-radius: rem2(2px);
     flex-flow: column nowrap;
     justify-content: flex-start;
     box-shadow: $bit-box-shadow-callout;
@@ -112,23 +112,23 @@
 .user-info-container {
     width: 100%;
     display: flex;
-    height: rem(100px);
-    padding: 0 rem(2px);
+    height: rem2(100px);
+    padding: 0 rem2(2px);
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: rem(10px);
+    margin-bottom: rem2(10px);
     justify-content: flex-start;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .toggle-theme-btn {
     padding: 0;
     border: none;
     cursor: pointer;
-    height: rem(32px);
+    height: rem2(32px);
     border-radius: 50%;
-    min-width: rem(32px);
-    margin-right: rem(10px);
+    min-width: rem2(32px);
+    margin-right: rem2(10px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
 
@@ -140,7 +140,7 @@
         justify-content: center;
 
         .bit-icon {
-            margin: 0 rem(4px);
+            margin: 0 rem2(4px);
         }
     }
 

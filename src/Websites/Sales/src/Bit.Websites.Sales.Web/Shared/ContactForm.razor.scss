@@ -13,51 +13,51 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: rem(80px) rem(140px);
+    padding: rem2(80px) rem2(140px);
     box-sizing: border-box;
 
     @include lg {
-        padding: rem(60px) rem(60px);
+        padding: rem2(60px) rem2(60px);
     }
 
     @include sm {
-        padding: rem(60px) rem(30px);
+        padding: rem2(60px) rem2(30px);
     }
 
     @include xs {
-        padding: rem(60px) rem(30px);
+        padding: rem2(60px) rem2(30px);
     }
 
     .secondary-title {
         font-weight: 500;
-        font-size: rem(30px);
+        font-size: rem2(30px);
         color: $Gray2;
-        margin-bottom: rem(24px);
+        margin-bottom: rem2(24px);
 
         @include sm {
-            font-size: rem(24px);
+            font-size: rem2(24px);
         }
     }
 
     .title {
-        font-size: rem(44px);
+        font-size: rem2(44px);
         font-weight: bold;
         margin-bottom: 1rem;
 
         @include sm {
-            font-size: rem(34px);
+            font-size: rem2(34px);
         }
     }
 
     .title-underline {
         background-color: $Y1;
-        width: rem(240px);
-        height: rem(4px);
-        margin-bottom: rem(76px);
+        width: rem2(240px);
+        height: rem2(4px);
+        margin-bottom: rem2(76px);
 
         @include sm {
-            width: rem(180px);
-            height: rem(2px);
+            width: rem2(180px);
+            height: rem2(2px);
         }
     }
 }
@@ -66,7 +66,7 @@
     width: 100%;
     display: flex;
     align-items: center;
-    max-width: rem(600px);
+    max-width: rem2(600px);
     flex-flow: column nowrap;
     justify-content: flex-start;
 
@@ -77,7 +77,7 @@
         justify-content: space-between;
         align-items: center;
         gap: 2rem;
-        margin-bottom: rem(50px);
+        margin-bottom: rem2(50px);
 
         @include md {
             flex-flow: column;
@@ -107,22 +107,22 @@
         &.bit-txt {
             .bit-txt-label {
                 color: $Gray1;
-                font-size: rem(20px);
-                line-height: rem(32px);
+                font-size: rem2(20px);
+                line-height: rem2(32px);
 
                 @include md {
-                    font-size: rem(18px);
+                    font-size: rem2(18px);
                 }
             }
 
             .bit-txt-field-grp {
-                height: rem(60px);
-                border-radius: rem(3px);
+                height: rem2(60px);
+                border-radius: rem2(3px);
                 border-color: $Gray3;
             }
 
             .txt-field {
-                font-size: rem(22px);
+                font-size: rem2(22px);
                 line-height: 2rem;
 
                 &:focus {
@@ -136,7 +136,7 @@
         &.bit-txt {
             .bit-txt-field-grp {
                 padding: 0.5rem;
-                height: rem(150px);
+                height: rem2(150px);
             }
         }
     }

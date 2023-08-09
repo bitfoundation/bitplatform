@@ -4,8 +4,8 @@
 .number {
     position: absolute;
     top: 0;
-    padding: rem(12px);
-    font-size: rem(12px);
+    padding: rem2(12px);
+    font-size: rem2(12px);
     color: $Gray3;
 }
 
@@ -16,18 +16,18 @@
 
 .text-title {
     position: absolute;
-    bottom: rem(55px);
+    bottom: rem2(55px);
     width: 100%;
-    font-size: rem(15px);
+    font-size: rem2(15px);
     text-align: center;
     color: $White;
 }
 
 .text-description {
     position: absolute;
-    bottom: rem(30px);
+    bottom: rem2(30px);
     width: 100%;
-    font-size: rem(11px);
+    font-size: rem2(11px);
     text-align: center;
     color: $White;
 }
@@ -43,7 +43,7 @@
 }
 
 ::deep .goto-button {
-    margin-right: rem(10px);
+    margin-right: rem2(10px);
 }
 
 ::deep .item {

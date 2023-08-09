@@ -9,7 +9,7 @@
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
-    margin-bottom: rem(28px);
+    margin-bottom: rem2(28px);
     justify-content: flex-start;
 
     @include sm {
@@ -21,15 +21,15 @@
     display: flex;
     cursor: pointer;
     overflow: hidden;
-    height: rem(190px);
+    height: rem2(190px);
     text-align: center;
-    padding: rem(16px);
+    padding: rem2(16px);
     align-items: center;
     text-decoration: none;
     box-sizing: border-box;
-    line-height: rem(40px);
+    line-height: rem2(40px);
     width: calc(25% - 8px);
-    border-radius: rem(2px);
+    border-radius: rem2(2px);
     justify-content: center;
     flex-flow: column nowrap;
     box-shadow: $bit-box-shadow-callout;
@@ -50,12 +50,12 @@
 }
 
 .card-img {
-    width: rem(56px);
-    height: rem(56px);
+    width: rem2(56px);
+    height: rem2(56px);
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    margin-bottom: rem(8px);
+    margin-bottom: rem2(8px);
 
     &.basic-inputs {
         background-image: url('images/icon/input-icon.svg');
@@ -91,14 +91,14 @@
     align-items: flex-start;
 
     .github-codespaces-icon {
-        width: rem(35px);
-        height: rem(35px);
-        min-width: rem(35px);
-        margin-right: rem(12px);
+        width: rem2(35px);
+        height: rem2(35px);
+        min-width: rem2(35px);
+        margin-right: rem2(12px);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        background-position-y: rem(3px);
+        background-position-y: rem2(3px);
     }
 }
 

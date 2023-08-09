@@ -4,17 +4,17 @@
 
 .main-container {
     display: flex;
-    width: rem(560px);
+    width: rem2(560px);
     align-items: center;
     flex-direction: column;
-    min-height: rem(378px);
-    border-radius: rem(2px);
+    min-height: rem2(378px);
+    border-radius: rem2(2px);
     justify-content: flex-start;
-    padding: rem(16px) rem(24px);
+    padding: rem2(16px) rem2(24px);
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
-        padding: rem(16px) rem(24px) calc(rem(16px) + env(safe-area-inset-bottom));
+        padding: rem2(16px) rem2(24px) calc(rem2(16px) + env(safe-area-inset-bottom));
     }
 
     @include sm {
@@ -22,7 +22,7 @@
         bottom: 0;
         width: 100%;
         position: fixed;
-        border-radius: rem(8px) rem(8px) 0 0;
+        border-radius: rem2(8px) rem2(8px) 0 0;
     }
 }
 
@@ -31,19 +31,19 @@
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: rem(24px);
+    margin-bottom: rem2(24px);
     justify-content: space-between;
 }
 
 .title {
     font-weight: 600;
-    font-size: rem(20px);
-    line-height: rem(28px);
+    font-size: rem2(20px);
+    line-height: rem2(28px);
 }
 
 .form-input-container {
     width: 100%;
-    margin-bottom: rem(24px);
+    margin-bottom: rem2(24px);
 }
 
 ::deep .validation-message {

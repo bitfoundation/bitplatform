@@ -14,10 +14,10 @@
 .page-header {
     display: flex;
     align-items: center;
-    margin-bottom: rem(37px);
+    margin-bottom: rem2(37px);
 
     @include sm {
-        margin-bottom: rem(29px);
+        margin-bottom: rem2(29px);
     }
 }
 
@@ -32,33 +32,33 @@
 .page-title {
     margin: 0;
     font-weight: 700;
-    font-size: rem(24px);
-    line-height: rem(32px);
+    font-size: rem2(24px);
+    line-height: rem2(32px);
 
     @include md {
         font-weight: 600;
-        font-size: rem(20px);
-        line-height: rem(28px);
+        font-size: rem2(20px);
+        line-height: rem2(28px);
     }
 
     @include sm {
         font-weight: 600;
-        font-size: rem(18px);
-        line-height: rem(24px);
+        font-size: rem2(18px);
+        line-height: rem2(24px);
     }
 }
 
 .form-input-container {
     width: 100%;
-    max-width: rem(388px);
-    margin-bottom: rem(30px);
+    max-width: rem2(388px);
+    margin-bottom: rem2(30px);
 }
 
 .form-message-bar {
     top: 0;
     left: 0;
     position: absolute;
-    border-radius: rem(4px) rem(4px) 0 0;
+    border-radius: rem2(4px) rem2(4px) 0 0;
 }
 
 .form-profile-container {
@@ -66,23 +66,23 @@
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: rem(33px);
+    margin-bottom: rem2(33px);
     justify-content: flex-start;
 }
 
 .form-input-error {
-    font-size: rem(12px);
-    line-height: rem(16px);
+    font-size: rem2(12px);
+    line-height: rem2(16px);
     color: $bit-color-state-error;
 }
 
 .form-choice-container {
     width: 100%;
-    max-width: rem(340px);
-    margin-bottom: rem(19px);
+    max-width: rem2(340px);
+    margin-bottom: rem2(19px);
 
     @include md {
-        margin-bottom: rem(25px);
+        margin-bottom: rem2(25px);
     }
 
     @include sm {
@@ -96,7 +96,7 @@
     }
 
     .back-btn {
-        margin-right: rem(10px);
+        margin-right: rem2(10px);
     }
 
     .validation-message {

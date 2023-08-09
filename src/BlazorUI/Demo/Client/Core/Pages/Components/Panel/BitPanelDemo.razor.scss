@@ -1,13 +1,13 @@
 ﻿@import "../../../Styles/abstracts/functions";
 
 .btn-container {
-    gap: rem(16px);
+    gap: rem2(16px);
     display: flex;
     flex-flow: column;
 }
 
 .position-btn {
-    gap: rem(16px);
+    gap: rem2(16px);
     display: flex;
     flex-flow: column nowrap;
 
@@ -19,7 +19,7 @@
 
 ::deep {
     .header-padding {
-        padding-top: calc(rem(18px) + var(--bit-status-bar-height));
+        padding-top: calc(rem2(18px) + var(--bit-status-bar-height));
 
         @supports (-webkit-touch-callout: none) {
             padding-top: env(safe-area-inset-top);

@@ -7,10 +7,10 @@
     height: 100%;
     display: flex;
     align-items: center;
-    max-width: rem(900px);
+    max-width: rem2(900px);
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem(48px) rem(16px);
+    padding: rem2(48px) rem2(16px);
 
     @include lt-lg {
         padding-top: 0;
@@ -20,38 +20,38 @@
 .search-box-container {
     width: 100%;
     display: flex;
-    padding: rem(21px);
+    padding: rem2(21px);
     align-items: center;
     justify-content: center;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .todo-content {
     width: 100%;
     display: flex;
     position: relative;
-    max-width: rem(608px);
+    max-width: rem2(608px);
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    padding: rem(24px) rem(14px) rem(64px);
+    padding: rem2(24px) rem2(14px) rem2(64px);
 }
 
 .main-title {
     margin: 0;
     font-weight: 600;
-    font-size: rem(28px);
-    line-height: rem(36px);
-    margin-bottom: rem(20px);
+    font-size: rem2(28px);
+    line-height: rem2(36px);
+    margin-bottom: rem2(20px);
 }
 
 .add-todo-container {
     width: 100%;
     display: flex;
-    gap: rem(16px);
+    gap: rem2(16px);
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: rem(24px);
+    margin-bottom: rem2(24px);
     justify-content: flex-start;
 }
 
@@ -68,9 +68,9 @@
 }
 
 .sort-drp-container {
-    @media all and (max-width: #{em(430px)}) {
-        top: rem(25px);
-        right: rem(14px);
+    @media all and (max-width: #{rem2(430px)}) {
+        top: rem2(25px);
+        right: rem2(14px);
         position: absolute;
     }
 }
@@ -86,38 +86,38 @@
 .todo-list {
     width: 100%;
     display: flex;
-    height: rem(350px);
+    height: rem2(350px);
     align-items: center;
-    margin-top: rem(4px);
+    margin-top: rem2(4px);
     flex-flow: column nowrap;
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-border-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
 
     @include lt-lg {
-        height: rem(300px);
+        height: rem2(300px);
     }
 }
 
 .todo-item {
     width: 100%;
     display: flex;
-    padding: rem(16px);
+    padding: rem2(16px);
     align-items: center;
     flex-flow: row nowrap;
-    min-height: rem(80px);
+    min-height: rem2(80px);
     min-width: fit-content;
     justify-content: space-between;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
     &:last-child {
         border-bottom: none;
     }
 
     &.edit-mode {
-        gap: rem(16px);
+        gap: rem2(16px);
 
-        @media all and (max-width: #{em(450px)}) {
+        @media all and (max-width: #{rem2(450px)}) {
             flex-flow: column;
 
             ::deep .todo-input {
@@ -140,10 +140,10 @@
 
 .todo-item-date {
     white-space: nowrap;
-    font-size: rem(11px);
-    margin-top: rem(4px);
-    margin-left: rem(28px);
-    line-height: rem(20px);
+    font-size: rem2(11px);
+    margin-top: rem2(4px);
+    margin-left: rem2(28px);
+    line-height: rem2(20px);
     color: $bit-color-foreground-secondary;
 }
 
@@ -168,13 +168,13 @@
 
     .add-todo-button {
         line-height: 1;
-        min-width: rem(70px);
-        min-height: rem(32px);
+        min-width: rem2(70px);
+        min-height: rem2(32px);
     }
 
     .sort-todo-drp {
-        width: rem(150px);
-        height: rem(32px);
+        width: rem2(150px);
+        height: rem2(32px);
     }
 
     .todo-input {

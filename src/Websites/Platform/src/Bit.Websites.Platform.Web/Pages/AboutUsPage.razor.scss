@@ -22,9 +22,9 @@
 .page-section-content {
     display: flex;
     align-items: center;
-    max-width: rem(1200px);
-    padding-left: rem(20px);
-    padding-right: rem(20px);
+    max-width: rem2(1200px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
     justify-content: center;
     flex-flow: column nowrap;
 }
@@ -70,10 +70,10 @@
 
     .value-card {
         flex-grow: 0;
-        padding: rem(20px);
-        min-width: rem(325px);
-        min-height: rem(200px);
-        border-radius: rem(4px);
+        padding: rem2(20px);
+        min-width: rem2(325px);
+        min-height: rem2(200px);
+        border-radius: rem2(4px);
         max-width: calc((100% / 3) - 20px);
         flex-basis: calc((100% / 3) - 20px);
         box-shadow: $bit-box-shadow-callout;
@@ -106,10 +106,10 @@
 
     .member-card {
         flex-grow: 0;
-        padding: rem(20px);
-        border-radius: rem(4px);
-        min-width: rem(275px);
-        max-width: rem(275px);
+        padding: rem2(20px);
+        border-radius: rem2(4px);
+        min-width: rem2(275px);
+        max-width: rem2(275px);
         box-shadow: $bit-box-shadow-callout;
     }
 
@@ -120,9 +120,9 @@
     }
 
     .member-img {
-        width: rem(70px);
-        height: rem(70px);
-        border-radius: rem(10px);
+        width: rem2(70px);
+        height: rem2(70px);
+        border-radius: rem2(10px);
     }
 
     .contact-grp {
@@ -132,10 +132,10 @@
 
     .contact-lnk {
         cursor: pointer;
-        width: rem(36px);
-        height: rem(36px);
+        width: rem2(36px);
+        height: rem2(36px);
         border-radius: 50%;
-        background-size: rem(20px);
+        background-size: rem2(20px);
         background-position: center;
         background-repeat: no-repeat;
     }
@@ -149,12 +149,12 @@
     }
 
     .member-name {
-        margin-top: rem(20px);
-        margin-bottom: rem(5px);
+        margin-top: rem2(20px);
+        margin-bottom: rem2(5px);
     }
 
     .member-position {
-        font-size: rem(14px);
+        font-size: rem2(14px);
         color: $bit-color-foreground-secondary;
     }
 }

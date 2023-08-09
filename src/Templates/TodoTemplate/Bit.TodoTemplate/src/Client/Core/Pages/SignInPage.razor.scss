@@ -8,23 +8,23 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem(56px) rem(16px);
+    padding: rem2(56px) rem2(16px);
 
     @include lg {
-        padding: rem(48px) rem(16px);
+        padding: rem2(48px) rem2(16px);
     }
 
     @include sm {
-        padding: rem(40px) rem(16px);
+        padding: rem2(40px) rem2(16px);
     }
 }
 
 .form-forgot-password {
-    font-size: rem(14px);
-    line-height: rem(24px);
-    margin-bottom: rem(20px);
+    font-size: rem2(14px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(20px);
 
     @include lt-xl {
-        margin-bottom: rem(16px);
+        margin-bottom: rem2(16px);
     }
 }

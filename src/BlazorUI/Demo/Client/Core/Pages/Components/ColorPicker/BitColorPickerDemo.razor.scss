@@ -5,21 +5,21 @@
 ::deep {
     @include sm {
         .color-picker {
-            width: rem(220px);
-            height: rem(256px);
+            width: rem2(220px);
+            height: rem2(256px);
         }
     }
 
     .custom-color-picker {
-        width: rem(100px);
-        height: rem(250px);
+        width: rem2(100px);
+        height: rem2(250px);
     }
 }
 
 .example-box {
     display: flex;
     flex-flow: column nowrap;
-    gap: rem(30px);
+    gap: rem2(30px);
 }
 
 .example {

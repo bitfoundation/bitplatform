@@ -10,11 +10,11 @@
     position: fixed;
     align-items: center;
     flex-flow: row nowrap;
-    min-height: rem(48px);
-    padding-top: rem(7px);
-    padding-left: rem(16px);
-    padding-right: rem(16px);
-    padding-bottom: rem(7px);
+    min-height: rem2(48px);
+    padding-top: rem2(7px);
+    padding-left: rem2(16px);
+    padding-right: rem2(16px);
+    padding-bottom: rem2(7px);
     justify-content: space-between;
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
@@ -22,10 +22,10 @@
 
 .logo-lnk {
     cursor: pointer;
-    width: rem(24px);
-    height: rem(24px);
-    min-width: rem(24px);
-    border-radius: rem(4px);
+    width: rem2(24px);
+    height: rem2(24px);
+    min-width: rem2(24px);
+    border-radius: rem2(4px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -42,7 +42,7 @@
 ::deep {
     .header-menu {
         display: none;
-        margin-right: rem(12px);
+        margin-right: rem2(12px);
 
         @include lt-lg {
             display: block;
@@ -50,14 +50,14 @@
     }
 
     .header-item {
-        padding: rem(4px) rem(16px);
+        padding: rem2(4px) rem2(16px);
 
         @include lt-lg {
-            padding: rem(4px) rem(8px);
+            padding: rem2(4px) rem2(8px);
         }
 
         @include lt-md {
-            padding: rem(4px) rem(4px);
+            padding: rem2(4px) rem2(4px);
         }
     }
 }

@@ -5,24 +5,24 @@
 .card {
     width: 100%;
     display: flex;
-    min-height: rem(376px);
+    min-height: rem2(376px);
     align-items: flex-start;
-    border-radius: rem(2px);
+    border-radius: rem2(2px);
     flex-flow: column nowrap;
-    margin-bottom: rem(24px);
+    margin-bottom: rem2(24px);
     justify-content: flex-start;
-    padding: rem(24px) rem(16px) rem(58px);
+    padding: rem2(24px) rem2(16px) rem2(58px);
     background-color: $bit-color-background-primary;
-    border: rem(1px) solid $bit-color-border-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
 
     @include md {
-        padding: rem(24px) rem(16px) rem(36px);
+        padding: rem2(24px) rem2(16px) rem2(36px);
     }
 
     @include sm {
         width: 100%;
-        margin-bottom: rem(16px);
-        padding: rem(24px) rem(8px) rem(32px);
+        margin-bottom: rem2(16px);
+        padding: rem2(24px) rem2(8px) rem2(32px);
     }
 }
 
@@ -31,45 +31,45 @@
     display: flex;
     align-items: flex-start;
     flex-flow: column nowrap;
-    padding-bottom: rem(16px);
+    padding-bottom: rem2(16px);
     justify-content: flex-start;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
     @include md {
-        padding-bottom: rem(12px);
+        padding-bottom: rem2(12px);
     }
 }
 
 .title {
     font-weight: 600;
-    font-size: rem(18px);
-    line-height: rem(24px);
-    margin-bottom: rem(4px);
+    font-size: rem2(18px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(4px);
 
     @include md {
-        font-size: rem(16px);
-        line-height: rem(22px);
+        font-size: rem2(16px);
+        line-height: rem2(22px);
     }
 
     @include sm {
-        font-size: rem(14px);
-        line-height: rem(20px);
+        font-size: rem2(14px);
+        line-height: rem2(20px);
     }
 }
 
 .subtitle {
     font-weight: 400;
-    font-size: rem(14px);
-    line-height: rem(20px);
+    font-size: rem2(14px);
+    line-height: rem2(20px);
 
     @include md {
-        font-size: rem(12px);
-        line-height: rem(16px);
+        font-size: rem2(12px);
+        line-height: rem2(16px);
     }
 
     @include sm {
-        font-size: rem(10px);
-        line-height: rem(12px);
+        font-size: rem2(10px);
+        line-height: rem2(12px);
     }
 }
 
@@ -78,13 +78,13 @@
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: rem(32px) rem(16px) 0;
+    padding: rem2(32px) rem2(16px) 0;
 
     @include md {
-        padding: rem(32px) rem(8px) 0;
+        padding: rem2(32px) rem2(8px) 0;
     }
 
     @include sm {
-        padding: rem(32px) rem(8px) 0;
+        padding: rem2(32px) rem2(8px) 0;
     }
 }

@@ -2,9 +2,9 @@
 @import "../../../../Styles/abstracts/_functions.scss";
 
 .list-item {
-    height: rem(44px);
-    min-width: rem(450px);
-    margin: rem(10px) rem(10px);
-    padding: rem(10px) rem(20px);
+    height: rem2(44px);
+    min-width: rem2(450px);
+    margin: rem2(10px) rem2(10px);
+    padding: rem2(10px) rem2(20px);
     background-color: $bit-color-background-secondary;
 }

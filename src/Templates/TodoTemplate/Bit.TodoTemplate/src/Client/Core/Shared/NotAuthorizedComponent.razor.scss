@@ -4,12 +4,12 @@
 .main {
     width: 100%;
     display: flex;
-    padding: rem(8px);
+    padding: rem2(8px);
     text-align: center;
-    max-width: rem(800px);
+    max-width: rem2(800px);
     flex-direction: column;
-    max-height: rem(600px);
-    border-radius: rem(4px);
+    max-height: rem2(600px);
+    border-radius: rem2(4px);
     background-color: $bit-color-background-primary;
 }
 
@@ -20,9 +20,9 @@
 .description {
     overflow: auto;
     white-space: pre;
-    margin: rem(24px);
+    margin: rem2(24px);
 }
 
 .buttons {
-    margin-bottom: rem(24px);
+    margin-bottom: rem2(24px);
 }

@@ -2,19 +2,19 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .header-container {
-    min-height: rem(72px);
+    min-height: rem2(72px);
     background-color: $Blue1;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    padding: rem(20px) rem(140px);
+    padding: rem2(20px) rem2(140px);
     font-weight: 500;
     user-select: none;
 }
 
 .header-bit-icon {
-    width: rem(42px);
+    width: rem2(42px);
 }
 
 .header-items-container {
@@ -32,7 +32,7 @@
     }
 
     &.margin-around {
-        margin: auto rem(56px) !important;
+        margin: auto rem2(56px) !important;
     }
 
     &.blue-font-color {
