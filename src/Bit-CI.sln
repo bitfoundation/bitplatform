@@ -27,7 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{23426B1A-C
 	ProjectSection(SolutionItems) = preProject
 		BlazorUI\Demo\.gitignore = BlazorUI\Demo\.gitignore
 		BlazorUI\Demo\Directory.Build.props = BlazorUI\Demo\Directory.Build.props
-		BlazorUI\Demo\global.json = BlazorUI\Demo\global.json
 		BlazorUI\Demo\README.md = BlazorUI\Demo\README.md
 	EndProjectSection
 EndProject
