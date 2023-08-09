@@ -1,11 +1,16 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
-public partial class BitMenuButtonOption : IDisposable
+public class BitMenuButtonOption : ComponentBase, IDisposable
 {
     private bool _disposed;
 
     [CascadingParameter] protected BitMenuButton<BitMenuButtonOption> Parent { get; set; } = default!;
+
+
+    /// <summary>
+    /// Whether or not the option is enabled.
+    /// </summary>
+    [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Name of an icon to render next to the option text
@@ -22,7 +27,6 @@ public partial class BitMenuButtonOption : IDisposable
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
-    protected override string RootElementClass => "bit-mbgo";
 
     protected override async Task OnInitializedAsync()
     {

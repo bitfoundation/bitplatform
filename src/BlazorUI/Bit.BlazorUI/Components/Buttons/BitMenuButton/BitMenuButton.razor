@@ -9,42 +9,38 @@
     </CascadingValue>
 }
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
-    <button id="@_menuButtonId"
-            type="@ButtonType?.GetValue()"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@(IsEnabled ? 0 : -1)"
-            class="bit-mnb-mbt"
-            @onclick="HandleOnClick">
-        @if (HeaderTemplate is not null)
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="OpenCallout"
+        id="@UniqueId"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        type="@_buttonType.GetValue()"
+        tabindex="@(IsEnabled ? 0 : -1)"
+        aria-label="@AriaLabel"
+        aria-hidden="@AriaHidden"
+        aria-describedby="@AriaDescription">
+    @if (HeaderTemplate is not null)
+    {
+        @HeaderTemplate
+    }
+    else
+    {
+        @if (IconName.HasValue())
         {
-            @HeaderTemplate
+            <i class="bit-icon bit-icon--@IconName" />
         }
-        else
-        {
-            @if (IconName.HasValue())
-            {
-                <i class="bit-icon bit-icon--@IconName" />
-            }
-            <span class="bit-mnb-txt">@Text</span>
-            <i class="bit-icon bit-icon--ChevronDown" />
-        }
-    </button>
-    <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
-    <div id="@_menuButtonCalloutId" class="bit-mnb-its" tabindex="@(IsEnabled ? 0 : -1)">
+        <span class="bit-mnb-txt">@Text</span>
+        <i class="bit-icon bit-icon--ChevronDown" />
+    }
+
+    <div id="@_overlayId" class="bit-mnb-ovl" @onclick="CloseCallout" @onclick:stopPropagation></div>
+    <div id="@_calloutId" class="bit-mnb-cal" tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
                 <li role="presentation">
-                    <button @onclick="() => HandleOnItemClick(item)"
-                            type="@ButtonType?.GetValue()"
+                    <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
+                            type="@_buttonType.GetValue()"
                             aria-disabled="@GetIsEnabled(item)"
                             tabindex="@(GetIsEnabled(item) ? 0 : -1)"
                             class="bit-mnb-itm @(GetIsEnabled(item) ? "" : "bit-dis")">
@@ -66,4 +62,4 @@
             }
         </ul>
     </div>
-</div>
+</button>
