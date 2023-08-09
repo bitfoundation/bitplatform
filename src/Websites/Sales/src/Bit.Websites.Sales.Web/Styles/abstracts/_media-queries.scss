@@ -1,12 +1,12 @@
 ﻿@import '_functions.scss';
 
-$screen-lg-min: em(1025px);
-$screen-lg-max: em(1440);
+$screen-lg-min: rem2(1025px);
+$screen-lg-max: rem2(1440);
 
-$screen-md-min: em(361px);
-$screen-md-max: em(1024px);
+$screen-md-min: rem2(361px);
+$screen-md-max: rem2(1024px);
 
-$screen-sm-max: em(360px);
+$screen-sm-max: rem2(360px);
 
 
 

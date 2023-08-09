@@ -24,35 +24,35 @@
     flex-flow: column nowrap;
     align-items: center;
     width: 100%;
-    max-width: rem(1200px);
+    max-width: rem2(1200px);
     margin-left: auto;
     margin-right: auto;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
-    padding-top: rem(80px);
-    padding-bottom: rem(80px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    padding-top: rem2(80px);
+    padding-bottom: rem2(80px);
     box-sizing: border-box;
 
     @include md {
-        padding-left: rem(30px);
-        padding-right: rem(30px);
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
     }
 }
 
 .main-section {
     .page-section-content {
-        padding-top: rem(120px);
+        padding-top: rem2(120px);
 
         @include lt-lg {
-            padding-top: rem(160px);
+            padding-top: rem2(160px);
         }
     }
 
     .primary-btn {
         display: inline-flex;
         justify-content: center;
-        padding: rem(14px) rem(16px);
-        border-radius: rem(4px);
+        padding: rem2(14px) rem2(16px);
+        border-radius: rem2(4px);
         box-shadow: none;
         cursor: pointer;
         -webkit-user-select: none;
@@ -63,7 +63,7 @@
         transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
         background-color: $B6Color;
         color: $White;
-        font-size: rem(16px);
+        font-size: rem2(16px);
         line-height: 1.3125;
         letter-spacing: 0;
         font-weight: 700;
@@ -74,11 +74,11 @@
     }
 
     .page-main-title {
-        max-width: rem(500px);
+        max-width: rem2(500px);
         margin: 0;
-        margin-top: rem(10px);
-        margin-bottom: rem(40px);
-        font-size: rem(64px);
+        margin-top: rem2(10px);
+        margin-bottom: rem2(40px);
+        font-size: rem2(64px);
         font-weight: 800;
         line-height: 1.2;
         background: linear-gradient(to right, #007FFF, #0059B2);
@@ -86,22 +86,22 @@
         -webkit-text-fill-color: transparent;
 
         @include lg {
-            font-size: rem(52px);
+            font-size: rem2(52px);
         }
 
         @include lt-lg {
-            margin-bottom: rem(28px);
-            font-size: rem(42px);
+            margin-bottom: rem2(28px);
+            font-size: rem2(42px);
         }
     }
 
     .page-desc {
         width: 100%;
-        margin-bottom: rem(32px);
-        max-width: rem(750px);
-        font-size: rem(16px);
+        margin-bottom: rem2(32px);
+        max-width: rem2(750px);
+        font-size: rem2(16px);
         font-weight: 400;
-        line-height: rem(32px);
+        line-height: rem2(32px);
         color: #2E2E2E;
         text-align: center;
     }
@@ -113,24 +113,24 @@
 
 .section-title {
     margin: 0;
-    margin-top: rem(10px);
-    margin-bottom: rem(40px);
-    font-size: rem(32px);
+    margin-top: rem2(10px);
+    margin-bottom: rem2(40px);
+    font-size: rem2(32px);
     font-weight: 800;
     line-height: 1.2;
     color: #132F4C;
     text-align: center;
 
     @include lg {
-        font-size: rem(28px);
+        font-size: rem2(28px);
     }
 
     @include lt-lg {
-        font-size: rem(24px);
+        font-size: rem2(24px);
     }
 
     @include sm {
-        margin-bottom: rem(20px);
+        margin-bottom: rem2(20px);
     }
 }
 
@@ -146,13 +146,13 @@
     flex-basis: calc(25% - 20px);
     flex-grow: 0;
     max-width: calc(25% - 20px);
-    min-width: rem(275px);
-    min-height: rem(241px);
-    padding: rem(20px);
-    margin-top: rem(20px);
-    margin-left: rem(20px);
-    border-radius: rem(4px);
-    border: rem(1px) solid #E0E3E7;
+    min-width: rem2(275px);
+    min-height: rem2(241px);
+    padding: rem2(20px);
+    margin-top: rem2(20px);
+    margin-left: rem2(20px);
+    border-radius: rem2(4px);
+    border: rem2(1px) solid #E0E3E7;
     box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
     box-sizing: border-box;
     color: #1A2027;
@@ -161,21 +161,21 @@
 }
 
 .benefit-card-title {
-    margin-bottom: rem(10px);
-    font-size: rem(20px);
+    margin-bottom: rem2(10px);
+    font-size: rem2(20px);
     line-height: 1.5;
     letter-spacing: 0;
     font-weight: 700;
     color: #1A2027;
-    padding-left: rem(30px);
+    padding-left: rem2(30px);
     box-sizing: border-box;
-    background-size: rem(28px);
+    background-size: rem2(28px);
     background-position: center left;
     background-repeat: no-repeat;
 }
 
 .benefit-card-desc {
-    font-size: rem(16px);
+    font-size: rem2(16px);
     line-height: 1.5;
     letter-spacing: 0;
     font-weight: 400;

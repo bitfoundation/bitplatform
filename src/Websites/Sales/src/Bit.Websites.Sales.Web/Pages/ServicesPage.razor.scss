@@ -5,74 +5,74 @@
 .page-sec {
     width: 100%;
     display: flex;
-    max-width: rem(1440px);
+    max-width: rem2(1440px);
     box-sizing: border-box;
-    padding: rem(40px) rem(140px);
+    padding: rem2(40px) rem2(140px);
     margin: 0 auto;
 
     @include lg {
-        padding: rem(32px) rem(60px);
+        padding: rem2(32px) rem2(60px);
     }
 
     @include sm {
-        padding: rem(16px);
+        padding: rem2(16px);
     }
 }
 
 .sec-title {
     font-weight: bold;
-    font-size: rem(44px);
+    font-size: rem2(44px);
     margin-bottom: 1rem;
     text-align: center;
 
     @include lg {
-        font-size: rem(34px);
+        font-size: rem2(34px);
     }
 
     @include md {
-        font-size: rem(30px);
+        font-size: rem2(30px);
     }
 
     @include sm {
-        font-size: rem(26px);
+        font-size: rem2(26px);
     }
 }
 
 .sec-title-underline {
     background-color: $Y1;
-    width: rem(240px);
-    height: rem(4px);
+    width: rem2(240px);
+    height: rem2(4px);
     margin-bottom: 2rem;
 
     @include lg {
-        width: rem(200px);
-        height: rem(2px);
+        width: rem2(200px);
+        height: rem2(2px);
     }
 
     @include md {
-        width: rem(180px);
+        width: rem2(180px);
     }
 
     @include sm {
-        width: rem(150px);
+        width: rem2(150px);
     }
 }
 
 .sec-desc {
     color: $Gray2;
-    font-size: rem(20px);
+    font-size: rem2(20px);
     text-align: center;
     line-height: 2rem;
     margin-bottom: 4rem;
 
     @include md {
-        font-size: rem(18px);
-        line-height: rem(24px);
+        font-size: rem2(18px);
+        line-height: rem2(24px);
     }
 
     @include sm {
-        font-size: rem(16px);
-        line-height: rem(20px);
+        font-size: rem2(16px);
+        line-height: rem2(20px);
     }
 }
 
@@ -80,26 +80,26 @@
     background-image: url('/images/services/services_bg.webp');
     background-repeat: no-repeat;
     background-size: cover;
-    margin-bottom: rem(140px);
+    margin-bottom: rem2(140px);
 
     .services {
-        padding-top: rem(180px);
+        padding-top: rem2(180px);
         display: flex;
         flex-flow: column;
         align-items: center;
 
         .services-title {
             font-weight: 800;
-            font-size: rem(40px);
-            line-height: rem(52px);
+            font-size: rem2(40px);
+            line-height: rem2(52px);
             color: $B2;
-            margin-bottom: rem(24px);
+            margin-bottom: rem2(24px);
         }
 
         .services-bread {
             font-weight: 400;
-            font-size: rem(16px);
-            line-height: rem(24px);
+            font-size: rem2(16px);
+            line-height: rem2(24px);
             color: $Gray2;
         }
     }
@@ -108,19 +108,19 @@
         flex-flow: row nowrap;
         justify-content: flex-start;
         align-items: flex-start;
-        padding-top: rem(96px);
+        padding-top: rem2(96px);
 
         .sec-body {
             .sec-title {
                 font-weight: 700;
-                font-size: rem(40px);
-                line-height: rem(52px);
+                font-size: rem2(40px);
+                line-height: rem2(52px);
                 text-align: unset;
-                margin-bottom: rem(24px);
+                margin-bottom: rem2(24px);
 
                 @include md {
-                    font-size: rem(26px);
-                    line-height: rem(42px);
+                    font-size: rem2(26px);
+                    line-height: rem2(42px);
                 }
 
                 @include sm {
@@ -130,15 +130,15 @@
 
             .sec-desc {
                 font-weight: 400;
-                font-size: rem(20px);
-                line-height: rem(32px);
+                font-size: rem2(20px);
+                line-height: rem2(32px);
                 text-align: unset;
                 color: $Gray1;
-                max-width: rem(880px);
+                max-width: rem2(880px);
 
                 @include md {
-                    font-size: rem(16px);
-                    line-height: rem(26px);
+                    font-size: rem2(16px);
+                    line-height: rem2(26px);
                 }
 
                 @include sm {
@@ -158,11 +158,11 @@
 
     .sec-title {
         color: $B1;
-        margin-bottom: rem(32px);
+        margin-bottom: rem2(32px);
     }
 
     .sec-desc {
-        max-width: rem(900px);
+        max-width: rem2(900px);
     }
 
     .sec-content {
@@ -173,11 +173,11 @@
             z-index: -1;
             position: absolute;
             top: 0;
-            left: rem(-170px);
-            width: rem(500px);
-            height: rem(1000px);
+            left: rem2(-170px);
+            width: rem2(500px);
+            height: rem2(1000px);
             background-image: url('/images/services/outsourcing/outsourcing_bg_1.svg');
-            background-size: rem(100px);
+            background-size: rem2(100px);
             background-repeat: no-repeat;
             background-position: top 5rem left;
 
@@ -188,23 +188,23 @@
 
         .steps-bg-2 {
             flex-basis: 100%;
-            max-width: rem(500px);
-            height: rem(1000px);
+            max-width: rem2(500px);
+            height: rem2(1000px);
             top: 0;
             position: sticky;
             background-image: url('/images/services/outsourcing/outsourcing_bg_2.webp');
             background-position: top 2rem right;
             background-size: contain;
             background-repeat: no-repeat;
-            margin-right: rem(-140px);
+            margin-right: rem2(-140px);
 
             @include lg {
-                margin-right: rem(-60px);
+                margin-right: rem2(-60px);
             }
 
             @include md {
-                max-width: rem(420px);
-                height: rem(890px);
+                max-width: rem2(420px);
+                height: rem2(890px);
                 flex-basis: 60%;
             }
 
@@ -217,33 +217,33 @@
             flex-basis: 100%;
 
             .step {
-                background-position-y: rem(5px);
+                background-position-y: rem2(5px);
                 background-repeat: no-repeat;
                 margin-bottom: 3rem;
 
                 .step-title {
                     font-weight: 700;
-                    font-size: rem(30px);
+                    font-size: rem2(30px);
                     padding-bottom: 1rem;
 
                     @include md {
-                        font-size: rem(24px);
+                        font-size: rem2(24px);
                     }
 
                     @include sm {
-                        font-size: rem(22px);
+                        font-size: rem2(22px);
                     }
                 }
 
                 .step-desc {
                     font-weight: 400;
-                    font-size: rem(18px);
-                    line-height: rem(28px);
+                    font-size: rem2(18px);
+                    line-height: rem2(28px);
                     color: $Gray1;
 
                     @include md {
-                        font-size: rem(15px);
-                        line-height: rem(20px);
+                        font-size: rem2(15px);
+                        line-height: rem2(20px);
                     }
 
                     @include sm {
@@ -270,17 +270,17 @@
                     display: flex;
                     flex-flow: row wrap;
                     gap: 1rem;
-                    margin-top: rem(10px);
+                    margin-top: rem2(10px);
 
                     .tag {
-                        font-size: rem(14px);
+                        font-size: rem2(14px);
                         color: $Gray2;
-                        padding: rem(4px) rem(10px);
+                        padding: rem2(4px) rem2(10px);
                         background-color: $B6;
                         border: 1px solid $B5;
                         border-radius: 2px;
                         background-repeat: no-repeat;
-                        background-position: center left rem(10px);
+                        background-position: center left rem2(10px);
                     }
                 }
             }

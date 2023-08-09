@@ -9,13 +9,13 @@
     border-spacing: 0;
     display: inline-grid;
     box-sizing: border-box;
-    margin-bottom: rem(40px);
+    margin-bottom: rem2(40px);
 }
 
 .th-row {
     width: 100%;
     display: flex;
-    min-height: rem(42px);
+    min-height: rem2(42px);
     color: $bit-color-foreground-primary;
 }
 
@@ -23,7 +23,7 @@
     width: 100%;
     display: flex;
     min-width: max-content;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
     &:last-child {
         border: none;
@@ -37,12 +37,12 @@
     text-align: left;
     overflow: hidden;
     align-items: center;
-    font-size: rem(14px);
+    font-size: rem2(14px);
     box-sizing: border-box;
     text-overflow: ellipsis;
     justify-content: flex-start;
     background-color: transparent;
-    padding: rem(5px) rem(16px) rem(5px) rem(16px);
+    padding: rem2(5px) rem2(16px) rem2(5px) rem2(16px);
 
     &:last-child {
         border: none;
@@ -53,10 +53,10 @@
     display: flex;
     text-align: left;
     overflow: hidden;
-    padding: rem(16px);
+    padding: rem2(16px);
     text-overflow: clip;
     white-space: normal;
-    font-size: rem(11px);
+    font-size: rem2(11px);
     box-sizing: border-box;
     word-break: break-word;
     align-items: flex-start;

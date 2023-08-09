@@ -8,41 +8,41 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem(56px) rem(16px);
+    padding: rem2(56px) rem2(16px);
 
     @include lg {
-        padding: rem(48px) rem(16px);
+        padding: rem2(48px) rem2(16px);
     }
 
     @include sm {
-        padding: rem(40px) rem(16px);
+        padding: rem2(40px) rem2(16px);
     }
 }
 
 .form-description {
     font-weight: 600;
-    width: rem(454px);
-    height: rem(24px);
-    font-size: rem(16px);
-    line-height: rem(24px);
+    width: rem2(454px);
+    height: rem2(24px);
+    font-size: rem2(16px);
+    line-height: rem2(24px);
 
     @include lg {
-        width: rem(398px);
-        height: rem(20px);
+        width: rem2(398px);
+        height: rem2(20px);
     }
 
     @include md {
-        width: rem(398px);
-        height: rem(20px);
+        width: rem2(398px);
+        height: rem2(20px);
     }
 
     @include sm {
-        width: rem(280px);
-        height: rem(40px);
+        width: rem2(280px);
+        height: rem2(40px);
     }
 
     @include lt-xl {
-        font-size: rem(14px);
-        line-height: rem(20px);
+        font-size: rem2(14px);
+        line-height: rem2(20px);
     }
 }

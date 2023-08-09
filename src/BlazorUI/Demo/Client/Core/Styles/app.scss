@@ -28,9 +28,9 @@ html, body, #app-container {
     z-index: 10;
     position: sticky;
     background-color: $bit-color-background-secondary;
-    top: calc(rem(75px) + var(--bit-status-bar-height));
+    top: calc(rem2(75px) + var(--bit-status-bar-height));
 
     .bit-ios & {
-        top: calc(rem(75px) + env(safe-area-inset-top));
+        top: calc(rem2(75px) + env(safe-area-inset-top));
     }
 }

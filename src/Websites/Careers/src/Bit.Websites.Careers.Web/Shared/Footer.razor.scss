@@ -2,7 +2,7 @@
 @import '../Styles/abstracts/_functions.scss';
 
 .footer-container {
-    min-height: rem(176px);
+    min-height: rem2(176px);
     display: flex;
     flex-direction: column;
     color: $Gray1;
@@ -14,25 +14,25 @@
     background-color: $Blue1;
     display: flex;
     flex-flow: row nowrap;
-    padding: 0 rem(140px);
+    padding: 0 rem2(140px);
 }
 
 .left-side-content {
     flex: 1;
     display: flex;
     flex-flow: column nowrap;
-    padding-top: rem(24px);
+    padding-top: rem2(24px);
     justify-content: flex-start;
     align-items: flex-start;
 }
 
 .footer-bit-icon {
-    width: rem(36px);
+    width: rem2(36px);
 }
 
 .footer-info-text {
-    font-size: rem(14px);
-    margin-top: rem(8px);
+    font-size: rem2(14px);
+    margin-top: rem2(8px);
 }
 
 .communications-options {
@@ -40,9 +40,9 @@
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    width: rem(172px);
+    width: rem2(172px);
     cursor: pointer;
-    margin-top: rem(12px);
+    margin-top: rem2(12px);
 
     .mail-button {
         background: url(/images/footer/mail-icon-blue.svg);
@@ -62,9 +62,9 @@
 }
 
 .communication-button {
-    width: rem(28px);
-    height: rem(28px);
-    background-size: rem(28px);
+    width: rem2(28px);
+    height: rem2(28px);
+    background-size: rem2(28px);
     background-repeat: no-repeat;
     background-position: center;
     position: relative;
@@ -76,28 +76,28 @@
 }
 
 .center-text {
-    min-width: rem(121px);
+    min-width: rem2(121px);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    margin: 0 rem(4px);
+    margin: 0 rem2(4px);
     font-weight: 500;
-    padding-bottom: rem(40px);
+    padding-bottom: rem2(40px);
 }
 
 .footer-items-container {
     flex: 1;
-    font-size: rem(14px);
+    font-size: rem2(14px);
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
-    padding-bottom: rem(30px);
+    padding-bottom: rem2(30px);
     flex-flow: column nowrap;
 
     .footer-item {
-        margin-top: rem(4px);
+        margin-top: rem2(4px);
         cursor: pointer;
-        line-height: rem(24px);
+        line-height: rem2(24px);
 
         &:hover {
             color: $Primary;
@@ -106,19 +106,19 @@
 }
 
 .bottom-line {
-    height: rem(32px);
-    margin-top: rem(1px);
+    height: rem2(32px);
+    margin-top: rem2(1px);
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: rem(10px);
+    font-size: rem2(10px);
     background-color: $Blue1;
 }
 
 .red-heart {
     color: $Red;
-    margin: 0 rem(2px);
+    margin: 0 rem2(2px);
 }
 
 .back-to-top-button {
@@ -128,9 +128,9 @@
     transition: all 0.2s;
     cursor: pointer;
     background: url(/images/footer/go-to-top-icon.svg) no-repeat center;
-    background-size: rem(43px);
-    height: rem(43px);
-    width: rem(43px);
+    background-size: rem2(43px);
+    height: rem2(43px);
+    width: rem2(43px);
 
     &:hover {
         top: -26px;

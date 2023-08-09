@@ -1,20 +1,20 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
 
 .m-b-15 {
-    margin-bottom: rem(15px);
+    margin-bottom: rem2(15px);
 }
 
 .spinner-container, 
 .spinner-positioning {
     label {
-        padding: rem(16px) 0;
-        font-size: rem(16px);
+        padding: rem2(16px) 0;
+        font-size: rem2(16px);
     }
 }
 
 .spinner-container {
     label {
-        margin-right: rem(20px);
+        margin-right: rem2(20px);
     }
 
     > div {
@@ -23,7 +23,7 @@
         align-items: center;
 
         > div {
-            margin-left: rem(20px);
+            margin-left: rem2(20px);
         }
     }
 }
@@ -39,7 +39,7 @@
         align-items: center;
 
         &:not(:first-child) {
-            margin-top: rem(20px);
+            margin-top: rem2(20px);
         }
     }
 }
@@ -63,5 +63,5 @@
 }
 
 ::deep .bit-spn-fluent {
-    margin-top: rem(10px);
+    margin-top: rem2(10px);
 }

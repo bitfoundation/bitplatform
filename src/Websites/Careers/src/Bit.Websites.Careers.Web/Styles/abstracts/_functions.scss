@@ -1,21 +1,15 @@
-﻿$html-font-size: 16px;
+﻿@use 'sass:math';
 
-/// stripUnit(10px) -> 10
-/// stripUnit(2em) -> 2
-/// stripUnit(3) -> 3
+$html-font-size: 16px;
+
 @function stripUnit($value) {
-    @if type-of($value) == 'number' and not unitless($value) {
-        @return $value / ($value * 0 + 1);
-    }
-    @return $value;
+    @return math.div($value, ($value * 0 + 1));
 }
 
-/// Convert px to rem.
-@function rem($pxValue) {
-    @return #{stripUnit($pxValue) / stripUnit($html-font-size)}rem;
+@function em2($pxValue, $base-font-size: $html-font-size) {
+    @return #{calc(stripUnit($pxValue) / stripUnit($base-font-size))}em;
 }
 
-/// Convert px to em.
-@function em($size, $base-font-size: 16px) {
-    @return stripUnit($size) / stripUnit($base-font-size) * 1em;
+@function rem2($pxValue) {
+    @return #{calc(stripUnit($pxValue) / stripUnit($html-font-size))}rem;
 }

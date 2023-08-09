@@ -48,11 +48,11 @@
 
     .checked-box {
         display: flex;
-        width: rem(32px);
-        height: rem(32px);
+        width: rem2(32px);
+        height: rem2(32px);
         border: 1px solid;
         align-items: center;
-        margin-right: rem(5px);
+        margin-right: rem2(5px);
         justify-content: center;
     }
 }
