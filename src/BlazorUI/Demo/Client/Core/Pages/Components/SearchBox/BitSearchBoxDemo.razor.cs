@@ -121,11 +121,11 @@ public partial class BitSearchBoxDemo
 
 <BitLabel>OnChange</BitLabel>
 <BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" />
-<span>Search Value: @OnChangeSearchValue</span>
+<BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
 
 <BitLabel>OnSearch (Serach by Enter)</BitLabel>
 <BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
-<span>Search Value: @OnSearchValue</span>";
+<BitLabel>Search Value: @OnSearchValue</BitLabel>";
     private readonly string example4CSharpCode = @"
 private string TwoWaySearchValue;
 private string OnChangeSearchValue;
