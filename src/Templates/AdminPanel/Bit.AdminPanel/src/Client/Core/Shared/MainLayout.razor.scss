@@ -10,8 +10,8 @@
     position: relative;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    padding-top: rem($HeaderHeight);
-    padding-left: rem($NavMenuWidth);
+    padding-top: rem2($HeaderHeight);
+    padding-left: rem2($NavMenuWidth);
     background-color: $bit-color-background-secondary;
 
     @include lt-lg {
@@ -50,35 +50,35 @@
     margin-left: auto;
     margin-right: auto;
     min-height: calc(100vh - 103px);
-    padding: 0 rem($LargeScreenPadding);
-    max-width: rem($LargeScreenMaxWidth);
-    padding-top: calc(rem(32px) + var(--bit-status-bar-height));
-    padding-bottom: rem(32px);
+    padding: 0 rem2($LargeScreenPadding);
+    max-width: rem2($LargeScreenMaxWidth);
+    padding-top: calc(rem2(32px) + var(--bit-status-bar-height));
+    padding-bottom: rem2(32px);
 
     .bit-ios & {
-        padding-top: calc(rem(32px) + env(safe-area-inset-top));
+        padding-top: calc(rem2(32px) + env(safe-area-inset-top));
         min-height: calc(100vh - 103px - env(safe-area-inset-bottom));
     }
 
     @include md {
-        padding: 0 rem($MediumScreenPadding);
-        max-width: rem($MediumScreenMaxWidth);
-        padding-top: calc(rem(32px) + var(--bit-status-bar-height));
-        padding-bottom: rem(32px);
+        padding: 0 rem2($MediumScreenPadding);
+        max-width: rem2($MediumScreenMaxWidth);
+        padding-top: calc(rem2(32px) + var(--bit-status-bar-height));
+        padding-bottom: rem2(32px);
 
         .bit-ios & {
-            padding-top: calc(rem(32px) + env(safe-area-inset-top));
+            padding-top: calc(rem2(32px) + env(safe-area-inset-top));
         }
     }
 
     @include sm {
-        padding: 0 rem($SmallScreenPadding);
-        max-width: rem($SmallScreenMaxWidth);
-        padding-top: calc(rem(16px) + var(--bit-status-bar-height));
-        padding-bottom: rem(16px);
+        padding: 0 rem2($SmallScreenPadding);
+        max-width: rem2($SmallScreenMaxWidth);
+        padding-top: calc(rem2(16px) + var(--bit-status-bar-height));
+        padding-bottom: rem2(16px);
 
         .bit-ios & {
-            padding-top: calc(rem(16px) + env(safe-area-inset-top));
+            padding-top: calc(rem2(16px) + env(safe-area-inset-top));
         }
     }
 }
@@ -101,7 +101,7 @@
     position: fixed;
     text-align: center;
     align-items: center;
-    font-size: rem(14px);
+    font-size: rem2(14px);
     justify-content: center;
     color: $bit-color-primary-main;
 }

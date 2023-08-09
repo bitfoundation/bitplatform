@@ -6,23 +6,24 @@
 footer {
     width: 100%;
     display: flex;
+    padding-top: 5rem;
     align-items: center;
     box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    border-top: rem(1px) solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
 }
 
 .footer-section {
     width: 100%;
     position: relative;
-    max-width: rem(1200px);
+    max-width: rem2(1200px);
     box-sizing: border-box;
-    padding: rem(40px) rem(20px) rem(80px);
+    padding: rem2(40px) rem2(20px) rem2(80px);
 
     &:first-child {
         display: grid;
-        gap: rem(40px);
+        gap: rem2(40px);
         align-items: center;
         grid-auto-columns: 1fr;
         grid-template-rows: auto;
@@ -41,9 +42,9 @@ footer {
     &:last-child {
         display: flex;
         align-items: center;
-        padding: rem(40px) rem(20px);
+        padding: rem2(40px) rem2(20px);
         justify-content: space-between;
-        border-top: rem(1px) solid $bit-color-border-secondary;
+        border-top: rem2(1px) solid $bit-color-border-secondary;
 
         @include sm {
             align-items: center;
@@ -53,8 +54,8 @@ footer {
     }
 
     @include md {
-        padding-left: rem(30px);
-        padding-right: rem(30px);
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
     }
 }
 
@@ -75,10 +76,10 @@ footer {
 
 .go-to-top {
     bottom: 0;
-    right: rem(2px);
+    right: rem2(2px);
     cursor: pointer;
     position: absolute;
-    padding: rem(8px) rem(12px);
+    padding: rem2(8px) rem2(12px);
     background-color: $bit-color-background-secondary;
 
     &:hover {
@@ -92,7 +93,7 @@ footer {
     flex-flow: column nowrap;
 
     @include sm {
-        margin-bottom: rem(30px);
+        margin-bottom: rem2(30px);
     }
 
     a {
@@ -100,9 +101,9 @@ footer {
     }
 
     .address, .tel, .country {
-        padding-left: rem(20px);
+        padding-left: rem2(20px);
         background-repeat: no-repeat;
-        background-position-y: rem(4px);
+        background-position-y: rem2(4px);
     }
 
     .address, .tel {
@@ -127,9 +128,9 @@ footer {
 }
 
 .bit-logo {
-    width: rem(32px);
-    height: rem(27px);
-    margin-bottom: rem(20px);
+    width: rem2(32px);
+    height: rem2(27px);
+    margin-bottom: rem2(20px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -140,15 +141,15 @@ footer {
     margin: 0;
     line-height: 1.5;
     letter-spacing: 0;
-    font-size: rem(14px);
+    font-size: rem2(14px);
 }
 
 .footer-link {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
-    font-size: rem(14px);
-    margin-top: rem(10px);
+    font-size: rem2(14px);
+    margin-top: rem2(10px);
     text-decoration: none;
     color: $bit-color-primary-main;
 
@@ -161,8 +162,8 @@ footer {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
-    font-size: rem(14px);
-    margin-top: rem(16px);
+    font-size: rem2(14px);
+    margin-top: rem2(16px);
 }
 
 .social-link-group {
@@ -172,18 +173,18 @@ footer {
     justify-content: center;
 
     @include sm {
-        margin-bottom: rem(8px);
+        margin-bottom: rem2(8px);
     }
 }
 
 .social-link {
     cursor: pointer;
-    width: rem(32px);
-    height: rem(32px);
-    margin: 0 rem(10);
+    width: rem2(32px);
+    height: rem2(32px);
+    margin: 0 rem2(10);
     border-radius: 50%;
     background-color: #a19f9d;
-    background-size: rem(18px);
+    background-size: rem2(18px);
     background-position: center;
     background-repeat: no-repeat;
 }

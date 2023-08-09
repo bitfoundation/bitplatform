@@ -7,10 +7,10 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem(28px) rem(110px);
+    padding: rem2(28px) rem2(110px);
 
     @include lt-lg {
-        padding: rem(28px) rem(47px);
+        padding: rem2(28px) rem2(47px);
     }
 }
 
@@ -22,13 +22,13 @@
 
 .modal-title {
     font-weight: 600;
-    font-size: rem(24px);
-    line-height: rem(40px);
-    margin-bottom: rem(12px);
+    font-size: rem2(24px);
+    line-height: rem2(40px);
+    margin-bottom: rem2(12px);
 }
 
 .modal-desc {
-    font-size: rem(18px);
-    line-height: rem(24px);
-    margin-bottom: rem(36px);
+    font-size: rem2(18px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(36px);
 }

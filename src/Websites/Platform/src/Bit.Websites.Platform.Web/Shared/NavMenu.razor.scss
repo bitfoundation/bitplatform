@@ -14,11 +14,11 @@
     overflow-y: auto;
     position: sticky;
     flex-direction: column;
-    top: rem($HeaderHeight);
-    width: rem($NavMenuWidth);
-    max-width: rem($NavMenuWidth);
-    height: calc(100vh - rem($HeaderHeight));
-    background-color: $bit-color-background-primary;
+    top: rem2($HeaderHeight);
+    width: rem2($NavMenuWidth);
+    max-width: rem2($NavMenuWidth);
+    height: calc(100vh - rem2($HeaderHeight));
+    background-color: $bit-color-background-secondary;
 
     @include lt-lg {
         height: 100vh;
@@ -29,7 +29,7 @@
     }
 
     @include sm {
-        border-radius: 0 rem(10px) rem(10px) 0;
+        border-radius: 0 rem2(10px) rem2(10px) 0;
     }
 }
 
@@ -58,28 +58,28 @@
 
 .search-box-container {
     width: 100%;
-    padding: rem(24px) rem(22px);
+    padding: rem2(24px) rem2(22px);
     box-sizing: border-box;
 }
 
 .nav-menu-list {
     width: 100%;
-    height: calc(100% - #{rem(89px)});
+    height: calc(100% - #{rem2(89px)});
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
 
     &::-webkit-scrollbar {
-        width: rem(6px);
+        width: rem2(6px);
     }
 }
 
 ::deep .nav-menu-search-box {
     width: 100%;
-    height: rem(40px);
+    height: rem2(40px);
 
     input::-webkit-input-placeholder {
-        font-size: rem(14px);
+        font-size: rem2(14px);
         font-weight: 500;
     }
 }
@@ -87,8 +87,8 @@
 ::deep .side-nav {
     .link-enabled-nourl {
         font-weight: 600;
-        font-size: rem(14px);
-        line-height: rem(32px);
+        font-size: rem2(14px);
+        line-height: rem2(32px);
         color: #323130;
     }
 
@@ -117,11 +117,11 @@
     }
 
     .link-enabled-hasurl {
-        height: rem(40px);
+        height: rem2(40px);
         box-sizing: border-box;
-        font-size: rem(14px);
+        font-size: rem2(14px);
         font-weight: 400;
-        line-height: rem(26px);
+        line-height: rem2(26px);
         color: #323130;
 
         &:hover {
@@ -134,7 +134,7 @@
         color: $B6Color;
 
         &:after {
-            border-left: rem(4px) solid $B6Color;
+            border-left: rem2(4px) solid $B6Color;
         }
     }
 }

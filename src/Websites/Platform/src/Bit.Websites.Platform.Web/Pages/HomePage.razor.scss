@@ -25,10 +25,10 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    max-width: rem(1200px);
+    max-width: rem2(1200px);
     box-sizing: border-box;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
 }
 
 .hero-section {
@@ -60,7 +60,7 @@
         width: 50%;
         display: flex;
         padding-top: 15rem;
-        max-width: rem(504px);
+        max-width: rem2(504px);
         align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
@@ -92,7 +92,7 @@
             padding: 2rem;
             min-width: 225rem;
             padding-bottom: 5rem;
-            border-bottom-left-radius: rem(2px);
+            border-bottom-left-radius: rem2(2px);
             background-color: $bit-color-background-secondary;
         }
 
@@ -117,7 +117,7 @@
 
     ::deep .hero-quickstart-button {
         padding: 0;
-        height: rem(50px);
+        height: rem2(50px);
 
         .hero-quickstart-link {
             height: 100%;
@@ -162,7 +162,7 @@
     .components-content-container {
         width: 65%;
         display: flex;
-        max-width: rem(700px);
+        max-width: rem2(700px);
         align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: space-between;
@@ -179,7 +179,7 @@
         display: flex;
         flex-flow: row nowrap;
         width: calc(100% + 40px);
-        padding-bottom: rem(40px);
+        padding-bottom: rem2(40px);
         max-width: calc(100% + 40px);
         flex-basis: calc(100% + 40px);
 
@@ -193,16 +193,16 @@
             max-width: 50%;
             flex-basis: 50%;
             flex-flow: row nowrap;
-            padding-top: rem(20px);
+            padding-top: rem2(20px);
 
             .com-item-content {
                 height: 100%;
                 display: flex;
                 flex-flow: column;
-                padding: rem(5px);
-                padding-left: rem(20px);
+                padding: rem2(5px);
+                padding-left: rem2(20px);
                 justify-content: center;
-                border-left: rem(2px) solid #173A5E;
+                border-left: rem2(2px) solid #173A5E;
             }
 
             .com-item-value {
@@ -210,7 +210,7 @@
                 font-weight: 400;
                 font-weight: 700;
                 line-height: 1.5;
-                font-size: rem(28px);
+                font-size: rem2(28px);
                 letter-spacing: 0.2px;
             }
 
@@ -219,7 +219,7 @@
                 font-weight: 400;
                 line-height: 1.5;
                 letter-spacing: 0;
-                font-size: rem(16px);
+                font-size: rem2(16px);
             }
         }
     }
@@ -230,15 +230,15 @@
         cursor: pointer;
         font-weight: 700;
         align-items: center;
-        font-size: rem(14px);
+        font-size: rem2(14px);
         flex-flow: row nowrap;
-        line-height: rem(32px);
+        line-height: rem2(32px);
         transition: all 0.2s linear;
 
         .com-link-arrow {
-            width: rem(16px);
-            height: rem(16px);
-            margin-left: rem(8px);
+            width: rem2(16px);
+            height: rem2(16px);
+            margin-left: rem2(8px);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -261,12 +261,12 @@
         }
 
         .image-link {
-            width: rem(500px);
-            height: rem(338px);
+            width: rem2(500px);
+            height: rem2(338px);
             background-repeat: no-repeat;
             background-position: center left;
             background-image: url('/images/home/balzorui-bg.webp');
-            border-radius: rem(6px);
+            border-radius: rem2(6px);
             box-shadow: $bit-box-shadow-callout;
         }
     }
@@ -274,20 +274,20 @@
 
 .templates-section {
     .template-terminal {
-        gap: rem(12px);
+        gap: rem2(12px);
         display: flex;
         flex-wrap: wrap;
-        padding: rem(50px);
-        margin: rem(50px) 0;
+        padding: rem2(50px);
+        margin: rem2(50px) 0;
         align-items: center;
-        border-radius: rem(4px);
+        border-radius: rem2(4px);
         color: #f0f0f0;
         border: 1px solid #001234;
         background-color: #012456;
 
         span {
             white-space: nowrap;
-            font-size: rem(18px);
+            font-size: rem2(18px);
             font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
         }
 
@@ -355,11 +355,11 @@
     .template-card-list {
         display: flex;
         flex-flow: row wrap;
-        margin-left: rem(-20px);
+        margin-left: rem2(-20px);
         justify-content: center;
         width: calc(100% + 20px);
 
-        @media all and (max-width: #{em(750px)}) {
+        @media all and (max-width: #{rem2(750px)}) {
             width: 100%;
             margin-left: 0;
         }
@@ -367,21 +367,21 @@
 
     .template-card {
         flex-grow: 0;
-        padding: rem(40px);
-        min-width: rem(275px);
-        margin-top: rem(20px);
-        min-height: rem(241px);
-        margin-left: rem(20px);
+        padding: rem2(40px);
+        min-width: rem2(275px);
+        margin-top: rem2(20px);
+        min-height: rem2(241px);
+        margin-left: rem2(20px);
         box-sizing: border-box;
-        border-radius: rem(8px);
+        border-radius: rem2(8px);
         max-width: calc(50% - 20px);
         flex-basis: calc(50% - 20px);
         background-color: $bit-color-background-secondary;
 
-        @media all and (max-width: #{em(750px)}) {
+        @media all and (max-width: #{rem2(750px)}) {
             margin-left: 0;
             flex-basis: 100%;
-            max-width: rem(500px);
+            max-width: rem2(500px);
         }
     }
 
@@ -390,16 +390,16 @@
         cursor: pointer;
         font-weight: 700;
         align-items: center;
-        font-size: rem(14px);
+        font-size: rem2(14px);
         flex-flow: row nowrap;
-        line-height: rem(32px);
+        line-height: rem2(32px);
         transition: all 0.2s linear;
         color: $bit-color-primary-main;
 
         .template-link-arrow {
-            width: rem(16px);
-            height: rem(16px);
-            margin-left: rem(8px);
+            width: rem2(16px);
+            height: rem2(16px);
+            margin-left: rem2(8px);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -415,21 +415,21 @@
         cursor: pointer;
         position: relative;
         padding: 55% 0 0 0;
-        margin-bottom: rem(14px);
+        margin-bottom: rem2(14px);
     }
 
     .template-img {
         top: 0;
         width: 100%;
         position: absolute;
-        border-radius: rem(6px);
+        border-radius: rem2(6px);
         box-shadow: $bit-box-shadow-callout;
     }
 
     .links-container {
         display: flex;
         flex-flow: row wrap;
-        margin-top: rem(4px);
+        margin-top: rem2(4px);
         justify-content: space-between;
     }
 }
@@ -453,9 +453,9 @@
     }
 
     .tech-item {
-        width: rem(70px);
-        height: rem(70px);
-        margin: rem(20px);
+        width: rem2(70px);
+        height: rem2(70px);
+        margin: rem2(20px);
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
@@ -496,8 +496,8 @@
 .customer-section {
     ::deep .customer-feedback-carousel {
         width: 100%;
-        height: rem(360px);
-        margin: rem(32px) auto;
+        height: rem2(360px);
+        margin: rem2(32px) auto;
     }
 
     .customer-feedback-card {
@@ -509,24 +509,24 @@
         align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
-        padding: rem(46px) rem(40px);
+        padding: rem2(46px) rem2(40px);
         background-color: $bit-color-background-secondary;
 
         @include md {
-            padding: rem(28px) rem(25px);
+            padding: rem2(28px) rem2(25px);
         }
 
         @include sm {
-            padding: rem(24px);
+            padding: rem2(24px);
         }
     }
 
     .twitter-icon {
         cursor: pointer;
-        width: rem(48px);
-        height: rem(48px);
+        width: rem2(48px);
+        height: rem2(48px);
         border-radius: 50%;
-        background-size: rem(32px);
+        background-size: rem2(32px);
         background-position: center;
         background-repeat: no-repeat;
         background-image: url('/images/home/twitter-icon.svg');
@@ -537,43 +537,43 @@
         flex-grow: 1;
         font-weight: 400;
         overflow: hidden;
-        font-size: rem(20px);
+        font-size: rem2(20px);
         text-align-last: left;
-        line-height: rem(32px);
-        margin-bottom: rem(14px);
+        line-height: rem2(32px);
+        margin-bottom: rem2(14px);
 
         .highlighted-txt {
             color: $bit-color-primary-main;
         }
 
         @include md {
-            font-size: rem(18px);
-            line-height: rem(28px);
-            margin-bottom: rem(10px);
+            font-size: rem2(18px);
+            line-height: rem2(28px);
+            margin-bottom: rem2(10px);
         }
 
         @include sm {
-            font-size: rem(16px);
-            line-height: rem(24px);
-            margin-bottom: rem(8px);
+            font-size: rem2(16px);
+            line-height: rem2(24px);
+            margin-bottom: rem2(8px);
         }
     }
 
     .customer-feedback-name {
         z-index: 2;
         font-weight: 700;
-        font-size: rem(18px);
-        line-height: rem(32px);
+        font-size: rem2(18px);
+        line-height: rem2(32px);
 
         @include md {
-            font-size: rem(15px);
-            line-height: rem(28px);
+            font-size: rem2(15px);
+            line-height: rem2(28px);
         }
 
         @include sm {
             font-weight: 600;
-            font-size: rem(14px);
-            line-height: rem(28px);
+            font-size: rem2(14px);
+            line-height: rem2(28px);
         }
     }
 
@@ -583,9 +583,9 @@
     }
 
     .customer-image {
-        width: rem(64px);
+        width: rem2(64px);
         border-radius: 50%;
-        margin-right: rem(10px);
+        margin-right: rem2(10px);
     }
 }
 
@@ -594,7 +594,6 @@
     padding: 5rem 0;
     text-align: center;
     scroll-margin: 7rem;
-    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
@@ -612,7 +611,7 @@
         }
 
         ::deep a {
-            min-width: rem(360px);
+            min-width: rem2(360px);
         }
 
         @include xs {

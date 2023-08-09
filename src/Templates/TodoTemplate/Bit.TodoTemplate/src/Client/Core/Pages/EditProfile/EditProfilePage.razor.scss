@@ -9,10 +9,10 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem(48px) rem(16px);
+    padding: rem2(48px) rem2(16px);
 
     @include lt-lg {
-        padding: rem(16px);
+        padding: rem2(16px);
     }
 }
 
@@ -21,10 +21,10 @@
     display: flex;
     position: relative;
     align-items: center;
-    max-width: rem(608px);
-    border-radius: rem(4px);
+    max-width: rem2(608px);
+    border-radius: rem2(4px);
     flex-flow: column nowrap;
-    padding: rem(32px) rem(14px);
+    padding: rem2(32px) rem2(14px);
     background-color: $bit-color-background-primary;
 
     &.profile-panel {
@@ -49,66 +49,66 @@
     top: 0;
     left: 0;
     position: absolute;
-    border-radius: rem(4px) rem(4px) 0 0;
+    border-radius: rem2(4px) rem2(4px) 0 0;
 }
 
 .page-title {
     font-weight: 600;
-    font-size: rem(28px);
-    line-height: rem(44px);
-    margin-bottom: rem(16px);
+    font-size: rem2(28px);
+    line-height: rem2(44px);
+    margin-bottom: rem2(16px);
 }
 
 .form-profile-container {
     width: 100%;
     display: flex;
     align-items: center;
-    max-width: rem(340px);
+    max-width: rem2(340px);
     flex-flow: row nowrap;
-    margin-bottom: rem(17px);
+    margin-bottom: rem2(17px);
     justify-content: flex-start;
 
     @include lt-xl {
-        max-width: rem(300px);
-        margin-bottom: rem(13px);
+        max-width: rem2(300px);
+        margin-bottom: rem2(13px);
     }
 
     @include md {
-        margin-bottom: rem(21px);
+        margin-bottom: rem2(21px);
     }
 
     @include sm {
         max-width: 100%;
-        margin-bottom: rem(13px);
+        margin-bottom: rem2(13px);
     }
 }
 
 .form-input-container {
     width: 100%;
     display: flex;
-    max-width: rem(340px);
+    max-width: rem2(340px);
     flex-flow: column nowrap;
-    margin-bottom: rem(17px);
+    margin-bottom: rem2(17px);
 }
 
 .form-input-error {
-    font-size: rem(12px);
-    line-height: rem(16px);
+    font-size: rem2(12px);
+    line-height: rem2(16px);
     color: $bit-color-state-error;
 }
 
 .form-choice-container {
     width: 100%;
-    max-width: rem(340px);
-    margin-bottom: rem(19px);
+    max-width: rem2(340px);
+    margin-bottom: rem2(19px);
 
     @include lt-xl {
-        max-width: rem(300px);
-        margin-bottom: rem(17px);
+        max-width: rem2(300px);
+        margin-bottom: rem2(17px);
     }
 
     @include md {
-        margin-bottom: rem(25px);
+        margin-bottom: rem2(25px);
     }
 
     @include sm {

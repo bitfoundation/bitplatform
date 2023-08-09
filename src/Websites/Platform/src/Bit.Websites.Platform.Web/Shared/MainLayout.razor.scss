@@ -10,10 +10,10 @@
     min-height: 100vh;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: rem($HeaderHeight);
+    padding-top: rem2($HeaderHeight);
 
     @include lt-lg {
-        padding-top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 }
 
@@ -56,41 +56,41 @@
     margin: 0 auto;
     overflow: hidden;
     position: relative;
-    padding-top: rem(65px);
-    padding-left: rem(60px);
-    padding-right: rem(60px);
-    padding-bottom: rem(65px);
+    padding-top: rem2(65px);
+    padding-left: rem2(60px);
+    padding-right: rem2(60px);
+    padding-bottom: rem2(65px);
     max-width: calc(100% - $NavMenuWidth);
 
     @include lt-xl {
-        padding-top: rem(35px);
-        padding-bottom: rem(35px);
+        padding-top: rem2(35px);
+        padding-bottom: rem2(35px);
     }
 
     @include lg {
-        padding-left: rem(16px);
-        padding-right: rem(16px);
+        padding-left: rem2(16px);
+        padding-right: rem2(16px);
     }
 
     @include md {
         max-width: 100%;
-        padding-left: rem(30px);
-        padding-right: rem(30px);
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
     }
 
     @include sm {
         max-width: 100%;
-        padding-left: rem(20px);
-        padding-right: rem(20px);
+        padding-left: rem2(20px);
+        padding-right: rem2(20px);
     }
 
     @media all and (min-width: 1621px) {
-        max-width: rem(1320px);
+        max-width: rem2(1320px);
     }
 }
 
 .docs-content {
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-primary;
 }
 
 ::deep {

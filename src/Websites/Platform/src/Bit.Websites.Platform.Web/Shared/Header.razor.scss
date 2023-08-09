@@ -17,7 +17,7 @@
 
 .main-header--full-page {
     .header-main-container {
-        max-width: rem(1200px);
+        max-width: rem2(1200px);
     }
 }
 
@@ -29,18 +29,18 @@
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
-    min-height: rem($HeaderHeight);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    min-height: rem2($HeaderHeight);
     justify-content: space-between;
 
     @include md {
-        padding-left: rem(30px);
-        padding-right: rem(30px);
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
     }
 
     @include lt-lg {
-        border-bottom: rem(1px) solid $bit-color-border-secondary;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
         ::deep .header-link {
             display: none;
@@ -57,9 +57,9 @@
 
 .header-logo {
     cursor: pointer;
-    width: rem(50px);
-    height: rem(50px);
-    margin-right: rem(20px);
+    width: rem2(50px);
+    height: rem2(50px);
+    margin-right: rem2(20px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -70,10 +70,10 @@
     height: 100%;
     cursor: pointer;
     line-height: 1.5;
-    font-size: rem(18px);
+    font-size: rem2(18px);
     text-decoration: none;
     box-sizing: border-box;
-    padding: rem(10px) rem(16px);
+    padding: rem2(10px) rem2(16px);
     color: $bit-color-foreground-secondary;
 
     &:hover {
@@ -102,10 +102,10 @@
 
 .github-btn {
     cursor: pointer;
-    width: rem(40px);
-    height: rem(40px);
+    width: rem2(40px);
+    height: rem2(40px);
     border-radius: 50%;
-    margin-left: rem(5px);
+    margin-left: rem2(5px);
 }
 
 .bit-theme-dark .github-btn {
@@ -120,8 +120,8 @@
     padding: 0;
     border: none;
     cursor: pointer;
-    height: rem(35px);
-    min-width: rem(35px);
+    height: rem2(35px);
+    min-width: rem2(35px);
     border-radius: 50%;
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
@@ -134,7 +134,7 @@
         justify-content: center;
 
         .bit-icon {
-            margin: 0 rem(4px);
+            margin: 0 rem2(4px);
         }
     }
 
@@ -161,7 +161,7 @@
     box-sizing: border-box;
     justify-content: flex-start;
     backdrop-filter: none;
-    height: rem($HeaderSecondRowHeight);
+    height: rem2($HeaderSecondRowHeight);
 
     @include lt-lg {
         display: flex;
@@ -174,23 +174,23 @@
     z-index: 100;
     display: flex;
     position: fixed;
-    padding: rem(20px);
+    padding: rem2(20px);
     box-sizing: border-box;
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
-    top: rem(calc($HeaderHeight + $HeaderSecondRowHeight));
-    height: calc(100vh - #{rem(calc($HeaderHeight + $HeaderSecondRowHeight))});
+    top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    height: calc(100vh - #{rem2(calc($HeaderHeight + $HeaderSecondRowHeight))});
 }
 
 .header-nav-link {
     width: 100%;
     line-height: 1.5;
-    padding: rem(8px) 0;
-    font-size: rem(14px);
+    padding: rem2(8px) 0;
+    font-size: rem2(14px);
     text-decoration: none;
-    margin-bottom: rem(16px);
+    margin-bottom: rem2(16px);
     color: $bit-color-foreground-secondary;
 }
 
@@ -200,10 +200,10 @@
 
 ::deep {
     .header-nav-close-btn {
-        top: rem(10px);
-        right: rem(10px);
-        width: rem(44px);
-        height: rem(44px);
+        top: rem2(10px);
+        right: rem2(10px);
+        width: rem2(44px);
+        height: rem2(44px);
         position: absolute;
         color: $bit-color-primary-main;
     }
@@ -217,11 +217,11 @@
 
     .header-menu-btn {
         border-radius: 50%;
-        min-width: rem(30px);
-        max-width: rem(30px);
-        min-height: rem(30px);
-        max-height: rem(30px);
-        margin-right: rem(16px);
+        min-width: rem2(30px);
+        max-width: rem2(30px);
+        min-height: rem2(30px);
+        max-height: rem2(30px);
+        margin-right: rem2(16px);
 
         @include gt-md {
             display: none;
@@ -232,13 +232,13 @@
 .header-menu-popup {
     display: none;
     z-index: 1302;
-    top: rem(36px);
+    top: rem2(36px);
     cursor: default;
     position: absolute;
     flex-flow: row nowrap;
-    max-height: rem(350px);
-    border-radius: rem(4px);
-    padding: rem(8px) rem(16px);
+    max-height: rem2(350px);
+    border-radius: rem2(4px);
+    padding: rem2(8px) rem2(16px);
     box-shadow: $bit-box-shadow-callout;
     border-color: $bit-color-border-secondary;
     background-color: $bit-color-background-primary;
@@ -246,7 +246,7 @@
     @include sm {
         padding: 0;
         overflow: auto;
-        max-height: rem(222px);
+        max-height: rem2(222px);
         flex-flow: column nowrap;
     }
 
@@ -262,25 +262,25 @@
     }
 
     .col {
-        padding: rem(8px) 0;
+        padding: rem2(8px) 0;
     }
 
     .col-header {
         font-weight: 700;
-        font-size: rem(16px);
+        font-size: rem2(16px);
         color: $bit-color-primary-main;
-        padding: rem(8px) rem(16px) rem(20px);
+        padding: rem2(8px) rem2(16px) rem2(20px);
     }
 
 
     .menu-item {
         display: flex;
         cursor: pointer;
-        margin: rem(8px) 0;
+        margin: rem2(8px) 0;
         align-items: center;
         flex-flow: row nowrap;
-        border-radius: rem(4px);
-        padding: rem(8px) rem(16px);
+        border-radius: rem2(4px);
+        padding: rem2(8px) rem2(16px);
         justify-content: flex-start;
         transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
 
@@ -298,14 +298,14 @@
     .item-title {
         font-weight: 600;
         white-space: nowrap;
-        font-size: rem(16px);
+        font-size: rem2(16px);
         color: $bit-color-foreground-primary;
     }
 
     .item-desc {
         font-weight: 600;
         white-space: nowrap;
-        font-size: rem(14px);
+        font-size: rem2(14px);
         color: $bit-color-foreground-secondary;
     }
 
@@ -326,11 +326,11 @@
     }
 
     .menu-item-icon {
-        width: rem(32px);
-        height: rem(32px);
-        margin-right: rem(16px);
+        width: rem2(32px);
+        height: rem2(32px);
+        margin-right: rem2(16px);
         border-radius: 50%;
-        border: rem(1px) solid $B11Color;
+        border: rem2(1px) solid $B11Color;
         background-color: $White;
         background-position: center;
         background-repeat: no-repeat;
@@ -342,32 +342,32 @@
 
     .todo-item {
         background-image: url('/images/header/todo-template-icon.webp');
-        background-size: rem(22px);
+        background-size: rem2(22px);
     }
 
     .admin-item {
         background-image: url('/images/header/admin-panel-icon.webp');
-        background-size: rem(18px);
+        background-size: rem2(18px);
     }
 
     .components-item {
         background-image: url('/images/header/components-icon.webp');
-        background-size: rem(28px);
+        background-size: rem2(28px);
     }
 
     .cloud-item {
         background-image: url('/images/header/cloud-icon.webp');
-        background-size: rem(20px);
+        background-size: rem2(20px);
     }
 
     .academy-item {
         background-image: url('/images/header/academy-icon.webp');
-        background-size: rem(22px);
+        background-size: rem2(22px);
     }
 
     .support-item {
         background-image: url('/images/header/support-icon.webp');
-        background-size: rem(22px);
+        background-size: rem2(22px);
     }
 }
 

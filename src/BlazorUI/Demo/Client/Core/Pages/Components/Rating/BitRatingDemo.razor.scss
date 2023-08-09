@@ -3,24 +3,24 @@
 @import '../../../Styles/abstracts/_colors.scss';
 
 .validation-summary {
-    border-left: rem(5px) solid $Red10;
+    border-left: rem2(5px) solid $Red10;
     background-color: $ErrorBlockRed;
     overflow: hidden;
-    margin-bottom: rem(10px);
+    margin-bottom: rem2(10px);
 
     .validation-errors {
-        margin: rem(5px);
+        margin: rem2(5px);
     }
 }
 
 ::deep div.validation-message {
     color: $Red20;
-    font-size: rem(12px);
+    font-size: rem2(12px);
 }
 
 .example-box {
     display: flex;
-    gap: rem(15px);
+    gap: rem2(15px);
     width: fit-content;
     flex-direction: column;
 

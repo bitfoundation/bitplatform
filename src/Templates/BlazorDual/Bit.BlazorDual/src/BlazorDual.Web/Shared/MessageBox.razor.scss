@@ -4,7 +4,7 @@
 .main {
     flex-grow: 1;
     display: flex;
-    padding: rem(10px);
+    padding: rem2(10px);
     flex-direction: column;
 }
 
@@ -21,7 +21,7 @@
     display: flex;
     overflow: auto;
     white-space: pre;
-    margin: rem(10px) 0;
+    margin: rem2(10px) 0;
     max-width: 90vw;
 }
 

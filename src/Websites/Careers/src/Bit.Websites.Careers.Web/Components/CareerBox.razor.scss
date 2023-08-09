@@ -3,18 +3,18 @@
 
 .careers-box {
     width: 100%;
-    min-height: rem(160px);
+    min-height: rem2(160px);
     background: $PureWhite;
     border: 1px solid $Gray3;
     border-radius: 12px;
-    margin-bottom: rem(16px);
+    margin-bottom: rem2(16px);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: rem(28px) rem(56px);
+    padding: rem2(28px) rem2(56px);
 
     &:last-child {
-        margin-bottom: rem(32px) !important;
+        margin-bottom: rem2(32px) !important;
     }
 
     .careers-box-content {
@@ -24,19 +24,19 @@
     }
 
     .careers-box-title {
-        margin-right: rem(48px);
-        font-size: rem(20px);
+        margin-right: rem2(48px);
+        font-size: rem2(20px);
         font-weight: 500;
         color: $Gray1;
     }
 
     .careers-box-img {
-        width: rem(148px);
+        width: rem2(148px);
     }
 }
 
 .btn-pad {
-    padding: rem(8px) rem(32px);
+    padding: rem2(8px) rem2(32px);
     border-radius: 4px;
     font-weight: 500;
 }
@@ -44,7 +44,7 @@
 .careers-button {
     background-color: $Primary;
     color: $PureWhite;
-    height: rem(48px);
+    height: rem2(48px);
 
     &:hover {
         background-color: $Blue4;

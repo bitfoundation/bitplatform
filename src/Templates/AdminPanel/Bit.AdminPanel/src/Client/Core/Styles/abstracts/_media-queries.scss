@@ -2,13 +2,13 @@
 
 /// https://github.com/Necromancerx/media-queries-scss-mixins
 
-$screen-lg-min: em(1201px);
-$screen-lg-max: em(1920px);
+$screen-lg-min: rem2(1201px);
+$screen-lg-max: rem2(1920px);
 
-$screen-md-min: em(769px);
-$screen-md-max: em(1200px);
+$screen-md-min: rem2(769px);
+$screen-md-max: rem2(1200px);
 
-$screen-sm-max: em(768px);
+$screen-sm-max: rem2(768px);
 
 // media devices
 @mixin sm {

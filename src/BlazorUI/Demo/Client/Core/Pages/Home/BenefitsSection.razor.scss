@@ -11,13 +11,13 @@
 
     .benefit-card {
         flex-grow: 0;
-        padding: rem(20px);
-        margin-top: rem(20px);
-        min-width: rem(275px);
-        min-height: rem(241px);
-        margin-left: rem(20px);
+        padding: rem2(20px);
+        margin-top: rem2(20px);
+        min-width: rem2(275px);
+        min-height: rem2(241px);
+        margin-left: rem2(20px);
         box-sizing: border-box;
-        border-radius: rem(2px);
+        border-radius: rem2(2px);
         max-width: calc(25% - 20px);
         flex-basis: calc(25% - 20px);
         box-shadow: $bit-box-shadow-callout;

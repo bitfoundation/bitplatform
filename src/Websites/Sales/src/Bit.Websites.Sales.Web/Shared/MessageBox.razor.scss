@@ -4,7 +4,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: rem(10px);
+    padding: rem2(10px);
 }
 
 .header {
@@ -18,10 +18,10 @@
 .body {
     display: flex;
     flex-grow: 1;
-    margin: rem(10px) 0;
+    margin: rem2(10px) 0;
     white-space: pre;
     overflow: auto;
-    max-width: rem(960px);
+    max-width: rem2(960px);
 }
 
 .footer {

@@ -4,15 +4,15 @@
 
 .main-container {
     display: flex;
-    width: rem(560px);
+    width: rem2(560px);
     align-items: center;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    padding: rem(16px) rem(24px);
+    padding: rem2(16px) rem2(24px);
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
-        padding-bottom: calc(rem(16px) + env(safe-area-inset-bottom));
+        padding-bottom: calc(rem2(16px) + env(safe-area-inset-bottom));
     }
 
     @include sm {
@@ -20,7 +20,7 @@
         bottom: 0;
         width: 100%;
         position: fixed;
-        border-radius: rem(8px) rem(8px) 0 0;
+        border-radius: rem2(8px) rem2(8px) 0 0;
     }
 }
 
@@ -29,22 +29,22 @@
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
-    margin-bottom: rem(20px);
+    margin-bottom: rem2(20px);
     justify-content: space-between;
 }
 
 .title {
     font-weight: 600;
-    font-size: rem(20px);
-    line-height: rem(28px);
+    font-size: rem2(20px);
+    line-height: rem2(28px);
 }
 
 .body {
     width: 100%;
     font-weight: 400;
-    font-size: rem(14px);
-    line-height: rem(20px);
-    margin-bottom: rem(16px);
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+    margin-bottom: rem2(16px);
 }
 
 .btn-group {

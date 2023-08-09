@@ -14,11 +14,11 @@
     position: sticky;
     overflow-y: auto;
     flex-direction: column;
-    width: rem($NavMenuWidth);
-    max-width: rem($NavMenuWidth);
+    width: rem2($NavMenuWidth);
+    max-width: rem2($NavMenuWidth);
     background-color: $bit-color-background-primary;
-    top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
-    height: calc(100vh - rem($HeaderHeight) - var(--bit-status-bar-height));
+    top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height));
+    height: calc(100vh - rem2($HeaderHeight) - var(--bit-status-bar-height));
 
     @include lt-lg {
         top: 0;
@@ -26,7 +26,7 @@
         z-index: 13;
         height: 100vh;
         position: fixed;
-        border-radius: 0 rem(10px) rem(10px) 0;
+        border-radius: 0 rem2(10px) rem2(10px) 0;
         padding-top: var(--bit-status-bar-height);
     }
 }
@@ -63,7 +63,7 @@
 .search-box-container {
     width: 100%;
     box-sizing: border-box;
-    padding: rem(24px) rem(22px);
+    padding: rem2(24px) rem2(22px);
 }
 
 .nav-menu-list {
@@ -71,10 +71,10 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-    height: calc(100% - #{rem(89px)});
+    height: calc(100% - #{rem2(89px)});
 
     &::-webkit-scrollbar {
-        width: rem(0px);
+        width: rem2(0px);
     }
 }
 

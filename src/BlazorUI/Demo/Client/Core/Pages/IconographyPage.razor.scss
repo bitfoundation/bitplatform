@@ -8,17 +8,17 @@
     display: flex;
     overflow-y: auto;
     overflow-x: hidden;
-    height: rem(369px);
+    height: rem2(369px);
     flex-flow: row wrap;
     align-items: flex-start;
     justify-content: flex-start;
 
     &::-webkit-scrollbar {
-        width: rem(5px);
+        width: rem2(5px);
     }
 
     &::-webkit-scrollbar-thumb {
-        border-radius: rem(8px);
+        border-radius: rem2(8px);
         background-color: $bit-color-foreground-secondary;
     }
 }
@@ -26,8 +26,8 @@
 .icon-box {
     cursor: help;
     display: flex;
-    width: rem(80px);
-    margin: rem(10px);
+    width: rem2(80px);
+    margin: rem2(10px);
     overflow: hidden;
     align-items: center;
     flex-flow: column nowrap;
@@ -35,8 +35,8 @@
 
     .icon-name {
         opacity: 0;
-        font-size: rem(11px);
-        margin-top: rem(8px);
+        font-size: rem2(11px);
+        margin-top: rem2(8px);
     }
 
     &:hover {
@@ -48,7 +48,7 @@
 
 .empty-list {
     width: 100%;
-    height: rem(144px);
+    height: rem2(144px);
 }
 
 ::deep {
@@ -57,7 +57,7 @@
     }
 
     .iconography-search-box {
-        max-width: rem(300px);
-        margin-bottom: rem(50px);
+        max-width: rem2(300px);
+        margin-bottom: rem2(50px);
     }
 }
