@@ -83,13 +83,6 @@ public partial class BitSearchBoxDemo
 
 
 
-    private string TwoWaySearchValue;
-    private string OnChangeSearchValue;
-    private string OnSearchValue;
-
-    private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
-
-
     private readonly string example1HTMLCode = @"
 <BitLabel>Basic</BitLabel>
 <BitSearchBox Placeholder=""Search"" />
