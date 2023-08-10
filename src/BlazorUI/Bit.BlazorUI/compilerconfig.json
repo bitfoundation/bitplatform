@@ -1,6 +1,6 @@
 ﻿[
     {
-        "outputFile": "Styles/bit.blazorui.css",
+        "outputFile": "wwwroot/styles/bit.blazorui.css",
         "inputFile": "Styles/bit.blazorui.scss",
         "options": {
             "relativeUrls": false,
@@ -9,7 +9,7 @@
         "minify": { "enabled": false }
     },
     {
-        "outputFile": "Styles/bit.blazorui.fluent.css",
+        "outputFile": "wwwroot/styles/bit.blazorui.fluent.css",
         "inputFile": "Styles/Fluent/bit.blazorui.fluent.scss",
         "options": {
             "relativeUrls": false,
@@ -18,7 +18,7 @@
         "minify": { "enabled": false }
     },
     {
-        "outputFile": "Styles/bit.blazorui.fluent-dark.css",
+        "outputFile": "wwwroot/styles/bit.blazorui.fluent-dark.css",
         "inputFile": "Styles/Fluent/bit.blazorui.fluent-dark.scss",
         "options": {
             "relativeUrls": false,
@@ -27,7 +27,7 @@
         "minify": { "enabled": false }
     },
     {
-        "outputFile": "Styles/bit.blazorui.fluent-light.css",
+        "outputFile": "wwwroot/styles/bit.blazorui.fluent-light.css",
         "inputFile": "Styles/Fluent/bit.blazorui.fluent-light.scss",
         "options": {
             "relativeUrls": false,

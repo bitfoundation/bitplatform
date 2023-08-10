@@ -6,11 +6,10 @@ internal static class BitMenuButtonJsExtensions
     internal static async Task ToggleMenuButtonCallout<T>(this IJSRuntime jsRuntime,
                                                               DotNetObjectReference<BitMenuButton<T>> dotNetObjRef,
                                                               string uniqueId,
-                                                              string menuButtonId,
-                                                              string menuButtonCalloutId,
-                                                              string menuButtonOverlayId,
+                                                              string calloutId,
+                                                              string overlayId,
                                                               bool isCalloutOpen) where T : class
     {
-        await jsRuntime.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", dotNetObjRef, uniqueId, menuButtonId, menuButtonCalloutId, menuButtonOverlayId, isCalloutOpen);
+        await jsRuntime.InvokeVoidAsync("BitMenuButton.toggleMenuButtonCallout", dotNetObjRef, uniqueId, calloutId, overlayId, isCalloutOpen);
     }
 }

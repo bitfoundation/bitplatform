@@ -1,71 +1,60 @@
 ﻿class BitMenuButton {
-    static toggleMenuButtonCallout(dotnetObjReference: DotNetObject,
-        splitButtonWrapperId: string,
-        splitButtonId: string,
-        splitButtonCalloutId: string,
-        splitButtonOverlayId: string,
-        isOpenMenu: boolean) {
+    static toggleMenuButtonCallout(
+        dotnetObjReference: DotNetObject,
+        uniqueId: string,
+        calloutId: string,
+        overlayId: string,
+        isCalloutOpen: boolean) {
 
-        const splitButtonWrapper = document.getElementById(splitButtonWrapperId);
-        if (splitButtonWrapper == null)
-            return;
+        const menuButton = document.getElementById(uniqueId);
+        if (menuButton == null) return;
 
-        const splitButton = document.getElementById(splitButtonId);
-        if (splitButton == null)
-            return;
+        const callout = document.getElementById(calloutId);
+        if (callout == null) return;
 
-        const splitButtonCallout = document.getElementById(splitButtonCalloutId);
-        if (splitButtonCallout == null)
-            return;
+        const overlay = document.getElementById(overlayId);
+        if (overlay == null) return;
 
-        const splitButtonOverlay = document.getElementById(splitButtonOverlayId);
-        if (splitButtonOverlay == null)
-            return;
-
-        if (isOpenMenu) {
-            splitButtonCallout.style.display = "none";
-            splitButtonOverlay.style.display = "none";
+        if (!isCalloutOpen) {
+            callout.style.display = "none";
+            overlay.style.display = "none";
             Bit.currentCallout.update("", "", null);
         } else {
-            Bit.closeCurrentCalloutIfExists(splitButtonCalloutId, splitButtonOverlayId, dotnetObjReference);
-            splitButtonCallout.style.display = "block";
-            splitButtonOverlay.style.display = "block";
+            Bit.closeCurrentCalloutIfExists(calloutId, overlayId, dotnetObjReference);
+            callout.style.display = "block";
+            overlay.style.display = "block";
 
-            const splitButtonCalloutHeight = splitButtonCallout.offsetHeight;
-            const splitButtonCalloutWidth = splitButtonCallout.offsetWidth;
+            const calloutHeight = callout.offsetHeight;
+            const calloutWidth = callout.offsetWidth;
 
-            const splitButtonHeight = splitButton.offsetHeight;
-            const splitButtonTop = splitButton.getBoundingClientRect().y;
+            const menuButtonWidth = menuButton.offsetWidth;
+            const menuButtonHeight = menuButton.offsetHeight;
 
-            const splitButtonWrapperWidth = splitButtonWrapper.offsetWidth;
-            const splitButtonWrapperHeight = splitButtonWrapper.offsetHeight;
+            const { x: menuButtonX, y: menuButtonY } = menuButton.getBoundingClientRect();
 
-            const splitButtonWrapperX = splitButtonWrapper.getBoundingClientRect().x;
-            const splitButtonWrapperY = splitButtonWrapper.getBoundingClientRect().y;
+            const menuButtonBottom = window.innerHeight - (menuButtonHeight + menuButtonY);
+            const menuButtonRight = window.innerWidth - (menuButtonWidth + menuButtonX);
 
-            const splitButtonWrapperBottom = window.innerHeight - (splitButtonWrapperHeight + splitButtonWrapperY);
-            const splitButtonWrapperRight = window.innerWidth - (splitButtonWrapperWidth + splitButtonWrapperX);
-
-            if (splitButtonWrapperBottom >= splitButtonCalloutHeight) {
-                splitButtonCallout.style.top = splitButtonWrapperY + splitButtonWrapperHeight + 1 + "px";
-                splitButtonCallout.style.left = splitButtonWrapperX + "px";
-                splitButtonCallout.style.right = "unset";
-                splitButtonCallout.style.bottom = "unset";
-            } else if (splitButtonTop >= splitButtonCalloutHeight) {
-                splitButtonCallout.style.bottom = splitButtonWrapperBottom + splitButtonHeight + 1 + "px";
-                splitButtonCallout.style.left = splitButtonWrapperX + "px";
-                splitButtonCallout.style.right = "unset";
-                splitButtonCallout.style.top = "unset";
-            } else if (splitButtonWrapperRight >= splitButtonCalloutWidth) {
-                splitButtonCallout.style.left = splitButtonWrapperX + splitButtonWrapperWidth + 1 + "px";
-                splitButtonCallout.style.bottom = "2px";
-                splitButtonCallout.style.right = "unset";
-                splitButtonCallout.style.top = "unset";
+            if (menuButtonBottom >= calloutHeight) {
+                callout.style.top = menuButtonY + menuButtonHeight + 1 + "px";
+                callout.style.left = menuButtonX + "px";
+                callout.style.right = "unset";
+                callout.style.bottom = "unset";
+            } else if (menuButtonY >= calloutHeight) {
+                callout.style.bottom = menuButtonBottom + menuButtonHeight + 1 + "px";
+                callout.style.left = menuButtonX + "px";
+                callout.style.right = "unset";
+                callout.style.top = "unset";
+            } else if (menuButtonRight >= calloutWidth) {
+                callout.style.left = menuButtonX + menuButtonWidth + 1 + "px";
+                callout.style.bottom = "2px";
+                callout.style.right = "unset";
+                callout.style.top = "unset";
             } else {
-                splitButtonCallout.style.left = splitButtonWrapperX - splitButtonCalloutWidth - 1 + "px";
-                splitButtonCallout.style.bottom = "2px";
-                splitButtonCallout.style.top = "unset";
-                splitButtonCallout.style.right = "unset";
+                callout.style.left = menuButtonX - calloutWidth - 1 + "px";
+                callout.style.bottom = "2px";
+                callout.style.top = "unset";
+                callout.style.right = "unset";
             }
         }
     }

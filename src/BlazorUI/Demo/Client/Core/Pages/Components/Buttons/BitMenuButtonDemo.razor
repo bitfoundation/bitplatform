@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/menubutton"
             Title="MenuButton"
-            Description="menubutton component of the bit BlazorUI components" />
+            Description="MenuButton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="MenuButton"
                ComponentDescription="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
@@ -13,7 +13,7 @@
                Notes="The BitMenuButton is a Multi-API component which can accept the list of Items in 3 different ways: BitMenuButtonItem class, a custom Generic class, and BitMenuButtonOption component.">
     <BitPivot OnItemClick="OnTabClick" ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
         <BitPivotItem HeaderText="Item">
-            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonItemHTMLCode" CSharpSourceCode="@example1BitMenuButtonItemCSharpCode" ExampleId="example1">
+            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonItemHTMLCode" CSharpSourceCode="@example1BitMenuButtonItemCSharpCode" ExampleId="example11">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary"
@@ -39,7 +39,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonItemHTMLCode" CSharpSourceCode="@example2BitMenuButtonItemCSharpCode" ExampleId="example2">
+            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonItemHTMLCode" CSharpSourceCode="@example2BitMenuButtonItemCSharpCode" ExampleId="example12">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -58,7 +58,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonItemHTMLCode" CSharpSourceCode="@example3BitMenuButtonItemCSharpCode" ExampleId="example3">
+            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonItemHTMLCode" CSharpSourceCode="@example3BitMenuButtonItemCSharpCode" ExampleId="example13">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Styled Button"
@@ -75,7 +75,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonItemHTMLCode" CSharpSourceCode="@example4BitMenuButtonItemCSharpCode" ExampleId="example4">
+            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonItemHTMLCode" CSharpSourceCode="@example4BitMenuButtonItemCSharpCode" ExampleId="example14">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Items="basicMenuButton"
@@ -104,7 +104,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonItemHTMLCode" CSharpSourceCode="@example5BitMenuButtonItemCSharpCode" ExampleId="example5">
+            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonItemHTMLCode" CSharpSourceCode="@example5BitMenuButtonItemCSharpCode" ExampleId="example15">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -138,38 +138,10 @@
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
-
-            <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6BitMenuButtonItemHTMLCode" CSharpSourceCode="@example6BitMenuButtonItemCSharpCode" ExampleId="example6">
-                <ExamplePreview>
-                    <div class="example-content column">
-                        <div>
-                            <BitLabel>Small size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Small"
-                                           Items="basicMenuButton"
-                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
-                        </div>
-                        <div>
-                            <BitLabel>Medium size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Medium"
-                                           Items="basicMenuButton"
-                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
-                        </div>
-                        <div>
-                            <BitLabel>Large size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Large"
-                                           Items="basicMenuButton"
-                                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
-                        </div>
-                    </div>
-                </ExamplePreview>
-            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="Custom">
-            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1CustomItemHTMLCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
+            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1CustomItemHTMLCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example21">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary"
@@ -207,7 +179,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2CustomItemHTMLCode" CSharpSourceCode="@example2CustomItemCSharpCode" ExampleId="example2">
+            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2CustomItemHTMLCode" CSharpSourceCode="@example2CustomItemCSharpCode" ExampleId="example22">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -232,7 +204,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3CustomItemHTMLCode" CSharpSourceCode="@example3CustomItemCSharpCode" ExampleId="example3">
+            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3CustomItemHTMLCode" CSharpSourceCode="@example3CustomItemCSharpCode" ExampleId="example23">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Styled Button"
@@ -255,7 +227,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4CustomItemHTMLCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example4">
+            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4CustomItemHTMLCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example24">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Items="basicMenuButtonWithCustomType"
@@ -290,7 +262,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5CustomItemHTMLCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example5">
+            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5CustomItemHTMLCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example25">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -330,47 +302,10 @@
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
-
-            <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6CustomItemHTMLCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
-                <ExamplePreview>
-                    <div class="example-content column">
-                        <div>
-                            <BitLabel>Small size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Small"
-                                           Items="basicMenuButtonWithCustomType"
-                                           TextField="@nameof(MenuActionItem.Name)"
-                                           KeyField="@nameof(MenuActionItem.Id)"
-                                           IconNameField="@nameof(MenuActionItem.Icon)"
-                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
-                        </div>
-                        <div>
-                            <BitLabel>Medium size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Medium"
-                                           Items="basicMenuButtonWithCustomType"
-                                           TextField="@nameof(MenuActionItem.Name)"
-                                           KeyField="@nameof(MenuActionItem.Id)"
-                                           IconNameField="@nameof(MenuActionItem.Icon)"
-                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
-                        </div>
-                        <div>
-                            <BitLabel>Large size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Large"
-                                           Items="basicMenuButtonWithCustomType"
-                                           TextField="@nameof(MenuActionItem.Name)"
-                                           KeyField="@nameof(MenuActionItem.Id)"
-                                           IconNameField="@nameof(MenuActionItem.Icon)"
-                                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
-                        </div>
-                    </div>
-                </ExamplePreview>
-            </ComponentExampleBox>
         </BitPivotItem>
 
         <BitPivotItem HeaderText="Option">
-            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example1BitMenuButtonOptionCSharpCode" ExampleId="example1">
+            <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example1BitMenuButtonOptionCSharpCode" ExampleId="example31">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary"
@@ -399,16 +334,16 @@
 
                         <BitMenuButton Text="Item Disabled"
                                        OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
-                            <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" IsEnabled="false" />
-                            <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
-                            <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" IsEnabled="false" />
+                            <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                            <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                            <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
                         </BitMenuButton>
                     </div>
                     <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example2BitMenuButtonOptionCSharpCode" ExampleId="example2">
+            <ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example2BitMenuButtonOptionCSharpCode" ExampleId="example32">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -433,7 +368,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example3BitMenuButtonOptionCSharpCode" ExampleId="example3">
+            <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example3BitMenuButtonOptionCSharpCode" ExampleId="example33">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Styled Button"
@@ -456,7 +391,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example4BitMenuButtonOptionCSharpCode" ExampleId="example4">
+            <ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example4BitMenuButtonOptionCSharpCode" ExampleId="example34">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton ButtonStyle="BitButtonStyle.Primary"
@@ -495,7 +430,7 @@
                 </ExamplePreview>
             </ComponentExampleBox>
 
-            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example5BitMenuButtonOptionCSharpCode" ExampleId="example5">
+            <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example5BitMenuButtonOptionCSharpCode" ExampleId="example35">
                 <ExamplePreview>
                     <div class="example-content">
                         <BitMenuButton Text="Primary Button"
@@ -537,53 +472,16 @@
                     <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
                 </ExamplePreview>
             </ComponentExampleBox>
-
-            <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example6BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example6BitMenuButtonOptionCSharpCode" ExampleId="example6">
-                <ExamplePreview>
-                    <div class="example-content column">
-                        <div>
-                            <BitLabel>Small size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Small"
-                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
-                                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
-                            </BitMenuButton>
-                        </div>
-                        <div>
-                            <BitLabel>Medium size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Medium"
-                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
-                                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
-                            </BitMenuButton>
-                        </div>
-                        <div>
-                            <BitLabel>Large size</BitLabel>
-                            <BitMenuButton Text="Button"
-                                           ButtonSize="BitButtonSize.Large"
-                                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
-                                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
-                                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
-                            </BitMenuButton>
-                        </div>
-                    </div>
-                </ExamplePreview>
-            </ComponentExampleBox>
         </BitPivotItem>
     </BitPivot>
 </ComponentDemo>
 
 @code {
-    private string example1SelectedItem;
-    private string example2SelectedItem;
-    private string example3SelectedItem;
-    private string example4SelectedItem;
-    private string example5SelectedItem;
+    private string? example1SelectedItem;
+    private string? example2SelectedItem;
+    private string? example3SelectedItem;
+    private string? example4SelectedItem;
+    private string? example5SelectedItem;
 
     private List<BitMenuButtonItem> basicMenuButton = new()
     {
