@@ -7,9 +7,12 @@
     white-space: nowrap;
     text-decoration: none;
     min-width: spacing(15);
+    min-height: spacing(4);
     box-sizing: border-box;
     text-overflow: ellipsis;
+    font-size: spacing(1.75);
     border-width: spacing(0.1875);
+    padding: spacing(0.5) spacing(2);
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
@@ -86,29 +89,10 @@
     }
 }
 
-.bit-ldb-sm {
-    font-size: spacing(1.5);
-    min-height: spacing(3.5);
-    line-height: spacing(2.75);
-    padding: spacing(0.25) spacing(1.5);
-}
-
-.bit-ldb-md {
-    font-size: spacing(1.75);
-    min-height: spacing(4.5);
-    padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height;
-}
-
-.bit-ldb-lg {
-    font-size: spacing(2);
-    min-height: spacing(5.5);
-    line-height: spacing(3.75);
-    padding: spacing(0.75) spacing(2.5);
-}
-
 .bit-ldb-spn {
     border-radius: 50%;
+    width: spacing(2.5);
+    height: spacing(2.5);
     border-width: spacing(0.2125);
     border-style: $shape-border-style;
     animation: bit-ldb-spinner-animation 1.3s linear infinite;
@@ -158,33 +142,4 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
-}
-
-.bit-ldb-spn-lg {
-    .bit-ldb-spn {
-        width: spacing(3.5);
-        height: spacing(3.5);
-    }
-}
-
-.bit-ldb-spn-md {
-    .bit-ldb-spn {
-        width: spacing(2.5);
-        height: spacing(2.5);
-    }
-}
-
-.bit-ldb-spn-sm {
-
-    .bit-ldb-spn {
-        width: spacing(2);
-        height: spacing(2);
-    }
-}
-
-.bit-ldb-spn-xs {
-    .bit-ldb-spn {
-        width: spacing(1.5);
-        height: spacing(1.5);
-    }
 }

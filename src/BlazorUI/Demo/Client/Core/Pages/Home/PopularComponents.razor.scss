@@ -33,7 +33,7 @@
     }
 
     &.sample-side {
-        top: calc(rem($HeaderHeight) - var(--bit-status-bar-height) + 5px);
+        top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height) + 5px);
         position: sticky;
     }
 }
@@ -41,7 +41,7 @@
 .component-list {
     width: 100%;
     display: flex;
-    max-width: rem(500px);
+    max-width: rem2(500px);
     flex-flow: column nowrap;
 
     @include lt-lg {
@@ -52,25 +52,26 @@
 .component-row {
     outline: 0;
     width: 100%;
+    height: 100%;
     cursor: pointer;
     user-select: none;
-    padding: rem(20px);
+    padding: rem2(20px);
     position: relative;
     display: inline-flex;
     flex-flow: row nowrap;
-    margin-top: rem(10px);
+    margin-top: rem2(10px);
     -ms-user-select: none;
     text-decoration: none;
     box-sizing: border-box;
     -moz-user-select: none;
     align-items: flex-start;
-    border-radius: rem(2px);
+    border-radius: rem2(2px);
     transition-property: all;
     -webkit-user-select: none;
     transition-duration: 150ms;
     justify-content: flex-start;
     background-color: transparent;
-    border: rem(1px) solid transparent;
+    border: rem2(1px) solid transparent;
 
     &:hover {
         background-color: $bit-color-action-active-background-primary;
@@ -78,24 +79,25 @@
 
     .component-icon {
         display: flex;
-        height: rem(36px);
+        height: rem2(36px);
         border-radius: 50%;
         align-items: center;
-        min-width: rem(36px);
-        margin-right: rem(20px);
+        min-width: rem2(36px);
+        margin-right: rem2(20px);
         justify-content: center;
 
         @include lt-lg {
-            margin-bottom: rem(10px);
+            margin-bottom: rem2(10px);
         }
     }
 
     .component-info-container {
         width: 100%;
+        height: 100%;
         display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
         align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: space-around;
     }
 
     .component-name {
@@ -103,7 +105,7 @@
         line-height: 1.5;
         font-weight: 700;
         letter-spacing: 0;
-        font-size: rem(14px);
+        font-size: rem2(14px);
         color: $bit-color-foreground-primary;
     }
 
@@ -112,9 +114,9 @@
         text-align: left;
         font-weight: 400;
         letter-spacing: 0;
-        margin-top: rem(5px);
-        font-size: rem(14px);
-        margin-bottom: rem(5px);
+        margin-top: rem2(5px);
+        font-size: rem2(14px);
+        margin-bottom: rem2(5px);
         color: $bit-color-foreground-secondary;
     }
 
@@ -131,21 +133,21 @@
 
 .example-preview {
     box-shadow: $bit-box-shadow-callout;
-    border-radius: rem(2px) rem(2px) 0 0;
+    border-radius: rem2(2px) rem2(2px) 0 0;
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 
     @include lt-lg {
-        margin-top: rem(20px);
+        margin-top: rem2(20px);
     }
 }
 
 .component-container {
-    padding: rem(20px);
-    min-height: rem(50px);
+    padding: rem2(20px);
+    min-height: rem2(50px);
 }
 
 .example-code {
-    border-radius: 0 0 rem(4px) rem(4px);
+    border-radius: 0 0 rem2(4px) rem2(4px);
 
     pre {
         margin: 0;
@@ -153,13 +155,13 @@
         direction: ltr;
         overflow: auto;
         border-radius: 0;
-        max-height: rem(300px);
-        min-height: rem(200px);
+        max-height: rem2(300px);
+        min-height: rem2(200px);
 
         &::-webkit-scrollbar-thumb:hover {
             background-color: #c8c6c4 !important;
-            border-radius: rem(8px);
-            border: rem(4px) solid #c8c6c4 !important;
+            border-radius: rem2(8px);
+            border: rem2(4px) solid #c8c6c4 !important;
         }
     }
 }
@@ -173,10 +175,10 @@
         letter-spacing: 0;
         align-items: center;
         display: inline-flex;
-        font-size: rem(14px);
-        min-height: rem(24px);
+        font-size: rem2(14px);
+        min-height: rem2(24px);
         text-decoration: none;
-        padding-top: rem(16px);
+        padding-top: rem2(16px);
 
         &:hover {
             color: #0059B2;
@@ -200,7 +202,7 @@
     }
 
     .component-carousel {
-        height: rem(250px);
+        height: rem2(280px);
 
         @include gt-md {
             display: none;
@@ -209,8 +211,8 @@
 
     .link-chevron-right {
         font-weight: 700;
-        font-size: rem(12px);
-        margin-top: rem(3px);
-        margin-left: rem(4px);
+        font-size: rem2(12px);
+        margin-top: rem2(3px);
+        margin-left: rem2(4px);
     }
 }

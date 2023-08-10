@@ -1,0 +1,117 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.page-section {
+    width: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+.page-section-content {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    max-width: rem2(1200px);
+    box-sizing: border-box;
+    padding-top: rem2(80px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    flex-flow: column nowrap;
+    padding-bottom: rem2(80px);
+}
+
+.main-section {
+}
+
+.mid-section {
+    background: $bit-color-background-secondary;
+
+    .mid-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-flow: column nowrap;
+    }
+}
+
+.plans-section {
+    margin-bottom: 5rem;
+
+    .plan-card-list {
+        display: flex;
+        gap: rem2(40px);
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+    }
+
+    .plan-card {
+        display: flex;
+        padding: rem2(20px);
+        border-radius: rem2(4px);
+        flex-flow: column nowrap;
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    .plan-card-desc {
+        flex-grow: 1;
+        padding: 1rem 0;
+    }
+}
+
+::deep {
+    .grey-txt {
+        display: inline;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .modal-container {
+        min-width: rem2(550px);
+
+        @include sm {
+            min-width: calc(100% - 32px);
+        }
+    }
+
+    .form {
+        text-align: center;
+        padding: rem2(48px) rem2(32px);
+    }
+
+    .modal-text-field {
+        text-align: left;
+        margin-bottom: rem2(24px);
+    }
+
+    .validation-message {
+        text-align: left;
+        font-size: rem2(12px);
+        margin-top: rem2(-20px);
+        color: $bit-color-state-error;
+    }
+
+    .close-btn {
+        top: rem2(16px);
+        right: rem2(16px);
+        position: absolute;
+    }
+}
+
+.modal-message-container {
+    text-align: center;
+    padding: rem2(48px) rem2(32px);
+}

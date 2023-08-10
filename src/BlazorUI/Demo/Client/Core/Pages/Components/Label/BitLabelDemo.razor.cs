@@ -33,9 +33,24 @@ public partial class BitLabelDemo
 
     private readonly string example1HTMLCode = @"
 <BitLabel>I'm a Label</BitLabel>
-<BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>
-<BitLabel IsRequired=""true"">I'm a required Label</BitLabel>
+<BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>";
+
+    private readonly string example2HTMLCode = @"
+<style>
+    .custom-class {
+        padding: 0 0.5rem;
+        border: 1px solid red;
+        max-width: max-content;
+    }
+</style>
+
+<BitLabel Style=""color: dodgerblue; font-weight:bold"">I'm a Label with Style</BitLabel>
+<BitLabel Class=""custom-class"">I'm a Label with Class</BitLabel>";
+
+    private readonly string example3HTMLCode = @"
+<BitLabel IsRequired=""true"">I'm a required Label</BitLabel>";
+
+    private readonly string example4HTMLCode = @"
 <BitLabel For=""label-input"">A Label for An Input</BitLabel>
-<input type=""text"" name=""label-input"" id=""label-input"" />
-";
+<input type=""text"" name=""label-input"" id=""label-input"" />";
 }

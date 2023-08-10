@@ -24,7 +24,7 @@
 
 .header--full-page {
     .container {
-        max-width: rem(1200px);
+        max-width: rem2(1200px);
     }
 }
 
@@ -36,14 +36,14 @@
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    padding-left: rem(20px);
-    padding-right: rem(20px);
-    min-height: rem($HeaderHeight);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    min-height: rem2($HeaderHeight);
     justify-content: space-between;
 
     @include lt-lg {
-        padding-left: rem(10px);
-        padding-right: rem(10px);
+        padding-left: rem2(10px);
+        padding-right: rem2(10px);
     }
 }
 
@@ -56,16 +56,16 @@
 
 .logo {
     cursor: pointer;
-    width: rem(50px);
-    height: rem(50px);
-    margin-right: rem(30px);
+    width: rem2(50px);
+    height: rem2(50px);
+    margin-right: rem2(30px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     background-image: url('images/bit-logo.svg');
 
     @include lt-lg {
-        margin: 0 rem(10px);
+        margin: 0 rem2(10px);
     }
 }
 
@@ -74,16 +74,16 @@
     cursor: pointer;
     line-height: 1.5;
     padding-bottom: 0;
-    padding: rem(10px);
-    font-size: rem(16px);
+    padding: rem2(10px);
+    font-size: rem2(16px);
     text-decoration: none;
     box-sizing: border-box;
     color: $bit-color-foreground-secondary;
 }
 
 .link--active {
-    color: $B2Color;
     font-weight: 600;
+    color: $bit-color-primary-main;
 }
 
 .right-section {
@@ -94,22 +94,25 @@
 
 .github-btn {
     cursor: pointer;
-    width: rem(40px);
-    height: rem(40px);
+    width: rem2(40px);
+    height: rem2(40px);
     border-radius: 50%;
-    margin-left: rem(10px);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-image: url('images/github-icon.webp');
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
 }
 
 .toggle-theme-btn {
     padding: 0;
     border: none;
     cursor: pointer;
-    height: rem(35px);
-    min-width: rem(35px);
+    height: rem2(35px);
+    min-width: rem2(35px);
     border-radius: 50%;
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
@@ -122,7 +125,7 @@
         justify-content: center;
 
         .bit-icon {
-            margin: 0 rem(4px);
+            margin: 0 rem2(4px);
         }
     }
 

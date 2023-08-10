@@ -22,7 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{0EB8B659-F
 	ProjectSection(SolutionItems) = preProject
 		Demo\.gitignore = Demo\.gitignore
 		Demo\Directory.Build.props = Demo\Directory.Build.props
-		Demo\global.json = Demo\global.json
 		Demo\README.md = Demo\README.md
 	EndProjectSection
 EndProject

@@ -234,10 +234,12 @@ _book
 *.tsbuildinfo
 
 /src/BlazorUI/Bit.BlazorUI/**/*.css
+/src/BlazorUI/Bit.BlazorUI/Scripts/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 
 /src/BlazorUI/Bit.BlazorUI.Extras/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Extras/Scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
 
@@ -249,10 +251,15 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/**/*.css.gz
 
+/src/Bup/Bit.Bup/Scripts/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.css
+
+/src/Bswup/Bit.Bswup/Scripts/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
+
+/src/Butil/Bit.Butil/Scripts/**/*.js
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
 custom.aprof

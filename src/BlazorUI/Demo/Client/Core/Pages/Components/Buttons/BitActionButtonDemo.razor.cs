@@ -30,20 +30,11 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "ButtonSize",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "BitButtonSize.Medium",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "BitButtonType.Button",
+            DefaultValue = "null",
             Description = "The type of the button.",
         },
         new()
@@ -52,6 +43,15 @@ public partial class BitActionButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of action button, It can be Any custom tag or a text.",
+        },
+        new()
+        {
+            Name = "ClassStyles",
+            Type = "BitActionButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes/styles for different parts of the BitActionButton.",
         },
         new()
         {
@@ -89,35 +89,64 @@ public partial class BitActionButtonDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new()
+            Id = "class-styles",
+            Title = "BitActionButtonClassStyles",
+            Parameters = new()
             {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
+               new()
+               {
+                   Name = "Container",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the internal container of the BitActionButton."
+               },
+               new()
+               {
+                   Name = "Primary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the primary section of the BitActionButton."
+               },
+               new()
+               {
+                   Name = "Secondary",
+                   Type = "BitClassStylePair?",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the secondary section of the BitActionButton."
+               },
             }
         },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS classes."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS styles."
+               }
+            }
+        }
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
         new()
         {
             Id = "button-type-enum",
@@ -152,22 +181,20 @@ public partial class BitActionButtonDemo
     private readonly string example1HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
 
-<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user</BitActionButton>";
+<BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user (Disabled)</BitActionButton>";
 
     private readonly string example2HTMLCode = @"
 <style>
     .custom-action-button {
         color: #111;
-        width: 14.5rem;
         font-size: 1rem;
-        margin-top: 0.625rem;
+        border-radius: 1rem;
         border-color: #D7D7D7;
         background-color: #CCC;
-        justify-content: center;
     }
 </style>
 
-<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""font-size:16px;border:2px solid #32385B;justify-content: center;width: 232px;"">
+<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""font-size:16px; border:2px solid #32385B; border-radius: 1rem;"">
     Styled Action Button
 </BitActionButton>
 
@@ -176,19 +203,19 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-    <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Add Event</BitActionButton>
+Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Visible Action Button</BitActionButton> ]
 
-    <div><span>Hidden Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton>]</div>
+Hidden: [ <BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
 
-    <div><span>Collapsed Button: </span>[<BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton>]</div>";
+Collapsed: [ <BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
-    Action Button with Aria Description
+    Action Button with AriaDescription
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.Library"" AriaHidden=""true"">
-    Action Button with Aria Hidden
+    Action Button with AriaHidden
 </BitActionButton>";
 
     private readonly string example5HTMLCode = @"
@@ -198,52 +225,96 @@ public partial class BitActionButtonDemo
 
 <BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
     Go To Bit Platform
-</BitActionButton>
-
-<BitActionButton IconName=""@BitIconName.Website"" Target=""_self"" Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">
-    <span>Bit Platform From Span</span>
 </BitActionButton>";
 
     private readonly string example6HTMLCode = @"
-<BitLabel>Small size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-
-<BitLabel>Medium size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-
-<BitLabel>Large size</BitLabel>
-<BitActionButton ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
-
-    private readonly string example7HTMLCode = @"
 <style>
-    .custom-btn-sm.bit-acb-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-    
-    .custom-btn-md.bit-acb-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-    
-    .custom-btn-lg.bit-acb-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
+    .custom-btn-ctn {
+        gap: 0.5rem;
+        display: flex;
     }
 </style>
 
-<BitLabel>Small size</BitLabel>
-<BitActionButton Class=""custom-btn-sm"" ButtonSize=""BitButtonSize.Small"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
-    
-<BitLabel>Medium size</BitLabel>
-<BitActionButton Class=""custom-btn-md"" ButtonSize=""BitButtonSize.Medium"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>
+<BitActionButton IconName=""@BitIconName.AddFriend"">
+    <div class=""custom-btn-ctn"">
+        <BitLabel>A Text from BitLabel</BitLabel>
+        <BitSpinnerLoading Size=""30"" />
+    </div>
+</BitActionButton>";
 
-<BitLabel>Large size</BitLabel>
-<BitActionButton Class=""custom-btn-lg"" ButtonSize=""BitButtonSize.Large"" IconName=""@BitIconName.AddFriend"">Button</BitActionButton>";
+    private readonly string example7HTMLCode = @"
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+
+        <ValidationSummary />
+
+        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+
+        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+        <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
+
+        <div>
+            <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">Submit</BitActionButton>
+            <BitActionButton IconName=""@BitIconName.Reset""  ButtonType=""BitButtonType.Reset"">Reset</BitActionButton>
+            <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">Button</BitActionButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
+        The form submitted successfully.
+    </BitMessageBar>
+}";
+    private readonly string example7CSharpCode = @"
+public class ButtonValidationModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
+
+    public string? NonRequiredText { get; set; }
+}
+
+private bool formIsValidSubmit;
+private ButtonValidationModel validationButtonModel = new();
+
+private async Task HandleValidSubmit()
+{
+    formIsValidSubmit = true;
+
+    await Task.Delay(2000);
+
+    validationButtonModel = new();
+
+    formIsValidSubmit = false;
+
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
+}";
+
+    private readonly string example8HTMLCode = @"
+<style>
+    .custom-class {
+        gap: 5px;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        background-color: aqua;
+    }
+</style>
+
+<BitActionButton IconName=""@BitIconName.AddFriend""
+                 ClassStyles=""@(new() { Container = new() { Class = ""custom-class"" },
+                                        Icon = new() { Style = ""color:green"" },
+                                        Content = new() { Style = ""color:blue"" } })"">
+    Create account
+</BitActionButton>";
+
 }

@@ -7,7 +7,7 @@
     width: 100%;
     display: flex;
     max-width: 100%;
-    margin-bottom: rem(36px);
+    margin-bottom: rem2(36px);
     flex-flow: column nowrap;
     justify-content: flex-start;
 }
@@ -18,10 +18,10 @@
     flex-wrap: wrap;
     position: relative;
     align-items: flex-end;
-    margin-top: rem(32px);
+    margin-top: rem2(32px);
     box-sizing: border-box;
     justify-content: space-between;
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .header-btn-group {
@@ -36,61 +36,56 @@
     width: 100%;
     overflow: auto;
     position: relative;
-    min-height: rem(70px);
+    min-height: rem2(70px);
     box-sizing: border-box;
-    line-height: rem(24px);
-    /*pre {
-        margin: 0;
-        background-color: $White;
-    }*/
 
     &::-webkit-scrollbar {
-        width: rem(6px);
+        width: rem2(6px);
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(8px);
+        height: rem2(8px);
     }
 }
 
 .example-container {
-    padding: rem(24px);
+    padding: rem2(24px);
 
     @include lt-lg {
-        padding: rem(24px) 0;
+        padding: rem2(24px) 0;
     }
 
     &::-webkit-scrollbar {
-        width: rem(10px);
+        width: rem2(10px);
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(10px);
+        height: rem2(10px);
     }
 }
 
 ::deep {
     .header-btn {
         height: 100%;
-        min-height: rem(40px);
+        min-height: rem2(40px);
         border-bottom: none !important;
-        border-radius: rem(4px) rem(4px) 0 0;
-        border: rem(1px) solid $bit-color-border-secondary;
+        border-radius: rem2(4px) rem2(4px) 0 0;
+        border: rem2(1px) solid $bit-color-border-secondary;
 
         &.show-code {
-            min-width: rem(125px);
-            padding: rem(4px) rem(12px);
+            min-width: rem2(125px);
+            padding: rem2(4px) rem2(12px);
 
             i {
                 font-size: 1.125rem;
-                margin-right: rem(8px);
+                margin-right: rem2(8px);
                 color: $bit-color-primary-main;
             }
 
             @include lt-lg {
-                width: rem(42px);
+                width: rem2(42px);
                 min-width: unset;
-                padding: rem(4px) rem(20px);
+                padding: rem2(4px) rem2(20px);
 
                 .show-code-lbl {
                     display: none;
@@ -100,19 +95,19 @@
 
         &.copy-link {
             z-index: 1;
-            width: rem(42px);
-            padding: 0 rem(20px);
-            background-color: $bit-color-secondary-main;
+            width: rem2(42px);
+            padding: 0 rem2(20px);
         }
     }
 
     .copy-btn {
         z-index: 1;
-        top: rem(16px);
-        right: rem(24px);
-        width: rem(34px);
-        height: rem(34px);
+        top: rem2(16px);
+        right: rem2(10px);
+        width: rem2(34px);
+        height: rem2(34px);
         position: absolute;
         border-radius: 50%;
+        background-color: $bit-color-background-secondary;
     }
 }

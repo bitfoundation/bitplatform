@@ -1,82 +1,122 @@
 [
     {
+        "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss",
-        "outputFile": "Shared/MainLayout.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
         "inputFile": "Shared/AppErrorBoundary.razor.scss",
-        "outputFile": "Shared/AppErrorBoundary.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss",
-        "outputFile": "Shared/MessageBox.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/Header.razor.css",
         "inputFile": "Shared/Header.razor.scss",
-        "outputFile": "Shared/Header.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/Footer.razor.css",
         "inputFile": "Shared/Footer.razor.scss",
-        "outputFile": "Shared/Footer.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/NavMenu.razor.css",
         "inputFile": "Shared/NavMenu.razor.scss",
-        "outputFile": "Shared/NavMenu.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
         "outputFile": "Shared/NotAuthorizedComponent.razor.css",
-        "inputFile": "Shared/NotAuthorizedComponent.razor.scss"
+        "inputFile": "Shared/NotAuthorizedComponent.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/SignOutConfirmModal.razor.css",
         "inputFile": "Shared/SignOutConfirmModal.razor.scss",
-        "outputFile": "Shared/SignOutConfirmModal.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/PageNotFound.razor.css",
         "inputFile": "Shared/PageNotFound.razor.scss",
-        "outputFile": "Shared/PageNotFound.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/HomePage.razor.css",
         "inputFile": "Pages/HomePage.razor.scss",
-        "outputFile": "Pages/HomePage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/PrivacyPage.razor.css",
         "inputFile": "Pages/PrivacyPage.razor.scss",
-        "outputFile": "Pages/PrivacyPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/SignUpPage.razor.css",
         "inputFile": "Pages/SignUpPage.razor.scss",
-        "outputFile": "Pages/SignUpPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/SignInPage.razor.css",
         "inputFile": "Pages/SignInPage.razor.scss",
-        "outputFile": "Pages/SignInPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/EmailConfirmationPage.razor.css",
         "inputFile": "Pages/EmailConfirmationPage.razor.scss",
-        "outputFile": "Pages/EmailConfirmationPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/ForgotPasswordPage.razor.css",
         "inputFile": "Pages/ForgotPasswordPage.razor.scss",
-        "outputFile": "Pages/ForgotPasswordPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/ResetPasswordPage.razor.css",
         "inputFile": "Pages/ResetPasswordPage.razor.scss",
-        "outputFile": "Pages/ResetPasswordPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/TodoPage.razor.css",
         "inputFile": "Pages/TodoPage.razor.scss",
-        "outputFile": "Pages/TodoPage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css",
         "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss",
-        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css",
         "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
-        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css"
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     },
     {
-        "outputFile": "wwwroot/styles/app.min.css",
-        "inputFile": "Styles/app.scss"
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     }
 ]

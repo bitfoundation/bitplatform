@@ -1,42 +1,43 @@
 ﻿.buttons-container {
-    line-height: 3.125rem;
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.buttons-container-grid {
+    gap: 0.5rem;
+    display: grid;
+}
+
+.form-container {
+    max-width: 20rem;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
 }
 
 ::deep {
     .custom-action-button {
-        color: #111;
-        width: 14.5rem;
-        font-size: 1rem;
-        margin-top: 0.625rem;
-        border-color: #D7D7D7;
-        background-color: #CCC;
-        justify-content: center;
+        border-radius: 1rem;
+        border: 2px solid #777;
     }
 
-    .custom-btn-sm {
-        &.bit-acb-sm {
-            font-size: 8px;
-            line-height: 1.5;
-            padding: 4px 8px;
-            border-radius: 3px;
-        }
+    .custom-btn-ctn {
+        gap: 0.5rem;
+        display: flex;
     }
 
-    .custom-btn-md {
-        &.bit-acb-md {
-            font-size: 16px;
-            line-height: 1.4;
-            border-radius: 4px;
-            padding: 12px 24px;
-        }
+    .validation-message {
+        color: red;
     }
 
-    .custom-btn-lg {
-        &.bit-acb-lg {
-            font-size: 32px;
-            line-height: 1.33;
-            border-radius: 6px;
-            padding: 20px 32px;
-        }
+    .custom-class {
+        gap: 5px;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        background-color: aqua;
     }
 }

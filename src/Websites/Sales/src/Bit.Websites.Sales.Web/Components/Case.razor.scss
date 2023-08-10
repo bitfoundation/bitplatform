@@ -1,0 +1,213 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+
+.case-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 rem2(100px) 0 rem2(200px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: 0 rem2(47px) 0 rem2(63px);
+    }
+
+    @include lt-lg {
+        justify-content: flex-start;
+        padding: 0 rem2(70px);
+    }
+
+    @include sm {
+        padding: 0 rem2(35px);
+    }
+}
+
+.case-left-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    max-width: rem2(540px);
+    margin-right: rem2(116px);
+
+    @include lg {
+        max-width: rem2(484px);
+        margin-right: 0;
+    }
+
+    @include lt-lg {
+        margin-right: 0;
+    }
+}
+
+.case-title {
+    font-weight: 800;
+    font-size: rem2(40px);
+    line-height: rem2(67px);
+    color: #222933;
+    margin-bottom: rem2(17px);
+}
+
+.case-desc {
+    width: 100%;
+    //white-space: pre;
+    font-weight: 500;
+    font-size: rem2(18px);
+    line-height: rem2(29px);
+    color: #62676D;
+    padding-bottom: rem2(17px);
+    margin-bottom: rem2(31px);
+    border-bottom: rem2(1px) solid #8C96AA;
+}
+
+.case-tech-title {
+    font-weight: bold;
+    font-size: rem2(18px);
+    line-height: rem2(30px);
+    color: #222933;
+    margin-bottom: rem2(23px);
+}
+
+.case-tech-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    height: rem2(63px);
+    margin-bottom: rem2(41px);
+}
+
+.case-tech {
+    position: relative;
+    width: rem2(43px);
+    height: rem2(43px);
+    margin-right: rem2(20px);
+    border-radius: 50%;
+    background-color: #FAFAFA;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: rem2(20px);
+    transition: all linear 0.2s;
+    cursor: pointer;
+
+    .tooltip {
+        position: absolute;
+        top: rem2(-41px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: rem2(15px);
+        line-height: rem2(25px);
+        text-align: center;
+        color: #434750;
+        border-radius: rem2(3px);
+        padding: rem2(4px) rem2(8px);
+        background-color: $Secondary;
+    }
+
+    &:hover {
+        width: rem2(63px);
+        height: rem2(63px);
+        background-color: $White;
+        background-size: rem2(24px);
+        border: 1px solid #D0D0D0;
+
+        .tooltip {
+            display: flex;
+        }
+    }
+
+    .tooltip-vector {
+        position: absolute;
+        bottom: rem2(-6px);
+        width: rem2(13px);
+        height: rem2(6px);
+        background-image: url('/images/cases/tooltip-vector.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+}
+
+.python {
+    background-image: url('/images/cases/tech/python-gray-icon.svg');
+
+    &:hover {
+        background-image: url('/images/cases/tech/html5-color-icon.svg');
+    }
+}
+
+.case-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+.case-right-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.case-photo {
+    width: rem2(525px);
+    height: rem2(640px);
+    background-image: url('/images/cases/case-photo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem2(63px);
+
+    @include lg {
+        width: rem2(475px);
+        height: rem2(578px);
+        margin-bottom: rem2(94px);
+    }
+}
+
+.case-info-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.case-info-box {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    width: rem2(130px);
+    height: rem2(82px);
+    border: rem2(1px) solid #EDEDED;
+    margin-right: rem2(16px);
+
+    &:last-child {
+        margin-right: 0;
+    }
+
+    .case-info-value {
+        font-weight: bold;
+        font-size: rem2(15px);
+        line-height: rem2(25px);
+        text-align: center;
+        color: $BlueDark;
+        margin-bottom: rem2(10px);
+    }
+
+    .case-info-title {
+        font-size: rem2(12px);
+        line-height: rem2(19px);
+        text-align: center;
+        color: #434750;
+    }
+}

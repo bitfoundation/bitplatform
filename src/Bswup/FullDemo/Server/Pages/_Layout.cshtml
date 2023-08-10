@@ -9,13 +9,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bit Bswup Demo</title>
     <base href="~/" />
+    <meta charset="utf-8" />
+    <title>bit Bswup Full Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="~/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="Bit.Bswup.Demo.Client.styles.css" />
-    <script src="_content/Bit.Bswup/bit-bswup.progress.min.js"></script>
+    <link rel="stylesheet" href="Bit.Bswup.Demo.Client.styles.css" asp-append-version="true" />
 </head>
 <body style="background:black; color:white">
 
@@ -23,21 +22,22 @@
         @RenderBody()
     </div>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></script>
-    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script src="_content/Bit.Bswup/bit-bswup.js"
+    <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js" asp-append-version="true"
             scope="/"
             log="none"
             sw="service-worker.js"
             handler="bitBswupHandler"></script>
 
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js" asp-append-version="true"></script>
     <component type="typeof(Bit.Bswup.Demo.Client.Shared.DemoBswupProgressBar)" render-mode="@RenderMode.Static" />
 
-    @* <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.min.css">
+    @* <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css">
     <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
-               param-AutoReload="true"
-               param-HideApp="true"
-               param-ShowAssets="false"
-               param-ShowLogs="true"
-               param-AppContainer="@("#app-container")" /> *@
+               param-AutoReload=false
+               param-HideApp=true
+               param-ShowAssets=true
+               param-ShowLogs=false
+               param-AppContainer=@("#app-container") /> *@
 </body>
 </html>

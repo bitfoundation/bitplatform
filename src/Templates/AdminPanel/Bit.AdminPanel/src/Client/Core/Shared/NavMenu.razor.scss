@@ -18,9 +18,9 @@
     overflow-y: auto;
     align-items: center;
     flex-direction: column;
-    width: rem($NavMenuWidth);
-    padding-bottom: rem(24px);
-    max-width: rem($NavMenuWidth);
+    width: rem2($NavMenuWidth);
+    padding-bottom: rem2(24px);
+    max-width: rem2($NavMenuWidth);
     justify-content: space-between;
     padding-top: var(--bit-status-bar-height);
     background-color: $bit-color-background-primary;
@@ -67,16 +67,16 @@
 
 .menu-top-row {
     width: 100%;
-    height: rem(calc($HeaderHeight + 1px));
+    height: rem2(calc($HeaderHeight + 1px));
     background-repeat: no-repeat;
-    background-size: rem(30px) rem(20px);
+    background-size: rem2(30px) rem2(20px);
     background-image: url('images/bit-logo.svg');
-    background-position: top rem(16px) left rem(16px);
-    border-bottom: rem(1px) solid $bit-color-border-secondary;
+    background-position: top rem2(16px) left rem2(16px);
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 ::deep {
     .bit-nav-menu {
-        padding-top: rem(32px);
+        padding-top: rem2(32px);
     }
 }

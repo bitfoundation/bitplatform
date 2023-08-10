@@ -1,0 +1,471 @@
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+/*--- start general classes ---*/
+section {
+    margin-bottom: rem2(88px);
+    user-select: none;
+
+    &:nth-child(odd) {
+        background-color: $Blue2;
+    }
+
+    &:nth-child(even) {
+        background-color: $PureWhite;
+    }
+}
+
+.section-title {
+    font-size: rem2(30px);
+    font-weight: 600;
+    color: $Black1;
+    padding-bottom:rem2(12px);
+    border-bottom: rem2(3px) solid $Orange1;
+    margin: 0 auto;
+    direction: rtl;
+    text-align: center;
+}
+
+.btn-pad {
+    padding: rem2(8px) rem2(32px);
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.arrow-icon-btn {
+    color: $Blue3;
+    font-weight: 600;
+    background: url(/images/main-page/left-arrow-blue.svg) no-repeat 0px;
+    text-align: right;
+}
+
+/*--- end general classes ---*/
+
+
+.hero-section-container {
+    display: flex;
+    padding: rem2(56px) rem2(140px) 0 rem2(100px);
+    background-color: $Blue1 !important;
+    align-items: flex-end;
+
+    .person-pic {
+        background: url(/images/main-page/yaser-moradi-pic.webp) no-repeat bottom;
+        background-size: contain;
+        margin-right: rem2(30px);
+        width: 100%;
+        height: rem2(456px);
+        flex: 3;
+    }
+
+    .hero-section-content {
+        flex: 4;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-end;
+        padding: rem2(78px) 0;
+
+        .hero-section-title {
+            color: $Black1;
+            font-size: rem2(30px);
+            font-weight: 600;
+            margin-bottom: rem2(16px);
+            line-height: rem2(56px);
+            direction: rtl;
+        }
+
+        .hero-section-description {
+            margin-bottom: rem2(40px);
+            color: $Gray2;
+            font-size: rem2(24px);
+            line-height: rem2(48px);
+            direction: rtl;
+        }
+
+        .hero-section-bit-icon {
+            height: rem2(24px);
+            margin-bottom: rem2(-5px)
+        }
+    }
+
+    .careers-button {
+        background-color: $Primary;
+        color: $PureWhite;
+        height: rem2(48px);
+
+        &:hover {
+            background-color: $Blue4;
+        }
+    }
+}
+
+
+.about-us-section-container {
+    display: flex;
+    flex-flow: column nowrap;
+    padding: rem2(40px) rem2(140px) rem2(80px) rem2(140px);
+
+    .about-us-section-content {
+        margin-top: rem2(73px);
+        display: flex;
+        position: relative;
+        justify-content: space-between;
+    }
+
+    .about-us-section-img-container {
+        margin-right: rem2(50px);
+        position: relative;
+        height: fit-content;
+
+        .about-us-section-img {
+            height: rem2(248px);
+        }
+
+        .ui-effect-1 {
+            position: absolute;
+            top: -33px;
+            left: -28px;
+        }
+
+        .ui-effect-2 {
+            position: absolute;
+            bottom: -28px;
+            right: -28px;
+        }
+
+        .ui-effect-3 {
+            position: absolute;
+            left: 72px;
+            top: -53px;
+        }
+    }
+
+    .about-us-section-info {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-end;
+        flex: 3;
+
+        .about-us-section-description {
+            font-size: rem2(20px);
+            direction: rtl;
+            color: $Black1;
+            margin-bottom: rem2(32px);
+            margin-top: rem2(24px);
+        }
+
+        .about-us-section-btn {
+            color: $Primary;
+            border: 1px solid $Primary;
+            background-color: $PureWhite;
+            transition: all 0.3s;
+
+            &:hover {
+                color: $PureWhite;
+                background-color: $Primary;
+            }
+        }
+    }
+
+    .ui-effect-4 {
+        position: absolute;
+        right: -63px;
+        top: -80px;
+    }
+}
+
+.careers-section-container {
+    padding: rem2(40px) rem2(20px) rem2(90px);
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+
+    .careers-section-content {
+        max-width: rem2(970px);
+        position: relative;
+        margin-top: rem2(64px);
+    }
+
+    .more-careers {
+        width: 100%;
+        border: 2px solid $Blue1;
+        min-height: rem2(186px);
+        border-radius: 12px;
+        padding: rem2(48px) rem2(200px);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .more-careers-title {
+            width: 100%;
+            font-size: rem2(20px);
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: rem2(18px);
+        }
+
+        .send-resume-btn {
+            background-size: rem2(28px);
+            width: rem2(121px);
+        }
+
+        .ui-effect-bell {
+            position: absolute;
+            top: rem2(34px);
+            right: 73px;
+        }
+    }
+
+    .ui-effect-rocket {
+        position: absolute;
+        bottom: -90px;
+        left: 68px;
+    }
+}
+
+
+.feedback-section {
+    padding-bottom: rem2(40px);
+
+    ::deep .bit-carousel {
+        height: rem2(720px);
+    }
+
+    .feedback-container {
+        display: flex;
+        flex-flow: row nowrap;
+
+
+        .product-designer-info-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-left: rem2(80px);
+        }
+
+        .product-designer-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .designer-avatar {
+            background: url(/images/main-page/zahra-ebrahimi-pic.webp) no-repeat center;
+            background-size: contain;
+            height: rem2(260px);
+            width: 100%;
+        }
+
+        .designer-name {
+            color: $Gray1;
+            font-size: rem2(24px);
+            font-weight: 500;
+            margin-top: rem2(13px);
+            line-height: rem2(48px);
+            direction: rtl;
+        }
+
+        .designer-post-text {
+            color: $Gray4;
+            font-size: rem2(20px);
+            margin-top: rem2(6px);
+            line-height: rem2(40px);
+        }
+
+        .feedback-content {
+            flex: 3;
+            padding: rem2(40px) rem2(86px) 0 rem2(56px);
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .feedback-description {
+            margin-top: rem2(189px);
+            font-size: rem2(20px);
+            color: $Gray1;
+            line-height: rem2(40px);
+            text-align: center;
+            direction: rtl;
+            position: relative;
+
+            .quote-down {
+                position: absolute;
+                top: -54px;
+                right: 0;
+            }
+
+            .quote-up {
+                position: absolute;
+                bottom: -54px;
+                left: 0;
+            }
+
+            .ui-effect-5 {
+                position: absolute;
+                top: -70px;
+                left: -50px;
+            }
+        }
+
+        .slide-btns {
+            display: flex;
+            width: rem2(120px);
+            justify-content: space-between;
+            margin-top: rem2(120px);
+        }
+
+        .slides-left-arrow {
+            background: url(/images/main-page/slides-left-arrow-empty.svg) no-repeat center;
+            width: rem2(40px);
+            height: rem2(40px);
+        }
+
+        .slides-right-arrow {
+            background: url(/images/main-page/slides-right-arrow-filled.svg) no-repeat center;
+            width: rem2(40px);
+            height: rem2(40px);
+        }
+
+        .team-members-img {
+            flex: 1;
+            background: url(/images/main-page/team-members-avatars.webp) no-repeat right;
+            background-size: contain;
+            height: rem2(680px);
+        }
+    }
+
+    .second-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: $Blue3;
+    }
+}
+
+
+.flow-section-container {
+    padding: rem2(40px) rem2(50px) rem2(127px);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    .flow-section-content {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: rem2(48px);
+    }
+
+    .flow-step {
+        max-width: rem2(120px);
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .step-name {
+        font-weight: 500;
+        color: $Black1;
+        margin-top: rem2(8px);
+    }
+
+    .connection-line {
+        margin-top: rem2(8px);
+        max-width: rem2(130px);
+        width: 100%;
+        border-bottom: 2px dashed $Blue5;
+    }
+}
+
+
+.why-bit-section-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: rem2(48px) rem2(50px) rem2(80px);
+
+    .why-bit-section-content {
+        margin-top: rem2(65px);
+        display: grid;
+        grid-template-columns: auto auto auto;
+        grid-gap: rem2(21px) 9vw;
+    }
+
+    .why-bit-item {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+
+    .why-bit-item-text {
+        font-size: rem2(20px);
+        color: $Black1;
+        font-weight: 500;
+        direction: rtl;
+        background: url(/images/main-page/tick-icon-blue.svg) no-repeat right;
+        background-size: rem2(40px);
+        padding-right: rem2(56px);
+    }
+
+    .why-bit-item img {
+        margin-left: rem2(16px);
+    }
+}
+
+
+.suggestions-section-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: rem2(48px);
+    margin-bottom: 0;
+
+    .suggestions-section-content {
+        width: 100%;
+        max-width: rem2(1158px);
+        margin-top: rem2(44px);
+    }
+
+    .suggestion-items-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: rem2(40px);
+    }
+
+    .suggestion-items-header-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: rem2(8px);
+    }
+
+    .see-all-btn {
+        background-size: rem2(24px);
+        width: rem2(124px);
+    }
+
+    .suggestion-items-container-title {
+        font-size: rem2(20px);
+        font-weight: 500;
+        color: $Gray1;
+        line-height: rem2(42px);
+    }
+
+    .suggestion-items {
+        display: flex;
+        justify-content: space-between;
+    }
+}

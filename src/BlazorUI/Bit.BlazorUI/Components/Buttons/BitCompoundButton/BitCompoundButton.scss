@@ -8,6 +8,7 @@
     min-width: spacing(9);
     text-decoration: none;
     box-sizing: border-box;
+    padding: spacing(2) spacing(1.5);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
@@ -63,42 +64,12 @@
 
 .bit-cmb-prt {
     display: block;
+    font-size: spacing(1.75);
     margin-bottom: spacing(0.625);
 }
 
 .bit-cmb-sct {
     display: block;
     font-weight: 400;
-    line-height: spacing(2.25);
-}
-
-.bit-cmb-sm {
     font-size: spacing(1.5);
-    line-height: spacing(2.75);
-    padding: spacing(0.25) spacing(1.25);
-
-    .bit-cmb-sct {
-        font-size: spacing(1);
-    }
-}
-
-.bit-cmb-md {
-    font-size: spacing(1.75);
-    padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height;
-
-    .bit-cmb-sct {
-        font-size: spacing(1.25);
-    }
-}
-
-.bit-cmb-lg {
-    font-size: spacing(2);
-    line-height: spacing(3.75);
-    padding: spacing(0.75) spacing(2.75);
-
-    .bit-cmb-sct {
-        font-size: spacing(1.5);
-        line-height: spacing(2.5);
-    }
 }

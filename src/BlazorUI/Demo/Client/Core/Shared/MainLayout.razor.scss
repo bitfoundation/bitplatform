@@ -11,7 +11,7 @@ main {
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: calc(rem($HeaderHeight) + var(--bit-status-bar-height));
+    padding-top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height));
 
     &.full-page {
         .site-content {
@@ -25,18 +25,18 @@ main {
         width: 100%;
         margin: 0 auto;
         position: relative;
-        padding: rem(40px);
+        padding: rem2(40px);
         max-width: calc(100% - $NavMenuWidth);
         background-color: $bit-color-background-secondary;
 
         @include md {
             max-width: 100%;
-            padding: rem(30px);
+            padding: rem2(30px);
         }
 
         @include sm {
             max-width: 100%;
-            padding: rem(20px);
+            padding: rem2(20px);
         }
     }
 }
@@ -48,11 +48,11 @@ main {
 
     .page-section {
         width: 100%;
-        padding: rem(28px);
+        padding: rem2(28px);
         position: relative;
         box-sizing: border-box;
-        border-radius: rem(2px);
-        margin-bottom: rem(28px);
+        border-radius: rem2(2px);
+        margin-bottom: rem2(28px);
         box-shadow: $bit-box-shadow-callout;
         color: $bit-color-foreground-secondary;
         background-color: $bit-color-background-primary;
@@ -60,39 +60,35 @@ main {
 
     .title {
         overflow-wrap: anywhere;
-        margin-bottom: rem(50px);
+        margin-bottom: rem2(50px);
     }
 
     .subtitle {
-        margin-bottom: rem(35px);
+        margin-bottom: rem2(35px);
         color: $bit-color-foreground-primary;
     }
 
     .section-title {
-        bottom: rem(8px);
+        bottom: rem2(8px);
         position: absolute;
-        margin-right: rem(175px);
+        margin-right: rem2(175px);
         color: $bit-color-foreground-primary;
 
         @include lt-lg {
             overflow-wrap: anywhere;
-            margin-right: rem(90px);
+            margin-right: rem2(90px);
         }
     }
 }
 
 .bit-ios {
     main {
-        padding-top: calc(rem($HeaderHeight) + env(safe-area-inset-top));
+        padding-top: calc(rem2($HeaderHeight) + env(safe-area-inset-top));
     }
 }
 
-::deep a {
-    text-decoration: none;
-}
-
 ::deep .example-desc {
-    margin-bottom: rem(8px);
+    margin-bottom: rem2(8px);
 }
 
 ::deep pre {
@@ -104,22 +100,22 @@ main {
     border-top: none;
     flex-flow: column;
     position: relative;
-    min-height: rem(70px);
-    max-height: rem(464px);
+    min-height: rem2(70px);
+    max-height: rem2(464px);
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: flex-start;
     padding: 24px 80px 24px 24px;
-    border: rem(1px) solid $bit-color-border-primary;
+    border: rem2(1px) solid $bit-color-border-primary;
     font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
     &::-webkit-scrollbar {
-        width: rem(6.5px);
+        width: rem2(8px);
     }
 
     &::-webkit-scrollbar-thumb {
-        border-radius: rem(8px);
-        border: rem(4px) solid #c8c6c4;
+        border-radius: rem2(8px);
+        border: rem2(4px) solid #c8c6c4;
     }
 
     &::-webkit-scrollbar-button {
@@ -127,12 +123,12 @@ main {
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        border: rem(4px) solid $B3Color;
-        border-radius: rem(8px);
+        border-radius: rem2(8px);
+        border: rem2(4px) solid $B3Color;
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem(6px);
+        height: rem2(8);
     }
 }
 
@@ -143,12 +139,6 @@ main {
     span {
         font-family: inherit;
     }
-}
-
-::deep .hljs {
-    overflow-x: unset !important;
-    padding: 0 !important;
-    background-color: transparent !important;
 }
 
 ::deep ::-webkit-scrollbar-thumb {
@@ -164,7 +154,7 @@ main {
     position: fixed;
     text-align: center;
     align-items: center;
-    font-size: rem(14px);
+    font-size: rem2(14px);
     justify-content: center;
     color: $bit-color-background-primary;
     background-color: $bit-color-background-primary;
@@ -184,4 +174,30 @@ main {
     color: transparent;
     background-color: transparent;
     height: env(safe-area-inset-top);
+}
+
+::deep .code-box {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding: rem2(8px);
+    user-select: text;
+    margin: rem2(16px) 0;
+    white-space: nowrap;
+    align-items: center;
+    box-sizing: border-box;
+    -webkit-user-select: text;
+    justify-content: flex-start;
+    background-color: $bit-color-background-secondary;
+    border-left: rem2(4px) solid $bit-color-border-secondary;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        height: rem2(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2(8px);
+        background-color: $bit-color-border-secondary;
+    }
 }

@@ -1,0 +1,137 @@
+﻿@import '_colors.scss';
+@import '_functions.scss';
+@import '_media-queries.scss';
+
+@mixin PrimaryButton($IsInNavbar) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: rem2(54px);
+    border-radius: rem2(3px);
+    border: none;
+    background-color: $Primary;
+    color: $White;
+    font-weight: 600;
+    font-size: rem2(16px);
+    line-height: rem2(22px);
+    text-align: center;
+    cursor: pointer;
+
+    @if $IsInNavbar {
+        width: rem2(164px);
+    }
+    @else {
+        width: rem2(205px);
+    }
+
+    /*@include md {
+        height: rem2(51px);
+        font-size: rem2(14px);
+        line-height: rem2(19px);
+    }
+
+    @include sm {
+        @if $IsInNavbar {
+            width: rem2(96px);
+        }
+        @else {
+            width: rem2(136px);
+        }
+
+        height: rem2(39px);
+        font-size: rem2(9px);
+        line-height: rem2(12px);
+    }*/
+
+    &:hover {
+        background-color: $B1;
+    }
+}
+
+@mixin SecondaryButton($IsInNavbar) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: rem2(54px);
+    border-radius: rem2(3px);
+    border: 1px solid $B2;
+    color: $B2;
+    font-weight: 600;
+    font-size: rem2(16px);
+    line-height: rem2(22px);
+    text-align: center;
+    cursor: pointer;
+
+    @if $IsInNavbar {
+        width: rem2(164px);
+    }
+    @else {
+        width: rem2(205px);
+    }
+
+    @include md {
+        height: rem2(51px);
+        font-size: rem2(14px);
+        line-height: rem2(19px);
+    }
+
+    @include sm {
+        @if $IsInNavbar {
+            width: rem2(96px);
+        }
+        @else {
+            width: rem2(136px);
+        }
+
+        height: rem2(39px);
+        font-size: rem2(9px);
+        line-height: rem2(12px);
+    }
+}
+
+@mixin PrimaryTitle {
+    font-weight: 800;
+    font-size: rem2(80px);
+    line-height: rem2(133px);
+    color: $Primary;
+    white-space: pre;
+    position: relative;
+    z-index: 1;
+
+    @include lg {
+        font-size: rem2(70px);
+        line-height: rem2(117px);
+    }
+
+    @include md {
+        font-size: rem2(60px);
+        line-height: rem2(110px);
+    }
+
+    @include sm {
+        font-size: rem2(40px);
+        line-height: rem2(67px);
+    }
+}
+
+@mixin PrimaryTitleBorder {
+    position: absolute;
+    left: 0;
+    bottom: 33%;
+    z-index: -1;
+    width: 100%;
+    height: rem2(18px);
+    background: $Secondary;
+
+    @include lg {
+        height: rem2(17px);
+    }
+
+    @include md {
+        height: rem2(12px);
+    }
+
+    @include sm {
+        height: rem2(9px);
+    }
+}

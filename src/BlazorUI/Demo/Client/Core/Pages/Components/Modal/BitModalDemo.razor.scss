@@ -5,17 +5,17 @@
     display: flex;
     font-weight: 600;
     align-items: center;
-    font-size: rem(24px);
+    font-size: rem2(24px);
     justify-content: space-between;
-    border-top: rem(4px) solid #0054C6;
-    padding: rem(12px) rem(12px) rem(14px) rem(24px);
+    border-top: rem2(4px) solid #0054C6;
+    padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
 }
 
 .modal-body {
     overflow-y: hidden;
-    max-width: rem(960px);
-    line-height: rem(20px);
-    padding: 0 rem(24px) rem(24px);
+    max-width: rem2(960px);
+    line-height: rem2(20px);
+    padding: 0 rem2(24px) rem2(24px);
 }
 
 .btn-container {
@@ -39,7 +39,7 @@
     width: 100%;
     overflow: auto;
     margin-top: 1rem;
-    height: rem(400px);
+    height: rem2(400px);
     position: relative;
-    border: rem(2px) lightgreen solid;
+    border: rem2(2px) lightgreen solid;
 }

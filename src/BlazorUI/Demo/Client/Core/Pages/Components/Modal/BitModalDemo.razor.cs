@@ -33,7 +33,7 @@ public partial class BitModalDemo
             Name = "ClassStyles",
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
-            Href = "class-styles",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
             Description = "Custom CSS classes/styles for different parts of the BitModal component."
         },
@@ -130,7 +130,7 @@ public partial class BitModalDemo
                    Name = "Container",
                    Type = "BitClassStylePair?",
                    Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "class-style-pair",
+                   Href = "#class-style-pair",
                    LinkType = LinkType.Link
                }
             }

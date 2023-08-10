@@ -1,0 +1,138 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.footer-container {
+    min-height: rem2(176px);
+    display: flex;
+    flex-direction: column;
+    color: $Gray1;
+    position: relative;
+}
+
+.footer-content {
+    flex: 1;
+    background-color: $Blue1;
+    display: flex;
+    flex-flow: row nowrap;
+    padding: 0 rem2(140px);
+}
+
+.left-side-content {
+    flex: 1;
+    display: flex;
+    flex-flow: column nowrap;
+    padding-top: rem2(24px);
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.footer-bit-icon {
+    width: rem2(36px);
+}
+
+.footer-info-text {
+    font-size: rem2(14px);
+    margin-top: rem2(8px);
+}
+
+.communications-options {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: rem2(172px);
+    cursor: pointer;
+    margin-top: rem2(12px);
+
+    .mail-button {
+        background: url(/images/footer/mail-icon-blue.svg);
+    }
+
+    .whatsup-button {
+        background: url(/images/footer/whats-app-icon-blue.svg);
+    }
+
+    .linkedin-button {
+        background: url(/images/footer/linkedin-icon-blue.svg);
+    }
+
+    .github-button {
+        background: url(/images/footer/github-icon-blue.svg);
+    }
+}
+
+.communication-button {
+    width: rem2(28px);
+    height: rem2(28px);
+    background-size: rem2(28px);
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    transition: all 0.2s;
+
+    &:hover {
+        top: -3px;
+    }
+}
+
+.center-text {
+    min-width: rem2(121px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 0 rem2(4px);
+    font-weight: 500;
+    padding-bottom: rem2(40px);
+}
+
+.footer-items-container {
+    flex: 1;
+    font-size: rem2(14px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-bottom: rem2(30px);
+    flex-flow: column nowrap;
+
+    .footer-item {
+        margin-top: rem2(4px);
+        cursor: pointer;
+        line-height: rem2(24px);
+
+        &:hover {
+            color: $Primary;
+        }
+    }
+}
+
+.bottom-line {
+    height: rem2(32px);
+    margin-top: rem2(1px);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: rem2(10px);
+    background-color: $Blue1;
+}
+
+.red-heart {
+    color: $Red;
+    margin: 0 rem2(2px);
+}
+
+.back-to-top-button {
+    position: absolute;
+    top: -23px;
+    right: 140px;
+    transition: all 0.2s;
+    cursor: pointer;
+    background: url(/images/footer/go-to-top-icon.svg) no-repeat center;
+    background-size: rem2(43px);
+    height: rem2(43px);
+    width: rem2(43px);
+
+    &:hover {
+        top: -26px;
+    }
+}

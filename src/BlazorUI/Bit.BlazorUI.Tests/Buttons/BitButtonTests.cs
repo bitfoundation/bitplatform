@@ -14,13 +14,13 @@ public class BitButtonTests : BunitTestContext
         DataRow(false, BitButtonStyle.Primary, "title"),
         DataRow(false, BitButtonStyle.Standard, "title")
     ]
-    public void BitButtonTest(bool isEnabled, BitButtonStyle style, string title)
+    public void BitButtonTest(bool isEnabled, BitButtonStyle buttonStyle, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.ButtonStyle, buttonStyle);
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -36,49 +36,22 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        if (isEnabled)
+        if (buttonStyle == BitButtonStyle.Standard)
         {
-            var btnStyle = style == BitButtonStyle.Primary ? "bit-btn-pri" : "bit-btn-std";
-            Assert.IsTrue(bitButton.ClassList.Contains(btnStyle));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-pri"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-std"));
         }
         else
         {
-            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-pri"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-pri"));
             Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-std"));
         }
+
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
         bitButton.Click();
 
         Assert.AreEqual(isEnabled, clicked);
-    }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitButton>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var bitButton = com.Find(".bit-btn");
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-btn-sm",
-            BitButtonSize.Medium or null => "bit-btn-md",
-            BitButtonSize.Large => "bit-btn-lg",
-            _ => throw new NotSupportedException()
-        };
-
-        Assert.IsTrue(bitButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,

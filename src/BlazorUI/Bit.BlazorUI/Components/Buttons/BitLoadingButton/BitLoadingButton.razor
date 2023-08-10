@@ -1,17 +1,15 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement"
-        @attributes="HtmlAttributes"
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
-        aria-label="@AriaLabel"
-        aria-describedby="@AriaDescription"
-        aria-hidden="@AriaHidden"
-        tabindex="@_tabIndex"
-        type="@ButtonType?.GetValue()"
+        type="@_buttonType.GetValue()"
         title="@Title"
-        @onclick="HandleOnClick">
+        tabindex="@_tabIndex"
+        aria-label="@AriaLabel"
+        aria-hidden="@AriaHidden"
+        aria-describedby="@AriaDescription">
     @if (IsLoading)
     {
         if (LoadingTemplate is not null)
@@ -20,11 +18,11 @@
         }
         else
         {
-            <div class="bit-ldb-ldg @GetLabelPositionClass() @GetSpinnerSizeClass()">
-                <div class="bit-ldb-spn"></div>
+            <div style="@ClassStyles?.LoadingContainer?.Style" class="bit-ldb-ldg @GetLabelPositionClass() @ClassStyles?.LoadingContainer?.Class">
+                <div style="@ClassStyles?.Spinner?.Style" class="bit-ldb-spn @ClassStyles?.Spinner?.Class"></div>
                 @if (LoadingLabel.HasValue())
                 {
-                    <div class="bit-ldb-lbl">
+                    <div style="@ClassStyles?.LoadingLabel?.Style" class="bit-ldb-lbl @ClassStyles?.LoadingLabel?.Class">
                         @LoadingLabel
                     </div>
                 }

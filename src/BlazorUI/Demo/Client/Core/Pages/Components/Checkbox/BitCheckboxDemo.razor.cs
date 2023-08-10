@@ -258,9 +258,10 @@ private bool IsCheckedLabelTemplate;
     private readonly string example6HTMLCode = @"
 <style>
     .custom-checkbox {
+        gap: 0.5rem;
         display: flex;
-        justify-content: center;
         cursor: pointer;
+        flex-wrap: wrap;
         user-select: none;
         align-items: center;
     }
@@ -282,7 +283,7 @@ private bool IsCheckedLabelTemplate;
             <BitIcon IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : null)"" />
         </div>
         <span>
-            Customized Basic Checkbox
+            Custom Basic Checkbox
         </span>
     </div>
 </BitCheckbox>
@@ -293,11 +294,10 @@ private bool IsCheckedLabelTemplate;
             <BitIcon IconName=""@(IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : null))"" />
         </div>
         <span>
-            Customized Indeterminate checkbox
+            Custom Indeterminate checkbox
         </span>
+        <BitButton OnClick=""() => IsIndeterminateCustomCheckBox = true"">Make Indeterminate</BitButton>
     </div>
-    &nbsp;
-    <BitButton ButtonSize=""BitButtonSize.Small"" OnClick=""() => IsIndeterminateCustomCheckBox = true"">Make Indeterminate</BitButton>
 </BitCheckbox>";
     private readonly string example6CSharpCode = @"
 private bool IsCheckedCustomCheckBox;
@@ -310,6 +310,7 @@ private bool IsIndeterminateCustomCheckBox = true;
 
 <style>
     .validation-summary {
+        color: #A4262C;
         overflow: hidden;
         margin-bottom: 0.8rem;
         background-color: #FDE7E9;

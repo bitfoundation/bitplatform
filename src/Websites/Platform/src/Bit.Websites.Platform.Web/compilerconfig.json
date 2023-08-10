@@ -1,0 +1,254 @@
+[
+    {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Header.razor.css",
+        "inputFile": "Shared/Header.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/LoadingComponent.razor.css",
+        "inputFile": "Shared/LoadingComponent.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NavigationButtons.razor.css",
+        "inputFile": "Shared/NavigationButtons.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NavMenu.razor.css",
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NotFoundComponent.razor.css",
+        "inputFile": "Shared/NotFoundComponent.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/CacheMechanismPage.razor.css",
+        "inputFile": "Pages/AdminPanel/CacheMechanismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/ContributePage.razor.css",
+        "inputFile": "Pages/AdminPanel/ContributePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/DatabasePage.razor.css",
+        "inputFile": "Pages/AdminPanel/DatabasePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/DeploymentTypePage.razor.css",
+        "inputFile": "Pages/AdminPanel/DeploymentTypePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/AdminPanel/DevelopmentPrerequisitesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/DevOpsPage.razor.css",
+        "inputFile": "Pages/AdminPanel/DevOpsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.css",
+        "inputFile": "Pages/AdminPanel/ExceptionHandlingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/CreateProjectPage.razor.css",
+        "inputFile": "Pages/AdminPanel/CreateProjectPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/HostingModelsPage.razor.css",
+        "inputFile": "Pages/AdminPanel/HostingModelsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/MultilingualismPage.razor.css",
+        "inputFile": "Pages/AdminPanel/MultilingualismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/OverviewPage.razor.css",
+        "inputFile": "Pages/AdminPanel/OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/ProjectStructurePage.razor.css",
+        "inputFile": "Pages/AdminPanel/ProjectStructurePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/RunPage.razor.css",
+        "inputFile": "Pages/AdminPanel/RunPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AdminPanel/SettingsPage.razor.css",
+        "inputFile": "Pages/AdminPanel/SettingsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/CacheMechanismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/ContributePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ContributePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/DatabasePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DatabasePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DeploymentTypePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DevelopmentPrerequisitesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/DevOpsPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/DevOpsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ExceptionHandlingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/CreateProjectPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/CreateProjectPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/HostingModelsPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/HostingModelsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/MultilingualismPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/MultilingualismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/OverviewPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.css",
+        "inputFile": "Pages/TodoTemplate/ProjectStructurePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/RunPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/RunPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TodoTemplate/SettingsPage.razor.css",
+        "inputFile": "Pages/TodoTemplate/SettingsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AboutUsPage.razor.css",
+        "inputFile": "Pages/AboutUsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ComponentsPage.razor.css",
+        "inputFile": "Pages/ComponentsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ContactUsPage.razor.css",
+        "inputFile": "Pages/ContactUsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/PricingPage.razor.css",
+        "inputFile": "Pages/PricingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    }
+]

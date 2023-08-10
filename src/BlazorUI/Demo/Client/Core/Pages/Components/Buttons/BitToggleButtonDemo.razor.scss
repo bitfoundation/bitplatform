@@ -1,34 +1,17 @@
 ﻿.example-box {
-    display: flex;
-    flex-flow: row wrap;
     gap: 0.5rem;
+    display: flex;
     width: fit-content;
+    flex-flow: row wrap;
     align-items: center;
 
     &.column {
         flex-direction: column;
+        align-items: flex-start;
     }
 }
 
-::deep {
-    .custom-btn-sm {
-        padding: 4px 8px;
-        font-size: 8px;
-        line-height: 1.5;
-        border-radius: 3px;
-    }
-
-    .custom-btn-md {
-        padding: 12px 24px;
-        font-size: 16px;
-        line-height: 1.4;
-        border-radius: 4px;
-    }
-
-    .custom-btn-lg {
-        padding: 20px 32px;
-        font-size: 32px;
-        line-height: 1.33;
-        border-radius: 6px;
-    }
+::deep .custom-class {
+    color: aqua;
+    border-radius: 1rem;
 }

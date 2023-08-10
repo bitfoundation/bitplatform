@@ -3,6 +3,9 @@
 To use bit Bup, please follow these steps:
 
 1. Install the `Bit.Bup` nuget package
+```bat
+dotnet add package Bit.Bup
+```
 
 2. In the default document (`index.html`, `_Host.cshtml`, or `_Layout.cshtml`), add an `autostart="false"` attribute and value to the script tag of the Blazor script.
 

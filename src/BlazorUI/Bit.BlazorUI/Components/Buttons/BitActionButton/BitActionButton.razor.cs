@@ -4,8 +4,15 @@ namespace Bit.BlazorUI;
 
 public partial class BitActionButton
 {
-    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private int? _tabIndex;
+    private BitButtonType _buttonType;
+
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] public EditContext? EditContext { get; set; }
+
 
     /// <summary>
     /// Whether the action button can have focus in disabled mode
@@ -23,22 +30,6 @@ public partial class BitActionButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
-    /// </summary>
-    [Parameter]
-    public BitButtonSize ButtonSize
-    {
-        get => buttonSize;
-        set
-        {
-            if (buttonSize == value) return;
-
-            buttonSize = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The type of the button
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
@@ -49,9 +40,9 @@ public partial class BitActionButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// Custom CSS classes/styles for different parts of the BitActionButton.
     /// </summary>
-    [CascadingParameter] public EditContext? EditContext { get; set; }
+    [Parameter] public BitActionButtonClassStyles? ClassStyles { get; set; }
 
     /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
@@ -78,28 +69,19 @@ public partial class BitActionButton
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+
     protected override string RootElementClass => "bit-acb";
 
-    protected override void RegisterComponentClasses()
-    {
-        ClassBuilder.Register(() => ButtonSize switch
-        {
-            BitButtonSize.Small => $"{RootElementClass}-sm",
-            BitButtonSize.Large => $"{RootElementClass}-lg",
-            _ => $"{RootElementClass}-md"
-        });
-    }
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnParametersSet()
     {
         if (IsEnabled is false)
         {
             _tabIndex = AllowDisabledFocus ? null : -1;
         }
 
-        ButtonType ??= EditContext is null ? BitButtonType.Button : BitButtonType.Submit;
+        _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
-        await base.OnInitializedAsync();
+        base.OnParametersSet();
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)

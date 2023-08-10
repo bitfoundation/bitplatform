@@ -10,21 +10,21 @@
 
 .title {
     font-weight: 600;
-    font-size: rem(120px);
-    line-height: rem(168px);
+    font-size: rem2(120px);
+    line-height: rem2(168px);
 
     @include lt-xl {
-        font-size: rem(100px);
+        font-size: rem2(100px);
     }
 }
 
 .description {
     font-weight: 400;
-    font-size: rem(18px);
-    line-height: rem(28px);
+    font-size: rem2(18px);
+    line-height: rem2(28px);
 
     @include lt-xl {
-        font-size: rem(16px);
-        line-height: rem(24px);
+        font-size: rem2(16px);
+        line-height: rem2(24px);
     }
 }

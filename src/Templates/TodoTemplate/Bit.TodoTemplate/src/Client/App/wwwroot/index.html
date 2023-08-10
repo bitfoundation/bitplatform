@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html bit-theme="dark">
 <head>
     <base href="/" />
     <meta charset="utf-8" />
@@ -13,10 +13,10 @@
     <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-semibold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-semilight.woff2" as="font" type="font/woff2" crossorigin>
 
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.min.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.min.css" />
-    <link rel="stylesheet" href="_content/TodoTemplate.Client.Core/styles/app.min.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <link rel="stylesheet" href="_content/TodoTemplate.Client.Core/styles/app.css" />
     <link rel="stylesheet" href="_content/TodoTemplate.Client.Core/TodoTemplate.Client.Core.bundle.scp.css" />
 
     <style>
@@ -124,15 +124,15 @@
     </style>
 </head>
 
-<body class="bit-css-clr-bg-primary bit-css-clr-fg-primary">
-    <div id="app-container">
+<body>
+    <div id="app-container" class="bit-css-clr-bg-primary bit-css-clr-fg-primary">
         <div class="lds-wrapper">
             <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
         </div>
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
-    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
     <script src="_content/TodoTemplate.Client.Core/scripts/app.js"></script>
     <script>
         window.addEventListener('contextmenu', (event) => event.preventDefault());

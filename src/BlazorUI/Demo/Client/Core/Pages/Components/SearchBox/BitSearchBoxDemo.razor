@@ -8,9 +8,8 @@
 <ComponentDemo ComponentName="SearchBox"
                ComponentDescription="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitSearchBox" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a searchbox you can use a BitSearchbox component.</div>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic</BitLabel>
@@ -25,9 +24,8 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underlined BitSearchBox" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="IsUnderlined" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">BitSearchBox component can be like an underline.</div>
             <div class="example-box">
                 <div>
                     <BitLabel>Basic Underlined SearchBox</BitLabel>
@@ -42,7 +40,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitSearchBox Icon" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="Icon" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -63,7 +61,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitSearchBox Binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -75,21 +73,20 @@
                 <div>
                     <BitLabel>OnChange</BitLabel>
                     <BitSearchBox Placeholder="Search" OnChange="(s) => OnChangeSearchValue = s" OnClear="() => OnChangeSearchValue = string.Empty" />
-                    <span>Search Value: @OnChangeSearchValue</span>
+                    <BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
                 </div>
                 <br />
                 <div>
                     <BitLabel>OnSearch (Search by Enter)</BitLabel>
                     <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" />
-                    <span>Search Value: @OnSearchValue</span>
+                    <BitLabel>Search Value: @OnSearchValue</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SearchBox Validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">The BitSearchBox supports DataAnnotation validation in the Blazor EditForm. It provides snappy validation feedback as you type.</div>
             <div class="example-box">
                 <EditForm Model="ValidationSearchBoxModel">
                     <DataAnnotationsValidator />
@@ -101,3 +98,11 @@
     </ComponentExampleBox>
 
 </ComponentDemo>
+
+@code {
+    private string TwoWaySearchValue;
+    private string OnChangeSearchValue;
+    private string OnSearchValue;
+
+    private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
+}

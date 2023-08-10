@@ -7,24 +7,56 @@
 <ComponentDemo ComponentName="Link"
                ComponentDescription="Links lead to another part of an app, other pages, or help articles. They can also be used to initiate commands."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitLink" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a link you can use a BitLink component.</div>
             <div class="example-box">
                 <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
                 <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank Target Link</BitLink>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
+                <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="HasUnderline" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+        <ExamplePreview>
+            <div class="example-box">
                 <BitLink Href="https://github.com/bitfoundation/bitplatform" HasUnderline="true">Underlined link</BitLink>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Target" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank target link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_parent">Parent target link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_self">Self target link</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_top">Top target link</BitLink>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OnClick" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-box">
                 <BitLink OnClick="LinkOnClick">Link with OnClick</BitLink>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitLink to navigate the page" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Navigate to elements" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-desc">If you start the Href parameter with a # character, it's looking for the same element id and scrolling on it.</div>
-            <BitLink Href="#end-article">Go To End of this Article</BitLink>
-            <p id="start-article">
+            <BitLink Style="scroll-margin: 70px" id="start-article" Href="#end-article">Go To End of this Article</BitLink>
+            <p>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                 amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                 sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -57,14 +89,25 @@
                 cursus. Aenean lectus magna, tincidunt sit amet sodales a, volutpat ac leo. Morbi nisl sapien, tincidunt sit
                 amet mauris quis, sollicitudin auctor est.
             </p>
-            <p id="end-article">
+            <p>
                 Nam id mi justo. Nam vehicula vulputate augue, ac pretium enim rutrum ultricies. Sed aliquet accumsan
                 varius. Quisque ac auctor ligula. Fusce fringilla, odio et dignissim iaculis, est lacus ultrices risus,
                 vitae condimentum enim urna eu nunc. In risus est, mattis non suscipit at, mattis ut ante. Maecenas
                 consectetur urna vel erat maximus, non molestie massa consequat. Duis a feugiat nibh. Sed a hendrerit diam,
                 a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
             </p>
-            <BitLink Href="#start-article">Go To Start of this Article</BitLink>
+            <BitLink Style="scroll-margin: 70px" id="end-article" Href="#start-article">Go To Start of this Article</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private void LinkOnClick()
+    {
+        // Here you can do something else...
+
+        Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
+    }
+}

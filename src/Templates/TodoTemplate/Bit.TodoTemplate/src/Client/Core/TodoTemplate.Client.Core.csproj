@@ -20,21 +20,21 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.2.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.2.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.2.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.2.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.3.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.3.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.3.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.2.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="jose-jwt" Version="4.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.10" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.10" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -82,9 +82,8 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.min.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
 </Project>

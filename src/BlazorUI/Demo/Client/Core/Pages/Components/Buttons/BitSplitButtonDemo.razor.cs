@@ -297,190 +297,6 @@ public partial class BitSplitButtonDemo
 
 
 
-    private string BasicClickedItem;
-    private string IsStickyClickedItem;
-    private string DisabledClickedItem;
-    private string TemplateClickedItem;
-
-    private List<BitSplitButtonItem> BasicItems = new()
-    {
-        new()
-        {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji
-        },
-        new()
-        {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji
-        },
-        new()
-        {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji2
-        }
-    };
-    private List<BitSplitButtonItem> IsStickyItems = new()
-    {
-        new()
-        {
-            Text = "Add",
-            Key = "add-key",
-            IconName = BitIconName.Add
-        },
-        new()
-        {
-            Text = "Edit",
-            Key = "edit-key",
-            IconName = BitIconName.Edit
-        },
-        new()
-        {
-            Text = "Delete",
-            Key = "delete-key",
-            IconName = BitIconName.Delete
-        }
-    };
-    private List<BitSplitButtonItem> DisabledItems = new()
-    {
-        new()
-        {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji,
-            IsEnabled = false
-        },
-        new()
-        {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji2
-        },
-        new()
-        {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji,
-            IsEnabled = false
-        },
-        new()
-        {
-            Text = "Item D",
-            Key = "D",
-            IconName = BitIconName.Emoji2
-        }
-    };
-    private List<BitSplitButtonItem> TemplateItems = new()
-    {
-        new()
-        {
-            Text = "Add",
-            Key = "add-key"
-        },
-        new()
-        {
-            Text = "Edit",
-            Key = "edit-key"
-        },
-        new()
-        {
-            Text = "Delete",
-            Key = "delete-key"
-        }
-    };
-
-    private List<SplitActionItem> BasicCustomItems = new()
-    {
-        new()
-        {
-            Name = "Item A",
-            Id = "A"
-        },
-        new()
-        {
-            Name = "Item B",
-            Id = "B",
-            Icon = BitIconName.Emoji
-        },
-        new()
-        {
-            Name = "Item C",
-            Id = "C",
-            Icon = BitIconName.Emoji2
-        }
-    };
-    private List<SplitActionItem> IsStickyCustomItems = new()
-    {
-        new()
-        {
-            Name = "Add",
-            Id = "add-key",
-            Icon = BitIconName.Add
-        },
-        new()
-        {
-            Name = "Edit",
-            Id = "edit-key",
-            Icon = BitIconName.Edit
-        },
-        new()
-        {
-            Name = "Delete",
-            Id = "delete-key",
-            Icon = BitIconName.Delete
-        }
-    };
-    private List<SplitActionItem> DisabledCustomItems = new()
-    {
-        new()
-        {
-            Name = "Item A",
-            Id = "A",
-            Icon = BitIconName.Emoji,
-            IsEnabled = false
-        },
-        new()
-        {
-            Name = "Item B",
-            Id = "B",
-            Icon = BitIconName.Emoji2
-        },
-        new()
-        {
-            Name = "Item C",
-            Id = "C",
-            Icon = BitIconName.Emoji,
-            IsEnabled = false
-        },
-        new()
-        {
-            Name = "Item D",
-            Id = "D",
-            Icon = BitIconName.Emoji2
-        }
-    };
-    private List<SplitActionItem> TemplateCustomItems = new()
-    {
-        new()
-        {
-            Name = "Add",
-            Id = "add-key"
-        },
-        new()
-        {
-            Name = "Edit",
-            Id = "edit-key"
-        },
-        new()
-        {
-            Name = "Delete",
-            Id = "delete-key"
-        }
-    };
-
     private void OnTabClick()
     {
         BasicClickedItem = string.Empty;
@@ -865,8 +681,9 @@ private string DisabledClickedItem;
     private readonly string example4BitSplitButtonItemHTMLCode = @"
 <style>
     .item-template-box {
-        display: flex;
+        gap: 0.5rem;
         width: 100%;
+        display: flex;
     }
 </style>
 
@@ -924,8 +741,9 @@ private string DisabledClickedItem;
     private readonly string example4CustomItemHTMLCode = @"
 <style>
     .item-template-box {
-        display: flex;
+        gap: 0.5rem;
         width: 100%;
+        display: flex;
     }
 </style>
 
@@ -989,8 +807,9 @@ private string DisabledClickedItem;
     private readonly string example4BitSplitButtonOptionHTMLCode = @"
 <style>
     .item-template-box {
-        display: flex;
+        gap: 0.5rem;
         width: 100%;
+        display: flex;
     }
 </style>
 

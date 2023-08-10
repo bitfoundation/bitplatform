@@ -28,11 +28,16 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Scripts/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="npx --yes esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
     
 </Project>

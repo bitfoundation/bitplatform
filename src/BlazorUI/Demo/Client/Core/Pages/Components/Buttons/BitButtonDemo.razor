@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/button"
             Title="Button"
-            Description="button component of the bit BlazorUI components" />
+            Description="Button component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Button"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
@@ -10,32 +10,23 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <div class="example-desc">To create a button you can use a BitButton component.</div>
             <div class="buttons-container">
-                <BitButton IsEnabled="true" OnClick="() => PrimaryCounter++">
-                    Primary (@PrimaryCounter)
+                <BitButton OnClick="() => primaryCounter++">Primary (@primaryCounter)</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
+                    Standard (@standardCounter)
                 </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="true" OnClick="() => StandardCounter++">
-                    Standard (@StandardCounter)
-                </BitButton>
-                <BitButton IsEnabled="false" AllowDisabledFocus="false">
-                    Disabled
-                </BitButton>
-                <BitButton Class="label-btn" IsEnabled="true">
-                    <label>A Text from label element</label>
-                </BitButton>
+                <BitButton IsEnabled="false">Disabled</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="example-desc">BitButton can directly get css class or inline style.</div>
             <div class="buttons-container">
-                <BitButton Style="height: 40px;width: 166px;font-size: 16px;">
+                <BitButton Style="color:darkblue; font-weight:bold">
                     Styled Button
                 </BitButton>
-                <BitButton Class="custom-button">
+                <BitButton Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
                     Classed Button
                 </BitButton>
             </div>
@@ -44,83 +35,113 @@
 
     <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
-            <div class="example-desc">By setting Visibility attribute, BitButton can be Visible, Hidden or Collapsed.</div>
             <div class="buttons-container-grid">
-                <div><BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton></div>
-                <div>Hidden Button: [<BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton>]</div>
-                <div>Collapsed Button: [<BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton>]</div>
+                <div>Visible: [ <BitButton Visibility="BitComponentVisibility.Visible">Visible Button</BitButton> ]</div>
+                <div>Hidden: [ <BitButton Visibility="BitComponentVisibility.Hidden">Hidden Button</BitButton> ]</div>
+                <div>Collapsed: [ <BitButton Visibility="BitComponentVisibility.Collapsed">Collapsed Button</BitButton> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Arias for Screen Reader" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
-            <div class="example-desc">Aria attribues can also set for a BitButton.</div>
             <div class="buttons-container">
                 <BitButton AriaDescription="Detailed description used for screen reader.">
-                    Button with Aria Description
+                    Button with AriaDescription
                 </BitButton>
                 <BitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
-                    Button with Aria Hidden
+                    Button with AriaHidden
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button-like Anchor" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="Link button" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
-            <div class="example-desc">BitButton can act as a link by setting Href and Target attributes.</div>
             <div class="buttons-container">
-                <BitButton Title="Primary" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">
+                <BitButton Title="Primary" Target="_blank" Href="https://bitplatform.dev">
                     Open Bit Platform In New Tab
                 </BitButton>
-                <BitButton Title="Standard" Href="https://github.com/bitfoundation/bitplatform" ButtonStyle="BitButtonStyle.Standard">
+                <BitButton Title="Standard" Href="https://bitplatform.dev" ButtonStyle="BitButtonStyle.Standard">
                     Go To Bit Platform
                 </BitButton>
-                <BitButton Target="_self" Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">
-                    <span>Bit Platform From Span</span>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div class="buttons-container">
+                <BitButton Class="custom-content">
+                    <BitIcon IconName="@BitIconName.Airplane" />
+                    <span>A Primary custom text</span>
+                    <BitRippleLoading Size="20" />
+                </BitButton>
+
+                <BitButton Class="custom-content" ButtonStyle="BitButtonStyle.Standard">
+                    <BitIcon IconName="@BitIconName.Accept" />
+                    <span>A Standard custom text</span>
+                    <BitRollerLoading Size="20" />
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitButton in different sizes" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="Button Type" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
-            <div class="example-desc">BitButton can get different sizes using the <code>ButtonSize</code> parameter.</div>
-            <div class="buttons-container-grid">
-                <div>
-                    <div>Small size</div>
-                    <BitButton ButtonSize="BitButtonSize.Small">Button</BitButton>
-                </div>
-                <div>
-                    <div>Medium size</div>
-                    <BitButton ButtonSize="BitButtonSize.Medium">Button</BitButton>
-                </div>
-                <div>
-                    <div>Large size</div>
-                    <BitButton ButtonSize="BitButtonSize.Large">Button</BitButton>
-                </div>
+            <div class="form-container">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                        <DataAnnotationsValidator />
+
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText" />
+                        <br />
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText" />
+                        <br />
+                        <div>
+                            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                            <BitButton ButtonType="BitButtonType.Reset">Reset</BitButton>
+                            <BitButton ButtonType="BitButtonType.Button">Button</BitButton>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form submitted successfully.
+                    </BitMessageBar>
+                }
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized BitButton in different sizes" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
-        <ExamplePreview>
-            <div class="example-desc">BitButton can be customized easily in different sizes by overriding a certain CSS class.</div>
-            <div class="buttons-container-grid">
-                <div>
-                    <div>Small size</div>
-                    <BitButton Class="custom-btn-sm" ButtonSize="BitButtonSize.Small">Button</BitButton>
-                </div>
-                <div>
-                    <div>Medium size</div>
-                    <BitButton Class="custom-btn-md" ButtonSize="BitButtonSize.Medium">Button</BitButton>
-                </div>
-                <div>
-                    <div>Large size</div>
-                    <BitButton Class="custom-btn-lg" ButtonSize="BitButtonSize.Large">Button</BitButton>
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private int primaryCounter;
+    private int standardCounter;
+
+    private bool formIsValidSubmit;
+    private ButtonValidationModel buttonValidationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        buttonValidationModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+}

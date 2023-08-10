@@ -23,7 +23,7 @@
     </section>
     <section id="implementation-section" class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.H6" Class="subtitle">@ComponentName parameters</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H6" Class="subtitle"><b>@ComponentName</b> parameters</BitTypography>
         <table class="table-view params-table">
             <tr class="th-row">
                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
@@ -38,7 +38,7 @@
                     <td class="td-cell">
                         @if (param.LinkType == LinkType.Link)
                         {
-                            <BitLink Class="param-table-link" Href="@param.Href">
+                            <BitLink Href="@param.Href">
                                 <BitTypography Variant="BitTypographyVariant.Caption">@param.Type</BitTypography>
                             </BitLink>
                         }
@@ -55,7 +55,7 @@
 
         @foreach (var subClass in ComponentSubClasses)
         {
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subClass.Id">@subClass.Title</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subClass.Id" Style="scroll-margin:70px"><b>@subClass.Title</b> properties</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle2" Gutter>@subClass.Description</BitTypography>
             <table class="table-view params-table">
                 <tr class="th-row">
@@ -71,7 +71,7 @@
                         <td class="td-cell">
                             @if (subParam.LinkType == LinkType.Link)
                             {
-                                <BitLink Class="param-table-link" Href="@subParam.Href">
+                                <BitLink Href="@subParam.Href">
                                     <BitTypography Variant="BitTypographyVariant.Caption">@subParam.Type</BitTypography>
                                 </BitLink>
                             }
@@ -89,7 +89,7 @@
 
         @foreach (var subEnum in ComponentSubEnums)
         {
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subEnum.Id">@subEnum.Name enum</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subEnum.Id" Style="scroll-margin:70px"><b>@subEnum.Name</b> enum</BitTypography>
             <table class="table-view types-table">
                 <tr class="th-row">
                     <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
