@@ -1,21 +1,5 @@
 ﻿.flex-container {
-    display: flex;
     gap: 2rem;
-}
-
-::deep .bit-slider-ranged-vertical .bit-slider-value, 
-::deep .bit-slider-vertical .bit-slider-value {
-    margin-top: rem2(30px);
-}
-
-::deep .bit-slider-vertical {
-    padding: rem2(20px) rem2(40px);
-}
-
-::deep .bit-slider-container {
-    padding: rem2(30px) 0;
-}
-
-::deep .bit-btn-slider {
-    margin-bottom: rem2(30px);
+    height: 19rem;
+    display: flex;
 }
