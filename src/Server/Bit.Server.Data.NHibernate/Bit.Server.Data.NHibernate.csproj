@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
-    <PackageReference Include="NHibernate" Version="5.4.2" />
+    <PackageReference Include="NHibernate" Version="5.4.4" />
   </ItemGroup>
 
 </Project>

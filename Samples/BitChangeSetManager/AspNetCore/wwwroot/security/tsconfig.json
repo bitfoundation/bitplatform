@@ -2,7 +2,6 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowUnreachableCode": true,
-    "charset": "utf8",
     "diagnostics": false,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,

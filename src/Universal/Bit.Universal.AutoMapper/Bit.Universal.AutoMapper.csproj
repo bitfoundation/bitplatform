@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="AutoMapper" Version="10.1.1" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'uap10.0.17763' AND '$(TargetFramework)' != 'netstandard2.0' " Include="AutoMapper" Version="12.0.0" />
+        <PackageReference Condition=" '$(TargetFramework)' != 'uap10.0.17763' AND '$(TargetFramework)' != 'netstandard2.0' " Include="AutoMapper" Version="12.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -3,7 +3,6 @@
   "compilerOptions": {
     "composite": true,
     "allowUnreachableCode": true,
-    "charset": "utf8",
     "declaration": true,
     "diagnostics": false,
     "emitDecoratorMetadata": false,
