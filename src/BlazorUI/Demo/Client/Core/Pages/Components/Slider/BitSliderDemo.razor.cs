@@ -149,54 +149,50 @@ public partial class BitSliderDemo
 
 
 
-    private double? sliderHorizontalValue = 2;
-    private double? sliderRangedLowerValue = 3;
-    private double? sliderRangedUpperValue = 7;
-
-    private void ResetBitSliderRangedValues()
-    {
-        sliderRangedLowerValue = 3;
-        sliderRangedUpperValue = 7;
-    }
-
-
     private readonly string example1HTMLCode = @"
-<BitSlider Label=""Basic"" />
-
-<BitSlider Label=""Snapping Slider""
-           Min=""0""
-           Max=""50""
-           Step=""10""
-           DefaultValue=""20"" />
-
-<BitSlider Label=""Disabled""
-           Min=""50""
-           Max=""500""
-           Step=""50""
-           DefaultValue=""300""
-           IsEnabled=""false"" />
-
-<BitSlider Label=""Controlled""
-           Max=""10""
-           @bind-Value=""sliderHorizontalValue"" />
-<BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 2"">Reset Value</BitButton>
-
+<BitSlider Label=""Basic slider"" />
+<br />
+<br />
+<BitSlider Label=""Disabled slider""
+            Min=""50""
+            Max=""500""
+            Step=""50""
+            DefaultValue=""300""
+            IsEnabled=""false"" />
+<br />
+<br />
+<BitSlider Label=""Snapping slider""
+            Min=""0""
+            Max=""50""
+            Step=""10""
+            DefaultValue=""20"" />
+<br />
+<br />
+<BitSlider @bind-Value=""sliderHorizontalValue""
+            Label=""Controlled slider""
+            Max=""10"" />
+<BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 2"">Reset value</BitButton>
+<br />
+<br />
+<br />
 <BitSlider Label=""Formatted value""
-           Max=""100""
-           DefaultValue=""31""
-           ValueFormat=""P00"" />
-
-<BitSlider Label=""Formatted Value""
-           Max=""1000""
-           DefaultValue=""319""
-           ValueFormat=""P01"" />
-
-<BitSlider Label=""Origin From Zero""
-           Min=""-5""
-           Max=""5""
-           Step=""1""
-           DefaultValue=""2""
-           IsOriginFromZero=""true"" />";
+            Max=""100""
+            DefaultValue=""31""
+            ValueFormat=""P00"" />
+<br />
+<br />
+<BitSlider Label=""Formatted value""
+            Max=""1000""
+            DefaultValue=""319""
+            ValueFormat=""P01"" />
+<br />
+<br />
+<BitSlider Label=""Origin from zero""
+            Min=""-5""
+            Max=""5""
+            Step=""1""
+            DefaultValue=""2""
+            IsOriginFromZero=""true"" />";
     private readonly string example1CSharpCode = @"
 private double? sliderHorizontalValue = 2;";
 
@@ -220,7 +216,7 @@ private double? sliderHorizontalValue = 2;";
            Max=""100"" ValueFormat=""P00""
            IsVertical=""true"" />
 
-<BitSlider Label=""Origin From Zero""
+<BitSlider Label=""Origin from zero""
            Min=""-5""
            Max=""15""
            Step=""1""
@@ -250,7 +246,7 @@ private double? sliderHorizontalValue = 2;";
            @bind-LowerValue=""sliderRangedLowerValue""
            @bind-UpperValue=""sliderRangedUpperValue""
            IsRanged=""true"" />
-<BitButton Class=""bit-btn-slider"" OnClick=""ResetBitSliderRangedValues"">Reset Value</BitButton>
+<BitButton Class=""bit-btn-slider"" OnClick=""ResetBitSliderRangedValues"">Reset value</BitButton>
 
 <BitSlider Label=""Formatted value""
            Max=""100""
@@ -276,8 +272,7 @@ private void ResetBitSliderRangedValues()
 }";
 
     private readonly string example4HTMLCode = @"
-<BitSlider Style=""height:250px""
-           Label=""Basic""
+<BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
            Step=""1""
@@ -286,8 +281,7 @@ private void ResetBitSliderRangedValues()
            IsRanged=""true""
            IsVertical=""true"" />
 
-<BitSlider Style=""height:250px""
-           Label=""Disabled""
+<BitSlider Label=""Disabled""
            Min=""50""
            Max=""500""
            Step=""50""
@@ -297,8 +291,7 @@ private void ResetBitSliderRangedValues()
            IsVertical=""true""
            IsEnabled=""false"" />
 
-<BitSlider Style=""height:250px""
-           Label=""Formatted value""
+<BitSlider Label=""Formatted value""
            Max=""100""
            ValueFormat=""P00""
            DefaultUpperValue=""30""
@@ -306,8 +299,7 @@ private void ResetBitSliderRangedValues()
            IsRanged=""true""
            IsVertical=""true"" />
 
-<BitSlider Style=""height:250px""
-           Label=""Origin From Zero""
+<BitSlider Label=""Origin from zero""
            Min=""-5""
            Max=""15""
            Step=""1""
