@@ -3,7 +3,8 @@
     "compilerOptions": {
         "target": "es6",
         "allowJs": true,
-        "lib": [ "DOM", "ESNext" ]
+        "lib": [ "DOM", "ESNext" ],
+        "outDir": "wwwroot"
     },
     "include": ["./Scripts/*.ts"]
 }

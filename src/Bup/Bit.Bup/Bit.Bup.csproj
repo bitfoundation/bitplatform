@@ -35,8 +35,8 @@
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Exec Condition="!Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install typescript@5.1.6 esbuild@0.19.0 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="node_modules/.bin/esbuild Scripts/bit-bup.js --minify --outfile=wwwroot/bit-bup.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="node_modules/.bin/esbuild Scripts/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
