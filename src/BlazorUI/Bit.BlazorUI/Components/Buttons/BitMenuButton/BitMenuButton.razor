@@ -26,14 +26,15 @@
     {
         @if (IconName.HasValue())
         {
-            <i class="bit-icon bit-icon--@IconName" />
+            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
         }
-        <span class="bit-mnb-txt">@Text</span>
-        <i class="bit-icon bit-icon--ChevronDown" />
+        <span style="@ClassStyles?.Text?.Style" class="bit-mnb-txt @ClassStyles?.Text?.Class">@Text</span>
+        <i style="@ClassStyles?.ChevronDown?.Style" class="bit-icon bit-icon--@ChevronDownIcon @ClassStyles?.ChevronDown?.Class" />
     }
 
-    <div id="@_overlayId" class="bit-mnb-ovl" @onclick="CloseCallout" @onclick:stopPropagation></div>
-    <div id="@_calloutId" class="bit-mnb-cal" tabindex="@(IsEnabled ? 0 : -1)">
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         id="@_overlayId" style="@ClassStyles?.Overlay?.Style" class="bit-mnb-ovl @ClassStyles?.Overlay?.Class"></div>
+    <div id="@_calloutId" style="@ClassStyles?.Callout?.Style" class="bit-mnb-cal @ClassStyles?.Callout?.Class" tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
@@ -45,8 +46,8 @@
                             type="@_buttonType.GetValue()"
                             aria-disabled="@isEnabled"
                             tabindex="@(isEnabled ? 0 : -1)"
-                            style="@GetStyle(item)"
-                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item)">
+                            style="@GetStyle(item) @ClassStyles?.ItemButton?.Style"
+                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item) @ClassStyles?.ItemButton?.Class">
                         @if (template is not null)
                         {
                             @template(item)
@@ -60,9 +61,9 @@
                             var iconName = GetIconName(item);
                             @if (iconName.HasValue())
                             {
-                                <i class="bit-icon bit-icon--@iconName" />
+                                <i style="@ClassStyles?.ItemIcon?.Style" class="bit-icon bit-icon--@iconName @ClassStyles?.ItemIcon?.Class" />
                             }
-                            <span class="bit-mnb-txt">@GetText(item)</span>
+                            <span style="@ClassStyles?.ItemText?.Style" class="bit-mnb-txt @ClassStyles?.ItemText?.Class">@GetText(item)</span>
                         }
                     </button>
                 </li>

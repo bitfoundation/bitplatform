@@ -132,7 +132,7 @@ public partial class _BitMenuButtonCustomDemo
 
 
 
-    private readonly string example1CustomItemHTMLCode = @"
+    private readonly string example1HTMLCode = @"
 <BitMenuButton Text=""Primary""
                ButtonStyle=""BitButtonStyle.Primary""
                Items=""basicCustoms""
@@ -165,7 +165,7 @@ public partial class _BitMenuButtonCustomDemo
                OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example1SelectedItem</div>";
-    private readonly string example1CustomItemCSharpCode = @"
+    private readonly string example1CSharpCode = @"
 private string example1SelectedItem;
 
 public class MenuActionItem
@@ -256,7 +256,7 @@ protected override void OnInitialized()
     };
 }";
 
-    private readonly string example2CustomItemHTMLCode = @"
+    private readonly string example2HTMLCode = @"
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
                ButtonStyle=""BitButtonStyle.Primary""
@@ -276,7 +276,7 @@ protected override void OnInitialized()
                OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example2SelectedItem</div>";
-    private readonly string example2CustomItemCSharpCode = @"
+    private readonly string example2CSharpCode = @"
 private string example2SelectedItem;
 
 public class MenuActionItem
@@ -310,7 +310,7 @@ private List<MenuActionItem> basicCustoms = new()
 };
 ";
 
-    private readonly string example3CustomItemHTMLCode = @"
+    private readonly string example3HTMLCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -352,7 +352,7 @@ private List<MenuActionItem> basicCustoms = new()
                OnItemClick=""(MenuActionItem item) => example32SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example32SelectedItem</div>";
-    private readonly string example3CustomItemCSharpCode = @"
+    private readonly string example3CSharpCode = @"
 private string example31SelectedItem;
 private string example32SelectedItem;
 
@@ -414,7 +414,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 };";
 
 
-    private readonly string example4CustomItemHTMLCode = @"
+    private readonly string example4HTMLCode = @"
 <BitMenuButton Items=""basicCustoms""
                TextFieldSelector=""item => item.Name""
                KeyFieldSelector=""item => item.Id""
@@ -444,7 +444,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 </BitMenuButton>
 
 <div>Clicked Item: @example4SelectedItem</div>";
-    private readonly string example4CustomItemCSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private string example4SelectedItem;
 
 public class MenuActionItem
@@ -478,7 +478,7 @@ private List<MenuActionItem> basicCustoms = new()
 };
 ";
 
-    private readonly string example5CustomItemHTMLCode = @"
+    private readonly string example5HTMLCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -534,7 +534,7 @@ private List<MenuActionItem> basicCustoms = new()
                ButtonStyle=""BitButtonStyle.Primary"" />
 
 <div>Clicked Item: @example52SelectedItem</div>";
-    private readonly string example5CustomItemCSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private string example51SelectedItem;
 private string example52SelectedItem;
 
@@ -593,4 +593,53 @@ private List<MenuActionItem> itemTemplateCustoms2 = new()
         Fragment = (item => @<div class=""item-template-box"" style=""color:red"">@item.Name (@item.Id)</div>)
     }
 };";
+
+    private readonly string example6HTMLCode = @"
+<BitMenuButton Text=""ClassStyles""
+               Items=""basicCustoms""
+               IconName=""@BitIconName.ExpandMenu""
+               ChevronDownIcon=""@BitIconName.DoubleChevronDown""
+               TextFieldSelector=""item => item.Name""
+               KeyFieldSelector=""item => item.Id""
+               IconNameFieldSelector=""item => item.Icon""
+               OnItemClick=""(MenuActionItem item) => example6SelectedItem = item.Id""
+               ClassStyles=""@(new() {
+                                Icon = new() { Style = ""color:red"" },
+                                Text = new() { Style = ""color:aqua"" },
+                                ChevronDown = new() { Style = ""color:darkred;font-size:10px"" }})"" />
+
+<div>Clicked Item: @example6SelectedItem</div>";
+    private readonly string example6CSharpCode = @"
+private string? example6SelectedItem;
+
+public class MenuActionItem
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<MenuActionItem> basicCustoms = new()
+{
+    new MenuActionItem()
+    {
+        Name = ""Item A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new MenuActionItem()
+    {
+        Name = ""Item B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji
+    },
+    new MenuActionItem()
+    {
+        Name = ""Item C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+";
 }

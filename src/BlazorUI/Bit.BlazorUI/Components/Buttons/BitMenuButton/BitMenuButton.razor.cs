@@ -70,6 +70,8 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
+    [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
+
     /// <summary>
     /// The content of the BitMenuButton, that are BitMenuButtonOption components.
     /// </summary>
@@ -84,6 +86,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// The CSS Class field selector of the custom input class.
     /// </summary>
     [Parameter] public Func<TItem, string?>? ClassFieldSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for different parts of the BitMenuButton.
+    /// </summary>
+    [Parameter] public BitMenuButtonClassStyles? ClassStyles { get; set; }
 
     /// <summary>
     /// The content inside the header of MenuButton can be customized.
