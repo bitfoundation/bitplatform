@@ -41,6 +41,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "ChevronDownIcon",
+            Type = "string",
+            DefaultValue = "ChevronDown",
+            Description = "Icon name of the chevron down part of the BitMenuButton.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -59,6 +66,15 @@ public partial class BitMenuButtonDemo
             Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "The CSS Class field selector of the custom input class.",
+        },
+        new()
+        {
+            Name = "ClassStyles",
+            Type = "BitMenuButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes/styles for different parts of the BitMenuButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -322,6 +338,106 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
+               }
+            }
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitMenuButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Callout",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout container of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "ChevronDown",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chevron down of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "ItemButton",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "ItemIcon",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item icon of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "ItemText",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item text of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overlay of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "BitClassStylePair?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text of the BitMenuButton.",
+                   Href = "#class-style-pair",
+                   LinkType = LinkType.Link,
+               },
+            },
+        },
+        new()
+        {
+            Id = "class-style-pair",
+            Title = "BitClassStylePair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   Description = "Custom CSS classes."
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "string?",
+                   Description = "Custom CSS styles."
                }
             }
         }

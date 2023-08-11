@@ -1,4 +1,4 @@
-﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonItemHTMLCode" CSharpSourceCode="@example1BitMenuButtonItemCSharpCode" ExampleId="example11">
+﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example11">
     <ExamplePreview>
         <div class="example-content">
             <BitMenuButton Text="Primary"
@@ -23,7 +23,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonItemHTMLCode" CSharpSourceCode="@example2BitMenuButtonItemCSharpCode" ExampleId="example12">
+<ComponentExampleBox Title="IconName" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example12">
     <ExamplePreview>
         <div class="example-content">
             <BitMenuButton Text="Primary Button"
@@ -42,7 +42,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonItemHTMLCode" CSharpSourceCode="@example3BitMenuButtonItemCSharpCode" ExampleId="example13">
+<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example13">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
@@ -70,7 +70,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonItemHTMLCode" CSharpSourceCode="@example4BitMenuButtonItemCSharpCode" ExampleId="example14">
+<ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example14">
     <ExamplePreview>
         <div class="example-content">
             <BitMenuButton Items="basicItems"
@@ -99,7 +99,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonItemHTMLCode" CSharpSourceCode="@example5BitMenuButtonItemCSharpCode" ExampleId="example15">
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example15">
     <ExamplePreview>
         <div class="example-content">
             <BitMenuButton Text="Primary Button"
@@ -145,6 +145,23 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
+<ComponentExampleBox Title="ClassStyles" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example16">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="ClassStyles"
+                           Items="basicItems"
+                           IconName="@BitIconName.ExpandMenu"
+                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
+                           OnItemClick="(BitMenuButtonItem item) => example6SelectedItem = item.Key" 
+                           ClassStyles="@(new() { 
+                                            Icon = new() { Style = "color:red" },
+                                            Text = new() { Style = "color:aqua" },
+                                            ChevronDown = new() { Style = "color:darkred;font-size:10px" }})"/>
+        </div>
+        <div class="clicked-item">Clicked Item: @example6SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
 @code {
     private string? example1SelectedItem;
     private string? example2SelectedItem;
@@ -153,6 +170,7 @@
     private string? example4SelectedItem;
     private string? example51SelectedItem;
     private string? example52SelectedItem;
+    private string? example6SelectedItem;
 
     private List<BitMenuButtonItem> itemTemplateItems2 = new()
     {
