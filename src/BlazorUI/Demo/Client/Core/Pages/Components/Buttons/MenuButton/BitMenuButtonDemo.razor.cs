@@ -41,6 +41,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "ChevronDownIcon",
+            Type = "string",
+            DefaultValue = "ChevronDown",
+            Description = "Icon name of the chevron down part of the BitMenuButton.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",

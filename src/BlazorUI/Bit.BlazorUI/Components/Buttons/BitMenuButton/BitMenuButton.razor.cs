@@ -70,6 +70,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
+    /// <summary>
+    /// Icon name of the chevron down part of the BitMenuButton.
+    /// </summary>
     [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
 
     /// <summary>
