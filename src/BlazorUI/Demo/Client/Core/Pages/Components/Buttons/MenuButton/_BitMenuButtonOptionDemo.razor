@@ -1,0 +1,191 @@
+﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example1BitMenuButtonOptionCSharpCode" ExampleId="example31">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="Primary"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+
+            <BitMenuButton Text="Standard"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+
+            <BitMenuButton Text="Disabled"
+                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key"
+                           IsEnabled="false">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+
+            <BitMenuButton Text="Item Disabled"
+                           OnItemClick="(BitMenuButtonOption item) => example1SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconName" HTMLSourceCode="@example2BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example2BitMenuButtonOptionCSharpCode" ExampleId="example32">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="Primary Button"
+                           IconName="@BitIconName.Edit"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           OnItemClick="(BitMenuButtonOption item) => example2SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+
+            <BitMenuButton Text="Standard Button"
+                           IconName="@BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           OnItemClick="(BitMenuButtonOption item) => example2SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example2SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example3BitMenuButtonOptionCSharpCode" ExampleId="example33">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Styled Button"
+                           OnItemClick="(BitMenuButtonOption item) => example31SelectedItem = item.Key"
+                           Style="width: 200px; height: 40px; background-color: #8A8886; border-color: black;">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+
+            <BitMenuButton Text="Classed Button"
+                           OnItemClick="(BitMenuButtonOption item) => example31SelectedItem = item.Key"
+                           Class="custom-class">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example31SelectedItem</div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Item Styled & Classed Button" OnItemClick="(BitMenuButtonOption item) => example32SelectedItem = item.Key">
+                <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" Style="color:red" />
+                <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" Class="custom-item" />
+                <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" Style="background:blue" />
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example32SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example4BitMenuButtonOptionCSharpCode" ExampleId="example34">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton ButtonStyle="BitButtonStyle.Primary"
+                           OnItemClick="(BitMenuButtonOption item) => example4SelectedItem = item.Key">
+                <HeaderTemplate>
+                    <BitIcon IconName="@BitIconName.Warning" />
+                    <div style="font-weight: 600; color: white;">
+                        Custom Header!
+                    </div>
+                    <BitIcon IconName="@BitIconName.Warning" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+                    <BitMenuButtonOption Text="Item D" Key="D" IconName="@BitIconName.Emoji" />
+                </ChildContent>
+            </BitMenuButton>
+
+            <BitMenuButton ButtonStyle="BitButtonStyle.Standard"
+                           OnItemClick="(BitMenuButtonOption item) => example4SelectedItem = item.Key">
+                <HeaderTemplate>
+                    <div style="font-weight: bold; color: #d13438;">
+                        Custom Header!
+                    </div>
+                </HeaderTemplate>
+                <ChildContent>
+                    <BitMenuButtonOption Text="Item A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Item B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Item C" Key="C" IconName="@BitIconName.Emoji2" />
+                    <BitMenuButtonOption Text="Item D" Key="D" IconName="@BitIconName.Emoji" />
+                </ChildContent>
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example4SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5BitMenuButtonOptionHTMLCode" CSharpSourceCode="@example5BitMenuButtonOptionCSharpCode" ExampleId="example35">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="Primary Button"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           IconName="@BitIconName.Edit"
+                           OnItemClick="(BitMenuButtonOption item) => example5SelectedItem = item.Key">
+                <ItemTemplate Context="item">
+                    <div class="item-template-box">
+                        <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
+                            @item.Text (@item.Key)
+                        </span>
+                    </div>
+                </ItemTemplate>
+                <ChildContent>
+                    <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </ChildContent>
+            </BitMenuButton>
+
+            <BitMenuButton Text="Standard Button"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           IconName="@BitIconName.Edit"
+                           OnItemClick="(BitMenuButtonOption item) => example5SelectedItem = item.Key">
+                <ItemTemplate Context="item">
+                    <div class="item-template-box">
+                        <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
+                            @item.Text (@item.Key)
+                        </span>
+                    </div>
+                </ItemTemplate>
+                <ChildContent>
+                    <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </ChildContent>
+            </BitMenuButton>
+        </div>
+        <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+
+
+@code {
+    private string? example1SelectedItem;
+    private string? example2SelectedItem;
+    private string? example31SelectedItem;
+    private string? example32SelectedItem;
+    private string? example4SelectedItem;
+    private string? example5SelectedItem;
+}
