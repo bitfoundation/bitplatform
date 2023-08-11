@@ -33,6 +33,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The custom template for the option.
+    /// </summary>
+    [Parameter] public RenderFragment<BitMenuButtonOption>? Template { get; set; }
+
+    /// <summary>
     /// Text to render in the option.
     /// </summary>
     [Parameter] public string? Text { get; set; }

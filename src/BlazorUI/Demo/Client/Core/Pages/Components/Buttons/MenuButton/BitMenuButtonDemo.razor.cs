@@ -226,6 +226,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Template",
+                   Type = "RenderFragment<BitMenuButtonItem>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the item.",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
@@ -273,6 +280,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The custom value for the style attribute of the option.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitMenuButtonOption>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the option.",
                },
                new()
                {

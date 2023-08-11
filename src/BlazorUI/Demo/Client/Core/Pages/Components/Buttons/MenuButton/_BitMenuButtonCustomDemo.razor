@@ -144,7 +144,7 @@
                            TextFieldSelector="item => item.Name"
                            KeyFieldSelector="item => item.Id"
                            IconNameFieldSelector="item => item.Icon"
-                           OnItemClick="(MenuActionItem item) => example5SelectedItem = item.Id"
+                           OnItemClick="(MenuActionItem item) => example51SelectedItem = item.Id"
                            ButtonStyle="BitButtonStyle.Primary">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
@@ -161,7 +161,7 @@
                            TextField="@nameof(MenuActionItem.Name)"
                            KeyField="@nameof(MenuActionItem.Id)"
                            IconNameField="@nameof(MenuActionItem.Icon)"
-                           OnItemClick="(MenuActionItem item) => example5SelectedItem = item.Id"
+                           OnItemClick="(MenuActionItem item) => example51SelectedItem = item.Id"
                            ButtonStyle="BitButtonStyle.Standard">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
@@ -172,7 +172,22 @@
                 </ItemTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example51SelectedItem</div>
+        <br /><br /><br /><br />
+        <div>Item's Template</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Primary Button"
+                           IconName="@BitIconName.Edit"
+                           Items="itemTemplateCustoms2"
+                           TextField="@nameof(MenuActionItem.Name)"
+                           KeyField="@nameof(MenuActionItem.Id)"
+                           IconNameField="@nameof(MenuActionItem.Icon)"
+                           TemplateField="@nameof(MenuActionItem.Fragment)"
+                           OnItemClick="(MenuActionItem item) => example52SelectedItem = item.Id"
+                           ButtonStyle="BitButtonStyle.Primary" />
+        </div>
+        <div class="clicked-item">Clicked Item: @example52SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -184,5 +199,31 @@
     private string? example31SelectedItem;
     private string? example32SelectedItem;
     private string? example4SelectedItem;
-    private string? example5SelectedItem;
+    private string? example51SelectedItem;
+    private string? example52SelectedItem;
+
+    private List<MenuActionItem> itemTemplateCustoms2 = new()
+    {
+        new()
+        {
+            Name = "Add",
+            Id = "add-key",
+            Icon = BitIconName.Add,
+            Fragment = (item => @<div class="item-template-box" style="color:green">@item.Name (@item.Id)</div>)
+        },
+        new()
+        {
+            Name = "Edit",
+            Id = "edit-key",
+            Icon = BitIconName.Edit,
+            Fragment = (item => @<div class="item-template-box" style="color:yellow">@item.Name (@item.Id)</div>)
+        },
+        new()
+        {
+            Name = "Delete",
+            Id = "delete-key",
+            Icon = BitIconName.Delete,
+            Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)
+        }
+    };
 }

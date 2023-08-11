@@ -10,6 +10,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private const string IS_ENABLED_FIELD = nameof(BitMenuButtonItem.IsEnabled);
     private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
     private const string STYLE_FIELD = nameof(BitMenuButtonItem.Style);
+    private const string TEMPLATE_FIELD = nameof(BitMenuButtonItem.Template);
     private const string TEXT_FIELD = nameof(BitMenuButtonItem.Text);
 
 
@@ -21,6 +22,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalKeyField = KEY_FIELD;
     private string _internalStyleField = STYLE_FIELD;
+    private string _internalTemplateField = TEMPLATE_FIELD;
     private string _internalTextField = TEXT_FIELD;
 
 
@@ -177,6 +179,16 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
+    /// Template field name of the custom input class.
+    /// </summary>
+    [Parameter] public string TemplateField { get; set; } = TEMPLATE_FIELD;
+
+    /// <summary>
+    /// Template field selector of the custom input class.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? TemplateFieldSelector { get; set; }
+
+    /// <summary>
     /// Text field name of the custom input class.
     /// </summary>
     [Parameter] public string TextField { get; set; } = TEXT_FIELD;
@@ -220,6 +232,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
         _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
         _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
+        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TemplateField;
         _internalTextField = TextFieldSelector?.GetName() ?? TextField;
 
         _dotnetObj = DotNetObjectReference.Create(this);
@@ -324,6 +337,21 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(_internalStyleField);
+    }
+
+    private RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitMenuButtonItem bitMenuButtonItem)
+        {
+            return bitMenuButtonItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Template as RenderFragment<TItem>;
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(_internalTemplateField);
     }
 
     private string? GetText(TItem item)
