@@ -11,4 +11,6 @@ public class MenuActionItem
     public string? Style { get; set; }
 
     public RenderFragment<MenuActionItem>? Fragment { get; set; }
+
+    public Action<MenuActionItem>? Clicked { get; set; }
 }

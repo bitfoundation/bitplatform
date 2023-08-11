@@ -56,7 +56,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "ClassFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
+            Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "The CSS Class field selector of the custom input class.",
         },
@@ -84,7 +84,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "IconNameFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
+            Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "IconName field selector of the custom input class.",
         },
@@ -98,7 +98,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "IsEnabledFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
+            Type = "Func<TItem, bool>?",
             DefaultValue = "null",
             Description = "IsEnabled field selector of the custom input class.",
         },
@@ -128,7 +128,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "KeyFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
+            Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "Key field selector of the custom input class.",
         },
@@ -146,6 +146,20 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "OnClickField",
+            Type = "string",
+            DefaultValue = "OnClick",
+            Description = "OnClick field name of the custom input class.",
+        },
+        new()
+        {
+            Name = "OnClickFieldSelector",
+            Type = "Func<TItem, Action<TItem>?>?",
+            DefaultValue = "null",
+            Description = "OnClick field selector of the custom input class.",
+        },
+        new()
+        {
             Name = "StyleField",
             Type = "string",
             DefaultValue = "Style",
@@ -154,7 +168,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "StyleFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
+            Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "The CSS Style field selector of the custom input class.",
         },
@@ -175,7 +189,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "TextFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
+            Type = "Func<TItem, string?>?",
             DefaultValue = "null",
             Description = "Name of an icon to render next to the item text.",
         }
@@ -216,6 +230,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a Key of the item.",
+               },
+               new()
+               {
+                   Name = "OnClick",
+                   Type = "EventCallback",
+                   DefaultValue = "",
+                   Description = "Click event handler of the item.",
                },
                new()
                {
@@ -273,6 +294,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a key of the option.",
+               },
+               new()
+               {
+                   Name = "OnClick",
+                   Type = "EventCallback",
+                   DefaultValue = "",
+                   Description = "Click event handler of the option.",
                },
                new()
                {

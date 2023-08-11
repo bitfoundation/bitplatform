@@ -28,6 +28,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
+    /// Click event handler of the option.
+    /// </summary>
+    [Parameter] public EventCallback<BitMenuButtonOption> OnClick { get; set; }
+
+    /// <summary>
     /// The custom value for the style attribute of the option.
     /// </summary>
     [Parameter] public string? Style { get; set; }

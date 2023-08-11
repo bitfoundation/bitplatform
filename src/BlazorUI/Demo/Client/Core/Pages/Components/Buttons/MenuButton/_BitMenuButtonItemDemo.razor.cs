@@ -94,6 +94,42 @@ public partial class _BitMenuButtonItemDemo
         }
     };
 
+    private List<BitMenuButtonItem> basicItemsWithOnClick = default!;
+
+    protected override void OnInitialized()
+    {
+        Action<BitMenuButtonItem> onClick = item =>
+        {
+            example1SelectedItem = $"{item.Text} - OnClick";
+            StateHasChanged();
+        };
+
+        basicItemsWithOnClick = new()
+        {
+            new()
+            {
+                Text = "Item A",
+                Key = "A",
+                IconName = BitIconName.Emoji,
+                OnClick = onClick
+            },
+            new()
+            {
+                Text = "Item B",
+                Key = "B",
+                IconName = BitIconName.Emoji,
+                OnClick = onClick
+            },
+            new()
+            {
+                Text = "Item C",
+                Key = "C",
+                IconName = BitIconName.Emoji2,
+                OnClick = onClick
+            }
+        };
+    }
+
 
 
     private readonly string example1BitMenuButtonItemHTMLCode = @"
@@ -107,14 +143,13 @@ public partial class _BitMenuButtonItemDemo
                Items=""basicItems""
                OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
 
-<BitMenuButton Text=""Disabled""
-               Items=""basicItems""
-               OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key""
-               IsEnabled=""false"" />
+<BitMenuButton Text=""Disabled"" Items=""basicItems"" IsEnabled=""false"" />
 
 <BitMenuButton Text=""Item Disabled""
                Items=""itemDisabledItems""
                OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
+
+<BitMenuButton Text=""Item OnClick"" Items=""basicItemsWithOnClick"" />
 
 <div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1BitMenuButtonItemCSharpCode = @"
@@ -164,7 +199,40 @@ private List<BitMenuButtonItem> itemDisabledItems = new()
         IconName = BitIconName.Emoji2
     }
 };
-";
+
+private List<BitMenuButtonItem> basicItemsWithOnClick = default!;
+protected override void OnInitialized()
+{
+    Action<BitMenuButtonItem> onClick = item =>
+    {
+        example1SelectedItem = $""{item.Text} - OnClick"";
+        StateHasChanged();
+    };
+    basicItemsWithOnClick = new()
+    {
+        new()
+        {
+            Text = ""Item A"",
+            Key = ""A"",
+            IconName = BitIconName.Emoji,
+            OnClick = onClick
+        },
+        new()
+        {
+            Text = ""Item B"",
+            Key = ""B"",
+            IconName = BitIconName.Emoji,
+            OnClick = onClick
+        },
+        new()
+        {
+            Text = ""Item C"",
+            Key = ""C"",
+            IconName = BitIconName.Emoji2,
+            OnClick = onClick
+        }
+    };
+}";
 
     private readonly string example2BitMenuButtonItemHTMLCode = @"
 <BitMenuButton Text=""Primary Button""

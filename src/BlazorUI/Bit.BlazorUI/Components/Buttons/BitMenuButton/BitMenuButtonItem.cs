@@ -23,6 +23,11 @@ public class BitMenuButtonItem
     public string? Key { get; set; }
 
     /// <summary>
+    /// Click event handler of the item.
+    /// </summary>
+    public Action<BitMenuButtonItem>? OnClick { get; set; }
+
+    /// <summary>
     /// The custom value for the style attribute of the item.
     /// </summary>
     public string? Style { get; set; }

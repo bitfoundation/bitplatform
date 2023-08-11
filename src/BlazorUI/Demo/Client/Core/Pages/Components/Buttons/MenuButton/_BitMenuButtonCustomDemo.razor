@@ -17,13 +17,7 @@
                            IconNameField="@nameof(MenuActionItem.Icon)"
                            OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
 
-            <BitMenuButton Text="Disabled"
-                           Items="basicCustoms"
-                           TextFieldSelector="item => item.Name"
-                           KeyFieldSelector="item => item.Id"
-                           IconNameFieldSelector="item => item.Icon"
-                           OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id"
-                           IsEnabled="false" />
+            <BitMenuButton Text="Disabled" Items="basicCustoms" IsEnabled="false" />
 
             <BitMenuButton Text="Item Disabled"
                            Items="itemDisabledCustoms"
@@ -31,6 +25,13 @@
                            KeyFieldSelector="item => item.Id"
                            IconNameFieldSelector="item => item.Icon"
                            OnItemClick="(MenuActionItem item) => example1SelectedItem = item.Id" />
+
+            <BitMenuButton Text="Item OnClick"
+                           Items="basicCustomsWithOnClick"
+                           TextFieldSelector="item => item.Name"
+                           KeyFieldSelector="item => item.Id"
+                           IconNameFieldSelector="item => item.Icon"
+                           OnClickFieldSelector="item => item.Clicked"/>
         </div>
         <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
     </ExamplePreview>

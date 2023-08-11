@@ -94,6 +94,42 @@ public partial class _BitMenuButtonCustomDemo
         }
     };
 
+    private List<MenuActionItem> basicCustomsWithOnClick = default!;
+
+    protected override void OnInitialized()
+    {
+        Action<MenuActionItem> onClick = item =>
+        {
+            example1SelectedItem = $"{item.Name} - Clicked";
+            StateHasChanged();
+        };
+
+        basicCustomsWithOnClick = new()
+        {
+            new()
+            {
+                Name = "Item A",
+                Id = "A",
+                Icon = BitIconName.Emoji,
+                Clicked = onClick
+            },
+            new()
+            {
+                Name = "Item B",
+                Id = "B",
+                Icon = BitIconName.Emoji,
+                Clicked = onClick
+            },
+            new()
+            {
+                Name = "Item C",
+                Id = "C",
+                Icon = BitIconName.Emoji2,
+                Clicked = onClick
+            }
+        };
+    }
+
 
 
     private readonly string example1CustomItemHTMLCode = @"
@@ -184,7 +220,41 @@ private List<MenuActionItem> itemDisabledCustoms = new()
         Icon = BitIconName.Emoji2
     }
 };
-";
+
+private List<MenuActionItem> basicCustomsWithOnClick = default!;
+protected override void OnInitialized()
+{
+    Action<MenuActionItem> onClick = item =>
+    {
+        example1SelectedItem = $""{item.Name} - Clicked"";
+        StateHasChanged();
+    };
+
+    basicCustomsWithOnClick = new()
+    {
+        new()
+        {
+            Name = ""Item A"",
+            Id = ""A"",
+            Icon = BitIconName.Emoji,
+            Clicked = onClick
+        },
+        new()
+        {
+            Name = ""Item B"",
+            Id = ""B"",
+            Icon = BitIconName.Emoji,
+            Clicked = onClick
+        },
+        new()
+        {
+            Name = ""Item C"",
+            Id = ""C"",
+            Icon = BitIconName.Emoji2,
+            Clicked = onClick
+        }
+    };
+}";
 
     private readonly string example2CustomItemHTMLCode = @"
 <BitMenuButton Text=""Primary Button""
