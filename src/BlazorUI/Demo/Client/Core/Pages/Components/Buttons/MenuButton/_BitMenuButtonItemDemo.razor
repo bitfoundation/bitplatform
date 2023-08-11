@@ -106,7 +106,7 @@
             <BitMenuButton Text="Primary Button"
                            IconName="@BitIconName.Edit"
                            Items="itemTemplateItems"
-                           OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key"
+                           OnItemClick="(BitMenuButtonItem item) => example51SelectedItem = item.Key"
                            ButtonStyle="BitButtonStyle.Primary">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
@@ -120,7 +120,7 @@
             <BitMenuButton Text="Standard Button"
                            IconName="@BitIconName.Edit"
                            Items="itemTemplateItems"
-                           OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key"
+                           OnItemClick="(BitMenuButtonItem item) => example51SelectedItem = item.Key"
                            ButtonStyle="BitButtonStyle.Standard">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
@@ -131,7 +131,18 @@
                 </ItemTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example51SelectedItem</div>
+        <br /><br /><br /><br />
+        <div>Item's Template</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Primary Button"
+                           IconName="@BitIconName.Edit"
+                           Items="itemTemplateItems2"
+                           OnItemClick="(BitMenuButtonItem item) => example52SelectedItem = item.Key"
+                           ButtonStyle="BitButtonStyle.Primary" />
+        </div>
+        <div class="clicked-item">Clicked Item: @example52SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -141,5 +152,31 @@
     private string? example31SelectedItem;
     private string? example32SelectedItem;
     private string? example4SelectedItem;
-    private string? example5SelectedItem;
+    private string? example51SelectedItem;
+    private string? example52SelectedItem;
+
+    private List<BitMenuButtonItem> itemTemplateItems2 = new()
+    {
+        new()
+        {
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add,
+            Template = (item => @<div class="item-template-box" style="color:green">@item.Text (@item.Key)</div>)
+        },
+        new ()
+        {
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit,
+            Template = (item => @<div class="item-template-box" style="color:yellow">@item.Text (@item.Key)</div>)
+        },
+        new()
+        {
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete,
+            Template = (item => @<div class="item-template-box" style="color:red">@item.Text (@item.Key)</div>)
+        }
+    };
 }

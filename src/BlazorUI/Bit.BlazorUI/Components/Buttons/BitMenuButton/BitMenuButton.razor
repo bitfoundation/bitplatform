@@ -38,6 +38,7 @@
             @foreach (TItem item in _items)
             {
                 var isEnabled = GetIsEnabled(item);
+                var template = GetTemplate(item);
                 <li role="presentation">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
@@ -46,7 +47,11 @@
                             tabindex="@(isEnabled ? 0 : -1)"
                             style="@GetStyle(item)"
                             class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item)">
-                        @if (ItemTemplate is not null)
+                        @if (template is not null)
+                        {
+                            @template(item)
+                        }
+                        else if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
                         }

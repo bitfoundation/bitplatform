@@ -422,7 +422,7 @@ private List<MenuActionItem> basicCustoms = new()
                TextFieldSelector=""item => item.Name""
                KeyFieldSelector=""item => item.Id""
                IconNameFieldSelector=""item => item.Icon""
-               OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
+               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id""
                ButtonStyle=""BitButtonStyle.Primary"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
@@ -439,7 +439,7 @@ private List<MenuActionItem> basicCustoms = new()
                TextField=""@nameof(MenuActionItem.Name)""
                KeyField=""@nameof(MenuActionItem.Id)""
                IconNameField=""@nameof(MenuActionItem.Icon)""
-               OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id""
+               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id""
                ButtonStyle=""BitButtonStyle.Standard"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
@@ -450,9 +450,23 @@ private List<MenuActionItem> basicCustoms = new()
     </ItemTemplate>
 </BitMenuButton>
 
-<div>Clicked Item: @example5SelectedItem</div>";
+<div>Clicked Item: @example51SelectedItem</div>
+
+
+<BitMenuButton Text=""Primary Button""
+               IconName=""@BitIconName.Edit""
+               Items=""itemTemplateCustoms2""
+               TextField=""@nameof(MenuActionItem.Name)""
+               KeyField=""@nameof(MenuActionItem.Id)""
+               IconNameField=""@nameof(MenuActionItem.Icon)""
+               TemplateField=""@nameof(MenuActionItem.Fragment)""
+               OnItemClick=""(MenuActionItem item) => example52SelectedItem = item.Id""
+               ButtonStyle=""BitButtonStyle.Primary"" />
+
+<div>Clicked Item: @example52SelectedItem</div>";
     private readonly string example5CustomItemCSharpCode = @"
-private string example5SelectedItem;
+private string example51SelectedItem;
+private string example52SelectedItem;
 
 public class MenuActionItem
 {
@@ -460,6 +474,7 @@ public class MenuActionItem
     public string? Name { get; set; }
     public string? Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
+    public RenderFragment<MenuActionItem>? Fragment { get; set; }
 }
 
 private List<MenuActionItem> itemTemplateCustoms = new()
@@ -483,5 +498,29 @@ private List<MenuActionItem> itemTemplateCustoms = new()
         Icon = BitIconName.Delete
     }
 };
-";
+
+private List<MenuActionItem> itemTemplateCustoms2 = new()
+{
+    new()
+    {
+        Name = ""Add"",
+        Id = ""add-key"",
+        Icon = BitIconName.Add,
+        Fragment = (item => @<div class=""item-template-box"" style=""color:green"">@item.Name (@item.Id)</div>)
+    },
+    new()
+    {
+        Name = ""Edit"",
+        Id = ""edit-key"",
+        Icon = BitIconName.Edit,
+        Fragment = (item => @<div class=""item-template-box"" style=""color:yellow"">@item.Name (@item.Id)</div>)
+    },
+    new()
+    {
+        Name = ""Delete"",
+        Id = ""delete-key"",
+        Icon = BitIconName.Delete,
+        Fragment = (item => @<div class=""item-template-box"" style=""color:red"">@item.Name (@item.Id)</div>)
+    }
+};";
 }

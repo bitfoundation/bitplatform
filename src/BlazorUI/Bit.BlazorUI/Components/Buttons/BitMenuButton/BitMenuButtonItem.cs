@@ -28,6 +28,11 @@ public class BitMenuButtonItem
     public string? Style { get; set; }
 
     /// <summary>
+    /// The custom template for the item.
+    /// </summary>
+    public RenderFragment<BitMenuButtonItem>? Template { get; set; }
+
+    /// <summary>
     /// Text to render in the item.
     /// </summary>
     public string? Text { get; set; }

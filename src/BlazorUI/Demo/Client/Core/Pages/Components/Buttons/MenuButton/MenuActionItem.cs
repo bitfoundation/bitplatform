@@ -9,4 +9,6 @@ public class MenuActionItem
 
     public string? Class { get; set; }
     public string? Style { get; set; }
+
+    public RenderFragment<MenuActionItem>? Fragment { get; set; }
 }

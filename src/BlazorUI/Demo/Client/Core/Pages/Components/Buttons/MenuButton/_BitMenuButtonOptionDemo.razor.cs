@@ -154,7 +154,7 @@ private string example4SelectedItem;
 <BitMenuButton Text=""Primary Button""
                ButtonStyle=""BitButtonStyle.Primary""
                IconName=""@BitIconName.Edit""
-               OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example51SelectedItem = item.Key"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -172,7 +172,7 @@ private string example4SelectedItem;
 <BitMenuButton Text=""Standard Button""
                ButtonStyle=""BitButtonStyle.Standard""
                IconName=""@BitIconName.Edit""
-               OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example51SelectedItem = item.Key"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -187,8 +187,26 @@ private string example4SelectedItem;
     </ChildContent>
 </BitMenuButton>
 
-<div>Clicked Item: @example5SelectedItem</div>";
+<div>Clicked Item: @example51SelectedItem</div>
+
+
+<BitMenuButton Text=""Primary Button""
+               IconName=""@BitIconName.Edit""
+               ButtonStyle=""BitButtonStyle.Primary""
+               OnItemClick=""(BitMenuButtonOption item) => example52SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"">
+        <Template Context=""item""><div class=""item-template-box"" style=""color:green"">@item.Text (@item.Key)</div></Template>
+    </BitMenuButtonOption>
+    <BitMenuButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"">
+        <Template Context=""item""><div class=""item-template-box"" style=""color:yellow"">@item.Text (@item.Key)</div></Template>
+    </BitMenuButtonOption>
+    <BitMenuButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"">
+        <Template Context=""item""><div class=""item-template-box"" style=""color:red"">@item.Text (@item.Key)</div></Template>
+    </BitMenuButtonOption>
+</BitMenuButton>
+
+<div>Clicked Item: @example52SelectedItem</div>";
     private readonly string example5BitMenuButtonOptionCSharpCode = @"
-private string example5SelectedItem;
-";
+private string example51SelectedItem;
+private string example52SelectedItem;";
 }

@@ -347,7 +347,7 @@ private List<BitMenuButtonItem> basicItems = new()
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
                Items=""itemTemplateItems""
-               OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
+               OnItemClick=""(BitMenuButtonItem item) => example51SelectedItem = item.Key""
                ButtonStyle=""BitButtonStyle.Primary"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
@@ -361,7 +361,7 @@ private List<BitMenuButtonItem> basicItems = new()
 <BitMenuButton Text=""Standard Button""
                IconName=""@BitIconName.Edit""
                Items=""itemTemplateItems""
-               OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key""
+               OnItemClick=""(BitMenuButtonItem item) => example51SelectedItem = item.Key""
                ButtonStyle=""BitButtonStyle.Standard"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
@@ -372,9 +372,19 @@ private List<BitMenuButtonItem> basicItems = new()
     </ItemTemplate>
 </BitMenuButton>
 
-<div>Clicked Item: @example5SelectedItem</div>";
+<div>Clicked Item: @example51SelectedItem</div>
+
+
+<BitMenuButton Text=""Primary Button""
+               IconName=""@BitIconName.Edit""
+               Items=""itemTemplateItems2""
+               OnItemClick=""(BitMenuButtonItem item) => example52SelectedItem = item.Key""
+               ButtonStyle=""BitButtonStyle.Primary"" />
+
+<div>Clicked Item: @example52SelectedItem</div>";
     private readonly string example5BitMenuButtonItemCSharpCode = @"
-private string example5SelectedItem;
+    private string? example51SelectedItem;
+    private string? example52SelectedItem;
 
 private List<BitMenuButtonItem> itemTemplateItems = new()
 {
@@ -395,6 +405,31 @@ private List<BitMenuButtonItem> itemTemplateItems = new()
         Text = ""Delete"",
         Key = ""delete-key"",
         IconName = BitIconName.Delete
+    }
+};
+
+private List<BitMenuButtonItem> itemTemplateItems2 = new()
+{
+    new()
+    {
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add,
+        Template = (item => @<div class=""item-template-box"" style=""color:green"">@item.Text (@item.Key)</div>)
+    },
+    new ()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit,
+        Template = (item => @<div class=""item-template-box"" style=""color:yellow"">@item.Text (@item.Key)</div>)
+    },
+    new()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete,
+        Template = (item => @<div class=""item-template-box"" style=""color:red"">@item.Text (@item.Key)</div>)
     }
 };";
 }
