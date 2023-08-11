@@ -3,22 +3,32 @@
 public class BitMenuButtonItem
 {
     /// <summary>
+    /// The custom CSS classes of the item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Name of an icon to render next to the item text.
+    /// </summary>
+    public string? IconName { get; set; }
+
+    /// <summary>
     /// Whether or not the item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Name of an icon to render next to the item text
-    /// </summary>
-    public string? IconName { get; set; }
-
-    /// <summary>
-    /// A unique value to use as a key of the item
+    /// A unique value to use as a key of the item.
     /// </summary>
     public string? Key { get; set; }
 
     /// <summary>
-    /// Text to render in the item
+    /// The custom value for the style attribute of the item.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Text to render in the item.
     /// </summary>
     public string? Text { get; set; }
 }

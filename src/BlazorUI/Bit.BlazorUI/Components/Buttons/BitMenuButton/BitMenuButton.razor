@@ -37,13 +37,15 @@
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
+                var isEnabled = GetIsEnabled(item);
                 <li role="presentation">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
                             type="@_buttonType.GetValue()"
-                            aria-disabled="@GetIsEnabled(item)"
-                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="bit-mnb-itm @(GetIsEnabled(item) ? "" : "bit-dis")">
+                            aria-disabled="@isEnabled"
+                            tabindex="@(isEnabled ? 0 : -1)"
+                            style="@GetStyle(item)"
+                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item)">
                         @if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
