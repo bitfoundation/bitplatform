@@ -6,32 +6,38 @@ public partial class _BitMenuButtonOptionDemo
 <BitMenuButton Text=""Primary""
                ButtonStyle=""BitButtonStyle.Primary""
                OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Standard""
                ButtonStyle=""BitButtonStyle.Standard""
                OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Disabled""
                OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key""
                IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Item Disabled""
+<BitMenuButton Text=""Option Disabled""
                OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Option OnClick"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" OnClick=""@(_ => example1SelectedItem = $""Option A - OnClick"")"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" OnClick=""@(_ => example1SelectedItem = $""Option C - OnClick"")"" />
 </BitMenuButton>
 
 <div>Clicked Item: @example1SelectedItem</div>";
@@ -44,18 +50,18 @@ private string example1SelectedItem;
                IconName=""@BitIconName.Edit""
                ButtonStyle=""BitButtonStyle.Primary""
                OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Standard Button""
                IconName=""@BitIconName.Add""
                ButtonStyle=""BitButtonStyle.Standard""
                OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <div>Clicked Item: @example2SelectedItem</div>";
@@ -78,26 +84,26 @@ private string example2SelectedItem;";
 <BitMenuButton Text=""Styled Button""
                OnItemClick=""(BitMenuButtonOption item) => example31SelectedItem = item.Key""
                Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Classed Button""
                OnItemClick=""(BitMenuButtonOption item) => example31SelectedItem = item.Key""
                Class=""custom-class"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <div>Clicked Item: @example31SelectedItem</div>
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" OnItemClick=""(BitMenuButtonOption item) => example32SelectedItem = item.Key"">
-    <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color:red"" />
-    <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" Class=""custom-item"" />
-    <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" Style=""background:blue"" />
+<BitMenuButton Text=""Option Styled & Classed Button"" OnItemClick=""(BitMenuButtonOption item) => example32SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color:red"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" Class=""custom-item"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" Style=""background:blue"" />
 </BitMenuButton>
 
 <div>Clicked Item: @example32SelectedItem</div>";
@@ -116,10 +122,10 @@ private string example32SelectedItem;";
         <BitIcon IconName=""@BitIconName.Warning"" />
     </HeaderTemplate>
     <ChildContent>
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
-        <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+        <BitMenuButtonOption Text=""Option D"" Key=""D"" IconName=""@BitIconName.Emoji"" />
     </ChildContent>
 </BitMenuButton>
 
@@ -131,10 +137,10 @@ private string example32SelectedItem;";
         </div>
     </HeaderTemplate>
     <ChildContent>
-        <BitMenuButtonOption Text=""Item A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Item C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
-        <BitMenuButtonOption Text=""Item D"" Key=""D"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+        <BitMenuButtonOption Text=""Option D"" Key=""D"" IconName=""@BitIconName.Emoji"" />
     </ChildContent>
 </BitMenuButton>
 

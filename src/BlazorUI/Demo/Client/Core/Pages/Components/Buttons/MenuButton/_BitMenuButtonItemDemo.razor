@@ -11,14 +11,13 @@
                            Items="basicItems"
                            OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
 
-            <BitMenuButton Text="Disabled"
-                           Items="basicItems"
-                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key"
-                           IsEnabled="false" />
+            <BitMenuButton Text="Disabled" Items="basicItems" IsEnabled="false" />
 
             <BitMenuButton Text="Item Disabled"
                            Items="itemDisabledItems"
                            OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+
+            <BitMenuButton Text="Item OnClick" Items="basicItemsWithOnClick" />
         </div>
         <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
     </ExamplePreview>

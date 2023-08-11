@@ -1,29 +1,11 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 {
-    private const string CLASS_FIELD = nameof(BitMenuButtonItem.Class);
-    private const string ICON_NAME_FIELD = nameof(BitMenuButtonItem.IconName);
-    private const string IS_ENABLED_FIELD = nameof(BitMenuButtonItem.IsEnabled);
-    private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
-    private const string STYLE_FIELD = nameof(BitMenuButtonItem.Style);
-    private const string TEMPLATE_FIELD = nameof(BitMenuButtonItem.Template);
-    private const string TEXT_FIELD = nameof(BitMenuButtonItem.Text);
-
-
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
-
-    private string _internalClassField = CLASS_FIELD;
-    private string _internalIconNameField = ICON_NAME_FIELD;
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalKeyField = KEY_FIELD;
-    private string _internalStyleField = STYLE_FIELD;
-    private string _internalTemplateField = TEMPLATE_FIELD;
-    private string _internalTextField = TEXT_FIELD;
 
 
     private string? _calloutId;
@@ -96,12 +78,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// <summary>
     /// The CSS Class field name of the custom input class.
     /// </summary>
-    [Parameter] public string ClassField { get; set; } = CLASS_FIELD;
+    [Parameter] public string ClassField { get; set; } = nameof(BitMenuButtonItem.Class);
 
     /// <summary>
     /// The CSS Class field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? ClassFieldSelector { get; set; }
+    [Parameter] public Func<TItem, string?>? ClassFieldSelector { get; set; }
 
     /// <summary>
     /// The content inside the header of MenuButton can be customized.
@@ -116,22 +98,22 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// <summary>
     /// IconName field name of the custom input class.
     /// </summary>
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
+    [Parameter] public string IconNameField { get; set; } = nameof(BitMenuButtonItem.IconName);
 
     /// <summary>
     /// IconName field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
+    [Parameter] public Func<TItem, string?>? IconNameFieldSelector { get; set; }
 
     /// <summary>
     /// IsEnabled field name of the custom input class.
     /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
+    [Parameter] public string IsEnabledField { get; set; } = nameof(BitMenuButtonItem.IsEnabled);
 
     /// <summary>
     /// IsEnabled field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
+    [Parameter] public Func<TItem, bool>? IsEnabledFieldSelector { get; set; }
 
     /// <summary>
     ///  List of BitMenuButtonItem to show as a item in MenuButton.
@@ -146,12 +128,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Key field name of the custom input class.
     /// </summary>
-    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
+    [Parameter] public string KeyField { get; set; } = nameof(BitMenuButtonItem.Key);
 
     /// <summary>
     /// Key field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
+    [Parameter] public Func<TItem, string?>? KeyFieldSelector { get; set; }
 
     /// <summary>
     /// The callback is called when the MenuButton header is clicked.
@@ -164,14 +146,24 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// OnClick field name of the custom input class.
+    /// </summary>
+    [Parameter] public string OnClickField { get; set; } = nameof(BitMenuButtonItem.OnClick);
+
+    /// <summary>
+    /// OnClick field selector of the custom input class.
+    /// </summary>
+    [Parameter] public Func<TItem, Action<TItem>?>? OnClickFieldSelector { get; set; }
+
+    /// <summary>
     /// The CSS Style field name of the custom input class.
     /// </summary>
-    [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
+    [Parameter] public string StyleField { get; set; } = nameof(BitMenuButtonItem.Style);
 
     /// <summary>
     /// The CSS Style field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
+    [Parameter] public Func<TItem, string?>? StyleFieldSelector { get; set; }
 
     /// <summary>
     /// The text to show inside the header of MenuButton.
@@ -181,22 +173,22 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Template field name of the custom input class.
     /// </summary>
-    [Parameter] public string TemplateField { get; set; } = TEMPLATE_FIELD;
+    [Parameter] public string TemplateField { get; set; } = nameof(BitMenuButtonItem.Template);
 
     /// <summary>
     /// Template field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TemplateFieldSelector { get; set; }
+    [Parameter] public Func<TItem, RenderFragment<TItem>?>? TemplateFieldSelector { get; set; }
 
     /// <summary>
     /// Text field name of the custom input class.
     /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
+    [Parameter] public string TextField { get; set; } = nameof(BitMenuButtonItem.Text);
 
     /// <summary>
     /// Text field selector of the custom input class.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
+    [Parameter] public Func<TItem, string>? TextFieldSelector { get; set; }
 
 
     [JSInvokable("CloseCallout")]
@@ -226,14 +218,6 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     {
         _calloutId = $"{RootElementClass}-callout-{UniqueId}";
         _overlayId = $"{RootElementClass}-overlay-{UniqueId}";
-
-        _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
-        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
-        _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
-        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TemplateField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -266,9 +250,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
     private string? GetClass(TItem item)
     {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
+        if (item is BitMenuButtonItem menuButtonItem)
         {
-            return bitMenuButtonItem.Class;
+            return menuButtonItem.Class;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
@@ -276,14 +260,19 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Class;
         }
 
-        return item.GetValueFromProperty<string?>(_internalClassField);
+        if (ClassFieldSelector is not null)
+        {
+            return ClassFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(ClassField);
     }
 
     private string? GetIconName(TItem item)
     {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
+        if (item is BitMenuButtonItem menuButtonItem)
         {
-            return bitMenuButtonItem.IconName;
+            return menuButtonItem.IconName;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
@@ -291,14 +280,19 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<string?>(_internalIconNameField);
+        if (IconNameFieldSelector is not null)
+        {
+            return IconNameFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(IconNameField);
     }
 
     private bool GetIsEnabled(TItem item)
     {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
+        if (item is BitMenuButtonItem menuButtonItem)
         {
-            return bitMenuButtonItem.IsEnabled;
+            return menuButtonItem.IsEnabled;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
@@ -306,14 +300,19 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.IsEnabled;
         }
 
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
+        if (IsEnabledFieldSelector is not null)
+        {
+            return IsEnabledFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty(IsEnabledField, true);
     }
 
     private string? GetKey(TItem item)
     {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
+        if (item is BitMenuButtonItem menuButtonItem)
         {
-            return bitMenuButtonItem.Key;
+            return menuButtonItem.Key;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
@@ -321,7 +320,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Key;
         }
 
-        return item.GetValueFromProperty<string?>(_internalKeyField);
+        if (KeyFieldSelector is not null)
+        {
+            return KeyFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(KeyField);
     }
 
     private string? GetStyle(TItem item)
@@ -336,7 +340,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Style;
         }
 
-        return item.GetValueFromProperty<string?>(_internalStyleField);
+        if (StyleFieldSelector is not null)
+        {
+            return StyleFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(StyleField);
     }
 
     private RenderFragment<TItem>? GetTemplate(TItem item)
@@ -351,7 +360,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Template as RenderFragment<TItem>;
         }
 
-        return item.GetValueFromProperty<RenderFragment<TItem>?>(_internalTemplateField);
+        if (TemplateFieldSelector is not null)
+        {
+            return TemplateFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(TemplateField);
     }
 
     private string? GetText(TItem item)
@@ -366,10 +380,15 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Text;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTextField);
+        if (TextFieldSelector is not null)
+        {
+            return TextFieldSelector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(TextField);
     }
 
-    private async Task OpenCallout(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
@@ -384,6 +403,26 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
         await CloseCallout();
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            menuButtonItem.OnClick?.Invoke(menuButtonItem);
+        }
+        else if (item is BitMenuButtonOption menuButtonOption)
+        {
+            await menuButtonOption.OnClick.InvokeAsync(menuButtonOption);
+        }
+        else
+        {
+            if (OnClickFieldSelector is not null)
+            {
+                OnClickFieldSelector!(item)?.Invoke(item);
+            }
+            else
+            {
+                item.GetValueFromProperty<Action<TItem>?>(OnClickField)?.Invoke(item);
+            }
+        }
 
         await OnItemClick.InvokeAsync(item);
     }
