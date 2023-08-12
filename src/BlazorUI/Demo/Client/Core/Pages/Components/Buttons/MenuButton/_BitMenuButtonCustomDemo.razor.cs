@@ -134,35 +134,35 @@ public partial class _BitMenuButtonCustomDemo
 
     private readonly string example1HTMLCode = @"
 <BitMenuButton Text=""Primary""
-               ButtonStyle=""BitButtonStyle.Primary""
                Items=""basicCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })""
                OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
 <BitMenuButton Text=""Standard""
                ButtonStyle=""BitButtonStyle.Standard""
                Items=""basicCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })""
                OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
 
-<BitMenuButton Text=""Disabled""
-               Items=""basicCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
-               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id""
-               IsEnabled=""false"" />
+<BitMenuButton Text=""Disabled"" Items=""basicCustoms"" IsEnabled=""false"" />
 
 <BitMenuButton Text=""Item Disabled""
                Items=""itemDisabledCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
                OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
+
+<BitMenuButton Text=""Item OnClick""
+               Items=""basicCustomsWithOnClick""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon },
+                                        OnClick = { Selector = item => item.Clicked } })"" />
 
 <div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1CSharpCode = @"
@@ -259,20 +259,19 @@ protected override void OnInitialized()
     private readonly string example2HTMLCode = @"
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
-               ButtonStyle=""BitButtonStyle.Primary""
                Items=""basicCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
                OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
 <BitMenuButton Text=""Standard Button""
                IconName=""@BitIconName.Add""
                ButtonStyle=""BitButtonStyle.Standard""
                Items=""basicCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
                OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example2SelectedItem</div>";
@@ -307,8 +306,7 @@ private List<MenuActionItem> basicCustoms = new()
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
-};
-";
+};";
 
     private readonly string example3HTMLCode = @"
 <style>
@@ -325,30 +323,30 @@ private List<MenuActionItem> basicCustoms = new()
 
 <BitMenuButton Text=""Styled Button""
                Items=""basicCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
-               OnItemClick=""(MenuActionItem item) => example31SelectedItem = item.Id""
-               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;"" />
+               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })""
+               OnItemClick=""(MenuActionItem item) => example31SelectedItem = item.Id"" />
 
 <BitMenuButton Text=""Classed Button""
                Items=""basicCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
-               OnItemClick=""(MenuActionItem item) => example31SelectedItem = item.Id""
-               Class=""custom-class"" />
+               Class=""custom-class"" 
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
+               OnItemClick=""(MenuActionItem item) => example31SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example31SelectedItem</div>
 
 
 <BitMenuButton Text=""Item Styled & Classed Button""
-               Items=""itemStyleClassCustoms"" 
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
-               StyleField=""@nameof(MenuActionItem.Style)""
-               ClassField=""@nameof(MenuActionItem.Class)""
+               Items=""itemStyleClassCustoms""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) },
+                                        Class = { Name = nameof(MenuActionItem.Class) },
+                                        Style = { Name = nameof(MenuActionItem.Style) } })""
                OnItemClick=""(MenuActionItem item) => example32SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example32SelectedItem</div>";
@@ -416,11 +414,10 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 
     private readonly string example4HTMLCode = @"
 <BitMenuButton Items=""basicCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
-               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
-               ButtonStyle=""BitButtonStyle.Primary"">
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
+               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id"">
     <HeaderTemplate>
         <BitIcon IconName=""@BitIconName.Warning"" />
         <div style=""font-weight: 600; color: white;"">
@@ -431,11 +428,11 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 </BitMenuButton>
 
 <BitMenuButton Items=""basicCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
-               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id""
-               ButtonStyle=""BitButtonStyle.Standard"">
+               ButtonStyle=""BitButtonStyle.Standard""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })""
+               OnItemClick=""(MenuActionItem item) => example4SelectedItem = item.Id"">
     <HeaderTemplate>
         <div style=""font-weight: bold; color: #d13438;"">
             Custom Header!
@@ -475,8 +472,7 @@ private List<MenuActionItem> basicCustoms = new()
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
-};
-";
+};";
 
     private readonly string example5HTMLCode = @"
 <style>
@@ -489,11 +485,10 @@ private List<MenuActionItem> basicCustoms = new()
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
                Items=""itemTemplateCustoms""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
-               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id""
-               ButtonStyle=""BitButtonStyle.Primary"">
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
+               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -506,11 +501,11 @@ private List<MenuActionItem> basicCustoms = new()
 <BitMenuButton Text=""Standard Button""
                IconName=""@BitIconName.Edit""
                Items=""itemTemplateCustoms""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
-               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id""
-               ButtonStyle=""BitButtonStyle.Standard"">
+               ButtonStyle=""BitButtonStyle.Standard""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })""
+               OnItemClick=""(MenuActionItem item) => example51SelectedItem = item.Id"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -526,12 +521,11 @@ private List<MenuActionItem> basicCustoms = new()
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
                Items=""itemTemplateCustoms2""
-               TextField=""@nameof(MenuActionItem.Name)""
-               KeyField=""@nameof(MenuActionItem.Id)""
-               IconNameField=""@nameof(MenuActionItem.Icon)""
-               TemplateField=""@nameof(MenuActionItem.Fragment)""
-               OnItemClick=""(MenuActionItem item) => example52SelectedItem = item.Id""
-               ButtonStyle=""BitButtonStyle.Primary"" />
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) },
+                                        Template = { Name = nameof(MenuActionItem.Fragment)} })""
+               OnItemClick=""(MenuActionItem item) => example52SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example52SelectedItem</div>";
     private readonly string example5CSharpCode = @"
@@ -599,14 +593,13 @@ private List<MenuActionItem> itemTemplateCustoms2 = new()
                Items=""basicCustoms""
                IconName=""@BitIconName.ExpandMenu""
                ChevronDownIcon=""@BitIconName.DoubleChevronDown""
-               TextFieldSelector=""item => item.Name""
-               KeyFieldSelector=""item => item.Id""
-               IconNameFieldSelector=""item => item.Icon""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
                OnItemClick=""(MenuActionItem item) => example6SelectedItem = item.Id""
-               ClassStyles=""@(new() {
-                                Icon = new() { Style = ""color:red"" },
-                                Text = new() { Style = ""color:aqua"" },
-                                ChevronDown = new() { Style = ""color:darkred;font-size:10px"" }})"" />
+               ClassStyles=""@(new() { Icon = { Style = ""color:red"" },
+                                      Text = { Style = ""color:aqua"" },
+                                      ChevronDown = { Style = ""color:darkred;font-size:10px"" }})"" />
 
 <div>Clicked Item: @example6SelectedItem</div>";
     private readonly string example6CSharpCode = @"
@@ -640,6 +633,6 @@ private List<MenuActionItem> basicCustoms = new()
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
-};
-";
+};";
+
 }
