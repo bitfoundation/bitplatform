@@ -29,15 +29,11 @@
     }
 
     ::deep {
-        .bit-btn {
-            width: fit-content;
-        }
-
         .validation-message {
             color: $Red20;
             font-size: rem2(12px);
-            line-height: normal;
             margin-top: rem2(5px);
+            line-height: normal;
         }
 
         .validation-errors {
@@ -47,15 +43,12 @@
 }
 
 .custom-wrapper {
-    display: flex;
     gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
     margin-bottom: 2rem;
 
     ::deep {
-        .bit-txt {
-            width: 100%;
-        }
-
         .custom-label {
             color: blue;
             font-weight: 900;

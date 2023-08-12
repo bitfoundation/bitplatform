@@ -39,7 +39,7 @@ jobs:
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
 
