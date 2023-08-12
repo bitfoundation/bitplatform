@@ -35,6 +35,26 @@
                     "description": "Other"
                 }
             ]
+        },
+        "pipeline": {
+            "displayName": "CI-CD Pipeline",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "GitHub",
+            "choices": [
+                {
+                    "choice": "GitHub",
+                    "description": "GitHub actions"
+                },
+                {
+                    "choice": "Azure",
+                    "description": "Azure DevOps pipelines"
+                },
+                {
+                    "choice": "Other",
+                    "description": "Other"
+                }
+            ]
         }
     },
     "sources": [
@@ -60,6 +80,14 @@
                         "**/*.nuspec",
                         "**/Migrations/**"
                     ]
+                },
+                {
+                    "condition": "(pipeline != GitHub)",
+                    "exclude": [ ".github/**" ]
+                },
+                {
+                    "condition": "(pipeline != Azure)",
+                    "exclude": [ ".azure-devops/**" ]
                 }
             ]
         }
