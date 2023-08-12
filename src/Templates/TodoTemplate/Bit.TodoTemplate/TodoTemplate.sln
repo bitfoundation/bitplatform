@@ -30,6 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.Web", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTemplate.Client.App", "src\Client\App\TodoTemplate.Client.App.csproj", "{5DD4EE2C-8397-4E32-B147-6FF87D7DD648}"
 EndProject
+#if (pipeline == "Azure")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{308C2DB4-661A-410A-91B5-6C54CDB4E9B5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{6CBB5D23-A91C-493B-BA95-CE6A6A8E0C79}"
@@ -38,6 +39,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
+#elif (pipeline == "GitHub")
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{405C750E-F6ED-4CEB-92F2-010066DC4364}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{09A4E0FB-544F-4BA1-8C68-FD5DB514B819}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+	EndProjectSection
+EndProject
+#endif
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +94,8 @@ Global
 		{5DD4EE2C-8397-4E32-B147-6FF87D7DD648} = {99987B56-D7E8-43AA-9EFC-07EC384B4382}
 		{308C2DB4-661A-410A-91B5-6C54CDB4E9B5} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 		{6CBB5D23-A91C-493B-BA95-CE6A6A8E0C79} = {308C2DB4-661A-410A-91B5-6C54CDB4E9B5}
+		{405C750E-F6ED-4CEB-92F2-010066DC4364} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+		{09A4E0FB-544F-4BA1-8C68-FD5DB514B819} = {405C750E-F6ED-4CEB-92F2-010066DC4364}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}

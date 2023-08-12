@@ -15,9 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Web", "src\Blazo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Api", "src\BlazorDual.Api\BlazorDual.Api.csproj", "{0AC1B4C6-4043-4F37-A146-E408B157409C}"
 EndProject
+#if (pipeline == "Azure")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{69B2E1F0-795A-4ED2-BD6B-49BE67DA78A2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{153A3957-23B8-4266-9C8B-8FBEABDF1679}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{506B3F4E-DBBD-4319-BF46-CFCB45BC2C7D}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,12 +24,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
 	EndProjectSection
 EndProject
+#elif (pipeline == "GitHub")
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{153A3957-23B8-4266-9C8B-8FBEABDF1679}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5CE63A4C-D57D-46F3-85F6-083D030C55AA}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\cd.yml = .github\workflows\cd.yml
 		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject
+#endif
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
