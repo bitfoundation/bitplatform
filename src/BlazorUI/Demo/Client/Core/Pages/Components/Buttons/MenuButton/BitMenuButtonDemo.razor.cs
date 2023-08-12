@@ -55,20 +55,6 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "ClassField",
-            Type = "string",
-            DefaultValue = "Class",
-            Description = "The CSS Class field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "ClassFieldSelector",
-            Type = "Func<TItem, string?>?",
-            DefaultValue = "null",
-            Description = "The CSS Class field selector of the custom input class.",
-        },
-        new()
-        {
             Name = "ClassStyles",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",
@@ -92,34 +78,6 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "IconNameField",
-            Type = "string",
-            DefaultValue = "IconName",
-            Description = "IconName field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "IconNameFieldSelector",
-            Type = "Func<TItem, string?>?",
-            DefaultValue = "null",
-            Description = "IconName field selector of the custom input class.",
-        },
-        new()
-        {
-            Name = "IsEnabledField",
-            Type = "string",
-            DefaultValue = "IsEnabled",
-            Description = "IsEnabled field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "IsEnabledFieldSelector",
-            Type = "Func<TItem, bool>?",
-            DefaultValue = "null",
-            Description = "IsEnabled field selector of the custom input class.",
-        },
-        new()
-        {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
@@ -136,17 +94,12 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "KeyField",
-            Type = "string",
-            DefaultValue = "Key",
-            Description = "Key field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "KeyFieldSelector",
-            Type = "Func<TItem, string?>?",
+            Name = "NameSelectors",
+            Type = "BitMenuButtonNameSelectors<TItem>?",
             DefaultValue = "null",
-            Description = "Key field selector of the custom input class.",
+            Description = "Names and selectors of the custom input type properties.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors",
         },
         new()
         {
@@ -162,52 +115,10 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "OnClickField",
-            Type = "string",
-            DefaultValue = "OnClick",
-            Description = "OnClick field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "OnClickFieldSelector",
-            Type = "Func<TItem, Action<TItem>?>?",
-            DefaultValue = "null",
-            Description = "OnClick field selector of the custom input class.",
-        },
-        new()
-        {
-            Name = "StyleField",
-            Type = "string",
-            DefaultValue = "Style",
-            Description = "The CSS Style field name of the custom input class.",
-        },
-        new()
-        {
-            Name = "StyleFieldSelector",
-            Type = "Func<TItem, string?>?",
-            DefaultValue = "null",
-            Description = "The CSS Style field selector of the custom input class.",
-        },
-        new()
-        {
             Name = "Text",
             Type = "string?",
             DefaultValue = "null",
             Description = "The text to show inside the header of MenuButton."
-        },
-        new()
-        {
-            Name = "TextField",
-            Type = "string",
-            DefaultValue = "Text",
-            Description = "Name of an icon to render next to the item text.",
-        },
-        new()
-        {
-            Name = "TextFieldSelector",
-            Type = "Func<TItem, string?>?",
-            DefaultValue = "null",
-            Description = "Name of an icon to render next to the item text.",
         }
     };
 
@@ -350,8 +261,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "Callout",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for the callout container of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -359,8 +270,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "ChevronDown",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for the chevron down of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -368,8 +279,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "Icon",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for the icon of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -377,8 +288,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "ItemButton",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for each item of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -386,8 +297,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "ItemIcon",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for each item icon of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -395,8 +306,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "ItemText",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for each item text of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -404,8 +315,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "Overlay",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for each overlay of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -413,8 +324,8 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "Text",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
+                   Type = "BitClassStylePair",
+                   DefaultValue = "new()",
                    Description = "Custom CSS classes/styles for the text of the BitMenuButton.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link,
@@ -440,7 +351,98 @@ public partial class BitMenuButtonDemo
                    Description = "Custom CSS styles."
                }
             }
-        }
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitMenuButtonNameSelectors",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Class",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Class))",
+                    Description = "The CSS Class field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "IconName",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.IconName))",
+                    Description = "IconName field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "IsEnabled",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.IsEnabled))",
+                    Description = "IsEnabled field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Key",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Key))",
+                    Description = "Key field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OnClick",
+                    Type = "BitNameSelectorPair<TItem, Action<TItem>?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.OnClick))",
+                    Description = "OnClick field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Style",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Style))",
+                    Description = "Style field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Text",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Text))",
+                    Description = "Text field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+            }
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Name",
+                   Type = "string",
+                   Description = "Custom class property name."
+               },
+               new()
+               {
+                   Name = "Selector",
+                   Type = "Func<TItem, TProp?>?",
+                   Description = "Custom class property selector."
+               }
+            }
+        },
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
