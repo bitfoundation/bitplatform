@@ -6,4 +6,11 @@ public class MenuActionItem
     public string? Name { get; set; }
     public string? Icon { get; set; }
     public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+    public string? Style { get; set; }
+
+    public RenderFragment<MenuActionItem>? Fragment { get; set; }
+
+    public Action<MenuActionItem>? Clicked { get; set; }
 }

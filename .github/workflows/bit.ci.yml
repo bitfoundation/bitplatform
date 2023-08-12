@@ -8,7 +8,7 @@ jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
 

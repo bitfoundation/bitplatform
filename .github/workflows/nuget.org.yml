@@ -17,7 +17,7 @@ on:
 jobs:
   build-publish:
     name: build & publish
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
 
