@@ -512,22 +512,22 @@ private string NotTrimmedValue;";
     private readonly string example12HTMLCode = @"
 <style>
     .validation-summary {
-        border-left: rem(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
         overflow: hidden;
-        margin-bottom: rem(10px);
+        margin-bottom: 10px;
+        background-color: #FDE7E9;
+        border-left: 5px solid #d13438;
     }
 
     ::deep {
         .validation-message {
-            color: $Red20;
-            font-size: rem(12px);
+            color: #A4262C;
+            font-size: 12px;
+            margin-top: 5px;
             line-height: normal;
-            margin-top: rem(5px);
         }
 
         .validation-errors {
-            margin: rem(5px);
+            margin: 5px;
         }
     }
 </style>
