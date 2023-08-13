@@ -17,9 +17,9 @@
         if (isOpen) {
             dateRangePickerCallout.style.display = "none";
             dateRangePickerOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
+            BitCallouts.currentCallout.update("", "", null);
         } else {
-            Bit.closeCurrentCalloutIfExists(dateRangePickerCalloutId, dateRangePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrentCallout(dateRangePickerCalloutId, dateRangePickerOverlayId, dotnetObjReference);
             dateRangePickerCallout.style.display = "block";
             dateRangePickerOverlay.style.display = "block";
             const dateRangePickerCalloutHeight = dateRangePickerCallout.offsetHeight;

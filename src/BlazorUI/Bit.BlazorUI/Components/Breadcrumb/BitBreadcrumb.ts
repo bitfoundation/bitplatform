@@ -22,11 +22,11 @@
         if (isCalloutOpen) {
             dropdownCallout.style.display = "none";
             dropdownOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
-            Bit.currentDropdownCalloutId = "";
+            BitCallouts.currentCallout.update("", "", null);
+            BitCallouts.currentDropdownCalloutId = "";
         } else {
-            Bit.currentDropdownCalloutId = calloutId;
-            Bit.closeCurrentCalloutIfExists(calloutId, overlayId, dotnetObjReference);
+            BitCallouts.currentDropdownCalloutId = calloutId;
+            BitCallouts.replaceCurrentCallout(calloutId, overlayId, dotnetObjReference);
             dropdownCallout.style.display = "block";
             dropdownOverlay.style.display = "block";
 
