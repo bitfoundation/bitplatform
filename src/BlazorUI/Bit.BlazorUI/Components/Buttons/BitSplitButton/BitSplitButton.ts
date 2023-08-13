@@ -25,9 +25,9 @@
         if (isOpenMenu) {
             splitButtonCallout.style.display = "none";
             splitButtonOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
+            BitCallouts.currentCallout.update("", "", null);
         } else {
-            Bit.closeCurrentCalloutIfExists(splitButtonCalloutId, splitButtonOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrentCallout(splitButtonCalloutId, splitButtonOverlayId, dotnetObjReference);
             splitButtonCallout.style.display = "block";
             splitButtonOverlay.style.display = "block";
 

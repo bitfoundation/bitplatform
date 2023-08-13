@@ -88,8 +88,7 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Capture and render additional attributes in addition to the component's parameters
     /// </summary>
-    [Parameter]
-    public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

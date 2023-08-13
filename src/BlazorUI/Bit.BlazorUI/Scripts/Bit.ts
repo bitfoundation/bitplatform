@@ -1,26 +1,4 @@
-﻿class BitCalloutComponent {
-    calloutId: string;
-    overlayId: string;
-    objRef: DotNetObject | null;
-
-    constructor() {
-        this.calloutId = "";
-        this.overlayId = "";
-        this.objRef = null;
-    }
-
-    update(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        this.calloutId = calloutId;
-        this.overlayId = overlayId;
-        this.objRef = obj;
-    }
-}
-
-class Bit {
-    static currentDropdownCalloutId = "";
-    static currentCallout: BitCalloutComponent = new BitCalloutComponent();
-    static currentDropdownCalloutResponsiveModeIsEnabled = false;
-
+﻿class Bit {
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         if (!element) return;
         element[property] = value;
@@ -102,28 +80,5 @@ class Bit {
             return result.toString(16);
         });
         return result;
-    }
-
-
-    static closeCurrentCalloutIfExists(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        if (Bit.currentCallout.calloutId.length === 0 || Bit.currentCallout.overlayId.length === 0) {
-            Bit.currentCallout.update(calloutId, overlayId, obj);
-            return;
-        }
-
-        if (calloutId !== Bit.currentCallout.calloutId && overlayId !== Bit.currentCallout.overlayId) {
-            const callout = document.getElementById(Bit.currentCallout.calloutId);
-            if (callout == null)
-                return;
-
-            const overlay = document.getElementById(Bit.currentCallout.overlayId);
-            if (overlay == null)
-                return;
-
-            callout.style.display = "none";
-            overlay.style.display = "none";
-            Bit.currentCallout.objRef?.invokeMethodAsync("CloseCallout");
-            Bit.currentCallout.update(calloutId, overlayId, obj);
-        }
     }
 }

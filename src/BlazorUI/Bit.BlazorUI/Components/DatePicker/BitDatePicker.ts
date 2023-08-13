@@ -17,9 +17,9 @@
         if (isOpen) {
             datePickerCallout.style.display = "none";
             datePickerOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
+            BitCallouts.currentCallout.update("", "", null);
         } else {
-            Bit.closeCurrentCalloutIfExists(datePickerCalloutId, datePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrentCallout(datePickerCalloutId, datePickerOverlayId, dotnetObjReference);
             datePickerCallout.style.display = "block";
             datePickerOverlay.style.display = "block";
             const datePickerCalloutHeight = datePickerCallout.offsetHeight;

@@ -33,8 +33,14 @@
     }
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
-         id="@_overlayId" style="@ClassStyles?.Overlay?.Style" class="bit-mnb-ovl @ClassStyles?.Overlay?.Class"></div>
-    <div id="@_calloutId" style="@ClassStyles?.Callout?.Style" class="bit-mnb-cal @ClassStyles?.Callout?.Class" tabindex="@(IsEnabled ? 0 : -1)">
+         id="@_overlayId"
+         style="display:@(_isCalloutOpen ? "block" : "none") @ClassStyles?.Overlay?.Style"
+         class="bit-mnb-ovl @ClassStyles?.Overlay?.Class"></div>
+
+    <div id="@_calloutId"
+         style="@ClassStyles?.Callout?.Style" 
+         class="bit-mnb-cal @ClassStyles?.Callout?.Class" 
+         tabindex="@(IsEnabled ? 0 : -1)">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
