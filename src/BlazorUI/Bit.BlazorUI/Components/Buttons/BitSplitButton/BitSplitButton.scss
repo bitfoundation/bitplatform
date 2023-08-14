@@ -34,6 +34,9 @@
     background-color: $color-primary-main;
 
     .bit-spl-opb, .bit-spl-chb {
+        border-color: $color-primary-main;
+        background-color: $color-primary-main;
+
         @media (hover: hover) {
             &:hover {
                 border-color: $color-action-hover-primary;
@@ -65,6 +68,9 @@
     background-color: $color-secondary-main;
 
     .bit-spl-opb, .bit-spl-chb {
+        border-color: $color-border-primary;
+        background-color: $color-secondary-main;
+
         @media (hover: hover) {
             &:hover {
                 background-color: $color-action-hover-secondary;
@@ -89,32 +95,27 @@
 
 .bit-spl-cds {
     border: none;
+    border-color: unset;
+    background-color: unset;
 
     .bit-spl-chb {
         border-width: $shape-border-width;
         border-style: $shape-border-style;
-        border-color: $color-primary-main;
+        border-radius: $shape-border-radius;
         border-left: none;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
     }
 
-    &.bit-spl-pri {
-        .bit-spl-chb {
-            border-color: $color-primary-main;
-        }
-    }
-
-    &.bit-spl-std {
-        .bit-spl-chb {
-            border-color: $color-border-primary;
-        }
+    .bit-spl-spb {
+        display: none;
     }
 }
 
 .bit-spl-spb {
     margin: auto 0;
+    height: spacing(2);
     width: spacing(0.125);
-    height: spacing(2.5);
-    background-color: $color-border-primary;
 }
 
 .bit-spl-opb,
@@ -139,7 +140,6 @@
 .bit-spl-chb {
     width: spacing(4);
     font-size: spacing(1.5);
-    border-radius: $shape-border-radius;
 }
 
 .bit-spl-cal {
@@ -151,7 +151,7 @@
     z-index: $zindex-callout;
     min-width: spacing(22.5);
     box-shadow: $box-shadow-callout;
-    transition: opacity 100ms, transform 300ms;
+    transition: opacity 100ms, transform 200ms;
     background-color: $color-background-primary;
     transform: translate3d(0, spacing(-1.25), 0);
     border-radius: 0 0 spacing(0.25) spacing(0.25);

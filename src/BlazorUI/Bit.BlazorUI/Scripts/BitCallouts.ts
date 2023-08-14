@@ -54,11 +54,11 @@ class BitCallouts {
             BitCallouts.replaceCurrentCallout(calloutId, "", dotNetObj);
             callout.style.display = "block";
 
-            const calloutHeight = callout.offsetHeight;
-            const calloutWidth = callout.offsetWidth;
-
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
+
+            const calloutHeight = callout.offsetHeight;
+            const calloutWidth = callout.offsetWidth;
 
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 
