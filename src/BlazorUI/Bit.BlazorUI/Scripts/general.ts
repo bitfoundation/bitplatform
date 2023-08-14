@@ -10,8 +10,10 @@
 
 window.addEventListener('scroll', (e: any) => {
     const minimumWidthForDropdownNormalOpen = 640;
-    if ((BitCallouts.currentDropdownCalloutId && window.innerWidth < minimumWidthForDropdownNormalOpen && BitCallouts.currentDropdownCalloutResponsiveModeIsEnabled) ||
-        (e.target.id && BitCallouts.currentDropdownCalloutId === e.target.id)) return;
+    if ((BitCallouts.currentDropdownCalloutId
+          && window.innerWidth < minimumWidthForDropdownNormalOpen
+          && BitCallouts.currentDropdownCalloutResponsiveModeIsEnabled)
+        || (e.target.id && BitCallouts.currentDropdownCalloutId === e.target.id)) return;
 
     BitCallouts.replaceCurrentCallout("", "", null);
 }, true);

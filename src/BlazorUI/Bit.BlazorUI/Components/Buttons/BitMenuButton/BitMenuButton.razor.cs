@@ -10,7 +10,6 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
     private string _uniqueId = default!;
     private string _calloutId = default!;
-    private string _overlayId = default!;
 
 
     private bool _isCalloutOpen
@@ -67,7 +66,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     }
 
     /// <summary>
-    ///  List of Item, each of which can be a Button with different action in the MenuButton.
+    ///  List of Item, each of which can be a Button with different action in the BitMenuButton.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -87,17 +86,17 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public BitMenuButtonClassStyles? ClassStyles { get; set; }
 
     /// <summary>
-    /// The content inside the header of MenuButton can be customized.
+    /// The content inside the header of BitMenuButton can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// The icon to show inside the header of MenuButton.
+    /// The icon to show inside the header of BitMenuButton.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    ///  List of BitMenuButtonItem to show as a item in MenuButton.
+    ///  List of BitMenuButtonItem to show as a item in BitMenuButton.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
@@ -112,7 +111,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback is called when the MenuButton header is clicked.
+    /// The callback is called when the BitMenuButton header is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -122,7 +121,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// The text to show inside the header of MenuButton.
+    /// The text to show inside the header of BitMenuButton.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
@@ -160,13 +159,12 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
         _calloutId = $"{RootElementClass}-callout-{UniqueId}";
-        _overlayId = $"{RootElementClass}-overlay-{UniqueId}";
 
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
     protected override Task OnParametersSetAsync()
@@ -347,12 +345,13 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
+
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
         _isCalloutOpen = true;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _overlayId, _isCalloutOpen, _dotnetObj);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
 
         await OnClick.InvokeAsync(e);
     }
@@ -391,8 +390,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _overlayId, _isCalloutOpen, _dotnetObj);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
     }
+
 
     public void Dispose()
     {

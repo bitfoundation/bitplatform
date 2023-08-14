@@ -13,7 +13,6 @@
         id="@UniqueId"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
-        type="@_buttonType.GetValue()"
         tabindex="@(IsEnabled ? 0 : -1)"
         aria-label="@AriaLabel"
         aria-hidden="@AriaHidden"
@@ -33,14 +32,12 @@
     }
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
-         id="@_overlayId"
          style="display:@(_isCalloutOpen ? "block" : "none") @ClassStyles?.Overlay?.Style"
          class="bit-mnb-ovl @ClassStyles?.Overlay?.Class"></div>
 
     <div id="@_calloutId"
-         style="@ClassStyles?.Callout?.Style" 
-         class="bit-mnb-cal @ClassStyles?.Callout?.Class" 
-         tabindex="@(IsEnabled ? 0 : -1)">
+         style="@ClassStyles?.Callout?.Style"
+         class="bit-mnb-cal @ClassStyles?.Callout?.Class">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
@@ -49,8 +46,8 @@
                 <li role="presentation">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
-                            type="@_buttonType.GetValue()"
                             aria-disabled="@isEnabled"
+                            type="@_buttonType.GetValue()"
                             tabindex="@(isEnabled ? 0 : -1)"
                             style="@GetStyle(item) @ClassStyles?.ItemButton?.Style"
                             class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item) @ClassStyles?.ItemButton?.Class">
@@ -69,7 +66,9 @@
                             {
                                 <i style="@ClassStyles?.ItemIcon?.Style" class="bit-icon bit-icon--@iconName @ClassStyles?.ItemIcon?.Class" />
                             }
-                            <span style="@ClassStyles?.ItemText?.Style" class="bit-mnb-txt @ClassStyles?.ItemText?.Class">@GetText(item)</span>
+                            <span style="@ClassStyles?.ItemText?.Style" class="bit-mnb-txt @ClassStyles?.ItemText?.Class">
+                                @GetText(item)
+                            </span>
                         }
                     </button>
                 </li>

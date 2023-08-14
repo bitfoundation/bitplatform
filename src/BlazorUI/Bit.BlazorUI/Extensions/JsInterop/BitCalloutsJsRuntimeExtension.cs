@@ -8,11 +8,10 @@ internal static class BitCalloutsJsRuntimeExtension
         this IJSRuntime jsRuntime,
         string componentId,
         string calloutId,
-        string overlayId,
         bool isCalloutOpen,
         DotNetObjectReference<T> dotNetObjRef) where T : class
     {
-        await jsRuntime.InvokeVoidAsync("BitCallouts.toggleCallout", componentId, calloutId, overlayId, isCalloutOpen, dotNetObjRef);
+        await jsRuntime.InvokeVoidAsync("BitCallouts.toggleCallout", componentId, calloutId, isCalloutOpen, dotNetObjRef);
     }
     internal static async Task ClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
