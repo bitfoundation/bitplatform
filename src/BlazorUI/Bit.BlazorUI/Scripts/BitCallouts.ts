@@ -22,49 +22,43 @@ class BitCallouts {
     static currentDropdownCalloutResponsiveModeIsEnabled = false;
 
     static replaceCurrentCallout(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        if (BitCallouts.currentCallout.calloutId.length === 0 || BitCallouts.currentCallout.overlayId.length === 0) {
+        if (BitCallouts.currentCallout.calloutId.length === 0) {
             BitCallouts.currentCallout.update(calloutId, overlayId, obj);
             return;
         }
 
-        if (calloutId !== BitCallouts.currentCallout.calloutId && overlayId !== BitCallouts.currentCallout.overlayId) {
+        if (calloutId !== BitCallouts.currentCallout.calloutId) {
             const callout = document.getElementById(BitCallouts.currentCallout.calloutId);
             if (callout == null) return;
 
             const overlay = document.getElementById(BitCallouts.currentCallout.overlayId);
-            if (overlay == null) return;
 
             callout.style.display = "none";
-            overlay.style.display = "none";
+            overlay && (overlay.style.display = "none");
             BitCallouts.currentCallout.objRef?.invokeMethodAsync("CloseCallout");
             BitCallouts.currentCallout.update(calloutId, overlayId, obj);
         }
     }
 
-    static toggleCallout(componentId: string, calloutId: string, overlayId: string, isCalloutOpen: boolean, dotNetObj: DotNetObject) {
+    static toggleCallout(componentId: string, calloutId: string, isCalloutOpen: boolean, dotNetObj: DotNetObject) {
         const component = document.getElementById(componentId);
         if (component == null) return;
 
         const callout = document.getElementById(calloutId);
         if (callout == null) return;
 
-        //const overlay = document.getElementById(overlayId);
-        //if (overlay == null) return;
-
         if (!isCalloutOpen) {
             callout.style.display = "none";
-            //overlay.style.display = "none";
             BitCallouts.currentCallout.update("", "", null);
         } else {
-            BitCallouts.replaceCurrentCallout(calloutId, overlayId, dotNetObj);
+            BitCallouts.replaceCurrentCallout(calloutId, "", dotNetObj);
             callout.style.display = "block";
-            //overlay.style.display = "block";
-
-            const calloutHeight = callout.offsetHeight;
-            const calloutWidth = callout.offsetWidth;
 
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
+
+            const calloutHeight = callout.offsetHeight;
+            const calloutWidth = callout.offsetWidth;
 
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 

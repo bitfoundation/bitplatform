@@ -141,33 +141,4 @@ public class BitSplitButtonTests : BunitTestContext
             Assert.AreEqual(clickedItem, items.First());
         }
     }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitSplitButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitSplitButton<BitSplitButtonItem>>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-spl-sm",
-            BitButtonSize.Medium => "bit-spl-md",
-            BitButtonSize.Large => "bit-spl-lg",
-            _ => "bit-spl-md",
-        };
-
-        var bitSplitButton = com.Find(".bit-spl");
-
-        Assert.IsTrue(bitSplitButton.ClassList.Contains(sizeClass));
-    }
 }

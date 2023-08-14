@@ -67,21 +67,21 @@ public partial class BitMenuButtonDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content inside the header of MenuButton can be customized.",
+            Description = "The content inside the header of BitMenuButton can be customized.",
         },
         new()
         {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name to show inside the header of MenuButton.",
+            Description = "The icon name to show inside the header of BitMenuButton.",
         },
         new()
         {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "List of Item, each of which can be a Button with different action in the MenuButton.",
+            Description = "List of Item, each of which can be a Button with different action in the BitMenuButton.",
             LinkType = LinkType.Link,
             Href = "#menu-button-items"
         },
@@ -105,7 +105,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback is called when the MenuButton header is clicked."
+            Description = "The callback is called when the BitMenuButton header is clicked."
         },
         new()
         {
@@ -118,7 +118,7 @@ public partial class BitMenuButtonDemo
             Name = "Text",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to show inside the header of MenuButton."
+            Description = "The text to show inside the header of BitMenuButton."
         }
     };
 
