@@ -4,12 +4,13 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 {
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
 
-    private string? _calloutId;
-    private string? _overlayId;
+    private string _uniqueId = default!;
+    private string _calloutId = default!;
+    private string _overlayId = default!;
 
 
     private bool _isCalloutOpen
@@ -148,13 +149,22 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
 
     protected override string RootElementClass => "bit-mnb";
+    protected override void RegisterComponentClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                                       ? string.Empty
+                                       : ButtonStyle == BitButtonStyle.Primary
+                                           ? $"{RootElementClass}-pri"
+                                           : $"{RootElementClass}-std");
+
+        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        _uniqueId = UniqueId.ToString();
         _calloutId = $"{RootElementClass}-callout-{UniqueId}";
         _overlayId = $"{RootElementClass}-overlay-{UniqueId}";
-
-        _dotnetObj = DotNetObjectReference.Create(this);
 
         await base.OnInitializedAsync();
     }
@@ -172,16 +182,16 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void OnAfterRender(bool firstRender)
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                       ? string.Empty
-                                       : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-pri"
-                                           : $"{RootElementClass}-std");
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
 
-        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+        base.OnAfterRender(firstRender);
     }
+
 
     private string? GetClass(TItem item)
     {
@@ -216,7 +226,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         {
             return menuButtonOption.IconName;
         }
-        
+
         if (NameSelectors is null) return null;
 
         if (NameSelectors.IconName.Selector is not null)
@@ -342,7 +352,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         if (IsEnabled is false) return;
 
         _isCalloutOpen = true;
-        await _js.ToggleMenuButtonCallout(_dotnetObj, UniqueId.ToString(), _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _overlayId, _isCalloutOpen, _dotnetObj);
 
         await OnClick.InvokeAsync(e);
     }
@@ -381,7 +391,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
-        await _js.ToggleMenuButtonCallout(_dotnetObj, UniqueId.ToString(), _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _overlayId, _isCalloutOpen, _dotnetObj);
     }
 
     public void Dispose()
@@ -390,11 +400,15 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         GC.SuppressFinalize(this);
     }
 
-    protected void Dispose(bool disposing)
+    protected async void Dispose(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        _dotnetObj.Dispose();
+        if (_dotnetObj is not null)
+        {
+            await _js.ClearCallout(_calloutId);
+            _dotnetObj.Dispose();
+        }
 
         _disposed = true;
     }
