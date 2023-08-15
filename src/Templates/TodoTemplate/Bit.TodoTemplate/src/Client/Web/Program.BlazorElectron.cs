@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Client.Core.Shared;
-#if BlazorServer
+#if BlazorElectron
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 #endif
