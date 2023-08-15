@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Core;
+using AdminPanel.Client.Core.Shared;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
