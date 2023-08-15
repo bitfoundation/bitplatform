@@ -13,7 +13,13 @@
                 <BitToggle Label="Basic" @bind-Value="BasicValue" />
                 <br />
                 <BitToggle Label="Disabled" @bind-Value="DisabledValue" IsEnabled="false" />
-                <br />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Text & Label" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
                 <BitToggle Label="OnText And OffText" @bind-Value="OnTextValue" OnText="On" OffText="Off" />
                 <br />
                 <BitToggle Label="Inline Label" @bind-Value="InLineLabelValue" IsInlineLabel="true" />
@@ -23,20 +29,22 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitToggle with Custom Label" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle @bind-Value="LabelTemplateValue">
                     <LabelTemplate>
-                        <span style="color: green;">This is custom Label</span>
-                        <BitIcon IconName="@BitIconName.Filter" />
+                        <div style="display: flex; align-items: center; gap: 10px">
+                            <BitLabel Style="color: green;">This is custom Label</BitLabel>
+                            <BitIcon IconName="@BitIconName.Filter" />
+                        </div>
                     </LabelTemplate>
                 </BitToggle>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitToggle Binding" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div style="display:flex; align-items:flex-end">
@@ -52,7 +60,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitToggle validation" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -82,3 +90,32 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private bool BasicValue;
+    private bool DisabledValue;
+    private bool OnTextValue;
+    private bool InLineLabelValue;
+    private bool DefaultTextValue;
+
+    private bool LabelTemplateValue;
+
+    private bool OneWayValue;
+    private bool TwoWayValue;
+
+    public BitToggleValidationModel ValidationForm { get; set; } = new();
+    private string SuccessMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+}
