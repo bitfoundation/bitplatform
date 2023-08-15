@@ -2,76 +2,84 @@
 
 public partial class _BitMenuButtonCustomDemo
 {
+    private string? example1SelectedItem;
+    private string? example2SelectedItem;
+    private string? example3SelectedItem;
+    private string? example41SelectedItem;
+    private string? example42SelectedItem;
+    private string? example43SelectedItem;
+    private string? example5SelectedItem;
+    private string? example61SelectedItem;
+    private string? example62SelectedItem;
+
+
     private List<MenuActionItem> basicCustoms = new()
     {
         new()
         {
-            Name = "Item A",
+            Name = "Custom A",
             Id = "A",
             Icon = BitIconName.Emoji
         },
         new()
         {
-            Name = "Item B",
+            Name = "Custom B",
             Id = "B",
             Icon = BitIconName.Emoji
         },
         new()
         {
-            Name = "Item C",
+            Name = "Custom C",
             Id = "C",
             Icon = BitIconName.Emoji2
         }
     };
-
     private List<MenuActionItem> itemStyleClassCustoms = new()
     {
         new()
         {
-            Name = "Item A",
+            Name = "Custom A",
             Id = "A",
             Icon = BitIconName.Emoji,
             Style = "color:red"
         },
         new()
         {
-            Name = "Item B",
+            Name = "Custom B",
             Id = "B",
             Icon = BitIconName.Emoji,
             Class = "custom-item"
         },
         new()
         {
-            Name = "Item C",
+            Name = "Custom C",
             Id = "C",
             Icon = BitIconName.Emoji2,
             Style = "background:blue"
         }
     };
-
     private List<MenuActionItem> itemDisabledCustoms = new()
     {
         new()
         {
-            Name = "Item A",
+            Name = "Custom A",
             Id = "A",
             Icon = BitIconName.Emoji
         },
         new()
         {
-            Name = "Item B",
+            Name = "Custom B",
             Id = "B",
             Icon = BitIconName.Emoji,
             IsEnabled = false
         },
         new()
         {
-            Name = "Item C",
+            Name = "Custom C",
             Id = "C",
             Icon = BitIconName.Emoji2
         }
     };
-
     private List<MenuActionItem> itemTemplateCustoms = new()
     {
         new()
@@ -93,41 +101,37 @@ public partial class _BitMenuButtonCustomDemo
             Icon = BitIconName.Delete
         }
     };
-
-    private List<MenuActionItem> basicCustomsWithOnClick = default!;
+    private List<MenuActionItem> basicCustomsOnClick = new()
+    {
+        new()
+        {
+            Name = "Custom A",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "Custom B",
+            Id = "B",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "Custom C",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
 
     protected override void OnInitialized()
     {
         Action<MenuActionItem> onClick = item =>
         {
-            example1SelectedItem = $"{item.Name} - Clicked";
+            example2SelectedItem = $"{item.Name} - Clicked";
             StateHasChanged();
         };
 
-        basicCustomsWithOnClick = new()
-        {
-            new()
-            {
-                Name = "Item A",
-                Id = "A",
-                Icon = BitIconName.Emoji,
-                Clicked = onClick
-            },
-            new()
-            {
-                Name = "Item B",
-                Id = "B",
-                Icon = BitIconName.Emoji,
-                Clicked = onClick
-            },
-            new()
-            {
-                Name = "Item C",
-                Id = "C",
-                Icon = BitIconName.Emoji2,
-                Clicked = onClick
-            }
-        };
+        basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
     }
 
 
@@ -150,20 +154,6 @@ public partial class _BitMenuButtonCustomDemo
 
 <BitMenuButton Text=""Disabled"" Items=""basicCustoms"" IsEnabled=""false"" />
 
-<BitMenuButton Text=""Item Disabled""
-               Items=""itemDisabledCustoms""
-               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
-                                        Key = { Selector = item => item.Id },
-                                        IconName = { Selector = item => item.Icon } })""
-               OnItemClick=""(MenuActionItem item) => example1SelectedItem = item.Id"" />
-
-<BitMenuButton Text=""Item OnClick""
-               Items=""basicCustomsWithOnClick""
-               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
-                                        Key = { Selector = item => item.Id },
-                                        IconName = { Selector = item => item.Icon },
-                                        OnClick = { Selector = item => item.Clicked } })"" />
-
 <div>Clicked Item: @example1SelectedItem</div>";
     private readonly string example1CSharpCode = @"
 private string example1SelectedItem;
@@ -178,101 +168,41 @@ public class MenuActionItem
 
 private List<MenuActionItem> basicCustoms = new()
 {
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item A"",
+        Name = ""Custom A"",
         Id = ""A"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item B"",
+        Name = ""Custom B"",
         Id = ""B"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item C"",
+        Name = ""Custom C"",
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
-};
-
-private List<MenuActionItem> itemDisabledCustoms = new()
-{
-    new MenuActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji
-    },
-    new MenuActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji,
-        IsEnabled = false
-    },
-    new MenuActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};
-
-private List<MenuActionItem> basicCustomsWithOnClick = default!;
-protected override void OnInitialized()
-{
-    Action<MenuActionItem> onClick = item =>
-    {
-        example1SelectedItem = $""{item.Name} - Clicked"";
-        StateHasChanged();
-    };
-
-    basicCustomsWithOnClick = new()
-    {
-        new()
-        {
-            Name = ""Item A"",
-            Id = ""A"",
-            Icon = BitIconName.Emoji,
-            Clicked = onClick
-        },
-        new()
-        {
-            Name = ""Item B"",
-            Id = ""B"",
-            Icon = BitIconName.Emoji,
-            Clicked = onClick
-        },
-        new()
-        {
-            Name = ""Item C"",
-            Id = ""C"",
-            Icon = BitIconName.Emoji2,
-            Clicked = onClick
-        }
-    };
-}";
+};";
 
     private readonly string example2HTMLCode = @"
-<BitMenuButton Text=""Primary Button""
-               IconName=""@BitIconName.Edit""
-               Items=""basicCustoms""
+<BitMenuButton Text=""Custom Disabled""
+               Items=""itemDisabledCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })""
                OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
 
-<BitMenuButton Text=""Standard Button""
-               IconName=""@BitIconName.Add""
+<BitMenuButton Text=""Custom OnClick""
+               Items=""basicCustomsOnClick""
                ButtonStyle=""BitButtonStyle.Standard""
-               Items=""basicCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
-                                        IconName = { Selector = item => item.Icon } })""
-               OnItemClick=""(MenuActionItem item) => example2SelectedItem = item.Id"" />
+                                        IconName = { Selector = item => item.Icon },
+                                        OnClick = { Selector = item => item.Clicked } })"" />
 
 <div>Clicked Item: @example2SelectedItem</div>";
     private readonly string example2CSharpCode = @"
@@ -286,29 +216,115 @@ public class MenuActionItem
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<MenuActionItem> basicCustoms = new()
+private List<MenuActionItem> itemDisabledCustoms = new()
 {
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item A"",
+        Name = ""Custom A"",
         Id = ""A"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item B"",
+        Name = ""Custom B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji,
+        IsEnabled = false
+    },
+    new()
+    {
+        Name = ""Custom C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+
+private List<MenuActionItem> basicCustomsOnClick = new()
+{
+    new()
+    {
+        Name = ""Custom A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""Custom B"",
         Id = ""B"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item C"",
+        Name = ""Custom C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};
+protected override void OnInitialized()
+{
+    Action<MenuActionItem> onClick = item =>
+    {
+        example2SelectedItem = $""{item.Name} - Clicked"";
+        StateHasChanged();
+    };
+
+    basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
+}";
+
+    private readonly string example3HTMLCode = @"
+<BitMenuButton Text=""IconName""
+               Items=""basicCustoms""
+               IconName=""@BitIconName.Edit""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
+               OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id"" />
+
+<BitMenuButton Text=""ChevronDownIcon""
+               Items=""basicCustoms""
+               IconName=""@BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               ChevronDownIcon=""@BitIconName.DoubleChevronDown""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })""
+               OnItemClick=""(MenuActionItem item) => example3SelectedItem = item.Id"" />
+
+<div>Clicked Item: @example2SelectedItem</div>";
+    private readonly string example3CSharpCode = @"
+private string example2SelectedItem;
+
+public class MenuActionItem
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<MenuActionItem> basicCustoms = new()
+{
+    new()
+    {
+        Name = ""Custom A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""Custom B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""Custom C"",
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example4HTMLCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -319,11 +335,19 @@ private List<MenuActionItem> basicCustoms = new()
         color: aqua;
         background-color: darkgoldenrod;
     }
+
+    .custom-icon {
+        color: red;
+    }
+
+    .custom-text {
+        color: aqua;
+    }
 </style>
 
 <BitMenuButton Text=""Styled Button""
                Items=""basicCustoms""
-               Style=""width: 200px; height: 40px; background-color: #8A8886; border-color: black;""
+               Style=""width:200px;height:40px;background-color:#888;"" 
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })""
@@ -340,7 +364,7 @@ private List<MenuActionItem> basicCustoms = new()
 <div>Clicked Item: @example31SelectedItem</div>
 
 
-<BitMenuButton Text=""Item Styled & Classed Button""
+<BitMenuButton Text=""Custom Styled & Classed Button""
                Items=""itemStyleClassCustoms""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
@@ -349,10 +373,36 @@ private List<MenuActionItem> basicCustoms = new()
                                         Style = { Name = nameof(MenuActionItem.Style) } })""
                OnItemClick=""(MenuActionItem item) => example32SelectedItem = item.Id"" />
 
-<div>Clicked Item: @example32SelectedItem</div>";
-    private readonly string example3CSharpCode = @"
+<div>Clicked Item: @example32SelectedItem</div>
+
+
+<BitMenuButton Text=""Styles""
+                Items=""basicCustoms""
+                IconName=""@BitIconName.ExpandMenu""
+                OnItemClick=""(MenuActionItem item) => example33SelectedItem = item.Id""
+                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                         Key = { Name = nameof(MenuActionItem.Id) },
+                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" 
+                Styles=""@(new() { Icon = ""color:red"" ,
+                                  Text = ""color:aqua"",
+                                  ItemText = ""color:dodgerblue;font-size:11px"",
+                                  Overlay = ""background-color: var(--bit-clr-bg-overlay)"" })"" />
+
+<BitMenuButton Text=""Classes""
+                Items=""basicCustoms""
+                IconName=""@BitIconName.ExpandMenu""
+                ButtonStyle=""BitButtonStyle.Standard""
+                OnItemClick=""(MenuActionItem item) => example33SelectedItem = item.Id""
+                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                         Key = { Selector = item => item.Id },
+                                         IconName = { Selector = item => item.Icon } })"" 
+                Classes=""@(new() { Icon = ""custom-icon"" , Text = ""custom-text"" })"" />
+
+<div>Clicked Item: @example33SelectedItem</div>";
+    private readonly string example4CSharpCode = @"
 private string example31SelectedItem;
 private string example32SelectedItem;
+private string example33SelectedItem;
 
 public class MenuActionItem
 {
@@ -366,21 +416,21 @@ public class MenuActionItem
 
 private List<MenuActionItem> basicCustoms = new()
 {
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item A"",
+        Name = ""Custom A"",
         Id = ""A"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item B"",
+        Name = ""Custom B"",
         Id = ""B"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item C"",
+        Name = ""Custom C"",
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
@@ -390,21 +440,21 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 {
     new()
     {
-        Name = ""Item A"",
+        Name = ""Custom A"",
         Id = ""A"",
         Icon = BitIconName.Emoji,
         Style = ""color:red""
     },
     new()
     {
-        Name = ""Item B"",
+        Name = ""Custom B"",
         Id = ""B"",
         Icon = BitIconName.Emoji,
         Class = ""custom-item""
     },
     new()
     {
-        Name = ""Item C"",
+        Name = ""Custom C"",
         Id = ""C"",
         Icon = BitIconName.Emoji2,
         Style = ""background:blue""
@@ -412,7 +462,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 };";
 
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example5HTMLCode = @"
 <BitMenuButton Items=""basicCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
@@ -441,7 +491,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 </BitMenuButton>
 
 <div>Clicked Item: @example4SelectedItem</div>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private string example4SelectedItem;
 
 public class MenuActionItem
@@ -454,27 +504,27 @@ public class MenuActionItem
 
 private List<MenuActionItem> basicCustoms = new()
 {
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item A"",
+        Name = ""Custom A"",
         Id = ""A"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item B"",
+        Name = ""Custom B"",
         Id = ""B"",
         Icon = BitIconName.Emoji
     },
-    new MenuActionItem()
+    new()
     {
-        Name = ""Item C"",
+        Name = ""Custom C"",
         Id = ""C"",
         Icon = BitIconName.Emoji2
     }
 };";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example6HTMLCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -528,7 +578,7 @@ private List<MenuActionItem> basicCustoms = new()
                OnItemClick=""(MenuActionItem item) => example52SelectedItem = item.Id"" />
 
 <div>Clicked Item: @example52SelectedItem</div>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 private string example51SelectedItem;
 private string example52SelectedItem;
 
@@ -543,19 +593,19 @@ public class MenuActionItem
 
 private List<MenuActionItem> itemTemplateCustoms = new()
 {
-    new MenuActionItem()
+    new()
     {
         Name = ""Add"",
         Id = ""add-key"",
         Icon = BitIconName.Add
     },
-    new MenuActionItem()
+    new()
     {
         Name = ""Edit"",
         Id = ""edit-key"",
         Icon = BitIconName.Edit
     },
-    new MenuActionItem()
+    new()
     {
         Name = ""Delete"",
         Id = ""delete-key"",
@@ -587,52 +637,4 @@ private List<MenuActionItem> itemTemplateCustoms2 = new()
         Fragment = (item => @<div class=""item-template-box"" style=""color:red"">@item.Name (@item.Id)</div>)
     }
 };";
-
-    private readonly string example6HTMLCode = @"
-<BitMenuButton Text=""ClassStyles""
-               Items=""basicCustoms""
-               IconName=""@BitIconName.ExpandMenu""
-               ChevronDownIcon=""@BitIconName.DoubleChevronDown""
-               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
-                                        Key = { Selector = item => item.Id },
-                                        IconName = { Selector = item => item.Icon } })""
-               OnItemClick=""(MenuActionItem item) => example6SelectedItem = item.Id""
-               ClassStyles=""@(new() { Icon = { Style = ""color:red"" },
-                                      Text = { Style = ""color:aqua"" },
-                                      ChevronDown = { Style = ""color:darkred;font-size:10px"" }})"" />
-
-<div>Clicked Item: @example6SelectedItem</div>";
-    private readonly string example6CSharpCode = @"
-private string? example6SelectedItem;
-
-public class MenuActionItem
-{
-    public string? Id { get; set; }
-    public string? Name { get; set; }
-    public string? Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
-private List<MenuActionItem> basicCustoms = new()
-{
-    new MenuActionItem()
-    {
-        Name = ""Item A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji
-    },
-    new MenuActionItem()
-    {
-        Name = ""Item B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji
-    },
-    new MenuActionItem()
-    {
-        Name = ""Item C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
-};";
-
 }
