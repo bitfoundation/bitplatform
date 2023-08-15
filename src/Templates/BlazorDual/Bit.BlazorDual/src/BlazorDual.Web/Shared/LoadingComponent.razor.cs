@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web;
+﻿namespace BlazorDual.Web.Shared;
 
 public partial class LoadingComponent
 {

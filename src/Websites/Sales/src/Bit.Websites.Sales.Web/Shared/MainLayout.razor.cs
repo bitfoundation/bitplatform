@@ -1,7 +1,7 @@
 ﻿using Bit.Websites.Sales.Web.Services.Contracts;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.Websites.Sales.Web;
+namespace Bit.Websites.Sales.Web.Shared;
 
 public partial class MainLayout
 {

@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 
-namespace AdminPanel.Client.Core;
+namespace AdminPanel.Client.Core.Shared;
 
 public partial class Footer
 {
