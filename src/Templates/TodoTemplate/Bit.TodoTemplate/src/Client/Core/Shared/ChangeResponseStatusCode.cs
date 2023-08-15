@@ -1,8 +1,12 @@
 ﻿using System.Net;
 
-namespace AdminPanel.Client.Core.Shared;
-public partial class ChangeStatusCodeTo404 : AppComponentBase
+namespace TodoTemplate.Client.Core.Shared;
+
+public partial class ChangeResponseStatusCode : AppComponentBase
 {
+    [Parameter]
+    public HttpStatusCode StatusCode { get; set; }
+
     private static readonly Type? _httpContextAccessorType = Type.GetType("Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.Abstractions");
 
     [AutoInject]
@@ -20,7 +24,7 @@ public partial class ChangeStatusCodeTo404 : AppComponentBase
 
             var response = httpContext.GetType().GetProperty("Response")!.GetValue(httpContext)!;
 
-            response.GetType().GetProperty("StatusCode")!.SetValue(response, (int)HttpStatusCode.NotFound);
+            response.GetType().GetProperty("StatusCode")!.SetValue(response, (int)StatusCode);
         }
 
         return base.OnInitAsync();
