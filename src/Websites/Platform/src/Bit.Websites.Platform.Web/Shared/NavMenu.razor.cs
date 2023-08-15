@@ -1,7 +1,7 @@
 ﻿using Bit.Websites.Platform.Web.Services;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.Websites.Platform.Web;
+namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class NavMenu
 {

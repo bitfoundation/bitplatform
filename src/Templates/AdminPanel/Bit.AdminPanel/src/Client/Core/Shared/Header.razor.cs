@@ -2,7 +2,7 @@
 using AdminPanel.Shared.Dtos.Account;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace AdminPanel.Client.Core;
+namespace AdminPanel.Client.Core.Shared;
 
 public partial class Header : IDisposable
 {
