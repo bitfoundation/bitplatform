@@ -28,16 +28,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.3.0" />
-        <PackageReference Include="Bit.Bup" Version="5.3.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.4.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.4.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.4.0-pre-01" />
+        <PackageReference Include="Bit.Bup" Version="5.4.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="5.4.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
