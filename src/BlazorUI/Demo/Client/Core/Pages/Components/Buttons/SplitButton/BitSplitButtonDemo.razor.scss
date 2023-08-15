@@ -1,0 +1,39 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .clicked-item {
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .item-template-box {
+        gap: 6px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .custom-class {
+        color: aqua;
+        font-size: 18px;
+    }
+
+    .custom-item {
+        color: aqua;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-chevron {
+        background-color: coral;
+    }
+
+    .custom-button {
+        background-color: brown;
+    }
+}
