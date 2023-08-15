@@ -10,7 +10,7 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic BitNumericTextField" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="BasicValue"
@@ -23,12 +23,18 @@
                                      Step="@(1)"
                                      Label="Disabled"
                                      IsEnabled="false" />
-                <br />
-                <BitNumericTextField @bind-Value="LabelAndIconValue"
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="LabelPosition" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumericTextField @bind-Value="LabelTopValue"
                                      Placeholder="Enter a number..."
                                      Step="@(1)"
-                                     Label="Label & Icon"
-                                     IconName="@BitIconName.Lightbulb" />
+                                     Label="Label Top"
+                                     LabelPosition="BitNumericTextFieldLabelPosition.Top"/>
                 <br />
                 <BitNumericTextField @bind-Value="LabelLeftValue"
                                      Placeholder="Enter a number..."
@@ -39,20 +45,22 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField with LabelTemplate" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
+    <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="LabelTemplateValue" Placeholder="Enter a number..." Step="@(1)">
                     <LabelTemplate>
-                        <label style="color: green;">This is custom Label</label>
-                        <BitIcon IconName="@BitIconName.Filter" />
+                        <div style="display: flex; align-items: center; gap: 10px">
+                            <BitLabel Style="color: green;">This is custom Label</BitLabel>
+                            <BitIcon IconName="@BitIconName.Filter" />
+                        </div>
                     </LabelTemplate>
                 </BitNumericTextField>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField with Increment and Decrement Arrows" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Icons" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SpinArrowValue"
@@ -68,11 +76,17 @@
                                      ShowArrows="true"
                                      IncrementIconName="@BitIconName.LikeSolid"
                                      DecrementIconName="@BitIconName.DislikeSolid" />
+                <br />
+                <BitNumericTextField @bind-Value="LabelAndIconValue"
+                                     Placeholder="Enter a number..."
+                                     Step="@(1)"
+                                     Label="Label & Icon"
+                                     IconName="@BitIconName.Lightbulb" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Min & Max" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Min & Max" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="MinMaxValue1"
@@ -99,7 +113,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField with Suffix" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="Suffix" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SuffixValue1"
@@ -121,7 +135,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField Binding" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -143,7 +157,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitNumericTextField Events" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Events" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-box">
                 <div class="column">
@@ -154,9 +168,9 @@
                                          ShowArrows="true"
                                          OnIncrement="(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)"
                                          OnDecrement="(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)" />
-                    <span>OnIncrement Counter: @OnIncrementCounter</span>
-                    <span>OnDecrement Counter: @OnDecrementCounter</span>
-                    <span>Returned Value: @ArrowsEventReturnedValue</span>
+                    <BitLabel>OnIncrement Counter: @OnIncrementCounter</BitLabel>
+                    <BitLabel>OnDecrement Counter: @OnDecrementCounter</BitLabel>
+                    <BitLabel>Returned Value: @ArrowsEventReturnedValue</BitLabel>
                 </div>
                 <br />
                 <div class="column">
@@ -165,14 +179,14 @@
                                          Step="@(0.1)"
                                          Label="OnChange"
                                          OnChange="(double v) => HandleOnChangeEvent(v)" />
-                    <span>OnChange Counter: @OnChangeCounter</span>
-                    <span>Returned Value: @OnChangeEventReturnedValue</span>
+                    <BitLabel>OnChange Counter: @OnChangeCounter</BitLabel>
+                    <BitLabel>Returned Value: @OnChangeEventReturnedValue</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="NumericTextField validation" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -205,3 +219,73 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code{
+    private int BasicValue;
+    private int DisabledValue;
+
+    private int LabelTopValue;
+    private int LabelLeftValue;
+
+    private int LabelTemplateValue;
+
+    private int SpinArrowValue;
+    private int LabelAndIconValue;
+    private int SpinArrowWithIconValue;
+
+    private int MinMaxValue1;
+    private int MinMaxValue2;
+    private decimal MinMaxValue3;
+
+    private int SuffixValue1;
+    private decimal SuffixValue2;
+
+    private double OneWayValue;
+    private double TwoWayValue;
+
+    private double ArrowsEventBindedValue;
+    private double ArrowsEventReturnedValue;
+    private int OnIncrementCounter;
+    private int OnDecrementCounter;
+
+    private double OnChangeEventBindedValue;
+    private double OnChangeEventReturnedValue;
+    private int OnChangeCounter;
+
+    private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
+    {
+        ArrowsEventReturnedValue = onChangeValue.Value;
+
+        OnIncrementCounter++;
+    }
+
+    private void HandleOnDecrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
+    {
+        ArrowsEventReturnedValue = onChangeValue.Value;
+
+        OnDecrementCounter++;
+    }
+
+    private void HandleOnChangeEvent(double value)
+    {
+        OnChangeEventReturnedValue = value;
+
+        OnChangeCounter++;
+    }
+
+    private string SuccessMessage = string.Empty;
+    private BitNumericTextFieldValidationModel ValidationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+}
