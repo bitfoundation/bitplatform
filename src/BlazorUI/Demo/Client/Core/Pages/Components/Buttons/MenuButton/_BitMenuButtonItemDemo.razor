@@ -11,67 +11,96 @@
                            OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
 
             <BitMenuButton Text="Disabled" Items="basicItems" IsEnabled="false" />
-
-            <BitMenuButton Text="Item Disabled"
-                           Items="itemDisabledItems"
-                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
-
-            <BitMenuButton Text="Item OnClick" Items="basicItemsWithOnClick" />
         </div>
         <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconName" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example12">
+<ComponentExampleBox Title="Items" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example12">
     <ExamplePreview>
         <div class="example-content">
-            <BitMenuButton Text="Primary Button"
-                           Items="basicItems"
-                           IconName="@BitIconName.Edit"
+            <BitMenuButton Text="Item Disabled"
+                           Items="itemDisabledItems"
                            OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
 
-            <BitMenuButton Text="Standard Button"
-                           Items="basicItems"
-                           IconName="@BitIconName.Add"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
+            <BitMenuButton Text="Item OnClick" Items="basicItemsOnClick" ButtonStyle="BitButtonStyle.Standard" />
         </div>
         <div class="clicked-item">Clicked Item: @example2SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example13">
+<ComponentExampleBox Title="Icons" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example13">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="IconName"
+                           Items="basicItems"
+                           IconName="@BitIconName.Edit"
+                           OnItemClick="(BitMenuButtonItem item) => example3SelectedItem = item.Key" />
+
+            <BitMenuButton Text="ChevronDownIcon"
+                           Items="basicItems"
+                           IconName="@BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
+                           OnItemClick="(BitMenuButtonItem item) => example3SelectedItem = item.Key" />
+        </div>
+        <div class="clicked-item">Clicked Item: @example3SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example14">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Styled Button"
                            Items="basicItems"
-                           OnItemClick="(BitMenuButtonItem item) => example31SelectedItem = item.Key"
-                           Style="width: 200px; height: 40px; background-color: #8A8886; border-color: black;" />
+                           Style="width:200px;height:40px;background-color:#888;" 
+                           OnItemClick="(BitMenuButtonItem item) => example41SelectedItem = item.Key" />
 
             <BitMenuButton Text="Classed Button"
                            Items="basicItems"
-                           OnItemClick="(BitMenuButtonItem item) => example31SelectedItem = item.Key"
-                           Class="custom-class" />
+                           Class="custom-class" 
+                           OnItemClick="(BitMenuButtonItem item) => example41SelectedItem = item.Key" />
         </div>
-        <div class="clicked-item">Clicked Item: @example31SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example41SelectedItem</div>
         <br /><br /><br /><br />
         <div>Item's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Item Styled & Classed Button"
                            Items="itemStyleClassItems"
-                           OnItemClick="(BitMenuButtonItem item) => example32SelectedItem = item.Key" />
+                           OnItemClick="(BitMenuButtonItem item) => example42SelectedItem = item.Key" />
         </div>
-        <div class="clicked-item">Clicked Item: @example32SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example42SelectedItem</div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Styles"
+                           Items="basicItems"
+                           IconName="@BitIconName.ExpandMenu"
+                           OnItemClick="(BitMenuButtonItem item) => example43SelectedItem = item.Key"
+                           Styles="@(new() { Icon = "color:red" ,
+                                             Text = "color:aqua",
+                                             ItemText = "color:dodgerblue;font-size:11px",
+                                             Overlay = "background-color: var(--bit-clr-bg-overlay)" })" />
+
+            <BitMenuButton Text="Classes"
+                           Items="basicItems"
+                           IconName="@BitIconName.ExpandMenu"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           OnItemClick="(BitMenuButtonItem item) => example43SelectedItem = item.Key"
+                           Classes="@(new() { Icon = "custom-icon" , Text = "custom-text" })" />
+        </div>
+        <div class="clicked-item">Clicked Item: @example43SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example14">
+<ComponentExampleBox Title="HeaderTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example15">
     <ExamplePreview>
         <div class="example-content">
-            <BitMenuButton Items="basicItems" OnItemClick="(BitMenuButtonItem item) => example4SelectedItem = item.Key">
+            <BitMenuButton Items="basicItems" OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key">
                 <HeaderTemplate>
                     <BitIcon IconName="@BitIconName.Warning" />
                     <div style="font-weight: 600; color: white;">
@@ -83,7 +112,7 @@
 
             <BitMenuButton Items="basicItems"
                            ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example4SelectedItem = item.Key">
+                           OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key">
                 <HeaderTemplate>
                     <div style="font-weight: bold; color: #d13438;">
                         Custom Header!
@@ -91,17 +120,17 @@
                 </HeaderTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example4SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example5SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example15">
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example16">
     <ExamplePreview>
         <div class="example-content">
             <BitMenuButton Text="Primary Button"
                            Items="itemTemplateItems"
                            IconName="@BitIconName.Edit"
-                           OnItemClick="(BitMenuButtonItem item) => example51SelectedItem = item.Key">
+                           OnItemClick="(BitMenuButtonItem item) => example61SelectedItem = item.Key">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
                         <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -115,7 +144,7 @@
                            Items="itemTemplateItems"
                            IconName="@BitIconName.Edit"
                            ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example51SelectedItem = item.Key">
+                           OnItemClick="(BitMenuButtonItem item) => example61SelectedItem = item.Key">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
                         <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -125,7 +154,7 @@
                 </ItemTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example51SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example61SelectedItem</div>
         <br /><br /><br /><br />
         <div>Item's Template</div>
         <br />
@@ -133,38 +162,13 @@
             <BitMenuButton Text="Primary Button"
                            Items="itemTemplateItems2"
                            IconName="@BitIconName.Edit"
-                           OnItemClick="(BitMenuButtonItem item) => example52SelectedItem = item.Key" />
+                           OnItemClick="(BitMenuButtonItem item) => example62SelectedItem = item.Key" />
         </div>
-        <div class="clicked-item">Clicked Item: @example52SelectedItem</div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="ClassStyles" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example16">
-    <ExamplePreview>
-        <div class="example-content">
-            <BitMenuButton Text="ClassStyles"
-                           Items="basicItems"
-                           IconName="@BitIconName.ExpandMenu"
-                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
-                           OnItemClick="(BitMenuButtonItem item) => example6SelectedItem = item.Key"
-                           ClassStyles="@(new() { Icon = { Style = "color:red" },
-                                                  Text = { Style = "color:aqua" },
-                                                  ChevronDown = { Style = "color:darkred;font-size:10px" }})" />
-        </div>
-        <div class="clicked-item">Clicked Item: @example6SelectedItem</div>
+        <div class="clicked-item">Clicked Item: @example62SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 @code {
-    private string? example1SelectedItem;
-    private string? example2SelectedItem;
-    private string? example31SelectedItem;
-    private string? example32SelectedItem;
-    private string? example4SelectedItem;
-    private string? example51SelectedItem;
-    private string? example52SelectedItem;
-    private string? example6SelectedItem;
-
     private List<BitMenuButtonItem> itemTemplateItems2 = new()
     {
         new()

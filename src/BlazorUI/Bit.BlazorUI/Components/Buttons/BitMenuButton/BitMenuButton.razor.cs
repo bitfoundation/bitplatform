@@ -81,9 +81,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitMenuButton.
+    /// Custom CSS classes for different parts of the BitMenuButton.
     /// </summary>
-    [Parameter] public BitMenuButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The content inside the header of BitMenuButton can be customized.
@@ -119,6 +119,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// OnClick of each item returns that item with its property.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitMenuButton.
+    /// </summary>
+    [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text to show inside the header of BitMenuButton.
@@ -362,6 +367,8 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
         await CloseCallout();
 
+        await OnItemClick.InvokeAsync(item);
+
         if (item is BitMenuButtonItem menuButtonItem)
         {
             menuButtonItem.OnClick?.Invoke(menuButtonItem);
@@ -383,8 +390,6 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                 item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
             }
         }
-
-        await OnItemClick.InvokeAsync(item);
     }
 
     private async Task CloseCallout()

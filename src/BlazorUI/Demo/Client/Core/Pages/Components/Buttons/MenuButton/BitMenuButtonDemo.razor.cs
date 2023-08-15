@@ -55,10 +55,10 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes/styles for different parts of the BitMenuButton.",
+            Description = "Custom CSS classes for different parts of the BitMenuButton.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
@@ -112,6 +112,15 @@ public partial class BitMenuButtonDemo
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             Description = "OnClick of each item returns that item with its property."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitMenuButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitMenuButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -261,96 +270,60 @@ public partial class BitMenuButtonDemo
                new()
                {
                    Name = "Callout",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for the callout container of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout container of the BitMenuButton."
                },
                new()
                {
                    Name = "ChevronDown",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for the chevron down of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chevron down of the BitMenuButton."
                },
                new()
                {
                    Name = "Icon",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for the icon of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitMenuButton."
                },
                new()
                {
                    Name = "ItemButton",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for each item of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item of the BitMenuButton."
                },
                new()
                {
                    Name = "ItemIcon",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for each item icon of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item icon of the BitMenuButton."
                },
                new()
                {
                    Name = "ItemText",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for each item text of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item text of the BitMenuButton."
                },
                new()
                {
                    Name = "Overlay",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for each overlay of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overlay of the BitMenuButton."
                },
                new()
                {
                    Name = "Text",
-                   Type = "BitClassStylePair",
-                   DefaultValue = "new()",
-                   Description = "Custom CSS classes/styles for the text of the BitMenuButton.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text of the BitMenuButton."
                },
             },
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
-                   Type = "string?",
-                   Description = "Custom CSS classes."
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Custom CSS styles."
-               }
-            }
         },
         new()
         {
