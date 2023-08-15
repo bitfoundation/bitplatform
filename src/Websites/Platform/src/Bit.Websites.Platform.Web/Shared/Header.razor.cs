@@ -2,7 +2,7 @@
 using Bit.Websites.Platform.Web.Shared;
 using Bit.Websites.Platform.Web.Services;
 
-namespace Bit.Websites.Platform.Web;
+namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class Header : IDisposable
 {

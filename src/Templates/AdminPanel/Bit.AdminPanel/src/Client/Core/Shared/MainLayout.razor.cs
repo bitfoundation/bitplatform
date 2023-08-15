@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace AdminPanel.Client.Core;
+namespace AdminPanel.Client.Core.Shared;
 
 public partial class MainLayout : IDisposable
 {

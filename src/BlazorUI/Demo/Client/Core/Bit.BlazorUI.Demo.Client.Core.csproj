@@ -40,6 +40,7 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Shared" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
 

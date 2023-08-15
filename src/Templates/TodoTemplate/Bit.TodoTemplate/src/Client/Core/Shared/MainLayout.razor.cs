@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace TodoTemplate.Client.Core;
+namespace TodoTemplate.Client.Core.Shared;
 
 public partial class MainLayout : IDisposable
 {
