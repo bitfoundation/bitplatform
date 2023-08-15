@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -94,9 +93,9 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitSplitButton.
+    /// Custom CSS classes for different parts of the BitSplitButton.
     /// </summary>
-    [Parameter] public BitSplitButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitSplitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// If true, the current item is going to be change selected item.
@@ -122,6 +121,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     /// The callback is called when the button or button item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitSplitButton.
+    /// </summary>
+    [Parameter] public BitSplitButtonClassStyles? Styles { get; set; }
 
 
     [JSInvokable("CloseCallout")]
@@ -198,7 +202,7 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     private string? GetClass(TItem? item)
     {
-        if(item is null) return null;
+        if (item is null) return null;
 
         if (item is BitSplitButtonItem splitButtonItem)
         {
@@ -370,6 +374,8 @@ public partial class BitSplitButton<TItem> where TItem : class
         if (IsEnabled is false || item is null || GetIsEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
+
+        await InvokeItemClick(item);
     }
 
     private async Task HandleOnItemClick(TItem item)
@@ -383,11 +389,39 @@ public partial class BitSplitButton<TItem> where TItem : class
             if (GetIsEnabled(item) is false) return;
 
             await OnClick.InvokeAsync(item);
+
+            await InvokeItemClick(item);
         }
 
         _isCalloutOpen = false;
         await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
     }
+
+    private async Task InvokeItemClick(TItem item)
+    {
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            splitButtonItem.OnClick?.Invoke(splitButtonItem);
+        }
+        else if (item is BitSplitButtonOption splitButtonOption)
+        {
+            await splitButtonOption.OnClick.InvokeAsync(splitButtonOption);
+        }
+        else
+        {
+            if (NameSelectors is null) return;
+
+            if (NameSelectors.OnClick.Selector is not null)
+            {
+                NameSelectors.OnClick.Selector!(item)?.Invoke(item);
+            }
+            else
+            {
+                item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
+            }
+        }
+    }
+
 
     private async Task OpenCallout()
     {
