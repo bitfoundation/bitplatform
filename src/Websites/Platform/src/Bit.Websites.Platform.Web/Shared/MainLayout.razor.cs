@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.Websites.Platform.Web;
+namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class MainLayout
 {

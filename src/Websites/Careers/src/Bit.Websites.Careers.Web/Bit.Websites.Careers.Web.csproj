@@ -54,6 +54,7 @@
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="Bit.Websites.Careers.Web.Shared" />
         <Using Include="Bit.Websites.Careers.Web.Components" />
         <Using Include="Bit.Websites.Careers.Web.Services.Contracts" />
         <Using Include="Bit.Websites.Careers.Web.Services.Implementations" />

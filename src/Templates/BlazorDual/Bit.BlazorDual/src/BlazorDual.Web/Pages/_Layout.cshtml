@@ -60,7 +60,7 @@
     <div id="app-container">
         @if (isSpa || isPwa || noPrerender)
         {
-            <component type="typeof(BlazorDual.Web.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
+            <component type="typeof(BlazorDual.Web.Shared.LoadingComponent)" param-Color="@("#000")" render-mode="@RenderMode.Static" />
         }
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" asp-append-version=true />
         <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" asp-append-version=true />

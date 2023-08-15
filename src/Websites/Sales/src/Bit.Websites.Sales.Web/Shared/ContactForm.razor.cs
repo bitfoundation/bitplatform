@@ -1,6 +1,6 @@
 ﻿using Bit.Websites.Sales.Shared.Dtos.ContactUs;
 
-namespace Bit.Websites.Sales.Web;
+namespace Bit.Websites.Sales.Web.Shared;
 
 public partial class ContactForm
 {

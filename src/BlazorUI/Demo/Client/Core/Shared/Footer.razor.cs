@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.BlazorUI.Demo.Client.Core;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class Footer
 {

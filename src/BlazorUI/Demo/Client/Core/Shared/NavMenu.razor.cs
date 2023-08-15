@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Demo.Client.Core.Services;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.BlazorUI.Demo.Client.Core;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class NavMenu
 {

@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Shared.Dtos.Account;
 
-namespace TodoTemplate.Client.Core;
+namespace TodoTemplate.Client.Core.Shared;
 
 public partial class NavMenu : IDisposable
 {

@@ -92,7 +92,7 @@
     <div id="app-container">
         @if (isSpa || isPwa || noPrerender)
         {
-            <component type="typeof(Bit.BlazorUI.Demo.Client.Core.LoadingComponent)" param-Color="@("#444")" render-mode="@RenderMode.Static" />
+            <component type="typeof(Bit.BlazorUI.Demo.Client.Core.Shared.LoadingComponent)" param-Color="@("#444")" render-mode="@RenderMode.Static" />
         }
 
         <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" asp-append-version=true />

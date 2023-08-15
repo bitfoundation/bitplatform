@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace BlazorDual.Web;
+namespace BlazorDual.Web.Shared;
 
 public partial class MainLayout : IDisposable
 {

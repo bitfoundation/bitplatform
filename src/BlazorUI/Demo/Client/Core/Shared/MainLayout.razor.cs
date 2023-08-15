@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.BlazorUI.Demo.Client.Core;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout : IDisposable
 {
