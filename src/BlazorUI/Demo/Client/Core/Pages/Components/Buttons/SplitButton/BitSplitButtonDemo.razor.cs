@@ -64,6 +64,13 @@ public partial class BitSplitButtonDemo
         },
         new()
         {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Default value of the SelectedItem."
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -106,6 +113,19 @@ public partial class BitSplitButtonDemo
             Name = "OnClick",
             Type = "EventCallback<TItem>",
             Description = "The callback is called when the button or button item is clicked."
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<TItem>",
+            Description = "The callback that is called when the selected item has changed."
+        },
+        new()
+        {
+            Name = "SelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Determines the current selected item that acts as the main button."
         },
         new()
         {

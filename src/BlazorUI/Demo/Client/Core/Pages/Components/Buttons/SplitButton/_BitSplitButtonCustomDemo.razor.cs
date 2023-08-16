@@ -12,6 +12,9 @@ public partial class _BitSplitButtonCustomDemo
     private string? example61SelectedItem;
     private string? example62SelectedItem;
 
+    private SplitActionItem twoWaySelectedItem = default!;
+    private SplitActionItem? changedSelectedItem;
+
 
     private List<SplitActionItem> basicCustomItems = new()
     {
@@ -150,6 +153,8 @@ public partial class _BitSplitButtonCustomDemo
 
     protected override void OnInitialized()
     {
+        twoWaySelectedItem = basicCustomItems[1];
+
         Action<SplitActionItem> onClick = item =>
         {
             example4SelectedItem = $"{item.Name} - Clicked";
@@ -651,6 +656,60 @@ private List<SplitActionItem> itemTemplateCustoms2 = new()
         Id = ""delete-key"",
         Icon = BitIconName.Delete,
         Fragment = (item => @<div class=""item-template-box"" style=""color:red"">@item.Name (@item.Id)</div>)
+    }
+};";
+
+    private readonly string example7HTMLCode = @"
+<BitSplitButton Items=""basicCustomItems""
+                DefaultSelectedItem=""basicCustomItems[1]""
+                NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                         Text = { Name = nameof(SplitActionItem.Name) } })"" />
+      
+<BitSplitButton @bind-SelectedItem=""twoWaySelectedItem""
+                IsSticky=""true""
+                Items=""basicCustomItems""
+                ButtonStyle=""BitButtonStyle.Standard""
+                NameSelectors=""@(new() { IconName = { Selector = item => item.Icon },
+                                         Key = { Selector = item => item.Id },
+                                         Text = { Selector = item => item.Name } })"" />
+<div>Selected item: <b>@twoWaySelectedItem.Name</b></div>
+
+<BitSplitButton IsSticky=""true"" 
+                Items=""basicCustomItems""
+                OnChange=""(SplitActionItem item) => changedSelectedItem = item""
+                NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                         Text = { Name = nameof(SplitActionItem.Name) } })"" />
+<div>Selected item: <b>@changedSelectedItem?.Name</b></div>";
+    private readonly string example7CSharpCode = @"
+private SplitActionItem twoWaySelectedItem = default!;
+private SplitActionItem? changedSelectedItem;
+
+protected override void OnInitialized()
+{
+    twoWaySelectedItem = basicCustomItems[2];
+}
+
+private List<SplitActionItem> basicCustomItems = new()
+{
+    new()
+    {
+        Name = ""Custom A"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""Custom B"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""Custom C"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
     }
 };";
 }

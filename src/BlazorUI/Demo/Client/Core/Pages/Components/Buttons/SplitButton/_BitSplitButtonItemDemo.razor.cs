@@ -12,6 +12,9 @@ public partial class _BitSplitButtonItemDemo
     private string? example61SelectedItem;
     private string? example62SelectedItem;
 
+    private BitSplitButtonItem twoWaySelectedItem = default!;
+    private BitSplitButtonItem? changedSelectedItem;
+
 
     private List<BitSplitButtonItem> basicItems = new()
     {
@@ -150,6 +153,8 @@ public partial class _BitSplitButtonItemDemo
 
     protected override void OnInitialized()
     {
+        twoWaySelectedItem = basicItems[2];
+
         Action<BitSplitButtonItem> onClick = item =>
         {
             example4SelectedItem = $"{item.Text} - OnClick";
@@ -532,6 +537,45 @@ private List<BitSplitButtonItem> itemTemplateItems2 = new()
         Key = ""delete-key"",
         IconName = BitIconName.Delete,
         Template = (item => @<div class=""item-template-box"" style=""color:red"">@item.Text (@item.Key)</div>)
+    }
+};";
+
+    private readonly string example7HTMLCode = @"
+<BitSplitButton Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
+      
+<BitSplitButton IsSticky=""true"" Items=""basicItems"" @bind-SelectedItem=""twoWaySelectedItem"" ButtonStyle=""BitButtonStyle.Standard"" />
+<div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
+
+<BitSplitButton IsSticky=""true"" Items=""basicItems"" OnChange=""(BitSplitButtonItem item) => changedSelectedItem = item"" />
+<div>Changed item: <b>@changedSelectedItem?.Text</b></div>";
+    private readonly string example7CSharpCode = @"
+private BitSplitButtonItem twoWaySelectedItem = default!;
+private BitSplitButtonItem? changedSelectedItem;
+
+protected override void OnInitialized()
+{
+    twoWaySelectedItem = basicItems[2];
+}
+
+private List<BitSplitButtonItem> basicItems = new()
+{
+    new()
+    {
+        Text = ""Item A"",
+        Key = ""A"",
+        IconName = BitIconName.Emoji,
+    },
+    new()
+    {
+        Text = ""Item B"",
+        Key = ""B"",
+        IconName = BitIconName.Emoji
+    },
+    new()
+    {
+        Text = ""Item C"",
+        Key = ""C"",
+        IconName = BitIconName.Emoji2
     }
 };";
 }

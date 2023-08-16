@@ -263,3 +263,36 @@
         <div class="clicked-item">Clicked Item: @example62SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example37">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton @bind-SelectedItem="twoWaySelectedItem"
+                                IsSticky="true"
+                                TItem="BitSplitButtonOption"
+                                ButtonStyle="BitButtonStyle.Standard">
+                    <BitSplitButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitSplitButton>
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem?.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSplitButton IsSticky="true" OnChange="(BitSplitButtonOption item) => changedSelectedItem = item">
+                    <BitSplitButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitSplitButton>
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Text</b></div>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
