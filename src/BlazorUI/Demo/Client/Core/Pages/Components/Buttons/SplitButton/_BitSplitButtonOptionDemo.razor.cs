@@ -12,6 +12,8 @@ public partial class _BitSplitButtonOptionDemo
     private string? example61SelectedItem;
     private string? example62SelectedItem;
 
+    private BitSplitButtonOption? twoWaySelectedItem;
+    private BitSplitButtonOption? changedSelectedItem;
 
 
     private readonly string example1HTMLCode = @"
@@ -276,4 +278,26 @@ private string example53SelectedItem;";
     private readonly string example6CSharpCode = @"
 private string example61SelectedItem;
 private string example62SelectedItem;";
+
+    private readonly string example7HTMLCode = @"
+<BitSplitButton @bind-SelectedItem=""twoWaySelectedItem""
+                IsSticky=""true""
+                TItem=""BitSplitButtonOption""
+                ButtonStyle=""BitButtonStyle.Standard"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton>
+<div>Selected item: <b>@twoWaySelectedItem?.Text</b></div>
+
+<BitSplitButton IsSticky=""true"" OnChange=""(BitSplitButtonOption item) => changedSelectedItem = item"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton>
+<div>Changed item: <b>@changedSelectedItem?.Text</b></div>";
+    private readonly string example7CSharpCode = @"
+private BitSplitButtonOption? twoWaySelectedItem;
+private BitSplitButtonOption? changedSelectedItem;";
+
 }

@@ -249,6 +249,48 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example27">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Default SelectedItem</BitLabel>
+                <BitSplitButton Items="basicCustomItems"
+                                DefaultSelectedItem="basicCustomItems[1]"
+                                NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                                         Text = { Name = nameof(SplitActionItem.Name) } })" />
+            </div>
+        </div>
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton @bind-SelectedItem="twoWaySelectedItem"
+                                IsSticky="true"
+                                Items="basicCustomItems"
+                                ButtonStyle="BitButtonStyle.Standard"
+                                NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
+                                                         Key = { Selector = item => item.Id },
+                                                         Text = { Selector = item => item.Name } })" />
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem.Name</b></div>
+            </div>
+        </div>
+        <div class="example-content">
+            <div>
+                <BitLabel>Default SelectedItem</BitLabel>
+                <BitSplitButton IsSticky="true" 
+                                Items="basicCustomItems"
+                                OnChange="(SplitActionItem item) => changedSelectedItem = item"
+                                NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                                         Text = { Name = nameof(SplitActionItem.Name) } })" />
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Name</b></div>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
 @code {
     private List<SplitActionItem> itemTemplateCustoms2 = new()
     {

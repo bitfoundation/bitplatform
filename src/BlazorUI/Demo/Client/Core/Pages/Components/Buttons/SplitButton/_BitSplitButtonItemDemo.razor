@@ -107,9 +107,9 @@
         <br />
         <div class="example-content">
             <BitSplitButton Items="basicItems"
-                            OnClick="(BitSplitButtonItem item) => example53SelectedItem = item.Text" 
-                            Styles="@(new() { ChevronDownButton="background-color:red", 
-                                              ChevronDownIcon="color:darkblue", 
+                            OnClick="(BitSplitButtonItem item) => example53SelectedItem = item.Text"
+                            Styles="@(new() { ChevronDownButton="background-color:red",
+                                              ChevronDownIcon="color:darkblue",
                                               ItemButton="background:darkgoldenrod" })" />
 
             <BitSplitButton Items="basicItems"
@@ -187,6 +187,35 @@
                             OnClick="(BitSplitButtonItem item) => example62SelectedItem = item.Text" />
         </div>
         <div class="clicked-item">Clicked Item: @example62SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example17">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Default SelectedItem</BitLabel>
+                <BitSplitButton Items="basicItems" DefaultSelectedItem="basicItems[1]" />
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" @bind-SelectedItem="twoWaySelectedItem" ButtonStyle="BitButtonStyle.Standard" />
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" OnChange="(BitSplitButtonItem item) => changedSelectedItem = item" />
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Text</b></div>
+            </div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
