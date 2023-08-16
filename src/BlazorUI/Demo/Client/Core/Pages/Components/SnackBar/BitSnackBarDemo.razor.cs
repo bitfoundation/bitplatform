@@ -48,7 +48,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "BitSnackBarPosition.BottomRight",
             Description = "The position of SnackBar to show.",
             LinkType = LinkType.Link,
-            Href = "snackbar-position-enum"
+            Href = "#snackbar-position-enum"
         },
         new()
         {
