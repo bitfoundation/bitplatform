@@ -18,6 +18,11 @@ public class BitSplitButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitSplitButtonItem.IsEnabled));
 
     /// <summary>
+    /// IsSelected field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsSelected { get; set; } = new(nameof(BitSplitButtonItem.IsSelected));
+
+    /// <summary>
     /// Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitSplitButtonItem.Key));

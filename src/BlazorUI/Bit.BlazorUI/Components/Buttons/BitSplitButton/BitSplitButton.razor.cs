@@ -159,12 +159,17 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     internal void RegisterOption(BitSplitButtonOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
 
-        if (SelectedItem is null)
+        _items.Add(item);
+
+        if (SelectedItemHasBeenSet is false && option.IsSelected)
         {
-            SelectedItem = _items.FirstOrDefault();
+            SelectedItem = item;
         }
+
+        SelectedItem ??= _items.FirstOrDefault();
+
         StateHasChanged();
     }
 
@@ -210,10 +215,8 @@ public partial class BitSplitButton<TItem> where TItem : class
             _oldItems = Items;
             _items = Items.ToList();
 
-            if (SelectedItem is null)
-            {
-                SelectedItem = _items.FirstOrDefault();
-            }
+            SelectedItem ??= _items.LastOrDefault(GetIsSelected);
+            SelectedItem ??= _items.FirstOrDefault();
         }
 
         return base.OnParametersSetAsync();
@@ -300,6 +303,30 @@ public partial class BitSplitButton<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private bool GetIsSelected(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            return splitButtonItem.IsSelected;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.IsSelected;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
     private string? GetKey(TItem? item)
