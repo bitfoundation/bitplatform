@@ -44,6 +44,7 @@ public partial class NavMenu
             Text = "Galleries & Pickers",
             ChildItems = new()
             {
+                new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "ColorPicker", Url = "/components/colorpicker" },
                 new() { Text = "DatePicker", Url = "/components/datepicker" },
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker" },
