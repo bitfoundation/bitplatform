@@ -12,12 +12,12 @@ public class BitToggleButtonTests : BunitTestContext
        DataRow(false, true, "Button label", "Volume2", "title"),
        DataRow(false, false, "Button label", "Volume3", "title")
     ]
-    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, string? iconName, string title)
+    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string text, string? iconName, string title)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsChecked, isChecked);
-            parameters.Add(p => p.Text, label);
+            parameters.Add(p => p.Text, text);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Title, title);
@@ -36,7 +36,7 @@ public class BitToggleButtonTests : BunitTestContext
             Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(bitLabelTag.TextContent, label);
+        Assert.AreEqual(bitLabelTag.TextContent, text);
 
         Assert.AreEqual(bitToggleButton.GetAttribute("title"), title);
 
