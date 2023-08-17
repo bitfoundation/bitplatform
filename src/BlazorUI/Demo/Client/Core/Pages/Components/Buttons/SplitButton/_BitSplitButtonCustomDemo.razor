@@ -4,7 +4,6 @@
             <div>
                 <BitLabel>Primary</BitLabel>
                 <BitSplitButton Items="basicCustomItems"
-                                OnClick="(SplitActionItem item) => example1SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                          Key = { Name = nameof(SplitActionItem.Id) },
                                                          Text = { Name = nameof(SplitActionItem.Name) } })" />
@@ -13,7 +12,6 @@
                 <BitLabel>Standard</BitLabel>
                 <BitSplitButton Items="basicCustomItems"
                                 ButtonStyle="BitButtonStyle.Standard"
-                                OnClick="(SplitActionItem item) => example1SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                          Key = { Selector = item => item.Id },
                                                          Text = { Selector = item => item.Name } })" />
@@ -27,7 +25,6 @@
                                                          Text = { Name = nameof(SplitActionItem.Name) } })" />
             </div>
         </div>
-        <div class="clicked-item">Clicked item: @example1SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -37,8 +34,7 @@
             <div>
                 <BitLabel>Primary</BitLabel>
                 <BitSplitButton IsSticky="true"
-                                Items="isStickyCustomItems"
-                                OnClick="(SplitActionItem item) => example2SelectedItem = item.Name"
+                                Items="basicCustomItems"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                          Key = { Name = nameof(SplitActionItem.Id) },
                                                          Text = { Name = nameof(SplitActionItem.Name) } })" />
@@ -46,15 +42,13 @@
             <div>
                 <BitLabel>Standard</BitLabel>
                 <BitSplitButton IsSticky="true"
-                                Items="isStickyCustomItems"
+                                Items="basicCustomItems"
                                 ButtonStyle="BitButtonStyle.Standard"
-                                OnClick="(SplitActionItem item) => example2SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                          Key = { Selector = item => item.Id },
                                                          Text = { Selector = item => item.Name } })" />
             </div>
         </div>
-        <div class="clicked-item">Clicked item: @example2SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -62,43 +56,66 @@
     <ExamplePreview>
         <div class="example-content">
             <div>
-                <BitLabel>Sticky Primary</BitLabel>
+                <BitLabel>Sticky</BitLabel>
                 <BitSplitButton IsSticky="true"
                                 Items="disabledCustomItems"
-                                OnClick="(SplitActionItem item) => example3SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                          Key = { Name = nameof(SplitActionItem.Id) },
                                                          Text = { Name = nameof(SplitActionItem.Name) } })" />
             </div>
             <div>
-                <BitLabel>Basic Standard</BitLabel>
+                <BitLabel>Non-Sticky</BitLabel>
                 <BitSplitButton Items="disabledCustomItems"
                                 ButtonStyle="BitButtonStyle.Standard"
-                                OnClick="(SplitActionItem item) => example3SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                          Key = { Selector = item => item.Id },
                                                          Text = { Selector = item => item.Name } })" />
             </div>
         </div>
-        <div class="clicked-item">Clicked item: @example3SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item OnClick" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example24">
+<ComponentExampleBox Title="OnClick" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example24">
     <ExamplePreview>
+        <div>Component's OnClick:</div>
+        <br />
         <div class="example-content">
             <div>
-                <BitLabel>Primary</BitLabel>
-                <BitSplitButton Items="itemsOnClick"
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton IsSticky="true"
+                                Items="basicCustomItems"
+                                OnClick="(SplitActionItem item) => example41SelectedItem = item"
+                                NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                                         Text = { Name = nameof(SplitActionItem.Name) } })" />
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton Items="basicCustomItems"
+                                ButtonStyle="BitButtonStyle.Standard"
+                                OnClick="(SplitActionItem item) => example41SelectedItem = item"
+                                NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
+                                                         Key = { Selector = item => item.Id },
+                                                         Text = { Selector = item => item.Name } })" />
+            </div>
+        </div>
+        <div>Clicked item: <b>@example41SelectedItem?.Name</b></div>
+        <br /><br /><br /><br />
+        <div>Item's OnClick:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton IsSticky="true"
+                                Items="itemsOnClick"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                          Key = { Name = nameof(SplitActionItem.Id) },
                                                          Text = { Name = nameof(SplitActionItem.Name) },
                                                          OnClick = { Name = nameof(SplitActionItem.Clicked) } })" />
             </div>
             <div>
-                <BitLabel>Standard</BitLabel>
-                <BitSplitButton IsSticky="true"
-                                Items="itemsOnClick"
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton Items="itemsOnClick"
                                 ButtonStyle="BitButtonStyle.Standard"
                                 NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                          Key = { Selector = item => item.Id },
@@ -106,7 +123,7 @@
                                                          OnClick = { Selector = item => item.Clicked } })" />
             </div>
         </div>
-        <div class="clicked-item">Clicked item: @example4SelectedItem</div>
+        <div>Clicked item: <b>@example42SelectedItem?.Name</b></div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -118,39 +135,34 @@
             <BitSplitButton Items="basicCustomItems"
                             Style="width:200px;height:40px;"
                             ChevronDownIcon="@BitIconName.DoubleChevronDown8"
-                            OnClick="(SplitActionItem item) => example51SelectedItem = item.Name"
                             NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                      Key = { Name = nameof(SplitActionItem.Id) },
                                                      Text = { Name = nameof(SplitActionItem.Name) } })" />
 
             <BitSplitButton Items="basicCustomItems"
                             Class="custom-class"
-                            OnClick="(SplitActionItem item) => example51SelectedItem = item.Name"
+                            ButtonStyle="BitButtonStyle.Standard"
                             NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                      Key = { Selector = item => item.Id },
                                                      Text = { Selector = item => item.Name } })" />
         </div>
-        <div class="clicked-item">Clicked item: @example51SelectedItem</div>
-        <br /><br /><br /><br />
+        <br /><br />
         <div>Item's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitSplitButton IsSticky="true"
                             Items="itemStyleClassCustoms"
-                            OnClick="(SplitActionItem item) => example52SelectedItem = item.Name"
                             NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                      Key = { Name = nameof(SplitActionItem.Id) },
                                                      Text = { Name = nameof(SplitActionItem.Name) },
                                                      Class = { Name = nameof(SplitActionItem.Class) },
                                                      Style = { Name = nameof(SplitActionItem.Style) } })" />
         </div>
-        <div class="clicked-item">Clicked Item: @example52SelectedItem</div>
-        <br /><br /><br /><br />
+        <br /><br />
         <div>Styles & Classes:</div>
         <br />
         <div class="example-content">
             <BitSplitButton Items="basicCustomItems"
-                            OnClick="(SplitActionItem item) => example53SelectedItem = item.Name"
                             NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                      Key = { Name = nameof(SplitActionItem.Id) },
                                                      Text = { Name = nameof(SplitActionItem.Name) } })"
@@ -160,25 +172,23 @@
 
             <BitSplitButton Items="basicCustomItems"
                             ButtonStyle="BitButtonStyle.Standard"
-                            OnClick="(SplitActionItem item) => example53SelectedItem = item.Name"
                             NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                      Key = { Selector = item => item.Id },
                                                      Text = { Selector = item => item.Name } })"
-                            Classes="@(new() { ChevronDownButton="custom-chevron",
-                                               ItemButton="custom-button" })" />
+                            Classes="@(new() { ChevronDownButton="custom-chevron", ItemButton="custom-button" })" />
         </div>
-        <div class="clicked-item">Clicked Item: @example53SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example26">
     <ExamplePreview>
+        <div>Component's ItemTemplate:</div>
+        <br />
         <div class="example-content">
             <div>
                 <BitLabel>Primary</BitLabel>
                 <BitSplitButton IsSticky="true"
                                 Items="itemTemplateCustoms"
-                                OnClick="(SplitActionItem item) => example61SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                                          Key = { Name = nameof(SplitActionItem.Id) },
                                                          Text = { Name = nameof(SplitActionItem.Name) } })">
@@ -196,7 +206,6 @@
                 <BitSplitButton IsSticky="true"
                                 Items="itemTemplateCustoms"
                                 ButtonStyle="BitButtonStyle.Standard"
-                                OnClick="(SplitActionItem item) => example61SelectedItem = item.Name"
                                 NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
                                                          Key = { Selector = item => item.Id },
                                                          Text = { Selector = item => item.Name } })">
@@ -232,20 +241,72 @@
                 </BitSplitButton>
             </div>
         </div>
-        <div class="clicked-item">Clicked item: @example61SelectedItem</div>
-        <br /><br /><br /><br />
-        <div>Item's Template</div>
+        <br /><br />
+        <div>Item's Template:</div>
         <br />
         <div class="example-content">
             <BitSplitButton IsSticky="true"
                             Items="itemTemplateCustoms2"
-                            OnClick="(SplitActionItem item) => example62SelectedItem = item.Name"
                             NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
                                                      Key = { Name = nameof(SplitActionItem.Id) },
                                                      IconName = { Name = nameof(SplitActionItem.Icon) },
                                                      Template = { Name = nameof(SplitActionItem.Fragment)} })" />
         </div>
-        <div class="clicked-item">Clicked Item: @example62SelectedItem</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example27">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Default SelectedItem</BitLabel>
+                <BitSplitButton Items="basicCustomItems"
+                                DefaultSelectedItem="basicCustomItems[1]"
+                                NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                                         Text = { Name = nameof(SplitActionItem.Name) } })" />
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton @bind-SelectedItem="twoWaySelectedItem"
+                                IsSticky="true"
+                                Items="basicCustomItems"
+                                ButtonStyle="BitButtonStyle.Standard"
+                                NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
+                                                         Key = { Selector = item => item.Id },
+                                                         Text = { Selector = item => item.Name } })" />
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem.Name</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSplitButton IsSticky="true" 
+                                Items="basicCustomItems"
+                                OnChange="(SplitActionItem item) => changedSelectedItem = item"
+                                NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
+                                                         Key = { Name = nameof(SplitActionItem.Id) },
+                                                         Text = { Name = nameof(SplitActionItem.Name) } })" />
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Name</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>IsSelected</BitLabel>
+                <BitSplitButton Items="isSelectedCustomItems"
+                                NameSelectors="@(new() { IconName = { Selector = item => item.Icon },
+                                                         Key = { Selector = item => item.Id },
+                                                         IsSelected = { Selector = item => item.IsCurrent },
+                                                         Text = { Selector = item => item.Name } })" />
+            </div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 

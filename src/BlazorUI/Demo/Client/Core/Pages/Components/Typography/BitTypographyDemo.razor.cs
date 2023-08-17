@@ -41,7 +41,7 @@ public partial class BitTypographyDemo
             Type = "BitTypographyVariant",
             Description = "The variant of the Typography.",
             LinkType = LinkType.Link,
-            Href = "typography-variant-enum"
+            Href = "#typography-variant-enum"
         }
     };
 

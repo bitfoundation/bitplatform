@@ -173,8 +173,12 @@
     }
 
     .sort-todo-drp {
-        width: rem2(150px);
+        width: rem2(136px);
         height: rem2(32px);
+
+        .sort-todo-icn {
+            color: $bit-color-primary-main;
+        }
     }
 
     .todo-input {

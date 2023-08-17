@@ -12,7 +12,7 @@ public static class Urls
 
     public const string GithubOrg = "https://github.com/bitfoundation";
 
-    public const string Linkedin = "https://www.linkedin.com/company/bitplatformhq/about/";
+    public const string Linkedin = "https://www.linkedin.com/company/bitplatformhq";
 
     public const string Twitter = "https://twitter.com/bitplatformhq";
 

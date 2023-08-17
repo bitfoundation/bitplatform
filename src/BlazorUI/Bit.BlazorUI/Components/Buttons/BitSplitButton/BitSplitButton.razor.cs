@@ -4,8 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitSplitButton<TItem> where TItem : class
 {
+    private bool SelectedItemHasBeenSet;
+
     private bool isCalloutOpen;
-    private TItem? currentItem;
+    private TItem? selectedItem;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
 
@@ -24,17 +26,7 @@ public partial class BitSplitButton<TItem> where TItem : class
             ClassBuilder.Reset();
         }
     }
-    private TItem? _currentItem
-    {
-        get => currentItem;
-        set
-        {
-            if (currentItem == value) return;
 
-            currentItem = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     private bool _disposed;
     private BitButtonType _buttonType;
@@ -98,6 +90,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public BitSplitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Default value of the SelectedItem.
+    /// </summary>
+    [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
     /// If true, the current item is going to be change selected item.
     /// </summary>
     [Parameter] public bool IsSticky { get; set; }
@@ -123,6 +120,30 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
+    /// The callback that is called when the selected item has changed.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnChange { get; set; }
+
+    /// <summary>
+    /// Determines the current selected item that acts as the main button.
+    /// </summary>
+    [Parameter]
+    public TItem? SelectedItem
+    {
+        get => selectedItem;
+        set
+        {
+            if (selectedItem == value) return;
+
+            selectedItem = value;
+            ClassBuilder.Reset();
+            _ = SelectedItemChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitSplitButton.
     /// </summary>
     [Parameter] public BitSplitButtonClassStyles? Styles { get; set; }
@@ -138,12 +159,17 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     internal void RegisterOption(BitSplitButtonOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
 
-        if (_currentItem is null)
+        _items.Add(item);
+
+        if (SelectedItemHasBeenSet is false && option.IsSelected)
         {
-            _currentItem = _items.FirstOrDefault();
+            SelectedItem = item;
         }
+
+        SelectedItem ??= _items.FirstOrDefault();
+
         StateHasChanged();
     }
 
@@ -164,13 +190,18 @@ public partial class BitSplitButton<TItem> where TItem : class
                                           : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
-        ClassBuilder.Register(() => GetIsEnabled(_currentItem) ? string.Empty : $"{RootElementClass}-cds");
+        ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : $"{RootElementClass}-cds");
     }
 
     protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
         _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+
+        if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
+        {
+            SelectedItem = DefaultSelectedItem;
+        }
 
         base.OnInitialized();
     }
@@ -183,7 +214,9 @@ public partial class BitSplitButton<TItem> where TItem : class
         {
             _oldItems = Items;
             _items = Items.ToList();
-            _currentItem = _items.FirstOrDefault();
+
+            SelectedItem ??= _items.LastOrDefault(GetIsSelected);
+            SelectedItem ??= _items.FirstOrDefault();
         }
 
         return base.OnParametersSetAsync();
@@ -270,6 +303,30 @@ public partial class BitSplitButton<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private bool GetIsSelected(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            return splitButtonItem.IsSelected;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.IsSelected;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
     private string? GetKey(TItem? item)
@@ -382,7 +439,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     {
         if (IsSticky)
         {
-            _currentItem = item;
+            if (SelectedItemHasBeenSet is false || SelectedItemChanged.HasDelegate)
+            {
+                SelectedItem = item;
+                await OnChange.InvokeAsync(item);
+            }
         }
         else
         {

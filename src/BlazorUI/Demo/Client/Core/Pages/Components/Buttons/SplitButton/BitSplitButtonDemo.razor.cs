@@ -64,6 +64,13 @@ public partial class BitSplitButtonDemo
         },
         new()
         {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Default value of the SelectedItem."
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -109,6 +116,19 @@ public partial class BitSplitButtonDemo
         },
         new()
         {
+            Name = "OnChange",
+            Type = "EventCallback<TItem>",
+            Description = "The callback that is called when the selected item has changed."
+        },
+        new()
+        {
+            Name = "SelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Determines the current selected item that acts as the main button."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitSplitButtonClassStyles?",
             DefaultValue = "null",
@@ -124,7 +144,6 @@ public partial class BitSplitButtonDemo
         {
             Id = "split-button-items",
             Title = "BitSplitButtonItem",
-            Description = "BitSplitButtonItem is default type for item.",
             Parameters = new()
             {
                new()
@@ -147,6 +166,13 @@ public partial class BitSplitButtonDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the item is enabled.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines the selection state of the item.",
                },
                new()
                {
@@ -189,7 +215,6 @@ public partial class BitSplitButtonDemo
         {
             Id = "split-button-options",
             Title = "BitSplitButtonOption",
-            Description = "BitSplitButtonOption is a child component for BitSplitButton.",
             Parameters = new()
             {
                new()
@@ -212,6 +237,13 @@ public partial class BitSplitButtonDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the option is enabled.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines the selection state of the item.",
                },
                new()
                {

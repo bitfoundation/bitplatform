@@ -24,6 +24,11 @@ public partial class BitSplitButtonOption : ComponentBase, IDisposable
     [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
+    /// Determines the selection state of the item.
+    /// </summary>
+    [Parameter] public bool IsSelected { get; set; }
+
+    /// <summary>
     /// A unique value to use as a key of the option
     /// </summary>
     [Parameter] public string? Key { get; set; }

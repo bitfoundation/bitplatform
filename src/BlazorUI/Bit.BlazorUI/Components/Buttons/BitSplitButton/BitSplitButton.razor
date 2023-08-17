@@ -13,34 +13,34 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      id="@UniqueId">
-    <button @onclick="() => HandleOnClick(_currentItem)"
+    <button @onclick="() => HandleOnClick(SelectedItem)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
             type="@_buttonType.GetValue()"
             tabindex="@(IsEnabled ? 0 : -1)"
-            style="@GetStyle(_currentItem);@Styles?.ItemButton"
-            class="bit-spl-opb @(GetIsEnabled(_currentItem) ? "" : "bit-dis") @GetClass(_currentItem) @Classes?.ItemButton">
-        @if (_currentItem is not null)
+            style="@GetStyle(SelectedItem);@Styles?.ItemButton"
+            class="bit-spl-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton">
+        @if (SelectedItem is not null)
         {
-            var template = GetTemplate(_currentItem);
+            var template = GetTemplate(SelectedItem);
             if (template is not null)
             {
-                @template(_currentItem)
+                @template(SelectedItem)
             }
             else if (ItemTemplate is not null)
             {
-                @ItemTemplate(_currentItem)
+                @ItemTemplate(SelectedItem)
             }
             else
             {
-                var iconName = GetIconName(_currentItem);
+                var iconName = GetIconName(SelectedItem);
                 @if (iconName.HasValue())
                 {
                     <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                 }
                 <span style="@Styles?.ItemText" class="bit-spl-txt @Classes?.ItemText">
-                    @GetText(_currentItem)
+                    @GetText(SelectedItem)
                 </span>
             }
         }
@@ -66,7 +66,7 @@
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
-                if (item == _currentItem) continue;
+                if (item == SelectedItem) continue;
 
                 var isEnabled = GetIsEnabled(item);
                 var template = GetTemplate(item);
