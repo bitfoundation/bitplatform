@@ -229,7 +229,6 @@ custom.aprof
 
 /src/Server/Api/Attachments/**/*.*
 
-/src/Client/Core/Scripts/app*.js
 /src/Client/Core/wwwroot/scripts/app*.js
 
 /src/Server/Api/TodoTemplateDb.db*
