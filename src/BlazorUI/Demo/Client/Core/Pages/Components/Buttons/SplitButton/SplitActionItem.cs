@@ -13,4 +13,6 @@ public class SplitActionItem
     public RenderFragment<SplitActionItem>? Fragment { get; set; }
 
     public Action<SplitActionItem>? Clicked { get; set; }
+
+    public bool IsCurrent { get; set; }
 }
