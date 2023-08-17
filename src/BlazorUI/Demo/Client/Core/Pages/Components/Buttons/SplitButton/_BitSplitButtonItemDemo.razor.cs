@@ -2,42 +2,14 @@
 
 public partial class _BitSplitButtonItemDemo
 {
-    private string? example1SelectedItem;
-    private string? example2SelectedItem;
-    private string? example3SelectedItem;
-    private string? example4SelectedItem;
-    private string? example51SelectedItem;
-    private string? example52SelectedItem;
-    private string? example53SelectedItem;
-    private string? example61SelectedItem;
-    private string? example62SelectedItem;
+    private BitSplitButtonItem? example41SelectedItem;
+    private BitSplitButtonItem? example42SelectedItem;
 
     private BitSplitButtonItem twoWaySelectedItem = default!;
     private BitSplitButtonItem? changedSelectedItem;
 
 
     private List<BitSplitButtonItem> basicItems = new()
-    {
-        new()
-        {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji,
-        },
-        new()
-        {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji
-        },
-        new()
-        {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji2
-        }
-    };
-    private List<BitSplitButtonItem> isStickyItems = new()
     {
         new()
         {
@@ -62,52 +34,66 @@ public partial class _BitSplitButtonItemDemo
     {
         new()
         {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji,
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add
+        },
+        new()
+        {
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit,
             IsEnabled = false
         },
         new()
         {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji2
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete
+        }
+    };
+    private List<BitSplitButtonItem> itemsOnClick = new()
+    {
+        new()
+        {
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add
         },
         new()
         {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji,
-            IsEnabled = false
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit
         },
         new()
         {
-            Text = "Item D",
-            Key = "D",
-            IconName = BitIconName.Emoji2
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete
         }
     };
     private List<BitSplitButtonItem> itemStyleClassItems = new()
     {
         new()
         {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji,
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add,
             Style = "color:red"
         },
         new()
         {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji,
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit,
             Class = "custom-item"
         },
         new()
         {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji2,
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete,
             Style = "background:blue"
         }
     };
@@ -129,25 +115,26 @@ public partial class _BitSplitButtonItemDemo
             Key = "delete-key"
         }
     };
-    private List<BitSplitButtonItem> itemsOnClick = new()
+    private List<BitSplitButtonItem> isSelectedItems = new()
     {
         new()
         {
-            Text = "Item A",
-            Key = "A",
-            IconName = BitIconName.Emoji,
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add
         },
         new()
         {
-            Text = "Item B",
-            Key = "B",
-            IconName = BitIconName.Emoji
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit
         },
         new()
         {
-            Text = "Item C",
-            Key = "C",
-            IconName = BitIconName.Emoji2
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete,
+            IsSelected = true
         }
     };
 
@@ -157,7 +144,7 @@ public partial class _BitSplitButtonItemDemo
 
         Action<BitSplitButtonItem> onClick = item =>
         {
-            example4SelectedItem = $"{item.Text} - OnClick";
+            example42SelectedItem = item;
             StateHasChanged();
         };
 
@@ -167,55 +154,40 @@ public partial class _BitSplitButtonItemDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitSplitButton Items=""BasicItems"" OnClick=""(BitSplitButtonItem item) => example1SelectedItem = item.Text"" />
+<BitSplitButton Items=""basicItems"" />
     
-<BitSplitButton Items=""BasicItems""
-                ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""(BitSplitButtonItem item) => example1SelectedItem = item.Text"" />
+<BitSplitButton Items=""basicItems"" ButtonStyle=""BitButtonStyle.Standard"" />
 
-<BitSplitButton Items=""BasicItems"" IsEnabled=""false"" />
-
-<div>Clicked item: @example1SelectedItem</div>";
+<BitSplitButton Items=""basicItems"" IsEnabled=""false"" />";
     private readonly string example1CSharpCode = @"
-private string? example1SelectedItem;
-
-private List<BitSplitButtonItem> BasicItems = new()
+private List<BitSplitButtonItem> basicItems = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji,
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
     },
     new()
     {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji2
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
     }
 };";
 
     private readonly string example2HTMLCode = @"
-<BitSplitButton IsSticky=""true""
-                Items=""IsStickyItems""
-                OnClick=""(BitSplitButtonItem item) => example2SelectedItem = item.Text"" />
+<BitSplitButton IsSticky=""true"" Items=""basicItems"" />
         
-<BitSplitButton IsSticky=""true""
-                Items=""IsStickyItems""
-                ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""(BitSplitButtonItem item) => example2SelectedItem = item.Text"" />
-
-<div>Clicked item: @example2SelectedItem</div>";
+<BitSplitButton IsSticky=""true"" Items=""basicItems"" ButtonStyle=""BitButtonStyle.Standard"" />";
     private readonly string example2CSharpCode = @"
-private string? example2SelectedItem;
-
-private List<BitSplitButtonItem> IsStickyItems = new()
+private List<BitSplitButtonItem> basicItems = new()
 {
     new()
     {
@@ -238,76 +210,95 @@ private List<BitSplitButtonItem> IsStickyItems = new()
 };";
 
     private readonly string example3HTMLCode = @"
-<BitSplitButton IsSticky=""true""
-                Items=""DisabledItems""
-                OnClick=""(BitSplitButtonItem item) => example3SelectedItem = item.Text"" />
+<BitSplitButton Items=""disabledItems"" IsSticky=""true"" />
         
-<BitSplitButton Items=""DisabledItems""
-                ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""(BitSplitButtonItem item) => example3SelectedItem = item.Text"" />
-
-<div>Clicked item: @example3SelectedItem</div>";
+<BitSplitButton Items=""disabledItems"" ButtonStyle=""BitButtonStyle.Standard"" />";
     private readonly string example3CSharpCode = @"
-private string? example3SelectedItem;
-
-private List<BitSplitButtonItem> DisabledItems = new()
+private List<BitSplitButtonItem> disabledItems = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji,
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
+    },
+    new()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit,
         IsEnabled = false
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji2
-    },
-    new()
-    {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji,
-        IsEnabled = false
-    },
-    new()
-    {
-        Text = ""Item D"",
-        Key = ""D"",
-        IconName = BitIconName.Emoji2
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
     }
 };";
 
     private readonly string example4HTMLCode = @"
-<BitSplitButton Items=""itemsOnClick"" />
+<BitSplitButton IsSticky=""true""
+                Items=""basicItems""
+                OnClick=""(BitSplitButtonItem item) => example41SelectedItem = item"" />
 
-<BitSplitButton Items=""itemsOnClick"" ButtonStyle=""BitButtonStyle.Standard"" IsSticky=""true"" />
+<BitSplitButton Items=""basicItems""
+                ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""(BitSplitButtonItem item) => example41SelectedItem = item"" />
 
-<div>Clicked item: @example4SelectedItem</div>";
+<div>Clicked item: @example41SelectedItem?.Text</div>
+
+
+<BitSplitButton Items=""itemsOnClick"" IsSticky=""true"" />
+
+<BitSplitButton Items=""itemsOnClick"" ButtonStyle=""BitButtonStyle.Standard"" />
+
+<div>Clicked item: @example42SelectedItem?.Text</div>";
     private readonly string example4CSharpCode = @"
-private string? example4SelectedItem;
+private BitSplitButtonItem? example41SelectedItem;
+private BitSplitButtonItem? example42SelectedItem;
+
+private List<BitSplitButtonItem> basicItems = new()
+{
+    new()
+    {
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
+    },
+    new()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
+    },
+    new()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
+    }
+};
 
 private List<BitSplitButtonItem> itemsOnClick = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji,
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
     },
     new()
     {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji2
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
     }
 };
 
@@ -315,7 +306,7 @@ protected override void OnInitialized()
 {
     Action<BitSplitButtonItem> onClick = item =>
     {
-        example4SelectedItem = $""{item.Text} - OnClick"";
+        example42SelectedItem = item;
         StateHasChanged();
     };
 
@@ -345,60 +336,44 @@ protected override void OnInitialized()
 
 <BitSplitButton Items=""basicItems"" 
                 Style=""width:200px;height:40px;""
-                ChevronDownIcon=""@BitIconName.DoubleChevronDown8""
-                OnClick=""(BitSplitButtonItem item) => example51SelectedItem = item.Text"" />
+                ChevronDownIcon=""@BitIconName.DoubleChevronDown8"" />
 
-<BitSplitButton Items=""basicItems""
-                Class=""custom-class"" 
-                OnClick=""(BitSplitButtonItem item) => example51SelectedItem = item.Text"" />
-
-<div>Clicked item: @example51SelectedItem</div>
+<BitSplitButton Items=""basicItems"" 
+                Class=""custom-class""
+                ButtonStyle=""BitButtonStyle.Standard""  />
 
 
-<BitSplitButton IsSticky=""true""
-                Items=""itemStyleClassItems""
-                OnClick=""(BitSplitButtonItem item) => example52SelectedItem = item.Text"" />
-
-<div>Clicked Item: @example52SelectedItem</div>
+<BitSplitButton IsSticky=""true"" Items=""itemStyleClassItems"" />
 
 
 <BitSplitButton Items=""basicItems""
-                OnClick=""(BitSplitButtonItem item) => example53SelectedItem = item.Text"" 
                 Styles=""@(new() { ChevronDownButton=""background-color:red"", 
                                   ChevronDownIcon=""color:darkblue"", 
                                   ItemButton=""background:darkgoldenrod"" })"" />
 
 <BitSplitButton Items=""basicItems""
                 ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""(BitSplitButtonItem item) => example53SelectedItem = item.Text""
-                Classes=""@(new() { ChevronDownButton=""custom-chevron"",
-                                   ItemButton=""custom-button"" })"" />
-
-<div>Clicked Item: @example53SelectedItem</div>";
+                Classes=""@(new() { ChevronDownButton=""custom-chevron"", ItemButton=""custom-button"" })"" />";
     private readonly string example5CSharpCode = @"
-private string example51SelectedItem;
-private string example52SelectedItem;
-private string example53SelectedItem;
-
 private List<BitSplitButtonItem> basicItems = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
     },
     new()
     {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji2
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
     }
 };
 
@@ -406,23 +381,23 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji,
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add,
         Style = ""color:red""
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji,
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit,
         Class = ""custom-item""
     },
     new()
     {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji2,
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete,
         Style = ""background:blue""
     }
 };";
@@ -437,9 +412,7 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
     }
 </style>
 
-<BitSplitButton IsSticky=""true""
-                Items=""itemTemplateItems""
-                OnClick=""(BitSplitButtonItem item) => example61SelectedItem = item.Text"">
+<BitSplitButton IsSticky=""true"" Items=""itemTemplateItems"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -449,10 +422,7 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
     </ItemTemplate>
 </BitSplitButton>
         
-<BitSplitButton IsSticky=""true""
-                Items=""itemTemplateItems""
-                ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""(BitSplitButtonItem item) => example61SelectedItem = item.Text"">
+<BitSplitButton IsSticky=""true"" Items=""itemTemplateItems"" ButtonStyle=""BitButtonStyle.Standard"">
     <ItemTemplate Context=""item"">
         @if (item.Key == ""add-key"")
         {
@@ -484,18 +454,9 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
     </ItemTemplate>
 </BitSplitButton>
 
-<div>Clicked item: @example61SelectedItem</div>
 
-
-<BitSplitButton IsSticky=""true""
-                Items=""itemTemplateItems2""
-                OnClick=""(BitSplitButtonItem item) => example62SelectedItem = item.Text"" />
-
-<div>Clicked Item: @example62SelectedItem</div>";
+<BitSplitButton IsSticky=""true"" Items=""itemTemplateItems2"" />";
     private readonly string example6CSharpCode = @"
-private string? example61SelectedItem;
-private string? example62SelectedItem;
-
 private List<BitSplitButtonItem> itemTemplateItems = new()
 {
     new()
@@ -542,12 +503,17 @@ private List<BitSplitButtonItem> itemTemplateItems2 = new()
 
     private readonly string example7HTMLCode = @"
 <BitSplitButton Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
+
       
 <BitSplitButton IsSticky=""true"" Items=""basicItems"" @bind-SelectedItem=""twoWaySelectedItem"" ButtonStyle=""BitButtonStyle.Standard"" />
 <div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
 
+
 <BitSplitButton IsSticky=""true"" Items=""basicItems"" OnChange=""(BitSplitButtonItem item) => changedSelectedItem = item"" />
-<div>Changed item: <b>@changedSelectedItem?.Text</b></div>";
+<div>Changed item: <b>@changedSelectedItem?.Text</b></div>
+
+
+<BitSplitButton Items=""isSelectedItems"" />";
     private readonly string example7CSharpCode = @"
 private BitSplitButtonItem twoWaySelectedItem = default!;
 private BitSplitButtonItem? changedSelectedItem;
@@ -561,21 +527,45 @@ private List<BitSplitButtonItem> basicItems = new()
 {
     new()
     {
-        Text = ""Item A"",
-        Key = ""A"",
-        IconName = BitIconName.Emoji,
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
     },
     new()
     {
-        Text = ""Item B"",
-        Key = ""B"",
-        IconName = BitIconName.Emoji
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
     },
     new()
     {
-        Text = ""Item C"",
-        Key = ""C"",
-        IconName = BitIconName.Emoji2
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
+    }
+};
+
+private List<BitSplitButtonItem> isSelectedItems = new()
+{
+    new()
+    {
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
+    },
+    new()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
+    },
+    new()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete,
+        IsSelected = true
     }
 };";
+
 }
