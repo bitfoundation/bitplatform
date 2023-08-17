@@ -49,12 +49,12 @@
             <div class="example-box">
                 <div style="display:flex; align-items:flex-end">
                     <BitToggle Value="OneWayValue" Label="One-way" OnText="Off" OffText="On" />
-                    <BitToggleButton @bind-IsChecked="OneWayValue" Label="@(OneWayValue ? "Off" : "On")" />
+                    <BitToggleButton @bind-IsChecked="OneWayValue" Text="@(OneWayValue ? "Off" : "On")" />
                 </div>
                 <br />
                 <div style="display:flex; align-items:flex-end">
                     <BitToggle @bind-Value="TwoWayValue" Label="Two-way" OnText="Off" OffText="On" />
-                    <BitToggleButton @bind-IsChecked="TwoWayValue" Label="@(TwoWayValue ? "Off" : "On")" />
+                    <BitToggleButton @bind-IsChecked="TwoWayValue" Text="@(TwoWayValue ? "Off" : "On")" />
                 </div>
             </div>
         </ExamplePreview>

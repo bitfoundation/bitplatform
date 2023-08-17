@@ -11,7 +11,21 @@
     }
 }
 
-::deep .custom-class {
-    color: aqua;
-    border-radius: 1rem;
+::deep {
+    .custom-class {
+        color: aqua;
+        border-radius: 1rem;
+    }
+
+    .custom-container {
+        font-size: 12px;
+    }
+
+    .custom-icon {
+        color: blue;
+    }
+
+    .custom-text {
+        color: red;
+    }
 }
