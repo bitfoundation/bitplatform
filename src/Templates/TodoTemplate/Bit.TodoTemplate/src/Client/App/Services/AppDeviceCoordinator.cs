@@ -1,4 +1,5 @@
-﻿namespace TodoTemplate.Client.App.Services;
+﻿//-:cnd:noEmit
+namespace TodoTemplate.Client.App.Services;
 
 public class AppDeviceCoordinator : IBitDeviceCoordinator
 {

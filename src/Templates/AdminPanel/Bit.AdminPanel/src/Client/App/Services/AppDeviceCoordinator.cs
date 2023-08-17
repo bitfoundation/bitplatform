@@ -1,4 +1,5 @@
-﻿namespace AdminPanel.Client.App.Services;
+﻿//-:cnd:noEmit
+namespace AdminPanel.Client.App.Services;
 
 public class AppDeviceCoordinator : IBitDeviceCoordinator
 {

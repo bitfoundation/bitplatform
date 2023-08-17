@@ -1,4 +1,5 @@
-﻿namespace BlazorDual.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace BlazorDual.Shared.Infra;
 
 public enum BlazorMode
 {
