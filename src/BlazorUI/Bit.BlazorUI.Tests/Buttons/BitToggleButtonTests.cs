@@ -17,7 +17,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsChecked, isChecked);
-            parameters.Add(p => p.Label, label);
+            parameters.Add(p => p.Text, label);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Title, title);
@@ -182,26 +182,6 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("", true),
-        DataRow("bing.com", true),
-        DataRow("bing.com", false)
-    ]
-    public void BitToggleButtonShouldRenderExpectedElementBasedOnHref(string href, bool isEnabled)
-    {
-        var component = RenderComponent<BitToggleButton>(parameters =>
-        {
-            parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
-        });
-
-        var bitToggleButton = component.Find(".bit-tgb");
-        var tagName = bitToggleButton.TagName;
-        var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
-
-        Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
-    }
-
-    [DataTestMethod,
         DataRow(true),
         DataRow(false),
         DataRow(null)
@@ -228,34 +208,5 @@ public class BitToggleButtonTests : BunitTestContext
         {
             Assert.AreNotEqual(defaultIsChecked, isCheckedAfterOnChange);
         }
-    }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitToggleButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitToggleButton>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-tgb-sm",
-            BitButtonSize.Medium => "bit-tgb-md",
-            BitButtonSize.Large => "bit-tgb-lg",
-            _ => "bit-tgb-md",
-        };
-
-        var bitToggleButton = com.Find(".bit-tgb");
-
-        Assert.IsTrue(bitToggleButton.ClassList.Contains(sizeClass));
     }
 }

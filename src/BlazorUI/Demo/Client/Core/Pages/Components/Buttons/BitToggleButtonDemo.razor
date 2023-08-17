@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/togglebutton"
             Title="ToggleButton"
-            Description="togglebutton component of the bit BlazorUI components" />
+            Description="ToggleButton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="ToggleButton"
                ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
@@ -13,136 +13,75 @@
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitToggleButton @bind-IsChecked="TogglePrimaryButtonChecked"
-                                 Label="@(TogglePrimaryButtonChecked ? "Primary Mute":"Primary Unmute")"
-                                 IconName="@(TogglePrimaryButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
-                                 ButtonStyle="BitButtonStyle.Primary" />
-                <BitToggleButton @bind-IsChecked="ToggleStandardButtonChecked"
-                                 Label="@(ToggleStandardButtonChecked ? "Standard Mute":"Standard Unmute")"
-                                 IconName="@(ToggleStandardButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
+                <BitToggleButton OffText="Primary Unmute" OnText="Primary Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
+
+                <BitToggleButton OffText="Standard Unmute" OnText="Standard Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
                                  ButtonStyle="BitButtonStyle.Standard" />
-                <BitToggleButton @bind-IsChecked="ToggleDisabledButtonChecked"
-                                 IsEnabled="false"
-                                 Label="@(ToggleDisabledButtonChecked ? "Disabled Mute" : "Disabled Unmute")"
-                                 IconName="@(ToggleDisabledButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)" />
+
+                <BitToggleButton IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example2">
         <ExamplePreview>
+            <div>Style & Class:</div>
+            <br />
             <div class="example-box">
-                <BitToggleButton @bind-IsChecked="ToggleStyleButtonChecked"
-                                 Style="color:darkblue; font-weight:bold"
-                                 Label="@(ToggleStyleButtonChecked ? "Styled Button : Mute" : "Styled Button : Unmute")"
-                                 IconName="@(ToggleStyleButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)" />
-                <BitToggleButton @bind-IsChecked="ToggleClassButtonChecked"
-                                 Class="custom-class"
+                <BitToggleButton Style="color:darkblue; font-weight:bold"
+                                 OffText="Styled Button : Unmute" OnText="Styled Button : Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
+
+                <BitToggleButton Class="custom-class"
                                  ButtonStyle="BitButtonStyle.Standard"
-                                 Label="@(ToggleClassButtonChecked ? "Classed Button : Mute" : "Classed Button : Unmute")"
-                                 IconName="@(ToggleClassButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)" />
+                                 OffText="Classed Button : Unmute" OnText="Classed Button : Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="OnChange" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
-        <ExamplePreview>
-            <div class="example-box column">
-                <BitLabel>Check status is: @OnToggleButtonChanged</BitLabel>
-                <BitToggleButton @bind-IsChecked="ToggleButtonForOnChange"
-                                 Label="@(ToggleButtonForOnChange ? "Mute" : "Unmute")"
-                                 IconName="@(ToggleButtonForOnChange ? BitIconName.MicOff : BitIconName.Microphone)"
-                                 OnChange="ToggleButtonChanged" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Two-way binding" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
-        <ExamplePreview>
-            <div class="example-box column">
-                <BitCheckbox Label="Checked Toggle Button" @bind-Value="ToggleTwoWayButtonValue" />
-                <BitToggleButton @bind-IsChecked="ToggleTwoWayButtonValue"
-                                 Label="@(ToggleTwoWayButtonValue ? "Mute" : "Unmute")"
-                                 IconName="@(ToggleTwoWayButtonValue ? BitIconName.MicOff : BitIconName.Microphone)" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Default value" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
-        <ExamplePreview>
-            <div class="example-box column">
-                <BitToggleButton OnChange="((e) => ToggleButtonDefaultValue = e)"
-                                 DefaultIsChecked="true"
-                                 Label="@(ToggleButtonDefaultValue ? "Mute" : "Unmute")"
-                                 IconName="@(ToggleButtonDefaultValue ? BitIconName.MicOff : BitIconName.Microphone)" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="ARIA" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
-        <ExamplePreview>
+            <br /><br />
+            <div>Styles & Classes:</div>
+            <br />
             <div class="example-box">
-                <BitToggleButton @bind-IsChecked="ToggleAriaButtonChecked"
-                                 Label="@(ToggleAriaButtonChecked ? "AriaDescription Mute" : "AriaDescription Unmute")"
-                                 IconName="@(ToggleAriaButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
-                                 AriaDescription="Detailed description used for screen reader" />
-                <BitToggleButton @bind-IsChecked="ToggleAriaHiddenButtonChecked"
-                                 ButtonStyle="BitButtonStyle.Standard"
-                                 Label="@(ToggleAriaHiddenButtonChecked ? "AriaHidden Mute" : "AriaHidden Unmute")"
-                                 IconName="@(ToggleAriaHiddenButtonChecked ? BitIconName.MicOff : BitIconName.Microphone)"
-                                 AriaHidden="true" />
+                <BitToggleButton OffText="Styled Button : Unmute" OnText="Styled Button : Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
+                                 Styles="@(new() { Container="font-size:18px", Icon="color:red", Text="color:blue" })" />
+
+                <BitToggleButton ButtonStyle="BitButtonStyle.Standard"
+                                 OffText="Classed Button : Unmute" OnText="Classed Button : Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
+                                 Classes="@(new() { Container="custom-container", Icon="custom-icon", Text="custom-text" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
+            <div>DefaultIsChecked:</div>
+            <br />
             <div class="example-box column">
-                <div>
-                    <BitLabel>Small size</BitLabel>
-                    <BitToggleButton ButtonSize=BitButtonSize.Small @bind-IsChecked="ToggleTwoWayButtonSizeValue"
-                                     Label="@(ToggleTwoWayButtonSizeValue ? "Mute" : "Unmute")"
-                                     IconName="@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)" />
-                </div>
-                <div>
-                    <BitLabel>Medium size</BitLabel>
-                    <BitToggleButton ButtonSize=BitButtonSize.Medium @bind-IsChecked="ToggleTwoWayButtonSizeValue"
-                                     Label="@(ToggleTwoWayButtonSizeValue ? "Mute" : "Unmute")"
-                                     IconName="@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)" />
-                </div>
-                <div>
-                    <BitLabel>Large size</BitLabel>
-                    <BitToggleButton ButtonSize=BitButtonSize.Large @bind-IsChecked="ToggleTwoWayButtonSizeValue"
-                                     Label="@(ToggleTwoWayButtonSizeValue ? "Mute" : "Unmute")"
-                                     IconName="@(ToggleTwoWayButtonSizeValue ? BitIconName.MicOff : BitIconName.Microphone)" />
-                </div>
+                <BitToggleButton DefaultIsChecked="true"
+                                 OffText="Unmute" OnText="Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
+            </div>
+            <br /><br /><br />
+            <div>Two-way bound:</div>
+            <br />
+            <div class="example-box column">
+                <BitToggleButton @bind-IsChecked="example31Value"
+                                 Text="@(example31Value ? "Mute" : "Unmute")"
+                                 IconName="@(example31Value ? BitIconName.MicOff : BitIconName.Microphone)" />
+                <BitCheckbox Label="Checked Toggle Button" @bind-Value="example31Value" />
+            </div>
+            <br /><br /><br />
+            <div>OnChange:</div>
+            <br />
+            <div class="example-box column">
+                <BitToggleButton OnChange="v => example32Value = v"
+                                 OffText="Unmute" OnText="Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
+                <BitLabel>Check status is: @example32Value</BitLabel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private bool TogglePrimaryButtonChecked;
-    private bool ToggleStandardButtonChecked;
-    private bool ToggleDisabledButtonChecked;
-
-    private bool ToggleAriaButtonChecked;
-    private bool ToggleAriaHiddenButtonChecked;
-
-    private bool ToggleStyleButtonChecked;
-    private bool ToggleClassButtonChecked;
-
-    private bool ToggleButtonForOnChange = true;
-    private bool OnToggleButtonChanged = true;
-
-    private bool ToggleTwoWayButtonValue = true;
-
-    private bool ToggleButtonDefaultValue = true;
-
-    private bool ToggleTwoWayButtonSizeValue = true;
-
-    private void ToggleButtonChanged(bool newValue)
-    {
-        OnToggleButtonChanged = newValue;
-    }
-}
