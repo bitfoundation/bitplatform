@@ -182,6 +182,11 @@ public partial class BitCalendarDemo
     <ValidationMessage For=""@(() => formValidationCalendarModel.Date)"" />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    <BitButton ButtonType=""BitButtonType.Reset""
+                ButtonStyle=""BitButtonStyle.Standard""
+                OnClick=""() => { formValidationCalendarModel = new(); SuccessMessage=string.Empty; }"">
+                Reset
+    </BitButton>
 </EditForm>
 
 @if (string.IsNullOrEmpty(SuccessMessage) is false)
