@@ -127,10 +127,9 @@ async function handleFetch(e) {
 
     // the assets url are only the pathname part of the actual request url!
     // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
-    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url': 'reqUrl'][caseMethod]() === requestUrl[caseMethod]()
-    );
+    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url': 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
-    if (!asset) {
+    if (!asset) { // for assets that has asp-append-version or similar type of url versioning
         const url = new URL(requestUrl);
         const reqUrl = `${url.origin}${url.pathname}`;
         asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
