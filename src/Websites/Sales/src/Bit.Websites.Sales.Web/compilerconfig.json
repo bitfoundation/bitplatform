@@ -18,8 +18,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/ProcessPage.razor.css",
-        "inputFile": "Pages/ProcessPage.razor.scss",
+        "outputFile": "Pages/YourTeamPage.razor.css",
+        "inputFile": "Pages/YourTeamPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

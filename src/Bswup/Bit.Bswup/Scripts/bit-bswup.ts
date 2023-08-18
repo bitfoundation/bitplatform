@@ -31,7 +31,7 @@ class BitBswup {
 ; (function () {
     const bitBswupScript = document.currentScript;
 
-    window.addEventListener('load', runBswup); // very important: use only the "load" event!!!
+    window.addEventListener('DOMContentLoaded', runBswup); // important event!
 
     function runBswup() {
         if (!('serviceWorker' in navigator)) {
