@@ -25,7 +25,7 @@ public partial class ResetPasswordPage
         base.OnInitialized();
     }
 
-    protected async override Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
@@ -52,7 +52,7 @@ public partial class ResetPasswordPage
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {
-                UserName = Email,
+                Email = Email,
                 Password = _resetPasswordModel.Password
             });
 

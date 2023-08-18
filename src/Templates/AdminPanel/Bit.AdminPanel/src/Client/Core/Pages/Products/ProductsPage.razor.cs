@@ -61,7 +61,7 @@ public partial class ProductsPage
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
             catch
             {

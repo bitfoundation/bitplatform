@@ -55,11 +55,11 @@
             </h1>
 
             <div class="form-input-container">
-                <BitTextField @bind-Value="_signUpModel.UserName"
+                <BitTextField @bind-Value="_signUpModel.Email"
                               Label="@Localizer[nameof(AppStrings.Email)]"
                               Placeholder="@Localizer[nameof(AppStrings.Email)]"
                               Type="BitTextFieldType.Email" />
-                <ValidationMessage For="@(() => _signUpModel.UserName)" />
+                <ValidationMessage For="@(() => _signUpModel.Email)" />
             </div>
 
             <div class="form-input-container">

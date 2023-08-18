@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
 {
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appsettings.IdentitySettings;
 
         services.AddIdentity<User, Role>(options =>
@@ -37,7 +37,7 @@ public static class IServiceCollectionExtensions
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appsettings.JwtSettings;
 
         services.AddScoped<IJwtService, JwtService>();
@@ -102,6 +102,9 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorDual.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorDual.Shared.xml"));
+
             options.OperationFilter<ODataOperationFilter>();
 
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
@@ -125,7 +128,7 @@ public static class IServiceCollectionExtensions
                             Id = "bearerAuth"
                         }
                     },
-                    new string[] {}
+                    Array.Empty<string>()
                 }
             });
         });
@@ -133,7 +136,7 @@ public static class IServiceCollectionExtensions
 
     public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appsettings.HealthCheckSettings;
 
@@ -148,7 +151,7 @@ public static class IServiceCollectionExtensions
         var healthChecksBuilder = services.AddHealthChecks()
             .AddProcessAllocatedMemoryHealthCheck(maximumMegabytesAllocated: 6 * 1024)
             .AddDiskStorageHealthCheck(opt =>
-                opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory()), minimumFreeMegabytes: 5 * 1024))
+                opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024))
             .AddDbContextCheck<AppDbContext>();
 
         var emailSettings = appsettings.EmailSettings;

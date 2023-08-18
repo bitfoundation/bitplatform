@@ -25,7 +25,7 @@ public partial class AuthController : AppControllerBase
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        var existingUser = await _userManager.FindByNameAsync(signUpRequest.UserName);
+        var existingUser = await _userManager.FindByNameAsync(signUpRequest.Email!);
 
         var userToAdd = Mapper.Map<User>(signUpRequest);
 
@@ -33,7 +33,7 @@ public partial class AuthController : AppControllerBase
         {
             if (await _userManager.IsEmailConfirmedAsync(existingUser))
             {
-                throw new BadRequestException(Localizer.GetString(nameof(AppStrings.DuplicateEmail), existingUser.Email));
+                throw new BadRequestException(Localizer.GetString(nameof(AppStrings.DuplicateEmail), existingUser.Email!));
             }
             else
             {
@@ -42,11 +42,11 @@ public partial class AuthController : AppControllerBase
             }
         }
 
-        var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password);
+        var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password!);
 
         if (result.Succeeded is false)
         {
-            throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, signUpRequest.UserName!)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, signUpRequest.Email!)).ToArray());
         }
 
         await SendConfirmationEmail(new() { Email = userToAdd.Email }, userToAdd, cancellationToken);
@@ -55,7 +55,7 @@ public partial class AuthController : AppControllerBase
     [HttpPost]
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email);
+        var user = await _userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email!);
 
         if (user is null)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendConfirmationEmailRequest.Email!));
@@ -107,7 +107,7 @@ public partial class AuthController : AppControllerBase
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
         , CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email);
+        var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!);
 
         if (user is null)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
@@ -175,32 +175,36 @@ public partial class AuthController : AppControllerBase
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
     {
-        var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
+        var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email!);
 
         if (user is null)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), resetPasswordRequest.Email!));
 
-        var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token, resetPasswordRequest.Password);
+        var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token!, resetPasswordRequest.Password!);
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, resetPasswordRequest.Email!)).ToArray());
     }
 
+    /// <summary>
+    /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
+    /// These comments will also be used in swagger docs and ui.
+    /// </summary>
     [HttpPost]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
-        var user = await _userManager.FindByNameAsync(signInRequest.UserName);
+        var user = await _userManager.FindByNameAsync(signInRequest.Email!);
 
         if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.UserName!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.Email!));
 
-        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password, lockoutOnFailure: true);
+        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password!, lockoutOnFailure: true);
 
         if (checkPasswordResult.IsLockedOut)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd).Value.ToString("mm\\:ss")));
 
         if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.Email!));
 
         return await _jwtService.GenerateToken(user);
     }

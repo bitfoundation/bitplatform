@@ -16,9 +16,11 @@
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PwaPrerendered' ">$(DefineConstants);PwaPrerendered</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'PrerenderedOnly' ">$(DefineConstants);PrerenderedOnly</DefineConstants>
 
-        <LangVersion>preview</LangVersion>
+        <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
 
         <NeutralLanguage>en</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>

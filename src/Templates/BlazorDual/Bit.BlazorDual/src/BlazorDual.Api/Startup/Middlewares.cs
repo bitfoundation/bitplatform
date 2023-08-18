@@ -53,7 +53,7 @@ public class Middlewares
                 // https://bitplatform.dev/todo-template/cache-mechanism
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-                    MaxAge = TimeSpan.FromDays(365),
+                    MaxAge = TimeSpan.FromDays(7),
                     Public = true
                 };
             }
@@ -90,7 +90,7 @@ public class Middlewares
         {
             endpoints.MapControllers().RequireAuthorization();
 
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
             var healthCheckSettings = appsettings.HealthCheckSettings;
 

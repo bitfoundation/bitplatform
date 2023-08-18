@@ -30,7 +30,7 @@ public static class Middlewares
             {
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
-                    MaxAge = TimeSpan.FromDays(365),
+                    MaxAge = TimeSpan.FromDays(7),
                     Public = true
                 };
             }

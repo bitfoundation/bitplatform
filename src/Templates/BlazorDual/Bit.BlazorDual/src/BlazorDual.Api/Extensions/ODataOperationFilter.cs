@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
@@ -14,7 +14,7 @@ public class ODataOperationFilter : IOperationFilter
     {
         if (operation.Parameters == null) operation.Parameters = new List<OpenApiParameter>();
 
-        var descriptor = context.ApiDescription.ActionDescriptor as ControllerActionDescriptor;
+        var descriptor = (ControllerActionDescriptor)context.ApiDescription.ActionDescriptor;
 
         var odataQueryOptionsParameter = descriptor.Parameters.SingleOrDefault(p => typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType));
 

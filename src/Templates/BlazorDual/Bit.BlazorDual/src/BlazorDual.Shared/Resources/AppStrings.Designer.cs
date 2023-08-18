@@ -953,15 +953,6 @@ namespace BlazorDual.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Phone number.
-        /// </summary>
-        public static string PhoneNumber {
-            get {
-                return ResourceManager.GetString("PhoneNumber", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Privacy.
         /// </summary>
         public static string Privacy {

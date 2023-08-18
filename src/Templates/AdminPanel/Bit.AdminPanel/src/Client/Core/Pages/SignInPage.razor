@@ -28,8 +28,8 @@
                 <BitTextField Label="@Localizer[nameof(AppStrings.Email)]"
                               Placeholder="@Localizer[nameof(AppStrings.Email)]"
                               Type="BitTextFieldType.Email"
-                @bind-Value="_signInModel.UserName" />
-                <ValidationMessage For="@(() => _signInModel.UserName)" />
+                @bind-Value="_signInModel.Email" />
+                <ValidationMessage For="@(() => _signInModel.Email)" />
             </div>
 
             <div class="form-input-container">
