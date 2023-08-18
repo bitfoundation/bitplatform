@@ -18,5 +18,5 @@ public class User : IdentityUser<int>
 
     public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
 
-    public string DisplayName => FullName ?? NormalizedUserName;
+    public string? DisplayName => FullName ?? NormalizedUserName;
 }

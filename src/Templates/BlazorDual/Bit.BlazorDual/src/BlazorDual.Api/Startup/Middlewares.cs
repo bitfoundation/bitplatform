@@ -90,7 +90,7 @@ public class Middlewares
         {
             endpoints.MapControllers().RequireAuthorization();
 
-            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
             var healthCheckSettings = appsettings.HealthCheckSettings;
 

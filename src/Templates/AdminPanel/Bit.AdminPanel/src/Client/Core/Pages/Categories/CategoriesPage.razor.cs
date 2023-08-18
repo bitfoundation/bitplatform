@@ -59,7 +59,7 @@ public partial class CategoriesPage
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto) ?? new();
 
-                return BitDataGridItemsProviderResult.From(data.Items, (int)data.TotalCount);
+                return BitDataGridItemsProviderResult.From(data.Items!, (int)data.TotalCount);
             }
             catch
             {
