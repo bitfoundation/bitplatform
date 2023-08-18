@@ -96,10 +96,10 @@ private bool LabelTemplateValue;";
 
     private readonly string example4HTMLCode = @"
 <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
-<BitToggleButton @bind-IsChecked=""OneWayValue"" Label=""@(OneWayValue ? ""Off"" : ""On"")"" />
+<BitToggleButton @bind-IsChecked=""OneWayValue"" Text=""@(OneWayValue ? ""Off"" : ""On"")"" />
 
 <BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
-<BitToggleButton @bind-IsChecked=""TwoWayValue"" Label=""@(TwoWayValue ? ""Off"" : ""On"")"" />";
+<BitToggleButton @bind-IsChecked=""TwoWayValue"" Text=""@(TwoWayValue ? ""Off"" : ""On"")"" />";
     private readonly string example4CSharpCode = @"
 private bool OneWayValue;
 private bool TwoWayValue;";
