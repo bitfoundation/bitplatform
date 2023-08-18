@@ -113,8 +113,6 @@ public static class Services
 
         services.AddEndpointsApiExplorer();
 
-        services.AddAutoMapper(typeof(Program).Assembly);
-
         services.AddSwaggerGen();
 
         services.AddIdentity(configuration);

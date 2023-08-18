@@ -21,6 +21,7 @@
 
             <div class="form-input-container">
                 <BitTextField @bind-Value="_product.Name"
+                              AutoComplete="@BitAutoCompleteValue.Off"
                               Label="@Localizer[(nameof(AppStrings.Name))]"
                               Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
                 <ValidationMessage For="() => _product.Name" />
@@ -30,7 +31,7 @@
                 <BitDropdown @bind-Value="_selectedCategoyId"
                              IsMultiSelect="false"
                              Items="_allCategoryList"
-                             OnSelectItem="(item => _product.CategoryId = int.Parse(item.Value))"
+                             OnSelectItem="(item => { _product.CategoryId = int.Parse(item.Value); _product.CategoryName = item.Text; })"
                              Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]"
                              Label="@Localizer[(nameof(AppStrings.SelectCategory))]" />
                 <ValidationMessage For="@(() => _product.CategoryId)" />

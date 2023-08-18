@@ -21,8 +21,6 @@
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.2.0" />
-        <PackageReference Include="AutoMapper" Version="12.0.1" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -60,6 +58,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
+        <PackageReference Include="Riok.Mapperly" Version="3.1.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -72,9 +71,8 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="AutoMapper" />
-        <Using Include="AutoMapper.QueryableExtensions" />
         <Using Include="BlazorDual.Api.Data" />
+        <Using Include="BlazorDual.Api.Models" />
         <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Services.Contracts" />
     </ItemGroup>

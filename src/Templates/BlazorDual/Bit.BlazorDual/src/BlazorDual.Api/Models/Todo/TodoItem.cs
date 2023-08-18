@@ -1,6 +1,6 @@
-﻿using TodoTemplate.Server.Api.Models.Account;
+﻿using BlazorDual.Api.Models.Account;
 
-namespace TodoTemplate.Server.Api.Models.TodoItem;
+namespace BlazorDual.Api.Models.Todo;
 
 public class TodoItem
 {

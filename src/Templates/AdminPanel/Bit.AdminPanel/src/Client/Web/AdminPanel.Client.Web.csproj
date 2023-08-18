@@ -62,9 +62,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Newtonsoft.Json.dll" />
-        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Private.Xml.dll" />
-        <BlazorWebAssemblyLazyLoad Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="System.Data.Common.dll" />
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.dll" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.dll" />
+        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">

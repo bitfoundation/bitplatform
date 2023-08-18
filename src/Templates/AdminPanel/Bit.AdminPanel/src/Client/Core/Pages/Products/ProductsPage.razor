@@ -22,7 +22,7 @@
         <BitDataGrid @ref="_dataGrid" ItemsProvider="_productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="_pagination">
             <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
                                        Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
-            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]"  Property="p => p!.Name" Sortable="true" Class="column1">
+            <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value="ProductNameFilter"
                                   Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
@@ -40,5 +40,5 @@
     </div>
 </div>
 
-<CreateEditProductModal @ref="_modal" OnSave="WrapHandled(RefreshData)"/>
+<CreateEditProductModal @ref="_modal" OnSave="WrapHandled(RefreshData)" />
 <ConfirmMessageBox />

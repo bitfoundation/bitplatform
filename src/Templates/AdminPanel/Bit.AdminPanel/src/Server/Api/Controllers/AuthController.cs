@@ -31,7 +31,7 @@ public partial class AuthController : AppControllerBase
     {
         var existingUser = await _userManager.FindByNameAsync(signUpRequest.Email!);
 
-        var userToAdd = Mapper.Map<User>(signUpRequest);
+        var userToAdd = signUpRequest.Map();
 
         if (existingUser is not null)
         {
