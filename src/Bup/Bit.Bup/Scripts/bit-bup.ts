@@ -8,7 +8,7 @@
         return;
     }
 
-    window.addEventListener('load', runBup);
+    window.addEventListener('DOMContentLoaded', runBup);
 
 
     function runBup() {
@@ -89,7 +89,7 @@
                     handle('start');
                 }
 
-                if (fetchPromises.length < 10) return;
+                //if (fetchPromises.length < 10) return;
 
                 const percent = 100 * (++counter) / fetchPromises.length;
 
