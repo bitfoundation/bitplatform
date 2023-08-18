@@ -37,7 +37,6 @@ public static partial class Mapper
     public static partial ProductDto Map(this Product source);
     public static partial Product Map(this ProductDto source);
     public static partial void Patch(this ProductDto source, Product destination);
-
     [MapperIgnoreSource(nameof(Product.Category))]
     public static partial void Patch(this Product source, ProductDto destination);
 

@@ -73,8 +73,6 @@ public partial class CreateEditProductModal
                 await HttpClient.PutAsJsonAsync("Product/Update", _product, AppJsonContext.Default.ProductDto);
             }
 
-            await OnSave.InvokeAsync();
-
             _isOpen = false;
 
             await JsRuntime.SetBodyOverflow(false);
@@ -82,6 +80,8 @@ public partial class CreateEditProductModal
         finally
         {
             _isSaving = false;
+
+            await OnSave.InvokeAsync();
         }
     }
 
