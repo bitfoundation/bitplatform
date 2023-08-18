@@ -1,4 +1,4 @@
-﻿using BlazorDual.Shared.Dtos.TodoItem;
+﻿using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Web.Pages;
 
@@ -75,7 +75,8 @@ public partial class TodoPage
     {
         todoItem.IsDone = !todoItem.IsDone;
 
-        await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
+        (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto))
+            .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto))!.Patch(todoItem);
 
         FilterViewTodoItems();
     }
@@ -113,11 +114,10 @@ public partial class TodoPage
 
         try
         {
-            var newTodoItem = new TodoItemDto { Title = _newTodoTitle, Date = DateTimeOffset.Now };
+            var addedTodoItem = await (await HttpClient.PostAsJsonAsync("TodoItem/Create", new() { Title = _newTodoTitle }, AppJsonContext.Default.TodoItemDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto);
 
-            await HttpClient.PostAsJsonAsync("TodoItem/Create", newTodoItem, AppJsonContext.Default.TodoItemDto);
-
-            _allTodoItems.Add(newTodoItem);
+            _allTodoItems.Add(addedTodoItem!);
 
             FilterViewTodoItems();
 
@@ -160,7 +160,8 @@ public partial class TodoPage
             todoItem.IsUnderEdit = false;
             todoItem.Title = _underEditTodoItemTitle;
 
-            await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto);
+            (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto))!.Patch(todoItem);
 
             FilterViewTodoItems();
         }

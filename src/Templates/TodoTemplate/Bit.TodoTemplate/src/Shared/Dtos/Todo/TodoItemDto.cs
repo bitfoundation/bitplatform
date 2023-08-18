@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Shared.Dtos.TodoItem;
+﻿namespace TodoTemplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
 public class TodoItemDto

@@ -70,8 +70,11 @@
         <Using Include="BlazorDual.Web.Components" />
         <Using Include="BlazorDual.Web.Services.Contracts" />
         <Using Include="BlazorDual.Web.Services.Implementations" />
+        <Using Include="BlazorDual.Shared" />
 
         <Watch Remove="*.scss" />
+
+        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
     </ItemGroup>
 
     <ItemGroup>

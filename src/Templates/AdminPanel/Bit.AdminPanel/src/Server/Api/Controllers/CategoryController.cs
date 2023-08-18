@@ -1,4 +1,5 @@
-﻿using AdminPanel.Server.Api.Models.Categories;
+﻿using AdminPanel.Server.Api.Models;
+using AdminPanel.Server.Api.Models.Categories;
 using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.Server.Api.Controllers;
@@ -8,16 +9,16 @@ namespace AdminPanel.Server.Api.Controllers;
 public partial class CategoryController : AppControllerBase
 {
     [HttpGet, EnableQuery]
-    public IQueryable<CategoryDto> Get(CancellationToken cancellationToken)
+    public IQueryable<CategoryDto> Get()
     {
         return DbContext.Categories
-            .ProjectTo<CategoryDto>(Mapper.ConfigurationProvider, cancellationToken);
+            .Project();
     }
 
     [HttpGet("{id:int}")]
     public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
     {
-        var category = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var category = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (category is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
@@ -28,7 +29,7 @@ public partial class CategoryController : AppControllerBase
     [HttpGet]
     public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
-        var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+        var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
@@ -42,28 +43,32 @@ public partial class CategoryController : AppControllerBase
     }
 
     [HttpPost]
-    public async Task Create(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var categoryToAdd = Mapper.Map<Category>(dto);
+        var categoryToAdd = dto.Map();
 
         await DbContext.Categories.AddAsync(categoryToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return categoryToAdd.Map();
     }
 
     [HttpPut]
-    public async Task Update(CategoryDto dto, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
     {
         var categoryToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (categoryToUpdate is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        var updatedCategory = Mapper.Map(dto, categoryToUpdate);
-
-        DbContext.Categories.Update(categoryToUpdate);
+        dto.Patch(categoryToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        categoryToUpdate.Patch(dto);
+
+        return dto;
     }
 
     [HttpDelete("{id:int}")]

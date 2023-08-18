@@ -1,5 +1,5 @@
 ﻿using BlazorDual.Shared.Dtos.Account;
-using BlazorDual.Shared.Dtos.TodoItem;
+using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Shared.Dtos;
 

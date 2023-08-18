@@ -1,5 +1,5 @@
-﻿using BlazorDual.Api.Models.TodoItem;
-using BlazorDual.Shared.Dtos.TodoItem;
+﻿using BlazorDual.Api.Models.Todo;
+using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Api.Controllers;
 
@@ -8,19 +8,19 @@ namespace BlazorDual.Api.Controllers;
 public partial class TodoItemController : AppControllerBase
 {
     [HttpGet, EnableQuery]
-    public IQueryable<TodoItemDto> Get(CancellationToken cancellationToken)
+    public IQueryable<TodoItemDto> Get()
     {
         var userId = UserInformationProvider.GetUserId();
 
         return DbContext.TodoItems
             .Where(t => t.UserId == userId)
-            .ProjectTo<TodoItemDto>(Mapper.ConfigurationProvider, cancellationToken);
+            .Project();
     }
 
     [HttpGet("{id:int}")]
     public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
     {
-        var todoItem = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var todoItem = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (todoItem is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -29,30 +29,34 @@ public partial class TodoItemController : AppControllerBase
     }
 
     [HttpPost]
-    public async Task Create(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var todoItemToAdd = Mapper.Map<TodoItem>(dto);
+        var todoItemToAdd = dto.Map();
 
         todoItemToAdd.UserId = UserInformationProvider.GetUserId();
+
+        todoItemToAdd.Date = DateTimeOffset.UtcNow;
 
         await DbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return todoItemToAdd.Map();
     }
 
     [HttpPut]
-    public async Task Update(TodoItemDto dto, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
         var todoItemToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (todoItemToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
-        var updatedTodoItem = Mapper.Map(dto, todoItemToUpdate);
-
-        DbContext.TodoItems.Update(updatedTodoItem);
+        dto.Patch(todoItemToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return todoItemToUpdate.Map();
     }
 
     [HttpDelete("{id:int}")]

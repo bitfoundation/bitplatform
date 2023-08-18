@@ -1,5 +1,5 @@
 ﻿using TodoTemplate.Shared.Dtos.Account;
-using TodoTemplate.Shared.Dtos.TodoItem;
+using TodoTemplate.Shared.Dtos.Todo;
 
 namespace TodoTemplate.Shared.Dtos;
 
