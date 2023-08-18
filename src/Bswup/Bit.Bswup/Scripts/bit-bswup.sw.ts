@@ -125,18 +125,24 @@ async function handleFetch(e) {
 
     const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
 
-    let asset = UNIQUE_ASSETS.find(a => shouldServeIndexHtml
-        ? a.url[caseMethod]() === requestUrl[caseMethod]()
-        : new URL(requestUrl).pathname.endsWith(a.url)
+    // the assets url are only the pathname part of the actual request url!
+    // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
+    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url': 'reqUrl'][caseMethod]() === requestUrl[caseMethod]()
     );
 
+    if (!asset) {
+        const url = new URL(requestUrl);
+        const reqUrl = `${url.origin}${url.pathname}`;
+        asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
+    }
+
     if (!asset?.url) {
-        diagFetch('+++ handleFetch ended - invalid asset:', start, asset, requestUrl, e, req);
+        diagFetch('+++ handleFetch ended - asset not found:', start, asset, requestUrl, e, req);
 
         return fetch(req);
     }
 
-    const cacheUrl = `${asset.url}.${asset.hash || ''}`;
+    const cacheUrl = createCacheUrl(asset);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
     const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
@@ -253,7 +259,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                     return Promise.reject(response.statusText);
                 }
 
-                const cacheUrl = `${asset.url}.${asset.hash || ''}`;
+                const cacheUrl = createCacheUrl(asset);
                 await bitBswupCache.put(cacheUrl, response.clone());
 
                 if (report) {
@@ -269,6 +275,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
             return Promise.reject(err);
         }
     }
+}
+
+function createCacheUrl(asset: any) {
+    return asset.hash ? `${asset.url}.${asset.hash}` : asset.url;
 }
 
 function createNewAssetRequest(asset) {
@@ -295,9 +305,12 @@ function uniqueAssets(assets) {
     const unique = {};
     const distinct = [];
     for (let i = 0; i < assets.length; i++) {
-        if (unique[assets[i].url]) continue;
-        distinct.push(assets[i]);
-        unique[assets[i].url] = 1;
+        const a = assets[i];
+        if (unique[a.url]) continue;
+
+        a.reqUrl = new Request(a.url).url;
+        distinct.push(a);
+        unique[a.url] = 1;
     }
     return distinct;
 }
