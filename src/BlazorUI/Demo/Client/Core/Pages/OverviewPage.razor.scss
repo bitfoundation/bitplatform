@@ -57,6 +57,10 @@
     background-repeat: no-repeat;
     margin-bottom: rem2(8px);
 
+    &.buttons {
+        background-image: url('images/icon/input-icon.svg');
+    }
+
     &.basic-inputs {
         background-image: url('images/icon/input-icon.svg');
     }
