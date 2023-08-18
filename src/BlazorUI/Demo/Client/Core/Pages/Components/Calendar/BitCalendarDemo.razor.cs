@@ -100,6 +100,15 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "MonthPickerPosition",
+            Type = "BitCalendarMonthPickerPosition",
+            DefaultValue = "BitCalendarMonthPickerPosition.Besides",
+            LinkType = LinkType.Link,
+            Href ="#month-position-enum",
+            Description = "Used to set month picker position.",
+        },
+        new()
+        {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
             Description = "Callback for when the on selected date changed.",
@@ -110,13 +119,6 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the \"Go to today\" link should be shown or not."
-        },
-        new()
-        {
-            Name = "ShowMonthPickerAsOverlay",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
         },
         new()
         {
@@ -160,6 +162,30 @@ public partial class BitCalendarDemo
             Description = "Show time picker for select times.",
         }
     };
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "month-position-enum",
+            Name = "BitCalendarMonthPickerPosition",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "Beside",
+                    Description = "Show the month picker at the beside.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Description = "Show the month picker as overlay.",
+                    Value = "1",
+                }
+            }
+        }
+    };
 
 
 
@@ -183,9 +209,9 @@ public partial class BitCalendarDemo
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     <BitButton ButtonType=""BitButtonType.Reset""
-                ButtonStyle=""BitButtonStyle.Standard""
-                OnClick=""() => { formValidationCalendarModel = new(); SuccessMessage=string.Empty; }"">
-                Reset
+               ButtonStyle=""BitButtonStyle.Standard""
+               OnClick=""() => { formValidationCalendarModel = new(); SuccessMessage=string.Empty; }"">
+        Reset
     </BitButton>
 </EditForm>
 

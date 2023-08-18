@@ -6,7 +6,8 @@
 
 <ComponentDemo ComponentName="Calendar"
                ComponentDescription="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
-               ComponentParameters="componentParameters">
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-content">
@@ -49,7 +50,7 @@
                     <BitButton ButtonType="BitButtonType.Reset"
                                ButtonStyle="BitButtonStyle.Standard"
                                OnClick="() => { formValidationCalendarModel = new(); SuccessMessage=string.Empty; }">
-                               Reset
+                        Reset
                     </BitButton>
                 </EditForm>
 
@@ -87,8 +88,8 @@
             </div>
             <div class="example-content">
                 <BitCalendar AriaLabel="Select a date"
-                                MaxDate="DateTimeOffset.Now.AddDays(5)"
-                                MinDate="DateTimeOffset.Now.AddDays(-5)" />
+                             MaxDate="DateTimeOffset.Now.AddDays(5)"
+                             MinDate="DateTimeOffset.Now.AddDays(-5)" />
             </div>
             <br />
             <div class="example-desc">
@@ -96,8 +97,8 @@
             </div>
             <div class="example-content">
                 <BitCalendar AriaLabel="Select a date"
-                                MaxDate="DateTimeOffset.Now.AddMonths(1)"
-                                MinDate="DateTimeOffset.Now.AddMonths(-2)" />
+                             MaxDate="DateTimeOffset.Now.AddMonths(1)"
+                             MinDate="DateTimeOffset.Now.AddMonths(-2)" />
             </div>
             <br />
             <div class="example-desc">
@@ -213,7 +214,7 @@
     private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
     private DateTimeOffset? formattedDateTime = DateTimeOffset.Now;
-    private FormValidationCalendarModel formValidationCalendarModel = new ();
+    private FormValidationCalendarModel formValidationCalendarModel = new();
     private string SuccessMessage = string.Empty;
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
 
