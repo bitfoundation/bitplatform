@@ -354,10 +354,10 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example10HTMLCode = @"
 <BitCalendar MonthPickerPosition=""@monthPickerPosition"" AriaLabel=""Select a date"" />
-<BitToggleButton Label=""Toggle Month picker position"" OnChange=""ToggleMonthPickerPosition"" />
+<BitToggleButton Label=""Toggle month picker position"" OnChange=""ToggleMonthPickerPosition"" />
 
 <BitCalendar @bind-IsMonthPickerVisible=""@isMonthPickerVisible"" AriaLabel=""Select a date"" />
-<BitToggleButton Label=""Toggle Month picker visibility"" @bind-IsChecked=""@isMonthPickerVisible"" />";
+<BitToggleButton Label=""Toggle month picker visibility"" @bind-IsChecked=""@isMonthPickerVisible"" />";
     private readonly string example10CSharpCode = @"
 private bool isMonthPickerVisible = true;
 private BitCalendarMonthPickerPosition monthPickerPosition;
