@@ -28,10 +28,12 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
-        
-        <LangVersion>preview</LangVersion>
+
+        <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
         
         <NeutralLanguage>en</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>

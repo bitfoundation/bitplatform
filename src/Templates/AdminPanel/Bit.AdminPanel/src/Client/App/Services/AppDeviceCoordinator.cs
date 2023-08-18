@@ -12,7 +12,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
         return dimensionPixelSize / density;
 #elif IOS
         var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
-        return window.StatusBarManager.StatusBarFrame.Height;
+        return window!.StatusBarManager!.StatusBarFrame.Height;
 #elif WINDOWS
         return 30;
 #elif MACCATALYST
@@ -24,7 +24,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 
     public async Task SetDeviceTheme(bool isDark)
     {
-        Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
+        Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if ANDROID
         var window = Platform.CurrentActivity?.Window;
         if (isDark)

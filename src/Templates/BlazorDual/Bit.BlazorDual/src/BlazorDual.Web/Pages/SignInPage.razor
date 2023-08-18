@@ -19,11 +19,11 @@
         <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
 
         <div class="form-input-container">
-            <BitTextField @bind-Value="_signInModel.UserName"
+            <BitTextField @bind-Value="_signInModel.Email"
                           Label="@Localizer[nameof(AppStrings.Email)]"
                           Placeholder="@Localizer[nameof(AppStrings.Email)]"
                           Type="BitTextFieldType.Email" />
-            <ValidationMessage For="@(() => _signInModel.UserName)" />
+            <ValidationMessage For="@(() => _signInModel.Email)" />
         </div>
 
         <div class="form-input-container">

@@ -102,6 +102,9 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorDual.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorDual.Shared.xml"));
+
             options.OperationFilter<ODataOperationFilter>();
 
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme

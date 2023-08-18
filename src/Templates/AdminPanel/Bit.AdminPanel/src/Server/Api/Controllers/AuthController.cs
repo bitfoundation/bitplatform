@@ -22,6 +22,10 @@ public partial class AuthController : AppControllerBase
 
     [AutoInject] private IStringLocalizer<EmailStrings> _emailLocalizer = default!;
 
+    /// <summary>
+    /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
+    /// These comments will also be used in swagger docs and ui.
+    /// </summary>
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
@@ -189,10 +193,10 @@ public partial class AuthController : AppControllerBase
     [HttpPost]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
-        var user = await _userManager.FindByNameAsync(signInRequest.UserName);
+        var user = await _userManager.FindByNameAsync(signInRequest.Email);
 
         if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.UserName!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.Email!));
 
         var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password, lockoutOnFailure: true);
 
@@ -200,7 +204,7 @@ public partial class AuthController : AppControllerBase
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd).Value.ToString("mm\\:ss")));
 
         if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.Email!));
 
         return await _jwtService.GenerateToken(user);
     }

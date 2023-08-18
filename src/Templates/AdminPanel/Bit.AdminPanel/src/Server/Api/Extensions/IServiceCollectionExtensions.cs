@@ -108,6 +108,9 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "AdminPanel.Server.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "AdminPanel.Shared.xml"));
+
             options.OperationFilter<ODataOperationFilter>();
 
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme

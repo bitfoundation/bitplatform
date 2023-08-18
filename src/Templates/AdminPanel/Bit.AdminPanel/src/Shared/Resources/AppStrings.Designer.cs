@@ -1259,15 +1259,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Phone number.
-        /// </summary>
-        public static string PhoneNumber {
-            get {
-                return ResourceManager.GetString("PhoneNumber", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Price.
         /// </summary>
         public static string Price {

@@ -9,7 +9,7 @@ public class StateService : IStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;
     private readonly PersistentComponentState _applicationState;
-    private readonly ConcurrentDictionary<string, object?> _values = new ConcurrentDictionary<string, object?>();
+    private readonly ConcurrentDictionary<string, object?> _values = new();
 
     public StateService(PersistentComponentState applicationState)
     {

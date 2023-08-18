@@ -30,8 +30,6 @@ public partial class SignUpPage
 
         try
         {
-            _signUpModel.Email = _signUpModel.UserName;
-
             await HttpClient.PostAsJsonAsync("Auth/SignUp", _signUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             _isSignedUp = true;

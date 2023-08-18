@@ -103,7 +103,7 @@ public partial class MainPage
                 var window = handler.PlatformView.WindowScene;
                 if (window != null)
                 {
-                    window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+                    window.Titlebar!.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
                 }
 #elif IOS
                 var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;

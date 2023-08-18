@@ -687,9 +687,6 @@ Please confirm your email by clicking on the link.</value>
   <data name="IsAcceptPrivacy" xml:space="preserve">
     <value>Is accept privacy policy?</value>
   </data>
-  <data name="PhoneNumber" xml:space="preserve">
-    <value>Phone number</value>
-  </data>
   <data name="UserName" xml:space="preserve">
     <value>Username</value>
   </data>
