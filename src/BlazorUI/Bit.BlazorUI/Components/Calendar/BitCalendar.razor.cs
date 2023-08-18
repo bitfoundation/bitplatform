@@ -11,6 +11,7 @@ public partial class BitCalendar
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
+    private bool isMonthPickerVisible = true;
     private string focusClass = string.Empty;
     private string _focusClass
     {
@@ -22,9 +23,8 @@ public partial class BitCalendar
         }
     }
 
-    private bool _isMonthPickerOverlayOnTop;
-    private bool _showMonthPicker = true;
-    private bool _showMonthPickerAsOverlayInternal;
+    private bool _showYearView;
+    private bool _showMonthPicker;
     private int[,] _currentMonthCalendar = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
     private int _currentDay;
     private int _currentMonth;
@@ -156,15 +156,19 @@ public partial class BitCalendar
     /// </summary>
     [Parameter] public bool IsMonthPickerVisible
     {
-        get => _showMonthPicker;
+        get => isMonthPickerVisible;
         set
         {
-            if (_showMonthPicker == value) return;
+            if (isMonthPickerVisible == value) return;
 
-            _showMonthPicker = value;
-        }
+            isMonthPickerVisible = value;
+
+            if (value is false)
+            {
+                _showMonthPicker = false;
+            }
+        } 
     }
-
     /// <summary>
     /// MaxDate for the Calendar
     /// </summary>
@@ -181,6 +185,11 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
+    /// Used to set month picker position. 
+    /// </summary>
+    [Parameter] public BitCalendarMonthPickerPosition MonthPickerPosition { get; set; } = BitCalendarMonthPickerPosition.Besides;
+
+    /// <summary>
     /// Callback for when the date changes.
     /// </summary>
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
@@ -189,20 +198,6 @@ public partial class BitCalendar
     /// Whether the "Go to today" link should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
-
-    /// <summary>
-    /// Show month picker on top of date picker when visible.
-    /// </summary>
-    [Parameter] public bool ShowMonthPickerAsOverlay
-    {
-        get => _showMonthPickerAsOverlayInternal;
-        set
-        {
-            if (_showMonthPickerAsOverlayInternal == value) return;
-
-            _showMonthPickerAsOverlayInternal = value;
-        }
-    }
 
     /// <summary>
     /// Whether the calendar should show the week number (weeks 1 to 53) before each week row.
@@ -377,7 +372,7 @@ public partial class BitCalendar
         _currentMonth = month;
         _currentYear = _displayYear;
         CreateMonthCalendar(_currentYear, _currentMonth);
-        if (_showMonthPickerAsOverlayInternal is false) return;
+        if (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides) return;
 
         ToggleMonthPickerAsOverlay();
     }
@@ -397,7 +392,7 @@ public partial class BitCalendar
     {
         if (IsEnabled is false) return;
 
-        _showMonthPicker = !_showMonthPicker;
+        _showYearView = !_showYearView;
     }
 
     private void HandleYearChange(ChangeDirection direction)
@@ -626,7 +621,7 @@ public partial class BitCalendar
         var todayMonth = Culture.DateTimeFormat.Calendar.GetMonth(DateTime.Now);
         var todayYear = Culture.DateTimeFormat.Calendar.GetYear(DateTime.Now);
 
-        if (_showMonthPickerAsOverlayInternal)
+        if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay)
         {
             return (_yearRangeFrom == todayYear - 1 && _yearRangeTo == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
         }
@@ -665,7 +660,9 @@ public partial class BitCalendar
     }
 
     private void ToggleMonthPickerAsOverlay()
-        => _isMonthPickerOverlayOnTop = _isMonthPickerOverlayOnTop is false;
+    {
+        _showMonthPicker = !_showMonthPicker;
+    }
 
     private int GetValueForComparison(int firstDay)
     {

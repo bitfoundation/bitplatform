@@ -127,7 +127,6 @@
             <div class="example-desc">
                 In this sample, you can see how to implement a custom template for different parts of BitCalendar.
             </div>
-            
             <div class="example-content">
                 <BitCalendar AriaLabel="Select a date">
                     <DayCellTemplate>
@@ -137,7 +136,7 @@
                     </DayCellTemplate>
                 </BitCalendar>
             </div>
-                <br />
+            <br />
             <br />
             <div class="example-content">
                 <BitCalendar AriaLabel="Select a date">
@@ -172,12 +171,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="MonthPicker as overlay" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
+    <ComponentExampleBox Title="Month Position and Visibility" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
-            <div class="example-content">
-                <BitCalendar @bind-ShowMonthPickerAsOverlay="@isShowingMonthPicker" AriaLabel="Select a date" />
+            <div class="example-desc">
+                In this sample, you can change month picker position.
+                <br />
+                When you change its position to <strong>Overlay</strong> you can see month picker by tapping on BitCalendar's header.
             </div>
-            <BitToggleButton Label="Toggle Month picker" @bind-IsChecked="@isShowingMonthPicker" />
+            <div class="example-content">
+                <BitCalendar MonthPickerPosition="@monthPickerPosition" AriaLabel="Select a date" />
+            </div>
+            <BitToggleButton Label="Toggle Month picker position" OnChange="ToggleMonthPickerPosition" />
+            <br />
+            <br />
+            <div class="example-desc">
+                In this sample, you can fully hide or visible month picker.
+            </div>
+            <div class="example-content">
+                <BitCalendar @bind-IsMonthPickerVisible="@isMonthPickerVisible" AriaLabel="Select a date" />
+            </div>
+            <BitToggleButton Label="Toggle Month picker visibility" @bind-IsChecked="@isMonthPickerVisible" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -199,7 +212,13 @@
     private string SuccessMessage = string.Empty;
     private CultureInfo Culture = CultureInfo.CurrentUICulture;
 
-    private bool isShowingMonthPicker;
+    private bool isMonthPickerVisible = true;
+    private BitCalendarMonthPickerPosition monthPickerPosition;
+
+    private void ToggleMonthPickerPosition(bool newState)
+    {
+        monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Besides : BitCalendarMonthPickerPosition.Overlay;
+    }
 
     private async Task HandleValidSubmit()
     {

@@ -322,10 +322,19 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example10HTMLCode = @"
-<BitToggleButton Label=""Toggle Month picker"" @bind-IsChecked=""@isMonthPickerVisible"" />
-<BitCalendar @bind-ShowMonthPickerAsOverlay=""@isMonthPickerVisible"" AriaLabel=""Select a date"" />";
+<BitCalendar MonthPickerPosition=""@monthPickerPosition"" AriaLabel=""Select a date"" />
+<BitToggleButton Label=""Toggle Month picker position"" OnChange=""ToggleMonthPickerPosition"" />
+
+<BitCalendar @bind-IsMonthPickerVisible=""@isMonthPickerVisible"" AriaLabel=""Select a date"" />
+<BitToggleButton Label=""Toggle Month picker visibility"" @bind-IsChecked=""@isMonthPickerVisible"" />";
     private readonly string example10CSharpCode = @"
-private bool isShowingMonthPicker;";
+private bool isMonthPickerVisible = true;
+private BitCalendarMonthPickerPosition monthPickerPosition;
+
+private void ToggleMonthPickerPosition(bool newState)
+{
+    monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Besides : BitCalendarMonthPickerPosition.Overlay;
+}";
 
     private readonly string example11HTMLCode = @"
 <BitCalendar @bind-Value=""@selectedDateTime"" ShowTimePicker=""true"" AriaLabel=""Select a date"" />
