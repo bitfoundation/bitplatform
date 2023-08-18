@@ -364,7 +364,7 @@ private BitCalendarMonthPickerPosition monthPickerPosition;
 
 private void ToggleMonthPickerPosition(bool newState)
 {
-    monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Besides : BitCalendarMonthPickerPosition.Overlay;
+    monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides;
 }";
 
     private readonly string example11HTMLCode = @"
