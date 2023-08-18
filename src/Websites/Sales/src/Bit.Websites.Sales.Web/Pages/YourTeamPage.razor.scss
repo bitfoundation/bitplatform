@@ -21,9 +21,9 @@
 
 .sec-title {
     font-weight: bold;
-    font-size: rem2(44px);
-    margin-bottom: 1rem;
     text-align: center;
+    margin-bottom: 2rem;
+    font-size: rem2(44px);
 
     @include lg {
         font-size: rem2(34px);
@@ -107,24 +107,27 @@
 
     .success-is-journey {
         flex-flow: row nowrap;
-        justify-content: flex-start;
         align-items: flex-start;
         padding-top: rem2(96px);
+        justify-content: flex-start;
 
         .sec-body {
             .sec-title {
                 font-weight: 700;
-                font-size: rem2(40px);
-                line-height: rem2(42px);
                 text-align: unset;
+                font-size: rem2(40px);
+                line-height: rem2(52px);
                 margin-bottom: rem2(24px);
 
                 @include md {
-                    font-size: rem2(26px);
+                    font-size: rem2(32px);
+                    line-height: rem2(42px);
                 }
 
                 @include sm {
                     text-align: center;
+                    font-size: rem2(26px);
+                    line-height: rem2(36px);
                 }
             }
 
@@ -194,7 +197,7 @@
             flex-basis: 100%;
 
             .step {
-                padding-left: rem2(60px);
+                /*padding-left: rem2(60px);*/
                 background-position-y: rem2(3px);
                 background-repeat: no-repeat;
                 margin-bottom: 3rem;
@@ -230,23 +233,23 @@
             }
 
             .step-1 {
-                background-image: url('/images/process/sw-dev/sw_dev_1.svg');
+                /*background-image: url('/images/process/sw-dev/sw_dev_1.svg');*/
             }
 
             .step-2 {
-                background-image: url('/images/process/sw-dev/sw_dev_2.svg');
+                /*background-image: url('/images/process/sw-dev/sw_dev_2.svg');*/
             }
 
             .step-3 {
-                background-image: url('/images/process/sw-dev/sw_dev_3.svg');
+                /*background-image: url('/images/process/sw-dev/sw_dev_3.svg');*/
             }
 
             .step-4 {
-                background-image: url('/images/process/sw-dev/sw_dev_4.svg');
+                /*background-image: url('/images/process/sw-dev/sw_dev_4.svg');*/
             }
 
             .step-5 {
-                background-image: url('/images/process/sw-dev/sw_dev_5.svg');
+                /*background-image: url('/images/process/sw-dev/sw_dev_5.svg');*/
             }
         }
     }
