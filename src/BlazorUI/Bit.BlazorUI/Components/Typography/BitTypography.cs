@@ -52,7 +52,7 @@ public partial class BitTypography : BitComponentBase
 
     protected override string RootElementClass => "bit-tpg";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => $"bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}")
                     .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)

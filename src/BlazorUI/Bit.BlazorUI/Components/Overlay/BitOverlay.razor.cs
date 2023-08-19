@@ -64,7 +64,7 @@ public partial class BitOverlay
 
     protected override string RootElementClass => "bit-ovl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");

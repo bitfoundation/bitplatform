@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Pivot;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Pivot;
 
 public partial class BitPivotDemo
 {
@@ -564,10 +561,10 @@ private BitPivotItem SelectedPivotItem;";
     <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisibility"">Hide/Show Biz</BitButton>
 </div>";
     private readonly string example9CSharpCode = @"
-private BitComponentVisibility PivotItemVisibility;
+private BitVisibility PivotItemVisibility;
 private void TogglePivotItemVisibility()
 {
-    PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
+    PivotItemVisibility = PivotItemVisibility == BitVisibility.Visible ? BitVisibility.Collapsed : BitVisibility.Visible;
 }";
 
     private readonly string example10HtmlCode = @"

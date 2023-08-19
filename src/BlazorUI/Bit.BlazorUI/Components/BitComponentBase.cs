@@ -5,34 +5,30 @@ public abstract partial class BitComponentBase : ComponentBase
     private string? style;
     private string? @class;
     private bool isEnabled = true;
-    private BitComponentVisibility visibility;
+    private BitVisibility visibility;
 
     protected bool Rendered { get; private set; }
 
     private Guid _uniqueId = Guid.NewGuid();
 
+    /// <summary>
+    /// The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.
+    /// </summary>
     public Guid UniqueId => _uniqueId;
 
+    /// <summary>
+    /// The ElementReference of the root element.
+    /// </summary>
     public ElementReference RootElement { get; internal set; }
 
+
     /// <summary>
-    /// Custom style for the root element of the component
+    /// The aria-label of the control for the benefit of screen readers
     /// </summary>
-    [Parameter]
-    public string? Style
-    {
-        get => style;
-        set
-        {
-            if (style == value) return;
-
-            style = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter] public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Custom CSS class for the root element of the component
+    /// Custom CSS class for the root element of the component.
     /// </summary>
     [Parameter]
     public string? Class
@@ -48,7 +44,12 @@ public abstract partial class BitComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Whether or not the component is enabled
+    /// Capture and render additional attributes in addition to the component's parameters
+    /// </summary>
+    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Whether or not the component is enabled.
     /// </summary>
     [Parameter]
     public bool IsEnabled
@@ -64,10 +65,26 @@ public abstract partial class BitComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Whether the component is visible, hidden, collapsed
+    /// Custom CSS style for the root element of the component.
     /// </summary>
     [Parameter]
-    public BitComponentVisibility Visibility
+    public string? Style
+    {
+        get => style;
+        set
+        {
+            if (style == value) return;
+
+            style = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether the component is visible, hidden or collapsed.
+    /// </summary>
+    [Parameter]
+    public BitVisibility Visibility
     {
         get => visibility;
         set
@@ -75,20 +92,11 @@ public abstract partial class BitComponentBase : ComponentBase
             if (visibility == value) return;
 
             visibility = value;
-            OnComponentVisibilityChanged(value);
+            OnVisibilityChanged(value);
             StyleBuilder.Reset();
         }
     }
 
-    /// <summary>
-    /// The aria-label of the control for the benefit of screen readers
-    /// </summary>
-    [Parameter] public string? AriaLabel { get; set; }
-
-    /// <summary>
-    /// Capture and render additional attributes in addition to the component's parameters
-    /// </summary>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -114,7 +122,7 @@ public abstract partial class BitComponentBase : ComponentBase
                     break;
 
                 case nameof(Visibility):
-                    Visibility = (BitComponentVisibility)parameter.Value;
+                    Visibility = (BitVisibility)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -133,13 +141,14 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected override void OnInitialized()
     {
-        RegisterComponentStyles();
+        RegisterCssStyles();
+
         StyleBuilder
             .Register(() => style)
             .Register(() => visibility switch
             {
-                BitComponentVisibility.Hidden => "visibility:hidden",
-                BitComponentVisibility.Collapsed => "display:none",
+                BitVisibility.Hidden => "visibility:hidden",
+                BitVisibility.Collapsed => "display:none",
                 _ => string.Empty
             });
 
@@ -147,7 +156,8 @@ public abstract partial class BitComponentBase : ComponentBase
               .Register(() => RootElementClass)
               .Register(() => (IsEnabled ? string.Empty : "bit-dis"));
 
-        RegisterComponentClasses();
+        RegisterCssClasses();
+
         ClassBuilder.Register(() => @class);
 
         base.OnInitialized();
@@ -165,9 +175,9 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
 
-    protected virtual void RegisterComponentStyles() { }
+    protected virtual void RegisterCssStyles() { }
 
-    protected virtual void RegisterComponentClasses() { }
+    protected virtual void RegisterCssClasses() { }
 
-    protected virtual void OnComponentVisibilityChanged(BitComponentVisibility visibility) { }
+    protected virtual void OnVisibilityChanged(BitVisibility visibility) { }
 }

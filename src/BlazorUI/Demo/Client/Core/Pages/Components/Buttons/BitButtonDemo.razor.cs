@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
 public partial class BitButtonDemo
 {
@@ -161,11 +158,11 @@ private int standardCounter;";
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
     private readonly string example3HTMLCode = @"
-Visible: [ <BitButton Visibility=""BitComponentVisibility.Visible"">Visible Button</BitButton> ]
+Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 
-Hidden: [ <BitButton Visibility=""BitComponentVisibility.Hidden"">Hidden Button</BitButton> ]
+Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 
-Collapsed: [ <BitButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Button</BitButton> ]";
+Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">

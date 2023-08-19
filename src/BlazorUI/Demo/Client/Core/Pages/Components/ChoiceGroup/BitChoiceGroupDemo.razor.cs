@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ChoiceGroup;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ChoiceGroup;
 
 public partial class BitChoiceGroupDemo
 {

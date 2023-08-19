@@ -402,7 +402,7 @@ public partial class BitDateRangePicker
         return base.OnInitializedAsync();
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 

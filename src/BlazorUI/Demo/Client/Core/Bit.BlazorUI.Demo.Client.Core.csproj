@@ -33,16 +33,17 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.10" />
 
-        <Using Include="Microsoft.AspNetCore.Components" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
-        <Using Include="Microsoft.JSInterop" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Shared" />
-        <Using Include="Bit.BlazorUI" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Shared" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Models" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

@@ -163,7 +163,7 @@ public partial class BitPersona
 
     protected override string RootElementClass => "bit-prs";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Size.HasValue() ? $"{RootElementClass}-{Size}" : string.Empty);
 

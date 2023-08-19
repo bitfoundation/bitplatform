@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
 public partial class BitIconButtonDemo
 {
@@ -179,9 +176,9 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""@BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
     private readonly string example3HTMLCode = @"
-Visible: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitComponentVisibility.Visible"" /> ]
-Hidden: [ <BitIconButton Visibility=""BitComponentVisibility.Hidden"" /> ]
-Collapsed: [<BitIconButton Visibility=""BitComponentVisibility.Collapsed"" /> ]";
+Visible: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitVisibility.Visible"" /> ]
+Hidden: [ <BitIconButton Visibility=""BitVisibility.Hidden"" /> ]
+Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 
     private readonly string example4HTMLCode = @"
 <BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with AriaDescription"" />

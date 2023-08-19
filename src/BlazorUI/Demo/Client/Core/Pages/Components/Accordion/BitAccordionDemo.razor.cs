@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Accordion;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Accordion;
 
 public partial class BitAccordionDemo
 {

@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.OtpInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.OtpInput;
 
 public partial class BitOtpInputDemo
 {

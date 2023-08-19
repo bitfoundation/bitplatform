@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Link;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Link;
 
 public partial class BitLinkDemo
 {

@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Loading;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Loading;
 
 public partial class BitLoadingDemo
 {

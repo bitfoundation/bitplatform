@@ -114,7 +114,7 @@ public partial class BitModal : IDisposable
 
     protected override string RootElementClass => "bit-mdl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
 

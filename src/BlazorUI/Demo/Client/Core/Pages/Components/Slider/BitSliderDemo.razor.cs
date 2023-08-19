@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Slider;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Slider;
 
 public partial class BitSliderDemo
 {
