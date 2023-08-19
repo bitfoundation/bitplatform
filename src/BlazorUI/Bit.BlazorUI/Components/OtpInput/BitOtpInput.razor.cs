@@ -119,7 +119,7 @@ public partial class BitOtpInput
         }
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Direction switch
         {

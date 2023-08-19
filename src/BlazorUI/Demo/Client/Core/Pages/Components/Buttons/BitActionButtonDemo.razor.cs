@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
 public partial class BitActionButtonDemo
 {
@@ -203,11 +200,11 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3HTMLCode = @"
-Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitComponentVisibility.Visible"">Visible Action Button</BitActionButton> ]
+Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitVisibility.Visible"">Visible Action Button</BitActionButton> ]
 
-Hidden: [ <BitActionButton Visibility=""BitComponentVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
+Hidden: [ <BitActionButton Visibility=""BitVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
 
-Collapsed: [ <BitActionButton Visibility=""BitComponentVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
+Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
 
     private readonly string example4HTMLCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">

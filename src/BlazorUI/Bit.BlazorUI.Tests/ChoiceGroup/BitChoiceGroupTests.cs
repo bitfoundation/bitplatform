@@ -204,11 +204,11 @@ public class BitChoiceGroupTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitComponentVisibility.Visible),
-      DataRow(BitComponentVisibility.Hidden),
-      DataRow(BitComponentVisibility.Collapsed),
+      DataRow(BitVisibility.Visible),
+      DataRow(BitVisibility.Hidden),
+      DataRow(BitVisibility.Collapsed),
     ]
-    public void BitChoiceGroupShouldTakeCustomVisibility(BitComponentVisibility visibility)
+    public void BitChoiceGroupShouldTakeCustomVisibility(BitVisibility visibility)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -220,13 +220,13 @@ public class BitChoiceGroupTests : BunitTestContext
 
         switch (visibility)
         {
-            case BitComponentVisibility.Visible:
+            case BitVisibility.Visible:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains(""));
                 break;
-            case BitComponentVisibility.Hidden:
+            case BitVisibility.Hidden:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility:hidden"));
                 break;
-            case BitComponentVisibility.Collapsed:
+            case BitVisibility.Collapsed:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("display:none"));
                 break;
         }

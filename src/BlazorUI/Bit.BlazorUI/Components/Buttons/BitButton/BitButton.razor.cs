@@ -78,7 +78,7 @@ public partial class BitButton
 
     protected override string RootElementClass => "bit-btn";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                     ? $"{RootElementClass}-pri"

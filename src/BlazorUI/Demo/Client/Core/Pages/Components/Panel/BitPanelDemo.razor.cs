@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Panel;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Panel;
 
 public partial class BitPanelDemo
 {

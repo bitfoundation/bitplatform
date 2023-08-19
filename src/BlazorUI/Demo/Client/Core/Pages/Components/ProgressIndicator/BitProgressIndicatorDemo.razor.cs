@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ProgressIndicator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ProgressIndicator;
 
 public partial class BitProgressIndicatorDemo
 {

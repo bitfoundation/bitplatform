@@ -135,7 +135,7 @@ public partial class BitToggleButton
 
     protected override string RootElementClass => "bit-tgb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                           ? $"{RootElementClass}-pri"

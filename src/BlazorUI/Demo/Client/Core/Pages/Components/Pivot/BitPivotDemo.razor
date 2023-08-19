@@ -472,12 +472,12 @@
     private string SelectedKey = "Foo";
     private BitPivotItem SelectedPivotItem;
     private string OverridePivotSelectedKey = "1";
-    private BitComponentVisibility PivotItemVisibility;
+    private BitVisibility PivotItemVisibility;
     private bool PivotEnabled = true;
     private bool PivotItemEnabled = true;
 
     private void TogglePivotItemVisibility()
     {
-        PivotItemVisibility = PivotItemVisibility == BitComponentVisibility.Visible ? BitComponentVisibility.Collapsed : BitComponentVisibility.Visible;
+        PivotItemVisibility = PivotItemVisibility == BitVisibility.Visible ? BitVisibility.Collapsed : BitVisibility.Visible;
     }
 }

@@ -181,7 +181,7 @@ public partial class BitSplitButton<TItem> where TItem : class
 
 
     protected override string RootElementClass => "bit-spl";
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsEnabled is false
                                       ? string.Empty

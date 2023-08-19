@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 public enum LinkType
 {

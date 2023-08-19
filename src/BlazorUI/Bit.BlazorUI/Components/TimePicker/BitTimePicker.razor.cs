@@ -213,7 +213,7 @@ public partial class BitTimePicker
 
     protected override string RootElementClass => "bit-tpc";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
 

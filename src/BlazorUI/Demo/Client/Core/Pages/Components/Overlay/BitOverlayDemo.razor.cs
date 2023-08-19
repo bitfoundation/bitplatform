@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Overlay;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Overlay;
 
 public partial class BitOverlayDemo
 {

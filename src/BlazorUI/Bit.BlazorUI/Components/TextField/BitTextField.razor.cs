@@ -331,7 +331,7 @@ public partial class BitTextField
 
     protected override string RootElementClass => "bit-txt";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
                                     ? $"{RootElementClass}-{(IsResizable ? "mln" : "mlf")}"

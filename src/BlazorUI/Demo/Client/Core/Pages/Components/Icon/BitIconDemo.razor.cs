@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Icon;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Icon;
 
 public partial class BitIconDemo
 {
