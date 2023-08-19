@@ -69,7 +69,11 @@
         <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</div>
         <br />
         <div class="section-card-txt">
-            <b>Note</b>: When you run the project, the swagger page will open in a browser by default. Simply remove the swagger url from the browser's address bar to access the app.
+            <b>Warning</b>: When you run the project, the swagger page will open in a browser by default and client side debugging doesn't work. In order to debug blazor webassembly and open home page instead of swagger change <b>active launch profile</b> as following:
+            <div class="image-container">
+                <img class="image small" alt="blazor wasm target" src="/images/templates/blazor-wasm-target.webp" />
+            </div>
+            <b>We encourage you to debug on blazor server as much as possible and use blazor webassembly for production.</b>
         </div>
     </section>
 
@@ -116,7 +120,7 @@
         </div>
         <div class="code-box">@("<BlazorMode>BlazorElectron</BlazorMode>")</div>
         <div class="section-card-txt">
-            2. Set <b>TodoTemplate.Client.Web</b> as the startup project, choose electron as run target.
+            2. Set <b>TodoTemplate.Client.Web</b> as the startup project, choose electron as <b>active launch profile</b>.
         </div>
         <div class="image-container">
             <img class="image small" alt="Debug target" src="/images/templates/electron-target.webp" />
@@ -126,8 +130,11 @@
             3. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
         </div>
         <div class="section-card-txt">
+            <br />
             <b>Note</b>: This only runs the project. To debug the project, switch to other modes or consult the
             <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET</a> documentation.
+            <br />
+            <b>Warning</b>: In order to debug in blazor server mode, set Web project as startup project and switch back to the first <b>active launch profile</b>.
         </div>
     </section>
 </div>

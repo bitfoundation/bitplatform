@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "BlazorDual.Api": {
+        "BlazorDual.Api-Swagger": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
