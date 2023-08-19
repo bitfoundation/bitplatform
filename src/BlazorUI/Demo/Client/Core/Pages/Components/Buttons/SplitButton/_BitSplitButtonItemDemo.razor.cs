@@ -403,6 +403,35 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
 };";
 
     private readonly string example6HTMLCode = @"
+Visible: [ <BitSplitButton Visibility=""BitVisibility.Visible"" Items=""basicItems"" /> ]
+
+Hidden: [ <BitSplitButton Visibility=""BitVisibility.Hidden"" Items=""basicItems"" /> ]
+
+Collapsed: [ <BitSplitButton Visibility=""BitVisibility.Collapsed"" Items=""basicItems"" /> ]";
+    private readonly string example6CSharpCode = @"
+private List<BitSplitButtonItem> basicItems = new()
+{
+    new()
+    {
+        Text = ""Add"",
+        Key = ""add-key"",
+        IconName = BitIconName.Add
+    },
+    new()
+    {
+        Text = ""Edit"",
+        Key = ""edit-key"",
+        IconName = BitIconName.Edit
+    },
+    new()
+    {
+        Text = ""Delete"",
+        Key = ""delete-key"",
+        IconName = BitIconName.Delete
+    }
+};";
+
+    private readonly string example7HTMLCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -456,7 +485,7 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
 
 
 <BitSplitButton IsSticky=""true"" Items=""itemTemplateItems2"" />";
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 private List<BitSplitButtonItem> itemTemplateItems = new()
 {
     new()
@@ -501,7 +530,7 @@ private List<BitSplitButtonItem> itemTemplateItems2 = new()
     }
 };";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HTMLCode = @"
 <BitSplitButton Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
 
       
@@ -514,7 +543,7 @@ private List<BitSplitButtonItem> itemTemplateItems2 = new()
 
 
 <BitSplitButton Items=""isSelectedItems"" />";
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 private BitSplitButtonItem twoWaySelectedItem = default!;
 private BitSplitButtonItem? changedSelectedItem;
 
@@ -567,5 +596,4 @@ private List<BitSplitButtonItem> isSelectedItems = new()
         IsSelected = true
     }
 };";
-
 }

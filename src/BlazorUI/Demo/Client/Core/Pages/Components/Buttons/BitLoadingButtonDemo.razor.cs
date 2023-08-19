@@ -342,6 +342,19 @@ public partial class BitLoadingButtonDemo
 
     #endregion
 
+    #region Visibility
+
+    private bool VisibilityIsLoading;
+
+    private async Task VisibilityOnClick()
+    {
+        VisibilityIsLoading = true;
+        await Task.Delay(1000);
+        VisibilityIsLoading = false;
+    }
+
+    #endregion
+
     #region LoadingLabel
 
     private bool LoadingLabelPrimaryIsLoading;
@@ -557,6 +570,20 @@ private void Example1ToggleOnChange()
 }";
 
     private readonly string example3HTMLCode = @"
+Visible: [ <BitLoadingButton IsLoading=""VisibilityIsLoading"" Visibility=""BitVisibility.Visible"" OnClick=""VisibilityOnClick"">Visible loading button</BitLoadingButton> ]
+Hidden: [ <BitLoadingButton Visibility=""BitVisibility.Hidden"">Hidden loading button</BitLoadingButton> ]
+Collapsed: [ <BitLoadingButton Visibility=""BitVisibility.Collapsed"">Collapsed loading button</BitLoadingButton> ]";
+    private readonly string example3CSharpCode = @"
+private bool VisibilityIsLoading;
+
+private async Task VisibilityOnClick()
+{
+    VisibilityIsLoading = true;
+    await Task.Delay(1000);
+    VisibilityIsLoading = false;
+}";
+
+    private readonly string example4HTMLCode = @"
 <BitLoadingButton IsLoading=""LoadingLabelPrimaryIsLoading""
                   LoadingLabel=""Loading...""
                   ButtonStyle=""BitButtonStyle.Primary""
@@ -572,7 +599,7 @@ private void Example1ToggleOnChange()
 </BitLoadingButton>
 
 <BitToggle @bind-Value=""Example2Toggle"" OnChange=""Example3ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />";
-    private readonly string example3CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private bool LoadingLabelPrimaryIsLoading;
 private int LoadingLabelPrimaryCounter;
 private bool LoadingLabelStandardIsLoading;
@@ -601,7 +628,7 @@ private void Example3ToggleOnChange()
     LoadingLabelStandardIsLoading = Example3Toggle;
 }";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example5HTMLCode = @"
 <BitLoadingButton IsLoading=""TopPositionIsLoading""
                   LoadingLabel=""Loading...""
                   LoadingLabelPosition=""BitLabelPosition.Top""
@@ -633,7 +660,7 @@ private void Example3ToggleOnChange()
 </BitLoadingButton>
 
 <BitToggle @bind-Value=""Example3Toggle"" OnChange=""Example4ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />";
-    private readonly string example4CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private bool TopPositionIsLoading;
 private int TopPositionCounter;
 private bool RightPositionIsLoading;
@@ -684,7 +711,7 @@ private void Example4ToggleOnChange()
     LeftPositionIsLoading = Example4Toggle;
 }";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example6HTMLCode = @"
 <style>
     .custom-loading {
         display: flex;
@@ -724,7 +751,7 @@ private void Example4ToggleOnChange()
 </BitLoadingButton>
 
 <BitToggle @bind-Value=""Example5Toggle"" OnChange=""Example5ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />";
-    private readonly string example5CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 private bool EllipsisIsLoading;
 private bool RollerIsLoading;
 private bool Example5Toggle;
@@ -749,7 +776,7 @@ private void Example5ToggleOnChange()
     RollerIsLoading = Example5Toggle;
 }";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example7HTMLCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -774,7 +801,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -804,7 +831,7 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HTMLCode = @"
 <BitLoadingButton IsLoading=""ClassStylesPrimaryIsLoading""
                   ButtonStyle=""BitButtonStyle.Primary""
                   OnClick=""ClassStylesPrimaryOnClick""
@@ -822,7 +849,7 @@ private void HandleInvalidSubmit()
 </BitLoadingButton>
 
 <BitToggle @bind-Value=""Example7Toggle"" OnChange=""Example7ToggleOnChange"" OnText=""Turn Loading Off"" OffText=""Turn Loading On"" />";
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 private bool ClassStylesPrimaryIsLoading;
 private int ClassStylesPrimaryCounter;
 private bool ClassStylesStandardIsLoading;
