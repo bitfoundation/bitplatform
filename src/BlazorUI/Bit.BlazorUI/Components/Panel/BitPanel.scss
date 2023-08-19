@@ -166,6 +166,7 @@
 
 .bit-pnl-bdy {
     flex-grow: 1;
+    overflow-y: auto;
     font-size: spacing(2);
     padding-left: spacing(3);
     padding-right: spacing(3);

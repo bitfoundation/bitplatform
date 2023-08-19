@@ -19,16 +19,16 @@
 
 ::deep {
     .header-padding {
-        padding-top: calc(rem2(18px) + var(--bit-status-bar-height));
+        margin-top: var(--bit-status-bar-height);
 
         @supports (-webkit-touch-callout: none) {
-            padding-top: env(safe-area-inset-top);
+            margin-top: env(safe-area-inset-top);
         }
     }
 
     .footer-padding {
         @supports (-webkit-touch-callout: none) {
-            padding-bottom: env(safe-area-inset-bottom);
+            margin-top: env(safe-area-inset-bottom);
         }
     }
 }
