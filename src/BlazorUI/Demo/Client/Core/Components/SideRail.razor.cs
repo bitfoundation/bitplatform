@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 public partial class SideRail
 {

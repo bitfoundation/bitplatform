@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 public partial class ComponentDemo
 {
@@ -12,6 +9,7 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = new();
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
+    [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
 
 
     private readonly List<ComponentParameter> _baseComponentParameters = new()

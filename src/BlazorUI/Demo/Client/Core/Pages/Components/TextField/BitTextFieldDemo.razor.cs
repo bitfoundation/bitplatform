@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.TextField;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.TextField;
 
 public partial class BitTextFieldDemo
 {

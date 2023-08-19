@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.DatePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.DatePicker;
 
 public partial class BitDatePickerDemo
 {
@@ -284,7 +281,7 @@ public partial class BitDatePickerDemo
         new()
         {
             Id = "component-visibility-enum",
-            Name = "BitComponentVisibility",
+            Name = "BitVisibility",
             Description = "",
             Items = new()
             {

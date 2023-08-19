@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Label;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Label;
 
 public partial class BitLabelDemo
 {
