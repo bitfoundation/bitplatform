@@ -11,8 +11,14 @@ public abstract partial class BitComponentBase : ComponentBase
 
     private Guid _uniqueId = Guid.NewGuid();
 
+    /// <summary>
+    /// The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.
+    /// </summary>
     public Guid UniqueId => _uniqueId;
 
+    /// <summary>
+    /// The ElementReference of the root element.
+    /// </summary>
     public ElementReference RootElement { get; internal set; }
 
 

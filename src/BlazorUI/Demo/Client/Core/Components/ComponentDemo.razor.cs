@@ -46,6 +46,23 @@ public partial class ComponentDemo
         },
     };
 
+    private readonly List<ComponentParameter> _baseComponentPublicMembers = new()
+    {
+        new()
+        {
+            Name = "UniqueId",
+            Type = "Guid",
+            DefaultValue = "Guid.NewGuid()",
+            Description = "The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.",
+        },
+        new()
+        {
+            Name = "RootElement",
+            Type = "ElementReference",
+            Description = "The ElementReference of the root element.",
+        },
+    };
+
     private readonly List<ComponentSubEnum> _baseComponentSubEnums = new()
     {
         new()

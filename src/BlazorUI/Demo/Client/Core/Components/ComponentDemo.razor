@@ -23,7 +23,14 @@
 
         <ComponentParametersTable Name="@ComponentName" Parameters="ComponentParameters" />
 
+        @if (ComponentPublicMembers.Any())
+        {
+            <ComponentParametersTable Name="@ComponentName" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+        }
+
         <ComponentParametersTable Name="BitComponentBase" Parameters="_baseComponentParameters" />
+
+        <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_baseComponentPublicMembers" />
 
         <ComponentClassesTable Classes="ComponentSubClasses" />
 
