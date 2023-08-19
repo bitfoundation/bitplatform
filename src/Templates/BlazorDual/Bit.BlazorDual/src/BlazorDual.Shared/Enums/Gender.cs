@@ -5,5 +5,5 @@ public enum Gender
 {
     Male,
     Female,
-    Custom
+    Other
 }
