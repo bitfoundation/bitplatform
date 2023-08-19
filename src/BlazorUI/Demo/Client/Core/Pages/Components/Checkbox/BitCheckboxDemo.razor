@@ -47,25 +47,25 @@
             <div class="example-content">
                 <div class="controlled-box">
                     <BitCheckbox Label="One-way Controlled Checkbox" Value="IsChecked_OneWay" />
-                    <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay" ButtonSize="BitButtonSize.Small">
+                    <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay">
                         @(IsChecked_OneWay ? "Remove" : "Make") Checked
                     </BitButton>
                 </div>
                 <div class="controlled-box">
                     <BitCheckbox Label="Two-way Controlled Checkbox" @bind-Value="IsChecked_TwoWay" />
-                    <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay" ButtonSize="BitButtonSize.Small">
+                    <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay">
                         @(IsChecked_TwoWay ? "Remove" : "Make") Checked
                     </BitButton>
                 </div>
                 <div class="controlled-box">
                     <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminate_OneWay" />
-                    <BitButton OnClick="() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay" ButtonSize="BitButtonSize.Small">
+                    <BitButton OnClick="() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay">
                         @(IsIndeterminate_OneWay ? "Remove" : "Make") Indeterminate
                     </BitButton>
                 </div>
                 <div class="controlled-box">
                     <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminate_TwoWay" />
-                    <BitButton OnClick="() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay" ButtonSize="BitButtonSize.Small">
+                    <BitButton OnClick="() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay">
                         @(IsIndeterminate_TwoWay ? "Remove" : "Make") Indeterminate
                     </BitButton>
                 </div>
