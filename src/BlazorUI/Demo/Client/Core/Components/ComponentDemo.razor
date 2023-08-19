@@ -21,11 +21,11 @@
     <section id="implementation-section" class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
 
-        <ComponentParametersTable Name="@ComponentName" Parameters="ComponentParameters" />
+        <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
 
         @if (ComponentPublicMembers.Any())
         {
-            <ComponentParametersTable Name="@ComponentName" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+            <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
         }
 
         <ComponentParametersTable Name="BitComponentBase" Parameters="_baseComponentParameters" />
