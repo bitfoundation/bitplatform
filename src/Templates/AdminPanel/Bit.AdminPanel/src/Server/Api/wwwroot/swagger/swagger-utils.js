@@ -94,18 +94,18 @@ const createLoginUI = function (swagger, rootDiv) {
 
     rootDiv.appendChild(div);
 
-    //UserName
-    const userNameLabel = document.createElement("label");
-    div.appendChild(userNameLabel);
+    //email
+    const emailLabel = document.createElement("label");
+    div.appendChild(emailLabel);
 
-    const userNameSpan = document.createElement("span");
-    userNameSpan.innerText = "User";
-    userNameLabel.appendChild(userNameSpan);
+    const emailSpan = document.createElement("span");
+    emailSpan.innerText = "User";
+    emailLabel.appendChild(emailSpan);
 
-    const userNameInput = document.createElement("input");
-    userNameInput.type = "text";
-    userNameInput.style = "margin-left: 10px; margin-right: 10px;";
-    userNameLabel.appendChild(userNameInput);
+    const emailInput = document.createElement("input");
+    emailInput.type = "text";
+    emailInput.style = "margin-left: 10px; margin-right: 10px;";
+    emailLabel.appendChild(emailInput);
 
     //Password
     const passwordLabel = document.createElement("label");
@@ -130,25 +130,25 @@ const createLoginUI = function (swagger, rootDiv) {
     loginButton.classList.add("button");
     loginButton.innerText = "Login";
     loginButton.onclick = function () {
-        const userName = userNameInput.value;
+        const email = emailInput.value;
         const password = passwordInput.value;
 
-        if (userName === "" || password === "") {
-            alert("Insert userName and password!");
+        if (email === "" || password === "") {
+            alert("Insert email and password!");
             return;
         }
 
-        login(swagger, userName, password);
+        login(swagger, email, password);
     };
 
     div.appendChild(loginButton);
 }
 
-const login = async (swagger, userName, password) => {
+const login = async (swagger, email, password) => {
     const response = await fetch('/api/Auth/SignIn', {
         headers: {"Content-Type": "application/json; charset=utf-8"},
         method: 'POST',
-        body: JSON.stringify({"userName": userName, "password": password})
+        body: JSON.stringify({"email": email, "password": password})
     })
     if (response.ok) {
         const result = await response.json();

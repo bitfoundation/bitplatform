@@ -13,7 +13,7 @@
         <DefineConstants Condition="'$(WebAppDeploymentType)' == 'SSR'">$(DefineConstants);SSR</DefineConstants>
         <DefineConstants Condition="'$(WebAppDeploymentType)' == 'Static'">$(DefineConstants);Static</DefineConstants>
 
-        <LangVersion>preview</LangVersion>
+        <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
 

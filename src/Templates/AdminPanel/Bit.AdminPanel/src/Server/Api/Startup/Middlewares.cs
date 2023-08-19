@@ -84,7 +84,7 @@ public class Middlewares
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript("/swagger/swagger-utils.js");
+            options.InjectJavascript($"/swagger/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.MapControllers().RequireAuthorization();
