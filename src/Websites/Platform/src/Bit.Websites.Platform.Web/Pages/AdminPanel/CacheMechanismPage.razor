@@ -15,7 +15,7 @@
     <br />
 
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Pwa</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Pwa or PwaPrerender</BitTypography>
         <div class="section-card-txt">
             In Pwa mode, a manifest is generated and all files will be downloaded by Pwa with the help of this manifest.
             In this case, the Pwa app can work in offline mode, and for example, we can leverage ef-core and SQLite in the browser,
@@ -27,10 +27,13 @@
         <div class="section-card-txt">
             <b>Note</b>: that if you do not need a file, be sure to delete it so that it is no longer downloaded by Pwa.
         </div>
+        <div class="section-card-txt">
+            <b>Note</b>: Pwa and PwaPrerender are our recommendation for production environment.
+        </div>
     </section>
 
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa, SapPrerender and PrerenderOnly</BitTypography>
         <div class="section-card-txt">
             In Spa mode, if a js, css, or dll file gets changed, the new version will be automatically requested by the browser through
             the magic of the <b>asp-append-version</b> in <b>_Layout.cshtml</b> file. But for other file types such as fonts and images,
