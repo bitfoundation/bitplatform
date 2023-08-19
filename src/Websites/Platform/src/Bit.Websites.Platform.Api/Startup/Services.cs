@@ -40,7 +40,7 @@ public static class Services
         {
             IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             return httpClientFactory.CreateClient("WebAssemblyPreRenderingHttpClient");
-            // this is for pre rendering of blazor webassembly
+            // this is for pre rendering of Blazor WebAssembly
             // for other usages of httpclient, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
         services.AddRazorPages();
