@@ -28,7 +28,7 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
 
-        <LangVersion>preview</LangVersion>
+        <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
 

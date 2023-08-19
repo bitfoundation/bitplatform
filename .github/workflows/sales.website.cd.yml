@@ -16,7 +16,7 @@ jobs:
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -58,7 +58,7 @@ jobs:
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
     needs: build_blazor_api_wasm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}

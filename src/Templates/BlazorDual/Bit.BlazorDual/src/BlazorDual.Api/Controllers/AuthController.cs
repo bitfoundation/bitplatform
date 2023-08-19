@@ -22,6 +22,10 @@ public partial class AuthController : AppControllerBase
 
     [AutoInject] private IStringLocalizer<EmailStrings> _emailLocalizer = default!;
 
+    /// <summary>
+    /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
+    /// These comments will also be used in swagger docs and ui.
+    /// </summary>
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
@@ -186,10 +190,6 @@ public partial class AuthController : AppControllerBase
             throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, resetPasswordRequest.Email!)).ToArray());
     }
 
-    /// <summary>
-    /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
-    /// These comments will also be used in swagger docs and ui.
-    /// </summary>
     [HttpPost]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {

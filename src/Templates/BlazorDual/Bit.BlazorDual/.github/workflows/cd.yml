@@ -17,7 +17,7 @@ jobs:
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -31,7 +31,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorDual.Web/BlazorDual.Web.csproj
@@ -56,7 +56,7 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        dotnet tool install --global dotnet-ef --version 7.0.0
+        dotnet tool install --global dotnet-ef --version 7.0.10
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
 
     - name: Upload ef migrations bundle
@@ -74,7 +74,7 @@ jobs:
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
     needs: build_blazor_api_wasm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}

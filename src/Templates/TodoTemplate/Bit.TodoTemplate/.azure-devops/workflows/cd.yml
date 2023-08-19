@@ -15,7 +15,7 @@ jobs:
   displayName: 'build blazor api + web assembly'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2
@@ -49,7 +49,7 @@ jobs:
       targetType: 'inline'
       script: |
         dotnet new tool-manifest
-        dotnet tool install dotnet-ef --version 7.0.7
+        dotnet tool install dotnet-ef --version 7.0.10
         dotnet dotnet-ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/TodoTemplate.Server.Api.csproj
       failOnStderr: true
 
@@ -91,7 +91,7 @@ jobs:
   displayName: 'deploy blazor api + web assembly'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
 
@@ -149,7 +149,7 @@ jobs:
   displayName: 'build blazor hybrid (windows)'
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   - task: UseDotNet@2
@@ -205,7 +205,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   - task: UseDotNet@2
@@ -284,7 +284,7 @@ jobs:
   displayName: 'build blazor hybrid (maccatalyst)'
 
   pool:
-    vmImage: 'macos-latest'
+    vmImage: 'macos-12'
 
   steps:
   - task: UseDotNet@2
