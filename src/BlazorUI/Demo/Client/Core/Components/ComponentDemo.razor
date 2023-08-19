@@ -53,6 +53,37 @@
             }
         </table>
 
+        <BitTypography Variant="BitTypographyVariant.H6" Class="subtitle"><b>BitComponentBase</b> parameters</BitTypography>
+        <table class="table-view params-table">
+            <tr class="th-row">
+                <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
+                <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Type</BitTypography></th>
+                <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Default value</BitTypography></th>
+                <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Description</BitTypography></th>
+            </tr>
+            @foreach (var param in _baseComponentParameters)
+            {
+                <tr class="tdata-row">
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.Name</BitTypography></td>
+                    <td class="td-cell">
+                        @if (param.LinkType == LinkType.Link)
+                        {
+                            <BitLink Href="@param.Href">
+                                <BitTypography Variant="BitTypographyVariant.Caption">@param.Type</BitTypography>
+                            </BitLink>
+                        }
+                        else
+                        {
+                            <BitTypography Variant="BitTypographyVariant.Caption">@param.Type</BitTypography>
+                        }
+                    </td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.DefaultValue</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.Description</BitTypography></td>
+                </tr>
+            }
+        </table>
+
+
         @foreach (var subClass in ComponentSubClasses)
         {
             <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subClass.Id" Style="scroll-margin:70px"><b>@subClass.Title</b> properties</BitTypography>
@@ -88,6 +119,26 @@
         }
 
         @foreach (var subEnum in ComponentSubEnums)
+        {
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subEnum.Id" Style="scroll-margin:70px"><b>@subEnum.Name</b> enum</BitTypography>
+            <table class="table-view types-table">
+                <tr class="th-row">
+                    <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
+                    <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Value</BitTypography></th>
+                    <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Description</BitTypography></th>
+                </tr>
+                @foreach (var item in subEnum.Items)
+                {
+                    <tr class="tdata-row">
+                        <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Name</BitTypography></td>
+                        <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Value</BitTypography></td>
+                        <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Description</BitTypography></td>
+                    </tr>
+                }
+            </table>
+        }
+
+        @foreach (var subEnum in _baseComponentSubEnums)
         {
             <BitTypography Variant="BitTypographyVariant.H6" Gutter id="@subEnum.Id" Style="scroll-margin:70px"><b>@subEnum.Name</b> enum</BitTypography>
             <table class="table-view types-table">

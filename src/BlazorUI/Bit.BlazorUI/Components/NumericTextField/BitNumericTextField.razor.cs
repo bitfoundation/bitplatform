@@ -231,7 +231,7 @@ public partial class BitNumericTextField<TValue>
 
     protected override string RootElementClass => "bit-ntf";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
     }

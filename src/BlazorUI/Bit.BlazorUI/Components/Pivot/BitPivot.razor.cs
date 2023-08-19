@@ -120,7 +120,7 @@ public partial class BitPivot
 
     protected override string RootElementClass => "bit-pvt";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => LinkSize switch
         {
@@ -222,8 +222,8 @@ public partial class BitPivot
     {
         return _selectedItem?.Visibility switch
         {
-            BitComponentVisibility.Collapsed => "visibility:hidden",
-            BitComponentVisibility.Hidden => "display:none",
+            BitVisibility.Collapsed => "visibility:hidden",
+            BitVisibility.Hidden => "display:none",
             _ => string.Empty
         };
     }

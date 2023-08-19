@@ -153,7 +153,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
 
     protected override string RootElementClass => "bit-mnb";
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty

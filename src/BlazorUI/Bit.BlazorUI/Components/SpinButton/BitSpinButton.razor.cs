@@ -183,7 +183,7 @@ public partial class BitSpinButton
 
     protected override string RootElementClass => "bit-spb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
     }

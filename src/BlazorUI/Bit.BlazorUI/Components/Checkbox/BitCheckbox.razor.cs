@@ -126,7 +126,7 @@ public partial class BitCheckbox
 
     protected override string RootElementClass => "bit-chb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
 

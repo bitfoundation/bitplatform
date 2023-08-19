@@ -64,7 +64,7 @@ public partial class BitProgressIndicator
 
     protected override string RootElementClass => "bit-pin";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => PercentComplete is not null  ? string.Empty : $"{RootElementClass}-ind");
     }

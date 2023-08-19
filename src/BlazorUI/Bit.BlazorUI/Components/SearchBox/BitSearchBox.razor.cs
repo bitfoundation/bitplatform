@@ -119,7 +119,7 @@ public partial class BitSearchBox
 
     protected override string RootElementClass => "bit-srb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
 

@@ -24,7 +24,7 @@ public partial class BitSpinner
 
     protected override string RootElementClass => "bit-spn";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Size switch
         {

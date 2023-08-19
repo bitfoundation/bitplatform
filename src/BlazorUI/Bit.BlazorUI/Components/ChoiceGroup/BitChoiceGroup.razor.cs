@@ -238,7 +238,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     protected override string RootElementClass => "bit-chg";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
 

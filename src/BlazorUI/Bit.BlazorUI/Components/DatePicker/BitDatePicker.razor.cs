@@ -345,7 +345,7 @@ public partial class BitDatePicker
         return base.OnInitializedAsync();
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 
