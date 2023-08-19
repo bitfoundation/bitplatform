@@ -18,7 +18,7 @@
 }
 
 ::deep {
-    .header-padding {
+    .header-margin {
         margin-top: var(--bit-status-bar-height);
 
         @supports (-webkit-touch-callout: none) {
@@ -26,7 +26,7 @@
         }
     }
 
-    .footer-padding {
+    .footer-margin {
         @supports (-webkit-touch-callout: none) {
             margin-top: env(safe-area-inset-bottom);
         }
