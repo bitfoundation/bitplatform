@@ -139,14 +139,6 @@ public partial class BitPanelDemo
                },
                new()
                {
-                   Name = "ScrollContainer",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel scroll container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               },
-               new()
-               {
                    Name = "Header",
                    Type = "BitClassStylePair?",
                    Description = "Custom CSS classes/styles for the panel header.",

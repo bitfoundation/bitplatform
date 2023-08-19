@@ -6,10 +6,6 @@ public class BitPanelClassStyles
     /// Custom CSS classes/styles for the panel container.
     /// </summary>
     public BitClassStylePair? Container { get; set; }
-    /// <summary>
-    /// Custom CSS classes/styles for the panel scroll container.
-    /// </summary>
-    public BitClassStylePair? ScrollContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the panel header.

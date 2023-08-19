@@ -74,13 +74,16 @@
 .bit-pnl-cnt {
     top: 0;
     height: 100%;
+    flex-grow: 1;
     display: flex;
+    outline: none;
     overflow: auto;
     position: fixed;
     max-width: 100%;
     font-weight: 400;
     max-height: 100%;
     box-sizing: border-box;
+    flex-direction: column;
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
@@ -89,13 +92,6 @@
     animation-name: opacity, bit-pnl-trans-x;
     background-color: $color-background-primary;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
-}
-
-.bit-pnl-scn {
-    flex-grow: 1;
-    display: flex;
-    outline: none;
-    flex-direction: column;
 }
 
 .bit-pnl-hcn {
