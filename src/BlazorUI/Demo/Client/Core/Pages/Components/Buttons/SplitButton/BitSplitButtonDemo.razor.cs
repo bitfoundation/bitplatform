@@ -426,33 +426,6 @@ public partial class BitSplitButtonDemo
     {
         new()
         {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Small",
-                    Description="The button size is small.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The button size is medium.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The button size is large.",
-                    Value="2",
-                }
-            }
-        },
-        new()
-        {
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",

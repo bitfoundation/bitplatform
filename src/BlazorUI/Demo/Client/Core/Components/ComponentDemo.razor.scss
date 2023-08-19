@@ -18,6 +18,7 @@
         display: flex;
         min-height: rem2(42px);
         color: $bit-color-foreground-primary;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
     }
 
     .tdata-row {
@@ -37,13 +38,13 @@
         font-weight: 600;
         text-align: left;
         overflow: hidden;
+        padding: rem2(12px);
         align-items: center;
         font-size: rem2(14px);
         box-sizing: border-box;
         text-overflow: ellipsis;
         justify-content: flex-start;
         background-color: transparent;
-        padding: rem2(5px) rem2(16px) rem2(5px) rem2(16px);
 
         &:last-child {
             border: none;
@@ -54,7 +55,7 @@
         display: flex;
         text-align: left;
         overflow: hidden;
-        padding: rem2(16px);
+        padding: rem2(12px);
         text-overflow: clip;
         white-space: normal;
         font-size: rem2(11px);
