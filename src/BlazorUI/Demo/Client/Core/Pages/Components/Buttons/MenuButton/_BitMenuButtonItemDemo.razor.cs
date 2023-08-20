@@ -393,13 +393,13 @@ private List<BitMenuButtonItem> itemStyleClassItems = new()
 
     private readonly string example5HTMLCode = @"
 Visible: [ <BitMenuButton Visibility=""BitVisibility.Visible""
-                            Text=""Visible menu button""
-                            Items=""basicItems""
-                            OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key"" /> ]
+                          Text=""Visible menu button""
+                          Items=""basicItems""
+                          OnItemClick=""(BitMenuButtonItem item) => example5SelectedItem = item.Key"" /> ]
 
 Hidden: [ <BitMenuButton Visibility=""BitVisibility.Hidden""
-                            Text=""Hidden menu button""
-                            Items=""basicItems"" /> ]
+                         Text=""Hidden menu button""
+                         Items=""basicItems"" /> ]
 
 Collapsed: [ <BitMenuButton Visibility=""BitVisibility.Collapsed""
                             Text=""Collapsed menu button""

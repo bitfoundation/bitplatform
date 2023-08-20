@@ -486,28 +486,26 @@ private List<SplitActionItem> itemStyleClassCustoms = new()
 Visible: [ <BitSplitButton Visibility=""BitVisibility.Visible""
                            Items=""basicCustomItems""
                            NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
-                                                     Key = { Name = nameof(SplitActionItem.Id) },
-                                                     IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]
+                                                    Key = { Name = nameof(SplitActionItem.Id) },
+                                                    IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]
 
 Hidden: [ <BitSplitButton Visibility=""BitVisibility.Hidden""
                           Items=""basicCustomItems""
                           NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
-                                                    Key = { Name = nameof(SplitActionItem.Id) },
-                                                    IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]
+                                                   Key = { Name = nameof(SplitActionItem.Id) },
+                                                   IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]
 
 Collapsed: [ <BitSplitButton Visibility=""BitVisibility.Collapsed""
                              Items=""basicCustomItems""
                              NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
-                                                       Key = { Name = nameof(SplitActionItem.Id) },
-                                                       IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]";
+                                                      Key = { Name = nameof(SplitActionItem.Id) },
+                                                      IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]";
     private readonly string example6CSharpCode = @"
 public class SplitActionItem
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Icon { get; set; }
-    public string? Class { get; set; }
-    public string? Style { get; set; }
 }
 
 private List<SplitActionItem> basicCustomItems = new()

@@ -143,8 +143,8 @@
                                           Text="Visible menu button"
                                           Items="basicCustoms"
                                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })"
+                                                                   Key = { Name = nameof(MenuActionItem.Id) },
+                                                                   IconName = { Name = nameof(MenuActionItem.Icon) } })"
                                           OnItemClick="(MenuActionItem item) => example5SelectedItem = item.Id" /> ]
             </div>
             <div style="display: inline-flex">
@@ -152,16 +152,16 @@
                                          Text="Hidden menu button"
                                          Items="basicCustoms"
                                          NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" /> ]
+                                                                  Key = { Name = nameof(MenuActionItem.Id) },
+                                                                  IconName = { Name = nameof(MenuActionItem.Icon) } })" /> ]
             </div>
             <div style="display: inline-flex">
                 Collapsed: [ <BitMenuButton Visibility="BitVisibility.Collapsed"
                                             Text="Collapsed menu button"
                                             Items="basicCustoms"
                                             NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" /> ]
+                                                                     Key = { Name = nameof(MenuActionItem.Id) },
+                                                                     IconName = { Name = nameof(MenuActionItem.Icon) } })" /> ]
             </div>
         </div>
     </ExamplePreview>

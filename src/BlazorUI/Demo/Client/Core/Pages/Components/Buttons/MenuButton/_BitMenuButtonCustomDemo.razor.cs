@@ -467,23 +467,23 @@ Visible: [ <BitMenuButton Visibility=""BitVisibility.Visible""
                             Text=""Visible menu button""
                             Items=""basicCustoms""
                             NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                      Key = { Name = nameof(MenuActionItem.Id) },
-                                                      IconName = { Name = nameof(MenuActionItem.Icon) } })"" 
+                                                     Key = { Name = nameof(MenuActionItem.Id) },
+                                                     IconName = { Name = nameof(MenuActionItem.Icon) } })"" 
                             OnItemClick=""(MenuActionItem item) => example5SelectedItem = item.Id"" /> ]
 
 Hidden: [ <BitMenuButton Visibility=""BitVisibility.Hidden""
                             Text=""Hidden menu button""
                             Items=""basicCustoms""
                             NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                      Key = { Name = nameof(MenuActionItem.Id) },
-                                                      IconName = { Name = nameof(MenuActionItem.Icon) } })"" /> ]
+                                                     Key = { Name = nameof(MenuActionItem.Id) },
+                                                     IconName = { Name = nameof(MenuActionItem.Icon) } })"" /> ]
 
 Collapsed: [ <BitMenuButton Visibility=""BitVisibility.Collapsed""
                             Text=""Collapsed menu button""
                             Items=""basicCustoms""
                             NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                      Key = { Name = nameof(MenuActionItem.Id) },
-                                                      IconName = { Name = nameof(MenuActionItem.Icon) } })"" /> ]";
+                                                     Key = { Name = nameof(MenuActionItem.Id) },
+                                                     IconName = { Name = nameof(MenuActionItem.Icon) } })"" /> ]";
     private readonly string example5CSharpCode = @"
 private string example5SelectedItem;
 
@@ -492,7 +492,6 @@ public class MenuActionItem
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Icon { get; set; }
-    public bool IsEnabled { get; set; } = true;
 }
 
 private List<MenuActionItem> basicCustoms = new()
