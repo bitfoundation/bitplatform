@@ -3,7 +3,12 @@
 // Make sure to apply all changes you make here to the service-worker.published.js file too (if required).
 
 self.assetsInclude = [];
-self.assetsExclude = [];
+self.assetsExclude = [
+    /Riok\.Mapperly\.Abstractions\.dll$/,
+    /bit\.blazorui\.fluent\.css$/,
+    /bit\.blazorui\.fluent-dark\.css$/,
+    /bit\.blazorui\.fluent-light\.css$/,
+];
 self.externalAssets = [
     {
         "url": "/"

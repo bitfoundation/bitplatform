@@ -162,7 +162,7 @@ class BitBswup {
                 log: 'info',
                 sw: 'service-worker.js',
                 scope: '/',
-                handler: (...args: any[]) => { },
+                handlerName: 'bitBswupHandler',
                 blazorScript: '_framework/blazor.webassembly.js',
             }
 
@@ -180,21 +180,24 @@ class BitBswup {
             options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
 
             const handlerAttribute = bitBswupScript.attributes['handler'];
-            const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBswupHandler';
-            options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
+            options.handlerName = (handlerAttribute && handlerAttribute.value) || options.handlerName;
 
             const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
             options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
-
-            if (!options.handler || typeof options.handler !== 'function') {
-                warn('progress handler not found or is not a function!');
-                options.handler = undefined;
-            }
 
             return options;
         }
 
         function handle(...args: any[]) {
+            if (!options.handler) {
+                options.handler = window[options.handlerName];
+
+                if (!options.handler || typeof options.handler !== 'function') {
+                    warn('progress handler not found or is not a function!');
+                    options.handler = () => { };
+                }
+            }
+
             options.handler && options.handler(...args);
         }
 
@@ -218,8 +221,9 @@ interface BswupOptions {
     log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
     sw: string
     scope: string
-    handler(...args: any[]): void
+    handlerName: string
     blazorScript: string
+    handler?(...args: any[]): void
 }
 
 const BswupMessage = {
