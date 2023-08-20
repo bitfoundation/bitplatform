@@ -12,8 +12,8 @@ public partial class BitTextField
     private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
     private string focusClass = string.Empty;
-    private ElementReference _inputRef = default!;
 
+    private ElementReference _inputRef = default!;
     private string _textFieldId = string.Empty;
     private string _inputType = string.Empty;
     private string _labelId = string.Empty;
