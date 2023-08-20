@@ -10,8 +10,8 @@ public partial class BitTextField
     private bool isRequired;
     private bool isUnderlined;
     private bool isResizable = true;
-    private string focusClass = string.Empty;
     private ElementReference _inputRef = default!;
+    private string focusClass = string.Empty;
     private BitTextFieldType type = BitTextFieldType.Text;
 
     private string _textFieldId = string.Empty;
