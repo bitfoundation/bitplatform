@@ -1,6 +1,6 @@
 name: TodoTemplate CI
 
-# https://bitplatform.dev/todo-template/dev-ops
+# https://bitplatform.dev/templates/dev-ops
 
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'Spa'
