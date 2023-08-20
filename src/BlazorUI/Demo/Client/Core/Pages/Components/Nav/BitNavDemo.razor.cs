@@ -755,8 +755,8 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         ChildItems = new List<BitNavItem>
                         {
-                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
-                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
@@ -1225,8 +1225,8 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         ChildItems = new List<BitNavItem>
                         {
-                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
-                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
@@ -1287,8 +1287,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         Links = new List<BitPlatformMenu>
                         {
-                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
-                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
@@ -1851,8 +1851,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         Links = new List<BitPlatformMenu>
                         {
-                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/todo-template/overview"" },
-                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/admin-panel/overview"" },
+                            new() { Text = ""TodoTemplate"", Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel"", Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Url = ""https://bitplatform.dev/components"" },
@@ -1888,8 +1888,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/todo-template/overview"" Target=""_blank"" />
-                <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/admin-panel/overview"" Target=""_blank"" />
+                <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IsEnabled=""false"" />
@@ -2136,8 +2136,8 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/todo-template/overview"" Target=""_blank"" />
-                <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/admin-panel/overview"" Target=""_blank"" />
+                <BitNavOption Text=""TodoTemplate"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IsEnabled=""false"" />
