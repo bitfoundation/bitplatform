@@ -1,4 +1,5 @@
-﻿// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
+﻿// bit version: 5.4.0
+// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
 self.assetsExclude = [

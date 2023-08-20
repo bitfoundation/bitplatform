@@ -1,3 +1,5 @@
+// bit version: 5.4.0
+
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.defaultUrl = "/";
