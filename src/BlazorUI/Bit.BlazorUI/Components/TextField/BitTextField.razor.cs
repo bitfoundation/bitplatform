@@ -39,7 +39,7 @@ public partial class BitTextField
     [Parameter] public string? AutoComplete { get; set; }
 
     /// <summary>
-    /// If true, the input is focused.
+    /// Determines if the text field is auto focused on first render.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 

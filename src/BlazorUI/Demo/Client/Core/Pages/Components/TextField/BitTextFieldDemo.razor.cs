@@ -16,7 +16,7 @@ public partial class BitTextFieldDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the input is focused.",
+            Description = "Determines if the text field is auto focused on first render.",
         },
         new()
         {
