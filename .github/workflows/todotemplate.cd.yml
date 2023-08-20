@@ -18,7 +18,7 @@ jobs:
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -32,7 +32,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -57,7 +57,7 @@ jobs:
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
     needs: build_blazor_api_wasm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -91,7 +91,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: windows-latest
+    runs-on: windows-2022
   
     steps:
      
@@ -105,7 +105,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -134,7 +134,7 @@ jobs:
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: windows-latest
+    runs-on: windows-2022
   
     steps:
      
@@ -148,7 +148,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -187,7 +187,7 @@ jobs:
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
-     runs-on: macos-latest
+     runs-on: macos-12
    
      steps:
       
@@ -201,7 +201,7 @@ jobs:
 
      - uses: actions/setup-node@v3
        with:
-        node-version: latest
+        node-version: 18
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -230,7 +230,7 @@ jobs:
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
-    runs-on: macos-latest
+    runs-on: macos-12
   
     steps:
      
@@ -244,7 +244,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -294,7 +294,7 @@ jobs:
 
   build_blazor_electron_linux:
      name: build blazor electron (linux)
-     runs-on: ubuntu-latest
+     runs-on: ubuntu-22.04
    
      steps:
       
@@ -313,7 +313,7 @@ jobs:
 
      - uses: actions/setup-node@v3
        with:
-         node-version: latest
+         node-version: 18
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 

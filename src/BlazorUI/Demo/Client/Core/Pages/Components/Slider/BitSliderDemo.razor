@@ -7,19 +7,12 @@
 <ComponentDemo ComponentName="Slider"
                ComponentDescription="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitSlider" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
+    <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example1">
         <ExamplePreview>
-            <BitSlider Label="Basic" />
+            <BitSlider Label="Basic slider" />
             <br />
             <br />
-            <BitSlider Label="Snapping Slider"
-                       Min="0"
-                       Max="50"
-                       Step="10"
-                       DefaultValue="20" />
-            <br />
-            <br />
-            <BitSlider Label="Disabled"
+            <BitSlider Label="Disabled slider"
                        Min="50"
                        Max="500"
                        Step="50"
@@ -27,10 +20,17 @@
                        IsEnabled="false" />
             <br />
             <br />
+            <BitSlider Label="Snapping slider"
+                       Min="0"
+                       Max="50"
+                       Step="10"
+                       DefaultValue="20" />
+            <br />
+            <br />
             <BitSlider @bind-Value="sliderHorizontalValue"
-                       Label="Controlled"
+                       Label="Controlled slider"
                        Max="10" />
-            <BitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 2">Reset Value</BitButton>
+            <BitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 2">Reset value</BitButton>
             <br />
             <br />
             <br />
@@ -40,13 +40,13 @@
                        ValueFormat="P00" />
             <br />
             <br />
-            <BitSlider Label="Formatted Value"
+            <BitSlider Label="Formatted value"
                        Max="1000"
                        DefaultValue="319"
                        ValueFormat="P01" />
             <br />
             <br />
-            <BitSlider Label="Origin From Zero"
+            <BitSlider Label="Origin from zero"
                        Min="-5"
                        Max="5"
                        Step="1"
@@ -55,9 +55,9 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical Sliders" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Vertical slider" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
-            <div class="flex-container" style="height:300px">
+            <div class="flex-container">
                 <BitSlider Label="Basic"
                            Min="1"
                            Max="5"
@@ -77,7 +77,7 @@
                            Max="100" ValueFormat="P00"
                            IsVertical="true" />
 
-                <BitSlider Label="Origin From Zero"
+                <BitSlider Label="Origin from zero"
                            Min="-5"
                            Max="15"
                            Step="1"
@@ -88,7 +88,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Range Slider" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="Range slider" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
         <ExamplePreview>
             <BitSlider Label="Basic"
                        Min="0"
@@ -112,7 +112,7 @@
                        Label="Controlled example"
                        Max="10"
                        IsRanged="true" />
-            <BitButton Class="bit-btn-slider" OnClick="ResetBitSliderRangedValues">Reset Value</BitButton>
+            <BitButton Class="bit-btn-slider" OnClick="ResetBitSliderRangedValues">Reset value</BitButton>
             <br />
             <br />
             <br />
@@ -137,8 +137,7 @@
     <ComponentExampleBox Title="Vertical Range Slider" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="flex-container">
-                <BitSlider Style="height:250px"
-                           Label="Basic"
+                <BitSlider Label="Basic"
                            Min="1"
                            Max="5"
                            Step="1"
@@ -147,8 +146,7 @@
                            IsRanged="true"
                            IsVertical="true" />
 
-                <BitSlider Style="height:250px"
-                           Label="Disabled"
+                <BitSlider Label="Disabled"
                            Min="50"
                            Max="500"
                            Step="50"
@@ -158,8 +156,7 @@
                            IsVertical="true"
                            IsEnabled="false" />
 
-                <BitSlider Style="height:250px"
-                           Label="Formatted value"
+                <BitSlider Label="Formatted value"
                            Max="100"
                            ValueFormat="P00"
                            DefaultUpperValue="30"
@@ -167,8 +164,7 @@
                            IsRanged="true"
                            IsVertical="true" />
 
-                <BitSlider Style="height:250px"
-                           Label="Origin From Zero"
+                <BitSlider Label="Origin from zero"
                            Min="-5"
                            Max="15"
                            Step="1"
@@ -181,7 +177,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Slider With SliderBoxHtmlAttributes" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="SliderBoxHtmlAttributes" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <BitSlider Max="10"
                        DefaultUpperValue="3"
@@ -191,3 +187,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private double? sliderHorizontalValue = 2;
+    private double? sliderRangedLowerValue = 3;
+    private double? sliderRangedUpperValue = 7;
+
+    private void ResetBitSliderRangedValues()
+    {
+        sliderRangedLowerValue = 3;
+        sliderRangedUpperValue = 7;
+    }
+}

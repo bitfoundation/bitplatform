@@ -9,7 +9,7 @@ powershell -Command "[string]$trackedFiles = git ls-files; Get-ChildItem -Includ
 powershell -Command "Get-ChildItem -Include *.csproj -Recurse | ForEach-Object { dotnet clean $_.FullName }"
 
 :: Delete specified files & folders
-powershell -Command "Get-ChildItem -Include *.csproj.user,Resources.designer.cs,bin,obj,node_modules,Packages,TestResults,AppPackages -Recurse | ForEach-Object { Remove-Item -Recurse -Path $_ -Confirm:$false -Force }"
+powershell -Command "Get-ChildItem -Include *.csproj.user,Resources.designer.cs,bin,obj,node_modules,Packages,TestResults,AppPackages,.meteor -Recurse | ForEach-Object { Remove-Item -Recurse -Path $_ -Confirm:$false -Force }"
 FOR /d /r . %%d IN (.vs) DO @IF EXIST "%%d" rd /s /q "%%d"
 
 :: Delete empty directories

@@ -21,9 +21,9 @@
         if (isOpen) {
             timePickerCallout.style.display = "none";
             timePickerOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
+            BitCallouts.currentCallout.update("", "", null);
         } else {
-            Bit.closeCurrentCalloutIfExists(timePickerCalloutId, timePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrentCallout(timePickerCalloutId, timePickerOverlayId, dotnetObjReference);
             timePickerCallout.style.display = "block";
             timePickerOverlay.style.display = "block";
             const timePickerCalloutHeight = timePickerCallout.offsetHeight;

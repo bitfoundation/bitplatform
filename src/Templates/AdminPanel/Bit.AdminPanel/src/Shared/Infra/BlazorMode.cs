@@ -1,4 +1,5 @@
-﻿namespace AdminPanel.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace AdminPanel.Shared.Infra;
 
 public enum BlazorMode
 {

@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using BlazorDual.Api.Models.Account;
-using BlazorDual.Api.Models.TodoItem;
+using BlazorDual.Api.Models.Todo;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BlazorDual.Api.Data;

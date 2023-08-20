@@ -9,11 +9,11 @@
     </CascadingValue>
 }
 
-<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="OpenCallout"
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
         id="@UniqueId"
+        type="button"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
-        type="@_buttonType.GetValue()"
         tabindex="@(IsEnabled ? 0 : -1)"
         aria-label="@AriaLabel"
         aria-hidden="@AriaHidden"
@@ -26,25 +26,37 @@
     {
         @if (IconName.HasValue())
         {
-            <i class="bit-icon bit-icon--@IconName" />
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         }
-        <span class="bit-mnb-txt">@Text</span>
-        <i class="bit-icon bit-icon--ChevronDown" />
+        <span style="@Styles?.Text" class="bit-mnb-txt @Classes?.Text">@Text</span>
+        <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
     }
 
-    <div id="@_overlayId" class="bit-mnb-ovl" @onclick="CloseCallout" @onclick:stopPropagation></div>
-    <div id="@_calloutId" class="bit-mnb-cal" tabindex="@(IsEnabled ? 0 : -1)">
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-mnb-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="bit-mnb-cal @Classes?.Callout">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
+                var isEnabled = GetIsEnabled(item);
+                var template = GetTemplate(item);
                 <li role="presentation">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
+                            aria-disabled="@isEnabled"
                             type="@_buttonType.GetValue()"
-                            aria-disabled="@GetIsEnabled(item)"
-                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="bit-mnb-itm @(GetIsEnabled(item) ? "" : "bit-dis")">
-                        @if (ItemTemplate is not null)
+                            tabindex="@(isEnabled ? 0 : -1)"
+                            style="@GetStyle(item);@Styles?.ItemButton"
+                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item) @Classes?.ItemButton">
+                        @if (template is not null)
+                        {
+                            @template(item)
+                        }
+                        else if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
                         }
@@ -53,9 +65,11 @@
                             var iconName = GetIconName(item);
                             @if (iconName.HasValue())
                             {
-                                <i class="bit-icon bit-icon--@iconName" />
+                                <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                             }
-                            <span class="bit-mnb-txt">@GetText(item)</span>
+                            <span style="@Styles?.ItemText" class="bit-mnb-txt @Classes?.ItemText">
+                                @GetText(item)
+                            </span>
                         }
                     </button>
                 </li>

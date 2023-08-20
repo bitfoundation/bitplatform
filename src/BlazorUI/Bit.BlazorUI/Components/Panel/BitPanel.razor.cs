@@ -127,7 +127,7 @@ public partial class BitPanel
 
     protected override string RootElementClass => "bit-pnl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }

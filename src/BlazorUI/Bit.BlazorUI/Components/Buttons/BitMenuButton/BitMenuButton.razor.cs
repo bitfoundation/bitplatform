@@ -1,27 +1,15 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 {
-    private const string IS_ENABLED_FIELD = nameof(BitMenuButtonItem.IsEnabled);
-    private const string ICON_NAME_FIELD = nameof(BitMenuButtonItem.IconName);
-    private const string TEXT_FIELD = nameof(BitMenuButtonItem.Text);
-    private const string KEY_FIELD = nameof(BitMenuButtonItem.Key);
-
-
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private bool isCalloutOpen;
-
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalIconNameField = ICON_NAME_FIELD;
-    private string _internalTextField = TEXT_FIELD;
-    private string _internalKeyField = KEY_FIELD;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
 
-    private string? _calloutId;
-    private string? _overlayId;
+    private string _uniqueId = default!;
+    private string _calloutId = default!;
 
 
     private bool _isCalloutOpen
@@ -78,9 +66,14 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     }
 
     /// <summary>
-    ///  List of Item, each of which can be a Button with different action in the MenuButton.
+    ///  List of Item, each of which can be a Button with different action in the BitMenuButton.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
+    /// Icon name of the chevron down part of the BitMenuButton.
+    /// </summary>
+    [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
 
     /// <summary>
     /// The content of the BitMenuButton, that are BitMenuButtonOption components.
@@ -88,57 +81,37 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The content inside the header of MenuButton can be customized.
+    /// Custom CSS classes for different parts of the BitMenuButton.
+    /// </summary>
+    [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The content inside the header of BitMenuButton can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// The icon to show inside the header of MenuButton.
+    /// The icon to show inside the header of BitMenuButton.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    ///  List of BitMenuButtonItem to show as a item in MenuButton.
+    ///  List of BitMenuButtonItem to show as a item in BitMenuButton.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
-    /// Whether or not the item is enabled.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
-
-    /// <summary>
-    /// Whether or not the item is enabled.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
-
-    /// <summary>
-    /// Name of an icon to render next to the item text.
-    /// </summary>
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
-
-    /// <summary>
-    /// Name of an icon to render next to the item text.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
-
-    /// <summary>
-    /// The content inside the MenuButton-item can be customized.
+    /// The custom content to render each item.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// A unique value to use as a key of the item.
+    /// Names and selectors of the custom input type properties.
     /// </summary>
-    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
+    [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// A unique value to use as a key of the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
-
-    /// <summary>
-    /// The callback is called when the MenuButton header is clicked.
+    /// The callback is called when the BitMenuButton header is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -148,19 +121,14 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// The text to show inside the header of MenuButton.
+    /// Custom CSS styles for different parts of the BitMenuButton.
+    /// </summary>
+    [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The text to show inside the header of BitMenuButton.
     /// </summary>
     [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// Name of an icon to render next to the item text.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
-
-    /// <summary>
-    /// Name of an icon to render next to the item text.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
 
 
     [JSInvokable("CloseCallout")]
@@ -185,20 +153,23 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
 
     protected override string RootElementClass => "bit-mnb";
-
-    protected override async Task OnInitializedAsync()
+    protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => IsEnabled is false
+                                       ? string.Empty
+                                       : ButtonStyle == BitButtonStyle.Primary
+                                           ? $"{RootElementClass}-pri"
+                                           : $"{RootElementClass}-std");
+
+        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+    }
+
+    protected override void OnInitialized()
+    {
+        _uniqueId = UniqueId.ToString();
         _calloutId = $"{RootElementClass}-callout-{UniqueId}";
-        _overlayId = $"{RootElementClass}-overlay-{UniqueId}";
 
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
     protected override Task OnParametersSetAsync()
@@ -214,24 +185,44 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void OnAfterRender(bool firstRender)
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                       ? string.Empty
-                                       : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-pri"
-                                           : $"{RootElementClass}-std");
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
 
-        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+        base.OnAfterRender(firstRender);
     }
 
 
+    private string? GetClass(TItem item)
+    {
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Class;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
+    }
 
     private string? GetIconName(TItem item)
     {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
+        if (item is BitMenuButtonItem menuButtonItem)
         {
-            return bitMenuButtonItem.IconName;
+            return menuButtonItem.IconName;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
@@ -239,7 +230,102 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<string?>(_internalIconNameField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+    }
+
+    private bool GetIsEnabled(TItem item)
+    {
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsEnabled;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsEnabled;
+        }
+
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private string? GetKey(TItem item)
+    {
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Key;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Key;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
+    }
+
+    private string? GetStyle(TItem item)
+    {
+        if (item is BitMenuButtonItem bitMenuButtonItem)
+        {
+            return bitMenuButtonItem.Style;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    private RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitMenuButtonItem bitMenuButtonItem)
+        {
+            return bitMenuButtonItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
     private string? GetText(TItem item)
@@ -254,63 +340,64 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             return menuButtonOption.Text;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTextField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private string? GetKey(TItem item)
-    {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
-        {
-            return bitMenuButtonItem.Key;
-        }
 
-        if (item is BitMenuButtonOption menuButtonOption)
-        {
-            return menuButtonOption.Key;
-        }
-
-        return item.GetValueFromProperty<string?>(_internalKeyField);
-    }
-
-    private bool GetIsEnabled(TItem item)
-    {
-        if (item is BitMenuButtonItem bitMenuButtonItem)
-        {
-            return bitMenuButtonItem.IsEnabled;
-        }
-
-        if (item is BitMenuButtonOption menuButtonOption)
-        {
-            return menuButtonOption.IsEnabled;
-        }
-
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
-    }
-
-    private async Task OpenCallout(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
         _isCalloutOpen = true;
-        await _js.ToggleMenuButtonCallout(_dotnetObj, UniqueId.ToString(), _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
 
         await OnClick.InvokeAsync(e);
     }
 
-    internal async Task HandleOnItemClick(TItem item)
+    private async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
         await CloseCallout();
 
         await OnItemClick.InvokeAsync(item);
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            menuButtonItem.OnClick?.Invoke(menuButtonItem);
+        }
+        else if (item is BitMenuButtonOption menuButtonOption)
+        {
+            await menuButtonOption.OnClick.InvokeAsync(menuButtonOption);
+        }
+        else
+        {
+            if (NameSelectors is null) return;
+
+            if (NameSelectors.OnClick.Selector is not null)
+            {
+                NameSelectors.OnClick.Selector!(item)?.Invoke(item);
+            }
+            else
+            {
+                item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
+            }
+        }
     }
 
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
-        await _js.ToggleMenuButtonCallout(_dotnetObj, UniqueId.ToString(), _calloutId, _overlayId, _isCalloutOpen);
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
     }
+
 
     public void Dispose()
     {
@@ -318,11 +405,15 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         GC.SuppressFinalize(this);
     }
 
-    protected void Dispose(bool disposing)
+    protected async void Dispose(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        _dotnetObj.Dispose();
+        if (_dotnetObj is not null)
+        {
+            await _js.ClearCallout(_calloutId);
+            _dotnetObj.Dispose();
+        }
 
         _disposed = true;
     }

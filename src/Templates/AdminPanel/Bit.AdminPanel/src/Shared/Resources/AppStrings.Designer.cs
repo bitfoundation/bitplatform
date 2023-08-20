@@ -863,15 +863,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom.
-        /// </summary>
-        public static string GenderCustom {
-            get {
-                return ResourceManager.GetString("GenderCustom", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Female.
         /// </summary>
         public static string GenderFemale {
@@ -886,6 +877,15 @@ namespace AdminPanel.Shared.Resources {
         public static string GenderMale {
             get {
                 return ResourceManager.GetString("GenderMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Other.
+        /// </summary>
+        public static string GenderOther {
+            get {
+                return ResourceManager.GetString("GenderOther", resourceCulture);
             }
         }
         
@@ -1142,15 +1142,6 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No todos yet.
-        /// </summary>
-        public static string NoTodos {
-            get {
-                return ResourceManager.GetString("NoTodos", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
         /// </summary>
         public static string NotReceivedConfirmationEmailMessage {
@@ -1255,15 +1246,6 @@ namespace AdminPanel.Shared.Resources {
         public static string PhoneAttribute_Invalid {
             get {
                 return ResourceManager.GetString("PhoneAttribute_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Phone number.
-        /// </summary>
-        public static string PhoneNumber {
-            get {
-                return ResourceManager.GetString("PhoneNumber", resourceCulture);
             }
         }
         
@@ -1795,15 +1777,6 @@ namespace AdminPanel.Shared.Resources {
         public static string TermsTitle {
             get {
                 return ResourceManager.GetString("TermsTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to To Do item could not be found.
-        /// </summary>
-        public static string ToDoItemCouldNotBeFound {
-            get {
-                return ResourceManager.GetString("ToDoItemCouldNotBeFound", resourceCulture);
             }
         }
         

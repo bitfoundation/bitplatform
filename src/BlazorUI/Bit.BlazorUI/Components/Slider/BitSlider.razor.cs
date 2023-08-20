@@ -225,7 +225,7 @@ public partial class BitSlider
 
     protected override string RootElementClass => "bit-sld";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
 

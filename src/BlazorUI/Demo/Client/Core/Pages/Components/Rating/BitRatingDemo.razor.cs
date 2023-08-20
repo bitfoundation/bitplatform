@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Rating;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Rating;
 
 public partial class BitRatingDemo
 {
@@ -172,7 +169,7 @@ private double RatingLargeValue = 3;";
     private readonly string example5HTMLCode = @"
 <BitLabel>One-way:</BitLabel>
 <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
-<BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Label=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
+<BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Text=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
 
 <BitLabel>Two-way:</BitLabel>
 <BitRating Max=""6"" @bind-Value=""RatingControlledValue2"" />

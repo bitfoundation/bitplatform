@@ -1,0 +1,243 @@
+﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example11">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton Items="basicItems" />
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton Items="basicItems" ButtonStyle="BitButtonStyle.Standard" />
+            </div>
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitSplitButton Items="basicItems" IsEnabled="false" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IsSticky" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example12">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" />
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" ButtonStyle="BitButtonStyle.Standard" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled item" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example13">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton Items="disabledItems" IsSticky="true" />
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton Items="disabledItems" ButtonStyle="BitButtonStyle.Standard" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="OnClick" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example14">
+    <ExamplePreview>
+        <div>Component's OnClick:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton IsSticky="true"
+                                Items="basicItems"
+                                OnClick="(BitSplitButtonItem item) => example41SelectedItem = item" />
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton Items="basicItems"
+                                ButtonStyle="BitButtonStyle.Standard"
+                                OnClick="(BitSplitButtonItem item) => example41SelectedItem = item" />
+            </div>
+        </div>
+        <div>Clicked item: <b>@example41SelectedItem?.Text</b></div>
+        <br /><br /><br /><br />
+        <div>Item's OnClick:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton Items="itemsOnClick" IsSticky="true" />
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton Items="itemsOnClick" ButtonStyle="BitButtonStyle.Standard" />
+            </div>
+        </div>
+        <div>Clicked item: <b>@example42SelectedItem?.Text</b></div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example15">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton Items="basicItems"
+                            Style="width:200px;height:40px;"
+                            ChevronDownIcon="@BitIconName.DoubleChevronDown8" />
+
+            <BitSplitButton Items="basicItems"
+                            Class="custom-class"
+                            ButtonStyle="BitButtonStyle.Standard" />
+        </div>
+        <br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton IsSticky="true" Items="itemStyleClassItems" />
+        </div>
+        <br /><br />
+        <div>Styles & Classes:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton Items="basicItems"
+                            Styles="@(new() { ChevronDownButton="background-color:red",
+                                              ChevronDownIcon="color:darkblue",
+                                              ItemButton="background:darkgoldenrod" })" />
+
+            <BitSplitButton Items="basicItems"
+                            ButtonStyle="BitButtonStyle.Standard"
+                            Classes="@(new() { ChevronDownButton="custom-chevron", ItemButton="custom-button" })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example16">
+    <ExamplePreview>
+        <div>Component's ItemTemplate:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton IsSticky="true" Items="itemTemplateItems">
+                    <ItemTemplate Context="item">
+                        <div class="item-template-box">
+                            <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "#600000");">
+                                @item.Text (@item.Key)
+                            </span>
+                        </div>
+                    </ItemTemplate>
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton IsSticky="true" Items="itemTemplateItems" ButtonStyle="BitButtonStyle.Standard">
+                    <ItemTemplate Context="item">
+                        @if (item.Key == "add-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Add" />
+                                <span style="color: green;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                        else if (item.Key == "edit-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Edit" />
+                                <span style="color: yellow;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                        else if (item.Key == "delete-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Delete" />
+                                <span style="color: red;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                    </ItemTemplate>
+                </BitSplitButton>
+            </div>
+        </div>
+        <br /><br />
+        <div>Item's Template:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton IsSticky="true" Items="itemTemplateItems2" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example17">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Default SelectedItem</BitLabel>
+                <BitSplitButton Items="basicItems" DefaultSelectedItem="basicItems[1]" />
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" @bind-SelectedItem="twoWaySelectedItem" ButtonStyle="BitButtonStyle.Standard" />
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSplitButton IsSticky="true" Items="basicItems" OnChange="(BitSplitButtonItem item) => changedSelectedItem = item" />
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>IsSelected</BitLabel>
+                <BitSplitButton Items="isSelectedItems" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+@code {
+    private List<BitSplitButtonItem> itemTemplateItems2 = new()
+    {
+        new()
+        {
+            Text = "Add",
+            Key = "add-key",
+            IconName = BitIconName.Add,
+            Template = (item => @<div class="item-template-box" style="color:green">@item.Text (@item.Key)</div>)
+        },
+        new ()
+        {
+            Text = "Edit",
+            Key = "edit-key",
+            IconName = BitIconName.Edit,
+            Template = (item => @<div class="item-template-box" style="color:yellow">@item.Text (@item.Key)</div>)
+        },
+        new()
+        {
+            Text = "Delete",
+            Key = "delete-key",
+            IconName = BitIconName.Delete,
+            Template = (item => @<div class="item-template-box" style="color:red">@item.Text (@item.Key)</div>)
+        }
+    };
+}

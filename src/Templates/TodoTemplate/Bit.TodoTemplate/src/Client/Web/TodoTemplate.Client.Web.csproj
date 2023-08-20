@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
-		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
@@ -35,13 +35,13 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="5.3.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
+        <PackageReference Include="Bit.Bup" Version="5.4.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.4.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -69,7 +69,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include=".config\dotnet-tools.json" />
+        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
+        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -79,6 +80,7 @@
         <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
         <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the TodoTemplate.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
+        <Error Text="To run in BlazorServer or BlazorElectron modes, change the sdk of the TodoTemplate.Client.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" ('$(BlazorMode)' == 'BlazorServer' OR '$(BlazorMode)' == 'BlazorElectron') AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
     </Target>
 
 </Project>

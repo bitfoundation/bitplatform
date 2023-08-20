@@ -7,7 +7,10 @@
     display: inline-block;
     text-decoration: none;
     min-width: spacing(10);
+    min-height: spacing(4);
     box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
@@ -103,22 +106,4 @@
 
 .bit-tgb-txt {
     display: block;
-}
-
-.bit-tgb-sm {
-    font-size: spacing(1.5);
-    line-height: spacing(2.75);
-    padding: spacing(0.25) spacing(1.25);
-}
-
-.bit-tgb-md {
-    font-size: spacing(1.75);
-    padding: spacing(0.5) spacing(2);
-    line-height: $typography-line-height;
-}
-
-.bit-tgb-lg {
-    font-size: spacing(2);
-    line-height: spacing(3.75);
-    padding: spacing(0.75) spacing(2.75);
 }

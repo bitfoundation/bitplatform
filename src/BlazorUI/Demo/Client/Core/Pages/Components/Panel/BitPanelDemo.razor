@@ -75,7 +75,7 @@
                 <BitLabel>Panel with custom footer content</BitLabel>
                 <BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
 
-                <BitPanel ClassStyles="@(new() { Header = new() {Class = "header-padding"}, Footer = new() {Class = "footer-padding"}})" HeaderText="BitPanel with custom footer content" @bind-IsOpen="IsPanelWithFooterOpen">
+                <BitPanel ClassStyles="@(new() { Header = new() {Class = "header-margin"}, Footer = new() {Class = "footer-margin"}})" HeaderText="BitPanel with custom footer content" @bind-IsOpen="IsPanelWithFooterOpen">
                     <ChildContent>
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -178,7 +178,7 @@
 </div>
 
 @code {
-    private BitPanelClassStyles panelClassStyles = new() { Header = new() {Class = "header-padding"}};
+    private BitPanelClassStyles panelClassStyles = new() { Header = new() {Class = "header-margin"}};
 
     private bool IsBasicPanelOpen = false;
     private bool IsPanelWithHeaderTextOpen = false;

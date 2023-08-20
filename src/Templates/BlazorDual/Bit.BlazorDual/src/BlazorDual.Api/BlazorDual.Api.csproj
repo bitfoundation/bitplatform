@@ -21,13 +21,11 @@
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.2.0" />
-        <PackageReference Include="AutoMapper" Version="12.0.1" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -38,7 +36,7 @@
 
 
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -56,10 +54,11 @@
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="7.0.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="7.0.1" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="7.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.1.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
+        <PackageReference Include="Riok.Mapperly" Version="3.1.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -72,9 +71,8 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="AutoMapper" />
-        <Using Include="AutoMapper.QueryableExtensions" />
         <Using Include="BlazorDual.Api.Data" />
+        <Using Include="BlazorDual.Api.Models" />
         <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Services.Contracts" />
     </ItemGroup>

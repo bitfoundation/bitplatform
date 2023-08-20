@@ -1,7 +1,13 @@
-﻿// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
+﻿// bit version: 5.4.0
+// https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
-self.assetsExclude = [];
+self.assetsExclude = [
+    /Riok\.Mapperly\.Abstractions\.dll$/,
+    /bit\.blazorui\.fluent\.css$/,
+    /bit\.blazorui\.fluent-dark\.css$/,
+    /bit\.blazorui\.fluent-light\.css$/,
+];
 self.externalAssets = [
     {
         "url": "/"

@@ -3,10 +3,12 @@
 public partial class BitToggleButton
 {
     private bool IsCheckedHasBeenSet;
+
     private bool isChecked;
-    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+
     private int? _tabIndex;
+
 
     /// <summary>
     /// Whether the toggle button can have focus in disabled mode.
@@ -24,22 +26,6 @@ public partial class BitToggleButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
-    /// </summary>
-    [Parameter]
-    public BitButtonSize ButtonSize
-    {
-        get => buttonSize;
-        set
-        {
-            if (buttonSize == value) return;
-
-            buttonSize = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The style of compound button, Possible values: Primary | Standard.
     /// </summary>
     [Parameter]
@@ -54,9 +40,14 @@ public partial class BitToggleButton
     }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitToggleButton component.
+    /// The content of BitToggleButton.
     /// </summary>
-    [Parameter] public BitToggleButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitToggleButton component.
+    /// </summary>
+    [Parameter] public BitToggleButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Default value of the IsChecked.
@@ -64,9 +55,9 @@ public partial class BitToggleButton
     [Parameter] public bool? DefaultIsChecked { get; set; }
 
     /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor.
+    /// The icon that shows in the button.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Determine if the button is in checked state, default is true.
@@ -87,14 +78,9 @@ public partial class BitToggleButton
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
-    /// The icon that shows in the button.
+    /// Callback that is called when the IsChecked value has changed.
     /// </summary>
-    [Parameter] public string? IconName { get; set; }
-
-    /// <summary>
-    /// The text that shows in the label.
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
     /// Callback that is called when the button is clicked.
@@ -102,38 +88,60 @@ public partial class BitToggleButton
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback that is called when the IsChecked value has changed.
+    /// The icon of the BitToggleButton when it is not checked.
     /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
+    [Parameter] public string? OffIconName { get; set; }
 
     /// <summary>
-    /// If Href provided, specifies how to open the link.
+    /// The text of the BitToggleButton when it is not checked.
     /// </summary>
-    [Parameter] public string? Target { get; set; }
+    [Parameter] public string? OffText { get; set; }
+
+    /// <summary>
+    /// The title of the BitToggleButton when it is not checked.
+    /// </summary>
+    [Parameter] public string? OffTitle { get; set; }
+
+    /// <summary>
+    /// The icon of the BitToggleButton when it is checked.
+    /// </summary>
+    [Parameter] public string? OnIconName { get; set; }
+
+    /// <summary>
+    /// The text of the BitToggleButton when it is checked.
+    /// </summary>
+    [Parameter] public string? OnText { get; set; }
+
+    /// <summary>
+    /// The title of the BitToggleButton when it is checked.
+    /// </summary>
+    [Parameter] public string? OnTitle { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitToggleButton component.
+    /// </summary>
+    [Parameter] public BitToggleButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The text of the BitToggleButton.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
 
     /// <summary>
     /// The title to show when the mouse is placed on the button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+
     protected override string RootElementClass => "bit-tgb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                           ? $"{RootElementClass}-pri"
                                           : $"{RootElementClass}-std");
 
-        ClassBuilder.Register(() => ButtonSize switch
-        {
-            BitButtonSize.Small => $"{RootElementClass}-sm",
-            BitButtonSize.Large => $"{RootElementClass}-lg",
-            _ => $"{RootElementClass}-md"
-        });
-
-        ClassBuilder.Register(() => IsChecked
-                                       ? $"{RootElementClass}-chk"
-                                       : string.Empty);
+        ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-chk" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -154,10 +162,40 @@ public partial class BitToggleButton
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+
         await OnClick.InvokeAsync(e);
 
         if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+
         IsChecked = !IsChecked;
         await OnChange.InvokeAsync(IsChecked);
+    }
+
+
+    private string? GetIconName()
+    {
+        if (IsChecked && OnIconName.HasValue()) return OnIconName;
+
+        if (IsChecked is false && OffIconName.HasValue()) return OffIconName;
+
+        return IconName;
+    }
+
+    private string? GetText()
+    {
+        if (IsChecked && OnText.HasValue()) return OnText;
+
+        if (IsChecked is false && OffText.HasValue()) return OffText;
+
+        return Text;
+    }
+
+    private string? GetTitle()
+    {
+        if (IsChecked && OnTitle.HasValue()) return OnTitle;
+
+        if (IsChecked is false && OffTitle.HasValue()) return OffTitle;
+
+        return Title;
     }
 }

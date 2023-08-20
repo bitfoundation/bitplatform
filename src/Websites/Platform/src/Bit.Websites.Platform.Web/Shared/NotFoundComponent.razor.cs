@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Websites.Platform.Web;
+namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class NotFoundComponent
 {

@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Panel;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Panel;
 
 public partial class BitPanelDemo
 {
@@ -137,14 +134,6 @@ public partial class BitPanelDemo
                    Name = "Container",
                    Type = "BitClassStylePair?",
                    Description = "Custom CSS classes/styles for the Panel container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               },
-               new()
-               {
-                   Name = "ScrollContainer",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel scroll container.",
                    Href = "#class-style-pair",
                    LinkType = LinkType.Link
                },

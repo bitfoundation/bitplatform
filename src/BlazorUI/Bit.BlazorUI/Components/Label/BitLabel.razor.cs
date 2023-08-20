@@ -31,7 +31,7 @@ public partial class BitLabel
 
     protected override string RootElementClass => "bit-lbl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
     }

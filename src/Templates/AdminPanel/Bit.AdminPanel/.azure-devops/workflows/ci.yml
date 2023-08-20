@@ -9,7 +9,7 @@ jobs:
   displayName: 'build blazor server'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2
@@ -33,7 +33,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   - task: UseDotNet@2
@@ -69,7 +69,7 @@ jobs:
   displayName: 'build blazor hybrid (windows)'
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
 
   steps:
   - task: UseDotNet@2
@@ -141,7 +141,7 @@ jobs:
   displayName: 'build blazor hybrid (maccatalyst)'
 
   pool:
-    vmImage: 'macos-latest'
+    vmImage: 'macos-12'
 
   steps:
   - task: UseDotNet@2
@@ -177,7 +177,7 @@ jobs:
   displayName: 'build blazor api + web assembly'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2

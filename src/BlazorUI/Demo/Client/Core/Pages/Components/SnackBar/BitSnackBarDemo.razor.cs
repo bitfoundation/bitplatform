@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.SnackBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.SnackBar;
 
 public partial class BitSnackBarDemo
 {
@@ -48,7 +45,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "BitSnackBarPosition.BottomRight",
             Description = "The position of SnackBar to show.",
             LinkType = LinkType.Link,
-            Href = "snackbar-position-enum"
+            Href = "#snackbar-position-enum"
         },
         new()
         {

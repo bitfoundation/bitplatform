@@ -104,7 +104,7 @@
                 <div>
                     <BitLabel>One-way:</BitLabel>
                     <BitRating AllowZeroStars="true" Value="RatingControlledValue1" />
-                    <BitToggleButton OnChange="v =>  RatingControlledValue1 = v ? 5 : 0" Label="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
+                    <BitToggleButton OnChange="v =>  RatingControlledValue1 = v ? 5 : 0" Text="@(RatingControlledValue1 == 5 ? "Unstar All" : "Star All")" />
                 </div>
                 <br />
                 <div>

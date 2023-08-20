@@ -17,7 +17,7 @@ on:
 jobs:
   build-publish:
     name: build & publish
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -31,7 +31,7 @@ jobs:
     
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
 
     - name: dotnet restore BlazorUI
       run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /p:WarningLevel=0 /p:RunCodeAnalysis=false

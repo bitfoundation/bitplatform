@@ -16,7 +16,7 @@ jobs:
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -27,10 +27,9 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/Websites/Platform/global.json
-
+        
     - name: Switch to blazor web assembly
-      shell: pwsh
-      run: (Get-Content src/Websites/Platform/src/Bit.Websites.Platform.Web/Bit.Websites.Platform.Web.csproj) -replace 'Microsoft.NET.Sdk.Web', 'Microsoft.NET.Sdk.BlazorWebAssembly' | Set-Content src/Websites/Platform/src/Bit.Websites.Platform.Web/Bit.Websites.Platform.Web.csproj
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Websites/Platform/src/Bit.Websites.Platform.Web/Bit.Websites.Platform.Web.csproj
 
     - name: Restore workloads
       run: >
@@ -59,7 +58,7 @@ jobs:
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
     needs: build_blazor_api_wasm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}

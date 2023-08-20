@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Demo.Client.Core.Services;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Bit.BlazorUI.Demo.Client.Core;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class NavMenu
 {
@@ -12,7 +12,7 @@ public partial class NavMenu
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
-            Text = "Basic Inputs",
+            Text = "Buttons",
             ChildItems = new()
             {
                 new() { Text = "Button", Url = "/components/button" },
@@ -20,9 +20,16 @@ public partial class NavMenu
                 new() { Text = "CompoundButton", Url = "/components/compoundbutton" },
                 new() { Text = "IconButton", Url = "/components/iconbutton" },
                 new() { Text = "LoadingButton", Url = "/components/loadingbutton" },
-                new() { Text = "ToggleButton", Url = "/components/togglebutton" },
                 new() { Text = "MenuButton", Url = "/components/menubutton" },
                 new() { Text = "SplitButton", Url = "/components/splitbutton" },
+                new() { Text = "ToggleButton", Url = "/components/togglebutton" }
+            }
+        },
+        new()
+        {
+            Text = "Basic Inputs",
+            ChildItems = new()
+            {
                 new() { Text = "CheckBox", Url = "/components/checkbox" },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup" },
                 new() { Text = "Dropdown", Url = "/components/dropdown" },
@@ -44,6 +51,7 @@ public partial class NavMenu
             Text = "Galleries & Pickers",
             ChildItems = new()
             {
+                new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "ColorPicker", Url = "/components/colorpicker" },
                 new() { Text = "DatePicker", Url = "/components/datepicker" },
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker" },

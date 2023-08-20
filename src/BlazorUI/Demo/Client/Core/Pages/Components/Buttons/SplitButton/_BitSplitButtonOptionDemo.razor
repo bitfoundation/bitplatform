@@ -1,0 +1,311 @@
+﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example31">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" IsEnabled="false">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IsSticky" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example32">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" IsSticky="true">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" ButtonStyle="BitButtonStyle.Standard" IsSticky="true">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled item" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example33">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" IsSticky="true">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" IsEnabled="false" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" IsEnabled="false" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="OnClick" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example34">
+    <ExamplePreview>
+        <div>Component's OnClick:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton IsSticky="true" OnClick="(BitSplitButtonOption item) => example41SelectedItem = item.Text">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton ButtonStyle="BitButtonStyle.Standard" OnClick="(BitSplitButtonOption item) => example41SelectedItem = item.Text">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+            </div>
+        </div>
+        <div>Clicked item: <b>@example41SelectedItem</b></div>
+        <br /><br /><br /><br />
+        <div>Item's OnClick:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitSplitButton IsSticky="true" TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" OnClick="@(_ => example42SelectedItem = "Add - Sticky")" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" OnClick="@(_ => example42SelectedItem = "Edit - Sticky")" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" OnClick="@(_ => example42SelectedItem = "Delete - Sticky")" />
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" OnClick="@(_ => example42SelectedItem = "Add")" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" OnClick="@(_ => example42SelectedItem = "Edit")" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" OnClick="@(_ => example42SelectedItem = "Delete")" />
+                </BitSplitButton>
+            </div>
+        </div>
+        <div>Clicked item: <b>@example42SelectedItem</b></div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example35">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton TItem="BitSplitButtonOption"
+                            Style="width:200px;height:40px;"
+                            ChevronDownIcon="@BitIconName.DoubleChevronDown8">
+                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitSplitButton>
+
+            <BitSplitButton TItem="BitSplitButtonOption" Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
+                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitSplitButton>
+        </div>
+        <br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton TItem="BitSplitButtonOption" IsSticky="true">
+                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" Style="color:red" />
+                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" Class="custom-item" />
+                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" Style="background:blue" />
+            </BitSplitButton>
+        </div>
+        <br /><br />
+        <div>Styles & Classes:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton TItem="BitSplitButtonOption"
+                            Styles="@(new() { ChevronDownButton="background-color:red",
+                                              ChevronDownIcon="color:darkblue",
+                                              ItemButton="background:darkgoldenrod" })">
+                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitSplitButton>
+
+            <BitSplitButton TItem="BitSplitButtonOption"
+                            ButtonStyle="BitButtonStyle.Standard"
+                            Classes="@(new() { ChevronDownButton="custom-chevron", ItemButton="custom-button" })">
+                <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitSplitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example36">
+    <ExamplePreview>
+        <div>Component's ItemTemplate:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" IsSticky="true">
+                    <ItemTemplate Context="item">
+                        <div class="item-template-box">
+                            <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
+                                @item.Text (@item.Key)
+                            </span>
+                        </div>
+                    </ItemTemplate>
+                    <ChildContent>
+                        <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                        <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                        <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                    </ChildContent>
+                </BitSplitButton>
+            </div>
+            <div>
+                <BitLabel>Standard</BitLabel>
+                <BitSplitButton TItem="BitSplitButtonOption" ButtonStyle="BitButtonStyle.Standard" IsSticky="true">
+                    <ItemTemplate Context="item">
+                        @if (item.Key == "add-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Add" />
+                                <span style="color: green;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                        else if (item.Key == "edit-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Edit" />
+                                <span style="color: yellow;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                        else if (item.Key == "delete-key")
+                        {
+                            <div class="item-template-box">
+                                <BitIcon IconName="@BitIconName.Delete" />
+                                <span style="color: red;">
+                                    @item.Text (@item.Key)
+                                </span>
+                            </div>
+                        }
+                    </ItemTemplate>
+                    <ChildContent>
+                        <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                        <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                        <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
+                    </ChildContent>
+                </BitSplitButton>
+            </div>
+        </div>
+        <br /><br />
+        <div>Item's Template:</div>
+        <br />
+        <div class="example-content">
+            <BitSplitButton TItem="BitSplitButtonOption" IsSticky="true">
+                <ItemTemplate Context="item">
+                    <div class="item-template-box">
+                        <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
+                            @item.Text (@item.Key)
+                        </span>
+                    </div>
+                </ItemTemplate>
+                <ChildContent>
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add">
+                        <Template Context="item"><div class="item-template-box" style="color:green">@item.Text (@item.Key)</div></Template>
+                    </BitSplitButtonOption>
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit">
+                        <Template Context="item"><div class="item-template-box" style="color:yellow">@item.Text (@item.Key)</div></Template>
+                    </BitSplitButtonOption>
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete">
+                        <Template Context="item"><div class="item-template-box" style="color:red">@item.Text (@item.Key)</div></Template>
+                    </BitSplitButtonOption>
+                </ChildContent>
+            </BitSplitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example37">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitSplitButton @bind-SelectedItem="twoWaySelectedItem"
+                                IsSticky="true"
+                                TItem="BitSplitButtonOption"
+                                ButtonStyle="BitButtonStyle.Standard">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+                <br />
+                <div>Selected item: <b>@twoWaySelectedItem?.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSplitButton IsSticky="true" OnChange="(BitSplitButtonOption item) => changedSelectedItem = item">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitSplitButton>
+                <br />
+                <div>Changed item: <b>@changedSelectedItem?.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>IsSelected</BitLabel>
+                <BitSplitButton IsSticky="true" TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" IsSelected="true" />
+                </BitSplitButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

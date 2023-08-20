@@ -8,16 +8,16 @@ namespace AdminPanel.Server.Api.Controllers;
 public partial class ProductController : AppControllerBase
 {
     [HttpGet, EnableQuery]
-    public IQueryable<ProductDto> Get(CancellationToken cancellationToken)
+    public IQueryable<ProductDto> Get()
     {
         return DbContext.Products
-            .ProjectTo<ProductDto>(Mapper.ConfigurationProvider, cancellationToken);
+            .Project();
     }
 
     [HttpGet("{id:int}")]
     public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
     {
-        var product = await Get(cancellationToken).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (product is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
@@ -28,7 +28,7 @@ public partial class ProductController : AppControllerBase
     [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
-        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(Get(cancellationToken), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
@@ -42,28 +42,32 @@ public partial class ProductController : AppControllerBase
     }
 
     [HttpPost]
-    public async Task Create(ProductDto dto, CancellationToken cancellationToken)
+    public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToAdd = Mapper.Map<Product>(dto);
+        var productToAdd = dto.Map();
 
         await DbContext.Products.AddAsync(productToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        return productToAdd.Map();
     }
 
     [HttpPut]
-    public async Task Update(ProductDto dto, CancellationToken cancellationToken)
+    public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
         var productToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (productToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        var updatedProduct = Mapper.Map(dto, productToUpdate);
-
-        DbContext.Products.Update(productToUpdate);
+        dto.Patch(productToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        productToUpdate.Patch(dto);
+
+        return dto;
     }
 
     [HttpDelete("{id:int}")]

@@ -1,6 +1,13 @@
+// bit version: 5.4.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 // Make sure to apply all changes you make here to the service-worker.published.js file too (if required).
+
+self.assetsExclude = [
+    /bit\.blazorui\.fluent\.css$/,
+    /bit\.blazorui\.fluent-dark\.css$/,
+    /bit\.blazorui\.fluent-light\.css$/,
+];
 
 self.externalAssets = [
     {

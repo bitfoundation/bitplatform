@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Breadcrumb;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {

@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Checkbox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -217,22 +214,22 @@ private bool IsIndeterminate = true;
 
     private readonly string example4HTMLCode = @"
 <BitCheckbox Label=""One-way Controlled Checkbox"" Value=""IsChecked_OneWay"" />
-<BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"" ButtonSize=""BitButtonSize.Small"">
+<BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"">
     @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
 </BitButton>
 
 <BitCheckbox Label=""Two-way Controlled Checkbox"" @bind-Value=""IsChecked_TwoWay"" />
-<BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"" ButtonSize=""BitButtonSize.Small"">
+<BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"">
     @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
 </BitButton>
 
 <BitCheckbox Label=""One-way Controlled indeterminate checkbox"" IsIndeterminate=""IsIndeterminate_OneWay"" />
-<BitButton OnClick=""() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay"" ButtonSize=""BitButtonSize.Small"">
+<BitButton OnClick=""() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay"">
     @(IsIndeterminate_OneWay ? ""Remove"" : ""Make"") Indeterminate
 </BitButton>
 
 <BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminate_TwoWay"" />
-<BitButton OnClick=""() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay"" ButtonSize=""BitButtonSize.Small"">
+<BitButton OnClick=""() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay"">
     @(IsIndeterminate_TwoWay ? ""Remove"" : ""Make"") Indeterminate
 </BitButton>";
     private readonly string example4CSharpCode = @"

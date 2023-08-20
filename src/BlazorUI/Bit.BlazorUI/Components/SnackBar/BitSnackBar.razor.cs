@@ -90,7 +90,7 @@ public partial class BitSnackBar
 
     protected override string RootElementClass => "bit-snb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Position switch
         {

@@ -38,16 +38,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.3.0" />
-        <PackageReference Include="Bit.Bup" Version="5.3.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.4.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.4.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.4.0" />
+        <PackageReference Include="Bit.Bup" Version="5.4.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.4.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -66,11 +66,15 @@
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="BlazorDual.Web.Shared" />
         <Using Include="BlazorDual.Web.Components" />
         <Using Include="BlazorDual.Web.Services.Contracts" />
         <Using Include="BlazorDual.Web.Services.Implementations" />
+        <Using Include="BlazorDual.Shared" />
 
         <Watch Remove="*.scss" />
+
+        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
     </ItemGroup>
 
     <ItemGroup>
@@ -94,11 +98,13 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="npx --yes sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes -p typescript tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="npx --yes esbuild Scripts/app.js --minify --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.65.1 typescript@5.1.6 esbuild@0.19.0 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the BlazorDual.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
+        <Error Text="To run in BlazorServer or BlazorElectron modes, change the sdk of the BlazorDual.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" ('$(BlazorMode)' == 'BlazorServer' OR '$(BlazorMode)' == 'BlazorElectron') AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
     </Target>
     
 </Project>

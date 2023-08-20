@@ -1,52 +1,24 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if (Href.HasValue() && IsEnabled)
-{
-    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-       style="@StyleBuilder.Value"
-       class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
-       title="@Title"
-       target="@Target"
-       href="@Href"
-       tabindex="@_tabIndex">
-        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
-            @if (IconName.HasValue())
-            {
-                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
-            }
-
-            @if (Label.HasValue())
-            {
-                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
-            }
-        </span>
-    </a>
-}
-else
-{
-    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-            style="@StyleBuilder.Value"
-            class="@ClassBuilder.Value"
-            type="button"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@_tabIndex"
-            title="@Title">
-        <span style="@ClassStyles?.Container?.Style" class="bit-tgb-con @ClassStyles?.Container?.Class">
-            @if (IconName.HasValue())
-            {
-                <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
-            }
-
-            @if (Label.HasValue())
-            {
-                <span style="@ClassStyles?.Label?.Style" class="bit-tgb-txt @ClassStyles?.Label?.Class">@Label</span>
-            }
-        </span>
-    </button>
-}
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        type="button"
+        aria-label="@AriaLabel"
+        aria-describedby="@AriaDescription"
+        aria-hidden="@AriaHidden"
+        tabindex="@_tabIndex"
+        title="@GetTitle()">
+    <span style="@Styles?.Container" class="bit-tgb-con @Classes?.Container">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
+            <span style="@Styles?.Text" class="bit-tgb-txt @Classes?.Text">@GetText()</span>
+        }
+    </span>
+</button>

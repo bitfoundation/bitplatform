@@ -8,7 +8,7 @@ jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -22,7 +22,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
       
     - name: Restore workloads prerelease
       run: dotnet workload restore src/Bit-CI-release.sln && dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj
@@ -39,7 +39,7 @@ jobs:
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -58,7 +58,7 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
+        node-version: 18
 
     - name: Restore workloads
       run: dotnet workload restore src/Bit-CI.sln && dotnet workload restore src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj

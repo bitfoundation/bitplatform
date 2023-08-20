@@ -125,12 +125,14 @@
                 margin-bottom: rem2(24px);
 
                 @include md {
-                    font-size: rem2(26px);
+                    font-size: rem2(32px);
                     line-height: rem2(42px);
                 }
 
                 @include sm {
                     text-align: center;
+                    font-size: rem2(26px);
+                    line-height: rem2(36px);
                 }
             }
 

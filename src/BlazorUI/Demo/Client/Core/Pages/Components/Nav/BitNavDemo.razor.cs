@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Nav;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Nav;
 
 public partial class BitNavDemo
 {
@@ -18,7 +15,7 @@ public partial class BitNavDemo
         {
             Name = "AriaCurrentFieldSelector",
             Type = "Expression<Func<TItem, BitNavAriaCurrent>>?",
-            Href = "nav-item-aria-current",
+            Href = "#nav-item-aria-current",
             LinkType = LinkType.Link,
             Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'."
         },
@@ -169,7 +166,7 @@ public partial class BitNavDemo
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
-            Href="nav-item",
+            Href="#nav-item",
             LinkType = LinkType.Link,
             Description = "A collection of item to display in the navigation bar."
         },
@@ -185,7 +182,7 @@ public partial class BitNavDemo
             Name = "ItemTemplateRenderMode",
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-            Href = "nav-itemtemplate-rendermode",
+            Href = "#nav-itemtemplate-rendermode",
             LinkType = LinkType.Link,
             Description = "The render mode of the custom ItemTemplate."
         },
@@ -208,7 +205,7 @@ public partial class BitNavDemo
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
-            Href = "nav-mode-enum",
+            Href = "#nav-mode-enum",
             LinkType = LinkType.Link,
             Description = "Determines how the navigation will be handled."
         },
@@ -235,7 +232,7 @@ public partial class BitNavDemo
             Name = "RenderType",
             Type = "BitNavRenderType",
             DefaultValue = "BitNavRenderType.Normal",
-            Href = "nav-render-type-enum",
+            Href = "#nav-render-type-enum",
             LinkType = LinkType.Link,
             Description = "The way to render nav items."
         },
@@ -777,7 +774,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         Text = ""Community"",
         ChildItems = new List<BitNavItem>
         {
-            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq"" },
             new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
@@ -1247,7 +1244,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         Text = ""Community"",
         ChildItems = new List<BitNavItem>
         {
-            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq"" },
             new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
@@ -1309,7 +1306,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         Text = ""Community"",
         Links = new List<BitPlatformMenu>
         {
-            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq"" },
             new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
@@ -1873,7 +1870,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         Text = ""Community"",
         Links = new List<BitPlatformMenu>
         {
-            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq/about/"" },
+            new() { Text = ""Linkedin"", Url = ""https://www.linkedin.com/company/bitplatformhq"" },
             new() { Text = ""Twitter"", Url = ""https://twitter.com/bitplatformhq"" },
             new() { Text = ""Github repo"", Url = ""https://github.com/bitfoundation/bitplatform"" },
         }
@@ -1906,7 +1903,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     <BitNavOption Text=""Community""
                     ExpandAriaLabel=""Community Expanded""
                     CollapseAriaLabel=""Community Collapsed"">
-        <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq/about"" Target=""_blank"" />
+        <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Twitter"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
@@ -2154,7 +2151,7 @@ private BitNavOption ToggledOption;";
     <BitNavOption Text=""Community""
                   ExpandAriaLabel=""Community Expanded""
                   CollapseAriaLabel=""Community Collapsed"">
-        <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq/about"" Target=""_blank"" />
+        <BitNavOption Text=""Linkedin"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Twitter"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Github repo"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>

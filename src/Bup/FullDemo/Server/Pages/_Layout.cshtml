@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="css/app.css" asp-append-version="true" />
     <link rel="stylesheet" href="Bit.Bup.Demo.Client.styles.css" asp-append-version="true" />
-    @*<link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version="true">*@
     <script src="_content/Bit.Bup/bit-bup.progress.js" asp-append-version="true"></script>
 </head>
 <body>
@@ -29,12 +28,13 @@
     <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
     <script src="_content/Bit.Bup/bit-bup.js" log="none" handler="bitBupHandler" asp-append-version="true"></script>
     
-    <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
-    @*<component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+    @* <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" /> *@
+    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version="true">
+    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                param-ShowAssets="false"
                param-ShowLogs="false"
                param-AutoHide="true"
                param-HideApp="true"
-               param-AppContainer="@("#app-container")" />*@
+               param-AppContainer="@("#app-container")" />
 </body>
 </html>

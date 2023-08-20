@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Typography;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Typography;
 
 public partial class BitTypographyDemo
 {
@@ -41,7 +38,7 @@ public partial class BitTypographyDemo
             Type = "BitTypographyVariant",
             Description = "The variant of the Typography.",
             LinkType = LinkType.Link,
-            Href = "typography-variant-enum"
+            Href = "#typography-variant-enum"
         }
     };
 

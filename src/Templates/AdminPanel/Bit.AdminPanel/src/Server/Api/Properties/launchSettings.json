@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "AdminPanel.Server.Api": {
+        "AdminPanel.Server.Api-Swagger": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

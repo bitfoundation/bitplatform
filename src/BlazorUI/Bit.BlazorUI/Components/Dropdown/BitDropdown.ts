@@ -27,12 +27,12 @@
         if (isOpen) {
             dropdownCallout.style.display = "none";
             dropdownOverlay.style.display = "none";
-            Bit.currentCallout.update("", "", null);
-            Bit.currentDropdownCalloutId = "";
+            BitCallouts.currentCallout.update("", "", null);
+            BitCallouts.currentDropdownCalloutId = "";
         } else {
-            Bit.currentDropdownCalloutId = dropdownCalloutId;
-            Bit.currentDropdownCalloutResponsiveModeIsEnabled = isResponsiveModeEnabled;
-            Bit.closeCurrentCalloutIfExists(dropdownCalloutId, dropdownOverlayId, dotnetObjReference);
+            BitCallouts.currentDropdownCalloutId = dropdownCalloutId;
+            BitCallouts.currentDropdownCalloutResponsiveModeIsEnabled = isResponsiveModeEnabled;
+            BitCallouts.replaceCurrentCallout(dropdownCalloutId, dropdownOverlayId, dotnetObjReference);
             dropdownCallout.style.display = "block";
             dropdownOverlay.style.display = "block";
 

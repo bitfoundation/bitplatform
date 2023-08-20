@@ -334,7 +334,7 @@ public partial class BitDropdown
 
     protected override string RootElementClass => "bit-drp";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hval" : string.Empty);
 

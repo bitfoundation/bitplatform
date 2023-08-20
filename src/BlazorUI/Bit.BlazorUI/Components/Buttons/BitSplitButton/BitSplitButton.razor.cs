@@ -1,30 +1,20 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 public partial class BitSplitButton<TItem> where TItem : class
 {
-    private const string IS_ENABLED_FIELD = nameof(BitSplitButtonItem.IsEnabled);
-    private const string ICON_NAME_FIELD = nameof(BitSplitButtonItem.IconName);
-    private const string TEXT_FIELD = nameof(BitSplitButtonItem.Text);
-    private const string KEY_FIELD = nameof(BitSplitButtonItem.Key);
+    private bool SelectedItemHasBeenSet;
 
-    private BitButtonSize buttonSize = BitButtonSize.Medium;
     private bool isCalloutOpen;
+    private TItem? selectedItem;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalIconNameField = ICON_NAME_FIELD;
-    private string _internalTextField = TEXT_FIELD;
-    private string _internalKeyField = KEY_FIELD;
 
-    private List<TItem> _children = new();
-    private IEnumerable<TItem> _oldItems;
-    private TItem? _currentItem;
+    private string _uniqueId = default!;
+    private string _calloutId = default!;
 
-    private string? _splitButtonId;
-    private string? _splitButtonCalloutId;
-    private string? _splitButtonOverlayId;
+
     private bool _isCalloutOpen
     {
         get => isCalloutOpen;
@@ -37,7 +27,23 @@ public partial class BitSplitButton<TItem> where TItem : class
         }
     }
 
+
+    private bool _disposed;
+    private BitButtonType _buttonType;
+    private List<TItem> _items = new();
+    private IEnumerable<TItem> _oldItems = default!;
+    private DotNetObjectReference<BitSplitButton<TItem>> _dotnetObj = default!;
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// </summary>
+    [CascadingParameter] private EditContext? _editContext { get; set; }
+
+
 
     /// <summary>
     /// Detailed description of the button for the benefit of screen readers
@@ -50,25 +56,18 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The style of button, Possible values: Primary | Standard
     /// </summary>
     [Parameter]
-    public BitButtonSize ButtonSize
+    public BitButtonStyle ButtonStyle
     {
-        get => buttonSize;
+        get => buttonStyle;
         set
         {
-            if (buttonSize == value) return;
-
-            buttonSize = value;
+            buttonStyle = value;
             ClassBuilder.Reset();
         }
     }
-
-    /// <summary>
-    /// The style of button, Possible values: Primary | Standard
-    /// </summary>
-    [Parameter] public BitButtonStyle ButtonStyle { get; set; } = BitButtonStyle.Primary;
 
     /// <summary>
     ///  List of Item, each of which can be a Button with different action in the SplitButton.
@@ -76,14 +75,24 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// Icon name of the chevron down part of the BitSplitButton.
+    /// </summary>
+    [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
+
+    /// <summary>
     /// The content of the BitSplitButton, that are BitSplitButtonOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The content inside the item can be customized.
+    /// Custom CSS classes for different parts of the BitSplitButton.
     /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public BitSplitButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Default value of the SelectedItem.
+    /// </summary>
+    [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
     /// If true, the current item is going to be change selected item.
@@ -94,25 +103,16 @@ public partial class BitSplitButton<TItem> where TItem : class
     ///  List of Item, each of which can be a Button with different action in the SplitButton.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
-    /// <summary>
-    /// Whether or not the item is enabled.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
 
     /// <summary>
-    /// Whether or not the item is enabled.
+    /// The content inside the item can be customized.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to the item text.
+    /// Names and selectors of the custom input type properties.
     /// </summary>
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
-
-    /// <summary>
-    /// Name of an icon to render next to the item text.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
+    [Parameter] public BitSplitButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// The callback is called when the button or button item is clicked.
@@ -120,56 +120,34 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to the item text.
+    /// The callback that is called when the selected item has changed.
     /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
+    [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to the item text.
+    /// Determines the current selected item that acts as the main button.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
-
-    /// <summary>
-    /// A unique value to use as a key of the item.
-    /// </summary>
-    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
-
-    /// <summary>
-    /// A unique value to use as a key of the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
-
-    /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
-    /// </summary>
-    [CascadingParameter] private EditContext? _editContext { get; set; }
-
-    protected override string RootElementClass => "bit-spl";
-
-    protected override void RegisterComponentClasses()
+    [Parameter]
+    public TItem? SelectedItem
     {
-        ClassBuilder.Register(() => IsEnabled is false
-                                      ? string.Empty
-                                      : ButtonStyle == BitButtonStyle.Primary
-                                          ? $"{RootElementClass}-pri"
-                                          : $"{RootElementClass}-std");
-
-        ClassBuilder.Register(() => ButtonSize switch
+        get => selectedItem;
+        set
         {
-            BitButtonSize.Small => $"{RootElementClass}-sm",
-            BitButtonSize.Large => $"{RootElementClass}-lg",
-            _ => $"{RootElementClass}-md"
-        });
+            if (selectedItem == value) return;
+
+            selectedItem = value;
+            ClassBuilder.Reset();
+            _ = SelectedItemChanged.InvokeAsync(value);
+        }
     }
 
-    protected override void OnInitialized()
-    {
-        _splitButtonId = $"{RootElementClass}-{UniqueId}";
-        _splitButtonCalloutId = $"{RootElementClass}-callout-{UniqueId}";
-        _splitButtonOverlayId = $"{RootElementClass}-overlay-{UniqueId}";
+    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
-        base.OnInitialized();
-    }
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitSplitButton.
+    /// </summary>
+    [Parameter] public BitSplitButtonClassStyles? Styles { get; set; }
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -178,45 +156,105 @@ public partial class BitSplitButton<TItem> where TItem : class
         StateHasChanged();
     }
 
+
     internal void RegisterOption(BitSplitButtonOption option)
     {
-        _children.Add((option as TItem)!);
+        var item = (option as TItem)!;
 
-        if (_currentItem is null)
+        _items.Add(item);
+
+        if (SelectedItemHasBeenSet is false && option.IsSelected)
         {
-            _currentItem = _children.FirstOrDefault();
+            SelectedItem = item;
         }
+
+        SelectedItem ??= _items.FirstOrDefault();
+
+        StateHasChanged();
     }
 
     internal void UnregisterOption(BitSplitButtonOption option)
     {
-        _children.Remove((option as TItem)!);
+        _items.Remove((option as TItem)!);
+        StateHasChanged();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
 
-        await base.OnInitializedAsync();
+    protected override string RootElementClass => "bit-spl";
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => IsEnabled is false
+                                      ? string.Empty
+                                      : ButtonStyle == BitButtonStyle.Primary
+                                          ? $"{RootElementClass}-pri"
+                                          : $"{RootElementClass}-std");
+
+        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+        ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : $"{RootElementClass}-cds");
+    }
+
+    protected override void OnInitialized()
+    {
+        _uniqueId = UniqueId.ToString();
+        _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+
+        if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
+        {
+            SelectedItem = DefaultSelectedItem;
+        }
+
+        base.OnInitialized();
     }
 
     protected override Task OnParametersSetAsync()
     {
-        ButtonType ??= _editContext is null
-            ? BitButtonType.Button
-            : BitButtonType.Submit;
+        _buttonType = ButtonType ?? (_editContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         if (ChildContent is null && Items.Any() && Items != _oldItems)
         {
             _oldItems = Items;
-            _children = Items.ToList();
-            _currentItem = _children.FirstOrDefault();
+            _items = Items.ToList();
+
+            SelectedItem ??= _items.LastOrDefault(GetIsSelected);
+            SelectedItem ??= _items.FirstOrDefault();
         }
 
         return base.OnParametersSetAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+
+    private string? GetClass(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            return splitButtonItem.Class;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
     private string? GetIconName(TItem? item)
@@ -228,97 +266,255 @@ public partial class BitSplitButton<TItem> where TItem : class
             return splitButtonItem.IconName;
         }
 
-        if (item is BitMenuButtonOption menuButtonOption)
+        if (item is BitSplitButtonOption splitButtonOption)
         {
-            return menuButtonOption.IconName;
+            return splitButtonOption.IconName;
         }
 
-        return item.GetValueFromProperty<string?>(_internalIconNameField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    private string? GetText(TItem item)
+    private bool GetIsEnabled(TItem? item)
     {
-        if (item is BitSplitButtonItem splitButtonItem)
-        {
-            return splitButtonItem.Text;
-        }
+        if (item is null) return false;
 
-        if (item is BitMenuButtonOption menuButtonOption)
-        {
-            return menuButtonOption.Text;
-        }
-
-        return item.GetValueFromProperty<string?>(_internalTextField);
-    }
-
-    private string? GetKey(TItem item)
-    {
-        if (item is BitSplitButtonItem splitButtonItem)
-        {
-            return splitButtonItem.Key;
-        }
-
-        if (item is BitMenuButtonOption menuButtonOption)
-        {
-            return menuButtonOption.Key;
-        }
-
-        return item.GetValueFromProperty<string?>(_internalKeyField);
-    }
-
-    private bool GetIsEnabled(TItem item)
-    {
         if (item is BitSplitButtonItem splitButtonItem)
         {
             return splitButtonItem.IsEnabled;
         }
 
-        if (item is BitMenuButtonOption menuButtonOption)
+        if (item is BitSplitButtonOption splitButtonOption)
         {
-            return menuButtonOption.IsEnabled;
+            return splitButtonOption.IsEnabled;
         }
 
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
+
+    private bool GetIsSelected(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            return splitButtonItem.IsSelected;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.IsSelected;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
+    }
+
+    private string? GetKey(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            return splitButtonItem.Key;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.Key;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
+    }
+
+    private string? GetStyle(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSplitButtonItem BitSplitButtonItem)
+        {
+            return BitSplitButtonItem.Style;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSplitButtonItem BitSplitButtonItem)
+        {
+            return BitSplitButtonItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
+    private string? GetText(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSplitButtonItem BitSplitButtonItem)
+        {
+            return BitSplitButtonItem.Text;
+        }
+
+        if (item is BitSplitButtonOption splitButtonOption)
+        {
+            return splitButtonOption.Text;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
 
     private async Task HandleOnClick(TItem? item)
     {
         if (IsEnabled is false || item is null || GetIsEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
+
+        await InvokeItemClick(item);
     }
 
     private async Task HandleOnItemClick(TItem item)
     {
         if (IsSticky)
         {
-            _currentItem = item;
+            if (SelectedItemHasBeenSet is false || SelectedItemChanged.HasDelegate)
+            {
+                SelectedItem = item;
+                await OnChange.InvokeAsync(item);
+            }
         }
         else
         {
             if (GetIsEnabled(item) is false) return;
 
             await OnClick.InvokeAsync(item);
+
+            await InvokeItemClick(item);
         }
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.ToggleSplitButtonCallout(obj, UniqueId.ToString(), _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = false;
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
     }
 
-    private async Task ToggleCallout()
+    private async Task InvokeItemClick(TItem item)
+    {
+        if (item is BitSplitButtonItem splitButtonItem)
+        {
+            splitButtonItem.OnClick?.Invoke(splitButtonItem);
+        }
+        else if (item is BitSplitButtonOption splitButtonOption)
+        {
+            await splitButtonOption.OnClick.InvokeAsync(splitButtonOption);
+        }
+        else
+        {
+            if (NameSelectors is null) return;
+
+            if (NameSelectors.OnClick.Selector is not null)
+            {
+                NameSelectors.OnClick.Selector!(item)?.Invoke(item);
+            }
+            else
+            {
+                item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
+            }
+        }
+    }
+
+
+    private async Task OpenCallout()
     {
         if (IsEnabled is false) return;
 
-        var obj = DotNetObjectReference.Create(this);
-        await _js.ToggleSplitButtonCallout(obj, UniqueId.ToString(), _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
-        _isCalloutOpen = !_isCalloutOpen;
+        _isCalloutOpen = true;
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
     }
 
     private async Task CloseCallout()
     {
-        var obj = DotNetObjectReference.Create(this);
-        await _js.ToggleSplitButtonCallout(obj, UniqueId.ToString(), _splitButtonId, _splitButtonCalloutId, _splitButtonOverlayId, _isCalloutOpen);
         _isCalloutOpen = false;
+        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+    }
+
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected async void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            await _js.ClearCallout(_calloutId);
+            _dotnetObj.Dispose();
+        }
+
+        _disposed = true;
     }
 }

@@ -9,7 +9,7 @@ jobs:
   displayName: 'build blazor server'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2
@@ -34,7 +34,7 @@ jobs:
   displayName: 'build blazor api + web assembly'
 
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2

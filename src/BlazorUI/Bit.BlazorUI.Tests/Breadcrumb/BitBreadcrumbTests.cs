@@ -143,11 +143,11 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitComponentVisibility.Visible),
-      DataRow(BitComponentVisibility.Hidden),
-      DataRow(BitComponentVisibility.Collapsed),
+      DataRow(BitVisibility.Visible),
+      DataRow(BitVisibility.Hidden),
+      DataRow(BitVisibility.Collapsed),
     ]
-    public void BitBreadcrumbShouldTakeCustomVisibility(BitComponentVisibility visibility)
+    public void BitBreadcrumbShouldTakeCustomVisibility(BitVisibility visibility)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
@@ -159,13 +159,13 @@ public class BitBreadcrumbTests : BunitTestContext
 
         switch (visibility)
         {
-            case BitComponentVisibility.Visible:
+            case BitVisibility.Visible:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(""));
                 break;
-            case BitComponentVisibility.Hidden:
+            case BitVisibility.Hidden:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));
                 break;
-            case BitComponentVisibility.Collapsed:
+            case BitVisibility.Collapsed:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display:none"));
                 break;
         }

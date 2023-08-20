@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Models;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class PopularComponents
 {

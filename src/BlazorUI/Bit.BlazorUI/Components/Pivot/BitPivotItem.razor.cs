@@ -67,7 +67,7 @@ public partial class BitPivotItem : IDisposable
 
     protected override string RootElementClass => "bit-pvti";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsSelected ? "bit-pvti-sel" : string.Empty);
     }
@@ -89,7 +89,7 @@ public partial class BitPivotItem : IDisposable
         Parent?.Refresh();
     }
 
-    protected override void OnComponentVisibilityChanged(BitComponentVisibility visibility)
+    protected override void OnVisibilityChanged(BitVisibility visibility)
     {
         Parent?.Refresh();
     }

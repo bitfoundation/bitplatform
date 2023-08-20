@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Chart;
 
 public partial class BitChartDemo
 {

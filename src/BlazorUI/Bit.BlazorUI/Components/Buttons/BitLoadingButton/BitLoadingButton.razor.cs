@@ -105,7 +105,7 @@ public partial class BitLoadingButton
         base.OnParametersSet();
     }
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                     ? $"{RootElementClass}-pri"

@@ -26,6 +26,7 @@
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -85,14 +86,14 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Bit.BlazorUI" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.3.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.4.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.4.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.4.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

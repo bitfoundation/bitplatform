@@ -10,7 +10,7 @@ for csproj in $(find . -name '*.csproj'); do
 done
 
 # Delete specified directories
-for dir in $(find . -type d \( -name "bin" -o -name "obj" -o -name "node_modules" -o -name "Packages" -o -name ".vs" -o -name "TestResults" -o -name "AppPackages" \)); do
+for dir in $(find . -type d \( -name "bin" -o -name "obj" -o -name "node_modules" -o -name "Packages" -o -name ".vs" -o -name "TestResults" -o -name "AppPackages" -o -name ".meteor" \)); do
     rm -rf $dir
 done
 

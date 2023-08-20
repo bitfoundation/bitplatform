@@ -2,7 +2,7 @@
 
 public class PagedResult<T>
 {
-    public IList<T> Items { get; set; }
+    public IList<T>? Items { get; set; }
 
     public long TotalCount { get; set; }
 

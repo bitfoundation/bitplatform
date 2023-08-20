@@ -79,7 +79,7 @@
                 @bind-Value="_userToEdit.GenderAsString">
                     <BitChoiceGroupOption Value="@Gender.Male.ToString()" Text="@Localizer[nameof(AppStrings.GenderMale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
                     <BitChoiceGroupOption Value="@Gender.Female.ToString()" Text="@Localizer[nameof(AppStrings.GenderFemale)]" AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
-                    <BitChoiceGroupOption Value="@Gender.Custom.ToString()" Text="@Localizer[nameof(AppStrings.GenderCustom)]" AriaLabel="@Localizer[nameof(AppStrings.GenderCustom)]" />
+                    <BitChoiceGroupOption Value="@Gender.Other.ToString()" Text="@Localizer[nameof(AppStrings.GenderOther)]" AriaLabel="@Localizer[nameof(AppStrings.GenderOther)]" />
                 </BitChoiceGroup>
                 <ValidationMessage For="@(() => _userToEdit.Gender)" />
             </div>

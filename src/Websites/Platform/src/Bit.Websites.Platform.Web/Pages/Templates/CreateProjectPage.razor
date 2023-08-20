@@ -1,0 +1,54 @@
+﻿@page "/templates/create-project"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/create-project"
+            Title="Create project - Templates"
+            Description="create project of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        Install the necessary packages to start building with the bit project templates.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
+        <div class="section-card-txt">
+            1. Install the project templates from the NuGet package manager with one of the following commands:
+        </div>
+        <pre class="code-box">
+dotnet new install Bit.AdminPanel
+dotnet new install Bit.TodoTemplate
+dotnet new install Bit.BlazorDual</pre>
+        <div class="section-card-txt">
+            2. Create a new project using the installed project template with one of the following commands:
+        </div>
+        <pre class="code-box">
+dotnet new bit-admin
+dotnet new bit-todo
+dotnet new bit-dual</pre>
+        <div class="section-card-txt">
+            <b>Note</b>: bit project templates accept project name with --name (default is current folder name), --database default to 'SqlServer' among following options: 'SqlServer', 'Sqlite', 'Other' and --pipeline default to 'GitHub' among the following options: 'GitHub', 'Azure' (AzureDevOps pipelines), 'Other'.
+        </div>
+        <pre class="code-box">
+dotnet new bit-admin --name MyProject --database sqlite --pipeline github
+dotnet new bit-todo --name MyProject --database sqlite --pipeline github
+dotnet new bit-dual --name MyProject --database sqlite --pipeline github</pre>
+        <div class="section-card-txt">
+            <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
+        </div>
+    </section>
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <div class="section-card-txt">
+            After installing the template using the CLI, you can also create a new project with the Visual Studio:
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Create new project" src="/images/templates/todo/create-project-todo.webp" />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Development prerequisites" PrevUrl="/templates/development-prerequisites" Next="Database" NextUrl="/templates/database" />

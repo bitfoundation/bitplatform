@@ -94,7 +94,7 @@ const createLoginUI = function (swagger, rootDiv) {
 
     rootDiv.appendChild(div);
 
-    //UserName
+    //username
     const userNameLabel = document.createElement("label");
     div.appendChild(userNameLabel);
 
@@ -146,9 +146,9 @@ const createLoginUI = function (swagger, rootDiv) {
 
 const login = async (swagger, userName, password) => {
     const response = await fetch('/api/Auth/SignIn', {
-        headers: {"Content-Type": "application/json; charset=utf-8"},
+        headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
-        body: JSON.stringify({"userName": userName, "password": password})
+        body: JSON.stringify({ "userName": userName, "password": password })
     })
     if (response.ok) {
         const result = await response.json();

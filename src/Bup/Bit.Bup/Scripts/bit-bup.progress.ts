@@ -14,6 +14,9 @@
                     bupEl && (bupEl.style.display = 'block');
                     return showLogs ? console.log('downloading resources started.') : undefined;
                 case 'progress':
+                    hideApp && appEl && (appEl.style.display = 'none');
+                    bupEl && (bupEl.style.display = 'block');
+
                     if (showAssets && assetsEl) {
                         const li = document.createElement('li');
                         li.innerHTML = `${data.index}: <b>[${data.type}] ${data.name}</b>: ${data.url} (${data.integrity})`

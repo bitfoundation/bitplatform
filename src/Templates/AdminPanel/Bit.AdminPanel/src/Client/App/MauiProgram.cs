@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 
 using System.Reflection;
-using AdminPanel.Client.Core;
+using AdminPanel.Client.Core.Shared;
 using Microsoft.Extensions.FileProviders;
 
 namespace AdminPanel.Client.App;

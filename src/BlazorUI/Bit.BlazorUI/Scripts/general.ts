@@ -10,10 +10,12 @@
 
 window.addEventListener('scroll', (e: any) => {
     const minimumWidthForDropdownNormalOpen = 640;
-    if ((Bit.currentDropdownCalloutId && window.innerWidth < minimumWidthForDropdownNormalOpen && Bit.currentDropdownCalloutResponsiveModeIsEnabled) ||
-        (e.target.id && Bit.currentDropdownCalloutId === e.target.id)) return;
+    if ((BitCallouts.currentDropdownCalloutId
+          && window.innerWidth < minimumWidthForDropdownNormalOpen
+          && BitCallouts.currentDropdownCalloutResponsiveModeIsEnabled)
+        || (e.target.id && BitCallouts.currentDropdownCalloutId === e.target.id)) return;
 
-    Bit.closeCurrentCalloutIfExists("", "", null);
+    BitCallouts.replaceCurrentCallout("", "", null);
 }, true);
 
 window.addEventListener('resize', (e: any) => {
@@ -21,5 +23,5 @@ window.addEventListener('resize', (e: any) => {
     const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
     if (isMobile && resizeTriggeredByKeyboardOpen) return;
 
-    Bit.closeCurrentCalloutIfExists("", "", null);
+    BitCallouts.replaceCurrentCallout("", "", null);
 }, true);

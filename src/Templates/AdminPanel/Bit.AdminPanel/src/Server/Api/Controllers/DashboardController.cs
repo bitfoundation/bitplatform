@@ -40,7 +40,7 @@ public partial class DashboardController : AppControllerBase
              .Select(p => new ProductSaleStatDto()
              {
                  ProductName = p.Name,
-                 CategoryColor = p.Category.Color,
+                 CategoryColor = p.Category!.Color,
                  SaleAmount = rand.Next(1, 10) * p.Price
              }).ToListAsync();
     }

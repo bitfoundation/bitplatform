@@ -168,8 +168,8 @@
   <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>
-  <data name="GenderCustom" xml:space="preserve">
-    <value>Custom</value>
+  <data name="GenderOther" xml:space="preserve">
+    <value>Other</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
     <value>Female</value>
@@ -504,9 +504,6 @@ Please confirm your email by clicking on the link.</value>
   <data name="EnterCategoryName" xml:space="preserve">
     <value>Enter category name</value>
   </data>
-  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>To Do item could not be found</value>
-  </data>
   <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
     <value>You have already requested the reset password email. Try again in {0}</value>
   </data>
@@ -521,9 +518,6 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="ForgetPasswordTitle" xml:space="preserve">
     <value>Forget password</value>
-  </data>
-  <data name="NoTodos" xml:space="preserve">
-    <value>No todos yet</value>
   </data>
   <data name="NotReceivedConfirmationEmailMessage1" xml:space="preserve">
     <value>Haven’t you received the confirmation email?</value>
@@ -686,9 +680,6 @@ Please confirm your email by clicking on the link.</value>
   </data>
   <data name="IsAcceptPrivacy" xml:space="preserve">
     <value>Is accept privacy policy?</value>
-  </data>
-  <data name="PhoneNumber" xml:space="preserve">
-    <value>Phone number</value>
   </data>
   <data name="UserName" xml:space="preserve">
     <value>Username</value>

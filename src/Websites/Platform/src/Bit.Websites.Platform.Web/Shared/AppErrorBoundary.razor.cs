@@ -1,4 +1,4 @@
-﻿namespace Bit.Websites.Platform.Web;
+﻿namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class AppErrorBoundary
 {

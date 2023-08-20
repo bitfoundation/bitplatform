@@ -68,16 +68,15 @@
     opacity: 0;
     display: none;
     position: fixed;
-    pointer-events: none;
     overflow: hidden auto;
     box-sizing: border-box;
     z-index: $zindex-callout;
     min-width: spacing(22.5);
     box-shadow: $box-shadow-callout;
+    transition: opacity 100ms, transform 300ms;
     background-color: $color-background-primary;
     transform: translate3d(0, spacing(-1.25), 0);
     border-radius: 0 0 spacing(0.25) spacing(0.25);
-    transition: opacity 100ms, transform 300ms, pointer-events 300ms;
 
     ul {
         margin: 0;
@@ -90,7 +89,6 @@
 .bit-mnb-omn {
     .bit-mnb-cal {
         opacity: 1;
-        pointer-events: auto;
         transform: translate3d(0, 0, 0);
     }
 }

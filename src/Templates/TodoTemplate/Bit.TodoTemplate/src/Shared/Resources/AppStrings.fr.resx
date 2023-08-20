@@ -604,9 +604,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="IsTermsAccepted" xml:space="preserve">
     <value>Acceptez-vous les conditions?</value>
   </data>
-  <data name="PhoneNumber" xml:space="preserve">
-    <value>Numéro de téléphone</value>
-  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nom d'utilisateur</value>
   </data>

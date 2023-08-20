@@ -4,6 +4,6 @@
         "strict": true,
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "Scripts/app.js"
+        "outFile": "wwwroot/scripts/app.js"
     }
 }

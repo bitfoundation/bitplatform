@@ -58,7 +58,7 @@ public partial class BitToggle
 
     protected override string RootElementClass => "bit-tgl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk" : string.Empty);
 

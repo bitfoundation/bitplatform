@@ -168,8 +168,8 @@
   <data name="FullName" xml:space="preserve">
     <value>Nom et prénom</value>
   </data>
-  <data name="GenderCustom" xml:space="preserve">
-    <value>Personnalisé</value>
+  <data name="GenderOther" xml:space="preserve">
+    <value>Autre</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
     <value>Femelle</value>
@@ -504,15 +504,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="NotReceivedConfirmationEmailMessage1" xml:space="preserve">
     <value>Vous n'avez pas reçu le mail de confirmation?</value>
   </data>
-  <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Ajouter une tâche</value>
-  </data>
-  <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Cherchez quelque chose à faire...</value>
-  </data>
-  <data name="TodoTitle" xml:space="preserve">
-    <value>Faire</value>
-  </data>
   <data name="ArgumentIsNullOrWhitespace" xml:space="preserve">
     <value>L'argument '{0}' ne peut pas être nul, vide ou contenir uniquement des espaces.</value>
   </data>
@@ -698,9 +689,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
-  </data>
-  <data name="CustomGender" xml:space="preserve">
-    <value>Personnalisé</value>
   </data>
   <data name="FemaleGender" xml:space="preserve">
     <value>Femelle</value>

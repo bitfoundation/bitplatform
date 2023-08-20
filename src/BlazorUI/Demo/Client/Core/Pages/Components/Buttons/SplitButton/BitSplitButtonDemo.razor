@@ -1,0 +1,29 @@
+﻿@page "/components/splitbutton"
+@page "/components/split-button"
+
+<PageOutlet Url="components/splitbutton"
+            Title="SplitButton"
+            Description="SplitButton component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="SplitButton"
+                   ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitSplitButton is a Multi-API component which can accept the list of Items in 3 different ways: BitSplitButtonItem class, a custom Generic class, and BitSplitButtonOption component.">
+        <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
+            <BitPivotItem HeaderText="Item">
+                <_BitSplitButtonItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitSplitButtonCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitSplitButtonOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

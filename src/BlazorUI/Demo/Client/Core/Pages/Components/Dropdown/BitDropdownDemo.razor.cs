@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Dropdown;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Dropdown;
 
 public partial class BitDropdownDemo
 {

@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.ComponentDemoBase;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.BasicList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.BasicList;
 
 public partial class BitBasicListDemo
 {

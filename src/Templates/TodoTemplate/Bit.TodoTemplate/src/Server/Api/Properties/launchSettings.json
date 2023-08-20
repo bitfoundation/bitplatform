@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "TodoTemplate.Server.Api": {
+        "TodoTemplate.Server.Api-Swagger": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
