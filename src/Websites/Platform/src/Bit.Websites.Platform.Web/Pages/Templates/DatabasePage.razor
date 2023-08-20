@@ -1,23 +1,22 @@
-﻿@page "/admin-panel/database"
+﻿@page "/templates/database"
 @inherits AppComponentBase
 
-<PageOutlet Url="admin-panel/database"
-            Title="Database - AdminPanel"
-            Description="how to configure the database of the AdminPanel template of the bit platform" />
+<PageOutlet Url="templates/database"
+            Title="Database - Templates"
+            Description="how to configure the database of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H6" Gutter>AdminPanel</BitTypography>
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Database</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        Configure the database to work with the apps built with the bit AdminPanel.
+        Configure the database to work with the apps built with the bit project templates.
     </BitTypography>
     <br />
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Connection String</BitTypography>
         <div class="section-card-txt">
-            You can change connection string at <b>appsettings.json</b> file in <b>AdminPanel.Server.Api</b> project.
+            You can change connection string at <b>appsettings.json</b> file in <b>Server.Api</b> project.
         </div>
 
         <div class="section-card-txt">
@@ -29,7 +28,7 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Migration</BitTypography>
         <div class="section-card-txt">
-            Set <b>AdminPanel.Server.Api</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
+            Set <b>Server.Api</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
         </div>
         <div class="code-box">Add-Migration InitialSchema</div>
         <div class="code-box">Update-Database</div>
@@ -44,4 +43,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Create project" PrevUrl="/admin-panel/create-project" Next="Run" NextUrl="/admin-panel/run" />
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Run" NextUrl="/templates/run" />

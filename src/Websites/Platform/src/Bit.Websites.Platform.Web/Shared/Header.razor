@@ -1,15 +1,15 @@
 ﻿@inherits AppComponentBase
 
-<header class="main-header @((CurrentUrl.Contains("todo-template") is false && CurrentUrl.Contains("admin-panel") is false) ? "main-header--full-page" : null)">
+<header class="main-header @((CurrentUrl.Contains("templates") is false) ? "main-header--full-page" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (CurrentUrl.Contains("todo-template") || CurrentUrl.Contains("admin-panel"))
+            @if (CurrentUrl.Contains("templates"))
             {
                 <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
-            <div class="header-link header-ps-btn @((CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template")) ? "header-link--active" : null)">
+            <div class="header-link header-ps-btn @(CurrentUrl.Contains("templates") ? "header-link--active" : null)">
                 Products & Services
                 <div class="header-menu-popup">
                     <div class="col">
@@ -23,19 +23,11 @@
                             </div>
                         </a>
 
-                        <a class="menu-item @(CurrentUrl.Contains("admin-panel") ? "active" : "")" href="@Urls.AdminPanel">
-                            @* <span class="menu-item-icon admin-item"></span> *@
-                            <div class="menu-item-content">
-                                <div class="item-title">AdminPanel</div>
-                                <div class="item-desc">Admin & dashboard project template</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(CurrentUrl.Contains("todo-template") ? "active" : "")" href="@Urls.TodoTemplate">
+                        <a class="menu-item @(CurrentUrl.Contains("templates") ? "active" : "")" href="@Urls.Templates">
                             @* <span class="menu-item-icon todo-item"></span> *@
                             <div class="menu-item-content">
-                                <div class="item-title">TodoTemplate</div>
-                                <div class="item-desc">Simple project template</div>
+                                <div class="item-title">Project templates</div>
+                                <div class="item-desc">Cross-Platform project templates</div>
                             </div>
                         </a>
                     </div>
@@ -111,19 +103,11 @@
                         </div>
                     </a>
 
-                    <a class="menu-item" href="@Urls.TodoTemplate" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <span class="menu-item-icon todo-item"></span>
                         <div class="menu-item-content">
-                            <div class="item-title">TodoTemplate</div>
-                            <div class="item-desc">Simple project template</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item" href="@Urls.AdminPanel" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <span class="menu-item-icon admin-item"></span>
-                        <div class="menu-item-content">
-                            <div class="item-title">AdminPanel</div>
-                            <div class="item-desc">Admin & dashboard project template</div>
+                            <div class="item-title">Project templates</div>
+                            <div class="item-desc">Cross-Platform project templates</div>
                         </div>
                     </a>
                 </div>

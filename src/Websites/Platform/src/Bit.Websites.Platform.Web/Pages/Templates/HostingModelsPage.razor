@@ -1,21 +1,20 @@
-﻿@page "/todo-template/hosting-models"
+﻿@page "/templates/hosting-models"
 @inherits AppComponentBase
 
-<PageOutlet Url="todo-template/hosting-models"
-            Title="Hosting models - TodoTemplate"
-            Description="hosting models of the TodoTemplate of the bit platform" />
+<PageOutlet Url="templates/hosting-models"
+            Title="Hosting models - Templates"
+            Description="hosting models of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Hosting models (Blazor Mode)</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        bit TodoTemplate uses Blazor for building UI. Blazor is a web framework for building web UI components that uses modern technologies to host different models.
+        bit project templates use Blazor for building UI. Blazor is a web framework for building web UI components that uses modern technologies to host different models.
         <br />
         Blazor can be hosted on server-side in ASP.NET Core (Blazor Server), on client-side in the browser on a WebAssembly-based .NET runtime (Blazor WebAssembly, Blazor WASM),
         and in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid).
         <br />
-        Additionally, bit TodoTemplate has added support for a new mode, Blazor Electron, which allows for building desktop apps with Blazor.
+        Additionally, bit project templates have added support for a new mode, Blazor Electron, which allows for building desktop apps with Blazor.
         <br />
         Regardless of the hosting model, the approach and tools used to build Blazor apps are the same and the same Blazor source code can be used for any of the hosting models.
     </BitTypography>
@@ -42,7 +41,7 @@
         </div>
         <br />
         <div class="section-card-txt">
-            3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
+            3. Make sure the first line in the <b>Client.Web.csproj</b> file contains the following value.
         </div>
         <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.Web\">")</div>
     </section>
@@ -64,7 +63,7 @@
             2. Set <b>Api</b> project as the only startup project.
         </div>
         <div class="section-card-txt">
-            3. Make sure the first line in the <b>TodoTemplate.Client.Web.csproj</b> file contains the following value.
+            3. Make sure the first line in the <b>Client.Web.csproj</b> file contains the following value.
         </div>
         <div class="code-box">@("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">")</div>
         <br />
@@ -98,7 +97,7 @@
         </div>
         <div class="code-box">@("<BlazorMode>BlazorHybrid</BlazorMode>")</div>
         <div class="section-card-txt">
-            2. Set <b>TodoTemplate.Client.App</b> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
+            2. Set <b>Client.App</b> as the startup project, choose either Android, IOS, or Windows, then select your Physical device or Emulator as Debug-Target.
         </div>
         <div class="image-container">
             <img class="image small" alt="Debug target" src="/images/templates/debug-target.webp" />
@@ -125,7 +124,7 @@
         </div>
         <div class="code-box">@("<BlazorMode>BlazorElectron</BlazorMode>")</div>
         <div class="section-card-txt">
-            2. Set <b>TodoTemplate.Client.Web</b> as the startup project and choose Electron as the <b>launch profile</b> as shown in the following image:
+            2. Set <b>Client.Web</b> as the startup project and choose Electron as the <b>launch profile</b> as shown in the following image:
         </div>
         <div class="image-container">
             <img class="image small" alt="Debug target" src="/images/templates/electron-target.webp" />
@@ -144,4 +143,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Run" PrevUrl="/todo-template/run" Next="Deployment type" NextUrl="/todo-template/deployment-type" />
+<NavigationButtons Prev="Run" PrevUrl="/templates/run" Next="Deployment type" NextUrl="/templates/deployment-type" />

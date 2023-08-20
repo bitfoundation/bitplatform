@@ -1,16 +1,15 @@
-﻿@page "/todo-template/devops"
+﻿@page "/templates/devops"
 @inherits AppComponentBase
 
-<PageOutlet Url="todo-template/devops"
-            Title="DevOps - TodoTemplate"
-            Description="devops of the TodoTemplate of the bit platform" />
+<PageOutlet Url="templates/devops"
+            Title="DevOps - Templates"
+            Description="devops of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>DevOps</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        bit TodoTemplate provides features to add support for DevOps using GitHub actions.
+        bit project templates provide features to add support for DevOps using GitHub actions.
     </BitTypography>
     <br />
 
@@ -31,7 +30,7 @@
             </ul>
         </div>
         <div class="section-card-txt">
-            The CI pipeline only has one variable called <b>WEB_APP_DEPLOYMENT_TYPE</b> that you can read more about it <a href="todo-template/deployment-type">here</a>.
+            The CI pipeline only has one variable called <b>WEB_APP_DEPLOYMENT_TYPE</b> that you can read more about it <a href="templates/deployment-type">here</a>.
         </div>
     </section>
 
@@ -62,7 +61,7 @@
             It's important to mention that since the GitHub Actions secrets does not support storing files,
             to store secret files (such as pfx files), you need to convert the files' content to base64 and store the encoded result value as secret values.
         </div>
-        <pre class="code-box"># IdentityCertificate.pfx (See JWT settings section of https://bitplatform.dev/todo-template/settings)
+        <pre class="code-box"># IdentityCertificate.pfx (See JWT settings section of https://bitplatform.dev/templates/settings)
 API_IDENTITY_CERTIFICATE_FILE_BASE64
 API_IDENTITY_CERTIFICATE_PASSWORD
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
@@ -96,4 +95,4 @@ APPLICATION_DISPLAY_VERSION
 
 </div>
 
-<NavigationButtons Prev="Multilingualism" PrevUrl="/todo-template/multilingualism" Next="Contribute" NextUrl="/todo-template/contribute" />
+<NavigationButtons Prev="Multilingualism" PrevUrl="/templates/multilingualism" Next="Contribute" NextUrl="/templates/contribute" />

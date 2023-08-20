@@ -1,16 +1,15 @@
-﻿@page "/todo-template/run"
+﻿@page "/templates/run"
 @inherits AppComponentBase
 
-<PageOutlet Url="todo-template/run"
-            Title="Run - TodoTemplate"
-            Description="run the TodoTemplate of the bit platform" />
+<PageOutlet Url="templates/run"
+            Title="Run - Templates"
+            Description="run project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H6" Gutter>TodoTemplate</BitTypography>
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Run</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        To run the apps built with the bit TodoTemplate use the following instructions.
+        To run the apps built with the bit project templates use the following instructions.
     </BitTypography>
     <br />
 
@@ -36,7 +35,7 @@
         <br />
         <div class="section-card-txt">
             In <b>SignUp</b> Process after call API, a confirmation email send to your email. In dev environment, bit saves the sent emails as a <b>.eml</b> file in the
-            <b>./TodoTemplate/Api/bin/Debug/net7.0/sent-emails</b> path, and developers can easily view them in any <a href="https://msgeml.com/" target="_blank">eml viewer</a>.
+            <b>src/Server/Api/bin/Debug/net7.0/sent-emails</b> path, and developers can easily view them in any <a href="https://msgeml.com/" target="_blank">eml viewer</a>.
         </div>
         <div class="image-container">
             <img class="image small" alt="Confirm email" src="/images/templates/todo/confirm-email-todo.webp" />
@@ -52,4 +51,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Database" PrevUrl="/todo-template/database" Next="Hosting models" NextUrl="/todo-template/hosting-models" />
+<NavigationButtons Prev="Database" PrevUrl="/templates/database" Next="Hosting models" NextUrl="/templates/hosting-models" />
