@@ -25,7 +25,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsUnderlined" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="AutoFocus" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." AutoFocus="true" Label="Auto focused" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="IsUnderlined" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic" IsUnderlined="true" />
@@ -37,7 +45,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="HasBorder" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
+    <ComponentExampleBox Title="HasBorder" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic No Border" HasBorder="false" />
@@ -49,7 +57,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsMultiline" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+    <ComponentExampleBox Title="IsMultiline" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Resizable (By default)" IsMultiline="true" />
@@ -61,7 +69,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" HTMLSourceCode="@example5HTMLCode" ExampleId="example5">
+    <ComponentExampleBox Title="Icon" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter an email..." Label="Email Icon" IconName="@BitIconName.EditMail" />
@@ -71,7 +79,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Prefix & Suffix" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="Prefix & Suffix" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Label="With Prefix" Prefix="https://" />
@@ -85,37 +93,37 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
+    <ComponentExampleBox Title="Templates" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text...">
                     <LabelTemplate>
-                        <label style="color: coral;">This is custom Label</label>
+                        <BitLabel Style="color: coral;">This is custom Label</BitLabel>
                     </LabelTemplate>
                 </BitTextField>
                 <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Description">
                     <DescriptionTemplate>
-                        <span style="color: coral;">Description</span>
+                        <BitLabel Style="color: coral;">Description</BitLabel>
                     </DescriptionTemplate>
                 </BitTextField>
                 <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Prefix">
                     <PrefixTemplate>
-                        <span style="color: coral; margin: 0 5px;">Prefix</span>
+                        <BitLabel Style="color: coral; margin: 0 5px;">Prefix</BitLabel>
                     </PrefixTemplate>
                 </BitTextField>
                 <br />
                 <BitTextField Placeholder="Enter a text..." Label="This is custom Suffix">
                     <SuffixTemplate>
-                        <span style="color: coral; margin: 0 5px;">Suffix</span>
+                        <BitLabel Style="color: coral; margin: 0 5px;">Suffix</BitLabel>
                     </SuffixTemplate>
                 </BitTextField>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Password types" HTMLSourceCode="@example8HTMLCode" ExampleId="example8">
+    <ComponentExampleBox Title="Password types" HTMLSourceCode="@example9HTMLCode" ExampleId="example9">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a password..." Label="Password" Type="BitTextFieldType.Password" />
@@ -125,7 +133,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -140,7 +148,7 @@
                 <br />
                 <div>
                     <BitTextField Placeholder="Enter a text..." Label="OnChange" OnChange="(v) => OnChangeValue = v" />
-                    <span>Value: @OnChangeValue</span>
+                    <BitLabel>Value: @OnChangeValue</BitLabel>
                 </div>
                 <br />
                 <div>
@@ -150,7 +158,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsTrimmed" HTMLSourceCode="@example10HTMLCode" CSharpSourceCode="@example10CSharpCode" ExampleId="example10">
+    <ComponentExampleBox Title="IsTrimmed" HTMLSourceCode="@example11HTMLCode" CSharpSourceCode="@example11CSharpCode" ExampleId="example11">
         <ExamplePreview>
             <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
             <div class="example-box">
@@ -167,7 +175,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example11HTMLCode" ExampleId="example11">
+    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example12HTMLCode" ExampleId="example12">
         <ExamplePreview>
             <div class="custom-wrapper">
                 <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
@@ -183,7 +191,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example12HTMLCode" CSharpSourceCode="@example12CSharpCode" ExampleId="example12">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example13HTMLCode" CSharpSourceCode="@example13CSharpCode" ExampleId="example13">
         <ExamplePreview>
             <div class="example-box">
                 @if (formIsValidSubmit is false)
@@ -234,3 +242,34 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
+
+@code {
+    private string OneWayValue;
+    private string TwoWayValue;
+    private string OnChangeValue;
+    private string ReadOnlyValue = "this is readonly value";
+
+    private string TrimmedValue;
+    private string NotTrimmedValue;
+
+    private ValidationTextFieldModel validationTextFieldModel = new();
+    public bool formIsValidSubmit;
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        validationTextFieldModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+}
