@@ -193,10 +193,10 @@ public partial class AuthController : AppControllerBase
     [HttpPost]
     public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
     {
-        var user = await _userManager.FindByNameAsync(signInRequest.Email!);
+        var user = await _userManager.FindByNameAsync(signInRequest.UserName!);
 
         if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.Email!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.UserName!));
 
         var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password!, lockoutOnFailure: true);
 
@@ -204,7 +204,7 @@ public partial class AuthController : AppControllerBase
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd).Value.ToString("mm\\:ss")));
 
         if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.Email!));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));
 
         return await _jwtService.GenerateToken(user);
     }

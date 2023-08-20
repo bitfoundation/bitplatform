@@ -62,7 +62,7 @@ const showLoginUI = (swagger) => {
         const descriptionDiv = isLoginFormMustShow(swagger);
         if (descriptionDiv)
             createLoginUI(swagger, descriptionDiv);
-    }).observe(document, {childList: true, subtree: true});
+    }).observe(document, { childList: true, subtree: true });
 }
 
 const isLoginFormMustShow = (swagger) => {
@@ -94,18 +94,18 @@ const createLoginUI = function (swagger, rootDiv) {
 
     rootDiv.appendChild(div);
 
-    //email
-    const emailLabel = document.createElement("label");
-    div.appendChild(emailLabel);
+    //username
+    const userNameLabel = document.createElement("label");
+    div.appendChild(userNameLabel);
 
-    const emailSpan = document.createElement("span");
-    emailSpan.innerText = "User";
-    emailLabel.appendChild(emailSpan);
+    const userNameSpan = document.createElement("span");
+    userNameSpan.innerText = "User";
+    userNameLabel.appendChild(userNameSpan);
 
-    const emailInput = document.createElement("input");
-    emailInput.type = "text";
-    emailInput.style = "margin-left: 10px; margin-right: 10px;";
-    emailLabel.appendChild(emailInput);
+    const userNameInput = document.createElement("input");
+    userNameInput.type = "text";
+    userNameInput.style = "margin-left: 10px; margin-right: 10px;";
+    userNameLabel.appendChild(userNameInput);
 
     //Password
     const passwordLabel = document.createElement("label");
@@ -130,25 +130,25 @@ const createLoginUI = function (swagger, rootDiv) {
     loginButton.classList.add("button");
     loginButton.innerText = "Login";
     loginButton.onclick = function () {
-        const email = emailInput.value;
+        const userName = userNameInput.value;
         const password = passwordInput.value;
 
-        if (email === "" || password === "") {
-            alert("Insert email and password!");
+        if (userName === "" || password === "") {
+            alert("Insert userName and password!");
             return;
         }
 
-        login(swagger, email, password);
+        login(swagger, userName, password);
     };
 
     div.appendChild(loginButton);
 }
 
-const login = async (swagger, email, password) => {
+const login = async (swagger, userName, password) => {
     const response = await fetch('/api/Auth/SignIn', {
-        headers: {"Content-Type": "application/json; charset=utf-8"},
+        headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
-        body: JSON.stringify({"email": email, "password": password})
+        body: JSON.stringify({ "userName": userName, "password": password })
     })
     if (response.ok) {
         const result = await response.json();
