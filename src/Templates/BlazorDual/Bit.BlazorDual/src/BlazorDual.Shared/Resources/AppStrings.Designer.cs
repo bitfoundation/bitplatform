@@ -602,15 +602,6 @@ namespace BlazorDual.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom.
-        /// </summary>
-        public static string GenderCustom {
-            get {
-                return ResourceManager.GetString("GenderCustom", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Female.
         /// </summary>
         public static string GenderFemale {
@@ -625,6 +616,15 @@ namespace BlazorDual.Shared.Resources {
         public static string GenderMale {
             get {
                 return ResourceManager.GetString("GenderMale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Other.
+        /// </summary>
+        public static string GenderOther {
+            get {
+                return ResourceManager.GetString("GenderOther", resourceCulture);
             }
         }
         

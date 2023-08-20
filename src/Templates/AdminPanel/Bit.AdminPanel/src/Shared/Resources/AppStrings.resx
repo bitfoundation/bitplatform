@@ -168,8 +168,8 @@
   <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>
-  <data name="GenderCustom" xml:space="preserve">
-    <value>Custom</value>
+  <data name="GenderOther" xml:space="preserve">
+    <value>Other</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
     <value>Female</value>
