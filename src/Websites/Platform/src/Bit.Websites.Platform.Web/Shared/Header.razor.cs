@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
-using Bit.Websites.Platform.Web.Shared;
 using Bit.Websites.Platform.Web.Services;
 
 namespace Bit.Websites.Platform.Web.Shared;
@@ -35,7 +34,7 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        if (CurrentUrl.Contains("admin-panel") || CurrentUrl.Contains("todo-template"))
+        if (CurrentUrl.Contains("templates"))
         {
             return "Products & Services";
         }
@@ -57,8 +56,7 @@ public partial class Header : IDisposable
 
     private bool IsProductsServicesActive()
     {
-        return (CurrentUrl.Contains("admin-panel") ||
-           CurrentUrl.Contains("todo-template") ||
+        return (CurrentUrl.Contains("templates") ||
            CurrentUrl == Urls.Components ||
            CurrentUrl == Urls.CloudHostingSolutins ||
            CurrentUrl == Urls.Support ||

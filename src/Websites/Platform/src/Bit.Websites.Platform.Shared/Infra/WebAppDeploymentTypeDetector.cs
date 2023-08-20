@@ -1,7 +1,7 @@
 ﻿namespace Bit.Websites.Platform.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/todo-template/hosting-models
+/// https://bitplatform.dev/templates/hosting-models
 /// </summary>
 public class WebAppDeploymentTypeDetector
 {

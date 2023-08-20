@@ -1,0 +1,71 @@
+﻿@page "/templates/project-structure"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/project-structure"
+            Title="Project structure - Templates"
+            Description="project structure of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project structure</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide an initial source code structure for all types of applications.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>The Visual Studio Solution</BitTypography>
+        <div class="section-card-txt">
+            The VS solution prepared by the bit project templates has 6 Projects.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="TodoTemplate solution" src="/images/templates/todo/project-structure-todo.webp" />
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server.Api</BitTypography>
+        <div class="section-card-txt">
+            This project contains server-side codes including Controllers, Data access layer (Entity Framework), Identity, etc.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Infra.Iac</BitTypography>
+        <div class="section-card-txt">
+            Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. 
+            This project contains the necessary code to provide this feature. You don't have to use either Pulumi or even Azure, Host it wherever you want.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared</BitTypography>
+        <div class="section-card-txt">
+            This project is shared on both the server (Api project) and client(Web & App projects) sides, and can share code. 
+            The bit puts the code it wants to reuse; Like resources, Dto classes, shared contracts, services, etc.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.App</BitTypography>
+        <div class="section-card-txt">
+            This project contains code related to building an app, although much of the code is common to the web project which are located in Client.Core.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Core</BitTypography>
+        <div class="section-card-txt">
+            This project includes components and pages made with the help of Razor and Style sheet
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Web</BitTypography>
+        <div class="section-card-txt">
+            This project contains the necessary code to run web version of the project (Blazor WebAssembly & Blazor Server)
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Settings" PrevUrl="/templates/settings" Next="Exception handling" NextUrl="/templates/exception-handling" />
