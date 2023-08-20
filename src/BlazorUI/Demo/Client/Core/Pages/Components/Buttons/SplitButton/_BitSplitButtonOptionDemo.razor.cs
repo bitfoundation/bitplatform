@@ -9,6 +9,7 @@ public partial class _BitSplitButtonOptionDemo
     private BitSplitButtonOption? changedSelectedItem;
 
 
+
     private readonly string example1HTMLCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
@@ -153,6 +154,29 @@ private string? example42SelectedItem;";
     private readonly string example5CSharpCode = @"";
 
     private readonly string example6HTMLCode = @"
+Visible: [
+<BitSplitButton Visibility=""BitVisibility.Visible"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]
+
+Hidden: [
+<BitSplitButton Visibility=""BitVisibility.Hidden"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]
+
+Collapsed: [
+<BitSplitButton Visibility=""BitVisibility.Collapsed"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]";
+    private readonly string example6CSharpCode = @"";
+
+    private readonly string example7HTMLCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -237,11 +261,9 @@ private string? example42SelectedItem;";
         </BitSplitButtonOption>
     </ChildContent>
 </BitSplitButton>";
-    private readonly string example6CSharpCode = @"
-private string example61SelectedItem;
-private string example62SelectedItem;";
+    private readonly string example7CSharpCode = @"";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HTMLCode = @"
 <BitSplitButton @bind-SelectedItem=""twoWaySelectedItem""
                 IsSticky=""true""
                 TItem=""BitSplitButtonOption""
@@ -266,8 +288,7 @@ private string example62SelectedItem;";
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" IsSelected=""true"" />
 </BitSplitButton>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 private BitSplitButtonOption? twoWaySelectedItem;
 private BitSplitButtonOption? changedSelectedItem;";
-
 }

@@ -9,8 +9,9 @@ public partial class _BitMenuButtonOptionDemo
     private string? example42SelectedItem;
     private string? example43SelectedItem;
     private string? example5SelectedItem;
-    private string? example61SelectedItem;
-    private string? example62SelectedItem;
+    private string? example6SelectedItem;
+    private string? example71SelectedItem;
+    private string? example72SelectedItem;
 
 
 
@@ -157,7 +158,31 @@ private string example42SelectedItem;
 private string example43SelectedItem;";
 
     private readonly string example5HTMLCode = @"
-<BitMenuButton OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+Visible: [
+<BitMenuButton Visibility=""BitVisibility.Visible"" Text=""Visible menu button"" OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton> ]
+
+Hidden: [
+<BitMenuButton Visibility=""BitVisibility.Hidden"" Text=""Hidden menu button"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton> ]
+
+Collapsed: [
+<BitMenuButton Visibility=""BitVisibility.Collapsed"" Text=""Collapsed menu button"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton> ]";
+    private readonly string example5CSharpCode = @"
+private string example5SelectedItem;";
+
+    private readonly string example6HTMLCode = @"
+<BitMenuButton OnItemClick=""(BitMenuButtonOption item) => example6SelectedItem = item.Key"">
     <HeaderTemplate>
         <BitIcon IconName=""@BitIconName.Warning"" />
         <div style=""font-weight: 600; color: white;"">
@@ -174,7 +199,7 @@ private string example43SelectedItem;";
 </BitMenuButton>
 
 <BitMenuButton ButtonStyle=""BitButtonStyle.Standard""
-               OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example6SelectedItem = item.Key"">
     <HeaderTemplate>
         <div style=""font-weight: bold; color: #d13438;"">
             Custom Header!
@@ -189,10 +214,10 @@ private string example43SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example5SelectedItem</div>";
-    private readonly string example5CSharpCode = @"
-private string example5SelectedItem;";
+    private readonly string example6CSharpCode = @"
+private string example6SelectedItem;";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example7HTMLCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -202,7 +227,7 @@ private string example5SelectedItem;";
 
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
-               OnItemClick=""(BitMenuButtonOption item) => example61SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example71SelectedItem = item.Key"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -220,7 +245,7 @@ private string example5SelectedItem;";
 <BitMenuButton Text=""Standard Button""
                IconName=""@BitIconName.Edit""
                ButtonStyle=""BitButtonStyle.Standard""
-               OnItemClick=""(BitMenuButtonOption item) => example61SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example71SelectedItem = item.Key"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -235,12 +260,12 @@ private string example5SelectedItem;";
     </ChildContent>
 </BitMenuButton>
 
-<div>Clicked Item: @example61SelectedItem</div>
+<div>Clicked Item: @example71SelectedItem</div>
 
 
 <BitMenuButton Text=""Primary Button""
                IconName=""@BitIconName.Edit""
-               OnItemClick=""(BitMenuButtonOption item) => example62SelectedItem = item.Key"">
+               OnItemClick=""(BitMenuButtonOption item) => example72SelectedItem = item.Key"">
     <BitMenuButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"">
         <Template Context=""item""><div class=""item-template-box"" style=""color:green"">@item.Text (@item.Key)</div></Template>
     </BitMenuButtonOption>
@@ -252,8 +277,8 @@ private string example5SelectedItem;";
     </BitMenuButtonOption>
 </BitMenuButton>
 
-<div>Clicked Item: @example62SelectedItem</div>";
-    private readonly string example6CSharpCode = @"
-private string example61SelectedItem;
-private string example62SelectedItem;";
+<div>Clicked Item: @example72SelectedItem</div>";
+    private readonly string example7CSharpCode = @"
+private string example71SelectedItem;
+private string example72SelectedItem;";
 }

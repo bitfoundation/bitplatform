@@ -4,6 +4,11 @@
     width: fit-content;
     flex-flow: row wrap;
     align-items: center;
+
+    &.column {
+        flex-flow: column wrap;
+        align-items: flex-start;
+    }
 }
 
 .buttons-container {

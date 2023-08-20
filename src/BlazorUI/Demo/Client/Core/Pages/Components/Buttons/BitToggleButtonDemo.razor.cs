@@ -259,6 +259,11 @@ public partial class BitToggleButtonDemo
     private readonly string example2CSharpCode = @"";
 
     private readonly string example3HTMLCode = @"
+Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
+Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
+Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
+
+    private readonly string example4HTMLCode = @"
 <BitToggleButton DefaultIsChecked=""true""
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
@@ -272,7 +277,7 @@ public partial class BitToggleButtonDemo
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 <BitLabel>Check status is: @example32Value</BitLabel>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private bool example31Value;
 private bool example32Value;";
 }

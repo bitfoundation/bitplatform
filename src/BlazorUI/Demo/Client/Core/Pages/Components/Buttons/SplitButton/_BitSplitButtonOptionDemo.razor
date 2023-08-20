@@ -176,7 +176,38 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example36">
+<ComponentExampleBox Title="Visibility" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example36">
+    <ExamplePreview>
+        <div class="example-content column">
+            <div style="display: inline-flex">
+                Visible: [
+                <BitSplitButton Visibility="BitVisibility.Visible" TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitSplitButton> ]
+            </div>
+            <div style="display: inline-flex">
+                Hidden: [
+                <BitSplitButton Visibility="BitVisibility.Hidden" TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitSplitButton> ]
+            </div>
+            <div style="display: inline-flex">
+                Collapsed: [
+                <BitSplitButton Visibility="BitVisibility.Collapsed" TItem="BitSplitButtonOption">
+                    <BitSplitButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+                    <BitSplitButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitSplitButton> ]
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example37">
     <ExamplePreview>
         <div>Component's ItemTemplate:</div>
         <br />
@@ -266,7 +297,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example37">
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example38">
     <ExamplePreview>
         <div class="example-content">
             <div>

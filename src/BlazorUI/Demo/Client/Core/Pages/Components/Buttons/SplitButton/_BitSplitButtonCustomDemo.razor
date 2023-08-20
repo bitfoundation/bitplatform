@@ -180,7 +180,35 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example26">
+<ComponentExampleBox Title="Visibility" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example26">
+    <ExamplePreview>
+        <div class="example-content column">
+            <div style="display: inline-flex">
+                Visible: [ <BitSplitButton Visibility="BitVisibility.Visible"
+                                           Items="basicCustomItems"
+                                           NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                    Key = { Name = nameof(SplitActionItem.Id) },
+                                                                    IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+            <div style="display: inline-flex">
+                Hidden: [ <BitSplitButton Visibility="BitVisibility.Hidden"
+                                          Items="basicCustomItems"
+                                          NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                   Key = { Name = nameof(SplitActionItem.Id) },
+                                                                   IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+            <div style="display: inline-flex">
+                Collapsed: [ <BitSplitButton Visibility="BitVisibility.Collapsed"
+                                             Items="basicCustomItems"
+                                             NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                      Key = { Name = nameof(SplitActionItem.Id) },
+                                                                      IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example27">
     <ExamplePreview>
         <div>Component's ItemTemplate:</div>
         <br />
@@ -255,7 +283,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example27">
+<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example28">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -286,7 +314,7 @@
         <div class="example-content">
             <div>
                 <BitLabel>OnChange</BitLabel>
-                <BitSplitButton IsSticky="true" 
+                <BitSplitButton IsSticky="true"
                                 Items="basicCustomItems"
                                 OnChange="(SplitActionItem item) => changedSelectedItem = item"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
