@@ -52,7 +52,7 @@ public partial class ResetPasswordPage
 
             await AuthenticationService.SignIn(new SignInRequestDto
             {
-                Email = Email,
+                UserName = Email,
                 Password = _resetPasswordModel.Password
             });
 
