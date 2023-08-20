@@ -36,7 +36,8 @@ diag('ASSETS_URL:', ASSETS_URL);
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
-const CACHE_NAME = 'bit-bswup';
+const CACHE_NAME_PREFIX = 'bit-bswup-';
+const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -54,7 +55,7 @@ async function handleInstall(e) {
 async function handleActivate(e) {
     diag('activate version:', VERSION);
 
-    await deleteOldCaches();
+    //await deleteOldCaches();
 
     sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
 }
@@ -127,7 +128,7 @@ async function handleFetch(e) {
 
     // the assets url are only the pathname part of the actual request url!
     // since only the index url is simple and other urls have extra thins in them(like 'https://...`)
-    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url': 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
+    let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
         const url = new URL(requestUrl);
@@ -165,10 +166,12 @@ function handleMessage(e) {
     diag('handleMessage:', e);
 
     if (e.data === 'SKIP_WAITING') {
+        deleteOldCaches(); // remove the old caches when the new sw skips waiting
         return self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
+        deleteOldCaches(); // remove the old caches when the new sw claims all clients
         return self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 
@@ -182,8 +185,31 @@ function handleMessage(e) {
 async function createAssetsCache(ignoreProgressReport = false) {
     diagGroup('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
-    const bitBswupCache = await caches.open(CACHE_NAME);
-    let keys = await bitBswupCache.keys();
+    let newCache;
+    const cacheKeys = await caches.keys();
+
+    if (!ignoreProgressReport) {
+        const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
+        if (oldCacheKey) {
+            diag('copying old cache:', oldCacheKey);
+            newCache = await caches.open(CACHE_NAME);
+            const oldCache = await caches.open(oldCacheKey);
+            const oldKeys = await oldCache.keys();
+            for (var i = 0; i < oldKeys.length; i++) {
+                const oldKey = oldKeys[i];
+                if (!oldKey || !oldKey.url) continue;
+
+                const oldRes = await oldCache.match(oldKey.url);
+                await newCache.put(oldKey.url, oldRes);
+            }
+        }
+    }
+
+    if (!newCache) {
+        newCache = await caches.open(CACHE_NAME);
+    }
+
+    let keys = await newCache.keys();
     const firstTime = keys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
 
@@ -219,16 +245,20 @@ async function createAssetsCache(ignoreProgressReport = false) {
         if (!key || !key.url) continue;
 
         const lastIndex = key.url.lastIndexOf('.');
-        const url = lastIndex === -1 ? key.url : key.url.substring(0, lastIndex);
-        const hash = lastIndex === -1 ? '' : key.url.substring(lastIndex + 1);
+        let url = lastIndex === -1 ? key.url : key.url.substring(0, lastIndex);
+        let hash = lastIndex === -1 ? '' : key.url.substring(lastIndex + 1);
+        if (!hash.startsWith('sha256')) {
+            url = key.url;
+            hash = '';
+        }
         oldUrls.push({ url, hash });
         const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
         if (!foundAsset) {
             diag('*** removed oldUrl:', key.url);
-            bitBswupCache.delete(key.url);
+            newCache.delete(key.url);
         } else if (hash && hash !== foundAsset.hash) {
             diag('*** updated oldUrl:', key.url);
-            bitBswupCache.delete(key.url);
+            newCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
     }
@@ -236,12 +266,12 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diag('oldUrls:', oldUrls);
     diag('updatedAssets:', updatedAssets);
 
-    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url))));
+    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url) || a.url.endsWith(u.url))));
 
     diag('assetsToCache:', assetsToCache);
 
     total = assetsToCache.length;
-    const promises = assetsToCache.map(addCache.bind(null, ignoreProgressReport ? false : true));
+    const promises = assetsToCache.map(addCache.bind(null, !ignoreProgressReport));
 
     diag('createAssetsCache ended.');
     diagGroupEnd();
@@ -259,7 +289,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 }
 
                 const cacheUrl = createCacheUrl(asset);
-                await bitBswupCache.put(cacheUrl, response.clone());
+                await newCache.put(cacheUrl, response.clone());
 
                 if (report) {
                     const percent = (++current) / total * 100;
@@ -296,7 +326,7 @@ function createNewAssetRequest(asset) {
 
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => key.startsWith('bit-bswup-') || key.startsWith('blazor-resources-')).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(key => key.startsWith('blazor-resources') || (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 
