@@ -12,7 +12,7 @@ public partial class NavMenu
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
-            Text = "Buttons",
+            Text = "Components",
             ChildItems = new()
             {
                 new() { Text = "Button", Url = "/components/button" },
@@ -33,7 +33,6 @@ public partial class NavMenu
                 new() { Text = "CheckBox", Url = "/components/checkbox" },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup" },
                 new() { Text = "Dropdown", Url = "/components/dropdown" },
-                new() { Text = "FileUpload", Url = "/components/fileupload" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link" },
                 new() { Text = "Rating", Url = "/components/rating" },
@@ -55,6 +54,7 @@ public partial class NavMenu
                 new() { Text = "ColorPicker", Url = "/components/colorpicker" },
                 new() { Text = "DatePicker", Url = "/components/datepicker" },
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker" },
+                new() { Text = "FileUpload", Url = "/components/fileupload" },
                 new() { Text = "TimePicker", Url = "/components/timepicker" },
             }
         },
