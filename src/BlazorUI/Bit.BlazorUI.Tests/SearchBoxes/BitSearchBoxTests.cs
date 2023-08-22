@@ -77,7 +77,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.Value, value);
+            parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
