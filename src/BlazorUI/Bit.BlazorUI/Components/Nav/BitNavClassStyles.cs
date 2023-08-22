@@ -18,6 +18,11 @@ public class BitNavClassStyles
     public BitClassStylePair? ItemContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for item icon.
+    /// </summary>
+    public BitClassStylePair? ItemIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for selected item container.
     /// </summary>
     public BitClassStylePair? SelectedItemContainer { get; set; }
