@@ -72,7 +72,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="dotnet electronize version" ContinueOnError="true">
+        <Exec Condition="'$(UseElectron)' == 'true'" Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
         <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
