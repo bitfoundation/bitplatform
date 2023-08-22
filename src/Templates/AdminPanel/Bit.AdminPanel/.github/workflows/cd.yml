@@ -1,6 +1,6 @@
 name: AdminPanel CD
 
-# https://bitplatform.dev/admin-panel/dev-ops
+# https://bitplatform.dev/templates/dev-ops
 
 env:
   WEB_APP_DEPLOYMENT_TYPE: 'Spa'

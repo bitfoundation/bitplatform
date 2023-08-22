@@ -13,6 +13,7 @@ public partial class BitTextField
     private BitTextFieldType type = BitTextFieldType.Text;
     private string focusClass = string.Empty;
 
+    private ElementReference _inputRef = default!;
     private string _textFieldId = string.Empty;
     private string _inputType = string.Empty;
     private string _labelId = string.Empty;
@@ -36,6 +37,11 @@ public partial class BitTextField
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
     /// </summary>
     [Parameter] public string? AutoComplete { get; set; }
+
+    /// <summary>
+    /// Determines if the text field is auto focused on first render.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
@@ -360,6 +366,18 @@ public partial class BitTextField
         _descriptionId = $"TextField-{UniqueId}-Description";
 
         return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsEnabled is false) return;
+
+        if (AutoFocus)
+        {
+            await _inputRef.FocusAsync();
+        }
     }
 
 
