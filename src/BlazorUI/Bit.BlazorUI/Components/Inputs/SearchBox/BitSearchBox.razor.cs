@@ -9,7 +9,6 @@ public partial class BitSearchBox
     private bool inputHasFocus;
     private bool fixedIcon;
 
-    private bool _disposed;
     private string _inputId = string.Empty;
     private ElementReference _inputRef = default!;
 
@@ -187,7 +186,6 @@ public partial class BitSearchBox
         }
     }
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;
@@ -197,12 +195,11 @@ public partial class BitSearchBox
 
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            OnValueChanged -= HandleOnValueChanged;
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        OnValueChanged -= HandleOnValueChanged;
-
-        _disposed = true;
     }
 }

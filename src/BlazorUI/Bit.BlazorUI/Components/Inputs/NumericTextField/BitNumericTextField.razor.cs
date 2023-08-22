@@ -633,7 +633,6 @@ public partial class BitNumericTextField<TValue>
     private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
     private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         if (_typeOfValue == typeof(byte))

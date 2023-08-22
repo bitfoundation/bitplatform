@@ -5,7 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitToggle
 {
-    private bool _disposed;
     private string? _labelledById;
     private string? _stateText;
     private string? _buttonId;
@@ -118,19 +117,17 @@ public partial class BitToggle
 
     protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            OnValueChanged -= HandleOnValueChanged;
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        OnValueChanged -= HandleOnValueChanged;
-
-        _disposed = true;
     }
 }

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitCheckbox
+public partial class BitCheckbox : IDisposable
 {
     private bool IsIndeterminateHasBeenSet;
     private bool isIndeterminate;
@@ -192,7 +192,6 @@ public partial class BitCheckbox
         ClassBuilder.Reset();
     }
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 

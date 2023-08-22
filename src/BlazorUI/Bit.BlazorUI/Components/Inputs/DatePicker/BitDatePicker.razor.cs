@@ -39,7 +39,6 @@ public partial class BitDatePicker
     private int _yearRangeTo;
     private string _monthTitle = string.Empty;
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
-    private bool _disposed;
     private string? _labelId;
     private string? _calloutId;
     private string? _overlayId;
@@ -380,7 +379,6 @@ public partial class BitDatePicker
         return base.OnParametersSetAsync();
     }
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         if (value.HasNoValue())
@@ -1025,12 +1023,11 @@ public partial class BitDatePicker
 
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        _dotnetObj.Dispose();
-
-        _disposed = true;
     }
 }

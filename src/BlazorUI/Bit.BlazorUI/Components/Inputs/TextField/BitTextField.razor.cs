@@ -463,7 +463,6 @@ public partial class BitTextField
         SetElementType();
     }
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = IsTrimmed ? value?.Trim() : value;

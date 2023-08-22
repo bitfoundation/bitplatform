@@ -23,7 +23,6 @@ public partial class BitTimePicker
     private string? _wrapperId;
     private string? _calloutId;
     private string? _overlayId;
-    private bool _disposed;
     private BitTimePickerDialMode _currentView = BitTimePickerDialMode.Hours;
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private string _timeFormat => TimeFormat ?? (AmPm ? FORMAT_12_HOURS : FORMAT_24_HOURS);
@@ -488,13 +487,12 @@ public partial class BitTimePicker
 
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        OnValueChanged -= HandleOnValueChanged;
-        _dotnetObj.Dispose();
-
-        _disposed = true;
     }
 }

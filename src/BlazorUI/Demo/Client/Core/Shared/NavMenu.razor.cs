@@ -12,7 +12,7 @@ public partial class NavMenu
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
-            Text = "Components",
+            Text = "Buttons",
             ChildItems = new()
             {
                 new() { Text = "Button", Url = "/components/button" },

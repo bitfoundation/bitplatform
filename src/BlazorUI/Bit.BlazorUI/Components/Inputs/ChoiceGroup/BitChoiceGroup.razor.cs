@@ -510,7 +510,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 }

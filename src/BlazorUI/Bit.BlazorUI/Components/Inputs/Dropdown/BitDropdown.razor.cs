@@ -29,7 +29,6 @@ public partial class BitDropdown
     private bool _inputSearchHasFocus;
     private string? _searchText;
     private int? _totalItems;
-    private bool _disposed;
     private DotNetObjectReference<BitDropdown> _dotnetObj = default!;
     private Virtualize<(int index, BitDropdownItem item)>? _virtualizeElement;
     private ElementReference _searchInputElement;
@@ -752,7 +751,6 @@ public partial class BitDropdown
                  totalItemCount: providerResult.TotalItemCount);
     }
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;
@@ -774,12 +772,11 @@ public partial class BitDropdown
 
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        _dotnetObj.Dispose();
-
-        _disposed = true;
     }
 }

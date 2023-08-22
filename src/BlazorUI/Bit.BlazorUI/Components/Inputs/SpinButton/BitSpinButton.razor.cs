@@ -488,7 +488,6 @@ public partial class BitSpinButton
     }
 
 
-    /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         if (double.TryParse(value, out var parsedValue))
@@ -503,16 +502,13 @@ public partial class BitSpinButton
         return false;
     }
 
-
-    private bool _disposed;
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            _pointerDownTimer?.Dispose();
+        }
+
         base.Dispose(disposing);
-
-        if (_disposed || disposing is false) return;
-
-        _pointerDownTimer?.Dispose();
-
-        _disposed = true;
     }
 }

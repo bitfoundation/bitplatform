@@ -8,7 +8,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 {
     private bool? valueInvalid;
 
-    private bool _disposed;
     private Type? _nullableUnderlyingType;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
@@ -322,9 +321,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
 
 
-    void IDisposable.Dispose()
+    protected bool IsDisposed;
+
+    public void Dispose()
     {
-        if (_disposed) return;
+        if (IsDisposed) return;
 
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         if (EditContext is not null)
@@ -332,13 +333,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
         }
 
-        _disposed = true;
+        IsDisposed = true;
 
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
-    {
-    }
+    protected virtual void Dispose(bool disposing) { }
 }
