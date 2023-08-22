@@ -299,7 +299,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.Value, value);
+            parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.IsMultiline, isMultiline);
         });
@@ -373,8 +373,8 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(rows.ToString(), input.GetAttribute("rows"));
     }
 
-    [DataTestMethod, 
-        DataRow(true), 
+    [DataTestMethod,
+        DataRow(true),
         DataRow(false)
     ]
     public void BitTextFieldShouldRespectIsResizableWhenItIsMultiline(bool isResizable)
