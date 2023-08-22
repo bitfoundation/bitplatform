@@ -81,6 +81,11 @@ private void LinkOnClick()
 }";
 
     private readonly string example6HTMLCode = @"
+Visible: [ <BitLink Visibility=""BitVisibility.Visible"">Visible Link</BitLink> ]
+Hidden: [ <BitLink Visibility=""BitVisibility.Hidden"">Hidden Link</BitLink> ]
+Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</BitLink> ]";
+
+    private readonly string example7HTMLCode = @"
 <BitLink Style=""scroll-margin: 70px"" id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
