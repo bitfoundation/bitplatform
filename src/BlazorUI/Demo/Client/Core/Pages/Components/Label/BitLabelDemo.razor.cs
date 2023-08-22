@@ -51,4 +51,10 @@ public partial class BitLabelDemo
     private readonly string example4HTMLCode = @"
 <BitLabel For=""label-input"">A Label for An Input</BitLabel>
 <input type=""text"" name=""label-input"" id=""label-input"" />";
+
+    private readonly string example5HTMLCode = @"
+Visible: [ <BitLabel Visibility=""BitVisibility.Visible"">Visible Label</BitLabel> ]
+Hidden: [ <BitLabel Visibility=""BitVisibility.Hidden"">Hidden Label</BitLabel> ]
+Collapsed: [ <BitLabel Visibility=""BitVisibility.Collapsed"">Collapsed Label</BitLabel> ]";
+
 }
