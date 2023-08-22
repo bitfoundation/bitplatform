@@ -1156,4 +1156,66 @@ private List<BitDropdownItem> GetDropdownItems()
         }
     };
 }";
+
+    private readonly string example14HTMLCode = @"
+Visible: [ <BitDropdown @bind-Value=""SelectedValue""
+                        Items=""GetDropdownItems()""
+                        Placeholder=""Select an option""
+                        Visibility=""BitVisibility.Visible"" /> ]
+                
+Hidden: [ <BitDropdown @bind-Values=""SelectedValues""
+                       Items=""GetDropdownItems()""
+                       Placeholder=""Select options""
+                       Visibility=""BitVisibility.Hidden"" /> ]
+                
+Collapsed: [ <BitDropdown @bind-Values=""SelectedValues""
+                          Items=""GetDropdownItems()""
+                          Placeholder=""Select options""
+                          Visibility=""BitVisibility.Collapsed"" /> ]";
+    private readonly string example14CSharpCode = @"
+private List<BitDropdownItem> GetDropdownItems()
+{
+    return new()
+    {
+        new()
+        {
+            ItemType = BitDropdownItemType.Header,
+            Text = ""Fruits""
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Apple"",
+            Value = ""f-app""
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Orange"",
+            Value = ""f-ora"",
+            IsEnabled = false
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Banana"",
+            Value = ""f-ban"",
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Divider,
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Header,
+            Text = ""Vegetables""
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Broccoli"",
+            Value = ""v-bro"",
+        }
+    };
+}";
 }
