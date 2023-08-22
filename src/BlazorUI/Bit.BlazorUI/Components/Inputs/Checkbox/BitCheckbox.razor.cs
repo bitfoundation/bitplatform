@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 

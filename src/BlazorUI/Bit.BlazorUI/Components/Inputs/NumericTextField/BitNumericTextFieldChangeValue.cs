@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitNumericTextFieldChangeValue<T>
 {

@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
+
 public partial class BitTimePicker
 {
     private const string FORMAT_24_HOURS = "HH:mm";

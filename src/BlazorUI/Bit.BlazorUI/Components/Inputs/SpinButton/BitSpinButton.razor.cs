@@ -1,8 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
-using System.Xml;
-using System.Reflection.Emit;
 
 namespace Bit.BlazorUI;
 

@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public enum BitOtpInputDirection
 {
