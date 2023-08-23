@@ -64,6 +64,15 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitCheckboxClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitCheckbox.",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "DefaultIsIndeterminate",
             Type = "bool?",
             DefaultValue = "null",
@@ -118,11 +127,59 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitCheckboxClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitCheckbox.",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
             Description = "Title text applied to the root element and the hidden checkbox input.",
         },
+    };
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitMenuButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Container",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "Box",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the box element of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "Label",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label of the BitCheckbox."
+               },
+            },
+        }
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
@@ -146,13 +203,12 @@ public partial class BitCheckboxDemo
                     Value="1",
                 }
             }
-        }
+        },
     };
 
 
-
     private bool isIndeterminate = true;
-    
+
     private bool oneWayValue;
     private bool twoWayValue;
     private bool oneWayIsIndeterminate = true;
@@ -195,13 +251,43 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""BitCheckboxSide.End - Disable Checked Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example4HTMLCode = @"
+<style>
+    .custom-class {
+        color: brown;
+        padding: 1rem;
+        background-color: aquamarine;
+    }
+
+    .custom-label {
+        color: darkblue;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-box {
+        border-width: 3px;
+        border-color: crimson;
+    }
+</style>
+
+
+<BitCheckbox Label=""Styled checkbox"" Style=""background-color:aqua;color:red"" />
+
+<BitCheckbox Label=""Classed checkbox"" Class=""custom-class"" />
+
+
+<BitCheckbox Label=""Styles"" Styles=""@(new() { Label=""color:darkgoldenrod"", Box=""border-color:brown"", Icon=""color:red"" })"" />
+
+<BitCheckbox Label=""Classes"" Classes=""@(new() { Label=""custom-label"", Box=""custom-box"" })"" />";
+
+    private readonly string example5HTMLCode = @"
 <BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""isIndeterminate"" />
 <BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
-    private readonly string example4CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private bool isIndeterminate = true;
 ";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example6HTMLCode = @"
 <BitCheckbox Label=""One-way checked checkbox (Fixed)"" Value=""true"" />
 
 <BitCheckbox Label=""One-way controlled checkbox"" Value=""oneWayValue"" />
@@ -218,24 +304,24 @@ private bool isIndeterminate = true;
 
 <BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""twoWayIsIndeterminate"" />
 <BitButton OnClick=""() => twoWayIsIndeterminate = !twoWayIsIndeterminate"">@(twoWayIsIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;
 private bool oneWayIsIndeterminate = true;
 private bool twoWayIsIndeterminate = true;
 ";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example7HTMLCode = @"
 <BitCheckbox @bind-Value=""labelTemplateValue"">
     <LabelTemplate>
         <span style=""@(labelTemplateValue ? ""color: green;"" : ""color: red;"")"">Label Template</span>
     </LabelTemplate>
 </BitCheckbox>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 private bool labelTemplateValue;
 ";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HTMLCode = @"
 <style>
     .custom-checkbox {
         gap: 0.5rem;
@@ -273,13 +359,13 @@ private bool labelTemplateValue;
     </div>
 </BitCheckbox>
 <BitButton OnClick=""() => customContentIsIndeterminate = true"">Make Indeterminate</BitButton>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CSharpCode = @"
 private bool customCheckboxValue;
 private bool customContentValue;
 private bool customContentIsIndeterminate = true;
 ";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example9HTMLCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>
@@ -298,7 +384,7 @@ private bool customContentIsIndeterminate = true;
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example9CSharpCode = @"
 private BitCheckboxValidationModel validationModel = new();
 
 public class BitCheckboxValidationModel

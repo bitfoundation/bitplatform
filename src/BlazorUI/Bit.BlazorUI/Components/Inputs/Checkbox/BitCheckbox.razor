@@ -4,6 +4,37 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
+
+    <label title="@Title"
+           for="@_inputId"
+           style="@Styles?.Container"
+           class="bit-chb-lbl @Classes?.Container">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
+                <i aria-hidden="true"
+                   aria-label="@CheckmarkIconAriaLabel"
+                   style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@CheckmarkIconName @Classes?.Icon" />
+            </div>
+
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                <span style="@Styles?.Label" class="bit-chb-txt bit-nts @Classes?.Label">
+                    @Label
+                </span>
+            }
+        }
+    </label>
+
     <input @ref="_checkboxElement" @attributes="InputHtmlAttributes" @onclick="@HandleCheckboxClick"
            id="@_inputId"
            type="checkbox"
@@ -18,27 +49,4 @@
            aria-disabled="@(IsEnabled is false)"
            name="@Name"
            hidden />
-    <label title="@Title" for="@_inputId" class="bit-chb-lbl">
-        @if (ChildContent is not null)
-        {
-            @ChildContent
-        }
-        else
-        {
-            <div class="bit-chb-ctn">
-                <i class="bit-icon bit-icon--@CheckmarkIconName" aria-hidden="true" aria-label="@CheckmarkIconAriaLabel" />
-            </div>
-
-            @if (LabelTemplate is not null)
-            {
-                @LabelTemplate
-            }
-            else if (Label.HasValue())
-            {
-                <span class="bit-chb-txt bit-nts">
-                    @Label
-                </span>
-            }
-        }
-    </label>
 </div>
