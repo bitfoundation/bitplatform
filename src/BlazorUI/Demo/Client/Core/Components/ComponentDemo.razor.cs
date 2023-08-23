@@ -2,7 +2,7 @@
 
 public partial class ComponentDemo
 {
-    [Parameter] public string? ComponentName { get; set; }
+    [Parameter] public string ComponentName { get; set; } = default!;
     [Parameter] public string? ComponentDescription { get; set; }
     [Parameter] public string? Notes { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -10,9 +10,10 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
     [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
+    
 
 
-    private readonly List<ComponentParameter> _baseComponentParameters = new()
+    private readonly List<ComponentParameter> _componentBaseParameters = new()
     {
         new()
         {
@@ -46,7 +47,7 @@ public partial class ComponentDemo
         },
     };
 
-    private readonly List<ComponentParameter> _baseComponentPublicMembers = new()
+    private readonly List<ComponentParameter> _componentBasePublicMembers = new()
     {
         new()
         {
@@ -63,7 +64,7 @@ public partial class ComponentDemo
         },
     };
 
-    private readonly List<ComponentSubEnum> _baseComponentSubEnums = new()
+    private readonly List<ComponentSubEnum> _componentBaseSubEnums = new()
     {
         new()
         {
@@ -93,4 +94,36 @@ public partial class ComponentDemo
             }
         }
     };
+
+
+
+    private readonly List<string> _inputComponents = new() { 
+        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumericTextField", "OtpInput", "Rating",
+        "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
+    };
+    private readonly List<ComponentParameter> _inputBaseParameters = new()
+    {
+        new()
+        {
+            Name = "DisplayName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the display name for this field.",
+        },
+        new()
+        {
+            Name = "InputHtmlAttributes",
+            Type = "IReadOnlyDictionary<string, object>?",
+            DefaultValue = "null",
+            Description = "Gets or sets a collection of additional attributes that will be applied to the created element.",
+        },
+        new()
+        {
+            Name = "Value",
+            Type = "TValue?",
+            DefaultValue = "null",
+            Description = "Gets or sets the value of the input. This should be used with two-way binding.",
+        },
+    };
+
 }
