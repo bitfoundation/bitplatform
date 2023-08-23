@@ -269,6 +269,8 @@ public partial class BitCheckboxDemo
         border-color: crimson;
     }
 </style>
+
+
 <BitCheckbox Label=""Styled checkbox"" Style=""background-color:aqua;color:red"" />
 
 <BitCheckbox Label=""Classed checkbox"" Class=""custom-class"" />
