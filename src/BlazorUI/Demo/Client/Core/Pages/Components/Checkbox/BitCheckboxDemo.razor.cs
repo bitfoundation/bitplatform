@@ -36,10 +36,10 @@ public partial class BitCheckboxDemo
         {
             Name = "BoxSide",
             Type = "BitCheckBoxSide",
-            LinkType = LinkType.Link,
-            Href = "#box-side-enum",
             DefaultValue = "BitCheckBoxSide.Start",
             Description = "Determines whether the checkbox should be shown before the label (start) or after (end).",
+            Href = "#box-side-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -123,20 +123,6 @@ public partial class BitCheckboxDemo
             DefaultValue = "null",
             Description = "Title text applied to the root element and the hidden checkbox input.",
         },
-
-        new()
-        {
-            Name = "Value",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Checkbox state, control the checked state at a higher level.",
-        },
-        new()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the Value parameter changed.",
-        }
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
@@ -165,17 +151,21 @@ public partial class BitCheckboxDemo
 
 
 
-    private bool IsIndeterminate = true;
-    private bool IsChecked_OneWay;
-    private bool IsChecked_TwoWay;
-    private bool IsIndeterminate_OneWay = true;
-    private bool IsIndeterminate_TwoWay = true;
-    private bool IsCheckedLabelTemplate;
-    private bool IsCheckedCustomCheckBox;
-    private bool IsCheckedCustomIndeterminateCheckBox;
-    private bool IsIndeterminateCustomCheckBox = true;
-    private BitCheckboxValidationModel ValidationForm = new();
+    private bool isIndeterminate = true;
+    
+    private bool oneWayValue;
+    private bool twoWayValue;
+    private bool oneWayIsIndeterminate = true;
+    private bool twoWayIsIndeterminate = true;
+
+    private bool labelTemplateValue;
+    private bool customCheckboxValue;
+
+    private bool customContentValue;
+    private bool customContentIsIndeterminate = true;
+
     private string SuccessMessage = string.Empty;
+    private BitCheckboxValidationModel validationModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -184,7 +174,6 @@ public partial class BitCheckboxDemo
         SuccessMessage = string.Empty;
         StateHasChanged();
     }
-
     private void HandleInvalidSubmit()
     {
         SuccessMessage = string.Empty;
@@ -192,164 +181,125 @@ public partial class BitCheckboxDemo
 
 
     private readonly string example1HTMLCode = @"
-<BitCheckbox Label=""Basic Checkbox"" />
-<BitCheckbox Label=""One-way Checked Checkbox (Fixed)"" Value=""true"" />
-<BitCheckbox Label=""Disable Checkbox"" IsEnabled=""false"" />
-<BitCheckbox Label=""Disable Checked Checkbox"" IsEnabled=""false"" Value=""true"" />
-<BitCheckbox Label=""Custom checkmark Checkbox"" CheckmarkIconName=""@BitIconName.Heart"" />";
+<BitCheckbox Label=""Basic checkbox"" />
+<BitCheckbox Label=""Disable checkbox"" IsEnabled=""false"" />
+<BitCheckbox Label=""Disable checked checkbox"" IsEnabled=""false"" Value=""true"" />";
 
-    private readonly string example2TMLCode = @"
-<BitCheckbox Label=""Reversed - Basic Checkbox"" BoxSide=""@BitCheckBoxSide.End"" />
-<BitCheckbox Label=""Reversed - One-way Checked Checkbox (Fixed)"" BoxSide=""@BitCheckBoxSide.End"" Value=""true"" />
-<BitCheckbox Label=""Reversed - Disable Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" />
-<BitCheckbox Label=""Reversed - Disable Checked Checkbox"" BoxSide=""@BitCheckBoxSide.End"" IsEnabled=""false"" Value=""true"" />";
+    private readonly string example2HTMLCode = @"
+<BitCheckbox Label=""Custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.Heart"" />
+<BitCheckbox Label=""Disabled custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
     private readonly string example3HTMLCode = @"
-<BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminate"" />
-<BitCheckbox Label=""One-way indeterminate Checkbox (Fixed)"" IsIndeterminate=""true"" />
-<BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
-    private readonly string example3CSharpCode = @"
-private bool IsIndeterminate = true;
-";
+<BitCheckbox Label=""BitCheckboxSide.End - Basic Checkbox"" BoxSide=""@BitCheckboxSide.End"" />
+<BitCheckbox Label=""BitCheckboxSide.End - Disable Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" />
+<BitCheckbox Label=""BitCheckboxSide.End - Disable Checked Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example4HTMLCode = @"
-<BitCheckbox Label=""One-way Controlled Checkbox"" Value=""IsChecked_OneWay"" />
-<BitButton OnClick=""() => IsChecked_OneWay = !IsChecked_OneWay"">
-    @(IsChecked_OneWay ? ""Remove"" : ""Make"") Checked
-</BitButton>
-
-<BitCheckbox Label=""Two-way Controlled Checkbox"" @bind-Value=""IsChecked_TwoWay"" />
-<BitButton OnClick=""() => IsChecked_TwoWay = !IsChecked_TwoWay"">
-    @(IsChecked_TwoWay ? ""Remove"" : ""Make"") Checked
-</BitButton>
-
-<BitCheckbox Label=""One-way Controlled indeterminate checkbox"" IsIndeterminate=""IsIndeterminate_OneWay"" />
-<BitButton OnClick=""() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay"">
-    @(IsIndeterminate_OneWay ? ""Remove"" : ""Make"") Indeterminate
-</BitButton>
-
-<BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""IsIndeterminate_TwoWay"" />
-<BitButton OnClick=""() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay"">
-    @(IsIndeterminate_TwoWay ? ""Remove"" : ""Make"") Indeterminate
-</BitButton>";
+<BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""isIndeterminate"" />
+<BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
     private readonly string example4CSharpCode = @"
-private bool IsChecked_OneWay;
-private bool IsChecked_TwoWay;
-private bool IsIndeterminate_OneWay = true;
-private bool IsIndeterminate_TwoWay = true;
+private bool isIndeterminate = true;
 ";
 
     private readonly string example5HTMLCode = @"
-<BitCheckbox @bind-Value=""IsCheckedLabelTemplate"">
-    <LabelTemplate>
-        <span style=""@(IsCheckedLabelTemplate ? ""color: green;"" : ""color: red;"")"">
-            Label Template
-        </span>
-    </LabelTemplate>
-</BitCheckbox>
-";
+<BitCheckbox Label=""One-way checked checkbox (Fixed)"" Value=""true"" />
+
+<BitCheckbox Label=""One-way controlled checkbox"" Value=""oneWayValue"" />
+<BitButton OnClick=""() => oneWayValue = !oneWayValue"">@(oneWayValue ? ""Remove"" : ""Make"") Checked</BitButton>
+
+<BitCheckbox Label=""Two-way controlled checkbox"" @bind-Value=""twoWayValue"" />
+<BitButton OnClick=""() => twoWayValue = !twoWayValue"">@(twoWayValue ? ""Remove"" : ""Make"") Checked</BitButton>
+
+
+<BitCheckbox Label=""One-way indeterminate checkbox (Fixed)"" IsIndeterminate=""true"" />
+
+<BitCheckbox Label=""One-way Controlled indeterminate checkbox"" IsIndeterminate=""oneWayIsIndeterminate"" />
+<BitButton OnClick=""() => oneWayIsIndeterminate = !oneWayIsIndeterminate"">@(oneWayIsIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>
+
+<BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""twoWayIsIndeterminate"" />
+<BitButton OnClick=""() => twoWayIsIndeterminate = !twoWayIsIndeterminate"">@(twoWayIsIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>";
     private readonly string example5CSharpCode = @"
-private bool IsCheckedLabelTemplate;
+private bool oneWayValue;
+private bool twoWayValue;
+private bool oneWayIsIndeterminate = true;
+private bool twoWayIsIndeterminate = true;
 ";
 
     private readonly string example6HTMLCode = @"
+<BitCheckbox @bind-Value=""labelTemplateValue"">
+    <LabelTemplate>
+        <span style=""@(labelTemplateValue ? ""color: green;"" : ""color: red;"")"">Label Template</span>
+    </LabelTemplate>
+</BitCheckbox>";
+    private readonly string example6CSharpCode = @"
+private bool labelTemplateValue;
+";
+
+    private readonly string example7HTMLCode = @"
 <style>
     .custom-checkbox {
         gap: 0.5rem;
         display: flex;
         cursor: pointer;
-        flex-wrap: wrap;
-        user-select: none;
         align-items: center;
     }
 
-    .custom-checkbox .checked-box {
+    .custom-box {
         display: flex;
-        width: rem(32px);
-        height: rem(32px);
+        width: rem2(32px);
+        height: rem2(32px);
         border: 1px solid;
         align-items: center;
-        margin-right: rem(5px);
+        margin-right: rem2(5px);
         justify-content: center;
     }
 </style>
 
-<BitCheckbox @bind-Value=""IsCheckedCustomCheckBox"">
+<BitCheckbox @bind-Value=""customCheckboxValue"">
     <div class=""custom-checkbox"">
-        <div class=""checked-box"">
-            <BitIcon IconName=""@(IsCheckedCustomCheckBox ? BitIconName.Accept : null)"" />
+        <div class=""custom-box"">
+            <BitIcon IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
         </div>
-        <span>
-            Custom Basic Checkbox
-        </span>
+        <span>Custom basic checkbox</span>
     </div>
 </BitCheckbox>
 
-<BitCheckbox @bind-Value=""IsCheckedCustomIndeterminateCheckBox"" @bind-IsIndeterminate=""IsIndeterminateCustomCheckBox"">
+<BitCheckbox @bind-Value=""customContentValue"" @bind-IsIndeterminate=""customContentIsIndeterminate"">
     <div class=""custom-checkbox"">
-        <div class=""checked-box"">
-            <BitIcon IconName=""@(IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : null))"" />
+        <div class=""custom-box"">
+            <BitIcon IconName=""@(customContentIsIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
         </div>
-        <span>
-            Custom Indeterminate checkbox
-        </span>
-        <BitButton OnClick=""() => IsIndeterminateCustomCheckBox = true"">Make Indeterminate</BitButton>
+        <span>Custom indeterminate checkbox</span>
     </div>
-</BitCheckbox>";
-    private readonly string example6CSharpCode = @"
-private bool IsCheckedCustomCheckBox;
-private bool IsCheckedCustomIndeterminateCheckBox;
-private bool IsIndeterminateCustomCheckBox = true;
+</BitCheckbox>
+<BitButton OnClick=""() => customContentIsIndeterminate = true"">Make Indeterminate</BitButton>";
+    private readonly string example7CSharpCode = @"
+private bool customCheckboxValue;
+private bool customContentValue;
+private bool customContentIsIndeterminate = true;
 ";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HTMLCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>
-    .validation-summary {
-        color: #A4262C;
-        overflow: hidden;
-        margin-bottom: 0.8rem;
-        background-color: #FDE7E9;
-        border-left: 0.25rem solid #d13438;
-    }
-
-    .validation-summary .validation-errors {
-        margin: 0.25rem;
-    }
-
-    div.validation-message {
+    .validation-message {
         color: #A4262C;
         font-size: 0.75rem;
     }
 </style>
 
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-        <div>
-            <BitCheckbox Label=""I agree with the terms and conditions."" @bind-Value=""ValidationForm.TermsAgreement"" />
-            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
-        </div>
-        <br />
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-    private readonly string example7CSharpCode = @"
-private BitCheckboxValidationModel ValidationForm = new();
-private string SuccessMessage = string.Empty;
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+    <div>
+        <BitCheckbox Label=""I agree with the terms and conditions."" @bind-Value=""validationModel.TermsAgreement"" />
+        <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+    </div>
+    <br />
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example8CSharpCode = @"
+private BitCheckboxValidationModel validationModel = new();
 
 public class BitCheckboxValidationModel
 {
@@ -357,16 +307,7 @@ public class BitCheckboxValidationModel
     public bool TermsAgreement { get; set; }
 }
 
-private async Task HandleValidSubmit()
-{
-    SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
-}
+private async Task HandleValidSubmit() { }
 
-private void HandleInvalidSubmit()
-{
-    SuccessMessage = string.Empty;
-}";
+private void HandleInvalidSubmit() { }";
 }
