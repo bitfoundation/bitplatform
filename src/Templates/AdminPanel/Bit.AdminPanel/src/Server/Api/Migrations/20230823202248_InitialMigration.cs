@@ -3,12 +3,30 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BlazorDual.Api.Migrations
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
+namespace AdminPanel.Server.Api.Migrations
 {
-    public partial class IntialSchema : Migration
+    /// <inheritdoc />
+    public partial class InitialMigration : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
@@ -57,6 +75,29 @@ namespace BlazorDual.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Price = table.Column<decimal>(type: "money", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    CreatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleClaims",
                 columns: table => new
                 {
@@ -73,28 +114,6 @@ namespace BlazorDual.Api.Migrations
                         name: "FK_RoleClaims_Roles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Roles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TodoItems",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Date = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    IsDone = table.Column<bool>(type: "bit", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TodoItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TodoItems_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -184,6 +203,58 @@ namespace BlazorDual.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Color", "Name" },
+                values: new object[,]
+                {
+                    { 1, "#FFCD56", "Ford" },
+                    { 2, "#FF6384", "Nissan" },
+                    { 3, "#4BC0C0", "Benz" },
+                    { 4, "#FF9124", "BMW" },
+                    { 5, "#2B88D8", "Tesla" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "cc58f1b6-8609-4082-a578-30185c46d437", null, "test@bitplatform.dev", true, "BlazorDual test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAECrdSfa9LctR7Soh60QbX7pET8DeOzsF9O9TiWi3me19Mg/d7pseMTw7ecSM0BhqdQ==", null, false, null, null, "8a53ad0a-fdc3-41eb-81da-c35c49865b63", false, "test@bitplatform.dev" });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "CategoryId", "CreatedOn", "Description", "Name", "Price" },
+                values: new object[,]
+                {
+                    { 1, 1, new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "The Ford Mustang is ranked #1 in Sports Cars", "Mustang", 27155m },
+                    { 2, 1, new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer", "GT", 500000m },
+                    { 3, 1, new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.", "Ranger", 25000m },
+                    { 4, 1, new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "Raptor is a SCORE off-road trophy truck living in a asphalt world", "Raptor", 53205m },
+                    { 5, 1, new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.", "Maverick", 22470m },
+                    { 6, 2, new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "A powerful convertible sports car", "Roadster", 42800m },
+                    { 7, 2, new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "A perfectly adequate family sedan with sharp looks", "Altima", 24550m },
+                    { 8, 2, new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech", "GT-R", 113540m },
+                    { 9, 2, new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "A new smart SUV", "Juke", 28100m },
+                    { 10, 3, new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "H247", 54950m },
+                    { 11, 3, new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "V297", 103360m },
+                    { 12, 3, new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "R50", 2000000m },
+                    { 13, 4, new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "M550i", 77790m },
+                    { 14, 4, new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "540i", 60945m },
+                    { 15, 4, new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "530e", 56545m },
+                    { 16, 4, new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "530i", 55195m },
+                    { 17, 4, new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "M850i", 100045m },
+                    { 18, 4, new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "X7", 77980m },
+                    { 19, 4, new DateTimeOffset(new DateTime(2022, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "", "IX", 87000m },
+                    { 20, 5, new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "rapid acceleration and dynamic handling", "Model 3", 61990m },
+                    { 21, 5, new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "finishes near the top of our luxury electric car rankings.", "Model S", 135000m },
+                    { 22, 5, new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "Heart-pumping acceleration, long drive range", "Model X", 138890m },
+                    { 23, 5, new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)), "extensive driving range, lots of standard safety features", "Model Y", 67790m }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId",
+                table: "Products",
+                column: "CategoryId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
                 table: "RoleClaims",
@@ -195,11 +266,6 @@ namespace BlazorDual.Api.Migrations
                 column: "NormalizedName",
                 unique: true,
                 filter: "[NormalizedName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TodoItems_UserId",
-                table: "TodoItems",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
@@ -229,13 +295,14 @@ namespace BlazorDual.Api.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "RoleClaims");
+                name: "Products");
 
             migrationBuilder.DropTable(
-                name: "TodoItems");
+                name: "RoleClaims");
 
             migrationBuilder.DropTable(
                 name: "UserClaims");
@@ -248,6 +315,9 @@ namespace BlazorDual.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Roles");
