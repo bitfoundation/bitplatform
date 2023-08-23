@@ -266,7 +266,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
     }
@@ -282,7 +282,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
         if (ariaLabel is not null)
         {
