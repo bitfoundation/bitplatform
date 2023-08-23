@@ -39,7 +39,26 @@
     justify-content: center;
 }
 
-::deep .validation-message {
-    font-size: 0.75rem;
-    color: $bit-color-state-error;
+::deep {
+    .custom-class {
+        color: brown;
+        padding: 1rem;
+        background-color: aquamarine;
+    }
+
+    .custom-label {
+        color: darkblue;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-box {
+        border-width: 3px;
+        border-color: crimson;
+    }
+
+    .validation-message {
+        font-size: 0.75rem;
+        color: $bit-color-state-error;
+    }
 }

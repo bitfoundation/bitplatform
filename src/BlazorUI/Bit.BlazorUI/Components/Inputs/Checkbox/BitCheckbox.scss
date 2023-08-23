@@ -6,7 +6,7 @@
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 .bit-icon {
                     opacity: 1;
                     color: $color-action-hover-foreground-secondary;
@@ -16,18 +16,18 @@
     }
 
     &.bit-inv {
-        .bit-chb-ctn {
+        .bit-chb-box {
             border-color: $color-state-error;
         }
 
         &.bit-chb-ckd {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 background-color: $color-state-error;
             }
         }
 
         &.bit-chb-ind {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 .bit-icon {
                     background-color: $color-state-error;
                 }
@@ -46,7 +46,7 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-chb-ctn {
+        .bit-chb-box {
             border-color: $color-border-disabled;
 
             .bit-icon {
@@ -57,7 +57,7 @@
         }
 
         &.bit-chb-ckd {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 border-color: $color-border-disabled;
 
                 .bit-icon {
@@ -68,7 +68,7 @@
     }
 }
 
-.bit-chb-ctn {
+.bit-chb-box {
     display: flex;
     overflow: hidden;
     position: relative;
@@ -121,7 +121,7 @@
         flex-direction: row-reverse;
     }
 
-    .bit-chb-ctn {
+    .bit-chb-box {
         margin: 0 0 0 spacing(0.5);
     }
 
@@ -131,7 +131,7 @@
 }
 
 .bit-chb-ckd {
-    .bit-chb-ctn {
+    .bit-chb-box {
         border-color: $color-primary-main;
         background-color: $color-primary-main;
 
@@ -143,7 +143,7 @@
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 border-color: $color-action-hover-primary;
                 background-color: $color-action-hover-primary;
 
@@ -157,7 +157,7 @@
 }
 
 .bit-chb-ind {
-    .bit-chb-ctn {
+    .bit-chb-box {
         border-color: $color-primary-main;
         background-color: $color-background-primary;
 
@@ -177,7 +177,7 @@
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-ctn {
+            .bit-chb-box {
                 border-color: $color-action-hover-primary;
                 background-color: $color-background-primary;
 

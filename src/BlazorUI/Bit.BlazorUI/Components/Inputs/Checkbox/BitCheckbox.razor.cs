@@ -66,6 +66,11 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitCheckbox.
+    /// </summary>
+    [Parameter] public BitCheckboxClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Default indeterminate visual state for checkbox
     /// </summary>
     [Parameter] public bool? DefaultIsIndeterminate { get; set; }
@@ -119,6 +124,11 @@ public partial class BitCheckbox : IDisposable
     ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitCheckbox.
+    /// </summary>
+    [Parameter] public BitCheckboxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Title text applied to the root element and the hidden checkbox input
