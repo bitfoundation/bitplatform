@@ -5,142 +5,163 @@
             Title="Checkbox"
             Description="checkbox component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="CheckBox"
+<ComponentDemo ComponentName="Checkbox"
                ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" ExampleId="example1">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="Basic Checkbox" />
-                <BitCheckbox Label="One-way Checked Checkbox (Fixed)" Value="true" />
-                <BitCheckbox Label="Disable Checkbox" IsEnabled="false" />
-                <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" Value="true" />
-                <BitCheckbox Label="Custom checkmark Checkbox" CheckmarkIconName="@BitIconName.Heart" />
+                <BitCheckbox Label="Basic checkbox" />
+                <BitCheckbox Label="Disable checkbox" IsEnabled="false" />
+                <BitCheckbox Label="Disable checked checkbox" IsEnabled="false" Value="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Reversed" HTMLSourceCode="@example2TMLCode" ExampleId="example2">
+    <ComponentExampleBox Title="Checkmark Icon" HTMLSourceCode="@example2HTMLCode" ExampleId="example2">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="Reversed - Basic Checkbox" BoxSide="@BitCheckBoxSide.End" />
-                <BitCheckbox Label="Reversed - One-way Checked Checkbox (Fixed)" BoxSide="@BitCheckBoxSide.End" Value="true" />
-                <BitCheckbox Label="Reversed - Disable Checkbox" BoxSide="@BitCheckBoxSide.End" IsEnabled="false" />
-                <BitCheckbox Label="Reversed - Disable Checked Checkbox" BoxSide="@BitCheckBoxSide.End" IsEnabled="false" Value="true" />
+                <BitCheckbox Label="Custom checkmark checkbox" CheckmarkIconName="@BitIconName.Heart" />
+                <BitCheckbox Label="Disabled custom checkmark checkbox" CheckmarkIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Indeterminate" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example3">
+    <ComponentExampleBox Title="BoxSide" HTMLSourceCode="@example3HTMLCode" ExampleId="example3">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminate" />
-                <BitCheckbox Label="One-way indeterminate Checkbox (Fixed)" IsIndeterminate="true" />
+                <BitCheckbox Label="BitCheckboxSide.End - Basic Checkbox" BoxSide="@BitCheckboxSide.End" />
+                <BitCheckbox Label="BitCheckboxSide.End - Disable Checkbox" BoxSide="@BitCheckboxSide.End" IsEnabled="false" />
+                <BitCheckbox Label="BitCheckboxSide.End - Disable Checked Checkbox" BoxSide="@BitCheckboxSide.End" IsEnabled="false" Value="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example4HTMLCode" ExampleId="example4">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitCheckbox Label="Styled checkbox" Style="background-color:aqua;color:red" />
+
+                <BitCheckbox Label="Classed checkbox" Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitCheckbox Label="Styles" Styles="@(new() { Label="color:darkgoldenrod", Box="border-color:brown", Icon="color:red" })" />
+
+                <BitCheckbox Label="Classes" Classes="@(new() { Label="custom-label", Box="custom-box" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Indeterminate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+        <ExamplePreview>
+            <div class="example-content">
+                <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="isIndeterminate" />
                 <BitCheckbox Label="Disabled indeterminate checkbox" IsIndeterminate="true" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example4">
+    <ComponentExampleBox Title="Controlled" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
         <ExamplePreview>
+            <div><b>Value</b>:</div>
+            <br />
             <div class="example-content">
                 <div class="controlled-box">
-                    <BitCheckbox Label="One-way Controlled Checkbox" Value="IsChecked_OneWay" />
-                    <BitButton OnClick="() => IsChecked_OneWay = !IsChecked_OneWay">
-                        @(IsChecked_OneWay ? "Remove" : "Make") Checked
-                    </BitButton>
+                    <BitCheckbox Label="One-way checked checkbox (Fixed)" Value="true" />
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="Two-way Controlled Checkbox" @bind-Value="IsChecked_TwoWay" />
-                    <BitButton OnClick="() => IsChecked_TwoWay = !IsChecked_TwoWay">
-                        @(IsChecked_TwoWay ? "Remove" : "Make") Checked
-                    </BitButton>
+                    <BitCheckbox Label="One-way controlled checkbox" Value="oneWayValue" />
+                    <BitButton OnClick="() => oneWayValue = !oneWayValue">@(oneWayValue ? "Remove" : "Make") Checked</BitButton>
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="IsIndeterminate_OneWay" />
-                    <BitButton OnClick="() => IsIndeterminate_OneWay = !IsIndeterminate_OneWay">
-                        @(IsIndeterminate_OneWay ? "Remove" : "Make") Indeterminate
-                    </BitButton>
+                    <BitCheckbox Label="Two-way controlled checkbox" @bind-Value="twoWayValue" />
+                    <BitButton OnClick="() => twoWayValue = !twoWayValue">@(twoWayValue ? "Remove" : "Make") Checked</BitButton>
+                </div>
+            </div>
+            <br />
+            <br />
+            <div><b>Indeterminate</b>:</div>
+            <br />
+            <div class="example-content">
+                <div class="controlled-box">
+                    <BitCheckbox Label="One-way indeterminate checkbox (Fixed)" IsIndeterminate="true" />
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="IsIndeterminate_TwoWay" />
-                    <BitButton OnClick="() => IsIndeterminate_TwoWay = !IsIndeterminate_TwoWay">
-                        @(IsIndeterminate_TwoWay ? "Remove" : "Make") Indeterminate
-                    </BitButton>
+                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="oneWayIsIndeterminate" />
+                    <BitButton OnClick="() => oneWayIsIndeterminate = !oneWayIsIndeterminate">@(oneWayIsIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
+                </div>
+                <div class="controlled-box">
+                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="twoWayIsIndeterminate" />
+                    <BitButton OnClick="() => twoWayIsIndeterminate = !twoWayIsIndeterminate">@(twoWayIsIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example5">
+    <ComponentExampleBox Title="LabelTemplate" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
         <ExamplePreview>
             <div>
-                <BitCheckbox @bind-Value="IsCheckedLabelTemplate">
+                <BitCheckbox @bind-Value="labelTemplateValue">
                     <LabelTemplate>
-                        <span style="@(IsCheckedLabelTemplate ? "color: green;" : "color: red;")">
-                            Label Template
-                        </span>
+                        <span style="@(labelTemplateValue ? "color: green;" : "color: red;")">Label Template</span>
                     </LabelTemplate>
                 </BitCheckbox>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example6">
+    <ComponentExampleBox Title="Custom content" HTMLSourceCode="@example8HTMLCode" CSharpSourceCode="@example8CSharpCode" ExampleId="example8">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox @bind-Value="IsCheckedCustomCheckBox">
+                <BitCheckbox @bind-Value="customCheckboxValue">
                     <div class="custom-checkbox">
-                        <div class="checked-box">
-                            <BitIcon IconName="@(IsCheckedCustomCheckBox ? BitIconName.Accept : null)" />
+                        <div class="custom-box">
+                            <BitIcon IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
                         </div>
-                        <span>
-                            Custom Basic Checkbox
-                        </span>
+                        <span>Custom basic checkbox</span>
                     </div>
                 </BitCheckbox>
 
-                <BitCheckbox @bind-Value="IsCheckedCustomIndeterminateCheckBox" @bind-IsIndeterminate="IsIndeterminateCustomCheckBox">
+                <br />
+
+                <BitCheckbox @bind-Value="customContentValue" @bind-IsIndeterminate="customContentIsIndeterminate">
                     <div class="custom-checkbox">
-                        <div class="checked-box">
-                            <BitIcon IconName="@(IsIndeterminateCustomCheckBox ? BitIconName.Fingerprint : (IsCheckedCustomIndeterminateCheckBox ? BitIconName.Accept : null))" />
+                        <div class="custom-box">
+                            <BitIcon IconName="@(customContentIsIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
                         </div>
-                        <span>
-                            Custom Indeterminate checkbox
-                        </span>
-                        <BitButton OnClick="() => IsIndeterminateCustomCheckBox = true">Make Indeterminate</BitButton>
+                        <span>Custom indeterminate checkbox</span>
                     </div>
                 </BitCheckbox>
+                <BitButton OnClick="() => customContentIsIndeterminate = true">Make Indeterminate</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example7">
+    <ComponentExampleBox Title="Validation" HTMLSourceCode="@example9HTMLCode" CSharpSourceCode="@example9CSharpCode" ExampleId="example9">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))
                 {
-                    <EditForm Model="ValidationForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                         <DataAnnotationsValidator />
-                        <div class="validation-summary">
-                            <ValidationSummary />
-                        </div>
                         <div>
-                            <BitCheckbox Label="I agree with the terms and conditions." @bind-Value="ValidationForm.TermsAgreement" />
-                            <ValidationMessage For="@(() => ValidationForm.TermsAgreement)" />
+                            <BitCheckbox Label="I agree with the terms and conditions." @bind-Value="validationModel.TermsAgreement" />
+                            <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
                         </div>
                         <br />
-                        <BitButton ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                     </EditForm>
                 }
                 else
                 {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@SuccessMessage</BitMessageBar>
                 }
             </div>
         </ExamplePreview>

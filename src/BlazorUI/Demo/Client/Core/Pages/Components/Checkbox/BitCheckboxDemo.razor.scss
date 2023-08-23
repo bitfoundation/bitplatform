@@ -1,6 +1,6 @@
-﻿@import '../../../Styles/abstracts/_colors.scss';
-@import '../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 .example-content {
     gap: 0.5rem;
@@ -10,27 +10,11 @@
     align-items: flex-start;
 }
 
-.validation-summary {
-    color: $Red20;
-    overflow: hidden;
-    margin-bottom: 0.8rem;
-    background-color: $ErrorBlockRed;
-    border-left: 0.25rem solid $Red10;
-
-    .validation-errors {
-        margin: 0.25rem;
-    }
-}
-
-::deep div.validation-message {
-    color: $Red20;
-    font-size: 0.75rem;
-}
-
 .controlled-box {
     gap: 1rem;
     display: flex;
     width: fit-content;
+    margin-bottom: 1rem;
     flex-direction: row;
 
     @include sm {
@@ -42,17 +26,39 @@
     gap: 0.5rem;
     display: flex;
     cursor: pointer;
-    flex-wrap: wrap;
-    user-select: none;
     align-items: center;
+}
 
-    .checked-box {
-        display: flex;
-        width: rem2(32px);
-        height: rem2(32px);
-        border: 1px solid;
-        align-items: center;
-        margin-right: rem2(5px);
-        justify-content: center;
+.custom-box {
+    display: flex;
+    width: rem2(32px);
+    height: rem2(32px);
+    border: 1px solid;
+    align-items: center;
+    margin-right: rem2(5px);
+    justify-content: center;
+}
+
+::deep {
+    .custom-class {
+        color: brown;
+        padding: 1rem;
+        background-color: aquamarine;
+    }
+
+    .custom-label {
+        color: darkblue;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-box {
+        border-width: 3px;
+        border-color: crimson;
+    }
+
+    .validation-message {
+        font-size: 0.75rem;
+        color: $bit-color-state-error;
     }
 }

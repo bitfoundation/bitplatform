@@ -6,6 +6,11 @@ namespace Bit.BlazorUI;
 
 public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 {
+    protected bool IsDisposed;
+    protected bool ValueHasBeenSet;
+
+    private TValue? value;
+
     private bool? valueInvalid;
 
     private Type? _nullableUnderlyingType;
@@ -14,12 +19,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
-
     protected event EventHandler OnValueChanged = default!;
 
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
-
 
 
     /// <summary>
@@ -40,7 +43,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// @bind-Value="model.PropertyName"
     /// </example>
     [Parameter]
-    public TValue? Value { get; set; }
+    public TValue? Value
+    {
+        get => value;
+        set
+        {
+            if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
+
+            this.value = value;
+
+            if (OnValueChanged is not null)
+            {
+                OnValueChanged(this, EventArgs.Empty);
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
@@ -51,7 +68,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// Gets or sets an expression that identifies the bound value.
     /// </summary>
     [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
-
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -121,7 +137,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     }
 
 
-
     protected BitInputBase()
     {
         _validationStateChangedHandler = OnValidateStateChanged;
@@ -145,8 +160,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         }
     }
 
-    protected bool ValueHasBeenSet { get; set; }
-
     protected EditContext EditContext { get; set; } = default!;
 
     protected internal FieldIdentifier FieldIdentifier { get; set; }
@@ -165,11 +178,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             _ = ValueChanged.InvokeAsync(value);
 
             EditContext?.NotifyFieldChanged(FieldIdentifier);
-
-            if (OnValueChanged is not null)
-            {
-                OnValueChanged(this, EventArgs.Empty);
-            }
         }
     }
 
@@ -319,9 +327,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         return newDictionaryCreated;
     }
 
-
-
-    protected bool IsDisposed;
 
     public void Dispose()
     {

@@ -6,8 +6,10 @@ namespace Bit.BlazorUI;
 public partial class BitCheckbox : IDisposable
 {
     private bool IsIndeterminateHasBeenSet;
+
     private bool isIndeterminate;
-    private BitCheckBoxSide boxSide;
+    private BitCheckboxSide boxSide;
+
     private string _inputId = string.Empty;
     private ElementReference _checkboxElement;
 
@@ -37,7 +39,7 @@ public partial class BitCheckbox : IDisposable
     /// Determines whether the checkbox should be shown before the label (start) or after (end)
     /// </summary>
     [Parameter]
-    public BitCheckBoxSide BoxSide
+    public BitCheckboxSide BoxSide
     {
         get => boxSide;
         set
@@ -64,15 +66,20 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Default checkbox state
-    /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
+    /// Custom CSS classes for different parts of the BitCheckbox.
     /// </summary>
-    [Parameter] public bool? DefaultValue { get; set; }
+    [Parameter] public BitCheckboxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Default indeterminate visual state for checkbox
     /// </summary>
     [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+
+    /// <summary>
+    /// Default checkbox state
+    /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
+    /// </summary>
+    [Parameter] public bool? DefaultValue { get; set; }
 
     /// <summary>
     /// An indeterminate visual state for checkbox. 
@@ -91,7 +98,6 @@ public partial class BitCheckbox : IDisposable
             _ = IsIndeterminateChanged.InvokeAsync(value);
         }
     }
-
     [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
 
     /// <summary>
@@ -110,51 +116,43 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
+    /// Callback that is called when the checked value has changed
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
     ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback that is called when the checked value has changed
+    /// Custom CSS styles for different parts of the BitCheckbox.
     /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
+    [Parameter] public BitCheckboxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Title text applied to the root element and the hidden checkbox input
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
-    protected override string RootElementClass => "bit-chb";
 
+
+    protected override string RootElementClass => "bit-chb";
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
 
         ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-ckd" : string.Empty);
 
-        ClassBuilder.Register(() => BoxSide == BitCheckBoxSide.End ? $"{RootElementClass}-se" : string.Empty);
+        ClassBuilder.Register(() => BoxSide == BitCheckboxSide.End ? $"{RootElementClass}-end" : string.Empty);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        OnValueChanged += HandleOnValueChanged;
         _inputId = $"checkbox-{UniqueId}";
 
-        await base.OnInitializedAsync();
-    }
+        OnValueChanged += HandleOnValueChanged;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
             CurrentValue = DefaultValue.Value;
@@ -165,37 +163,21 @@ public partial class BitCheckbox : IDisposable
             IsIndeterminate = DefaultIsIndeterminate.Value;
         }
 
-        await base.OnParametersSetAsync();
+        base.OnInitialized();
     }
 
-    private async Task HandleCheckboxClick(MouseEventArgs args)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (IsEnabled is false) return;
-        await OnClick.InvokeAsync(args);
-
-        if (IsIndeterminate)
+        if (firstRender)
         {
-            if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
-            IsIndeterminate = false;
+            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
         }
-        else
-        {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            CurrentValue = !CurrentValue;
-            await OnChange.InvokeAsync(CurrentValue);
-        }
-    }
-
-    private void HandleOnValueChanged(object? sender, EventArgs args)
-    {
-        ClassBuilder.Reset();
+        base.OnAfterRender(firstRender);
     }
 
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
-
-    protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
 
     protected override void Dispose(bool disposing)
     {
@@ -205,5 +187,32 @@ public partial class BitCheckbox : IDisposable
         }
 
         base.Dispose(disposing);
+    }
+
+
+
+    private async Task HandleCheckboxClick(MouseEventArgs args)
+    {
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(args);
+
+        if (IsIndeterminate)
+        {
+            if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
+
+            IsIndeterminate = false;
+        }
+
+        CurrentValue = !CurrentValue;
+    }
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        ClassBuilder.Reset();
+
+        if (IsEnabled is false) return;
+
+        _ = OnChange.InvokeAsync(CurrentValue);
     }
 }

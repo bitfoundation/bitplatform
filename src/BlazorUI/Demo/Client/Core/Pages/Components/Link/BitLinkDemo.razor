@@ -52,7 +52,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Navigate to elements" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+    <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example6HTMLCode" ExampleId="example6">
+        <ExamplePreview>
+            <div>
+                <div style="display: flex">Visible: [ <BitLink Visibility="BitVisibility.Visible">Visible Link</BitLink> ]</div>
+                <div style="display: flex">Hidden: [ <BitLink Visibility="BitVisibility.Hidden">Hidden Link</BitLink> ]</div>
+                <div style="display: flex">Collapsed: [ <BitLink Visibility="BitVisibility.Collapsed">Collapsed Link</BitLink> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Navigate to elements" HTMLSourceCode="@example7HTMLCode" ExampleId="example7">
         <ExamplePreview>
             <div class="example-desc">If you start the Href parameter with a # character, it's looking for the same element id and scrolling on it.</div>
             <BitLink Style="scroll-margin: 70px" id="start-article" Href="#end-article">Go To End of this Article</BitLink>

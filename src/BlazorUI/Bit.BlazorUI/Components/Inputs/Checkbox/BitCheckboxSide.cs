@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitCheckBoxSide
+public enum BitCheckboxSide
 {
     /// <summary>
     /// The checkbox shows before the label

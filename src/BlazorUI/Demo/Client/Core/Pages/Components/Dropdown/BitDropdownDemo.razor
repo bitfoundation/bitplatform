@@ -72,7 +72,7 @@
                         </div>
                     </ItemTemplate>
                 </BitDropdown>
-                
+
                 <BitDropdown Label="Custom placeholder"
                              Items="GetCustomDropdownItems()"
                              Placeholder="Select an option"
@@ -323,6 +323,31 @@
                                  Placeholder="Select options"
                                  IsMultiSelect="true" />
                     <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" HTMLSourceCode="@example14HTMLCode" CSharpSourceCode="@example14CSharpCode" ExampleId="example14">
+        <ExamplePreview>
+            <div class="example-content">
+                <div style="display: inline-flex; text-wrap: nowrap;">
+                    Visible: [ <BitDropdown @bind-Value="SelectedValue"
+                                            Items="GetDropdownItems()"
+                                            Placeholder="Select an option"
+                                            Visibility="BitVisibility.Visible" /> ]
+                </div>
+                <div style="display: inline-flex; text-wrap: nowrap;">
+                    Hidden: [ <BitDropdown @bind-Values="SelectedValues"
+                                           Items="GetDropdownItems()"
+                                           Placeholder="Select options"
+                                           Visibility="BitVisibility.Hidden" /> ]
+                </div>
+                <div style="display: inline-flex; text-wrap: nowrap;">
+                    Collapsed: [ <BitDropdown @bind-Values="SelectedValues"
+                                              Items="GetDropdownItems()"
+                                              Placeholder="Select options"
+                                              Visibility="BitVisibility.Collapsed" /> ]
                 </div>
             </div>
         </ExamplePreview>
