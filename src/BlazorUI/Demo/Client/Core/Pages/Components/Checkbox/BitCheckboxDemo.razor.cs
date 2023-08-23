@@ -147,7 +147,7 @@ public partial class BitCheckboxDemo
         new()
         {
             Id = "class-styles",
-            Title = "BitMenuButtonClassStyles",
+            Title = "BitCheckboxClassStyles",
             Parameters = new()
             {
                new()
