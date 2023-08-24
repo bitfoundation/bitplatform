@@ -125,7 +125,7 @@ namespace TodoTemplate.Server.Api.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Account.Role", b =>
+            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,7 +155,7 @@ namespace TodoTemplate.Server.Api.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Account.User", b =>
+            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -246,17 +246,17 @@ namespace TodoTemplate.Server.Api.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "e734cc04-0977-4b58-aa4a-098d8b2e02b2",
+                            ConcurrencyStamp = "9d0d2a72-f5c8-4726-bcea-9a4417878873",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
-                            FullName = "BlazorDual test account",
+                            FullName = "TodoTemplate test account",
                             Gender = 2,
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAELbrU35IsfA7BO49EDBpQc0HS4QArVWecrAs0/5tY2yGPAOOE+2Rz3r2exUltUQqIg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDhxksdfk+yXwH0o1xZGZCnb5+gnK5XQRYQwx3tOQUcWOWy7a2w5FuI3ahddQiUw0w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "53f5a049-6026-4701-b087-2ac47e793006",
+                            SecurityStamp = "e5ec721d-b782-4259-81c8-b6101fc6768f",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
                         });
@@ -291,7 +291,7 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.Role", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -300,7 +300,7 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.User", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -309,7 +309,7 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.User", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -318,13 +318,13 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.Role", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.User", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -333,7 +333,7 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.User", null)
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -342,7 +342,7 @@ namespace TodoTemplate.Server.Api.Migrations
 
             modelBuilder.Entity("TodoTemplate.Server.Api.Models.Todo.TodoItem", b =>
                 {
-                    b.HasOne("TodoTemplate.Server.Api.Models.Account.User", "User")
+                    b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

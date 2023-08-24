@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TodoTemplate.Server.Api.Models.Account;
+using TodoTemplate.Server.Api.Models.Identity;
 using TodoTemplate.Server.Api.Models.Todo;
 
 namespace TodoTemplate.Server.Api.Data;

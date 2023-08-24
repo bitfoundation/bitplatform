@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using BlazorDual.Shared.Dtos.Account;
+using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Web.Services.Implementations;
 

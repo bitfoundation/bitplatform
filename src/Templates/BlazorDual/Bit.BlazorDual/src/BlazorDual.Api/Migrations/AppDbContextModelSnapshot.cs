@@ -22,7 +22,7 @@ namespace BlazorDual.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BlazorDual.Api.Models.Account.Role", b =>
+            modelBuilder.Entity("BlazorDual.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,7 +52,7 @@ namespace BlazorDual.Api.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("BlazorDual.Api.Models.Account.User", b =>
+            modelBuilder.Entity("BlazorDual.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -143,7 +143,7 @@ namespace BlazorDual.Api.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "ffea7ed9-9c62-43a9-b704-0aa6e1db297e",
+                            ConcurrencyStamp = "2e94af2d-0b0f-446b-9018-4c8dbe6ca764",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "BlazorDual test account",
@@ -151,9 +151,9 @@ namespace BlazorDual.Api.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAENNMhCsdnqf4Uc6k07hpg2nW72kCAkO2OzkAb6PstiSQDyO4weV7zPkNz3dDW7g88A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEC8Chdkxj7JjRFGIVBuO4uIUM8MShPvMlkcHzmaKgvthqvyw6QKK/XAwJy3B+SFauw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "927f977b-2c87-4534-9f06-053d9879b83c",
+                            SecurityStamp = "4d670635-e8d9-4b62-bd02-46b8bff61d91",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
                         });
@@ -291,7 +291,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("BlazorDual.Api.Models.Todo.TodoItem", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", "User")
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -302,7 +302,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.Role", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -311,7 +311,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -320,7 +320,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -329,13 +329,13 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.Role", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -344,7 +344,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

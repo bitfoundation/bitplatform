@@ -1,4 +1,4 @@
-﻿using TodoTemplate.Server.Api.Models.Account;
+﻿using TodoTemplate.Server.Api.Models.Identity;
 
 namespace TodoTemplate.Server.Api.Models.Todo;
 

@@ -539,7 +539,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DeleteCategory.
+        ///   Looks up a localized string similar to Delete category.
         /// </summary>
         public static string DeleteCategory {
             get {
@@ -548,7 +548,7 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DeleteProduct.
+        ///   Looks up a localized string similar to Delete product.
         /// </summary>
         public static string DeleteProduct {
             get {

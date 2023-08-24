@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
@@ -121,7 +120,7 @@ public static class Services
 
         services.AddHealthChecks(env, configuration);
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaulFromEmail, appSettings.EmailSettings.DefaultFromName)
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName)
             .AddRazorRenderer();
 
         if (appSettings.EmailSettings.UseLocalFolderForEmails)
