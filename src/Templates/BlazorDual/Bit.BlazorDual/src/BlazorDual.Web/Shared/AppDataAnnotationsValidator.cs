@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
 using BlazorDual.Shared.Attributes;
 
-namespace BlazorDual.Web.Components;
+namespace BlazorDual.Web.Shared;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {

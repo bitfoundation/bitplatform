@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using BlazorDual.Shared.Dtos.Identity;
 
-namespace BlazorDual.Web.Pages;
+namespace BlazorDual.Web.Pages.Identity;
 
 public partial class SignInPage
 {

@@ -1,5 +1,5 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     width: 100%;
@@ -16,5 +16,15 @@
 
     @include sm {
         padding: rem2(40px) rem2(16px);
+    }
+}
+
+.form-forgot-password {
+    font-size: rem2(14px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(20px);
+
+    @include lt-xl {
+        margin-bottom: rem2(16px);
     }
 }

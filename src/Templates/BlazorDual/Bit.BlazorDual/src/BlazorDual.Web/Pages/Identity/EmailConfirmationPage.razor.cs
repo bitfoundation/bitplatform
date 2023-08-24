@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Pages;
+﻿namespace BlazorDual.Web.Pages.Identity;
 
 public partial class EmailConfirmationPage
 {

@@ -1,6 +1,6 @@
 ﻿using BlazorDual.Shared.Dtos.Todo;
 
-namespace BlazorDual.Web.Pages;
+namespace BlazorDual.Web.Pages.Todo;
 
 [Authorize]
 public partial class TodoPage

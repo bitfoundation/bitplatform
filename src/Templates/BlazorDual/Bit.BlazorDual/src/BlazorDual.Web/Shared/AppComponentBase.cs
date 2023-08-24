@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Components;
+﻿namespace BlazorDual.Web.Shared;
 
 public partial class AppComponentBase : ComponentBase
 {
