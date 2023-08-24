@@ -33,25 +33,11 @@
     </section>
 
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Infra.Iac</BitTypography>
-        <div class="section-card-txt">
-            Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes. 
-            This project contains the necessary code to provide this feature. You don't have to use either Pulumi or even Azure, Host it wherever you want.
-        </div>
-    </section>
-
-    <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared</BitTypography>
         <div class="section-card-txt">
             This project is shared on both the server (Api project) and client(Web & App projects) sides, and can share code. 
-            The bit puts the code it wants to reuse; Like resources, Dto classes, shared contracts, services, etc.
-        </div>
-    </section>
-
-    <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.App</BitTypography>
-        <div class="section-card-txt">
-            This project contains code related to building an app, although much of the code is common to the web project which are located in Client.Core.
+            <br />
+            It contains resx files, Dto classes, shared contracts, services, etc.
         </div>
     </section>
 
@@ -65,9 +51,25 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Web</BitTypography>
         <div class="section-card-txt">
-            This project contains the necessary code to run web version of the project (Blazor WebAssembly & Blazor Server)
+            This project contains the necessary code to build web version of the app.
         </div>
     </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.App</BitTypography>
+        <div class="section-card-txt">
+            This project contains the necessary code to built mobile and desktop versions of the app.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Infra.Iac</BitTypography>
+        <div class="section-card-txt">
+            Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes.
+            This project contains the necessary code to provide this feature. You don't have to use either Pulumi or even Azure, Host it wherever you want!
+        </div>
+    </section>
+
 </div>
 
-<NavigationButtons Prev="Settings" PrevUrl="/templates/settings" Next="Exception handling" NextUrl="/templates/exception-handling" />
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Database" NextUrl="/templates/database" />

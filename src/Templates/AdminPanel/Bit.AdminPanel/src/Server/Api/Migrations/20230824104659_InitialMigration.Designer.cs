@@ -12,17 +12,71 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdminPanel.Server.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220919082024_InitialSchemaAndData")]
-    partial class InitialSchemaAndData
+    [Migration("20230824104659_InitialMigration")]
+    partial class InitialMigration
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.8")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Categories.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Color = "#FFCD56",
+                            Name = "Ford"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Color = "#FF6384",
+                            Name = "Nissan"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Color = "#4BC0C0",
+                            Name = "Benz"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Color = "#FF9124",
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Color = "#2B88D8",
+                            Name = "Tesla"
+                        });
+                });
 
             modelBuilder.Entity("AdminPanel.Server.Api.Models.Identity.Role", b =>
                 {
@@ -30,7 +84,7 @@ namespace AdminPanel.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -60,7 +114,7 @@ namespace AdminPanel.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -138,58 +192,26 @@ namespace AdminPanel.Server.Api.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Categories.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            Color = "#FFCD56",
-                            Name = "Ford"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Color = "#FF6384",
-                            Name = "Nissan"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Color = "#4BC0C0",
-                            Name = "Benz"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Color = "#FF9124",
-                            Name = "BMW"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Color = "#2B88D8",
-                            Name = "Tesla"
+                            AccessFailedCount = 0,
+                            BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
+                            ConcurrencyStamp = "9f7f7dc2-da36-431a-a390-f65aa6589582",
+                            Email = "test@bitplatform.dev",
+                            EmailConfirmed = true,
+                            FullName = "BlazorDual test account",
+                            Gender = 2,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "TEST@BITPLATFORM.DEV",
+                            NormalizedUserName = "TEST@BITPLATFORM.DEV",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHLM21HNl59v+pj1RM37VDwsDBTwCihJF/4NBXBTwYz2picGLk+OuXHrc7KWj0Nl/g==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "4d3447a4-022e-4ba7-8828-dad2a3a76459",
+                            TwoFactorEnabled = false,
+                            UserName = "test@bitplatform.dev"
                         });
                 });
 
@@ -199,7 +221,7 @@ namespace AdminPanel.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -230,7 +252,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "The Ford Mustang is ranked #1 in Sports Cars",
                             Name = "Mustang",
                             Price = 27155m
@@ -239,7 +261,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                             Name = "GT",
                             Price = 500000m
@@ -248,7 +270,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                             Name = "Ranger",
                             Price = 25000m
@@ -257,7 +279,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                             Name = "Raptor",
                             Price = 53205m
@@ -266,7 +288,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                             Name = "Maverick",
                             Price = 22470m
@@ -275,7 +297,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 6,
                             CategoryId = 2,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "A powerful convertible sports car",
                             Name = "Roadster",
                             Price = 42800m
@@ -284,7 +306,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 7,
                             CategoryId = 2,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "A perfectly adequate family sedan with sharp looks",
                             Name = "Altima",
                             Price = 24550m
@@ -293,7 +315,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 8,
                             CategoryId = 2,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                             Name = "GT-R",
                             Price = 113540m
@@ -302,7 +324,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 9,
                             CategoryId = 2,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "A new smart SUV",
                             Name = "Juke",
                             Price = 28100m
@@ -311,7 +333,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 10,
                             CategoryId = 3,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "H247",
                             Price = 54950m
@@ -320,7 +342,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 11,
                             CategoryId = 3,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "V297",
                             Price = 103360m
@@ -329,7 +351,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 12,
                             CategoryId = 3,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "R50",
                             Price = 2000000m
@@ -338,7 +360,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 13,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "M550i",
                             Price = 77790m
@@ -347,7 +369,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 14,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "540i",
                             Price = 60945m
@@ -356,7 +378,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 15,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "530e",
                             Price = 56545m
@@ -365,7 +387,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 16,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "530i",
                             Price = 55195m
@@ -374,7 +396,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 17,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "M850i",
                             Price = 100045m
@@ -383,7 +405,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 18,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "X7",
                             Price = 77980m
@@ -392,7 +414,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 19,
                             CategoryId = 4,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Name = "IX",
                             Price = 87000m
@@ -401,7 +423,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 20,
                             CategoryId = 5,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "rapid acceleration and dynamic handling",
                             Name = "Model 3",
                             Price = 61990m
@@ -410,7 +432,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 21,
                             CategoryId = 5,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "finishes near the top of our luxury electric car rankings.",
                             Name = "Model S",
                             Price = 135000m
@@ -419,7 +441,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 22,
                             CategoryId = 5,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Heart-pumping acceleration, long drive range",
                             Name = "Model X",
                             Price = 138890m
@@ -428,7 +450,7 @@ namespace AdminPanel.Server.Api.Migrations
                         {
                             Id = 23,
                             CategoryId = 5,
-                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 4, 30, 0, 0)),
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "extensive driving range, lots of standard safety features",
                             Name = "Model Y",
                             Price = 67790m
@@ -441,7 +463,7 @@ namespace AdminPanel.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -465,7 +487,7 @@ namespace AdminPanel.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");

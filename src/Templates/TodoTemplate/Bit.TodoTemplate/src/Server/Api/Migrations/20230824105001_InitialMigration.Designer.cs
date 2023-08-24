@@ -12,17 +12,18 @@ using TodoTemplate.Server.Api.Data;
 namespace TodoTemplate.Server.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220917180013_IntialSchema")]
-    partial class IntialSchema
+    [Migration("20230824105001_InitialMigration")]
+    partial class InitialMigration
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.8")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
@@ -30,7 +31,7 @@ namespace TodoTemplate.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -54,7 +55,7 @@ namespace TodoTemplate.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -133,7 +134,7 @@ namespace TodoTemplate.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -163,7 +164,7 @@ namespace TodoTemplate.Server.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -241,15 +242,36 @@ namespace TodoTemplate.Server.Api.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccessFailedCount = 0,
+                            BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
+                            ConcurrencyStamp = "9d0d2a72-f5c8-4726-bcea-9a4417878873",
+                            Email = "test@bitplatform.dev",
+                            EmailConfirmed = true,
+                            FullName = "BlazorDual test account",
+                            Gender = 2,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "TEST@BITPLATFORM.DEV",
+                            NormalizedUserName = "TEST@BITPLATFORM.DEV",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDhxksdfk+yXwH0o1xZGZCnb5+gnK5XQRYQwx3tOQUcWOWy7a2w5FuI3ahddQiUw0w==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "e5ec721d-b782-4259-81c8-b6101fc6768f",
+                            TwoFactorEnabled = false,
+                            UserName = "test@bitplatform.dev"
+                        });
                 });
 
-            modelBuilder.Entity("TodoTemplate.Server.Api.Models.TodoItem.TodoItem", b =>
+            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Todo.TodoItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("datetimeoffset");
@@ -321,7 +343,7 @@ namespace TodoTemplate.Server.Api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TodoTemplate.Server.Api.Models.TodoItem.TodoItem", b =>
+            modelBuilder.Entity("TodoTemplate.Server.Api.Models.Todo.TodoItem", b =>
                 {
                     b.HasOne("TodoTemplate.Server.Api.Models.Identity.User", "User")
                         .WithMany()

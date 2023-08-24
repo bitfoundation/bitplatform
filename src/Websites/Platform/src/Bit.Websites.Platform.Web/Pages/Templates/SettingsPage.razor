@@ -60,16 +60,22 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Email settings</BitTypography>
         <div class="section-card-txt">
-            bit project templates use <a href="https://github.com/lukencode/FluentEmail">FluentEmail</a> to send emails.
+            bit project templates use <a href="https://github.com/lukencode/FluentEmail" target="_blank">FluentEmail</a> to send emails.
             You can change the SMTP provider settings in the <b>appsettings.json</b> file in the Api project.
+            <br />
+            In dev environment, bit saves the sent emails as a <b>.eml</b> file in the
+            <b>src/Server/Api/bin/Debug/net7.0/sent-emails</b> path, and developers can easily view them in any <a href="https://msgeml.com/" target="_blank">eml viewer</a>.
+            <br />
+            You can also use any test smtp server such as <a href="https://ethereal.email/" target="_blank">ethereal.email</a> or any production ready smtp server such as
+            <a href="https://docs.sendgrid.com/for-developers/sending-email/getting-started-smtp" target="_blank">SendGrid</a>
         </div>
         <pre class="code-box">"EmailSettings": {
-    "Host": "LocalFolder", // Local folder means storing emails as .eml file in bin/Debug/net7.0/sent-emails folder. (Recommended for testing purposes only)
-    "Port": "25",
-    "DefaultFromEmail": "info@todo.com",
-    "DefaultFromName": "Todo",
-    "UserName": null,
-    "Password": null
+    "Host": "smtp.ethereal.email",
+    "Port": "587",
+    "DefaultFromEmail": "alva.schiller52@ethereal.email",
+    "DefaultFromName": "Alva Schiller",
+    "UserName": "alva.schiller52@ethereal.email",
+    "Password": "4PyGY8cDQ8mvu6h7qB"
 }</pre>
         <div class="section-card-txt">
             <b>Note</b>: You can find email templates used for email confirmation and reset password in the <b>Resources</b> directory of the Api project.
@@ -101,4 +107,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Deployment type" PrevUrl="/templates/deployment-type" Next="Project structure" NextUrl="/templates/project-structure" />
+<NavigationButtons Prev="Deployment type" PrevUrl="/templates/deployment-type" Next="Exception handling" NextUrl="/templates/exception-handling" />
