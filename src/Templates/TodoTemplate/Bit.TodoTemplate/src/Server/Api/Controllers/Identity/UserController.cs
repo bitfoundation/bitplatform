@@ -1,7 +1,7 @@
 ﻿using TodoTemplate.Server.Api.Models.Identity;
 using TodoTemplate.Shared.Dtos.Identity;
 
-namespace TodoTemplate.Server.Api.Controllers;
+namespace TodoTemplate.Server.Api.Controllers.Identity;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
