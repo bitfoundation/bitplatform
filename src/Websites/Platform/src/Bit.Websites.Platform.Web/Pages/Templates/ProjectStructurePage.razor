@@ -26,25 +26,44 @@
     </section>
 
     <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>.SolutionItems</BitTypography>
+        <div class="section-card-txt">
+            To simplify access to files such as .gitignore, we've added them to visual studio solution to simplify the way you can access them.
+            <br />
+            <br />
+            In <b>src/Directory.Build.props</b> file, there are settings such as enabling or disabling multilingualism,
+            switching between the web version and the app, enabling or disabling Prerendering, etc.
+            In the subsequent sections of the Documentation, you will become more familiar with this important file.
+            <br />
+            <br />
+            In addition, the DevOps CI/CD files, along with the global.json which specifies which version of the dotnet sdk should be installed on your system, are included in this solution folder.
+        </div>
+    </section>
+
+    <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server.Api</BitTypography>
         <div class="section-card-txt">
-            This project contains server-side codes including Controllers, Data access layer (Entity Framework), Identity, etc.
+            This project contains server-side codes including Controllers, efcore DbContext, models, asp.net core identity related classes, etc.
         </div>
     </section>
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared</BitTypography>
         <div class="section-card-txt">
-            This project is shared on both the server (Api project) and client(Web & App projects) sides, and can share code. 
+            This project is shared on both the server (Api project) and client(Web & App projects) sides.
             <br />
-            It contains resx files, Dto classes, shared contracts, services, etc.
+            It contains resx files, Dto classes, shared services contracts and implementations, etc.
         </div>
     </section>
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Core</BitTypography>
         <div class="section-card-txt">
-            This project includes components and pages made with the help of Razor and Style sheet
+            This project includes components and pages made with the help of razor, scss and csharp.
+            These pages and components are shared between app (for mobile/desktop) and web projects.
+        </div>
+        <div class="section-card-txt">
+            Note: BlazorDual project has no core project, because it doesn't support mobile/desktop version and there's no app project, so we've put everything in web project.
         </div>
     </section>
 
@@ -58,7 +77,7 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.App</BitTypography>
         <div class="section-card-txt">
-            This project contains the necessary code to built mobile and desktop versions of the app.
+            This project contains the necessary code to built mobile/desktop versions of the app.
         </div>
     </section>
 
