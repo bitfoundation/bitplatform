@@ -6,7 +6,7 @@ using BlazorDual.Api.Models.Identity;
 using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Api.Models.Emailing;
 
-namespace BlazorDual.Api.Controllers;
+namespace BlazorDual.Api.Controllers.Identity;
 
 [Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]

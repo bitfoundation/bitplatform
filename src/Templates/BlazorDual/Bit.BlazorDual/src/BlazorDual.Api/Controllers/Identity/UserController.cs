@@ -1,7 +1,7 @@
 ﻿using BlazorDual.Api.Models.Identity;
 using BlazorDual.Shared.Dtos.Identity;
 
-namespace BlazorDual.Api.Controllers;
+namespace BlazorDual.Api.Controllers.Identity;
 
 [Route("api/[controller]/[action]")]
 [ApiController]

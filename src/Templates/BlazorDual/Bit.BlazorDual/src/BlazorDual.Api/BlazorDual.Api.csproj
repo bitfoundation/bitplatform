@@ -72,7 +72,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="BlazorDual.Api.Data" />
-        <Using Include="BlazorDual.Api.Models" />
+        <Using Include="BlazorDual.Api.Mappers" />
         <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Services.Contracts" />
     </ItemGroup>

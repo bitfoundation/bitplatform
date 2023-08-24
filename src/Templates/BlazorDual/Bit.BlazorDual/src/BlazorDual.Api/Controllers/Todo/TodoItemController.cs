@@ -1,7 +1,7 @@
 ﻿using BlazorDual.Api.Models.Todo;
 using BlazorDual.Shared.Dtos.Todo;
 
-namespace BlazorDual.Api.Controllers;
+namespace BlazorDual.Api.Controllers.Todo;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
