@@ -1,11 +1,11 @@
-﻿using AdminPanel.Server.Api.Models.Identity;
-using AdminPanel.Shared.Dtos.Identity;
+﻿using BlazorDual.Api.Models.Identity;
+using BlazorDual.Shared.Dtos.Identity;
 using Riok.Mapperly.Abstractions;
 
-namespace AdminPanel.Server.Api.Mappers;
+namespace BlazorDual.Api.Mappers;
 
 [Mapper(UseDeepCloning = true)]
-public static partial class IdentityMappers
+public static partial class IdentityMapper
 {
     public static partial UserDto Map(this User source);
     public static partial void Patch(this EditUserDto source, User destination);

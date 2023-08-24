@@ -5,7 +5,7 @@ using Riok.Mapperly.Abstractions;
 namespace TodoTemplate.Server.Api.Mappers;
 
 [Mapper(UseDeepCloning = true)]
-public static partial class IdentityMappers
+public static partial class IdentityMapper
 {
     public static partial UserDto Map(this User source);
     public static partial void Patch(this EditUserDto source, User destination);
