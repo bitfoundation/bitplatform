@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using BlazorDual.Api;
-using BlazorDual.Api.Models.Account;
+using BlazorDual.Api.Models.Identity;
 using BlazorDual.Api.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;

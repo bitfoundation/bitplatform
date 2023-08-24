@@ -72,7 +72,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.Extensions.Options" />
         <Using Include="AdminPanel.Server.Api.Data" />
-        <Using Include="AdminPanel.Server.Api.Models" />
+        <Using Include="AdminPanel.Server.Api.Mappers" />
         <Using Include="AdminPanel.Shared.Enums" />
         <Using Include="AdminPanel.Server.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />

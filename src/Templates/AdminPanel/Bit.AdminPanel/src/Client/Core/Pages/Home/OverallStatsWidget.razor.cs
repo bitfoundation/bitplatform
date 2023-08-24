@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Shared.Dtos.Dashboard;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Home;
 
 public partial class OverallStatsWidget
 {

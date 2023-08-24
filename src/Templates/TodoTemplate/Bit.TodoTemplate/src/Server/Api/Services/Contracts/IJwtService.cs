@@ -1,5 +1,5 @@
-﻿using TodoTemplate.Server.Api.Models.Account;
-using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Server.Api.Models.Identity;
+using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Server.Api.Services.Contracts;
 

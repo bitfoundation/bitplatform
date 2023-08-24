@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Shared.Dtos.Categories;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Categories;
 
 [Authorize]
 public partial class CategoriesPage

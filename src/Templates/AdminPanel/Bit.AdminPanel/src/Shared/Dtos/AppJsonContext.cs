@@ -1,4 +1,4 @@
-﻿using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Shared.Dtos.Identity;
 using AdminPanel.Shared.Dtos.Categories;
 using AdminPanel.Shared.Dtos.Dashboard;
 using AdminPanel.Shared.Dtos.Products;

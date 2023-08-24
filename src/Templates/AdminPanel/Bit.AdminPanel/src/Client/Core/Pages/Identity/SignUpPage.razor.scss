@@ -1,0 +1,163 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    justify-content: center;
+
+    @include md {
+        align-items: center;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.page-section {
+    width: 50%;
+    height: 100%;
+    position: relative;
+
+    @include lt-lg {
+        width: 100%;
+        height: unset;
+    }
+
+    &:first-child {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        padding: rem2(135px) rem2(76px) rem2(40px);
+
+        @include md {
+            align-items: flex-end;
+            padding: rem2(25px) rem2(32px);
+            flex-flow: row-reverse nowrap;
+            justify-content: space-between;
+        }
+
+        @include sm {
+            display: none;
+        }
+    }
+
+    &:last-child {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        @include lt-lg {
+            height: 100%;
+        }
+
+        @include sm {
+            padding: 0 rem2(16px);
+        }
+    }
+}
+
+.bg-img {
+    width: 100%;
+    flex-shrink: 0;
+    height: rem2(348px);
+    margin-bottom: rem2(48px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/sign-in-up-bg.webp');
+
+    @include md {
+        width: rem2(287px);
+        height: rem2(180px);
+        margin-bottom: rem2(0);
+        margin-left: rem2(52px);
+    }
+}
+
+.section-content {
+    width: 100%;
+    display: flex;
+    max-width: rem2(357px);
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    .section-title {
+        margin: 0;
+        font-weight: 600;
+        font-size: rem2(28px);
+        line-height: rem2(36px);
+        margin-bottom: rem2(12px);
+
+        @include md {
+            font-size: rem2(20px);
+            line-height: rem2(28px);
+        }
+    }
+
+    .section-desc {
+        font-weight: 400;
+        font-size: rem2(16px);
+        line-height: rem2(24px);
+
+        @include md {
+            font-size: rem2(14px);
+            line-height: rem2(20px);
+        }
+    }
+
+    @include md {
+        max-width: 100%;
+    }
+}
+
+::deep .form {
+    width: 100%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    max-width: rem2(405px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.form-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: rem2(42px);
+    line-height: rem2(52px);
+    margin-bottom: rem2(60px);
+
+    @include md {
+        font-size: rem2(32px);
+        line-height: rem2(40px);
+    }
+
+    @include sm {
+        font-size: rem2(28px);
+        line-height: rem2(36px);
+    }
+}
+
+.form-input-container {
+    width: 100%;
+    text-align: left;
+    margin-bottom: rem2(24px);
+}
+
+.sign-in-row {
+    font-weight: 400;
+    font-size: rem2(14px);
+    margin-top: rem2(24px);
+    line-height: rem2(20px);
+}
+
+.form-description {
+    font-weight: 600;
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+}

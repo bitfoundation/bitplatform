@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AdminPanel.Server.Api;
-using AdminPanel.Server.Api.Models.Account;
+using AdminPanel.Server.Api.Models.Identity;
 using AdminPanel.Server.Api.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
