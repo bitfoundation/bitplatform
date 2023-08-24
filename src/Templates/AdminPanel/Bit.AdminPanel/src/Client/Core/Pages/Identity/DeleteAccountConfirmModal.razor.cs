@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core;
+﻿namespace AdminPanel.Client.Core.Pages.Identity;
 
 public partial class DeleteAccountConfirmModal
 {

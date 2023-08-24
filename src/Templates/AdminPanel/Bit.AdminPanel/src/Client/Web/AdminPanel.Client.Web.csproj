@@ -58,7 +58,7 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
         <Using Include="AdminPanel.Client.Core.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Core.Components" />
+        <Using Include="AdminPanel.Client.Core.Shared" />
     </ItemGroup>
 
     <ItemGroup>

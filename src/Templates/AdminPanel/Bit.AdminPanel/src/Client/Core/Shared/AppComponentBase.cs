@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core.Components;
+﻿namespace AdminPanel.Client.Core.Shared;
 
 public partial class AppComponentBase : ComponentBase
 {

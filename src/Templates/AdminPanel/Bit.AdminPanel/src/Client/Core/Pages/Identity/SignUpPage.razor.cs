@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Shared.Dtos.Identity;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Identity;
 
 public partial class SignUpPage
 {

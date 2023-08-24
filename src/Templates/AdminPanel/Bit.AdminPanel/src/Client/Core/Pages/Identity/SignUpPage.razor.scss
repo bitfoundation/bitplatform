@@ -1,14 +1,13 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     width: 100%;
     height: 100%;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: center;
     align-items: flex-start;
+    justify-content: center;
 
     @include md {
         align-items: center;
@@ -29,8 +28,8 @@
 
     &:first-child {
         display: flex;
-        align-items: flex-start;
         justify-content: center;
+        align-items: flex-start;
         flex-flow: column nowrap;
         padding: rem2(135px) rem2(76px) rem2(40px);
 
@@ -119,8 +118,9 @@
 ::deep .form {
     width: 100%;
     display: flex;
+    text-align: center;
     align-items: center;
-    max-width: rem2(384px);
+    max-width: rem2(405px);
     flex-flow: column nowrap;
     justify-content: flex-start;
 }
@@ -145,22 +145,19 @@
 
 .form-input-container {
     width: 100%;
+    text-align: left;
     margin-bottom: rem2(24px);
 }
 
-::deep .bit-msg-bar-fluent {
-    top: 0;
-    position: absolute;
+.sign-in-row {
+    font-weight: 400;
+    font-size: rem2(14px);
+    margin-top: rem2(24px);
+    line-height: rem2(20px);
 }
 
 .form-description {
-    text-align: center;
+    font-weight: 600;
     font-size: rem2(14px);
     line-height: rem2(20px);
-    margin-bottom: rem2(16px);
-}
-
-::deep .send-reset-link-btn {
-    width: rem2(130px);
-    max-width: rem2(130px);
 }

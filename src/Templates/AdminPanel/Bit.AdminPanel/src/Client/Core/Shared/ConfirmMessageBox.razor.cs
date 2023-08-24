@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core.Components;
+﻿namespace AdminPanel.Client.Core.Shared;
 
 public partial class ConfirmMessageBox : IDisposable
 {
@@ -30,7 +30,7 @@ public partial class ConfirmMessageBox : IDisposable
         await InvokeAsync(() =>
         {
             _ = JsRuntime.SetBodyOverflow(true);
-            
+
             _isOpen = true;
             _title = title;
             _message = message;

@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core.Pages;
+﻿namespace AdminPanel.Client.Core.Pages.Identity;
 
 public partial class EmailConfirmationPage
 {

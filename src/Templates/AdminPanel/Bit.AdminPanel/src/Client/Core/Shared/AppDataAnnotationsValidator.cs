@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
 using AdminPanel.Shared.Attributes;
 
-namespace AdminPanel.Client.Core.Components;
+namespace AdminPanel.Client.Core.Shared;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {

@@ -1,6 +1,5 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 
 .page-container {
     width: 100%;
@@ -42,6 +41,10 @@
         }
 
         @include sm {
+            display: none;
+        }
+
+        @media screen and (max-height:700px) {
             display: none;
         }
     }
@@ -119,7 +122,6 @@
 ::deep .form {
     width: 100%;
     display: flex;
-    text-align: center;
     align-items: center;
     max-width: rem2(384px);
     flex-flow: column nowrap;
@@ -149,26 +151,32 @@
     margin-bottom: rem2(24px);
 }
 
-::deep .bit-msg-bar-fluent {
-    top: 0;
-    position: absolute;
+.sign-up-row {
+    font-weight: 400;
+    font-size: rem2(14px);
+    margin-top: rem2(24px);
+    line-height: rem2(20px);
 }
 
-.form-description {
-    font-weight: 600;
-    width: rem2(398px);
-    height: rem2(20px);
+.form-forgot-password {
+    font-weight: 400;
     font-size: rem2(14px);
+    margin-top: rem2(24px);
     line-height: rem2(20px);
-    margin-bottom: rem2(25px);
+}
+
+::deep .bit-msg-bar-fluent {
+    top: 24px;
+    position: absolute;
+    width: calc(100% - 48px);
 
     @include md {
-        width: rem2(398px);
-        height: rem2(20px);
+        top: 16px;
+        width: calc(100% - 32px);
     }
 
     @include sm {
-        width: rem2(280px);
-        height: rem2(40px);
+        top: 16px;
+        width: calc(100% - 32px);
     }
 }

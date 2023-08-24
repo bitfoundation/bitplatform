@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Shared.Dtos.Identity;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Identity;
 
 [Authorize]
 public partial class EditProfilePage
