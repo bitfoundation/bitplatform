@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Shared.Dtos.Products;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Products;
 
 public partial class CreateEditProductModal
 {

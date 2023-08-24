@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Shared.Dtos.Account;
+using AdminPanel.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace AdminPanel.Client.Core.Shared;

@@ -22,7 +22,60 @@ namespace AdminPanel.Server.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Account.Role", b =>
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Categories.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Color = "#FFCD56",
+                            Name = "Ford"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Color = "#FF6384",
+                            Name = "Nissan"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Color = "#4BC0C0",
+                            Name = "Benz"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Color = "#FF9124",
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Color = "#2B88D8",
+                            Name = "Tesla"
+                        });
+                });
+
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,7 +105,7 @@ namespace AdminPanel.Server.Api.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Account.User", b =>
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -143,72 +196,19 @@ namespace AdminPanel.Server.Api.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "cc58f1b6-8609-4082-a578-30185c46d437",
+                            ConcurrencyStamp = "9f7f7dc2-da36-431a-a390-f65aa6589582",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
-                            FullName = "BlazorDual test account",
+                            FullName = "AdminPanel test account",
                             Gender = 2,
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAECrdSfa9LctR7Soh60QbX7pET8DeOzsF9O9TiWi3me19Mg/d7pseMTw7ecSM0BhqdQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHLM21HNl59v+pj1RM37VDwsDBTwCihJF/4NBXBTwYz2picGLk+OuXHrc7KWj0Nl/g==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "8a53ad0a-fdc3-41eb-81da-c35c49865b63",
+                            SecurityStamp = "4d3447a4-022e-4ba7-8828-dad2a3a76459",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
-                        });
-                });
-
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Categories.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Color = "#FFCD56",
-                            Name = "Ford"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Color = "#FF6384",
-                            Name = "Nissan"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Color = "#4BC0C0",
-                            Name = "Benz"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Color = "#FF9124",
-                            Name = "BMW"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Color = "#2B88D8",
-                            Name = "Tesla"
                         });
                 });
 
@@ -570,7 +570,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.Role", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -579,7 +579,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -588,7 +588,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -597,13 +597,13 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.Role", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -612,7 +612,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

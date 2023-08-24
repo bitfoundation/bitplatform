@@ -22,11 +22,11 @@
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.2.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.5.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.5.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -71,7 +71,7 @@
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.Extensions.Options" />
-        <Using Include="TodoTemplate.Server.Api.Models" />
+        <Using Include="TodoTemplate.Server.Api.Mappers" />
         <Using Include="TodoTemplate.Shared.Enums" />
         <Using Include="TodoTemplate.Server.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
