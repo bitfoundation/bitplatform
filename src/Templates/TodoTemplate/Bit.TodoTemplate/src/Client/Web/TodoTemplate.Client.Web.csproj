@@ -53,7 +53,7 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
         <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
-        <Using Include="TodoTemplate.Client.Core.Components" />
+        <Using Include="TodoTemplate.Client.Core.Shared" />
     </ItemGroup>
 
     <ItemGroup>

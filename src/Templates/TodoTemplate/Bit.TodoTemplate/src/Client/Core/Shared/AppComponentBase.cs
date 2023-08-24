@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Core.Components;
+﻿namespace TodoTemplate.Client.Core.Shared;
 
 public partial class AppComponentBase : ComponentBase
 {

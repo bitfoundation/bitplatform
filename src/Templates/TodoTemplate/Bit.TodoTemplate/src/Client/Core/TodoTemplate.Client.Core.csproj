@@ -45,7 +45,6 @@
         <Using Include="Bit.BlazorUI" />
         <Using Include="TodoTemplate.Shared" />
         <Using Include="TodoTemplate.Client.Core.Shared" />
-        <Using Include="TodoTemplate.Client.Core.Components" />
         <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
         <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
 

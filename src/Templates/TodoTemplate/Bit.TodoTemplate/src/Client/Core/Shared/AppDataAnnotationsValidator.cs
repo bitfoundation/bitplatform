@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
 using TodoTemplate.Shared.Attributes;
 
-namespace TodoTemplate.Client.Core.Components;
+namespace TodoTemplate.Client.Core.Shared;
 
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
