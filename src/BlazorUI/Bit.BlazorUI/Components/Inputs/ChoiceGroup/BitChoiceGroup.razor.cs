@@ -1,35 +1,11 @@
 ﻿using System.Text;
-using System.Drawing;
-using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 {
-    private const string ARIA_LABEL_FIELD = nameof(BitChoiceGroupItem<TValue>.AriaLabel);
-    private const string ID_FIELD = nameof(BitChoiceGroupItem<TValue>.Id);
-    private const string IS_ENABLED_FIELD = nameof(BitChoiceGroupItem<TValue>.IsEnabled);
-    private const string IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageSrc);
-    private const string IMAGE_ALT_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageAlt);
-    private const string IMAGE_SIZE_FIELD = nameof(BitChoiceGroupItem<TValue>.ImageSize);
-    private const string ICON_NAME_FIELD = nameof(BitChoiceGroupItem<TValue>.IconName);
-    private const string SELECTED_IMAGE_SRC_FIELD = nameof(BitChoiceGroupItem<TValue>.SelectedImageSrc);
-    private const string TEXT_FIELD = nameof(BitChoiceGroupItem<TValue>.Text);
-    private const string VALUE_FIELD = nameof(BitChoiceGroupItem<TValue>.Value);
-
     private bool isRequired;
-
-    private string _internalAriaLabelField = ARIA_LABEL_FIELD;
-    private string _internalIdField = ID_FIELD;
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalImageSrcField = IMAGE_SRC_FIELD;
-    private string _internalImageAltField = IMAGE_ALT_FIELD;
-    private string _internalImageSizeField = IMAGE_SIZE_FIELD;
-    private string _internalIconNameField = ICON_NAME_FIELD;
-    private string _internalSelectedImageSrcField = SELECTED_IMAGE_SRC_FIELD;
-    private string _internalTextField = TEXT_FIELD;
-    private string _internalValueField = VALUE_FIELD;
 
     private string _labelId = default!;
     private List<TItem> _items = new();
@@ -39,16 +15,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The name of the field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL_FIELD;
-
-    /// <summary>
-    /// The name of the field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
@@ -92,66 +58,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     }
 
     /// <summary>
-    /// The name of the field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be enable item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model that will be the id.
-    /// </summary>
-    [Parameter] public string IdField { get; set; } = ID_FIELD;
-
-    /// <summary>
-    /// The name of the field from the model that will be the id.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IdFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model.
-    /// </summary>
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
-
-    /// <summary>
-    /// The field selector from the model.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model that will be the image src.
-    /// </summary>
-    [Parameter] public string ImageSrcField { get; set; } = IMAGE_SRC_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be the image src.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? ImageSrcFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model that will be the image alternate text.
-    /// </summary>
-    [Parameter] public string ImageAltField { get; set; } = IMAGE_ALT_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be the image alternate text.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? ImageAltFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model that will be the image alternate text.
-    /// </summary>
-    [Parameter] public string ImageSizeField { get; set; } = IMAGE_SIZE_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be the image alternate text.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, Size>>? ImageSizeFieldSelector { get; set; }
-
-    /// <summary>
     /// Change direction to RTL.
     /// </summary>
     [Parameter] public bool IsRtl { get; set; }
@@ -172,9 +78,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
 
     /// <summary>
-    /// Name of the ChoiceGroup, this name is used to group each item into the same logical component.
+    /// Name of the ChoiceGroup, this unique name is used to group each item into the same logical component.
     /// </summary>
     [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitChoiceGroupNameSelectors<TItem, TValue>? NameSelectors { get; set; }
 
     /// <summary>
     /// Callback for when the option clicked.
@@ -187,34 +98,11 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
-    /// The name of the field from the model that will be the selected image src.
+    /// Alias of ChildContent.
     /// </summary>
-    [Parameter] public string SelectedImageSrcField { get; set; } = SELECTED_IMAGE_SRC_FIELD;
+    [Parameter] public RenderFragment? Options { get; set; }
 
-    /// <summary>
-    /// The field from the model that will be the selected image src.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? SelectedImageSrcFieldSelector { get; set; }
 
-    /// <summary>
-    /// The name of the field from the model that will be shown to the user.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be shown to the user.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
-
-    /// <summary>
-    /// The name of the field from the model that will be the underlying value.
-    /// </summary>
-    [Parameter] public string ValueField { get; set; } = VALUE_FIELD;
-
-    /// <summary>
-    /// The field from the model that will be the underlying value.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, TValue>>? ValueFieldSelector { get; set; }
 
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
@@ -247,17 +135,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        _internalAriaLabelField = AriaLabelFieldSelector?.GetName() ?? AriaLabelField;
-        _internalIdField = IdFieldSelector?.GetName() ?? IdField;
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
-        _internalImageSrcField = ImageSrcFieldSelector?.GetName() ?? ImageSrcField;
-        _internalImageAltField = ImageAltFieldSelector?.GetName() ?? ImageAltField;
-        _internalImageSizeField = ImageSizeFieldSelector?.GetName() ?? ImageSizeField;
-        _internalSelectedImageSrcField = SelectedImageSrcFieldSelector?.GetName() ?? SelectedImageSrcField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalValueField = ValueFieldSelector?.GetName() ?? ValueField;
-
         _labelId = $"ChoiceGroup-{UniqueId}-Label";
 
         if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
@@ -283,6 +160,8 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         }
     }
 
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
     private string? GetAriaLabel(TItem item)
@@ -297,7 +176,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.AriaLabel;
         }
 
-        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
 
     private string? GetId(TItem item)
@@ -312,7 +198,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Id;
         }
 
-        return item.GetValueFromProperty<string?>(_internalIdField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Id.Selector is not null)
+        {
+            return NameSelectors.Id.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Id.Name);
     }
 
     private bool GetIsEnabled(TItem item)
@@ -327,52 +220,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.IsEnabled;
         }
 
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
-    }
+        if (NameSelectors is null) return true;
 
-    private string? GetImageSrc(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (NameSelectors.IsEnabled.Selector is not null)
         {
-            return choiceGroupItem.ImageSrc;
+            return NameSelectors.IsEnabled.Selector!(item);
         }
 
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageSrc;
-        }
-
-        return item.GetValueFromProperty<string?>(_internalImageSrcField);
-    }
-
-    private string? GetImageAlt(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.ImageAlt;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageAlt;
-        }
-
-        return item.GetValueFromProperty<string?>(_internalImageAltField);
-    }
-
-    private Size GetImageSize(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.ImageSize ?? new Size(0, 0);
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.ImageSize ?? new Size(0, 0);
-        }
-
-        return item.GetValueFromProperty(_internalImageSizeField, new Size(0, 0));
+        return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name, true);
     }
 
     private string? GetIconName(TItem item)
@@ -387,7 +242,80 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.IconName;
         }
 
-        return item.GetBitIconNameFromProperty(_internalIconNameField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+    }
+
+    private string? GetImageSrc(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageSrc;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageSrc;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.ImageSrc.Selector is not null)
+        {
+            return NameSelectors.ImageSrc.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.ImageSrc.Name);
+    }
+
+    private string? GetImageAlt(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageAlt;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageAlt;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.ImageAlt.Selector is not null)
+        {
+            return NameSelectors.ImageAlt.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
+    }
+
+    private BitSize GetImageSize(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.ImageSize ?? new BitSize(0, 0);
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.ImageSize ?? new BitSize(0, 0);
+        }
+
+        if (NameSelectors is null) return new BitSize(0, 0);
+
+        if (NameSelectors.ImageSize.Selector is not null)
+        {
+            return NameSelectors.ImageSize.Selector!(item) ?? new BitSize(0, 0);
+        }
+
+        return item.GetValueFromProperty<BitSize?>(NameSelectors.ImageSize.Name) ?? new BitSize(0, 0);
     }
 
     private string? GetSelectedImageSrc(TItem item)
@@ -402,7 +330,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.SelectedImageSrc;
         }
 
-        return item.GetValueFromProperty<string?>(_internalSelectedImageSrcField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SelectedImageSrc.Selector is not null)
+        {
+            return NameSelectors.SelectedImageSrc.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.SelectedImageSrc.Name);
     }
 
     private string? GetText(TItem item)
@@ -417,7 +352,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Text;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTextField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
     private TValue? GetValue(TItem item)
@@ -432,7 +374,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return choiceGroupOption.Value;
         }
 
-        return item.GetValueFromProperty<TValue?>(_internalValueField);
+        if (NameSelectors is null) return default;
+
+        if (NameSelectors.Value.Selector is not null)
+        {
+            return NameSelectors.Value.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
     }
 
     private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
@@ -453,7 +402,32 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return EqualityComparer<TValue>.Default.Equals(itemValue, value);
     }
 
-    private string GetDivClassNameItem(TItem item)
+    private async Task HandleClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
+    }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        CurrentValue = e.Value.ConvertTo<TValue>();
+
+        await OnChange.InvokeAsync(e);
+    }
+
+    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+
+    private string? GetLayoutFlowClass() => LayoutFlow switch
+    {
+        BitLayoutFlow.Horizontal => "horizontal",
+        BitLayoutFlow.Vertical => "vertical",
+        _ => null
+    };
+
+    private string GetItemContainerClassName(TItem item)
     {
         const string itemRootElementClass = "bit-chgi";
 
@@ -487,29 +461,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return cssClass.ToString();
     }
 
-    private string GetLabelClassNameItem(TItem item) =>
-        (GetImageSrc(item).HasValue() || GetIconName(item).HasValue()) && ItemLabelTemplate is null 
-        ? "bit-chgi-lbl-img" 
-        : "bit-chgi-lbl";
-
-    private async Task HandleClick(MouseEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await OnClick.InvokeAsync(e);
-    }
-
-    private async Task HandleChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        CurrentValue = e.Value.ConvertTo<TValue>();
-
-        await OnChange.InvokeAsync(e);
-    }
-
-    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
-        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+    private string GetItemLabelClass(TItem item) => (GetImageSrc(item).HasValue() || GetIconName(item).HasValue()) && ItemLabelTemplate is null
+                                                            ? "bit-chgi-lbl-img"
+                                                            : "bit-chgi-lbl";
 }

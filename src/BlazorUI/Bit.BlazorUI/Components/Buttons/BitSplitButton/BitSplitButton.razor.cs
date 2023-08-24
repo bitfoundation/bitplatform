@@ -125,6 +125,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
     /// Determines the current selected item that acts as the main button.
     /// </summary>
     [Parameter]

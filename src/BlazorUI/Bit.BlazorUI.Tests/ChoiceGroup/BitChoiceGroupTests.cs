@@ -169,7 +169,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.AriaLabelledBy, ariaLabelledBy);
         });
 
-        var bitChoiceGroup = component.Find(".bit-chg").FirstElementChild;
+        var bitChoiceGroup = component.Find(".bit-chg");
         Assert.AreEqual(bitChoiceGroup.GetAttribute("aria-labelledby"), ariaLabelledBy);
     }
 

@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitChoiceGroupItem<TValue>
 {
@@ -37,7 +35,7 @@ public class BitChoiceGroupItem<TValue>
     /// <summary>
     /// Provides Height and Width for the Option image.
     /// </summary>
-    public Size? ImageSize { get; set; }
+    public BitSize? ImageSize { get; set; }
 
     /// <summary>
     /// Provides a new image for the selected Option in the Image-GroupOption.
