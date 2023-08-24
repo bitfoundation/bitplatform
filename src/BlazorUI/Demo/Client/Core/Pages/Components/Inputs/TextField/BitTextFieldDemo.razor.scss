@@ -1,0 +1,66 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+
+.example-box {
+    display: flex;
+    gap: rem2(15px);
+    width: rem2(300px);
+    flex-direction: column;
+
+    @include sm {
+        width: rem2(200px);
+    }
+
+    .validation-summary {
+        border-left: rem2(5px) solid $Red10;
+        background-color: $ErrorBlockRed;
+        overflow: hidden;
+        margin-bottom: rem2(10px);
+    }
+
+    .trimmed-box {
+        margin-top: rem2(10px);
+        border: 1px solid $Gray3;
+    }
+
+    .form-item {
+        margin-bottom: rem2(15px);
+    }
+
+    ::deep {
+        .validation-message {
+            color: $Red20;
+            font-size: rem2(12px);
+            margin-top: rem2(5px);
+            line-height: normal;
+        }
+
+        .validation-errors {
+            margin: rem2(5px);
+        }
+    }
+}
+
+.custom-wrapper {
+    gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+
+    ::deep {
+        .custom-label {
+            color: blue;
+            font-weight: 900;
+            font-size: 18px;
+        }
+
+        .custom-input {
+            color: darkgreen;
+            font-weight: 900;
+            font-size: 18px;
+            padding: 1rem;
+            height: 50px;
+        }
+    }
+}

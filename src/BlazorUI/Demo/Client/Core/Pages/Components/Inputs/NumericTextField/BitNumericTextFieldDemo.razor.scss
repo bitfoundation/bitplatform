@@ -1,0 +1,37 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+
+.validation-summary {
+    border-left: rem2(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem2(10px);
+}
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+
+    .validation-errors {
+        margin: rem2(5px);
+    }
+}
+
+.example-box {
+    display: flex;
+    gap: rem2(10px);
+    width: rem2(300px);
+    flex-direction: column;
+
+    @include sm {
+        width: rem2(200px);
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
