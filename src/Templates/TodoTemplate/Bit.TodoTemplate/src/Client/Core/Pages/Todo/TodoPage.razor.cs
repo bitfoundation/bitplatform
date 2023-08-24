@@ -1,6 +1,6 @@
 ﻿using TodoTemplate.Shared.Dtos.Todo;
 
-namespace TodoTemplate.Client.Core.Pages;
+namespace TodoTemplate.Client.Core.Pages.Todo;
 
 [Authorize]
 public partial class TodoPage

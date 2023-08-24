@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using TodoTemplate.Shared.Dtos.Identity;
 
-namespace TodoTemplate.Client.Core.Pages;
+namespace TodoTemplate.Client.Core.Pages.Identity;
 
 public partial class SignInPage
 {

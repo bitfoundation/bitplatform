@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Shared.Dtos.Identity;
 
-namespace TodoTemplate.Client.Core.Pages;
+namespace TodoTemplate.Client.Core.Pages.Identity;
 
 [Authorize]
 public partial class EditProfilePage

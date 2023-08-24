@@ -114,14 +114,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css",
-        "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss",
+        "outputFile": "Pages/Identity/EditProfilePage.razor.css",
+        "inputFile": "Pages/Identity/EditProfilePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
+        "outputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Core;
+﻿namespace TodoTemplate.Client.Core.Pages.Identity;
 
 public partial class DeleteAccountConfirmModal
 {
