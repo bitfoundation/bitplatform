@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<section class="box" id="@ExampleId">
+<section class="box" id="@Id">
     <div class="box-header">
         <BitTypography Variant="BitTypographyVariant.H5" Class="section-title">@Title</BitTypography>
         <div class="header-btn-group">
@@ -30,13 +30,13 @@
             </BitIconButton>
 
             <pre class="code">
-                <code class="language-cshtml">@HTMLSourceCode.Trim()</code>
+                <code class="language-cshtml">@HtmlCode.Trim()</code>
 
-                @if (CSharpSourceCode.HasValue())
+                @if (CsharpCode.HasValue())
                 {
                     <code class="language-csharp">
 &#64code {
-     @CSharpSourceCode.Trim().Replace("\n", "\n     ")
+     @CsharpCode.Trim().Replace("\n", "\n     ")
 }</code>
                 }
             </pre>

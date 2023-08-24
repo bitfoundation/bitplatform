@@ -6,95 +6,102 @@
 @if (ChildContent is not null)
 {
     <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
+        <div style="display:none" hidden>@ChildContent</div>
     </CascadingValue>
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     role="radiogroup"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     aria-label="@AriaLabel">
+     aria-label="@AriaLabel"
+     aria-labelledby="@GetAriaLabelledBy()">
 
-    <div role="radiogroup" aria-labelledby="@GetAriaLabelledBy()">
-        <label class="bit-chg-lbl" id="@_labelId" disabled="@(IsEnabled is false)">
-            @if (LabelTemplate is not null)
-            {
-                @LabelTemplate
-            }
-            else if (Label.HasValue())
-            {
-                @Label
-            }
-        </label>
+    <label id="@_labelId" disabled="@(IsEnabled is false)">
+        @if (LabelTemplate is not null)
+        {
+            @LabelTemplate
+        }
+        else if (Label.HasValue())
+        {
+            <span class="bit-chg-lbl">@Label</span>
+        }
+    </label>
 
-        <div class="bit-chg-cnt @LayoutFlow?.GetDisplayName()">
-            @foreach (var item in _items)
-            {
-                <div class="@GetDivClassNameItem(item)">
-                    <input @attributes="InputHtmlAttributes" @onclick="HandleClick" @onchange="() => HandleChange(new() { Value = GetValue(item) })"
-                           hidden
-                           type="radio"
-                           name="@Name"
-                           class="bit-chgi-input"
-                           required="@IsRequired"
-                           id="@GetInputId(item)"
-                           aria-label="@GetAriaLabel(item)"
-                           checked=@GetIsCheckedItem(item)
-                           value="@GetValue(item)?.ToString()"
-                           disabled="@(GetIsEnabled(item) is false)" />
+    <div class="bit-chg-cnt @GetLayoutFlowClass()">
+        @foreach (var item in _items)
+        {
+            var inputId = GetInputId(item);
+            var isChecked = GetIsCheckedItem(item);
 
-                    <label for="@GetInputId(item)">
-                        @if (ItemTemplate is not null)
-                        {
-                            @ItemTemplate(item)
-                        }
-                        else
-                        {
-                            <div class="@GetLabelClassNameItem(item)">
-                                @if (ItemLabelTemplate is not null)
+            <div class="@GetItemContainerClassName(item)">
+                <label for="@inputId">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        <div class="@GetItemLabelClass(item)">
+                            @if (ItemLabelTemplate is not null)
+                            {
+                                @ItemLabelTemplate(item)
+                            }
+                            else
+                            {
+                                var imageSrc = GetImageSrc(item);
+                                var imageSize = GetImageSize(item);
+
+                                @if (imageSrc.HasValue())
                                 {
-                                    @ItemLabelTemplate(item)
+                                    <div class="bit-chgi-img-cnt">
+                                        <div class="bit-chgi-img-wrp">
+                                            <div class="bit-chgi-img" style="@($"width:{imageSize.Width}px; height:{imageSize.Height}px;")">
+                                                <img src="@(isChecked ? GetSelectedImageSrc(item) : imageSrc)" alt="@GetImageAlt(item)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                var iconName = GetIconName(item);
+
+                                @if (iconName.HasValue())
+                                {
+                                    <div class="bit-chgi-ico-cnt">
+                                        <div class="bit-chgi-ico-wrp">
+                                            <i aria-hidden="true" class="bit-icon bit-icon--@iconName" />
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (imageSrc.HasValue() || iconName.HasValue())
+                                {
+                                    <div class="bit-chgi-wrp">
+                                        <span class="bit-chgi-txt">@GetText(item)</span>
+                                    </div>
                                 }
                                 else
                                 {
-                                    @if (GetImageSrc(item).HasValue())
-                                    {
-                                        <div class="bit-chgi-img-cnt">
-                                            <div class="bit-chgi-img-wrp">
-                                                <div class="bit-chgi-img" style="@($"width:{GetImageSize(item).Width}px; height:{GetImageSize(item).Height}px;")">
-                                                    <img src="@(GetIsCheckedItem(item) ? GetSelectedImageSrc(item) : GetImageSrc(item))" alt="@GetImageAlt(item)">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-
-                                    var iconName = GetIconName(item);
-
-                                    @if (iconName.HasValue())
-                                    {
-                                        <div class="bit-chgi-ico-cnt">
-                                            <div class="bit-chgi-ico-wrp">
-                                                <i aria-hidden="true" class="bit-icon bit-icon--@iconName" />
-                                            </div>
-                                        </div>
-                                    }
-
-                                    @if (GetImageSrc(item).HasValue() || iconName.HasValue())
-                                    {
-                                        <div class="bit-chgi-wrp">
-                                            <span class="bit-chgi-txt">@GetText(item)</span>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="bit-chgi-txt">@GetText(item)</span>
-                                    }
+                                    <span class="bit-chgi-txt">@GetText(item)</span>
                                 }
-                            </div>
-                        }
-                    </label>
-                </div>
-            }
-        </div>
+                            }
+                        </div>
+                    }
+                </label>
+
+                <input @attributes="InputHtmlAttributes" @onclick="HandleClick" @onchange="() => HandleChange(new() { Value = GetValue(item) })"
+                       hidden
+                       type="radio"
+                       name="@Name"
+                       id="@inputId"
+                       checked=@isChecked
+                       class="bit-chgi-input"
+                       required="@IsRequired"
+                       aria-label="@GetAriaLabel(item)"
+                       value="@GetValue(item)?.ToString()"
+                       disabled="@(GetIsEnabled(item) is false)" />
+            </div>
+        }
     </div>
+
 </div>
