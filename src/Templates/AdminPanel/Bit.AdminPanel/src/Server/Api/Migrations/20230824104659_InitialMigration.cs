@@ -218,7 +218,7 @@ namespace AdminPanel.Server.Api.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "9f7f7dc2-da36-431a-a390-f65aa6589582", null, "test@bitplatform.dev", true, "BlazorDual test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEHLM21HNl59v+pj1RM37VDwsDBTwCihJF/4NBXBTwYz2picGLk+OuXHrc7KWj0Nl/g==", null, false, null, null, "4d3447a4-022e-4ba7-8828-dad2a3a76459", false, "test@bitplatform.dev" });
+                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "9f7f7dc2-da36-431a-a390-f65aa6589582", null, "test@bitplatform.dev", true, "AdminPanel test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEHLM21HNl59v+pj1RM37VDwsDBTwCihJF/4NBXBTwYz2picGLk+OuXHrc7KWj0Nl/g==", null, false, null, null, "4d3447a4-022e-4ba7-8828-dad2a3a76459", false, "test@bitplatform.dev" });
 
             migrationBuilder.InsertData(
                 table: "Products",

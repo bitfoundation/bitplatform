@@ -202,7 +202,7 @@ namespace AdminPanel.Server.Api.Migrations
                             ConcurrencyStamp = "9f7f7dc2-da36-431a-a390-f65aa6589582",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
-                            FullName = "BlazorDual test account",
+                            FullName = "AdminPanel test account",
                             Gender = 2,
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",

@@ -189,7 +189,7 @@ namespace TodoTemplate.Server.Api.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "9d0d2a72-f5c8-4726-bcea-9a4417878873", null, "test@bitplatform.dev", true, "BlazorDual test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEDhxksdfk+yXwH0o1xZGZCnb5+gnK5XQRYQwx3tOQUcWOWy7a2w5FuI3ahddQiUw0w==", null, false, null, null, "e5ec721d-b782-4259-81c8-b6101fc6768f", false, "test@bitplatform.dev" });
+                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "9d0d2a72-f5c8-4726-bcea-9a4417878873", null, "test@bitplatform.dev", true, "TodoTemplate test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEDhxksdfk+yXwH0o1xZGZCnb5+gnK5XQRYQwx3tOQUcWOWy7a2w5FuI3ahddQiUw0w==", null, false, null, null, "e5ec721d-b782-4259-81c8-b6101fc6768f", false, "test@bitplatform.dev" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",

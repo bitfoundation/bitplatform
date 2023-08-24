@@ -249,7 +249,7 @@ namespace TodoTemplate.Server.Api.Migrations
                             ConcurrencyStamp = "9d0d2a72-f5c8-4726-bcea-9a4417878873",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
-                            FullName = "BlazorDual test account",
+                            FullName = "TodoTemplate test account",
                             Gender = 2,
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
