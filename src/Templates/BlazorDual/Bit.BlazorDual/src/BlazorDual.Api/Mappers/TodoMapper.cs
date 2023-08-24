@@ -4,6 +4,9 @@ using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Api.Mappers;
 
+/// <summary>
+/// More info at Server/Api/Mappers/README.md
+/// </summary>
 [Mapper(UseDeepCloning = true)]
 public static partial class TodoMapper
 {

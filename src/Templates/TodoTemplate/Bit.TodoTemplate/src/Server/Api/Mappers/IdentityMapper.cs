@@ -4,6 +4,9 @@ using Riok.Mapperly.Abstractions;
 
 namespace TodoTemplate.Server.Api.Mappers;
 
+/// <summary>
+/// More info at Server/Api/Mappers/README.md
+/// </summary>
 [Mapper(UseDeepCloning = true)]
 public static partial class IdentityMapper
 {
