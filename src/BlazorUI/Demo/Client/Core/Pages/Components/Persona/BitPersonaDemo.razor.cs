@@ -481,7 +481,7 @@ public partial class BitPersonaDemo
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.Dnd
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" >";
-    private static readonly string example1CSharpCode = @"
+    private static readonly string example1CsharpCode = @"
 public bool IsDetailsHidden { get; set; } = true;";
 
     private static readonly string example2HtmlCode = @"
@@ -496,7 +496,7 @@ public bool IsDetailsHidden { get; set; } = true;";
             OnActionClick=""() => ActionClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ActionClickCount: @ActionClickCount</p>";
-    private static readonly string example2CSharpCode = @"
+    private static readonly string example2CsharpCode = @"
 private int ActionClickCount = 0;";
 
     private static readonly string example3HtmlCode = @"
@@ -510,7 +510,7 @@ private int ActionClickCount = 0;";
             OnImageClick=""() => ImageClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ImageClickCount: @ImageClickCount</p>";
-    private static readonly string example3CSharpCode = @"
+    private static readonly string example3CsharpCode = @"
 private int ImageClickCount = 0;";
 
     private static readonly string example4HtmlCode = @"

@@ -37,7 +37,7 @@ public partial class BitChartDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <div>
     <BitChart Config=""_barChartConfigExample"" @ref=""_barChartExample"" />
 </div>
@@ -48,7 +48,7 @@ public partial class BitChartDemo
     <BitButton ButtonStyle = ""BitButtonStyle.Standard"" OnClick= ""AddBarData"" > Add Data</BitButton>
     <BitButton ButtonStyle = ""BitButtonStyle.Standard"" OnClick= ""RemoveBarData"" > Remove Data</BitButton>
 </div>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private const int InitalCount = 5;
 private BitChartBarConfig _barChartConfigExample;
 private BitChart _barChartExample;
@@ -161,12 +161,12 @@ private void RemoveBarData()
 }
 ";
     
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <div>
     <BitChart Config=""_horizontalBarChartConfigExample"" @ref=""_horizontalBarChartExample"" />
 </div>
 ";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private BitChartBarConfig _horizontalBarChartConfigExample;
 private BitChart _horizontalBarChartExample;
 
@@ -216,12 +216,12 @@ private void InitHorizontalBarChartExample()
 }
 ";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <div>
     <BitChart Config=""_stackedBarChartConfigExample"" @ref=""_stackedBarChartExample"" />
 </div>
 ";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private BitChartBarConfig _stackedBarChartConfigExample;
 private BitChart _stackedBarChartExample;
 
@@ -293,12 +293,12 @@ private void InitStackedBarChartExample()
 }
 ";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <div>
     <BitChart Config=""_lineChartConfigExample"" @ref=""_lineChartExample"" />
 </div>
 ";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private BitChartLineConfig _lineChartConfigExample;
 private BitChart _lineChartExample;
 
@@ -377,7 +377,7 @@ private void InitlineChartExample()
 }
 ";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <div>
     <BitChart Config=""_pieChartConfigExample"" @ref=""_pieChartExample"" />
 </div>
@@ -389,7 +389,7 @@ private void InitlineChartExample()
     <BitButton Style=""margin:5px"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""RemovePieData"">Remove Data</BitButton>
 </div>
 ";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private BitChartPieConfig _pieChartConfigExample;
 private BitChart _pieChartExample;
 
@@ -500,12 +500,12 @@ private void RemovePieData()
 }
 ";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <div>
     <BitChart Config=""_doughnutChartConfigExample"" @ref=""_doughnutChartExample"" />
 </div>
 ";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private BitChartPieConfig _doughnutChartConfigExample;
 private BitChart _doughnutChartExample;
 

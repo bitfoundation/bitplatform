@@ -297,31 +297,31 @@ public partial class BitTimePickerDemo
     }
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time...""
                AmPm=""true"" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitTimePicker IsEnabled=false
                Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitTimePicker IsEnabled=false
                Style=""max-width: 300px""
                Label=""Start time""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -348,7 +348,7 @@ public partial class BitTimePickerDemo
         @successMessage
     </BitMessageBar>
 }";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 public class FormValidationDatePickerModel
 {
     [Required]
@@ -371,19 +371,19 @@ private void HandleInvalidSubmit()
     successMessage = string.Empty;
 }";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AllowTextInput=true
                Label=""Start time""
                AriaLabel=""Select a time"" />";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
                TimeFormat=""hh:MM:ss"" />";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitTimePicker @ref=""timePicker""
                Style=""max-width: 300px""
                AriaLabel=""Select a time""
@@ -392,7 +392,7 @@ private void HandleInvalidSubmit()
         Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitTimePicker>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitTimePicker timePicker;
 
 private async Task OpenCallout()
@@ -400,16 +400,16 @@ private async Task OpenCallout()
     await timePicker.OpenCallout();
 }";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                @bind-Value=""@selectedTime""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
 <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 
-    private readonly string example10HTMLCode = @"
+    private readonly string example10HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                IconLocation=""BitIconLocation.Left""
@@ -419,13 +419,13 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
     </IconTemplate>
 </BitTimePicker>";
 
-    private readonly string example11HTMLCode = @"
+    private readonly string example11HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                IconName=""@BitIconName.Airplane""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example12HTMLCode = @"
+    private readonly string example12HtmlCode = @"
 <EditForm Model=""formValidationTimePickerModel"">
     <DataAnnotationsValidator />
     <div>
@@ -441,7 +441,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
         <ValidationSummary />
     </div>
 </EditForm>";
-    private readonly string example12CSharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class FormValidationDatePickerModel
 {
     [Required]
@@ -450,7 +450,7 @@ public class FormValidationDatePickerModel
 
 private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
-    private readonly string example13HTMLCode = @"
+    private readonly string example13HtmlCode = @"
 <BitTimePicker Style=""max-width: 300px""
                IsResponsive=""true""
                AriaLabel=""Select a time""

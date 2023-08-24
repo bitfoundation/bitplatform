@@ -149,7 +149,7 @@ public partial class BitOtpInputDemo
     private static readonly string example2HtmlCode = @"
 <BitOtpInput Length=""4"" AutoFocus=""true"" @bind-Value=""autoFocusOtpInput"" />
 <BitLabel>Output: [@autoFocusOtpInput]</BitLabel>";
-    private static readonly string example2CSharpCode = @"
+    private static readonly string example2CsharpCode = @"
 private string autoFocusOtpInput;";
 
     private static readonly string example3HtmlCode = @"
@@ -164,7 +164,7 @@ private string autoFocusOtpInput;";
 <BitLabel>Password</BitLabel>
 <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Password"" @bind-Value=""passwordOtpInput"" />
 <BitLabel>Output: [@passwordOtpInput]</BitLabel>";
-    private static readonly string example3CSharpCode = @"
+    private static readonly string example3CsharpCode = @"
 private string textOtpInput;
 private string numberOtpInput;
 private string passwordOtpInput;";
@@ -186,7 +186,7 @@ private string passwordOtpInput;";
 <BitLabel>Bottom to top</BitLabel>
 <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.BottomToTop"" @bind-Value=""BottomToTopOtpInput"" />
 <BitLabel>Output: [@BottomToTopOtpInput]</BitLabel>";
-    private static readonly string example4CSharpCode = @"
+    private static readonly string example4CsharpCode = @"
 private string leftToRightOtpInput;
 private string rightToLeftOtpInput;
 private string topToBottomOtpInput;
@@ -204,7 +204,7 @@ private string BottomToTopOtpInput;";
 <BitLabel>OnChange</BitLabel>
 <BitOtpInput Length=""4"" OnChange=""(value) => onChangeBindOtpInput = value"" />
 <BitLabel>Output: [@onChangeBindOtpInput]</BitLabel>";
-    private static readonly string example5CSharpCode = @"
+    private static readonly string example5CsharpCode = @"
 private string oneWayBindOtpInput;
 private string twoWayBindOtpInput;
 private string onChangeBindOtpInput;";
@@ -253,7 +253,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private static readonly string example6CSharpCode = @"
+    private static readonly string example6CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""Is required."")]

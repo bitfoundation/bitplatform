@@ -18,13 +18,13 @@ public partial class ComponentExampleBox
     private async Task CopyCodeToClipboard()
     {
         var code = string.IsNullOrEmpty(CsharpCode) is false
-            ? AppendCodePharaseToCSharpCode(CsharpCode)
+            ? AppendCodePhraseToCsharpCode(CsharpCode)
             : "";
 
         await JSRuntime.CopyToClipboard(HtmlCode.Trim() + code);
     }
 
-    private string AppendCodePharaseToCSharpCode(string cSharpSourceCode)
+    private string AppendCodePhraseToCsharpCode(string cSharpSourceCode)
     {
         string code = $@"{"\n\n"}@code {{
 {CsharpCode.Trim().Replace("\n", "\n\t")}

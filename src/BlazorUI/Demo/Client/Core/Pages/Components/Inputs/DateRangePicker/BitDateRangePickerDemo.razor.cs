@@ -342,12 +342,12 @@ public partial class BitDateRangePickerDemo
     
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitDateRangePicker IsEnabled=false
                     Style=""max-width: 300px""
                     AriaLabel=""Select dates""
@@ -359,20 +359,20 @@ public partial class BitDateRangePickerDemo
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     ShowWeekNumbers=true
                     ShowMonthPickerAsOverlay=true
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates...""
                     DateFormat=""dd=MM(yy)"" />";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates...""
@@ -391,7 +391,7 @@ public partial class BitDateRangePickerDemo
                     MaxDate=""DateTimeOffset.Now.AddYears(1)""
                     MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitDateRangePicker @ref=""dateRangePicker""
                     Style=""max-width: 300px""
                     AriaLabel=""Select dates""
@@ -400,27 +400,27 @@ public partial class BitDateRangePickerDemo
         Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitDateRangePicker>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private BitDateRangePicker dateRangePicker;
 private async Task OpenCallout()
 {
     await dateRangePicker.OpenCallout();
 }";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     @bind-Value=""@selectedDateRange""
                     AriaLabel=""select dates""
                     Placeholder=""select dates..."" />
 <BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitDateRangePickerValue selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
 };";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                     Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                     GoToToday=""برو به امروز""
@@ -433,7 +433,7 @@ private BitDateRangePickerValue selectedDateRange = new()
                     Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 <style>
     .weekend-cell {
         color: red;
@@ -522,41 +522,41 @@ private BitDateRangePickerValue selectedDateRange = new()
         <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
     </IconTemplate>
 </BitDateRangePicker>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example10HTMLCode = @"
+    private readonly string example10HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     ValueFormat=""Dep: {0}, Arr: {1}""
                     DateFormat=""dd=MM(yy)""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example11HTMLCode = @"
+    private readonly string example11HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     IconName=""@BitIconName.Airplane""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example12HTMLCode = @"
+    private readonly string example12HtmlCode = @"
 <BitDateRangePicker IsResponsive=""true""
                     Style=""max-width: 300px""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
 
-    private readonly string example13HTMLCode = @"
+    private readonly string example13HtmlCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AutoClose=""false""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
 
-    private readonly string example14HTMLCode = @"
+    private readonly string example14HtmlCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
                     ShowTimePicker=""true""
                     Style=""max-width: 300px""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
-    private readonly string example14CSharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitDateRangePickerValue selectedDateTimeRange = new()
 {
     StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),

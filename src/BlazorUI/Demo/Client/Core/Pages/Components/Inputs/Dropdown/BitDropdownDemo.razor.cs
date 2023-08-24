@@ -268,7 +268,7 @@ public partial class BitDropdownDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option"" />
@@ -283,7 +283,7 @@ public partial class BitDropdownDemo
              Placeholder=""Select an option""
              IsEnabled=""false""
              DefaultValue=""v-bro"" />";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()
@@ -330,7 +330,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
@@ -343,7 +343,7 @@ private List<BitDropdownItem> GetDropdownItems()
              Placeholder=""Select options""
              IsMultiSelect=""true"" />
 <BitLabel>Selected Value: @string.Join("","", ControlledValues)</BitLabel>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -391,13 +391,13 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitDropdown Label=""Multi select controlled""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
              @bind-Values=""ControlledValues""
              IsMultiSelect=""true"" />";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private List<string> ControlledValues = new() { ""Apple"", ""Banana"", ""Grape"" };
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -445,7 +445,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -521,7 +521,7 @@ private List<BitDropdownItem> GetDropdownItems()
              Label=""Custom CaretDownIconName""
              AriaLabel=""Custom dropdown chevron icon with icon name""
              CaretDownIconName=""@BitIconName.ScrollUpDown"" />";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private List<BitDropdownItem> GetCustomDropdownItems()
 {
     return new List<BitDropdownItem>()
@@ -615,7 +615,7 @@ private List<BitDropdownItem> GetCustomDropdownItems()
     };
 }";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitDropdown Label=""Category""
              Items=""Categories""
              Placeholder=""Select options""
@@ -629,7 +629,7 @@ private List<BitDropdownItem> GetCustomDropdownItems()
 
 <BitLabel>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</BitLabel>
 <BitLabel>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</BitLabel>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private List<BitDropdownItem> Categories = new();
 private List<BitDropdownItem> Products = new();
 private string CurrentCategory;
@@ -654,7 +654,7 @@ protected override void OnInitialized()
     base.OnInitialized();
 }";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""formValidationDropdownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -695,7 +695,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 public class FormValidationDropdownModel
 {
     [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
@@ -787,12 +787,12 @@ private List<BitDropdownItem> GetProductDropdownItems()
     };
 }";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsResponsiveModeEnabled=true />";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()
@@ -839,7 +839,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select an option""
@@ -854,7 +854,7 @@ private List<BitDropdownItem> GetDropdownItems()
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
                 SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -902,7 +902,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with virtualization""
              Items=""LargeListOfCategoriesForSingleSelect""
              Virtualize=""true""
@@ -919,7 +919,7 @@ private List<BitDropdownItem> GetDropdownItems()
              IsResponsiveModeEnabled=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private List<BitDropdownItem> LargeListOfCategories = new ();
 
 protected override void OnInitialized()
@@ -941,7 +941,7 @@ protected override void OnInitialized()
     base.OnInitialized();
 }";
 
-    private readonly string example10HTMLCode = @"
+    private readonly string example10HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with virtualization""
              ItemsProvider=""LoadDropdownItems""
              Virtualize=""true""
@@ -958,7 +958,7 @@ protected override void OnInitialized()
              IsResponsiveModeEnabled=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example10CSharpCode = @"
+    private readonly string example10CsharpCode = @"
 private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDropdownItems(BitDropdownItemsProviderRequest<BitDropdownItem> request)
 {
     try
@@ -996,7 +996,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
     }
 }";
 
-    private readonly string example11HTMLCode = @"
+    private readonly string example11HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with Rtl direction""
              Items=""GetArabicDropdownItems()""
              Placeholder=""حدد اختيارا""
@@ -1012,7 +1012,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
              IsRtl=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""عناصر البحث"" />";
-    private readonly string example11CSharpCode = @"
+    private readonly string example11CsharpCode = @"
 private List<BitDropdownItem> GetArabicDropdownItems()
 {
     return new()
@@ -1059,7 +1059,7 @@ private List<BitDropdownItem> GetArabicDropdownItems()
     };
 }";
 
-    private readonly string example12HTMLCode = @"
+    private readonly string example12HtmlCode = @"
 <BitDropdown Label=""Auto drop direction""
              Items=""LargeListOfCategoriesDropDirection""
              Virtualize=""true""
@@ -1077,7 +1077,7 @@ private List<BitDropdownItem> GetArabicDropdownItems()
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item""
              DropDirection=""BitDropDirection.TopAndBottom"" />";
-    private readonly string example12CSharpCode = @"
+    private readonly string example12CsharpCode = @"
 private List<BitDropdownItem> LargeListOfCategoriesDropDirection = new();
 
 protected override void OnInitialized()
@@ -1092,7 +1092,7 @@ protected override void OnInitialized()
     base.OnInitialized();
 }";
 
-    private readonly string example13HTMLCode = @"
+    private readonly string example13HtmlCode = @"
 <BitDropdown @bind-Value=""SelectedValue""
              ShowClearButton=""true""
              Label=""Single select dropdown""
@@ -1107,7 +1107,7 @@ protected override void OnInitialized()
              Placeholder=""Select options""
              IsMultiSelect=""true"" />
 <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>";
-    private readonly string example13CSharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string? SelectedValue;
 private List<string> SelectedValues = new();
 
@@ -1157,7 +1157,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example14HTMLCode = @"
+    private readonly string example14HtmlCode = @"
 Visible: [ <BitDropdown @bind-Value=""SelectedValue""
                         Items=""GetDropdownItems()""
                         Placeholder=""Select an option""
@@ -1172,7 +1172,7 @@ Collapsed: [ <BitDropdown @bind-Values=""SelectedValues""
                           Items=""GetDropdownItems()""
                           Placeholder=""Select options""
                           Visibility=""BitVisibility.Collapsed"" /> ]";
-    private readonly string example14CSharpCode = @"
+    private readonly string example14CsharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()

@@ -63,46 +63,46 @@ public partial class BitToggleDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
 
 <BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private bool BasicValue;
 private bool DisabledValue;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
 
 <BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool OnTextValue;
 private bool InLineLabelValue;
 private bool DefaultTextValue;";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitToggle @bind-Value=""LabelTemplateValue"">
     <LabelTemplate>
         <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
         <BitIcon IconName=""@BitIconName.Filter"" />
     </LabelTemplate>
 </BitToggle>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private bool LabelTemplateValue;";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
 <BitToggleButton @bind-IsChecked=""OneWayValue"" Text=""@(OneWayValue ? ""Off"" : ""On"")"" />
 
 <BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
 <BitToggleButton @bind-IsChecked=""TwoWayValue"" Text=""@(TwoWayValue ? ""Off"" : ""On"")"" />";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool OneWayValue;
 private bool TwoWayValue;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
@@ -146,7 +146,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]

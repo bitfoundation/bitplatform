@@ -328,7 +328,7 @@ private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
     </div>
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]

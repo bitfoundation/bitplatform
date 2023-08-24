@@ -146,7 +146,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Change tabs from outside of the component" HtmlCode="@example6HtmlCode" CsharpCode="@example6CSharpCode" Id="example6">
+    <ComponentExampleBox Title="Change tabs from outside of the component" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <BitPivot @bind-SelectedKey="OverridePivotSelectedKey" LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem Key="1" HeaderText="Samples">
@@ -191,7 +191,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Render content separately" HtmlCode="@example7HtmlCode" CsharpCode="@example7CSharpCode" Id="example7">
+    <ComponentExampleBox Title="Render content separately" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div style="margin-bottom:25px;border:1px solid #afafaf;width:fit-content;padding:10px;">
                 @if (SelectedKey == "Foo")
@@ -224,7 +224,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OnItemClick event" HtmlCode="@example8HtmlCode" CsharpCode="@example8CSharpCode" Id="example8">
+    <ComponentExampleBox Title="OnItemClick event" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div style="margin-bottom:25px">
                 Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
@@ -264,7 +264,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Show/Hide tabs" HtmlCode="@example9HtmlCode" CsharpCode="@example9CSharpCode" Id="example9">
+    <ComponentExampleBox Title="Show/Hide tabs" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large">
                 <BitPivotItem HeaderText="Foo">
@@ -440,7 +440,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled state" HtmlCode="@example12HtmlCode" CsharpCode="@example12CSharpCode" Id="example12">
+    <ComponentExampleBox Title="Disabled state" HtmlCode="@example12HtmlCode" CsharpCode="@example12CsharpCode" Id="example12">
         <ExamplePreview>
             <BitButton OnClick="() => PivotEnabled = !PivotEnabled">Toggle Pivot's IsEnabled</BitButton>
             <BitButton OnClick="() => PivotItemEnabled = !PivotItemEnabled">Toggle Pivot Item's IsEnabled</BitButton>

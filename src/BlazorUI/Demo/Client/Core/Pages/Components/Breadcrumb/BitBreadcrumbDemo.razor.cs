@@ -433,7 +433,7 @@ public partial class BitBreadcrumbDemo
         }
     }
 
-    private readonly string example1BreadcrumbItemHTMLCode = @"
+    private readonly string example1BreadcrumbItemHtmlCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" />
@@ -447,7 +447,7 @@ public partial class BitBreadcrumbDemo
     <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
 </div>
 ";
-    private readonly string example1CustomItemHTMLCode = @"
+    private readonly string example1CustomItemHtmlCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -477,7 +477,7 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
 </div>
 ";
-    private readonly string example1BreadcrumbOptionHTMLCode = @"
+    private readonly string example1BreadcrumbOptionHtmlCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"">
@@ -509,7 +509,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example2BreadcrumbItemHTMLCode = @"
+    private readonly string example2BreadcrumbItemHtmlCode = @"
 <div>
     <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""1"" />
@@ -535,7 +535,7 @@ public partial class BitBreadcrumbDemo
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 </div>
 ";
-    private readonly string example2CustomItemHTMLCode = @"
+    private readonly string example2CustomItemHtmlCode = @"
 <div>
     <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -600,7 +600,7 @@ public partial class BitBreadcrumbDemo
                     OverflowIndex=""2"" />
 </div>
 ";
-    private readonly string example2BreadcrumbOptionHTMLCode = @"
+    private readonly string example2BreadcrumbOptionHtmlCode = @"
 <div>
     <BitLabel>MaxDisplayedOptions (1)</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""1"">
@@ -657,7 +657,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example3BreadcrumbItemHTMLCode = @"
+    private readonly string example3BreadcrumbItemHtmlCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
@@ -673,7 +673,7 @@ public partial class BitBreadcrumbDemo
                    OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
-    private readonly string example3CustomItemHTMLCode = @"
+    private readonly string example3CustomItemHtmlCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -699,7 +699,7 @@ public partial class BitBreadcrumbDemo
                     OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
-    private readonly string example3BreadcrumbOptionHTMLCode = @"
+    private readonly string example3BreadcrumbOptionHtmlCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""@BitIconName.ChevronDown"">
@@ -721,7 +721,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example4BreadcrumbItemHTMLCode = @"
+    private readonly string example4BreadcrumbItemHtmlCode = @"
 <style>
     .custom-item {
         color: red;
@@ -765,7 +765,7 @@ public partial class BitBreadcrumbDemo
                    SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
-    private readonly string example4CustomItemHTMLCode = @"
+    private readonly string example4CustomItemHtmlCode = @"
 <style>
     .custom-item {
         color: red;
@@ -829,7 +829,7 @@ public partial class BitBreadcrumbDemo
                     SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
-    private readonly string example4BreadcrumbOptionHTMLCode = @"
+    private readonly string example4BreadcrumbOptionHtmlCode = @"
 <style>
     .custom-item {
         color: red;
@@ -892,14 +892,14 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example5BreadcrumbItemHTMLCode = @"
+    private readonly string example5BreadcrumbItemHtmlCode = @"
 <BitBreadcrumb Items=""@BreadcrumbItemsWithControlled""
                 MaxDisplayedItems=""3""
                 OverflowIndex=""2""
                 OnItemClick=""(BitBreadcrumbItem item) => HandleOnItemClick(item)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
-    private readonly string example5CustomItemHTMLCode = @"
+    private readonly string example5CustomItemHtmlCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithControlled""
                 TextField=""@nameof(PageInfoModel.Name)""
                 HrefField=""@nameof(PageInfoModel.Address)""
@@ -911,7 +911,7 @@ public partial class BitBreadcrumbDemo
                 OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
-    private readonly string example5BreadcrumbOptionHTMLCode = @"
+    private readonly string example5BreadcrumbOptionHtmlCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" SelectedItemStyle=""color:red; background:lightgreen;"">
     <BitBreadcrumbOption Text=""Option 1"" IsSelected=""@(SelectedOptionNumber == 1)"" OnClick=""() => SelectedOptionNumber = 1"" />
     <BitBreadcrumbOption Text=""Option 2"" IsSelected=""@(SelectedOptionNumber == 2)"" OnClick=""() => SelectedOptionNumber = 2"" />
@@ -922,7 +922,7 @@ public partial class BitBreadcrumbDemo
 </BitBreadcrumb>
 ";
 
-    private readonly string example6BreadcrumbItemHTMLCode = @"
+    private readonly string example6BreadcrumbItemHtmlCode = @"
 <div>
     <BitBreadcrumb Items=""@BreadcrumbItemsWithCustomized""
                     MaxDisplayedItems=""@MaxDisplayedItems""
@@ -940,7 +940,7 @@ public partial class BitBreadcrumbDemo
     </div>
 </div>
 ";
-    private readonly string example6CustomItemHTMLCode = @"
+    private readonly string example6CustomItemHtmlCode = @"
 <div>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithCustomized""
                     TextField=""@nameof(PageInfoModel.Name)""
@@ -963,7 +963,7 @@ public partial class BitBreadcrumbDemo
     </div>
 </div>
 ";
-    private readonly string example6BreadcrumbOptionHTMLCode = @"
+    private readonly string example6BreadcrumbOptionHtmlCode = @"
 <div>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""@MaxDisplayedItems"" OverflowIndex=""@OverflowIndex"">
         @for (int i = 0; i < ItemsCount; i++)
@@ -985,7 +985,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example1BreadcrumbItemCSharpCode = @"
+    private readonly string example1BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
     new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
@@ -1002,7 +1002,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
     new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 ";
-    private readonly string example1CustomItemCSharpCode = @"
+    private readonly string example1CustomItemCsharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
@@ -1035,7 +1035,7 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsDisabled = new()
 };
 ";
 
-    private readonly string example2BreadcrumbItemCSharpCode = @"
+    private readonly string example2BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
     new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
@@ -1044,7 +1044,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
     new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 ";
-    private readonly string example2CustomItemCSharpCode = @"
+    private readonly string example2CustomItemCsharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
@@ -1069,7 +1069,7 @@ private readonly List<PageInfoModel> CustomBreadcrumbItems = new()
 };
 ";
 
-    private readonly string example3BreadcrumbItemCSharpCode = @"
+    private readonly string example3BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
     new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
@@ -1078,7 +1078,7 @@ private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
     new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 };
 ";
-    private readonly string example3CustomItemCSharpCode = @"
+    private readonly string example3CustomItemCsharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
@@ -1103,7 +1103,7 @@ private readonly List<PageInfoModel> CustomBreadcrumbItems = new()
 };
 ";
 
-    private readonly string example4BreadcrumbItemCSharpCode = @"
+    private readonly string example4BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
 {
     new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
@@ -1128,7 +1128,7 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithStyle { get; set; } = new()
     new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", Style = ""color:red;background:greenyellow"", IsSelected = true }
 };
 ";
-    private readonly string example4CustomItemCSharpCode = @"
+    private readonly string example4CustomItemCsharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
@@ -1169,7 +1169,7 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithStyle = new()
 };
 ";
 
-    private readonly string example5BreadcrumbItemCSharpCode = @"
+    private readonly string example5BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItemsWithControlled { get; set; } = new()
 {
     new() { Text = ""Folder 1"" },
@@ -1186,7 +1186,7 @@ private void HandleOnItemClick(BitBreadcrumbItem item)
     item.IsSelected = true;
 }
 ";
-    private readonly string example5CustomItemCSharpCode = @"
+    private readonly string example5CustomItemCsharpCode = @"
 public class PageInfoModel
 {
     public string Name { get; set; }
@@ -1218,11 +1218,11 @@ private void HandleOnItemClick(PageInfoModel item)
     item.IsCurrent = true;
 }
 ";
-    private readonly string example5BreadcrumbOptionCSharpCode = @"
+    private readonly string example5BreadcrumbOptionCsharpCode = @"
 private int SelectedOptionNumber = 6;
 ";
 
-    private readonly string example6BreadcrumbItemCSharpCode = @"
+    private readonly string example6BreadcrumbItemCsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
@@ -1267,7 +1267,7 @@ private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
     item.IsSelected = true;
 }
 ";
-    private readonly string example6CustomItemCSharpCode = @"
+    private readonly string example6CustomItemCsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
@@ -1327,7 +1327,7 @@ private void RemoveCustomItem()
     }
 }
 ";
-    private readonly string example6BreadcrumbOptionCSharpCode = @"
+    private readonly string example6BreadcrumbOptionCsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;

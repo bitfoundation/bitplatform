@@ -743,9 +743,9 @@ public partial class BitNavDemo
 
 
 
-    private static string example1NavItemHTMLCode = @"
+    private static string example1NavItemHtmlCode = @"
 <BitNav Items=""BitPlatformNavMenu"" />";
-    private static string example1NavItemCSharpCode = @"
+    private static string example1NavItemCsharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
@@ -791,9 +791,9 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
     new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 };";
 
-    private static string example2NavItemHTMLCode = @"
+    private static string example2NavItemHtmlCode = @"
 <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />";
-    private static string example2NavItemCSharpCode = @"
+    private static string example2NavItemCsharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu = new()
 {
     new()
@@ -852,7 +852,7 @@ private static readonly List<BitNavItem> CarNavMenu = new()
     },
 };";
 
-    private static string example3NavItemHTMLCode = @"
+    private static string example3NavItemHtmlCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav Items=""FoodNavMenu""
         DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
@@ -868,7 +868,7 @@ private static readonly List<BitNavItem> CarNavMenu = new()
                 Label=""Select Item""
                 Items=""FoodMenuDropdownItems""
                 OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />";
-    private static string example3NavItemCSharpCode = @"
+    private static string example3NavItemCsharpCode = @"
 private static readonly List<BitNavItem> FoodNavMenu = new()
 {
     new()
@@ -996,7 +996,7 @@ private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c =
 private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
 private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 
-    private static string example4NavItemHTMLCode = @"
+    private static string example4NavItemHtmlCode = @"
 <style>
     .nav-custom-header {
         font-size: 17px;
@@ -1037,7 +1037,7 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
         </div>
     </ItemTemplate>
 </BitNav>";
-    private static string example4NavItemCSharpCode = @"
+    private static string example4NavItemCsharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu = new()
 {
     new()
@@ -1145,7 +1145,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
     new() { Text = ""Cookie"" },
 };";
 
-    private static string example5NavItemHTMLCode = @"
+    private static string example5NavItemHtmlCode = @"
 <BitNav Items=""FoodNavMenu""
         DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
         Mode=""BitNavMode.Manual""
@@ -1156,7 +1156,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
 <span>Clicked Item: @ClickedItem?.Text</span>
 <span>Selected Item: @SelectedItem?.Text</span>
 <span>Toggled Item: @(ToggledItem is null ? ""N/A"" : $""{ToggledItem.Text} ({(ToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
-    private static string example5NavItemCSharpCode = @"
+    private static string example5NavItemCsharpCode = @"
 private static readonly List<BitNavItem> FoodNavMenu = new()
 {
     new()
@@ -1210,13 +1210,13 @@ private BitNavItem ClickedItem;
 private BitNavItem SelectedItem;
 private BitNavItem ToggledItem;";
 
-    private static string example6NavItemHTMLCode = @"
+    private static string example6NavItemHtmlCode = @"
 <BitNav Items=""BitPlatformNavMenu""
         ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
                                ToggleButton = new() { Style=""color:cyan"" },
                                Item = new() { Style=""color:red"" },
                                ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })""";
-    private static string example6NavItemCSharpCode = @"
+    private static string example6NavItemCsharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
@@ -1264,14 +1264,14 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 
 
 
-    private static string example1CustomItemHTMLCode = @"
+    private static string example1CustomItemHtmlCode = @"
 <BitNav Items=""CustomBitPlatformNavMenu""
         TextField=""@nameof(BitPlatformMenu.Text)""
         UrlField=""@nameof(BitPlatformMenu.Url)""
         IconNameField=""@nameof(BitPlatformMenu.Icon)""
         IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
         ChildItemsField=""@nameof(BitPlatformMenu.Links)"" />";
-    private static string example1CustomItemCSharpCode = @"
+    private static string example1CustomItemCsharpCode = @"
 public class BitPlatformMenu
 {
     public string Text { get; set; } = string.Empty;
@@ -1326,7 +1326,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
 };";
 
-    private static string example2CustomItemHTMLCode = @"
+    private static string example2CustomItemHtmlCode = @"
 <BitNav Items=""CustomCarNavMenu""
         TextField=""@nameof(CarMenu.Name)""
         UrlField=""@nameof(CarMenu.PageUrl)""
@@ -1337,7 +1337,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         ExpandAriaLabelField=""@nameof(CarMenu.ExpandedAriaLabel)""
         ChildItemsField=""@nameof(CarMenu.Links)""
         RenderType=""BitNavRenderType.Grouped"" />";
-    private static string example2CustomItemCSharpCode = @"
+    private static string example2CustomItemCsharpCode = @"
 public class CarMenu
 {
     public string Name { get; set; } = string.Empty;
@@ -1408,7 +1408,7 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
     },
 };";
 
-    private static string example3CustomItemHTMLCode = @"
+    private static string example3CustomItemHtmlCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav Items=""CustomFoodNavMenu""
         TextFieldSelector=""item => item.Name""
@@ -1432,7 +1432,7 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
              Label=""Select Item""
              Items=""FoodMenuDropdownItems""
              OnSelectItem=""(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)"" />";
-    private static string example3CustomItemCSharpCode = @"
+    private static string example3CustomItemCsharpCode = @"
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
@@ -1568,7 +1568,7 @@ private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Fl
 private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
 private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
 
-    private static string example4CustomItemHTMLCode = @"
+    private static string example4CustomItemHtmlCode = @"
 <style>
     .nav-custom-header {
         font-size: 17px;
@@ -1622,7 +1622,7 @@ private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
         </div>
     </ItemTemplate>
 </BitNav>";
-    private static string example4CustomItemCSharpCode = @"
+    private static string example4CustomItemCsharpCode = @"
 public class CarMenu
 {
     public string Name { get; set; } = string.Empty;
@@ -1750,7 +1750,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     new() { Name = ""Cookie"" },
 };";
 
-    private static string example5CustomItemHTMLCode = @"
+    private static string example5CustomItemHtmlCode = @"
 <BitNav Items=""CustomFoodNavMenu""
         TextFieldSelector=""item => item.Name""
         IconNameFieldSelector=""item => item.Icon""
@@ -1765,7 +1765,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
 <span>Clicked Item: @CustomClickedItem?.Name</span>
 <span>Selected Item: @CustomSelectedItem?.Name</span>
 <span>Toggled Item: @(CustomToggledItem is null ? ""N/A"" : $""{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
-    private static string example5CustomItemCSharpCode = @"
+    private static string example5CustomItemCsharpCode = @"
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
@@ -1827,7 +1827,7 @@ private FoodMenu CustomClickedItem;
 private FoodMenu CustomSelectedItem;
 private FoodMenu CustomToggledItem;";
 
-    private static string example6CustomItemHTMLCode = @"
+    private static string example6CustomItemHtmlCode = @"
 <BitNav Items=""CustomBitPlatformNavMenu""
         TextField=""@nameof(BitPlatformMenu.Text)""
         UrlField=""@nameof(BitPlatformMenu.Url)""
@@ -1838,7 +1838,7 @@ private FoodMenu CustomToggledItem;";
                                ToggleButton = new() { Style=""color:cyan"" },
                                Item = new() { Style=""color:red"" },
                                ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })"" />";
-    private static string example6CustomItemCSharpCode = @"
+    private static string example6CustomItemCsharpCode = @"
 public class BitPlatformMenu
 {
     public string Text { get; set; } = string.Empty;
@@ -1895,7 +1895,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 
 
 
-    private static string example1NavOptionHTMLCode = @"
+    private static string example1NavOptionHtmlCode = @"
 <BitNav TItem=""BitNavOption"">
     <BitNavOption Text=""Bit Platform""
                     ExpandAriaLabel=""Bit Platform Expanded""
@@ -1926,7 +1926,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
-    private static string example2NavOptionHTMLCode = @"
+    private static string example2NavOptionHtmlCode = @"
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <BitNavOption Text=""Mercedes-Benz""
                     ExpandAriaLabel=""Mercedes-Benz Expanded""
@@ -1959,7 +1959,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     </BitNavOption>
 </BitNav>";
 
-    private static string example3NavOptionHTMLCode = @"
+    private static string example3NavOptionHtmlCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
@@ -2021,10 +2021,10 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
              DefaultValue=""French Fries""
              Label=""Pick one""
              Items=""FoodMenuDropdownItems"" />";
-    private static string example3NavOptionCSharpCode = @"
+    private static string example3NavOptionCsharpCode = @"
 private string SelectedOptionKey;";
 
-    private static string example4NavOptionHTMLCode = @"
+    private static string example4NavOptionHtmlCode = @"
 <BitLabel>Header Template (in Grouped mode)</BitLabel>
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
@@ -2101,7 +2101,7 @@ private string SelectedOptionKey;";
     </ChildContent>
 </BitNav>";
 
-    private static string example5NavOptionHTMLCode = @"
+    private static string example5NavOptionHtmlCode = @"
 <BitNav Mode=""BitNavMode.Manual""
         OnItemClick=""(BitNavOption option) => ClickedOption = option""
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
@@ -2135,12 +2135,12 @@ private string SelectedOptionKey;";
 <span>Clicked Option: @ClickedOption?.Text</span>
 <span>Selected Option: @SelectedOption?.Text</span>
 <span>Toggled Option: @(ToggledOption is null ? ""N/A"" : $""{ToggledOption.Text} ({(ToggledOption.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
-    private static string example5NavOptionCSharpCode = @"
+    private static string example5NavOptionCsharpCode = @"
 private BitNavOption ClickedOption;
 private BitNavOption SelectedOption;
 private BitNavOption ToggledOption;";
 
-    private static string example6NavOptionHTMLCode = @"
+    private static string example6NavOptionHtmlCode = @"
 <BitNav TItem=""BitNavOption""
         ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
                                ToggleButton = new() { Style=""color:cyan"" },

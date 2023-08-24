@@ -236,21 +236,21 @@ public partial class BitCheckboxDemo
     }
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitCheckbox Label=""Basic checkbox"" />
 <BitCheckbox Label=""Disable checkbox"" IsEnabled=""false"" />
 <BitCheckbox Label=""Disable checked checkbox"" IsEnabled=""false"" Value=""true"" />";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitCheckbox Label=""Custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.Heart"" />
 <BitCheckbox Label=""Disabled custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitCheckbox Label=""BitCheckboxSide.End - Basic Checkbox"" BoxSide=""@BitCheckboxSide.End"" />
 <BitCheckbox Label=""BitCheckboxSide.End - Disable Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" />
 <BitCheckbox Label=""BitCheckboxSide.End - Disable Checked Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" Value=""true"" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-class {
         color: brown;
@@ -280,14 +280,14 @@ public partial class BitCheckboxDemo
 
 <BitCheckbox Label=""Classes"" Classes=""@(new() { Label=""custom-label"", Box=""custom-box"" })"" />";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""isIndeterminate"" />
 <BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool isIndeterminate = true;
 ";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitCheckbox Label=""One-way checked checkbox (Fixed)"" Value=""true"" />
 
 <BitCheckbox Label=""One-way controlled checkbox"" Value=""oneWayValue"" />
@@ -304,24 +304,24 @@ private bool isIndeterminate = true;
 
 <BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-IsIndeterminate=""twoWayIsIndeterminate"" />
 <BitButton OnClick=""() => twoWayIsIndeterminate = !twoWayIsIndeterminate"">@(twoWayIsIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;
 private bool oneWayIsIndeterminate = true;
 private bool twoWayIsIndeterminate = true;
 ";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitCheckbox @bind-Value=""labelTemplateValue"">
     <LabelTemplate>
         <span style=""@(labelTemplateValue ? ""color: green;"" : ""color: red;"")"">Label Template</span>
     </LabelTemplate>
 </BitCheckbox>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool labelTemplateValue;
 ";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <style>
     .custom-checkbox {
         gap: 0.5rem;
@@ -359,13 +359,13 @@ private bool labelTemplateValue;
     </div>
 </BitCheckbox>
 <BitButton OnClick=""() => customContentIsIndeterminate = true"">Make Indeterminate</BitButton>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool customCheckboxValue;
 private bool customContentValue;
 private bool customContentIsIndeterminate = true;
 ";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>
@@ -384,7 +384,7 @@ private bool customContentIsIndeterminate = true;
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitCheckboxValidationModel validationModel = new();
 
 public class BitCheckboxValidationModel

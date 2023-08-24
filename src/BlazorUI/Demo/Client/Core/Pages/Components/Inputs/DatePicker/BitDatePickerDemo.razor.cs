@@ -330,12 +330,12 @@ public partial class BitDatePickerDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitDatePicker IsEnabled=false
                Style=""max-width: 350px""
                AriaLabel=""Select a date""
@@ -347,14 +347,14 @@ public partial class BitDatePickerDemo
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                ShowWeekNumbers=true
                ShowMonthPickerAsOverlay=true
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <EditForm Model=""formValidationDatePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -382,7 +382,7 @@ public partial class BitDatePickerDemo
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 public class FormValidationDatePickerModel
 {
     [Required]
@@ -405,7 +405,7 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AllowTextInput=true
                HighlightSelectedMonth=true
@@ -414,13 +414,13 @@ private void HandleInvalidSubmit()
                AriaLabel=""Select a date""
                Placeholder=""Enter a date (DD/MM/YYYY)"" />";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date.""
                Placeholder=""Select a date...""
                DateFormat=""dd=MM(yy)"" />";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date...""
@@ -439,7 +439,7 @@ private void HandleInvalidSubmit()
                MaxDate=""DateTimeOffset.Now.AddYears(1)""
                MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitDatePicker @ref=""datePicker""
                Style=""max-width: 350px""
                AriaLabel=""Select a date""
@@ -448,23 +448,23 @@ private void HandleInvalidSubmit()
         Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
 </BitDatePicker>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitDatePicker datePicker;
 private async Task OpenCallout()
 {
     await datePicker.OpenCallout();
 }";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                @bind-Value=""@selectedDate"" 
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
-    private readonly string example10HTMLCode = @"
+    private readonly string example10HtmlCode = @"
 <BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                GoToToday=""برو به امروز""
@@ -477,7 +477,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
                Style=""max-width: 350px"">
 </BitDatePicker>";
 
-    private readonly string example11HTMLCode = @"
+    private readonly string example11HtmlCode = @"
 <style>
     .weekend-cell {
         color: red;
@@ -567,16 +567,16 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
         <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24"" />
     </IconTemplate>
 </BitDatePicker>";
-    private readonly string example11CSharpCode = @"
+    private readonly string example11CsharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example12HTMLCode = @"
+    private readonly string example12HtmlCode = @"
 <BitDatePicker Style=""max-width: 350px""
                AriaLabel=""Select a date""
                IconName=""@BitIconName.Airplane""
                Placeholder=""Select a date..."" />";
 
-    private readonly string example13HTMLCode = @"
+    private readonly string example13HtmlCode = @"
 <EditForm Model=""formValidationDatePickerModel"">
     <DataAnnotationsValidator />
     <div>
@@ -592,7 +592,7 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
         <ValidationSummary />
     </div>
 </EditForm>";
-    private readonly string example13CSharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class FormValidationDatePickerModel
 {
     [Required]
@@ -601,18 +601,18 @@ public class FormValidationDatePickerModel
 
 private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
-    private readonly string example14HTMLCode = @"
+    private readonly string example14HtmlCode = @"
 <BitDatePicker IsResponsive=""true""
                Style=""max-width: 350px""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
 
-    private readonly string example15HTMLCode = @"
+    private readonly string example15HtmlCode = @"
 <BitDatePicker @bind-Value=""@selectedDateTime""
                Style=""max-width: 350px""
                ShowTimePicker=""true""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
-    private readonly string example15CSharpCode = @"
+    private readonly string example15CsharpCode = @"
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 }

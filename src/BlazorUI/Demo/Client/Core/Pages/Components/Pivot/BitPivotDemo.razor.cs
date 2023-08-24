@@ -459,7 +459,7 @@ public partial class BitPivotDemo
         </div>
     </BitButton>
 </div>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string OverridePivotSelectedKey = ""1"";";
 
     private readonly string example7HtmlCode = @"
@@ -492,7 +492,7 @@ private string OverridePivotSelectedKey = ""1"";";
     <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
     <BitPivotItem HeaderText=""Biz"" Key=""Biz""></BitPivotItem>
 </BitPivot>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string SelectedKey = ""Foo"";";
 
     private readonly string example8HtmlCode = @"
@@ -532,7 +532,7 @@ private string SelectedKey = ""Foo"";";
         </div>
     </BitPivotItem>
 </BitPivot>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitPivotItem SelectedPivotItem;";
 
     private readonly string example9HtmlCode = @"
@@ -560,7 +560,7 @@ private BitPivotItem SelectedPivotItem;";
 <div style=""margin-top:50px"">
     <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisibility"">Hide/Show Biz</BitButton>
 </div>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitVisibility PivotItemVisibility;
 private void TogglePivotItemVisibility()
 {
@@ -744,7 +744,7 @@ private void TogglePivotItemVisibility()
         </div>
     </BitPivotItem>
 </BitPivot>";
-    private readonly string example12CSharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool PivotEnabled = true;
 private bool PivotItemEnabled = true;";
 }

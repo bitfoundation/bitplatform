@@ -359,7 +359,7 @@ public partial class BitTextFieldDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsEnabled=""false"" />
@@ -369,36 +369,36 @@ public partial class BitTextFieldDemo
 <BitTextField Placeholder=""Enter a text..."" Label=""IsRequired"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />";
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" AutoFocus=""true"" Label=""Auto focused"" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" IsUnderlined=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Required No Border"" HasBorder=""false"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""@BitIconName.EditMail"" />
 
 <BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <BitTextField Label=""With Prefix"" Prefix=""https://"" />
 
 <BitTextField Label=""With Suffix"" Suffix="".com"" />
@@ -407,7 +407,7 @@ public partial class BitTextFieldDemo
 
 <BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."">
     <LabelTemplate>
         <BitLabel Style=""color: coral;"">This is custom Label</BitLabel>
@@ -432,12 +432,12 @@ public partial class BitTextFieldDemo
     </SuffixTemplate>
 </BitTextField>";
 
-    private readonly string example9HTMLCode = @"
+    private readonly string example9HtmlCode = @"
 <BitTextField Placeholder=""Enter a password..."" Label=""Password"" Type=""BitTextFieldType.Password"" />
 
 <BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
 
-    private readonly string example10HTMLCode = @"
+    private readonly string example10HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""One-way"" Value=""@OneWayValue"" />
 <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""OneWayValue"" />
 
@@ -448,23 +448,23 @@ public partial class BitTextFieldDemo
 <BitLabel>Value: @OnChangeValue</BitLabel>
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Readonly"" @bind-Value=""ReadOnlyValue"" IsReadonly=""true"" />";
-    private readonly string example10CSharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string OneWayValue;
 private string TwoWayValue;
 private string OnChangeValue;
 private string ReadOnlyValue = ""this is readonly value"";";
 
-    private readonly string example11HTMLCode = @"
+    private readonly string example11HtmlCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
 <pre class=""trimmed-box"">[@TrimmedValue]</pre>
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Not Trimmed"" @bind-Value=""NotTrimmedValue"" />
 <pre class=""trimmed-box"">[@NotTrimmedValue]</pre>";
-    private readonly string example11CSharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string TrimmedValue;
 private string NotTrimmedValue;";
 
-    private readonly string example12HTMLCode = @"
+    private readonly string example12HtmlCode = @"
 <style>
     .custom-label {
         color: blue;
@@ -487,7 +487,7 @@ private string NotTrimmedValue;";
 <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputStyle"" InputStyle=""color:red"" />
 <BitTextField Placeholder=""Enter a text..."" Label=""Custom InputClass"" InputClass=""custom-input"" />";
 
-    private readonly string example13HTMLCode = @"
+    private readonly string example13HtmlCode = @"
 <style>
     .validation-summary {
         overflow: hidden;
@@ -549,7 +549,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example13CSharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required]

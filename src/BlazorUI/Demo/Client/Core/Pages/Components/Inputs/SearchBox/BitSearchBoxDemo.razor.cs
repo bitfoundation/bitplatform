@@ -81,21 +81,21 @@ public partial class BitSearchBoxDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLabel>Basic</BitLabel>
 <BitSearchBox Placeholder=""Search"" />
     
 <BitLabel>Disabled</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitLabel>Basic Underlined SearchBox</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
 
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitLabel>SearchBox with fixed icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
 
@@ -105,7 +105,7 @@ public partial class BitSearchBoxDemo
 <BitLabel>SearchBox with custom icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitLabel>Two-way Bind</BitLabel>
 <BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
@@ -117,18 +117,18 @@ public partial class BitSearchBoxDemo
 <BitLabel>OnSearch (Serach by Enter)</BitLabel>
 <BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
 <BitLabel>Search Value: @OnSearchValue</BitLabel>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private string TwoWaySearchValue;
 private string OnChangeSearchValue;
 private string OnSearchValue;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
     <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
 </EditForm>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]

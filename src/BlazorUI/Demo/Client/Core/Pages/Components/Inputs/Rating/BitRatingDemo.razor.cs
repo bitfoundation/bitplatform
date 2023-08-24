@@ -103,7 +103,7 @@ public partial class BitRatingDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLabel>Basic:</BitLabel>
 <BitRating @bind-Value=""RatingBasicValue"" />
 <BitLabel>Rate: @RatingBasicValue</BitLabel>
@@ -115,12 +115,12 @@ public partial class BitRatingDemo
 <BitLabel>Readonly:</BitLabel>
 <BitRating IsReadOnly=""true"" @bind-Value=""RatingReadonlyValue"" />
 <BitLabel>Rate: @RatingReadonlyValue</BitLabel>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private double RatingBasicValue;
 private double RatingDisabledValue = 2;
 private double RatingReadonlyValue = 3.5;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitLabel>Max is 6</BitLabel>
 <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
 <BitLabel>Rate: @RatingMaxValue1</BitLabel>
@@ -132,12 +132,12 @@ private double RatingReadonlyValue = 3.5;";
 <BitLabel>Max is 100</BitLabel>
 <BitRating Max=""100"" @bind-Value=""RatingMaxValue3"" />
 <BitLabel>Rate: @RatingMaxValue3</BitLabel>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private double RatingMaxValue1 = 2.5;
 private double RatingMaxValue2 = 5;
 private double RatingMaxValue3 = 15;";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitLabel>Heart:</BitLabel>
 <BitRating Icon=""@BitIconName.HeartFill"" UnselectedIcon=""@BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
 <BitLabel>Rate: @RatingCustomIconValue1</BitLabel>
@@ -149,12 +149,12 @@ private double RatingMaxValue3 = 15;";
 <BitLabel>Like:</BitLabel>
 <BitRating Icon=""@BitIconName.LikeSolid"" UnselectedIcon=""@BitIconName.Dislike"" @bind-Value=""RatingCustomIconValue3"" />
 <BitLabel>Rate: @RatingCustomIconValue3</BitLabel>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private double RatingCustomIconValue1 = 1.5;
 private double RatingCustomIconValue2 = 2;
 private double RatingCustomIconValue3 = 3;";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitLabel>Small:</BitLabel>
 <BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
 <BitLabel>Rate: @RatingSmallValue</BitLabel>
@@ -162,11 +162,11 @@ private double RatingCustomIconValue3 = 3;";
 <BitLabel>Large:</BitLabel>
 <BitRating Size=""BitRatingSize.Large"" @bind-Value=""RatingLargeValue"" />
 <BitLabel>Rate: @RatingLargeValue</BitLabel>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private double RatingSmallValue = 3;
 private double RatingLargeValue = 3;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitLabel>One-way:</BitLabel>
 <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
 <BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Text=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
@@ -178,12 +178,12 @@ private double RatingLargeValue = 3;";
 <BitLabel>OnChange:</BitLabel>
 <BitRating DefaultValue=""2"" OnChange=""(v) => RatingControlledValue3 = v"" />
 <BitLabel>Rate: @RatingControlledValue3</BitLabel>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private double RatingControlledValue1 = 0;
 private double RatingControlledValue2 = 3;
 private double RatingControlledValue3;";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -206,7 +206,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 public class BitRatingDemoFormModel
 {
     [Range(typeof(double), ""1"", ""5"", ErrorMessage = ""Your rate must be between {1} and {2}"")]
