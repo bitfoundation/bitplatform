@@ -14,7 +14,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             EmailConfirmed = true,
             Gender = Gender.Other,
             BirthDate = new DateTime(2023, 1, 1),
-            FullName = "BlazorDual test account",
+            FullName = "AdminPanel test account",
             UserName = userName,
             Email = userName,
             NormalizedUserName = userName.ToUpperInvariant(),
