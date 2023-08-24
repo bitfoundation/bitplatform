@@ -2,7 +2,7 @@
     <ExamplePreview>
         <BitChoiceGroup Label="Basic Customs"
                         Items="basicCustoms"
-                        DefaultValue="@("A")"
+                        DefaultValue="basicCustoms[1].ItemValue"
                         NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
     </ExamplePreview>
 </ComponentExampleBox>
@@ -16,10 +16,12 @@
                             DefaultValue="@("A")"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
 
-            <BitChoiceGroup Label="ChoiceGroup with Disabled Customs"
+            <BitChoiceGroup Label="ChoiceGroup with Disabled Custom"
                             Items="disabledCustoms"
                             DefaultValue="@("A")"
-                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, 
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -42,7 +44,8 @@
                             Items="iconCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
-                                                     IconName = { Selector = i => i.IconName }})" />
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -66,11 +69,9 @@
         <div class="chg-box">
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
                             Items="itemTemplateCustoms"
-                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                     Value = { Selector = i => i.ItemValue },
-                                                     IconName = { Selector = i => i.IconName }})">
+                            NameSelectors="@(new() { Value = { Selector = i => i.ItemValue } })">
                 <ItemLabelTemplate Context="custom">
-                    <div style="margin-left: 27px;" class="custom-option @(itemLabelTemplateValue == custom.ItemValue ? "selected-option" : string.Empty)">
+                    <div style="margin-left:30px;height:20px" class="custom-container @(itemLabelTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
                         <BitIcon IconName="@custom.IconName" />
                         <span>@custom.Name</span>
                     </div>
@@ -79,13 +80,10 @@
 
             <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
                             Items="itemTemplateCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
-                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
-                                                     IconName = { Name = nameof(ChoiceModel.IconName) } })">
+                            NameSelectors="@(new() { Value = { Name = nameof(ChoiceModel.ItemValue) } })">
                 <ItemTemplate Context="custom">
-                    <div class="custom-option @(itemTemplateValue == custom.ItemValue ? "selected-option" : string.Empty)">
-                        <div class="option-pointer"></div>
-                        <BitIcon IconName="@custom.IconName" />
+                    <div class="custom-container @(itemTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
+                        <div class="custom-circle"></div>
                         <span>@custom.Name</span>
                     </div>
                 </ItemTemplate>
@@ -150,7 +148,8 @@
                             LayoutFlow="BitLayoutFlow.Horizontal"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
-                                                     IconName = { Selector = i => i.IconName }})" />
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -180,9 +179,6 @@
         {
             <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
                 <div>
                     <BitChoiceGroup @bind-Value="validationModel.Value"
                                     Items="basicCustoms"

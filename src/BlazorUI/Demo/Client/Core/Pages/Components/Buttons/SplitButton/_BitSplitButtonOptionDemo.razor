@@ -222,11 +222,11 @@
                             </span>
                         </div>
                     </ItemTemplate>
-                    <ChildContent>
+                    <Options>
                         <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
                         <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
                         <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
-                    </ChildContent>
+                    </Options>
                 </BitSplitButton>
             </div>
             <div>
@@ -261,11 +261,11 @@
                             </div>
                         }
                     </ItemTemplate>
-                    <ChildContent>
+                    <Options>
                         <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
                         <BitSplitButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
                         <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="BitIconName.Delete" />
-                    </ChildContent>
+                    </Options>
                 </BitSplitButton>
             </div>
         </div>
@@ -281,7 +281,7 @@
                         </span>
                     </div>
                 </ItemTemplate>
-                <ChildContent>
+                <Options>
                     <BitSplitButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add">
                         <Template Context="item"><div class="item-template-box" style="color:green">@item.Text (@item.Key)</div></Template>
                     </BitSplitButtonOption>
@@ -291,7 +291,7 @@
                     <BitSplitButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete">
                         <Template Context="item"><div class="item-template-box" style="color:red">@item.Text (@item.Key)</div></Template>
                     </BitSplitButtonOption>
-                </ChildContent>
+                </Options>
             </BitSplitButton>
         </div>
     </ExamplePreview>

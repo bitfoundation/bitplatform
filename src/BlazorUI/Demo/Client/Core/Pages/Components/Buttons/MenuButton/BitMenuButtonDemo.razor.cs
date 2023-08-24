@@ -112,6 +112,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",

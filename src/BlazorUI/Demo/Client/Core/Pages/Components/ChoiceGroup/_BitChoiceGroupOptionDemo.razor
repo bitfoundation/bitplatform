@@ -1,6 +1,6 @@
 ﻿<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
     <ExamplePreview>
-        <BitChoiceGroup Label="Basic Options" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroup Label="Basic Options" DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -53,6 +53,7 @@
                                       ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
                                       SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png" />
             </BitChoiceGroup>
+
             <BitChoiceGroup Label="Icon Options"
                             DefaultValue="@("Day")"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -88,7 +89,7 @@
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemLabelTemplate Context="option">
-                    <div style="margin-left: 27px;" class="custom-option @(itemLabelTemplateValue == option.Value ? "selected-option" : string.Empty)">
+                    <div style="margin-left:30px;height:20px" class="custom-container @(itemLabelTemplateValue == option.Value ? "selected" : string.Empty)">
                         <BitIcon IconName="@option.IconName" />
                         <span>@option.Text</span>
                     </div>
@@ -103,9 +104,8 @@
             <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemTemplate Context="option">
-                    <div class="custom-option @(itemTemplateValue == option.Value ? "selected-option" : string.Empty)">
-                        <div class="option-pointer"></div>
-                        <BitIcon IconName="@option.IconName" />
+                    <div class="custom-container @(itemTemplateValue == option.Value ? "selected" : string.Empty)">
+                        <div class="custom-circle"></div>
                         <span>@option.Text</span>
                     </div>
                 </ItemTemplate>
@@ -153,7 +153,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Horizontal" HtmlCode="@example7HtmlCode" Id="example7">
     <ExamplePreview>
         <div class="chg-box column">
             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
@@ -194,7 +194,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="RTL" HtmlCode="@example8HtmlCode" Id="example8">
     <ExamplePreview>
         <div class="chg-box column">
             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
@@ -220,9 +220,6 @@
         {
             <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
                 <div>
                     <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" @bind-Value="validationModel.Value">
                         <BitChoiceGroupOption Text="Option A" Value="@("A")" />

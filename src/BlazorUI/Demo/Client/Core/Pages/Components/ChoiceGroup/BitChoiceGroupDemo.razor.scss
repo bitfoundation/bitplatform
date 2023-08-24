@@ -32,13 +32,13 @@
         font-weight: bold;
     }
 
-    .custom-option {
+    .custom-container {
         display: flex;
         gap: rem2(10px);
         cursor: pointer;
         align-items: center;
 
-        .option-pointer {
+        .custom-circle {
             width: rem2(20px);
             height: rem2(20px);
             border: 1px solid;
@@ -46,7 +46,7 @@
         }
 
         &:hover {
-            .option-pointer {
+            .custom-circle {
                 border-top: rem2(5px) solid #C66;
                 border-left: rem2(5px) solid #66C;
                 border-right: rem2(5px) solid #CC6;
@@ -54,10 +54,10 @@
             }
         }
 
-        &.selected-option {
+        &.selected {
             color: #C66;
 
-            .option-pointer {
+            .custom-circle {
                 border-top: rem2(10px) solid #C66;
                 border-left: rem2(10px) solid #66C;
                 border-right: rem2(10px) solid #CC6;
@@ -69,16 +69,5 @@
     .validation-message {
         color: $Red20;
         font-size: rem2(12px);
-    }
-
-    .validation-summary {
-        overflow: hidden;
-        margin-bottom: rem2(10px);
-        background-color: $ErrorBlockRed;
-        border-left: rem2(5px) solid $Red10;
-
-        .validation-errors {
-            margin: rem2(5px);
-        }
     }
 }

@@ -1,6 +1,6 @@
 <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <BitChoiceGroup Label="Basic Items" Items="basicItems" DefaultValue="@("A")" />
+        <BitChoiceGroup Label="Basic Items" Items="basicItems" DefaultValue="basicItems[1].Value" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -12,7 +12,7 @@
                             Items="basicItems"
                             DefaultValue="@("A")" />
 
-            <BitChoiceGroup Label="ChoiceGroup with Disabled Items"
+            <BitChoiceGroup Label="ChoiceGroup with Disabled Item"
                             Items="disabledItems"
                             DefaultValue="@("A")" />
         </div>
@@ -45,7 +45,7 @@
         <div class="chg-box">
             <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
                 <ItemLabelTemplate Context="item">
-                    <div style="margin-left: 27px;" class="custom-option @(itemLabelTemplateValue == item.Value ? "selected-option" : string.Empty)">
+                    <div style="margin-left:30px;height:20px" class="custom-container @(itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">
                         <BitIcon IconName="@item.IconName" />
                         <span>@item.Text</span>
                     </div>
@@ -54,9 +54,8 @@
 
             <BitChoiceGroup Label="ItemTemplate" Items="itemTemplateItems" @bind-Value="itemTemplateValue">
                 <ItemTemplate Context="item">
-                    <div class="custom-option @(itemTemplateValue == item.Value ? "selected-option" : string.Empty)">
-                        <div class="option-pointer"></div>
-                        <BitIcon IconName="@item.IconName" />
+                    <div class="custom-container @(itemTemplateValue == item.Value ? "selected" : string.Empty)">
+                        <div class="custom-circle"></div>
                         <span>@item.Text</span>
                     </div>
                 </ItemTemplate>
@@ -111,9 +110,6 @@
         {
             <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
                 <div>
                     <BitChoiceGroup Items="basicItems" @bind-Value="validationModel.Value" />
                     <ValidationMessage For="@(() => validationModel.Value)" />

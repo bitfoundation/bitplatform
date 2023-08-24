@@ -9,5 +9,5 @@ public class ChoiceModel
     public BitSize? ImageSize { get; set; }
     public string? SelectedImageAddress { get; set; }
     public string? IconName { get; set; }
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 }
