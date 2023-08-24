@@ -53,8 +53,9 @@
             for store the public key and etc for validating incoming JWT tokens.
             To create PFX file run the following commands in PowerShell with the desired password and file path for your pfx file.
         </div>
-        <pre class="code-box">> $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
-> Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath PATH_TO_YOUR_IdentityServerCertificate.pfx -Password (ConvertTo-SecureString -String "YOUR_PASSWORD" -Force -AsPlainText)</pre>
+        <pre class="code-box">$cert = New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "IdentityServerCN" -Provider "Microsoft Strong Cryptographic Provider" -HashAlgorithm "SHA512" -NotAfter (Get-Date).AddYears(5)
+Export-PfxCertificate -cert ('Cert:\LocalMachine\My\' + $cert.thumbprint) -FilePath IdentityCertificate.pfx -Password (ConvertTo-SecureString -String "P@ssw0rdP@ssw0rd" -Force -AsPlainText)</pre>
+        <b>Note</b>: Replace P@ssw0rdP@ssw0rd with strong password and use that as IdentityCertificatePassword's value in appsettings.json
     </section>
 
     <section class="section-card">
