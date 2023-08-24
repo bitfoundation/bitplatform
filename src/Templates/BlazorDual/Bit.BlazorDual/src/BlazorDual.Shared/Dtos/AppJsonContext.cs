@@ -1,4 +1,4 @@
-﻿using BlazorDual.Shared.Dtos.Account;
+﻿using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Shared.Dtos;

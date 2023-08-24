@@ -2,8 +2,8 @@
 using System.Web;
 using FluentEmail.Core;
 using TodoTemplate.Server.Api.Resources;
-using TodoTemplate.Server.Api.Models.Account;
-using TodoTemplate.Shared.Dtos.Account;
+using TodoTemplate.Server.Api.Models.Identity;
+using TodoTemplate.Shared.Dtos.Identity;
 using TodoTemplate.Server.Api.Models.Emailing;
 
 namespace TodoTemplate.Server.Api.Controllers;

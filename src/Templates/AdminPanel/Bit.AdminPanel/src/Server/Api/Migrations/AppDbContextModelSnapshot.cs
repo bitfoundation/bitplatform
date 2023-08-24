@@ -22,7 +22,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Account.Role", b =>
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,7 +52,7 @@ namespace AdminPanel.Server.Api.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("AdminPanel.Server.Api.Models.Account.User", b =>
+            modelBuilder.Entity("AdminPanel.Server.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -549,7 +549,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.Role", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -558,7 +558,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -567,7 +567,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -576,13 +576,13 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.Role", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -591,7 +591,7 @@ namespace AdminPanel.Server.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("AdminPanel.Server.Api.Models.Account.User", null)
+                    b.HasOne("AdminPanel.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

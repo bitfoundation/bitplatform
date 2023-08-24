@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
-using TodoTemplate.Shared.Dtos.Account;
+using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Client.Core.Pages;
 

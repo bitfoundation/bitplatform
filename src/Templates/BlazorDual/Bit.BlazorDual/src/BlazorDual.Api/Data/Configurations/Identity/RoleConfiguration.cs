@@ -1,6 +1,6 @@
-﻿using BlazorDual.Api.Models.Account;
+﻿using BlazorDual.Api.Models.Identity;
 
-namespace BlazorDual.Api.Data.Configurations.Account;
+namespace BlazorDual.Api.Data.Configurations.Identity;
 
 public class RoleConfiguration : IEntityTypeConfiguration<Role>
 {

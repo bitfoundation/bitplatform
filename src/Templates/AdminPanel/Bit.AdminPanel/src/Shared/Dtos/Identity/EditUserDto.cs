@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Shared.Dtos.Account;
+﻿namespace AdminPanel.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class EditUserDto

@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Shared.Dtos.Account;
+﻿namespace TodoTemplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class EmailConfirmedRequestDto

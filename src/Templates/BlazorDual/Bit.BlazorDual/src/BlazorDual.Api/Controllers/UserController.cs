@@ -1,5 +1,5 @@
-﻿using BlazorDual.Api.Models.Account;
-using BlazorDual.Shared.Dtos.Account;
+﻿using BlazorDual.Api.Models.Identity;
+using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Api.Controllers;
 

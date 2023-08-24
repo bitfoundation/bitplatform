@@ -1,6 +1,6 @@
-﻿using BlazorDual.Api.Models.Account;
+﻿using BlazorDual.Api.Models.Identity;
 using BlazorDual.Api.Models.Todo;
-using BlazorDual.Shared.Dtos.Account;
+using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Shared.Dtos.Todo;
 using Riok.Mapperly.Abstractions;
 

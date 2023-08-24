@@ -1,5 +1,5 @@
-﻿using AdminPanel.Server.Api.Models.Account;
-using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Server.Api.Models.Identity;
+using AdminPanel.Shared.Dtos.Identity;
 
 namespace AdminPanel.Server.Api.Controllers;
 

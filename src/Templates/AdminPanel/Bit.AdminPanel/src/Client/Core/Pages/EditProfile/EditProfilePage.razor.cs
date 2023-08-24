@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Shared.Dtos.Account;
+using AdminPanel.Shared.Dtos.Identity;
 
 namespace AdminPanel.Client.Core.Pages;
 

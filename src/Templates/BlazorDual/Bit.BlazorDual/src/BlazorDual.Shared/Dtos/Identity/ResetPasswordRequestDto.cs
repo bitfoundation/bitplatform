@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Shared.Dtos.Account;
+﻿namespace BlazorDual.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class ResetPasswordRequestDto

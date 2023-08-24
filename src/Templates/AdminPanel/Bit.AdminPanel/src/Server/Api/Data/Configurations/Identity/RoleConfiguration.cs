@@ -1,6 +1,6 @@
-﻿using AdminPanel.Server.Api.Models.Account;
+﻿using AdminPanel.Server.Api.Models.Identity;
 
-namespace AdminPanel.Server.Api.Data.Configurations.Account;
+namespace AdminPanel.Server.Api.Data.Configurations.Identity;
 
 public class RoleConfiguration : IEntityTypeConfiguration<Role>
 {

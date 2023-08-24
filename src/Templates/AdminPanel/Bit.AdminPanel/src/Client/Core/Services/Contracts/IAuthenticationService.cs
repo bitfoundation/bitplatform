@@ -1,4 +1,4 @@
-﻿using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Shared.Dtos.Identity;
 
 namespace AdminPanel.Client.Core.Services.Contracts;
 

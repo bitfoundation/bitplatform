@@ -125,7 +125,7 @@ namespace BlazorDual.Api.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BlazorDual.Api.Models.Account.Role", b =>
+            modelBuilder.Entity("BlazorDual.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,7 +155,7 @@ namespace BlazorDual.Api.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("BlazorDual.Api.Models.Account.User", b =>
+            modelBuilder.Entity("BlazorDual.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -270,7 +270,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.Role", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -279,7 +279,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -288,7 +288,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -297,13 +297,13 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.Role", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -312,7 +312,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", null)
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -321,7 +321,7 @@ namespace BlazorDual.Api.Migrations
 
             modelBuilder.Entity("BlazorDual.Api.Models.TodoItem.TodoItem", b =>
                 {
-                    b.HasOne("BlazorDual.Api.Models.Account.User", "User")
+                    b.HasOne("BlazorDual.Api.Models.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

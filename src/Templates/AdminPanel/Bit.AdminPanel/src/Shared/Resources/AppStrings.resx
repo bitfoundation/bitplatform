@@ -796,10 +796,10 @@ Please confirm your email by clicking on the link.</value>
     <value>Are you sure you want to delete product {0}</value>
   </data>
   <data name="DeleteCategory" xml:space="preserve">
-    <value>DeleteCategory</value>
+    <value>Delete category</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
-    <value>DeleteProduct</value>
+    <value>Delete product</value>
   </data>
   <data name="SendResetLink" xml:space="preserve">
     <value>Submit</value>

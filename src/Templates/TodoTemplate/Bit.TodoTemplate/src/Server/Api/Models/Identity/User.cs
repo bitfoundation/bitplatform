@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Server.Api.Models.Account;
+﻿namespace TodoTemplate.Server.Api.Models.Identity;
 
 public class User : IdentityUser<int>
 {
