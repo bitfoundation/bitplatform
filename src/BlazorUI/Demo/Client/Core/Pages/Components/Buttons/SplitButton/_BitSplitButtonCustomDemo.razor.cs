@@ -153,7 +153,7 @@ public partial class _BitSplitButtonCustomDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSplitButton Items=""basicCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                          Key = { Name = nameof(SplitActionItem.Id) },
@@ -170,7 +170,7 @@ public partial class _BitSplitButtonCustomDemo
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                          Key = { Name = nameof(SplitActionItem.Id) },
                                          Text = { Name = nameof(SplitActionItem.Name) }})"" />";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 public class SplitActionItem
 {
     public string Id { get; set; }
@@ -200,7 +200,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""basicCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
@@ -213,7 +213,7 @@ private List<SplitActionItem> basicCustomItems = new()
                 NameSelectors=""@(new() { IconName = { Selector = item => item.Icon },
                                          Key = { Selector = item => item.Id },
                                          Text = { Selector = item => item.Name }})"" />";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 public class SplitActionItem
 {
     public string Id { get; set; }
@@ -243,7 +243,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""disabledCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
@@ -255,7 +255,7 @@ private List<SplitActionItem> basicCustomItems = new()
                 NameSelectors=""@(new() { IconName = { Selector = item => item.Icon },
                                          Key = { Selector = item => item.Id },
                                          Text = { Selector = item => item.Name }})"" />";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 public class SplitActionItem
 {
     public string Id { get; set; }
@@ -287,7 +287,7 @@ private List<SplitActionItem> disabledCustomItems = new()
     }
 };";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""basicCustomItems""
                 OnClick=""(SplitActionItem item) => example41SelectedItem = item""
@@ -319,7 +319,7 @@ private List<SplitActionItem> disabledCustomItems = new()
                                          OnClick = { Selector = item => item.Clicked } })"" />
 
 <div>Clicked item: @example42SelectedItem?.Name</div>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private SplitActionItem? example41SelectedItem;
 private SplitActionItem? example42SelectedItem;
 
@@ -364,7 +364,7 @@ protected override void OnInitialized()
     itemsOnClick.ForEach(i => i.Clicked = onClick);
 }";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -425,7 +425,7 @@ protected override void OnInitialized()
                                          Key = { Selector = item => item.Id },
                                          Text = { Selector = item => item.Name } })""
                 Classes=""@(new() { ChevronDownButton=""custom-chevron"", ItemButton=""custom-button"" })"" />";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 public class SplitActionItem
 {
     public string? Id { get; set; }
@@ -482,7 +482,7 @@ private List<SplitActionItem> itemStyleClassCustoms = new()
     }
 };";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 Visible: [ <BitSplitButton Visibility=""BitVisibility.Visible""
                            Items=""basicCustomItems""
                            NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
@@ -500,7 +500,7 @@ Collapsed: [ <BitSplitButton Visibility=""BitVisibility.Collapsed""
                              NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
                                                       Key = { Name = nameof(SplitActionItem.Id) },
                                                       IconName = { Name = nameof(SplitActionItem.Icon) } })"" /> ]";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 public class SplitActionItem
 {
     public string? Id { get; set; }
@@ -530,7 +530,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -599,7 +599,7 @@ private List<SplitActionItem> basicCustomItems = new()
                                          Key = { Name = nameof(SplitActionItem.Id) },
                                          IconName = { Name = nameof(SplitActionItem.Icon) },
                                          Template = { Name = nameof(SplitActionItem.Fragment)} })"" />";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class SplitActionItem
 {
     public string Id { get; set; }
@@ -652,7 +652,7 @@ private List<SplitActionItem> itemTemplateCustoms2 = new()
     }
 };";
 
-    private readonly string example8HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitSplitButton Items=""basicCustomItems""
                 DefaultSelectedItem=""basicCustomItems[1]""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
@@ -683,7 +683,7 @@ private List<SplitActionItem> itemTemplateCustoms2 = new()
                                          Text = { Selector = item => item.Name } })"" />
 
 <div>Selected item: <b>@twoWaySelectedItem.Name</b></div>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private SplitActionItem twoWaySelectedItem = default!;
 private SplitActionItem? changedSelectedItem;
 

@@ -1,0 +1,275 @@
+﻿@page "/components/textfield"
+@page "/components/text-field"
+
+<PageOutlet Url="components/textfield"
+            Title="TextField"
+            Description="textfield component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="TextField"
+               ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." Label="Basic" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Disabled" IsEnabled="false" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Description" Description="This is Description" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="IsRequired" IsRequired="true" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="MaxLength: 5" MaxLength="5" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="AutoFocus" HtmlCode="@example2HtmlCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." AutoFocus="true" Label="Auto focused" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="IsUnderlined" HtmlCode="@example3HtmlCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." Label="Basic" IsUnderlined="true" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Required" IsUnderlined="true" IsRequired="true" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Disabled" IsUnderlined="true" IsEnabled="false" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="HasBorder" HtmlCode="@example4HtmlCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." Label="Basic No Border" HasBorder="false" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Required No Border" HasBorder="false" IsRequired="true" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Disabled No Border" HasBorder="false" IsEnabled="false" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="IsMultiline" HtmlCode="@example5HtmlCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text..." Label="Resizable (By default)" IsMultiline="true" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Unresizable (Fixed)" IsMultiline="true" IsResizable="false" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Row count (10)" IsMultiline="true" Rows="10" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Icon" HtmlCode="@example6HtmlCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter an email..." Label="Email Icon" IconName="@BitIconName.EditMail" />
+                <br />
+                <BitTextField Placeholder="Enter a date..." Label="Calendar Icon" IconName="@BitIconName.Calendar" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Prefix & Suffix" HtmlCode="@example7HtmlCode" Id="example7">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Label="With Prefix" Prefix="https://" />
+                <br />
+                <BitTextField Label="With Suffix" Suffix=".com" />
+                <br />
+                <BitTextField Label="With Prefix and Suffix" Prefix="https://" Suffix=".com" />
+                <br />
+                <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IsEnabled="false" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Templates" HtmlCode="@example8HtmlCode" Id="example8">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a text...">
+                    <LabelTemplate>
+                        <BitLabel Style="color: coral;">This is custom Label</BitLabel>
+                    </LabelTemplate>
+                </BitTextField>
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="This is custom Description">
+                    <DescriptionTemplate>
+                        <BitLabel Style="color: coral;">Description</BitLabel>
+                    </DescriptionTemplate>
+                </BitTextField>
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="This is custom Prefix">
+                    <PrefixTemplate>
+                        <BitLabel Style="color: coral; margin: 0 5px;">Prefix</BitLabel>
+                    </PrefixTemplate>
+                </BitTextField>
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="This is custom Suffix">
+                    <SuffixTemplate>
+                        <BitLabel Style="color: coral; margin: 0 5px;">Suffix</BitLabel>
+                    </SuffixTemplate>
+                </BitTextField>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Password types" HtmlCode="@example9HtmlCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitTextField Placeholder="Enter a password..." Label="Password" Type="BitTextFieldType.Password" />
+                <br />
+                <BitTextField Placeholder="Enter a password..." Label="Can Reveal Password" Type="BitTextFieldType.Password" CanRevealPassword="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="One-way" Value="@OneWayValue" />
+                    <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="OneWayValue" />
+                </div>
+                <br />
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="Two-way" @bind-Value="TwoWayValue" />
+                    <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="TwoWayValue" />
+                </div>
+                <br />
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="OnChange" OnChange="(v) => OnChangeValue = v" />
+                    <BitLabel>Value: @OnChangeValue</BitLabel>
+                </div>
+                <br />
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="Readonly" @bind-Value="ReadOnlyValue" IsReadonly="true" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="IsTrimmed" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <ExamplePreview>
+            <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
+            <div class="example-box">
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="Trimmed" IsTrimmed="true" @bind-Value="TrimmedValue" />
+                    <pre class="trimmed-box">[@TrimmedValue]</pre>
+                </div>
+                <br />
+                <div>
+                    <BitTextField Placeholder="Enter a text..." Label="Not Trimmed" @bind-Value="NotTrimmedValue" />
+                    <pre class="trimmed-box">[@NotTrimmedValue]</pre>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" HtmlCode="@example12HtmlCode" Id="example12">
+        <ExamplePreview>
+            <div class="custom-wrapper">
+                <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Custom LabelClass" LabelClass="custom-label" />
+            </div>
+            <br />
+            <div class="custom-wrapper">
+                <BitTextField Placeholder="Enter a text..." Label="Custom InputStyle" InputStyle="color:red" />
+                <br />
+                <BitTextField Placeholder="Enter a text..." Label="Custom InputClass" InputClass="custom-input" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" HtmlCode="@example13HtmlCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <ExamplePreview>
+            <div class="example-box">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="validation-summary">
+                            <ValidationSummary />
+                        </div>
+                        <br />
+                        <div class="form-item">
+                            <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />
+                            <ValidationMessage For="() => validationTextFieldModel.Text" />
+                        </div>
+                        <br />
+                        <div class="form-item">
+                            <BitTextField Label="Numeric validation" @bind-Value="validationTextFieldModel.NumericText" />
+                            <ValidationMessage For="() => validationTextFieldModel.NumericText" />
+                        </div>
+                        <br />
+                        <div class="form-item">
+                            <BitTextField Label="Character validation" @bind-Value="validationTextFieldModel.CharacterText" />
+                            <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
+                        </div>
+                        <br />
+                        <div class="form-item">
+                            <BitTextField Label="Email format validation" @bind-Value="validationTextFieldModel.EmailText" />
+                            <ValidationMessage For="() => validationTextFieldModel.EmailText" />
+                        </div>
+                        <br />
+                        <div class="form-item">
+                            <BitTextField Label="Length character validation (Min: 3, Max: 5)" MaxLength="5" @bind-Value="validationTextFieldModel.RangeText" />
+                            <ValidationMessage For="() => validationTextFieldModel.RangeText" />
+                        </div>
+                        <br />
+                        <BitButton ButtonType="BitButtonType.Submit">
+                            Submit
+                        </BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                        The form is valid to submit successfully.
+                    </BitMessageBar>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
+
+@code {
+    private string OneWayValue;
+    private string TwoWayValue;
+    private string OnChangeValue;
+    private string ReadOnlyValue = "this is readonly value";
+
+    private string TrimmedValue;
+    private string NotTrimmedValue;
+
+    private ValidationTextFieldModel validationTextFieldModel = new();
+    public bool formIsValidSubmit;
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        validationTextFieldModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+}

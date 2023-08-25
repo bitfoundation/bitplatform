@@ -13,7 +13,7 @@
                    Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavItemHTMLCode" CsharpCode="@example1NavItemCSharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavItemHtmlCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu" />
@@ -21,7 +21,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavItemHTMLCode" CsharpCode="@example2NavItemCSharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavItemHtmlCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
@@ -29,7 +29,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavItemHTMLCode" CsharpCode="@example3NavItemCSharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavItemHtmlCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -60,7 +60,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavItemHTMLCode" CsharpCode="@example4NavItemCSharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavItemHtmlCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -94,7 +94,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5NavItemHTMLCode" CsharpCode="@example5NavItemCSharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5NavItemHtmlCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="FoodNavMenu"
@@ -113,7 +113,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavItemHTMLCode" CsharpCode="@example6NavItemCSharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavItemHtmlCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu"
@@ -127,7 +127,7 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1CustomItemHTMLCode" CsharpCode="@example1CustomItemCSharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1CustomItemHtmlCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -140,7 +140,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2CustomItemHTMLCode" CsharpCode="@example2CustomItemCSharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2CustomItemHtmlCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomCarNavMenu"
@@ -157,7 +157,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3CustomItemHTMLCode" CsharpCode="@example3CustomItemCSharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3CustomItemHtmlCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -196,7 +196,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4CustomItemHTMLCode" CsharpCode="@example4CustomItemCSharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4CustomItemHtmlCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -243,7 +243,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5CustomItemHTMLCode" CsharpCode="@example5CustomItemCSharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5CustomItemHtmlCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="CustomFoodNavMenu"
@@ -266,7 +266,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6CustomItemHTMLCode" CsharpCode="@example6CustomItemCSharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6CustomItemHtmlCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -285,7 +285,7 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavOptionHTMLCode" Id="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavOptionHtmlCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption">
@@ -321,7 +321,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavOptionHTMLCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavOptionHtmlCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
@@ -359,7 +359,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavOptionHTMLCode" CsharpCode="@example3NavOptionCSharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavOptionHtmlCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -433,7 +433,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavOptionHTMLCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavOptionHtmlCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -519,7 +519,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5NavOptionHTMLCode" CsharpCode="@example5NavOptionCSharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5NavOptionHtmlCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Mode="BitNavMode.Manual"
@@ -561,7 +561,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavOptionHTMLCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavOptionHtmlCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption"

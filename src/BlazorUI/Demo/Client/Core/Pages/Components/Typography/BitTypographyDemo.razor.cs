@@ -70,7 +70,7 @@ public partial class BitTypographyDemo
 
 
 
-    private string example1HTMLCode = @"
+    private string example1HtmlCode = @"
 <BitTypography>This is default (Subtitle1)</BitTypography>
 <br />
 <BitTypography Variant=""BitTypographyVariant.H1"">H1. Heading</BitTypography>

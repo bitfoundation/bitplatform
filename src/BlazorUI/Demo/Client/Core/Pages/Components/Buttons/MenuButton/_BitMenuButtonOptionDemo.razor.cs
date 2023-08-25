@@ -15,7 +15,7 @@ public partial class _BitMenuButtonOptionDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitMenuButton Text=""Primary"" OnItemClick=""(BitMenuButtonOption item) => example1SelectedItem = item.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
@@ -37,10 +37,10 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 
 <div>Clicked Item: @example1SelectedItem</div>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private string example1SelectedItem;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitMenuButton Text=""Option Disabled"" OnItemClick=""(BitMenuButtonOption item) => example2SelectedItem = item.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
@@ -54,10 +54,10 @@ private string example1SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example2SelectedItem</div>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private string example2SelectedItem;";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitMenuButton Text=""IconName""
                IconName=""@BitIconName.Edit""
                OnItemClick=""(BitMenuButtonOption item) => example3SelectedItem = item.Key"">
@@ -77,10 +77,10 @@ private string example2SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example3SelectedItem</div>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private string example3SelectedItem;";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -152,12 +152,12 @@ private string example3SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example43SelectedItem</div>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private string example41SelectedItem;
 private string example42SelectedItem;
 private string example43SelectedItem;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 Visible: [
 <BitMenuButton Visibility=""BitVisibility.Visible"" Text=""Visible menu button"" OnItemClick=""(BitMenuButtonOption item) => example5SelectedItem = item.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
@@ -178,10 +178,10 @@ Collapsed: [
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton> ]";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string example5SelectedItem;";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitMenuButton OnItemClick=""(BitMenuButtonOption item) => example6SelectedItem = item.Key"">
     <HeaderTemplate>
         <BitIcon IconName=""@BitIconName.Warning"" />
@@ -214,10 +214,10 @@ private string example5SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example5SelectedItem</div>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string example6SelectedItem;";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -278,7 +278,7 @@ private string example6SelectedItem;";
 </BitMenuButton>
 
 <div>Clicked Item: @example72SelectedItem</div>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string example71SelectedItem;
 private string example72SelectedItem;";
 }

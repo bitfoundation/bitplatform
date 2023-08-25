@@ -339,7 +339,7 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     };
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <style scoped>
     .grid {
         width: 100%;
@@ -530,7 +530,7 @@ public partial class BitDataGridDemo
     </div>
     <BitDataGridPaginator Value=""@pagination"" />
 </div>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 IQueryable<CountryModel> allCountries;
 string typicalSampleNameFilter = string.Empty;
 BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
@@ -570,7 +570,7 @@ public class MedalsModel
 }
 ";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 
@@ -621,7 +621,7 @@ public class MedalsModel
      </div>
 </div>
 ";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
 string _virtualSampleNameFilter = string.Empty;
 BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
@@ -807,7 +807,7 @@ public class Openfda
 }
 ";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
@@ -856,7 +856,7 @@ public class Openfda
      </div>
 </div>
 ";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 
 // To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData(options => options.EnableQueryFeatures())
 // Note that this need Microsoft.AspNetCore.OData nuget package to be installed

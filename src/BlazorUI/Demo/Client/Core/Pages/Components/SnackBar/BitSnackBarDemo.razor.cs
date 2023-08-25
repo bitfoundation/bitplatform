@@ -138,7 +138,7 @@ public partial class BitSnackBarDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSnackBar @ref=""BasicSnackBarRef""
                 Position=""@BasicSnackBarPosition""
                 AutoDismiss=""@BasicSnackBarAutoDismiss""
@@ -172,7 +172,7 @@ public partial class BitSnackBarDemo
 </div>
 
 <BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackBar"">Show</BitButton>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private BitSnackBar BasicSnackBarRef = new();
 private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
 private BitSnackBarPosition BasicSnackBarPosition = BitSnackBarPosition.BottomRight;
@@ -186,7 +186,7 @@ private async Task OpenBasicSnackBar()
     await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
 }";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSnackBar @ref=""DismissIconName"" DismissIconName=""@BitIconName.Go"" />
 <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 
@@ -213,7 +213,7 @@ private async Task OpenBasicSnackBar()
     </BodyTemplate>
 </BitSnackBar>
 <BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private BitSnackBar DismissIconName = new();
 private BitSnackBar TitleTemplate = new();
 private BitSnackBar BodyTemplate = new();

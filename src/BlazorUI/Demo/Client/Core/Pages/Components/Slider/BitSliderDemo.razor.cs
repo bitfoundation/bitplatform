@@ -147,7 +147,7 @@ public partial class BitSliderDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSlider Label=""Basic slider"" />
 <br />
 <br />
@@ -191,10 +191,10 @@ public partial class BitSliderDemo
             Step=""1""
             DefaultValue=""2""
             IsOriginFromZero=""true"" />";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private double? sliderHorizontalValue = 2;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -222,7 +222,7 @@ private double? sliderHorizontalValue = 2;";
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""0""
            Max=""10""
@@ -260,7 +260,7 @@ private double? sliderHorizontalValue = 2;";
            DefaultUpperValue=""2""
            IsRanged=""true""
            IsOriginFromZero=""true"" />";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private double? sliderRangedLowerValue = 3;
 private double? sliderRangedUpperValue = 7;
 private void ResetBitSliderRangedValues()
@@ -269,7 +269,7 @@ private void ResetBitSliderRangedValues()
     sliderRangedUpperValue = 7;
 }";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -307,7 +307,7 @@ private void ResetBitSliderRangedValues()
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitSlider Max=""10""
            DefaultUpperValue=""3""
            DefaultLowerValue=""5""

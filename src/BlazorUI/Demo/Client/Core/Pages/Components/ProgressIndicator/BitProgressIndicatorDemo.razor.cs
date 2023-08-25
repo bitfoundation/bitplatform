@@ -71,14 +71,14 @@ public partial class BitProgressIndicatorDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""@Description""
                       PercentComplete=""@CompletedPercent""
                       BarHeight=""50"" />
 
 <BitButton OnClick=""StartProgress"">Start Progress</BitButton>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private int CompletedPercent;
 private string Description = ""Push button to start!"";
 
@@ -103,7 +103,7 @@ private async Task StartProgress()
     }
 }";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""Example description"" 
                       BarHeight=""20"" />";
