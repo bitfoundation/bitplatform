@@ -411,7 +411,7 @@ public partial class BitPersonaDemo
 
 
 
-    private static readonly string example1HtmlCode = @"
+    private readonly string example1HtmlCode = @"
 <BitCheckbox @bind-Value=""IsDetailsHidden"" 
              OnClick=""() => IsDetailsHidden = !IsDetailsHidden"">Include BitPersona details</BitCheckbox>
 
@@ -481,10 +481,10 @@ public partial class BitPersonaDemo
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.Dnd
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" >";
-    private static readonly string example1CsharpCode = @"
+    private readonly string example1CsharpCode = @"
 public bool IsDetailsHidden { get; set; } = true;";
 
-    private static readonly string example2HtmlCode = @"
+    private readonly string example2HtmlCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -496,10 +496,10 @@ public bool IsDetailsHidden { get; set; } = true;";
             OnActionClick=""() => ActionClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ActionClickCount: @ActionClickCount</p>";
-    private static readonly string example2CsharpCode = @"
+    private readonly string example2CsharpCode = @"
 private int ActionClickCount = 0;";
 
-    private static readonly string example3HtmlCode = @"
+    private readonly string example3HtmlCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -510,10 +510,10 @@ private int ActionClickCount = 0;";
             OnImageClick=""() => ImageClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 <p>ImageClickCount: @ImageClickCount</p>";
-    private static readonly string example3CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private int ImageClickCount = 0;";
 
-    private static readonly string example4HtmlCode = @"
+    private readonly string example4HtmlCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
