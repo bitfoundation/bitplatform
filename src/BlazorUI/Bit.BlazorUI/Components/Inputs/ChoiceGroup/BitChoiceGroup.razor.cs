@@ -22,6 +22,11 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitChoiceGroup.
+    /// </summary>
+    [Parameter] public BitChoiceGroupClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Default selected item for ChoiceGroup.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
@@ -32,14 +37,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
-    /// Used to customize the label for the Item content.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
-
-    /// <summary>
     /// Used to customize the label for the Item Label content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
+
+    /// <summary>
+    /// Used to customize the label for the Item content.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// If true, selecting an option is mandatory in the ChoiceGroup.
@@ -90,17 +95,22 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// <summary>
     /// Callback for when the option clicked.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
     /// Callback for when the option has been changed.
     /// </summary>
-    [Parameter] public EventCallback<ChangeEventArgs> OnChange { get; set; }
+    [Parameter] public EventCallback<BitChangeEventArgs<TValue>> OnChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitChoiceGroup.
+    /// </summary>
+    [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
 
 
 
@@ -184,6 +194,28 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    private string? GetClass(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Class;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
     private string? GetId(TItem item)
@@ -340,6 +372,28 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.SelectedImageSrc.Name);
     }
 
+    private string? GetStyle(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Style;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
     private string? GetText(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -402,20 +456,21 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return EqualityComparer<TValue>.Default.Equals(itemValue, value);
     }
 
-    private async Task HandleClick(MouseEventArgs e)
+    private async Task HandleClick(TItem item)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        await OnClick.InvokeAsync(e);
+        await OnClick.InvokeAsync(item);
     }
 
-    private async Task HandleChange(ChangeEventArgs e)
+    private async Task HandleChange(TItem item)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        CurrentValue = e.Value.ConvertTo<TValue>();
+        var oldValue = CurrentValue;
+        CurrentValue = GetValue(item);
 
-        await OnChange.InvokeAsync(e);
+        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
     }
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
@@ -427,19 +482,18 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         _ => null
     };
 
-    private string GetItemContainerClassName(TItem item)
+    private string GetItemContainerCssClasses(TItem item)
     {
-        const string itemRootElementClass = "bit-chgi";
-
-        StringBuilder cssClass = new(itemRootElementClass);
+        StringBuilder cssClass = new(RootElementClass);
+        cssClass.Append("-icn");
 
         if (ItemTemplate is not null) return cssClass.ToString();
 
         if (GetIsCheckedItem(item))
         {
             cssClass.Append(' ')
-                    .Append(itemRootElementClass)
-                    .Append("-chk");
+                    .Append(RootElementClass)
+                    .Append("-ich");
         }
 
         if (ItemLabelTemplate is not null) return cssClass.ToString();
@@ -447,21 +501,25 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         if (IsEnabled is false || GetIsEnabled(item) is false)
         {
             cssClass.Append(' ')
-                    .Append(itemRootElementClass)
-                    .Append("-dis");
+                    .Append(RootElementClass)
+                    .Append("-ids");
         }
 
         if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
         {
             cssClass.Append(' ')
-                    .Append(itemRootElementClass)
-                    .Append("-img");
+                    .Append(RootElementClass)
+                    .Append("-ihi");
         }
 
         return cssClass.ToString();
     }
 
-    private string GetItemLabelClass(TItem item) => (GetImageSrc(item).HasValue() || GetIconName(item).HasValue()) && ItemLabelTemplate is null
-                                                            ? "bit-chgi-lbl-img"
-                                                            : "bit-chgi-lbl";
+    private string GetItemLabelWrapperCssClasses(TItem item)
+    {
+        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
+        return (hasImageOrIcon) && ItemLabelTemplate is null
+                ? "bit-chg-ilwi"
+                : "bit-chg-ilw";
+    }
 }

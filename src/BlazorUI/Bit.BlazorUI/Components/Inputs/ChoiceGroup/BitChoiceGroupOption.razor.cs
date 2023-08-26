@@ -1,57 +1,72 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroupOption<TValue> : IDisposable
+public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
 {
     private bool _disposed;
 
     [CascadingParameter] protected BitChoiceGroup<BitChoiceGroupOption<TValue>, TValue> Parent { get; set; } = default!;
 
     /// <summary>
-    /// Used to customize the label for the RadioButtonOption.
+    /// AriaLabel attribute for the BitChoiceGroup option.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Set attribute of Id for the GroupOption Option input.
+    /// CSS class attribute for the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// Id attribute of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Id { get; set; }
 
     /// <summary>
-    /// The icon to show as Option content.
+    /// Whether the BitChoiceGroup option is enabled.
+    /// </summary>
+    [Parameter] public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// The icon to show as content of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// The image address to show as Option content.
+    /// The image address to show as the content of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? ImageSrc { get; set; }
 
     /// <summary>
-    /// Provides alternative information for the Option image.
+    /// The alt attribute for the image of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? ImageAlt { get; set; }
 
     /// <summary>
-    /// Provides Height and Width for the Option image.
+    /// Provides Width and Height for the image of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public BitSize? ImageSize { get; set; }
 
     /// <summary>
-    /// Provides a new image for the selected Option in the Image-GroupOption.
+    /// Provides a new image for the selected state of the image of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? SelectedImageSrc { get; set; }
 
     /// <summary>
-    /// Text to show as content of GroupOption Option.
+    /// CSS style attribute for the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>
+    /// Text to show as the content of BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// This value is returned when GroupOption Option is Clicked.
+    /// This value is returned when BitChoiceGroup option is checked.
     /// </summary>
     [Parameter] public TValue? Value { get; set; }
 
-    protected override string RootElementClass => "bit-chgo";
+
 
     protected override async Task OnInitializedAsync()
     {

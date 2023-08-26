@@ -3,52 +3,62 @@
 public class BitChoiceGroupItem<TValue>
 {
     /// <summary>
-    /// AriaLabel attribute for the GroupOption Option input.
+    /// AriaLabel attribute for the BitChoiceGroup item.
     /// </summary>
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Set attribute of Id for the GroupOption Option input.
+    /// CSS class attribute for the BitChoiceGroup item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Id attribute of the BitChoiceGroup item.
     /// </summary>
     public string? Id { get; set; }
 
     /// <summary>
-    /// Whether or not the GroupOption Option is enabled.
+    /// Whether the BitChoiceGroup item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// The icon to show as Option content.
+    /// The icon to show as content of the BitChoiceGroup item.
     /// </summary>
     public string? IconName { get; set; }
 
     /// <summary>
-    /// The image address to show as Option content.
+    /// The image address to show as the content of the BitChoiceGroup item.
     /// </summary>
     public string? ImageSrc { get; set; }
 
     /// <summary>
-    /// Provides alternative information for the Option image.
+    /// The alt attribute for the image of the BitChoiceGroup item.
     /// </summary>
     public string? ImageAlt { get; set; }
 
     /// <summary>
-    /// Provides Height and Width for the Option image.
+    /// Provides Width and Height for the image of the BitChoiceGroup item.
     /// </summary>
     public BitSize? ImageSize { get; set; }
 
     /// <summary>
-    /// Provides a new image for the selected Option in the Image-GroupOption.
+    /// Provides a new image for the selected state of the image of the BitChoiceGroup item.
     /// </summary>
     public string? SelectedImageSrc { get; set; }
 
     /// <summary>
-    /// Text to show as content of GroupOption Option.
+    /// CSS style attribute for the BitChoiceGroup item.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Text to show as the content of BitChoiceGroup item.
     /// </summary>
     public string? Text { get; set; }
 
     /// <summary>
-    /// This value is returned when GroupOption Option is Clicked.
+    /// The value returned when BitChoiceGroup item is checked.
     /// </summary>
     public TValue? Value { get; set; }
 }

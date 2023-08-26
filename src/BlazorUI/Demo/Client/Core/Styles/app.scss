@@ -26,6 +26,8 @@ html, body, #app-container {
 .pivot-sticky-header {
     z-index: 10;
     position: sticky;
+    padding: 0.25rem 0.5rem;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
     top: calc(rem2(75px) + var(--bit-status-bar-height));
 

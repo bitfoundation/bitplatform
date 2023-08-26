@@ -9,7 +9,7 @@
 
 <ComponentExampleBox Title="Disabled" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="Disabled ChoiceGroup"
                             IsEnabled="false"
                             Items="basicCustoms"
@@ -28,7 +28,7 @@
 
 <ComponentExampleBox Title="Images and Icons" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="Image Customs"
                             DefaultValue="@("Bar")"
                             Items="imageCustoms"
@@ -50,7 +50,56 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Style & Class" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styled ChoiceGroup"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Style="width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="Classed ChoiceGroup"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Class="custom-class"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Items="itemStyleClassCustoms"
+                            DefaultValue="itemStyleClassCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, 
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     Class = { Name = nameof(ChoiceModel.Class) },
+                                                     Style = { Name = nameof(ChoiceModel.Style) } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styles"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Styles="@(new() { Label = "color:tomato",
+                                              ItemIcon = "color:red" ,
+                                              ItemText = "color:yellowgreen;font-size:12px;font-weight:bold" })"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="Classes"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Classes="@(new() { Label = "custom-label" , ItemText = "custom-text" })"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"/>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <BitChoiceGroup Items="basicCustoms"
                         DefaultValue="@("A")"
@@ -64,9 +113,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item Templates" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Item Templates" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
                             Items="itemTemplateCustoms"
                             NameSelectors="@(new() { Value = { Selector = i => i.ItemValue } })">
@@ -92,14 +141,14 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Binding" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <div>
                 <BitChoiceGroup Label="One-way" Value="@oneWayValue"
                                 Items="basicCustoms"
                                 NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
-                <div class="chg-output">
+                <div class="output">
                     <BitTextField @bind-Value="oneWayValue" />
                 </div>
             </div>
@@ -107,7 +156,7 @@
                 <BitChoiceGroup Label="Two-way" @bind-Value="twoWayValue"
                                 Items="basicCustoms"
                                 NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
-                <div class="chg-output">
+                <div class="output">
                     <BitTextField @bind-Value="twoWayValue" />
                 </div>
             </div>
@@ -115,9 +164,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Horizontal" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
-        <div class="chg-box column">
+        <div class="example-content column">
             <BitChoiceGroup Label="Basic"
                             DefaultValue="@("A")"
                             Items="basicCustoms"
@@ -154,9 +203,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="RTL" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
-        <div class="chg-box column">
+        <div class="example-content column">
             <BitChoiceGroup Label="Basic"
                             IsRtl="true"
                             DefaultValue="@("A")"
@@ -173,7 +222,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Validation" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         @if (string.IsNullOrEmpty(successMessage))
         {

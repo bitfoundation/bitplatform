@@ -10,4 +10,6 @@ public class ChoiceModel
     public string? SelectedImageAddress { get; set; }
     public string? IconName { get; set; }
     public bool IsDisabled { get; set; }
+    public string? Class { get; set; }
+    public string? Style { get; set; }
 }

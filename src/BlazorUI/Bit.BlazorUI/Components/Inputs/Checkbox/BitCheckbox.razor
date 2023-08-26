@@ -36,6 +36,8 @@
     </label>
 
     <input @ref="_checkboxElement" @attributes="InputHtmlAttributes" @onclick="@HandleCheckboxClick"
+           hidden 
+           name="@Name"
            id="@_inputId"
            type="checkbox"
            value="@CurrentValue"
@@ -46,7 +48,5 @@
            aria-labelledby="@AriaLabelledby"
            aria-posinset="@AriaPositionInSet"
            aria-describedby="@AriaDescription"
-           aria-disabled="@(IsEnabled is false)"
-           name="@Name"
-           hidden />
+           aria-disabled="@(IsEnabled is false)" />
 </div>

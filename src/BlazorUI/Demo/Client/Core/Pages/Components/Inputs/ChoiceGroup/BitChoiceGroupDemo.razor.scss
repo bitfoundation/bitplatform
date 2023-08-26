@@ -4,10 +4,9 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
-
-    .chg-box {
+    .example-content {
+        gap: 2rem;
         display: flex;
-        gap: rem2(30px);
 
         @include sm {
             flex-direction: column;
@@ -17,7 +16,7 @@
             flex-direction: column;
         }
 
-        .chg-output {
+        .output {
             gap: rem2(5px);
             display: flex;
             font-weight: 600;
@@ -25,6 +24,29 @@
             font-size: rem2(16px);
             margin-top: rem2(20px);
         }
+    }
+
+    .custom-class {
+        width: 300px;
+        padding: 2rem;
+        border-radius: 25%;
+        background-color: red;
+    }
+
+    .custom-item {
+        color: brown;
+    }
+
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-text {
+        color: blue;
+        font-size: 16px;
+        font-weight: bold;
     }
 
     .custom-label {

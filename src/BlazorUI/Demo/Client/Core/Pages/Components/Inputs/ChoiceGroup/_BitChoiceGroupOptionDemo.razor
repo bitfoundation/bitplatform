@@ -11,7 +11,7 @@
 
 <ComponentExampleBox Title="Disabled" HtmlCode="@example2HtmlCode" Id="example2">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="Disabled ChoiceGroup"
                             IsEnabled="false"
                             DefaultValue="@("A")"
@@ -36,7 +36,7 @@
 
 <ComponentExampleBox Title="Images and Icons" HtmlCode="@example3HtmlCode" Id="example3">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="Image Options"
                             DefaultValue="@("Bar")"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -65,7 +65,68 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example4HtmlCode" Id="example4">
+<ComponentExampleBox Title="Style & Class" HtmlCode="@example4HtmlCode" Id="example4">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styled ChoiceGroup" DefaultValue="@("B")"
+                            TItem="BitChoiceGroupOption<string>" TValue="string"
+                            Style="width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Classed ChoiceGroup" DefaultValue="@("B")"
+                            TItem="BitChoiceGroupOption<string>" TValue="string"
+                            Class="custom-class">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" Style="color:red" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" Class="custom-item" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" Style="color:green" />
+            </BitChoiceGroup>
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styles" DefaultValue="@("B")"
+                            TItem="BitChoiceGroupOption<string>" TValue="string"
+                            Styles="@(new() { Label = "color:tomato",
+                                              ItemIcon = "color:red" ,
+                                              ItemText = "color:yellowgreen;font-size:12px;font-weight:bold" })">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Styles" DefaultValue="@("B")"
+                            TItem="BitChoiceGroupOption<string>" TValue="string"
+                            Classes="@(new() { Label = "custom-label" , ItemText = "custom-text" })">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example5HtmlCode" Id="example5">
     <ExamplePreview>
         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
             <LabelTemplate>
@@ -83,9 +144,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item Templates" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Item Templates" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemLabelTemplate Context="option">
@@ -119,9 +180,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Binding" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div class="chg-box">
+        <div class="example-content">
             <div>
                 <BitChoiceGroup Label="One-way" Value="@oneWayValue"
                                 TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -131,7 +192,7 @@
                     <BitChoiceGroupOption Text="Option D" Value="@("D")" />
                 </BitChoiceGroup>
 
-                <div class="chg-output">
+                <div class="output">
                     <BitTextField @bind-Value="oneWayValue" />
                 </div>
             </div>
@@ -145,7 +206,7 @@
                     <BitChoiceGroupOption Text="Option D" Value="@("D")" />
                 </BitChoiceGroup>
 
-                <div class="chg-output">
+                <div class="output">
                     <BitTextField @bind-Value="twoWayValue" />
                 </div>
             </div>
@@ -153,9 +214,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" HtmlCode="@example7HtmlCode" Id="example7">
+<ComponentExampleBox Title="Horizontal" HtmlCode="@example8HtmlCode" Id="example8">
     <ExamplePreview>
-        <div class="chg-box column">
+        <div class="example-content column">
             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
                 <BitChoiceGroupOption Text="Option A" Value="@("A")" />
                 <BitChoiceGroupOption Text="Option B" Value="@("B")" />
@@ -174,13 +235,13 @@
                 <BitChoiceGroupOption Text="Bar"
                                       Value="@("Bar")"
                                       ImageAlt="Alt for Bar image"
-                                      ImageSize="@(new BitSize(32, 32))" 
+                                      ImageSize="@(new BitSize(32, 32))"
                                       ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
                                       SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" />
                 <BitChoiceGroupOption Text="Pie"
                                       Value="@("Pie")"
                                       ImageAlt="Alt for Pie image"
-                                      ImageSize="@(new BitSize(32, 32))" 
+                                      ImageSize="@(new BitSize(32, 32))"
                                       ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
                                       SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png" />
             </BitChoiceGroup>
@@ -194,9 +255,9 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" HtmlCode="@example8HtmlCode" Id="example8">
+<ComponentExampleBox Title="RTL" HtmlCode="@example9HtmlCode" Id="example9">
     <ExamplePreview>
-        <div class="chg-box column">
+        <div class="example-content column">
             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
                 <BitChoiceGroupOption Text="گزینه آ" Value="@("A")" />
                 <BitChoiceGroupOption Text="گزینه ب" Value="@("B")" />
@@ -214,7 +275,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Validation" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         @if (string.IsNullOrEmpty(successMessage))
         {

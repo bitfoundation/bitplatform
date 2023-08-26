@@ -8,6 +8,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.AriaLabel));
 
     /// <summary>
+    /// The CSS class field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Class));
+
+    /// <summary>
     /// The Id field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Id { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Id));
@@ -41,6 +46,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// The SelectedImageSrc field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> SelectedImageSrc { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.SelectedImageSrc));
+
+    /// <summary>
+    /// The CSS style field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Style));
 
     /// <summary>
     /// The Text field name and selector of the custom input class.
