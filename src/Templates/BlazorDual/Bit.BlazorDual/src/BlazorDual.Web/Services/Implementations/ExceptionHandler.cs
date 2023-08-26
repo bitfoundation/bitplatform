@@ -7,12 +7,14 @@ public partial class ExceptionHandler : IExceptionHandler
 {
     [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
     [AutoInject] IAuthenticationService _authenticationService = default!;
+    [AutoInject] MessageBoxService _messageBoxService = default!;
+
 
     async void SignOut()
     {
         try
         {
-            await MessageBox.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
+            await _messageBoxService.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
 
             await _authenticationService.SignOut();
         }
@@ -33,17 +35,17 @@ public partial class ExceptionHandler : IExceptionHandler
 
 #if DEBUG
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
-        _ = MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
-        Console.WriteLine(exceptionMessage);
+        _ = _messageBoxService.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = Console.Out.WriteLineAsync(exceptionMessage);
         Debugger.Break();
 #else
         if (exception is KnownException knownException)
         {
-            _ = MessageBox.Show(knownException.Message, _localizer[nameof(AppStrings.Error)]);
+            _ = _messageBoxService.Show(knownException.Message, _localizer[nameof(AppStrings.Error)]);
         }
         else
         {
-            _ = MessageBox.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
+            _ = _messageBoxService.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
         }
 #endif
     }

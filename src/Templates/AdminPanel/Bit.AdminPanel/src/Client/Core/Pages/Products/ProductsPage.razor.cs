@@ -10,7 +10,7 @@ public partial class ProductsPage
     private CreateEditProductModal? _modal;
     private string _productNameFilter = string.Empty;
 
-
+    ConfirmMessageBox _confirmMessageBox = default!;
     private BitDataGrid<ProductDto>? _dataGrid;
     private BitDataGridItemsProvider<ProductDto> _productsProvider = default!;
     private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };
@@ -93,7 +93,7 @@ public partial class ProductsPage
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await ConfirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty), 
+        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty), 
                                                      Localizer[nameof(AppStrings.DeleteProduct)]);
 
         if (confirmed)
