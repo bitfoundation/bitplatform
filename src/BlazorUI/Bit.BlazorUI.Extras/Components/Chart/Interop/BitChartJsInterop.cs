@@ -25,9 +25,9 @@ internal static class BitChartJsInterop
         }
     };
 
-    public static async Task InitChartJs(this IJSRuntime jsRuntime)
+    public static async Task InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
-        var result = await jsRuntime.InvokeAsync<string>($"{BitChartJsInteropName}.initChartJs");
+        await jsRuntime.InvokeVoidAsync($"{BitChartJsInteropName}.initChartJs", scripts);
     }
 
     /// <summary>

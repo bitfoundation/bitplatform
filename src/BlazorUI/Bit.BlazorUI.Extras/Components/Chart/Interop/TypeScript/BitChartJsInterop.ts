@@ -23,23 +23,29 @@ interface DelegateHandler extends IMethodHandler {
 class BitChartJsInterop {
     BlazorCharts = new Map<string, Chart>();
 
-    public initChartJs() {
-        return new Promise((resolve: any, reject: any) => {
+    public initChartJs(scripts: string[]) {
+        return new Promise(async (resolve: any, reject: any) => {
             try {
                 if (window.Chart) {
                     resolve();
                 } else {
-                    const script = document.createElement('script');
-                    //script.src = 'https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js';
-                    script.src = '_content/Bit.BlazorUI.Extras/chart.js/Chart.min.2.9.4.js';
-                    script.onload = e => resolve();
-                    script.onerror = err => reject(err);
-                    document.body.appendChild(script);
+                    for (var url of scripts) await addScript(url);
+                    resolve();
                 }
             } catch (e: any) {
                 reject(e);
             }
         });
+
+        async function addScript(url: string) {
+            return new Promise((res, rej) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = res;
+                script.onerror = rej;
+                document.body.appendChild(script);
+            })
+        }
     }
 
     public setupChart(config: BitChartConfiguration): boolean {
