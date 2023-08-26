@@ -18,6 +18,10 @@
         window.history.back();
     }
 
+    public static setBodyOverflow(hidden: boolean) {
+        document.body.style.overflow = hidden ? "hidden" : "auto";
+    }
+
     public static applyBodyElementClasses(cssClasses: string[], cssVariables: any): void {
         cssClasses?.forEach(c => document.body.classList.add(c));
         Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));

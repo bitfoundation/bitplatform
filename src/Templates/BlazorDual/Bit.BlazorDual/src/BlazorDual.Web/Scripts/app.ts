@@ -17,6 +17,10 @@
     public static goBack(): void {
         window.history.back();
     }
+
+    public static setBodyOverflow(hidden: boolean) {
+        document.body.style.overflow = hidden ? "hidden" : "auto";
+    }
 }
 
 declare class BitTheme { static init(options: any): void; };
