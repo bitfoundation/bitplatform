@@ -24,6 +24,7 @@ public partial class NavMenu
         new BitNavItem { Text = "Cache mechanism", Url = "/templates/cache-mechanism"},
         new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism"},
         new BitNavItem { Text = "DevOps", Url = "/templates/devops"},
+        new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration"},
         new BitNavItem { Text = "Contribute", Url = "/templates/contribute"}
     };
 
