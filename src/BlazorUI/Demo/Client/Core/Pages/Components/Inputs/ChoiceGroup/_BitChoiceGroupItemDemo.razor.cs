@@ -51,6 +51,13 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
         new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsEnabled = false }
     };
+    private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
+    {
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B", Style = "color:red" },
+        new() { Text = "Item C", Value = "C", Class = "custom-item" },
+        new() { Text = "Item D", Value = "D", Style = "color:green" }
+    };
     private readonly List<BitChoiceGroupItem<string>> itemTemplateItems = new()
     {
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
@@ -150,6 +157,76 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
 
     private readonly string example4HtmlCode = @"
 <style>
+    .custom-class {
+        width: 300px;
+        padding: 2rem;
+        border-radius: 25%;
+        background-color: red;
+    }
+
+    .custom-item {
+        color: brown;
+    }
+
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-text {
+        color: blue;
+        font-size: 16px;
+        font-weight: bold;
+    }
+</style>
+
+
+<BitChoiceGroup Label=""Styled ChoiceGroup""
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value""
+                Style=""width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"" />
+
+<BitChoiceGroup Label=""Classed ChoiceGroup""
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value""
+                Class=""custom-class"" />
+
+
+<BitChoiceGroup Items=""itemStyleClassItems""
+                DefaultValue=""itemStyleClassItems[1].Value"" />
+
+
+<BitChoiceGroup Label=""Styles""
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value""
+                Styles=""@(new() { Label = ""color:tomato"",
+                                  ItemIcon = ""color:red"" ,
+                                  ItemText = ""color:yellowgreen;font-size:12px;font-weight:bold"" })"" />
+
+<BitChoiceGroup Label=""Classes""
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value""
+                Classes=""@(new() { Label = ""custom-label"" , ItemText = ""custom-text"" })"" />";
+    private readonly string example4CsharpCode = @"
+private readonly List<BitChoiceGroupItem> basicItems<string> = new()
+{
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
+};
+
+private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
+{
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"", Style = ""color:red"" },
+    new() { Text = ""Item C"", Value = ""C"", Class = ""custom-item"" },
+    new() { Text = ""Item D"", Value = ""D"", Style = ""color:green"" }
+};";
+
+    private readonly string example5HtmlCode = @"
+<style>
     .custom-label {
         color: #A4262C;
         font-weight: bold;
@@ -163,7 +240,7 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
         </div>
     </LabelTemplate>
 </BitChoiceGroup>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 {
     new() { Text = ""Item A"", Value = ""A"" },
@@ -172,7 +249,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example6HtmlCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -224,7 +301,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
         </div>
     </ItemTemplate>
 </BitChoiceGroup>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";
 
@@ -235,13 +312,13 @@ private readonly List<BitChoiceGroupItem> itemTemplateItems<string> = new()
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Items=""basicItems"" Value=""@oneWayValue"" />
 <BitTextField @bind-Value=""oneWayValue"" />
 
 <BitChoiceGroup Label=""Two-way"" Items=""basicItems"" @bind-Value=""twoWayValue"" />
 <BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";
 
@@ -253,7 +330,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example8HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""basicItems"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
 
 <BitChoiceGroup Label=""Disabled"" Items=""basicItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
@@ -261,7 +338,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 <BitChoiceGroup Label=""Image"" Items=""imageItems"" DefaultValue=""@(""Bar"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
 
 <BitChoiceGroup Label=""Icon"" Items=""iconItems"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 {
     new() { Text = ""Item A"", Value = ""A"" },
@@ -299,11 +376,11 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 };";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example9HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""rtlItems"" DefaultValue=""@(""A"")"" IsRtl=""true"" />
 
 <BitChoiceGroup Label=""Disabled"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
 {
     new() { Text = ""بخش آ"", Value = ""A"" },
@@ -312,7 +389,7 @@ private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
     new() { Text = ""بخش ت"", Value = ""D"" }
 };";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example10HtmlCode = @"
 <style>
     .validation-message {
         color: #A4262C;
@@ -328,7 +405,7 @@ private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
     </div>
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]

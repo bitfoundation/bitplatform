@@ -17,7 +17,7 @@
     }
 
     &.bit-inv {
-        .bit-chgi-lbl {
+        .bit-chg-ilw {
             color: $color-state-error;
             border-color: $color-state-error;
 
@@ -32,7 +32,7 @@
 
             @media (hover: hover) {
                 &:hover {
-                    .bit-chgi-txt {
+                    .bit-chg-itx {
                         color: $color-state-error;
                     }
 
@@ -48,7 +48,7 @@
             }
         }
 
-        .bit-chgi-lbl-img {
+        .bit-chg-ilwi {
             color: $color-state-error;
             border-color: $color-state-error;
 
@@ -82,12 +82,12 @@
     &.bit-chg-rtl {
         direction: rtl;
 
-        .bit-chgi {
+        .bit-chg-icn {
             margin-right: 0;
             margin-left: spacing(1);
         }
 
-        .bit-chgi-lbl {
+        .bit-chg-ilw {
             &::before {
                 right: 0;
             }
@@ -100,14 +100,14 @@
                 }
             }
 
-            .bit-chgi-txt {
+            .bit-chg-itx {
                 padding-left: 0;
                 padding-right: spacing(3.25);
             }
         }
 
-        .bit-chgi-chk {
-            .bit-chgi-lbl {
+        .bit-chg-ich {
+            .bit-chg-ilw {
                 &::after {
                     right: spacing(0.625);
                 }
@@ -137,7 +137,7 @@
     }
 }
 
-.bit-chgi {
+.bit-chg-icn {
     border: none;
     display: flex;
     font-weight: 400;
@@ -152,7 +152,7 @@
     font-family: $typography-font-family;
 }
 
-.bit-chgi-img {
+.bit-chg-ihi {
     height: 100%;
     font-size: 0;
     padding-left: 0;
@@ -161,17 +161,7 @@
     background-color: $color-background-secondary;
 }
 
-.bit-chgi-input {
-    top: 0;
-    right: 0;
-    margin: 0;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-}
-
-.bit-chgi-lbl {
+.bit-chg-ilw {
     margin-top: 0;
     cursor: pointer;
     user-select: none;
@@ -209,7 +199,7 @@
 
     @media (hover: hover) {
         &:hover {
-            .bit-chgi-txt {
+            .bit-chg-itx {
                 color: $color-action-hover-foreground-primary;
             }
 
@@ -229,7 +219,7 @@
     }
 }
 
-.bit-chgi-lbl-img {
+.bit-chg-ilwi {
     margin: 0;
     display: flex;
     cursor: pointer;
@@ -287,12 +277,12 @@
     }
 }
 
-.bit-chgi-txt {
+.bit-chg-itx {
     display: inline-block;
     padding-left: spacing(3.25);
 }
 
-.bit-chgi-wrp {
+.bit-chg-itw {
     display: block;
     overflow: hidden;
     font-weight: 400;
@@ -305,24 +295,24 @@
     font-family: $typography-font-family;
     margin: spacing(0.5) spacing(1) spacing(0.25);
 
-    .bit-chgi-txt {
+    .bit-chg-itx {
         padding-left: 0;
         display: inline-block;
     }
 }
 
-.bit-chgi-img-cnt {
+.bit-chg-iic {
     height: spacing(4);
     position: relative;
     display: inline-block;
     padding: 0 spacing(3.75);
 }
 
-.bit-chgi-img-wrp {
+.bit-chg-iiw {
     transition: opacity 0.2s ease;
     padding-bottom: spacing(0.25);
 
-    .bit-chgi-img {
+    .bit-chg-iim {
         border-style: none;
         display: inline-block;
 
@@ -335,13 +325,13 @@
     }
 }
 
-.bit-chgi-ico-cnt {
+.bit-chg-icc {
     position: relative;
     display: inline-block;
     padding: 0 spacing(3.75);
 }
 
-.bit-chgi-ico-wrp {
+.bit-chg-icw {
     height: spacing(4);
     font-size: spacing(4);
     line-height: spacing(4);
@@ -352,8 +342,8 @@
     }
 }
 
-.bit-chgi-chk {
-    .bit-chgi-lbl {
+.bit-chg-ich {
+    .bit-chg-ilw {
         border-color: $color-primary-main;
 
         &:before {
@@ -383,7 +373,7 @@
         }
     }
 
-    .bit-chgi-lbl-img {
+    .bit-chg-ilwi {
         border-color: $color-primary-main;
 
         &:before {
@@ -419,8 +409,8 @@
     }
 }
 
-.bit-chgi-dis {
-    .bit-chgi-lbl {
+.bit-chg-ids {
+    .bit-chg-ilw {
         cursor: default;
         pointer-events: none;
         color: $color-foreground-disabled;
@@ -433,13 +423,13 @@
             border-color: $color-border-disabled;
         }
 
-        .bit-chgi-txt {
+        .bit-chg-itx {
             color: $color-foreground-disabled;
         }
 
         @media (hover: hover) {
             &:hover {
-                .bit-chgi-txt {
+                .bit-chg-itx {
                     color: $color-border-disabled;
                 }
 
@@ -450,7 +440,7 @@
         }
     }
 
-    .bit-chgi-lbl-img {
+    .bit-chg-ilwi {
         cursor: default;
         border-color: transparent;
         color: $color-foreground-disabled;
@@ -471,7 +461,7 @@
         }
     }
 
-    .bit-chgi-ico-wrp {
+    .bit-chg-icw {
         color: $color-foreground-disabled;
 
         i {
@@ -479,8 +469,8 @@
         }
     }
 
-    &.bit-chgi-chk {
-        .bit-chgi-lbl-img {
+    &.bit-chg-ich {
+        .bit-chg-ilwi {
             &:after {
                 background-color: $color-background-disabled;
                 border: spacing(0.625) $shape-border-style $color-border-disabled;

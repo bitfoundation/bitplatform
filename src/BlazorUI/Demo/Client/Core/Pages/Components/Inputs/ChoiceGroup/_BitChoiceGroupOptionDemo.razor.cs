@@ -77,6 +77,80 @@ public partial class _BitChoiceGroupOptionDemo
 
     private readonly string example4HtmlCode = @"
 <style>
+    .custom-class {
+        width: 300px;
+        padding: 2rem;
+        border-radius: 25%;
+        background-color: red;
+    }
+
+    .custom-item {
+        color: brown;
+    }
+
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-text {
+        color: blue;
+        font-size: 16px;
+        font-weight: bold;
+    }
+</style>
+
+
+<BitChoiceGroup Label=""Styled ChoiceGroup"" DefaultValue=""@(""B"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string""
+                Style=""width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Classed ChoiceGroup"" DefaultValue=""@(""B"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string""
+                Class=""custom-class"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+
+<BitChoiceGroup DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" Style=""color:red"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" Class=""custom-item"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" Style=""color:green"" />
+</BitChoiceGroup>
+
+
+<BitChoiceGroup Label=""Styles"" DefaultValue=""@(""B"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string""
+                Styles=""@(new() { Label = ""color:tomato"",
+                                  ItemIcon = ""color:red"" ,
+                                  ItemText = ""color:yellowgreen;font-size:12px;font-weight:bold"" })"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Styles"" DefaultValue=""@(""B"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string""
+                Classes=""@(new() { Label = ""custom-label"" , ItemText = ""custom-text"" })"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>";
+
+    private readonly string example5HtmlCode = @"
+<style>
     .custom-label {
         color: #A4262C;
         font-weight: bold;
@@ -97,7 +171,7 @@ public partial class _BitChoiceGroupOptionDemo
     </Options>
 </BitChoiceGroup>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example6HtmlCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -161,11 +235,11 @@ public partial class _BitChoiceGroupOptionDemo
         <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </Options>
 </BitChoiceGroup>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
@@ -184,11 +258,11 @@ private string itemTemplateValue = ""Day"";";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 <BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example8HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -224,7 +298,7 @@ private string twoWayValue = ""A"";";
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example9HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" IsRtl=""true"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
@@ -239,7 +313,7 @@ private string twoWayValue = ""A"";";
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example10HtmlCode = @"
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
     <div>
@@ -253,7 +327,7 @@ private string twoWayValue = ""A"";";
     </div>
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]
