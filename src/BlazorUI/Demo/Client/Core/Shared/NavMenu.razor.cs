@@ -1,12 +1,14 @@
 ﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
-public partial class NavMenu
+public partial class NavMenu : IDisposable
 {
+    private bool _disposed;
     private bool _isNavOpen = false;
-    private readonly List<BitNavItem> _allNavLinks = new()
+    private string _searchText = string.Empty;
+    private List<BitNavItem> _filteredNavItems = default!;
+    private readonly List<BitNavItem> _allNavItems = new()
     {
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
@@ -131,30 +133,20 @@ public partial class NavMenu
         new() { Text = "Theming", Url = "/theming" },
     };
 
-    private List<BitNavItem> _filteredNavLinks = default!;
-    private string _searchText = string.Empty;
 
-    [Inject] public NavManuService _menuService { get; set; } = default!;
+    [Inject] public NavManuService _navMenuService { get; set; } = default!;
 
-    public string? CurrentUrl { get; set; }
 
     protected override async Task OnInitAsync()
     {
         HandleClear();
-        _menuService.OnToggleMenu += ToggleMenu;
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        _navMenuService.OnToggleMenu += ToggleMenu;
 
         await base.OnInitAsync();
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-    {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
-        StateHasChanged();
-    }
 
-    async Task ToggleMenu()
+    private async Task ToggleMenu()
     {
         try
         {
@@ -174,17 +166,17 @@ public partial class NavMenu
 
     private void HandleClear()
     {
-        _filteredNavLinks = _allNavLinks;
+        _filteredNavItems = _allNavItems;
     }
 
     private void HandleChange(string text)
     {
         _searchText = text;
-        _filteredNavLinks = _allNavLinks;
+        _filteredNavItems = _allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(_allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        _filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        var flatNavLinkList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        _filteredNavItems = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)
@@ -192,10 +184,19 @@ public partial class NavMenu
         if (item.Url.HasNoValue()) return;
 
         _searchText = string.Empty;
-        _filteredNavLinks = _allNavLinks;
+        _filteredNavItems = _allNavItems;
 
         await ToggleMenu();
     }
 
     private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        _navMenuService.OnToggleMenu -= ToggleMenu;
+
+        _disposed = true;
+    }
 }

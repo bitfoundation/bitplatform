@@ -13,7 +13,7 @@
                       Value="@_searchText"
                       ValueChanged="@HandleChange"
                       OnClear="@HandleClear" />
-        @if (_filteredNavLinks.Count == 0)
+        @if (_filteredNavItems.Count == 0)
         {
             <br />
             <div>nothing found!</div>
@@ -21,7 +21,7 @@
     </div>
     <div class="nav-menu-list">
         <BitNav Class="side-nav"
-                Items="_filteredNavLinks"
+                Items="_filteredNavItems"
                 AriaLabel="bit BlazorUI Nav"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)">
         </BitNav>

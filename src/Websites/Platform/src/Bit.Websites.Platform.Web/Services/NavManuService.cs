@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace Bit.Websites.Platform.Web.Services;
+﻿namespace Bit.Websites.Platform.Web.Services;
 
 public class NavManuService
 {
-    public event Action OnToggleMenu;
+    public event Func<Task> OnToggleMenu;
 
     public void ToggleMenu()
     {
