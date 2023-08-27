@@ -37,7 +37,7 @@
 
             <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
                 <label for="@inputId" style="@Styles?.ItemLabel" class="@Classes?.ItemLabel">
-                    @if(template is not null)
+                    @if (template is not null)
                     {
                         @template(item)
                     }

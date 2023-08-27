@@ -413,7 +413,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "Template",
-                   Type = "BitNameSelectorPair<TItem, RenderFragment<BitChoiceGroupOption<TValue>>?>",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Template))",
                    Description = "Template field name and selector of the custom input class.",
                },
