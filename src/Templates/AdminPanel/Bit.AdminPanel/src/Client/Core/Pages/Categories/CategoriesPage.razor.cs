@@ -9,7 +9,7 @@ public partial class CategoriesPage
     private bool _isLoading;
     private string _categoryNameFilter = string.Empty;
 
-    ConfirmMessageBox _confirmMessageBox = default!;
+    private ConfirmMessageBox _confirmMessageBox = default!;
     private BitDataGrid<CategoryDto>? _dataGrid;
     private BitDataGridItemsProvider<CategoryDto> _categoriesProvider = default!;
     private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };

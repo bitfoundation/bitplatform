@@ -12,6 +12,7 @@ public partial class TodoPage
     private string? _selectedFilter;
     private string? _underEditTodoItemTitle;
     private string _newTodoTitle = string.Empty;
+    private ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IEnumerable<TodoItemDto> _viewTodoItems = default!;
     private List<BitDropdownItem> _sortItems = new();
@@ -133,15 +134,21 @@ public partial class TodoPage
     {
         if (_isLoading) return;
 
-        _isLoading = true;
-
         try
         {
-            await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
+            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title),
+                                                     Localizer[nameof(AppStrings.DeleteTodoItem)]);
 
-            _allTodoItems.Remove(todoItem);
+            if (confirmed)
+            {
+                _isLoading = true;
 
-            FilterViewTodoItems();
+                await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
+
+                _allTodoItems.Remove(todoItem);
+
+                FilterViewTodoItems();
+            }
         }
         finally
         {

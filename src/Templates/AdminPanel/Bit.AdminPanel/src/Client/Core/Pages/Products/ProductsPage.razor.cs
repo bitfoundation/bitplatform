@@ -10,7 +10,7 @@ public partial class ProductsPage
     private CreateEditProductModal? _modal;
     private string _productNameFilter = string.Empty;
 
-    ConfirmMessageBox _confirmMessageBox = default!;
+    private ConfirmMessageBox _confirmMessageBox = default!;
     private BitDataGrid<ProductDto>? _dataGrid;
     private BitDataGridItemsProvider<ProductDto> _productsProvider = default!;
     private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };

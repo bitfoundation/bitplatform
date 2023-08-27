@@ -658,4 +658,10 @@ Please confirm your email by clicking on the link.</value>
   <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>Are you sure you want to delete {0}</value>
+  </data>
+  <data name="DeleteTodoItem" xml:space="preserve">
+    <value>Delete todo item</value>
+  </data>
 </root>
