@@ -87,7 +87,7 @@ public partial class App
         }
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
-        await _jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+        await _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
     private async Task OnNavigateAsync(NavigationContext args)
