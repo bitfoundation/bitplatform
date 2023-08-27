@@ -658,4 +658,13 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>Etes-vous sûr de vouloir supprimer {0}</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="DeleteTodoItem" xml:space="preserve">
+    <value>Supprimer l'élément de tâche</value>
+  </data>
 </root>

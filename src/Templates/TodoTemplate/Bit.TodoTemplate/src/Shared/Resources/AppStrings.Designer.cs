@@ -106,6 +106,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete {0}.
+        /// </summary>
+        public static string AreYouSureWannaDelete {
+            get {
+                return ResourceManager.GetString("AreYouSureWannaDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
         /// </summary>
         public static string ArgumentIsNullOrWhitespace {
@@ -364,6 +373,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string DeleteAccountPrompt {
             get {
                 return ResourceManager.GetString("DeleteAccountPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete todo item.
+        /// </summary>
+        public static string DeleteTodoItem {
+            get {
+                return ResourceManager.GetString("DeleteTodoItem", resourceCulture);
             }
         }
         

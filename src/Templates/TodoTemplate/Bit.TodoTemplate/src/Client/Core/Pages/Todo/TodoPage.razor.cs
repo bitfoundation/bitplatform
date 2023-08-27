@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Shared.Dtos.Todo;
+﻿using TodoTemplate.Client.Core.Shared;
+using TodoTemplate.Shared.Dtos.Todo;
 
 namespace TodoTemplate.Client.Core.Pages.Todo;
 
@@ -12,6 +13,7 @@ public partial class TodoPage
     private string? _selectedFilter;
     private string? _underEditTodoItemTitle;
     private string _newTodoTitle = string.Empty;
+    ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IEnumerable<TodoItemDto> _viewTodoItems = default!;
     private List<BitDropdownItem> _sortItems = new();
@@ -133,15 +135,21 @@ public partial class TodoPage
     {
         if (_isLoading) return;
 
-        _isLoading = true;
-
         try
         {
-            await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
+            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title ?? string.Empty),
+                                                     Localizer[nameof(AppStrings.DeleteTodoItem)]);
 
-            _allTodoItems.Remove(todoItem);
+            if (confirmed)
+            {
+                _isLoading = true;
+                
+                await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
 
-            FilterViewTodoItems();
+                _allTodoItems.Remove(todoItem);
+
+                FilterViewTodoItems();
+            }
         }
         finally
         {
