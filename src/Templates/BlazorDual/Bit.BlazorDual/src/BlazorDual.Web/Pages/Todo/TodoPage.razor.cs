@@ -11,8 +11,8 @@ public partial class TodoPage
     private string? _selectedSort;
     private string? _selectedFilter;
     private string? _underEditTodoItemTitle;
-    ConfirmMessageBox _confirmMessageBox = default!;
     private string _newTodoTitle = string.Empty;
+    private ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IEnumerable<TodoItemDto> _viewTodoItems = default!;
     private List<BitDropdownItem> _sortItems = new();
@@ -136,7 +136,7 @@ public partial class TodoPage
 
         try
         {
-            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title ?? string.Empty),
+            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title),
                                                      Localizer[nameof(AppStrings.DeleteTodoItem)]);
 
             if (confirmed)

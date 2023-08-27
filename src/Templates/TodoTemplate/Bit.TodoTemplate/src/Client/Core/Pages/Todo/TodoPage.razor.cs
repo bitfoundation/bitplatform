@@ -13,7 +13,7 @@ public partial class TodoPage
     private string? _selectedFilter;
     private string? _underEditTodoItemTitle;
     private string _newTodoTitle = string.Empty;
-    ConfirmMessageBox _confirmMessageBox = default!;
+    private ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IEnumerable<TodoItemDto> _viewTodoItems = default!;
     private List<BitDropdownItem> _sortItems = new();
