@@ -1,15 +1,14 @@
 ﻿using Bit.Websites.Platform.Web.Services;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.Websites.Platform.Web.Shared;
 
-public partial class NavMenu
+public partial class NavMenu : IDisposable
 {
+    private bool _disposed;
     private bool _isNavOpen = false;
     private string _searchText = string.Empty;
-    private List<BitNavItem> _filteredNavLinks = default!;
-
-    private readonly List<BitNavItem> _templatesNavItems = new()
+    private List<BitNavItem> _filteredNavItems = default!;
+    private readonly List<BitNavItem> _allNavItems = new()
     {
         new BitNavItem { Text = "Overview", Url = "/templates/overview"},
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites"},
@@ -28,69 +27,63 @@ public partial class NavMenu
         new BitNavItem { Text = "Contribute", Url = "/templates/contribute"}
     };
 
-    [AutoInject] private NavManuService _navManuService = default!;
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
-    [AutoInject] private NavigationManager _navigationManager = default!;
+
+    [AutoInject] private NavManuService _navMenuService = default!;
+
 
     public string CurrentUrl { get; set; } = default!;
 
     protected override void OnInitialized()
     {
-        _navManuService.OnToggleMenu += ToggleMenu;
-        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        _navigationManager.LocationChanged += OnLocationChanged;
+        _navMenuService.OnToggleMenu += ToggleMenu;
+
         HandleOnClear();
+
         base.OnInitialized();
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-    {
-        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        HandleOnClear();
-        StateHasChanged();
-    }
 
-    private async void ToggleMenu()
+    private async Task ToggleMenu()
     {
         try
         {
             _isNavOpen = !_isNavOpen;
 
-            await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex);
+            ExceptionHandler.Handle(ex);
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
     private void HandleOnClear()
     {
-        _filteredNavLinks = _templatesNavItems;
+        _filteredNavItems = _allNavItems;
     }
 
     private void HandleValueChanged(string text)
     {
-        HandleOnClear();
         _searchText = text;
+        _filteredNavItems = _allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(_templatesNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        _filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        var flatNavLinkList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        _filteredNavItems = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)
     {
+        if (string.IsNullOrWhiteSpace(item.Url)) return;
+
         _searchText = string.Empty;
+        _filteredNavItems = _allNavItems;
 
-        HandleOnClear();
-
-        _isNavOpen = false;
-
-        await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
-
-        StateHasChanged();
+        await ToggleMenu();
     }
 
     private string GetNavMenuClass()
@@ -106,4 +99,13 @@ public partial class NavMenu
     }
 
     private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        _navMenuService.OnToggleMenu -= ToggleMenu;
+
+        _disposed = true;
+    }
 }

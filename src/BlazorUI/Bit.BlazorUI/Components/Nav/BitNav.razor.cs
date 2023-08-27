@@ -45,7 +45,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     private string _internalChildItemsField = CHILD_ITEMS_FIELD;
 
     internal List<TItem> _items = new();
-    private IEnumerable<TItem> _oldItems = default!;
+    private IEnumerable<TItem>? _oldItems = default!;
     internal Dictionary<TItem, bool> _itemExpandStates = new();
     private bool _disposed;
 
@@ -694,9 +694,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Items.Any() && Items != _oldItems)
+        if (ChildContent is null && Items != _oldItems)
         {
-            _items = Items.ToList();
+            _items = Items?.ToList() ?? new();
             _oldItems = Items;
         }
 
