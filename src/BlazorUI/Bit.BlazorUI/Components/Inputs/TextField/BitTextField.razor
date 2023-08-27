@@ -44,8 +44,9 @@
                           @onkeydown="@HandleOnKeyDown"
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
-                          id="@_textFieldId"
+                          id="@_textFieldId" 
                           style="@InputStyle"
+                          value="@CurrentValue"
                           class="bit-txt-inp @InputClass"
                           rows="@Rows"
                           disabled=@(IsEnabled is false)
