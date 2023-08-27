@@ -42,7 +42,7 @@ public partial class MessageBox : IDisposable
     {
         await InvokeAsync(() =>
         {
-            _ = JSRuntime.InvokeVoidAsync("App.setBodyOverflow", true);
+            _ = JSRuntime.SetBodyOverflow(true);
 
             _isOpen = true;
             _title = title;
