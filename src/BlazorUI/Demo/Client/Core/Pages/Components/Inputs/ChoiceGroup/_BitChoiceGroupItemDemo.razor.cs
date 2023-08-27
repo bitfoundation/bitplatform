@@ -5,6 +5,7 @@ public partial class _BitChoiceGroupItemDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string itemTemplateValue = "Day";
+    private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
     public ChoiceGroupValidationModel validationModel = new();
     public string? successMessage;
@@ -300,17 +301,56 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
             <span>@item.Text</span>
         </div>
     </ItemTemplate>
-</BitChoiceGroup>";
+</BitChoiceGroup>
+
+
+<BitChoiceGroup Label=""Item's Template"" Items=""itemTemplateItems2"" @bind-Value=""itemTemplateValue2"" />";
     private readonly string example6CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";
+private string itemTemplateValue2 = ""Day"";
 
 private readonly List<BitChoiceGroupItem> itemTemplateItems<string> = new()
 {
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar }
-};";
+};
+
+private List<BitChoiceGroupItem<string>> itemTemplateItems2 = default!;
+protected override void OnInitialized()
+{
+    itemTemplateItems2 = new()
+    {
+        new()
+        {
+            Text = ""Day"",
+            Value = ""Day"",
+            Template = (item => @<div class=""custom-container @(itemTemplateValue2 == item.Value ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:red"">@item.Text</span>
+                                 </div>)
+        },
+        new()
+        {
+            Text = ""Week"",
+            Value = ""Week"",
+            Template = (item => @<div class=""custom-container @(itemTemplateValue2 == item.Value ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:green"">@item.Text</span>
+                                 </div>)
+        },
+        new()
+        {
+            Text = ""Month"",
+            Value = ""Month"",
+            Template = (item => @<div class=""custom-container @(itemTemplateValue2 == item.Value ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:blue"">@item.Text</span>
+                                 </div>)
+        }
+    };
+}";
 
     private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Items=""basicItems"" Value=""@oneWayValue"" />

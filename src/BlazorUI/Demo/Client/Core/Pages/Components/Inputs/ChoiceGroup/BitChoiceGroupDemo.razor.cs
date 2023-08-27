@@ -214,6 +214,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Template",
+                   Type = "RenderFragment<BitChoiceGroupItem<TValue>>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the BitChoiceGroup item.",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
@@ -306,6 +313,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Template",
+                   Type = "RenderFragment<BitChoiceGroupOption<TValue>>?",
+                   DefaultValue = "null",
+                   Description = "The custom template for the BitChoiceGroup option.",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
@@ -395,6 +409,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Style))",
                    Description = "CSS style attribute for the BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Template))",
+                   Description = "Template field name and selector of the custom input class.",
                },
                new()
                {

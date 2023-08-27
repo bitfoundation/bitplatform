@@ -394,6 +394,28 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
+    private RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
     private string? GetText(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)

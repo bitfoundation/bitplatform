@@ -102,6 +102,10 @@
                 </ItemTemplate>
             </BitChoiceGroup>
         </div>
+        <br /><br /><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Item's Template" Items="itemTemplateItems2" @bind-Value="itemTemplateValue2" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -166,3 +170,41 @@
         <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
     </ExamplePreview>
 </ComponentExampleBox>
+
+@code {
+    private List<BitChoiceGroupItem<string>> itemTemplateItems2 = default!;
+
+    protected override void OnInitialized()
+    {
+        itemTemplateItems2 = new()
+        {
+            new()
+            {
+                Text = "Day",
+                Value = "Day",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+                                         <div class="custom-circle" />
+                                         <span style="color:red">@item.Text</span>
+                                     </div>)
+            },
+            new()
+            {
+                Text = "Week",
+                Value = "Week",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+                                         <div class="custom-circle" />
+                                         <span style="color:green">@item.Text</span>
+                                     </div>)
+            },
+            new()
+            {
+                Text = "Month",
+                Value = "Month",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+                                         <div class="custom-circle" />
+                                         <span style="color:blue">@item.Text</span>
+                                     </div>)
+            }
+        };
+    }
+}
