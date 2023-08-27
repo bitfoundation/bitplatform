@@ -57,6 +57,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The custom template for the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public RenderFragment<BitChoiceGroupOption<TValue>>? Template { get; set; }
+
+    /// <summary>
     /// Text to show as the content of BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Text { get; set; }

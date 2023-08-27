@@ -5,6 +5,7 @@ public partial class _BitChoiceGroupCustomDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string itemTemplateValue = "Day";
+    private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
     public ChoiceGroupValidationModel validationModel = new();
     public string? successMessage;
@@ -374,16 +375,24 @@ private readonly List<ChoiceModel> basicCustoms = new()
             <span>@custom.Name</span>
         </div>
     </ItemTemplate>
-</BitChoiceGroup>";
+</BitChoiceGroup>
+
+
+<BitChoiceGroup Label=""Item's Template"" Items=""itemTemplateCustoms2"" @bind-Value=""itemTemplateValue2""
+                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, 
+                                         Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                         Template = { Name = nameof(ChoiceModel.Fragment) } })"" />";
     private readonly string example6CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";
+private string itemTemplateValue2 = ""Day"";
 
 public class ChoiceModel
 {
     public string Name { get; set; }
     public string ItemValue { get; set; }
     public string? IconName { get; set; }
+    public RenderFragment<ChoiceModel>? Fragment { get; set; }
 }
 
 private readonly List<ChoiceModel> itemTemplateCustoms = new()
@@ -391,7 +400,42 @@ private readonly List<ChoiceModel> itemTemplateCustoms = new()
     new() { Name = ""Day"", ItemValue = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Name = ""Week"", ItemValue = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar }
-};";
+};
+
+private List<ChoiceModel> itemTemplateCustoms2 = default!;    
+protected override void OnInitialized()
+{
+    itemTemplateCustoms2 = new()
+    {
+        new()
+        {
+            Name = ""Day"",
+            ItemValue = ""Day"",
+            Fragment = (item => @<div class=""custom-container @(itemTemplateValue2 == item.ItemValue ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:red"">@item.Name</span>
+                                 </div>)
+        },
+        new()
+        {
+            Name = ""Week"",
+            ItemValue = ""Week"",
+            Fragment = (item => @<div class=""custom-container @(itemTemplateValue2 == item.ItemValue ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:green"">@item.Name</span>
+                                 </div>)
+        },
+        new()
+        {
+            Name = ""Month"",
+            ItemValue = ""Month"",
+            Fragment = (item => @<div class=""custom-container @(itemTemplateValue2 == item.ItemValue ? ""selected"" : """")"">
+                                     <div class=""custom-circle"" />
+                                     <span style=""color:blue"">@item.Name</span>
+                                 </div>)
+        }
+    };
+}";
 
     private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""

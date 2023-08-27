@@ -5,6 +5,7 @@ public partial class _BitChoiceGroupOptionDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string itemTemplateValue = "Day";
+    private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
     public ChoiceGroupValidationModel validationModel = new();
     public string? successMessage;
@@ -234,10 +235,40 @@ public partial class _BitChoiceGroupOptionDemo
         <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
         <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </Options>
+</BitChoiceGroup>
+
+
+<BitChoiceGroup Label=""Item's Template"" @bind-Value=""itemTemplateValue2""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"">
+        <Template Context=""option"">
+            <div class=""custom-container @(itemTemplateValue2 == option.Value ? ""selected"" : """")"">
+                <div class=""custom-circle""></div>
+                <span style=""color:red"">@option.Text</span>
+            </div>
+        </Template>
+    </BitChoiceGroupOption>
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"">
+        <Template Context=""option"">
+            <div class=""custom-container @(itemTemplateValue2 == option.Value ? ""selected"" : """")"">
+                <div class=""custom-circle""></div>
+                <span style=""color:green"">@option.Text</span>
+            </div>
+        </Template>
+    </BitChoiceGroupOption>
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"">
+        <Template Context=""option"">
+            <div class=""custom-container @(itemTemplateValue2 == option.Value ? ""selected"" : """")"">
+                <div class=""custom-circle""></div>
+                <span style=""color:blue"">@option.Text</span>
+            </div>
+        </Template>
+    </BitChoiceGroupOption>
 </BitChoiceGroup>";
     private readonly string example6CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
-private string itemTemplateValue = ""Day"";";
+private string itemTemplateValue = ""Day"";
+private string itemTemplateValue2 = ""Day"";";
 
     private readonly string example7HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""

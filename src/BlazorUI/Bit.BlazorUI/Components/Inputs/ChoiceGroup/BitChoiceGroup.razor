@@ -33,10 +33,15 @@
         {
             var inputId = GetInputId(item);
             var isChecked = GetIsCheckedItem(item);
+            var template = GetTemplate(item);
 
             <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
                 <label for="@inputId" style="@Styles?.ItemLabel" class="@Classes?.ItemLabel">
-                    @if (ItemTemplate is not null)
+                    @if(template is not null)
+                    {
+                        @template(item)
+                    }
+                    else if (ItemTemplate is not null)
                     {
                         @ItemTemplate(item)
                     }

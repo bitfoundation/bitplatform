@@ -177,6 +177,36 @@
                 </Options>
             </BitChoiceGroup>
         </div>
+        <br /><br /><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Item's Template" @bind-Value="itemTemplateValue2"
+                            TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Day" Value="@("Day")">
+                    <Template Context="option">
+                        <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
+                            <div class="custom-circle"></div>
+                            <span style="color:red">@option.Text</span>
+                        </div>
+                    </Template>
+                </BitChoiceGroupOption>
+                <BitChoiceGroupOption Text="Week" Value="@("Week")">
+                    <Template Context="option">
+                        <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
+                            <div class="custom-circle"></div>
+                            <span style="color:green">@option.Text</span>
+                        </div>
+                    </Template>
+                </BitChoiceGroupOption>
+                <BitChoiceGroupOption Text="Month" Value="@("Month")">
+                    <Template Context="option">
+                        <div class="custom-container @(itemTemplateValue2 == option.Value ? "selected" : "")">
+                            <div class="custom-circle"></div>
+                            <span style="color:blue">@option.Text</span>
+                        </div>
+                    </Template>
+                </BitChoiceGroupOption>
+            </BitChoiceGroup>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 

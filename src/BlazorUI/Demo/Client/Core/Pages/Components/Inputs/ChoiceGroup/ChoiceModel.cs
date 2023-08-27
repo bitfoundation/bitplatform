@@ -12,4 +12,5 @@ public class ChoiceModel
     public bool IsDisabled { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
+    public RenderFragment<ChoiceModel>? Fragment { get; set; }
 }

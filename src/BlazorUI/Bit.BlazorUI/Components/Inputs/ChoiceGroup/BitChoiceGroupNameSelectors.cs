@@ -53,6 +53,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Style));
 
     /// <summary>
+    /// Template field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Template));
+
+    /// <summary>
     /// The Text field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Text { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Text));
