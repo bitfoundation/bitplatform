@@ -9,7 +9,7 @@ public partial class NavMenu
     private string _searchText = string.Empty;
     private List<BitNavItem> _filteredNavLinks = default!;
 
-    private readonly List<BitNavItem> _templatesNavItems = new()
+    private readonly List<BitNavItem> _allNavItems = new()
     {
         new BitNavItem { Text = "Overview", Url = "/templates/overview"},
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites"},
@@ -67,26 +67,24 @@ public partial class NavMenu
 
     private void HandleOnClear()
     {
-        _filteredNavLinks = _templatesNavItems;
+        _filteredNavLinks = _allNavItems;
     }
 
     private void HandleValueChanged(string text)
     {
-        HandleOnClear();
         _searchText = text;
+        _filteredNavLinks = _allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(_templatesNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        var flatNavLinkList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
         _filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)
     {
-        _searchText = string.Empty;
-
-        HandleOnClear();
-
         _isNavOpen = false;
+        _searchText = string.Empty;
+        _filteredNavLinks = _allNavItems;
 
         await _jsRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
 

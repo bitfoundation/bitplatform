@@ -13,6 +13,11 @@
                       Value="@_searchText"
                       ValueChanged="@HandleValueChanged"
                       OnClear="@HandleOnClear" />
+        @if (_filteredNavLinks.Count == 0)
+        {
+            <br />
+            <div>nothing found!</div>
+        }
     </div>
     <div class="nav-menu-list">
         <BitNav Class="@GetNavMenuClass()"

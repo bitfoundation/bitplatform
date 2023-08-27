@@ -1,22 +1,27 @@
 ﻿@inherits AppComponentBase
 
-@if (isNavOpen)
+@if (_isNavOpen)
 {
     <div class="nav-menu-overlay nav-menu--mobile" @onclick="@ToggleMenu"></div>
 }
-<div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
+<div class="nav-menu @(_isNavOpen is false ? "nav-menu--desktop" : null)">
     <div class="search-box-container">
         <BitSearchBox Class="nav-menu-search-box"
                       Placeholder="Search components"
                       IconName="@BitIconName.Search"
                       IsUnderlined="true"
-                      Value="@searchText"
+                      Value="@_searchText"
                       ValueChanged="@HandleChange"
                       OnClear="@HandleClear" />
+        @if (_filteredNavLinks.Count == 0)
+        {
+            <br />
+            <div>nothing found!</div>
+        }
     </div>
     <div class="nav-menu-list">
         <BitNav Class="side-nav"
-                Items="filteredNavLinks"
+                Items="_filteredNavLinks"
                 AriaLabel="bit BlazorUI Nav"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)">
         </BitNav>

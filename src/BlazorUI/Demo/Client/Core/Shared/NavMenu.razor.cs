@@ -5,8 +5,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class NavMenu
 {
-    private bool isNavOpen = false;
-    private readonly List<BitNavItem> allNavLinks = new()
+    private bool _isNavOpen = false;
+    private readonly List<BitNavItem> _allNavLinks = new()
     {
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
@@ -131,8 +131,8 @@ public partial class NavMenu
         new() { Text = "Theming", Url = "/theming" },
     };
 
-    private List<BitNavItem> filteredNavLinks = default!;
-    private string searchText = string.Empty;
+    private List<BitNavItem> _filteredNavLinks = default!;
+    private string _searchText = string.Empty;
 
     [Inject] public NavManuService _menuService { get; set; } = default!;
 
@@ -158,9 +158,9 @@ public partial class NavMenu
     {
         try
         {
-            isNavOpen = !isNavOpen;
+            _isNavOpen = !_isNavOpen;
 
-            await JSRuntime.ToggleBodyOverflow(isNavOpen);
+            await JSRuntime.ToggleBodyOverflow(_isNavOpen);
         }
         catch (Exception ex)
         {
@@ -174,26 +174,26 @@ public partial class NavMenu
 
     private void HandleClear()
     {
-        filteredNavLinks = allNavLinks;
+        _filteredNavLinks = _allNavLinks;
     }
 
     private void HandleChange(string text)
     {
-        HandleClear();
-        searchText = text;
+        _searchText = text;
+        _filteredNavLinks = _allNavLinks;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        var flatNavLinkList = Flatten(_allNavLinks).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        _filteredNavLinks = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)
     {
         if (item.Url.HasNoValue()) return;
 
-        searchText = string.Empty;
+        _searchText = string.Empty;
+        _filteredNavLinks = _allNavLinks;
 
-        HandleClear();
         await ToggleMenu();
     }
 
