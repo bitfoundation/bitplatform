@@ -12,6 +12,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/ConfirmMessageBox.razor.css",
+        "inputFile": "Shared/ConfirmMessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss",
         "minify": { "enabled": false },
