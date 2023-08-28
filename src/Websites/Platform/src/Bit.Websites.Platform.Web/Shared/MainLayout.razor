@@ -2,12 +2,12 @@
 
 <Header />
 
-<div class="main @((CurrentUrl.Contains("templates") is false) ? "main--full-page" : null)">
-    @if (CurrentUrl.Contains("templates"))
+<div class="main @(_isTemplateDocRoute ? null : "main--full-page")">
+    @if (_isTemplateDocRoute)
     {
         <NavMenu />
     }
-    <div class="site-content @(CurrentUrl.Contains("templates") ? "docs-content" : "")">
+    <div class="site-content @(_isTemplateDocRoute ? "docs-content" : "")">
         <AppErrorBoundary>
                 @Body
         </AppErrorBoundary>
