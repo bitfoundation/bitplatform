@@ -80,7 +80,8 @@ public partial class EditProfilePage
             _user.BirthDate = _userToEdit.BirthDate;
             _user.Gender = _userToEdit.Gender;
 
-            await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto);
+            (await (await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto))!.Patch(_user);
 
             PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
 

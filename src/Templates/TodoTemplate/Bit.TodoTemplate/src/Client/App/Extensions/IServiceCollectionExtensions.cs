@@ -20,7 +20,7 @@ public static class IServiceCollectionExtensions
         services.AddClientWindowsServices();
 #endif
 
-        services.AddTransient<MainPage>();
+        services.AddScoped<MainPage>();
         services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;
