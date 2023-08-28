@@ -325,7 +325,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.
     /// </summary>
-    [Parameter] public string AdditionalUrlsField { get; set; } = URL_FIELD;
+    [Parameter] public string AdditionalUrlsField { get; set; } = ADDITIONAL_URLS_FIELD;
 
     /// <summary>
     /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.

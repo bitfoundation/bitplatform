@@ -135,20 +135,6 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "IsExpandedField",
-            Type = "string",
-            DefaultValue = "IsExpanded",
-            Description = "Whether or not the group is in an expanded state."
-        },
-        new()
-        {
-            Name = "IsExpandedFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
-            DefaultValue = "null",
-            Description = "Whether or not the group is in an expanded state."
-        },
-        new()
-        {
             Name = "IsEnabledField",
             Type = "string",
             DefaultValue = "IsEnabled",
@@ -160,6 +146,20 @@ public partial class BitNavDemo
             Type = "Expression<Func<TItem, bool>>?",
             DefaultValue = "null",
             Description = "Whether or not the item is disabled."
+        },
+        new()
+        {
+            Name = "IsExpandedField",
+            Type = "string",
+            DefaultValue = "IsExpanded",
+            Description = "Whether or not the group is in an expanded state."
+        },
+        new()
+        {
+            Name = "IsExpandedFieldSelector",
+            Type = "Expression<Func<TItem, bool>>?",
+            DefaultValue = "null",
+            Description = "Whether or not the group is in an expanded state."
         },
         new()
         {
@@ -259,34 +259,6 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "TextField",
-            Type = "string",
-            DefaultValue = "Name",
-            Description = "Text to render for the item."
-        },
-        new()
-        {
-            Name = "TextFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
-            DefaultValue = "null",
-            Description = "Text to render for the item."
-        },
-        new()
-        {
-            Name = "TitleField",
-            Type = "string",
-            DefaultValue= "Title",
-            Description = "Text for the item tooltip."
-        },
-        new()
-        {
-            Name = "TitleFieldSelector",
-            Type = "Expression<Func<TItem, string>>?",
-            DefaultValue = "null",
-            Description = "Text for the item tooltip."
-        },
-        new()
-        {
             Name = "TargetField",
             Type = "string",
             DefaultValue = "Target",
@@ -329,6 +301,34 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "TextField",
+            Type = "string",
+            DefaultValue = "Name",
+            Description = "Text to render for the item."
+        },
+        new()
+        {
+            Name = "TextFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
+            Description = "Text to render for the item."
+        },
+        new()
+        {
+            Name = "TitleField",
+            Type = "string",
+            DefaultValue= "Title",
+            Description = "Text for the item tooltip."
+        },
+        new()
+        {
+            Name = "TitleFieldSelector",
+            Type = "Expression<Func<TItem, string>>?",
+            DefaultValue = "null",
+            Description = "Text for the item tooltip."
+        },
+        new()
+        {
             Name = "UrlField",
             Type = "string",
             DefaultValue = "Url",
@@ -337,9 +337,23 @@ public partial class BitNavDemo
         new()
         {
             Name = "UrlFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
+            Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "URL to navigate for the item link."
+        },
+        new()
+        {
+            Name = "AdditionalUrlsField",
+            Type = "string",
+            DefaultValue = "Url",
+            Description = "Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL."
+        },
+        new()
+        {
+            Name = "AdditionalUrlsFieldSelector",
+            Type = "Expression<Func<TItem, IEnumerable<string>>>?",
+            DefaultValue = "null",
+            Description = "Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL."
         }
     };
 
