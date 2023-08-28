@@ -18,13 +18,13 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "Button", Url = "/components/button" },
-                new() { Text = "ActionButton", Url = "/components/actionbutton" },
-                new() { Text = "CompoundButton", Url = "/components/compoundbutton" },
-                new() { Text = "IconButton", Url = "/components/iconbutton" },
-                new() { Text = "LoadingButton", Url = "/components/loadingbutton" },
-                new() { Text = "MenuButton", Url = "/components/menubutton" },
-                new() { Text = "SplitButton", Url = "/components/splitbutton" },
-                new() { Text = "ToggleButton", Url = "/components/togglebutton" }
+                new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = new string[] { "/components/action-button" } },
+                new() { Text = "CompoundButton", Url = "/components/compoundbutton", AdditionalUrls = new string[] { "/components/compound-button" } },
+                new() { Text = "IconButton", Url = "/components/iconbutton", AdditionalUrls = new string[] { "/components/icon-button" } },
+                new() { Text = "LoadingButton", Url = "/components/loadingbutton", AdditionalUrls = new string[] { "/components/loading-button" } },
+                new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = new string[] { "/components/menu-button" } },
+                new() { Text = "SplitButton", Url = "/components/splitbutton", AdditionalUrls = new string[] { "/components/split-button" } },
+                new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = new string[] { "/components/toggle-button" } }
             }
         },
         new()
@@ -32,18 +32,18 @@ public partial class NavMenu : IDisposable
             Text = "Basic Inputs",
             ChildItems = new()
             {
-                new() { Text = "CheckBox", Url = "/components/checkbox" },
-                new() { Text = "ChoiceGroup", Url = "/components/choicegroup" },
+                new() { Text = "CheckBox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
+                new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" } },
                 new() { Text = "Dropdown", Url = "/components/dropdown" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link" },
                 new() { Text = "Rating", Url = "/components/rating" },
-                new() { Text = "SearchBox", Url = "/components/searchbox" },
+                new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = new string[] { "/components/search-box" } },
                 new() { Text = "Slider", Url = "/components/slider" },
-                new() { Text = "SpinButton", Url = "/components/spinbutton" },
-                new() { Text = "TextField", Url = "/components/textfield" },
-                new() { Text = "NumericTextField", Url = "/components/numerictextfield" },
-                new() { Text = "OtpInput", Url = "/components/otpinput" },
+                new() { Text = "SpinButton", Url = "/components/spinbutton", AdditionalUrls = new string[] { "/components/spin-button" } },
+                new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = new string[] { "/components/text-field" } },
+                new() { Text = "NumericTextField", Url = "/components/numerictextfield", AdditionalUrls = new string[] { "/components/numeric-text-field" } },
+                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = new string[] { "/components/otp-input" } },
                 new() { Text = "Toggle (Switch)", Url = "/components/toggle" }
             }
         },
@@ -53,11 +53,11 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "Calendar", Url = "/components/calendar" },
-                new() { Text = "ColorPicker", Url = "/components/colorpicker" },
-                new() { Text = "DatePicker", Url = "/components/datepicker" },
-                new() { Text = "DateRangePicker", Url = "/components/daterangepicker" },
-                new() { Text = "FileUpload", Url = "/components/fileupload" },
-                new() { Text = "TimePicker", Url = "/components/timepicker" },
+                new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = new string[] { "/components/color-picker" } },
+                new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = new string[] { "/components/date-picker" } },
+                new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = new string[] { "/components/date-range-picker" } },
+                new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = new string[] { "/components/file-upload" } },
+                new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = new string[] { "/components/time-picker" } },
             }
         },
         new()
@@ -65,7 +65,7 @@ public partial class NavMenu : IDisposable
             Text = "Items & Lists",
             ChildItems = new()
             {
-                new() { Text = "BasicList", Url = "/components/basiclist" },
+                new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = new string[] { "/components/basic-list" } },
                 new() { Text = "Carousel", Url = "/components/carousel" },
                 new() { Text = "Swiper", Url = "/components/swiper" },
                 new() { Text = "Persona (AvatarView)", Url = "/components/persona" }
@@ -86,7 +86,7 @@ public partial class NavMenu : IDisposable
             Text = "Notification & Engagement",
             ChildItems = new()
             {
-                new() { Text = "MessageBar", Url = "/components/messagebar" },
+                new() { Text = "MessageBar", Url = "/components/messagebar", AdditionalUrls = new string[] { "/components/message-bar" } },
                 new() { Text = "SnackBar", Url = "/components/snackbar" },
             }
         },
@@ -95,7 +95,7 @@ public partial class NavMenu : IDisposable
             Text = "Progress",
             ChildItems = new()
             {
-                new() { Text = "ProgressIndicator", Url = "/components/progressindicator" },
+                new() { Text = "ProgressIndicator", Url = "/components/progressindicator", AdditionalUrls = new string[] { "/components/progress-indicator" } },
                 new() { Text = "Spinner (BusyIndicator)", Url = "/components/spinner" },
                 new() { Text = "Loading", Url = "/components/loading" }
             },
@@ -125,7 +125,7 @@ public partial class NavMenu : IDisposable
             Text = "Extras",
             ChildItems = new()
             {
-                new() { Text = "DataGrid", Url = "/components/datagrid" },
+                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = new string[] { "/components/data-grid" } },
                 new() { Text = "Chart", Url = "/components/chart" }
             }
         },
