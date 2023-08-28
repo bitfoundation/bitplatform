@@ -69,7 +69,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 

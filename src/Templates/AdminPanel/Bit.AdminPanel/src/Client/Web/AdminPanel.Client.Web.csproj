@@ -65,7 +65,6 @@
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.dll" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.dll" />
-        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
