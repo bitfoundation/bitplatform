@@ -11,7 +11,7 @@ public partial class MessageBox : IDisposable
     private async Task OnCloseClick()
     {
         _isOpen = false;
-        await JSRuntime.SetBodyOverflow(false);
+        await JsRuntime.SetBodyOverflow(false);
         _tsc?.SetResult(null);
         _tsc = null;
     }
