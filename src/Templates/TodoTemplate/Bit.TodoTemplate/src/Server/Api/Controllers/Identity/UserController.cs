@@ -23,7 +23,7 @@ public partial class UserController : AppControllerBase
     }
 
     [HttpPut]
-    public async Task Update(EditUserDto userDto, CancellationToken cancellationToken)
+    public async Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
         var userId = UserInformationProvider.GetUserId();
 
@@ -35,6 +35,8 @@ public partial class UserController : AppControllerBase
         userDto.Patch(user);
 
         await _userManager.UpdateAsync(user);
+
+        return await GetCurrentUser(cancellationToken);
     }
 
     [HttpDelete]

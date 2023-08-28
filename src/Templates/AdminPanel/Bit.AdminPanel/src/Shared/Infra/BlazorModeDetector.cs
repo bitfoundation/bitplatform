@@ -2,7 +2,7 @@
 namespace AdminPanel.Shared.Infra;
 
 /// <summary>
-/// https://bitplatform.dev/adminpanel/hosting-models
+/// https://bitplatform.dev/templates/hosting-models
 /// </summary>
 public class BlazorModeDetector
 {

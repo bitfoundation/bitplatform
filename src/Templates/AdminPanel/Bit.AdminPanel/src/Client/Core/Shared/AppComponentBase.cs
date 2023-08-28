@@ -60,18 +60,19 @@ public partial class AppComponentBase : ComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            try
+            {
+                await OnAfterFirstRenderAsync();
+            }
+            catch (Exception exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        }
+
         await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender is false) return;
-
-        try
-        {
-            await OnAfterFirstRenderAsync();
-        }
-        catch (Exception exp)
-        {
-            ExceptionHandler.Handle(exp);
-        }
     }
 
     protected sealed override void OnInitialized()
