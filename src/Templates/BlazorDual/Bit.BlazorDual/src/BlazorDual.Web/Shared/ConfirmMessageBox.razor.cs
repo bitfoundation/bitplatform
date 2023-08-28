@@ -15,7 +15,7 @@ public partial class ConfirmMessageBox
 
         await InvokeAsync(() =>
         {
-            _ = JSRuntime.InvokeVoidAsync("App.setBodyOverflow", true);
+            _ = JSRuntime.SetBodyOverflow(true);
             _isOpen = true;
             _title = title;
             _message = message;
@@ -30,7 +30,7 @@ public partial class ConfirmMessageBox
     public async Task Confirm(bool value)
     {
         _isOpen = false;
-        await JSRuntime.InvokeVoidAsync("App.setBodyOverflow", true);
+        await JSRuntime.SetBodyOverflow(false);
         _tsc?.SetResult(value);
     }
 }
