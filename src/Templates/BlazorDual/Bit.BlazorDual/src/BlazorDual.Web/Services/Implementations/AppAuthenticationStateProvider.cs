@@ -1,4 +1,7 @@
-﻿namespace BlazorDual.Web.Services.Implementations;
+﻿using System.Text.Json;
+using System.Text;
+
+namespace BlazorDual.Web.Services.Implementations;
 
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
@@ -33,10 +36,45 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
         return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
     }
 
-    private IEnumerable<Claim> ParseTokenClaims(string access_token)
+    private static IEnumerable<Claim> ParseTokenClaims(string access_token)
     {
-        return Jose.JWT.Payload<Dictionary<string, object>>(access_token)
+        return ParseJwt(access_token)
             .Select(keyValue => new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty))
             .ToArray();
+    }
+
+    private static Dictionary<string, object> ParseJwt(string access_token)
+    {
+        // Split the token to get the payload
+        string base64UrlPayload = access_token.Split('.')[1];
+
+        // Convert the payload from Base64Url format to Base64
+        string base64Payload = ConvertBase64UrlToBase64(base64UrlPayload);
+
+        // Decode the Base64 string to get a JSON string
+        string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
+
+        // Deserialize the JSON string to a dictionary
+        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.DictionaryStringObject);
+
+        return claims;
+    }
+
+    private static string ConvertBase64UrlToBase64(string base64Url)
+    {
+        base64Url = base64Url.Replace('-', '+').Replace('_', '/');
+
+        // Adjust base64Url string length for padding
+        switch (base64Url.Length % 4)
+        {
+            case 2:
+                base64Url += "==";
+                break;
+            case 3:
+                base64Url += "=";
+                break;
+        }
+
+        return base64Url;
     }
 }

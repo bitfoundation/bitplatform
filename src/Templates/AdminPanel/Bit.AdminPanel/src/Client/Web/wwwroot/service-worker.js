@@ -5,7 +5,6 @@
 
 self.assetsInclude = [];
 self.assetsExclude = [
-    /Riok\.Mapperly\.Abstractions\.dll$/,
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
