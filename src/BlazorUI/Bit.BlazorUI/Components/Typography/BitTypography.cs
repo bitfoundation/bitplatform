@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitTypography : BitComponentBase
 {
-    public static Dictionary<BitTypographyVariant, string> VariantMapping = new()
+    protected static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
