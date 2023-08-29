@@ -1,0 +1,22 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     aria-label="@AriaLabel">
+    @if (ShouldStartVisible)
+    {
+        <img role="img"
+             class="@GetImageFitClass() @GetCoverStyleClass()"
+             alt="@Alt"
+             title="@Title"
+             loading="@Loading"
+             src="@_internalSrc"
+             @onload="HandleOnLoad"
+             @onerror="HandleOnError"
+             @onclick="HandleOnClick"
+             aria-hidden="@AriaHidden"
+             aria-describedby="@AriaDescription" />        
+    }
+</div>
