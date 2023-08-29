@@ -4,7 +4,7 @@ public static class IWindowsServiceCollectionExtensions
 {
     public static IServiceCollection AddClientWindowsServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in Windows.
+        // Services registered in this class can be injected in Windows.
 
         return services;
     }
