@@ -6,8 +6,14 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected HttpClient HttpClient = default!;
 
-    [AutoInject] protected IStateService StateService = default!;
+    /// <summary>
+    /// <inheritdoc cref="IPrerenderStateService"/>
+    /// </summary>
+    [AutoInject] protected IPrerenderStateService PrerenderStateService = default!;
 
+    /// <summary>
+    /// <inheritdoc cref="IPubSubService"/>
+    /// </summary>
     [AutoInject] protected IPubSubService PubSubService = default!;
 
     [AutoInject] protected IConfiguration Configuration = default!;

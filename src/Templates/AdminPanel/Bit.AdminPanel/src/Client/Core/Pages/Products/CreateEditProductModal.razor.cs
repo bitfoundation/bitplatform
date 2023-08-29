@@ -39,7 +39,7 @@ public partial class CreateEditProductModal
 
         try
         {
-            var categoryList = await StateService.GetValue($"{nameof(ProductsPage)}-AllCategoryList",
+            var categoryList = await PrerenderStateService.GetValue($"{nameof(ProductsPage)}-AllCategoryList",
                                         async () => await HttpClient.GetFromJsonAsync("Category/Get",
                                             AppJsonContext.Default.ListCategoryDto)) ?? new();
 
