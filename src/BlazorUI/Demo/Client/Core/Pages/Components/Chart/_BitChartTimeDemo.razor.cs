@@ -7,7 +7,6 @@ public partial class _BitChartTimeDemo
     private BitChart _chart = default!;
     private BitChartLineConfig _config = default!;
 
-
     protected override void OnInitialized()
     {
         _config = new BitChartLineConfig
@@ -18,7 +17,7 @@ public partial class _BitChartTimeDemo
                 Title = new BitChartOptionsTitle
                 {
                     Display = true,
-                    Text = "ChartJs.Blazor Time Scale Chart"
+                    Text = "BitChart Time Scale Chart"
                 },
                 Tooltips = new BitChartTooltips
                 {
@@ -42,7 +41,7 @@ public partial class _BitChartTimeDemo
                             },
                             Time = new BitChartTimeOptions
                             {
-                                TooltipFormat = "ll HH:mm"
+                                TooltipFormat = "dd MMM HH:mm"
                             },
                         }
                     },

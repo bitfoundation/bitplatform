@@ -4,21 +4,24 @@
             Title="Chart"
             Description="Chart component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Chart"
-               ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-               ComponentParameters="componentParameters">
-    <_BitChartBarDemo />
+<div>
+    <ComponentDemo ComponentName="Chart"
+                   ComponentDescription="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+                   Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses">
+        <_BitChartBarDemo />
 
-    <_BitChartHorizontalBarDemo />
+        <_BitChartHorizontalBarDemo />
 
-    <_BitChartStackedBarDemo />
+        <_BitChartStackedBarDemo />
 
-    <_BitChartLineDemo />
+        <_BitChartLineDemo />
 
-    <_BitChartPieDemo />
-    
-    <_BitChartDoughnutDemo />
+        <_BitChartPieDemo />
 
-    <_BitChartTimeDemo />
-</ComponentDemo>
+        <_BitChartDoughnutDemo />
+
+        <_BitChartTimeDemo />
+    </ComponentDemo>
+</div>
