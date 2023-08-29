@@ -6,9 +6,9 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in client side (Web, Android, iOS, Windows, and Mac)
+        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, and macOS)
 
-        services.AddScoped<IStateService, StateService>();
+        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();

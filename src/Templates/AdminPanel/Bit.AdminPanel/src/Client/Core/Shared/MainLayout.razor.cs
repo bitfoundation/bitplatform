@@ -9,7 +9,7 @@ public partial class MainLayout : IDisposable
     private bool _isUserAuthenticated;
     private ErrorBoundary _errorBoundaryRef = default!;
 
-    [AutoInject] private IStateService _stateService = default!;
+    [AutoInject] private IPrerenderStateService _stateService = default!;
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 

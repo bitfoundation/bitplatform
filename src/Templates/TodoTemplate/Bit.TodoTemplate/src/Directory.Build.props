@@ -2,14 +2,14 @@
 <Project>
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>
-        
+
         <BlazorMode>BlazorServer</BlazorMode>
         <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
+        <!-- Learn more about blazor modes at https://bitplatform.dev/templates/hosting-models -->
 
         <WebAppDeploymentType>Spa</WebAppDeploymentType>
         <!-- You can choose either Spa, Pwa, SpaPrerendered, PwaPrerendered or PrerenderedOnly -->
-        
-        <!-- Learn more about blazor modes & deployment types at https://bitplatform.dev/templates/hosting-models -->
+        <!-- Learn more about deployment types at https://bitplatform.dev/templates/deployment-type -->
 
         <UseElectron Condition=" '$(BlazorMode)' == 'BlazorElectron' ">true</UseElectron>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorElectron' ">$(DefineConstants);BlazorElectron</DefineConstants>

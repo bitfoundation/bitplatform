@@ -15,25 +15,6 @@ public partial class MainPage
         SetupStatusBar();
     }
 
-    private async void ContentPage_Loaded(object sender, EventArgs e)
-    {
-        try
-        {
-#if WINDOWS && RELEASE
-            var webView2 = (blazorWebView.Handler.PlatformView as Microsoft.UI.Xaml.Controls.WebView2);
-            await webView2.EnsureCoreWebView2Async();
-
-            var settings = webView2.CoreWebView2.Settings;
-            settings.IsZoomControlEnabled = false;
-            settings.AreBrowserAcceleratorKeysEnabled = false;
-#endif
-        }
-        catch (Exception exp)
-        {
-            _exceptionHandler.Handle(exp);
-        }
-    }
-
     private void SetupBlazorWebView()
     {
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
@@ -76,6 +57,25 @@ public partial class MainPage
                 settings.BlockNetworkImage = false;
 #endif
         });
+
+        Loaded += delegate
+        {
+            try
+            {
+#if WINDOWS && RELEASE
+                var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler.PlatformView;
+                await webView2.EnsureCoreWebView2Async();
+
+                var settings = webView2.CoreWebView2.Settings;
+                settings.IsZoomControlEnabled = false;
+                settings.AreBrowserAcceleratorKeysEnabled = false;
+#endif
+            }
+            catch (Exception exp)
+            {
+                _exceptionHandler.Handle(exp);
+            }
+        };
     }
 
     private void SetupStatusBar()

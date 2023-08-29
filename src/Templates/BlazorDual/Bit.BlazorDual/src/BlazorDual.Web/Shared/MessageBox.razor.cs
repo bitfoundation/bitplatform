@@ -29,7 +29,7 @@ public partial class MessageBox : IDisposable
 
     protected override Task OnInitAsync()
     {
-        _dispose = PubSubService.Sub(PubSubMessages.SHOW_MESSAGE, async args =>
+        _dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
             (var message, string title, TaskCompletionSource<object?> tsc) = ((string message, string title, TaskCompletionSource<object?> tsc))args!;
             await (_tsc?.Task ?? Task.CompletedTask);

@@ -4,7 +4,7 @@ public static class IAndroidServiceCollectionExtensions
 {
     public static IServiceCollection AddClientAndroidServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in Android.
+        // Services registered in this class can be injected in Android.
 
         return services;
     }

@@ -6,7 +6,7 @@ public partial class MessageBoxService
     public async Task Show(string message, string title = "")
     {
         TaskCompletionSource<object?> tsc = new();
-        _pubSubService.Pub(PubSubMessages.SHOW_MESSAGE, (message, title, tsc));
+        _pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, (message, title, tsc));
         await tsc.Task;
     }
 }

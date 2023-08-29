@@ -9,21 +9,6 @@ public partial class ExceptionHandler : IExceptionHandler
     [AutoInject] IAuthenticationService _authenticationService = default!;
     [AutoInject] MessageBoxService _messageBoxService = default!;
 
-
-    async void SignOut()
-    {
-        try
-        {
-            await _messageBoxService.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
-
-            await _authenticationService.SignOut();
-        }
-        catch (Exception exp)
-        {
-            Handle(exp);
-        }
-    }
-
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
         if (exception is UnauthorizedException)
@@ -48,5 +33,19 @@ public partial class ExceptionHandler : IExceptionHandler
             _ = _messageBoxService.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
         }
 #endif
+    }
+
+    private async void SignOut()
+    {
+        try
+        {
+            await _messageBoxService.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
+
+            await _authenticationService.SignOut();
+        }
+        catch (Exception exp)
+        {
+            Handle(exp);
+        }
     }
 }

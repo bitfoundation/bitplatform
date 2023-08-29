@@ -5,6 +5,11 @@ using TodoTemplate.Shared.Attributes;
 
 namespace TodoTemplate.Client.Core.Shared;
 
+/// <summary>
+/// To implement forms where each error is displayed according to the language chosen by the user, you can use the <see cref="DtoResourceTypeAttribute"/>
+/// on the corresponding class instead of using `ErrorResourceType` on each property. Check out <see cref="SignUpRequestDto"/> for an example.
+/// However, you need to use <see cref="AppDataAnnotationsValidator"/> instead of <see cref="DataAnnotationsValidator"/> in Blazor EditForms for this method to work.
+/// </summary>
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
     private static readonly PropertyInfo _OtherPropertyNamePropertyInfo = typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;

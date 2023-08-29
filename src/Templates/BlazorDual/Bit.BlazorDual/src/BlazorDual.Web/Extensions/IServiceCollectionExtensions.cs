@@ -7,7 +7,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
-        services.AddScoped<IStateService, StateService>();
+        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
