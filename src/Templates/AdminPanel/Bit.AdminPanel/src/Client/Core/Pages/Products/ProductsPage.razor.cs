@@ -7,7 +7,7 @@ namespace AdminPanel.Client.Core.Pages.Products;
 public partial class ProductsPage
 {
     private bool _isLoading;
-    private CreateEditProductModal? _modal;
+    private AddOrEditProductModal? _modal;
     private string _productNameFilter = string.Empty;
 
     private ConfirmMessageBox _confirmMessageBox = default!;
