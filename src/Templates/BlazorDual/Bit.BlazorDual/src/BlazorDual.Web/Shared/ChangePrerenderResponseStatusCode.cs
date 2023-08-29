@@ -2,7 +2,10 @@
 
 namespace BlazorDual.Web.Shared;
 
-public partial class ChangeResponseStatusCode : AppComponentBase
+/// <summary>
+/// This component is used during prerendering to determine the value of the StatusCode parameter for the returned HTTP response.
+/// </summary>
+public partial class ChangePrerenderResponseStatusCode : AppComponentBase
 {
     [Parameter]
     public HttpStatusCode StatusCode { get; set; }

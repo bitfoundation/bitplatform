@@ -19,7 +19,7 @@
     }
 
     /**
-     ** To disable the scrollbar of the body when showing the modal, so the modal can be always shown in the viewport without being scrolled out.
+     * To disable the scrollbar of the body when showing the modal, so the modal can be always shown in the viewport without being scrolled out.
      **/
     public static setBodyOverflow(hidden: boolean) {
         document.body.style.overflow = hidden ? "hidden" : "auto";

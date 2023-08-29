@@ -6,6 +6,11 @@ using System.Reflection;
 
 namespace BlazorDual.Web.Services.Implementations;
 
+/// <summary>
+/// The <see cref="ClientSideAuthTokenProvider"/> reads the token from the cookie,
+/// but during prerendering, there is no access to localStorage or the stored cookies.
+/// However, the cookies are sent automatically in http request and The <see cref="ServerSideAuthTokenProvider"/> provides that token to the application.
+/// </summary>
 #if BlazorServer
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {

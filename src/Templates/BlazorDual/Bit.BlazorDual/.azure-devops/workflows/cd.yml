@@ -1,6 +1,8 @@
 trigger:
 - main
 
+# https://bitplatform.dev/templates/devops
+
 variables:
   WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   APP_SERVICE_NAME: 'app-service-td-test'

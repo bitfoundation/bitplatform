@@ -39,7 +39,7 @@ public partial class TodoPage
 
         try
         {
-            _allTodoItems = await StateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
+            _allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
                                 async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto)) ?? new();
 
             FilterViewTodoItems();
