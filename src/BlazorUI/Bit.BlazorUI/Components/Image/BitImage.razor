@@ -2,13 +2,14 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     class="@ClassBuilder.Value"
-     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value @Classes?.Container"
+     style="@StyleBuilder.Value @Styles?.Container"
      aria-label="@AriaLabel">
     @if (ShouldStartVisible)
     {
         <img role="img"
-             class="@GetImageFitClass() @GetCoverStyleClass()"
+             class="@GetImageFitClass() @GetCoverStyleClass() @Classes?.Image"
+             style="@Styles?.Image"
              alt="@Alt"
              title="@Title"
              loading="@Loading"

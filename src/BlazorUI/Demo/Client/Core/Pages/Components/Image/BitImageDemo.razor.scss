@@ -1,0 +1,24 @@
+﻿@import "../../../Styles/abstracts/_functions.scss";
+
+.visibility-items {
+    white-space: nowrap;
+    align-items: center;
+    display: inline-flex;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        filter: hue-rotate(45deg);
+        background-color: blueviolet;
+    }
+
+    .custom-image {
+        filter: opacity(25%);
+    }
+
+    .custom-container {
+        width: rem2(256px);
+        border-radius: rem2(16px) rem2(48px);
+    }
+}

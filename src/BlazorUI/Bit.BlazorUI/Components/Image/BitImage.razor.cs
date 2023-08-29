@@ -3,7 +3,6 @@
 public partial class BitImage
 {
     private string? _internalSrc;
-    private bool _isLoaded;
 
 
 
@@ -23,15 +22,24 @@ public partial class BitImage
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// If true, fades the image in when loaded.
+    /// Custom CSS classes for different parts of the BitImage.
     /// </summary>
-    [Parameter] public bool ShouldFadeIn { get; set; } = true;
+    [Parameter] public BitImageClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
-    /// This disables ShouldFadeIn.
+    /// Specifies the cover style to be used for this image.
     /// </summary>
-    [Parameter] public bool ShouldStartVisible { get; set; } = true;
+    [Parameter] public BitImageCoverStyle CoverStyle { get; set; }
+
+    /// <summary>
+    /// Specifies the error src of image.
+    /// </summary>
+    [Parameter] public string? ErrorSrc { get; set; }
+
+    /// <summary>
+    /// The image height value in px.
+    /// </summary>
+    [Parameter] public double? Height { get; set; }
 
     /// <summary>
     /// Used to determine how the image is scaled and cropped to fit the frame.
@@ -39,9 +47,14 @@ public partial class BitImage
     [Parameter] public BitImageFit ImageFit { get; set; }
 
     /// <summary>
-    /// If true, the image frame will expand to fill its parent container.
+    /// Allows for browser-level image loading (lazy or eager).
     /// </summary>
-    [Parameter] public bool MaximizeFrame { get; set; }
+    [Parameter] public string? Loading { get; set; }
+
+    /// <summary>
+    /// Callback for when the image clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// Optional callback method for when the image load state has changed.
@@ -50,14 +63,9 @@ public partial class BitImage
     [Parameter] public EventCallback<BitImageLoadingState> OnLoadingStateChange { get; set; }
 
     /// <summary>
-    /// Specifies the cover style to be used for this image.
+    /// If true, fades the image in when loaded.
     /// </summary>
-    [Parameter] public BitImageCoverStyle CoverStyle { get; set; }
-
-    /// <summary>
-    /// Allows for browser-level image loading (lazy or eager).
-    /// </summary>
-    [Parameter] public string? Loading { get; set; }
+    [Parameter] public bool ShouldFadeIn { get; set; } = true;
 
     /// <summary>
     /// Specifies the src of image.
@@ -65,24 +73,19 @@ public partial class BitImage
     [Parameter] public string? Src { get; set; }
 
     /// <summary>
-    /// Specifies the error src of image.
+    /// Custom CSS styles for different parts of the BitImage.
     /// </summary>
-    [Parameter] public string? ErrorSrc { get; set; }
+    [Parameter] public BitImageClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Callback for when the image clicked.
+    /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool ShouldStartVisible { get; set; } = true;
 
     /// <summary>
     /// The title to show when the mouse is placed on the image.
     /// </summary>
     [Parameter] public string? Title { get; set; }
-
-    /// <summary>
-    /// The image height value in px.
-    /// </summary>
-    [Parameter] public double? Height { get; set; }
 
     /// <summary>
     /// The image width value in px.
@@ -146,6 +149,5 @@ public partial class BitImage
     protected void HandleOnLoad()
     {
         ShouldStartVisible = true;
-        StateHasChanged();
     }
 }
