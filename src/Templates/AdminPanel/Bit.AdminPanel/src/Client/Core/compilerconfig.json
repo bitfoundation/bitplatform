@@ -102,8 +102,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Products/CreateEditProductModal.razor.css",
-        "inputFile": "Pages/Products/CreateEditProductModal.razor.scss",
+        "outputFile": "Pages/Products/AddOrEditProductModal.razor.css",
+        "inputFile": "Pages/Products/AddOrEditProductModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -2,7 +2,7 @@
 
 namespace AdminPanel.Client.Core.Pages.Products;
 
-public partial class CreateEditProductModal
+public partial class AddOrEditProductModal
 {
 
     private bool _isOpen;
