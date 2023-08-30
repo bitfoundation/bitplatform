@@ -58,7 +58,7 @@ public partial class MainPage
 #endif
         });
 
-        Loaded += delegate
+        Loaded += async delegate
         {
             try
             {

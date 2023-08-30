@@ -14,7 +14,7 @@ public partial class TodoPage
     private string _newTodoTitle = string.Empty;
     private ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
-    private IEnumerable<TodoItemDto> _viewTodoItems = default!;
+    private IList<TodoItemDto> _viewTodoItems = default!;
     private List<BitDropdownItem> _sortItems = new();
 
     protected override async Task OnInitAsync()
@@ -52,34 +52,29 @@ public partial class TodoPage
 
     private void FilterViewTodoItems()
     {
-        _viewTodoItems = _allTodoItems.Where(todo =>
-            _selectedFilter == nameof(AppStrings.Active) ? todo.IsDone == false
-            : _selectedFilter == nameof(AppStrings.Completed) ? todo.IsDone
-            : true
-        );
+        _viewTodoItems = _allTodoItems
+            .Where(t => TodoItemIsVisible(t))
+            .OrderByIf(_selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
+            .OrderByIf(_selectedSort == nameof(AppStrings.Date), t => t.Date!)
+            .ToList();
+    }
 
-        if (_searchText is not null)
-        {
-            _viewTodoItems = _viewTodoItems.Where(t => string.IsNullOrWhiteSpace(t.Title) is false
-                                                                && t.Title.Contains(_searchText, StringComparison.OrdinalIgnoreCase));
-        }
+    private bool TodoItemIsVisible(TodoItemDto todoItem)
+    {
+        var condition1 = string.IsNullOrWhiteSpace(_searchText) || todoItem.Title!.Contains(_searchText!, StringComparison.OrdinalIgnoreCase);
 
-        if (_selectedSort is not null)
-        {
-            _viewTodoItems = _selectedSort == nameof(AppStrings.Alphabetical)
-                                ? _viewTodoItems.OrderBy(t => t.Title)
-                                : _viewTodoItems.OrderBy(t => t.Date);
-        }
+        var condition2 = _selectedFilter == nameof(AppStrings.Active) ? todoItem.IsDone is false
+            : _selectedFilter == nameof(AppStrings.Completed) ? todoItem.IsDone
+            : true;
+
+        return condition1 && condition2;
     }
 
     private async Task ToggleIsDone(TodoItemDto todoItem)
     {
         todoItem.IsDone = !todoItem.IsDone;
 
-        (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto))
-            .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto))!.Patch(todoItem);
-
-        FilterViewTodoItems();
+        await UpdateTodoItem(todoItem);
     }
 
     private void SearchTodoItems(string searchText)
@@ -89,22 +84,24 @@ public partial class TodoPage
         FilterViewTodoItems();
     }
 
-    private void CancelEditMode(TodoItemDto todoItem)
-    {
-        todoItem.IsUnderEdit = false;
-    }
-
-    private void ToggleToEditMode(TodoItemDto todoItem)
-    {
-        todoItem.IsUnderEdit = true;
-        _underEditTodoItemTitle = todoItem.Title;
-    }
-
     private void SortTodoItems(BitDropdownItem sort)
     {
         _selectedSort = sort.Value;
 
         FilterViewTodoItems();
+    }
+
+    private void FilterTodoItems(string filter)
+    {
+        _selectedFilter = filter;
+
+        FilterViewTodoItems();
+    }
+
+    private void ToggleEditMode(TodoItemDto todoItem)
+    {
+        _underEditTodoItemTitle = todoItem.Title;
+        todoItem.IsInEditMode = !todoItem.IsInEditMode;
     }
 
     private async Task AddTodoItem()
@@ -120,7 +117,10 @@ public partial class TodoPage
 
             _allTodoItems.Add(addedTodoItem!);
 
-            FilterViewTodoItems();
+            if (TodoItemIsVisible(addedTodoItem!))
+            {
+                _viewTodoItems.Add(addedTodoItem!);
+            }
 
             _newTodoTitle = "";
         }
@@ -136,18 +136,20 @@ public partial class TodoPage
 
         try
         {
-            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title),
+            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title!),
                                                      Localizer[nameof(AppStrings.DeleteTodoItem)]);
 
             if (confirmed)
             {
                 _isLoading = true;
 
+                StateHasChanged();
+
                 await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
 
                 _allTodoItems.Remove(todoItem);
 
-                FilterViewTodoItems();
+                _viewTodoItems.Remove(todoItem);
             }
         }
         finally
@@ -156,25 +158,34 @@ public partial class TodoPage
         }
     }
 
-    private async Task EditTodoItem(TodoItemDto todoItem)
+    private async Task SaveTodoItem(TodoItemDto todoItem)
     {
-        if (_isLoading || string.IsNullOrWhiteSpace(_underEditTodoItemTitle)) return;
+        if (_isLoading) return;
 
         _isLoading = true;
 
         try
         {
-            todoItem.IsUnderEdit = false;
             todoItem.Title = _underEditTodoItemTitle;
 
-            (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto))!.Patch(todoItem);
-
-            FilterViewTodoItems();
+            await UpdateTodoItem(todoItem);
         }
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    private async Task UpdateTodoItem(TodoItemDto todoItem)
+    {
+        (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto))
+            .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto))!.Patch(todoItem);
+
+        todoItem.IsInEditMode = false;
+
+        if (TodoItemIsVisible(todoItem) is false)
+        {
+            _viewTodoItems.Remove(todoItem);
         }
     }
 }
