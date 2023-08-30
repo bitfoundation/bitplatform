@@ -38,6 +38,13 @@ public partial class BitImageDemo
         },
         new()
         {
+            Name = "ImageAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new Dictionary<string, object>()",
+            Description = "Capture and render additional attributes in addition to the image's parameters"
+        },
+        new()
+        {
             Name = "ImageFit",
             Type = "BitImageFit?",
             DefaultValue = "null",
