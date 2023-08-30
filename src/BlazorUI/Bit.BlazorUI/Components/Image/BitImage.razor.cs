@@ -5,9 +5,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitImage
 {
-    private string? _internalSrc;
-    private bool _imageIsVisible;
-    private BitImageLoadingState _loadState;
+    private BitImageLoadingState _loadingState;
 
 
 
@@ -112,7 +110,7 @@ public partial class BitImage
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append(RootElementClass).Append("-elm");
+        className.Append($"{RootElementClass}-img");
 
         className.Append(' ').Append(ImageFit switch
         {
@@ -126,16 +124,14 @@ public partial class BitImage
 
         className.Append(' ').Append(CoverStyle switch
         {
-            BitImageCoverStyle.Portrait => $"{RootElementClass}-prt",
-            _ => $"{RootElementClass}-lnd"
+            BitImageCoverStyle.Portrait => $"{RootElementClass}-por",
+            _ => $"{RootElementClass}-lan"
         });
 
-        className.Append(' ').Append(_loadState switch
+        if (_loadingState == BitImageLoadingState.Loaded || (_loadingState == BitImageLoadingState.NotLoaded && ShouldStartVisible))
         {
-            BitImageLoadingState.NotLoaded => $"{RootElementClass}-nld",
-            BitImageLoadingState.Error => $"{RootElementClass}-err",
-            _ => $"{RootElementClass}-ldd"
-        });
+            className.Append($" {RootElementClass}-vis");
+        }
 
         if (string.IsNullOrEmpty(Classes?.Image) is false)
         {
@@ -143,22 +139,6 @@ public partial class BitImage
         }
 
         return className.ToString();
-    }
-
-    protected override void OnInitialized()
-    {
-        _imageIsVisible = ShouldStartVisible;
-
-        OnLoadingStateChange.InvokeAsync(_loadState);
-
-        base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _internalSrc = Src;
-
-        base.OnParametersSet();
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
@@ -171,22 +151,22 @@ public partial class BitImage
 
     protected virtual void HandleOnError()
     {
-        _loadState = BitImageLoadingState.Error;
+        _loadingState = BitImageLoadingState.Error;
 
-        OnLoadingStateChange.InvokeAsync(_loadState);
+        OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
     protected void HandleOnLoad()
     {
-        _loadState = BitImageLoadingState.Loaded;
+        _loadingState = BitImageLoadingState.Loaded;
 
-        OnLoadingStateChange.InvokeAsync(_loadState);
+        OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
     protected void HandleOnLoadStart()
     {
-        _loadState = BitImageLoadingState.NotLoaded;
+        _loadingState = BitImageLoadingState.NotLoaded;
 
-        OnLoadingStateChange.InvokeAsync(_loadState);
+        OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 }

@@ -302,18 +302,21 @@ public partial class BitImageDemo
 Visible: [
 <BitImage Alt=""Visible BitImage""
           Width=""194""
+          ImageFit=""BitImageFit.Contain""
           Visibility=""BitVisibility.Visible""
           Src=""images/bit-logo-blue.png"" /> ]
 
 Hidden: [
 <BitImage Alt=""Hidden BitImage""
           Width=""194""
+          ImageFit=""BitImageFit.Contain""
           Visibility=""BitVisibility.Hidden""
           Src=""images/bit-logo-blue.png"" /> ]
 
 Collapsed: [
 <BitImage Alt=""Collapsed BitImage""
           Width=""194""
+          ImageFit=""BitImageFit.Contain""
           Visibility=""BitVisibility.Collapsed""
           Src=""images/bit-logo-blue.png"" /> ]";
 
@@ -362,8 +365,9 @@ Collapsed: [
           CoverStyle=""BitImageCoverStyle.Landscape""
           Src=""images/bit-logo-blue.png"" />
 
-<BitImage Height=""96""
-          Alt=""Landscape BitImage with ImageFit: CenterCover""
+<BitImage Height=""144""
+          Width=""96""
+          Alt=""Portrait BitImage with ImageFit: CenterCover""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterCover""
           CoverStyle=""BitImageCoverStyle.Portrait""
@@ -377,8 +381,9 @@ Collapsed: [
           CoverStyle=""BitImageCoverStyle.Landscape""
           Src=""images/bit-logo-blue.png"" />
 
-<BitImage Height=""96""
-          Alt=""Landscape BitImage with ImageFit: CenterContain""
+<BitImage Height=""144""
+          Width=""96""
+          Alt=""Portrait BitImage with ImageFit: CenterContain""
           Style=""background-color: #00ffff17""
           ImageFit=""BitImageFit.CenterContain""
           CoverStyle=""BitImageCoverStyle.Portrait""

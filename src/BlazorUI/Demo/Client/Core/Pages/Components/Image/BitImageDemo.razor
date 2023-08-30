@@ -12,7 +12,6 @@
     <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
         <ExamplePreview>
             <div style="min-height: 144px">
-                <BitLabel>Basic</BitLabel>
                 <BitImage Alt="Basic BitImage" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
                 <br />
                 <BitLabel>Disabled</BitLabel>
@@ -53,7 +52,7 @@
         <ExamplePreview>
             <div>
                 <div>
-                    <BitTypography Variant="BitTypographyVariant.H6">For root element</BitTypography>
+                    <BitLabel>Component's Style & Class:</BitLabel>
                     <br />
                     <div>
                         <BitLabel>Styled</BitLabel>
@@ -69,10 +68,11 @@
                                   Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
                     </div>
                 </div>
-                <br />
-                <br />
+                <br /><br />
                 <div>
-                    <BitTypography Variant="BitTypographyVariant.H6">For image element</BitTypography>
+                    <BitLabel>
+                        <div><b>Styles</b> & <b>Classes</b>:</div>
+                    </BitLabel>
                     <br />
                     <div>
                         <BitLabel>Styles</BitLabel>
@@ -99,6 +99,7 @@
                     Visible: [
                     <BitImage Alt="Visible BitImage"
                               Width="194"
+                              ImageFit="BitImageFit.Contain"
                               Visibility="BitVisibility.Visible"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
                 </div>
@@ -107,6 +108,7 @@
                     Hidden: [
                     <BitImage Alt="Hidden BitImage"
                               Width="194"
+                              ImageFit="BitImageFit.Contain"
                               Visibility="BitVisibility.Hidden"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
                 </div>
@@ -115,6 +117,7 @@
                     Collapsed: [
                     <BitImage Alt="Collapsed BitImage"
                               Width="194"
+                              ImageFit="BitImageFit.Contain"
                               Visibility="BitVisibility.Collapsed"
                               Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" /> ]
                 </div>
@@ -200,7 +203,8 @@
                     <br />
                     <div>
                         <BitLabel>Portrait</BitLabel>
-                        <BitImage Height="96"
+                        <BitImage Height="144"
+                                  Width="96"
                                   Alt="Portrait BitImage with ImageFit: CenterCover"
                                   Style="background-color: #00ffff17"
                                   ImageFit="BitImageFit.CenterCover"
@@ -225,7 +229,8 @@
                     <br />
                     <div>
                         <BitLabel>Portrait</BitLabel>
-                        <BitImage Height="96"
+                        <BitImage Height="144"
+                                  Width="96"
                                   Alt="Portrait BitImage with ImageFit: CenterContain"
                                   Style="background-color: #00ffff17"
                                   ImageFit="BitImageFit.CenterContain"

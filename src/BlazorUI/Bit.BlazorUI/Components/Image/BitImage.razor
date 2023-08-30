@@ -5,14 +5,11 @@
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      aria-label="@AriaLabel">
-    @if (_imageIsVisible)
-    {
-        <img @attributes="ImageAttributes" @onclick="HandleOnClick" @onload="HandleOnLoad" @onerror="HandleOnError" @onloadstart="HandleOnLoadStart"
-             class="@GetImageClasses()"
-             style="@Styles?.Image"
-             alt="@Alt"
-             title="@Title"
-             loading="@Loading"
-             src="@_internalSrc" />
-    }
+    <img @attributes="ImageAttributes" @onclick="HandleOnClick" @onload="HandleOnLoad" @onerror="HandleOnError" @onloadstart="HandleOnLoadStart"
+         class="@GetImageClasses()"
+         style="@Styles?.Image"
+         alt="@Alt"
+         title="@Title"
+         loading="@Loading"
+         src="@Src" />
 </div>
