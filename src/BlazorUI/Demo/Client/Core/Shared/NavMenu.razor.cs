@@ -117,6 +117,7 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "Icon", Url = "/components/icon" },
+                new() { Text = "Image", Url = "/components/image" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
             },
         },
