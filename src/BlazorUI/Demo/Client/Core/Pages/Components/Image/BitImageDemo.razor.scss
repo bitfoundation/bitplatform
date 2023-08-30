@@ -1,6 +1,4 @@
-﻿@import "../../../Styles/abstracts/_functions.scss";
-
-.visibility-items {
+﻿.visibility-items {
     white-space: nowrap;
     align-items: center;
     display: inline-flex;
@@ -14,11 +12,8 @@
     }
 
     .custom-image {
+        width: 16rem;
         filter: opacity(25%);
-    }
-
-    .custom-container {
-        width: rem2(256px);
-        border-radius: rem2(16px) rem2(48px);
+        border-radius: 1rem 3rem;
     }
 }

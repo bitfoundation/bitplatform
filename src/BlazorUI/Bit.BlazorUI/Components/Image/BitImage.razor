@@ -2,22 +2,17 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     class="@ClassBuilder.Value @Classes?.Container"
-     style="@StyleBuilder.Value @Styles?.Container"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
      aria-label="@AriaLabel">
-    @if (ShouldStartVisible)
+    @if (_imageIsVisible)
     {
-        <img role="img"
-             class="@GetImageFitClass() @GetCoverStyleClass() @Classes?.Image"
+        <img @attributes="ImageAttributes" @onclick="HandleOnClick" @onload="HandleOnLoad" @onerror="HandleOnError" @onloadstart="HandleOnLoadStart"
+             class="@GetImageClasses()"
              style="@Styles?.Image"
              alt="@Alt"
              title="@Title"
              loading="@Loading"
-             src="@_internalSrc"
-             @onload="HandleOnLoad"
-             @onerror="HandleOnError"
-             @onclick="HandleOnClick"
-             aria-hidden="@AriaHidden"
-             aria-describedby="@AriaDescription" />        
+             src="@_internalSrc" />
     }
 </div>

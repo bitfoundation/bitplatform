@@ -1,8 +1,13 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text.RegularExpressions;
+using System.Text;
+
+namespace Bit.BlazorUI;
 
 public partial class BitImage
 {
     private string? _internalSrc;
+    private bool _imageIsVisible;
+    private BitImageLoadingState _loadState;
 
 
 
@@ -10,16 +15,6 @@ public partial class BitImage
     /// Specifies an alternate text for the image.
     /// </summary>
     [Parameter] public string? Alt { get; set; }
-
-    /// <summary>
-    /// Detailed description of the image for the benefit of screen readers.
-    /// </summary>
-    [Parameter] public string? AriaDescription { get; set; }
-
-    /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
-    /// </summary>
-    [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitImage.
@@ -32,14 +27,14 @@ public partial class BitImage
     [Parameter] public BitImageCoverStyle CoverStyle { get; set; }
 
     /// <summary>
-    /// Specifies the error src of image.
-    /// </summary>
-    [Parameter] public string? ErrorSrc { get; set; }
-
-    /// <summary>
     /// The image height value in px.
     /// </summary>
     [Parameter] public double? Height { get; set; }
+
+    /// <summary>
+    /// Capture and render additional attributes in addition to the image's parameters
+    /// </summary>
+    [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
     /// Used to determine how the image is scaled and cropped to fit the frame.
@@ -50,6 +45,11 @@ public partial class BitImage
     /// Allows for browser-level image loading (lazy or eager).
     /// </summary>
     [Parameter] public string? Loading { get; set; }
+
+    /// <summary>
+    /// If true, the image frame will expand to fill its parent container.
+    /// </summary>
+    [Parameter] public bool MaximizeFrame { get; set; }
 
     /// <summary>
     /// Callback for when the image clicked.
@@ -68,6 +68,11 @@ public partial class BitImage
     [Parameter] public bool ShouldFadeIn { get; set; } = true;
 
     /// <summary>
+    /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
+    /// </summary>
+    [Parameter] public bool ShouldStartVisible { get; set; } = true;
+
+    /// <summary>
     /// Specifies the src of image.
     /// </summary>
     [Parameter] public string? Src { get; set; }
@@ -76,11 +81,6 @@ public partial class BitImage
     /// Custom CSS styles for different parts of the BitImage.
     /// </summary>
     [Parameter] public BitImageClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
-    /// </summary>
-    [Parameter] public bool ShouldStartVisible { get; set; } = true;
 
     /// <summary>
     /// The title to show when the mouse is placed on the image.
@@ -98,7 +98,8 @@ public partial class BitImage
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ShouldFadeIn ? $"{RootElementClass}-fade" : string.Empty);
+        ClassBuilder.Register(() => ShouldFadeIn ? $"{RootElementClass}-fde" : string.Empty);
+        ClassBuilder.Register(() => MaximizeFrame ? $"{RootElementClass}-max" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -107,29 +108,57 @@ public partial class BitImage
         StyleBuilder.Register(() => Height > 0 ? $"height:{Height}px" : string.Empty);
     }
 
-    private string GetImageFitClass() => ImageFit switch
+    private string GetImageClasses()
     {
-        BitImageFit.Center => $"{RootElementClass}-center",
-        BitImageFit.Contain => $"{RootElementClass}-contain",
-        BitImageFit.Cover => $"{RootElementClass}-cover",
-        BitImageFit.None => $"{RootElementClass}-none",
-        BitImageFit.CenterCover => $"{RootElementClass}-center-cover",
-        BitImageFit.CenterContain => $"{RootElementClass}-center-contain",
-        _ => $"{RootElementClass}-none"
-    };
+        StringBuilder className = new StringBuilder();
 
-    private string GetCoverStyleClass() => CoverStyle switch
+        className.Append(RootElementClass).Append("-elm");
+
+        className.Append(' ').Append(ImageFit switch
+        {
+            BitImageFit.Center => $"{RootElementClass}-ctr",
+            BitImageFit.Contain => $"{RootElementClass}-cnt",
+            BitImageFit.Cover => $"{RootElementClass}-cvr",
+            BitImageFit.CenterCover => $"{RootElementClass}-ccv",
+            BitImageFit.CenterContain => $"{RootElementClass}-cct",
+            _ => $"{RootElementClass}-non"
+        });
+
+        className.Append(' ').Append(CoverStyle switch
+        {
+            BitImageCoverStyle.Portrait => $"{RootElementClass}-prt",
+            _ => $"{RootElementClass}-lnd"
+        });
+
+        className.Append(' ').Append(_loadState switch
+        {
+            BitImageLoadingState.NotLoaded => $"{RootElementClass}-nld",
+            BitImageLoadingState.Error => $"{RootElementClass}-err",
+            _ => $"{RootElementClass}-ldd"
+        });
+
+        if (string.IsNullOrEmpty(Classes?.Image) is false)
+        {
+            className.Append(' ').Append(Classes?.Image);
+        }
+
+        return className.ToString();
+    }
+
+    protected override void OnInitialized()
     {
-        BitImageCoverStyle.Landscape => $"{RootElementClass}-landscape",
-        BitImageCoverStyle.Portrait => $"{RootElementClass}-portrait",
-        _ => $"{RootElementClass}-landscape"
-    };
+        _imageIsVisible = ShouldStartVisible;
 
-    protected override Task OnParametersSetAsync()
+        OnLoadingStateChange.InvokeAsync(_loadState);
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
     {
         _internalSrc = Src;
 
-        return base.OnParametersSetAsync();
+        base.OnParametersSet();
     }
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
@@ -142,12 +171,22 @@ public partial class BitImage
 
     protected virtual void HandleOnError()
     {
-        _internalSrc = ErrorSrc;
-        ShouldStartVisible = true;
+        _loadState = BitImageLoadingState.Error;
+
+        OnLoadingStateChange.InvokeAsync(_loadState);
     }
 
     protected void HandleOnLoad()
     {
-        ShouldStartVisible = true;
+        _loadState = BitImageLoadingState.Loaded;
+
+        OnLoadingStateChange.InvokeAsync(_loadState);
+    }
+
+    protected void HandleOnLoadStart()
+    {
+        _loadState = BitImageLoadingState.NotLoaded;
+
+        OnLoadingStateChange.InvokeAsync(_loadState);
     }
 }
