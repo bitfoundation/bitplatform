@@ -13,7 +13,7 @@
                  Placeholder="@Placeholder"
                  Label="@Label"
                  Title="@Title"
-                 IsReselectable="NotifyOnReselect"
+                 IsReselectable="IsReselectable"
                  OnSelectItem="HandleSelectItem"
                  IsRequired="IsRequired">
         <LabelTemplate>
@@ -38,7 +38,7 @@
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropdownItem> OnSelectItem { get; set; }
-    [Parameter] public bool NotifyOnReselect { get; set; } = false;
+    [Parameter] public bool IsReselectable { get; set; } = false;
     [Parameter] public RenderFragment LabelTemplate { get; set; }
 
     public int Counter { get; set; }
