@@ -7,9 +7,9 @@
 </CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
+     class="@ClassBuilder.Value">
     <button @onclick="() => HandleOnClick(SelectedItem)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"

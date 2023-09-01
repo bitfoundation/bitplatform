@@ -2,9 +2,9 @@
 @inherits BitInputBase<DateTimeOffset?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
+     class="@ClassBuilder.Value">
 
     <div class="bit-cal-ctn" disabled=@(IsEnabled is false)>
         <div class="bit-cal-grp" role="group" aria-label="">

@@ -2,6 +2,7 @@
 @inherits BitInputBase<double>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)

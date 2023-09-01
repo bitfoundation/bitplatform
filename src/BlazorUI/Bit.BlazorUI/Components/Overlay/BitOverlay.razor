@@ -1,9 +1,8 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @onclick="CloseOverlay"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="CloseOverlay"
+     id="@UniqueId"
      aria-label="@AriaLabel"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
