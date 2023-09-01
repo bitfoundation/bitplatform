@@ -1,11 +1,8 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     @onpointerdown:preventDefault
-     @onpointerup="HandlePointerUp"
-     @onpointermove="HandlePointerMove"
-     @onpointerdown="HandlePointerDown"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onpointerdown:preventDefault @onpointerup="HandlePointerUp" @onpointermove="HandlePointerMove" @onpointerdown="HandlePointerDown"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
