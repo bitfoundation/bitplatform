@@ -1,0 +1,57 @@
+@namespace Bit.BlazorUI
+
+@if (Item.ItemType == BitDropdownItemType.Header)
+{
+    <div class="bit-drp-ihd">@Item.Text</div>
+}
+else if (Item.ItemType == BitDropdownItemType.Normal)
+{
+    @if (Dropdown.IsMultiSelect)
+    {
+        <div style="@(Item.IsHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
+            <button class="bit-drp-mcn" @onclick="@(() => Dropdown.HandleOnItemClick(Item))">
+                <div class="bit-drp-chb">
+                    <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@Item.Text" />
+                </div>
+
+                @if (Dropdown.ItemTemplate is not null)
+                {
+                    @Dropdown.ItemTemplate(Item)
+                }
+                else
+                {
+                    <span class="bit-drp-itx">@Item.Text</span>
+                }
+            </button>
+        </div>
+    }
+    else
+    {
+        <button @onclick="()=> Dropdown.HandleOnItemClick(Item)"
+                type="button"
+                role="option"
+                title="@Item.Title"
+                disabled=@(Item.IsEnabled is false)
+                tabindex="@(Item.IsEnabled ? 0 : -1)"
+                style="@(Item.IsHidden ? "display:none" : string.Empty)"
+                class="bit-drp-itm@(Item.IsSelected ? $" bit-drp-sel" : string.Empty)"
+                aria-label="@Item.AriaLabel"
+                aria-setsize="@Dropdown.GetTotalItems()"
+                aria-disabled="@(Item.IsEnabled is false)"
+                aria-selected="@(Item.IsSelected ? "true" : "false")"
+                aria-posinset="@Dropdown.GetItemPosInSet(Item)">
+            @if (Dropdown.ItemTemplate is not null)
+            {
+                @Dropdown.ItemTemplate(Item)
+            }
+            else
+            {
+                @Item.Text
+            }
+        </button>
+    }
+}
+else if (Item.ItemType == BitDropdownItemType.Divider)
+{
+    <div class="bit-drp-sep" role="separator"></div>
+}

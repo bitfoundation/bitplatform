@@ -48,7 +48,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
+            parameters.Add(p => p.IsResponsive, isResponsiveModeEnabled);
         });
 
         var bitDropdown = component.Find(".bit-drp");
@@ -57,12 +57,12 @@ public class BitDropdownTests : BunitTestContext
         {
             Assert.IsTrue(bitDropdown.ClassList.Contains("bit-drp-rsp"));
 
-            var lblContainer = component.Find(".bit-drp-rsp-lbl-ctn");
+            var lblContainer = component.Find(".bit-drp-rlc");
             Assert.IsNotNull(lblContainer);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rsp-lbl-ctn"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc"));
         }
     }
 
@@ -76,17 +76,17 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.IsResponsive, true);
             parameters.Add(p => p.Label, labelFragment);
         });
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rsp-lbl-ctn > label"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
-            Assert.AreEqual(labelFragment, component.Find(".bit-drp-rsp-lbl-ctn > label").InnerHtml);
+            Assert.AreEqual(labelFragment, component.Find(".bit-drp-rlc > label").InnerHtml);
         }
     }
 
@@ -100,7 +100,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.IsResponsive, true);
 
             if (string.IsNullOrEmpty(labelFragment) is false)
             {
@@ -110,11 +110,11 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(labelFragment))
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rsp-lbl-ctn > label"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-rlc > label"));
         }
         else
         {
-            var labelChild = component.Find(".bit-drp-rsp-lbl-ctn > label").ChildNodes;
+            var labelChild = component.Find(".bit-drp-rlc > :first-child");
             labelChild.MarkupMatches(labelFragment);
         }
     }
@@ -160,11 +160,11 @@ public class BitDropdownTests : BunitTestContext
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr").Count);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-chb-wrp"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-drp-iwr"));
         }
     }
 
@@ -185,12 +185,12 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
         });
 
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihdr").Count);
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Divider).Count, component.FindAll(".bit-drp-idiv").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihd").Count);
+        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Divider).Count, component.FindAll(".bit-drp-sep").Count);
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-chb-wrp").Count);
+            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr").Count);
         }
         else
         {
@@ -213,7 +213,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
-        var textSpan = component.Find(".bit-drp-txt-ctn");
+        var textSpan = component.Find(".bit-drp-tcn");
         var expectedText = items.Find(i => i.Value == defaultValue && i.ItemType == BitDropdownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -236,7 +236,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, defaultSelectedMultipleValueList);
         });
 
-        var textSpan = component.Find(".bit-drp-txt-ctn");
+        var textSpan = component.Find(".bit-drp-tcn");
         var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
         var expectedText = "";
 
@@ -272,7 +272,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Value, value);
         });
 
-        var textSpan = component.Find(".bit-drp-txt-ctn");
+        var textSpan = component.Find(".bit-drp-tcn");
         var expectedText = items.Find(i => i.Value == value && i.ItemType == BitDropdownItemType.Normal).Text;
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -295,7 +295,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Values, selectedMultipleValueList);
         });
 
-        var textSpan = component.Find(".bit-drp-txt-ctn");
+        var textSpan = component.Find(".bit-drp-tcn");
         var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
         var expectedText = new StringBuilder();
 
@@ -336,7 +336,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Placeholder, placeholder);
         });
 
-        var targetSpan = component.Find(".bit-drp-txt-ctn");
+        var targetSpan = component.Find(".bit-drp-tcn");
         var expectedText = new StringBuilder();
 
         if (isMultiSelect)
@@ -409,7 +409,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelFragment);
         });
 
-        var drpLabelChild = component.Find("label").ChildNodes;
+        var drpLabelChild = component.Find("div > :first-child");
         drpLabelChild.MarkupMatches(labelFragment);
     }
 
@@ -448,9 +448,9 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.NotifyOnReselect, notifyOnReselect);
+            parameters.Add(p => p.IsReselectable, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.OnSelectItem, () => itemSelected = true);
+            parameters.Add(p => p.OnChange, () => itemSelected = true);
         });
 
         var selectedItem = component.Find(".bit-drp-sel");
@@ -484,14 +484,14 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.OnSelectItem, () => itemsSelected++);
+            parameters.Add(p => p.OnChange, () => itemsSelected++);
         });
 
         if (isMultiSelect)
         {
-            var drpItems = component.FindAll(".bit-drp-chb-wrp", true);
-            drpItems[0].GetElementsByTagName("label").First().Click();
-            drpItems[1].GetElementsByTagName("label").First().Click();
+            var drpItems = component.FindAll(".bit-drp-iwr", true);
+            drpItems[0].GetElementsByTagName("button").First().Click();
+            drpItems[1].GetElementsByTagName("button").First().Click();
             var expectedResult = itemIsEnabled ? 2 : 0;
             Assert.AreEqual(expectedResult, itemsSelected);
         }
@@ -557,7 +557,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.ValuesChanged, HandleValuesChanged);
         });
 
-        var drpItems = component.FindAll(".bit-drp-chb-wrp");
+        var drpItems = component.FindAll(".bit-drp-iwr");
         drpItems[3].Children[0].Children[0].Click();
 
         int expectedResult;
@@ -629,7 +629,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textList = text.Split(",").ToList();
-        var drpItems = component.FindAll(".bit-drp-chb-wrp", enableAutoRefresh: true);
+        var drpItems = component.FindAll(".bit-drp-iwr", enableAutoRefresh: true);
         foreach (var txt in textList)
         {
             drpItems.Single(i => i.Children[0].Children[1].TextContent.Contains(txt)).Children[0].Click();
@@ -721,10 +721,10 @@ public class BitDropdownTests : BunitTestContext
             drp.Click();
 
             // select items
-            //var drpItemFirst = component.Find(".bit-drp-chb-wrp:first-child");
+            //var drpItemFirst = component.Find(".bit-drp-iwr:first-child");
             //drpItemFirst.Children[0].Click();
 
-            //var drpItemLast = component.Find(".bit-drp-chb-wrp:last-child");
+            //var drpItemLast = component.Find(".bit-drp-iwr:last-child");
             //drpItemLast.Children[0].Click();
 
             form.Submit();
@@ -821,10 +821,10 @@ public class BitDropdownTests : BunitTestContext
             drp.Click();
 
             // select items
-            //var drpItemFirst = component.Find(".bit-drp-chb-wrp:first-child");
+            //var drpItemFirst = component.Find(".bit-drp-iwr:first-child");
             //drpItemFirst.Children[0].Click();
 
-            //var drpItemLast = component.Find(".bit-drp-chb-wrp:last-child");
+            //var drpItemLast = component.Find(".bit-drp-iwr:last-child");
             //drpItemLast.Children[0].Click();
 
             form.Submit();
@@ -897,7 +897,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var searchBox = component.FindAll(".bit-drp-iwp .bit-drp-sb");
+        var searchBox = component.FindAll(".bit-drp-cal .bit-drp-sb");
         if (showSearchBox)
         {
             Assert.AreEqual(1, searchBox.Count);
@@ -935,7 +935,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb-wrp" : ".bit-drp-itm", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -999,7 +999,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-chb-wrp" : ".bit-drp-itm");
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         var actualRenderedItemCount = drpItems.Count;
 
         if (virtualize)
