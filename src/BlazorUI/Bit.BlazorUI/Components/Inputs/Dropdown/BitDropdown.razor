@@ -82,10 +82,10 @@
 
     <div class="bit-drp-ovl" id="@_dropdownOverlayId" @onclick="CloseCallout"></div>
 
-    <div class="bit-drp-iwp" id="@_dropdownCalloutId" tabindex="0" role="listbox" aria-labelledby="@_dropdownLabelId">
+    <div class="bit-drp-cal" id="@_dropdownCalloutId" tabindex="0" role="listbox" aria-labelledby="@_dropdownLabelId">
         @if (IsResponsive)
         {
-            <div class="bit-drp-rsp-lbl-ctn">
+            <div class="bit-drp-rlc">
                 @if (LabelTemplate is not null)
                 {
                     @LabelTemplate
@@ -141,7 +141,7 @@
             </div>
         }
 
-        <div @ref="_scrollWrapperElement" id="@_dropdownCalloutId" class="bit-drp-scr-wrp">
+        <div @ref="_scrollWrapperElement" id="@_dropdownCalloutId" class="bit-drp-swr">
             @if (Virtualize)
             {
                 if (ItemsProvider is null)

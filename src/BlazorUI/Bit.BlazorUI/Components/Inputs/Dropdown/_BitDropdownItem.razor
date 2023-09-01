@@ -2,31 +2,27 @@
 
 @if (Item.ItemType == BitDropdownItemType.Header)
 {
-    <div class="bit-drp-ihdr">
-        @Item.Text
-    </div>
+    <div class="bit-drp-ihd">@Item.Text</div>
 }
 else if (Item.ItemType == BitDropdownItemType.Normal)
 {
     @if (Dropdown.IsMultiSelect)
     {
         <div style="@(Item.IsHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
-            <label class="bit-drp-chb-ctn" @onclick="@(() => Dropdown.HandleOnItemClick(Item))">
+            <button class="bit-drp-mcn" @onclick="@(() => Dropdown.HandleOnItemClick(Item))">
                 <div class="bit-drp-chb">
                     <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@Item.Text" />
                 </div>
 
-                <span class="bit-drp-txt bit-nts">
-                    @if (Dropdown.ItemTemplate is not null)
-                    {
-                        @Dropdown.ItemTemplate(Item)
-                    }
-                    else
-                    {
-                        @Item.Text
-                    }
-                </span>
-            </label>
+                @if (Dropdown.ItemTemplate is not null)
+                {
+                    @Dropdown.ItemTemplate(Item)
+                }
+                else
+                {
+                    <span class="bit-drp-itx">@Item.Text</span>
+                }
+            </button>
         </div>
     }
     else
@@ -57,5 +53,5 @@ else if (Item.ItemType == BitDropdownItemType.Normal)
 }
 else if (Item.ItemType == BitDropdownItemType.Divider)
 {
-    <div class="bit-drp-idiv" role="separator"></div>
+    <div class="bit-drp-sep" role="separator"></div>
 }
