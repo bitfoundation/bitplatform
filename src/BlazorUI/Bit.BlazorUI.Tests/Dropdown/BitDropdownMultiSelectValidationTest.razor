@@ -1,25 +1,25 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitDropdown IsEnabled="IsEnabled"
-                     OnClick="HandleClick"
-                     IsMultiSelect="IsMultiSelect"
-                     IsOpen="IsOpen"
-                     Items="Items"
-                     MultiSelectDelimiter="@MultiSelectDelimiter"
-                     DefaultValues="DefaultValues"
-                     DefaultValue="@DefaultValue"
-                     Placeholder="@Placeholder"
-                     Label="@Label"
-                     Title="@Title"
-                     NotifyOnReselect="NotifyOnReselect"
-                     OnSelectItem="HandleSelectItem"
-                     @bind-Values="TestModel.Values"
-                     IsRequired="IsRequired">
-            <LabelTemplate>
-                @LabelTemplate
-            </LabelTemplate>
-        </BitDropdown>
+    <BitDropdown @bind-Values="TestModel.Values"
+                 IsEnabled="IsEnabled"
+                 OnClick="HandleClick"
+                 IsMultiSelect="IsMultiSelect"
+                 IsOpen="IsOpen"
+                 Items="Items"
+                 MultiSelectDelimiter="@MultiSelectDelimiter"
+                 DefaultValues="DefaultValues"
+                 DefaultValue="@DefaultValue"
+                 Placeholder="@Placeholder"
+                 Label="@Label"
+                 Title="@Title"
+                 IsReselectable="NotifyOnReselect"
+                 OnSelectItem="HandleSelectItem"
+                 IsRequired="IsRequired">
+        <LabelTemplate>
+            @LabelTemplate
+        </LabelTemplate>
+    </BitDropdown>
 
 </EditForm>
 

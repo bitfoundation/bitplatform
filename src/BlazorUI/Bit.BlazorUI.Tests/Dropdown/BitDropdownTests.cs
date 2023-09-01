@@ -48,7 +48,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, isResponsiveModeEnabled);
+            parameters.Add(p => p.IsResponsive, isResponsiveModeEnabled);
         });
 
         var bitDropdown = component.Find(".bit-drp");
@@ -76,7 +76,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.IsResponsive, true);
             parameters.Add(p => p.Label, labelFragment);
         });
 
@@ -100,7 +100,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown>(parameters =>
         {
-            parameters.Add(p => p.IsResponsiveModeEnabled, true);
+            parameters.Add(p => p.IsResponsive, true);
 
             if (string.IsNullOrEmpty(labelFragment) is false)
             {
@@ -448,9 +448,9 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.NotifyOnReselect, notifyOnReselect);
+            parameters.Add(p => p.IsReselectable, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.OnSelectItem, () => itemSelected = true);
+            parameters.Add(p => p.OnChange, () => itemSelected = true);
         });
 
         var selectedItem = component.Find(".bit-drp-sel");
@@ -484,7 +484,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.OnSelectItem, () => itemsSelected++);
+            parameters.Add(p => p.OnChange, () => itemsSelected++);
         });
 
         if (isMultiSelect)
