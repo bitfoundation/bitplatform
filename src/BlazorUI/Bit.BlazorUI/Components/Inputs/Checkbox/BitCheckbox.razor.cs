@@ -149,7 +149,7 @@ public partial class BitCheckbox : IDisposable
 
     protected override void OnInitialized()
     {
-        _inputId = $"checkbox-{UniqueId}";
+        _inputId = $"BitCheckbox-{UniqueId}-input";
 
         OnValueChanged += HandleOnValueChanged;
 

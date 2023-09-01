@@ -91,7 +91,7 @@ public partial class BitColorPicker : IDisposable
 
     protected override void OnInitialized()
     {
-        _colorRectangleDescriptionId = $"ColorRectangle-Description-{UniqueId}";
+        _colorRectangleDescriptionId = $"BitColorPicker-{UniqueId}-color-description";
 
         SetSaturationPickerBackground();
 

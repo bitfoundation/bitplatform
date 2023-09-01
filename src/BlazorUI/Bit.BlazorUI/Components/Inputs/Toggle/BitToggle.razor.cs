@@ -68,9 +68,9 @@ public partial class BitToggle
 
     protected override async Task OnInitializedAsync()
     {
-        _buttonId = $"Toggle-{UniqueId}-Button";
-        _labelId = $"Toggle-{UniqueId}-Label";
-        _stateTextId = $"Toggle-{UniqueId}-StateText";
+        _labelId = $"BitToggle-{UniqueId}-label";
+        _buttonId = $"BitToggle-{UniqueId}-button";
+        _stateTextId = $"BitToggle-{UniqueId}-state-text";
 
         SetTexts();
 

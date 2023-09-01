@@ -188,7 +188,7 @@ public partial class BitSpinButton
 
     protected override Task OnInitializedAsync()
     {
-        _inputId = $"SpinButton-{UniqueId}-Input";
+        _inputId = $"BitSpinButton-{UniqueId}-input";
 
         return base.OnInitializedAsync();
     }

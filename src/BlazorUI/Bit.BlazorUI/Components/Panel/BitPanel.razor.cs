@@ -134,7 +134,7 @@ public partial class BitPanel
 
     protected override Task OnInitializedAsync()
     {
-        _containerId = $"BitPanel-{UniqueId}-Container";
+        _containerId = $"BitPanel-{UniqueId}-container";
 
         return base.OnInitializedAsync();
     }

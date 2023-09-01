@@ -131,14 +131,14 @@ public partial class BitSearchBox
 
     protected override Task OnInitializedAsync()
     {
+        _inputId = $"BitSearchBox-{UniqueId}-input";
+
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
         {
             CurrentValueAsString = DefaultValue;
         }
 
         OnValueChanged += HandleOnValueChanged;
-
-        _inputId = $"SearchBox-{UniqueId}-Input";
 
         return base.OnInitializedAsync();
     }

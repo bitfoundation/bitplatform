@@ -234,9 +234,9 @@ public partial class BitSlider
 
     protected override void OnInitialized()
     {
-        _sliderBoxId = $"Slider-{UniqueId}";
-        _minInputId = $"{_sliderBoxId}-input-min";
-        _maxInputId = $"{_sliderBoxId}-input-max";
+        _sliderBoxId = $"BitSlider-{UniqueId}-box";
+        _minInputId = $"BitSlider-{UniqueId}-min-input";
+        _maxInputId = $"BitSlider-{UniqueId}-max-input";
 
         if (LowerValue.HasValue is false && DefaultLowerValue.HasValue)
         {
