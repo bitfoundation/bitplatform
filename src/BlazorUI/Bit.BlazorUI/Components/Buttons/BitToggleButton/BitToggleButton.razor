@@ -18,7 +18,11 @@
         }
         else
         {
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
+            var iconName = GetIconName();
+            if (iconName.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@iconName @Classes?.Icon" />
+            }
             <span style="@Styles?.Text" class="bit-tgb-txt @Classes?.Text">@GetText()</span>
         }
     </span>
