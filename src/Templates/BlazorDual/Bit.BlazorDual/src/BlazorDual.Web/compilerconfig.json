@@ -12,6 +12,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/ConfirmMessageBox.razor.css",
+        "inputFile": "Shared/ConfirmMessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Shared/MessageBox.razor.css",
         "inputFile": "Shared/MessageBox.razor.scss",
         "minify": { "enabled": false },
@@ -66,50 +72,50 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/SignUpPage.razor.css",
-        "inputFile": "Pages/SignUpPage.razor.scss",
+        "outputFile": "Pages/Identity/SignUpPage.razor.css",
+        "inputFile": "Pages/Identity/SignUpPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/SignInPage.razor.css",
-        "inputFile": "Pages/SignInPage.razor.scss",
+        "outputFile": "Pages/Identity/SignInPage.razor.css",
+        "inputFile": "Pages/Identity/SignInPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/EmailConfirmationPage.razor.css",
-        "inputFile": "Pages/EmailConfirmationPage.razor.scss",
+        "outputFile": "Pages/Identity/EmailConfirmationPage.razor.css",
+        "inputFile": "Pages/Identity/EmailConfirmationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/ForgotPasswordPage.razor.css",
-        "inputFile": "Pages/ForgotPasswordPage.razor.scss",
+        "outputFile": "Pages/Identity/ForgotPasswordPage.razor.css",
+        "inputFile": "Pages/Identity/ForgotPasswordPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/ResetPasswordPage.razor.css",
-        "inputFile": "Pages/ResetPasswordPage.razor.scss",
+        "outputFile": "Pages/Identity/ResetPasswordPage.razor.css",
+        "inputFile": "Pages/Identity/ResetPasswordPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/TodoPage.razor.css",
-        "inputFile": "Pages/TodoPage.razor.scss",
+        "outputFile": "Pages/Todo/TodoPage.razor.css",
+        "inputFile": "Pages/Todo/TodoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/EditProfile/EditProfilePage.razor.css",
-        "inputFile": "Pages/EditProfile/EditProfilePage.razor.scss",
+        "outputFile": "Pages/Identity/EditProfilePage.razor.css",
+        "inputFile": "Pages/Identity/EditProfilePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Pages/EditProfile/DeleteAccountConfirmModal.razor.scss",
+        "outputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

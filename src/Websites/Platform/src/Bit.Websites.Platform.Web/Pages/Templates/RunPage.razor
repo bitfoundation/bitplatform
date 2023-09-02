@@ -1,4 +1,6 @@
-﻿@page "/templates/run"
+﻿@page "/todo-template/run"
+@page "/admin-panel/run"
+@page "/templates/run"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/run"
@@ -21,34 +23,29 @@
         <div class="image-container">
             <img class="image small" alt="Swagger dashboard" src="/images/templates/todo/swagger-todo.webp" />
         </div>
+        <div class="section-card-txt">
+            Simply login with following credentials:
+        </div>
+        <div class="code-box">test@bitplatform.dev <br /> 123456</div>
     </section>
 
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>SignUp</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Next steps!</BitTypography>
         <div class="section-card-txt">
-            With the help of <b>Swagger</b>, you can call the <b>SignUp</b> API and Start the registration process, navigate to <b>Auth/SignUp</b>
-            API and press the <b>Try it Out</b> button, in the <b>Request body</b> Enter SignUp data, and press Execute button.
-        </div>
-        <div class="image-container">
-            <img class="image" alt="Swagger Sign Up" src="/images/templates/swagger-signup.webp" />
-        </div>
-        <br />
-        <div class="section-card-txt">
-            In <b>SignUp</b> Process after call API, a confirmation email send to your email. In dev environment, bit saves the sent emails as a <b>.eml</b> file in the
-            <b>src/Server/Api/bin/Debug/net7.0/sent-emails</b> path, and developers can easily view them in any <a href="https://msgeml.com/" target="_blank">eml viewer</a>.
-        </div>
-        <div class="image-container">
-            <img class="image small" alt="Confirm email" src="/images/templates/todo/confirm-email-todo.webp" />
-        </div>
-        <br />
-        <div class="section-card-txt">
-            By pressing the <b>Confirm email</b> button, the ConfirmEmail Api calls and registration process complete.
-            After it, you can login with the swagger login form on the top of the page, and call other APIs that need Authentication.
-        </div>
-        <div class="image-container">
-            <img class="image small" alt="Swagger Sign In" src="/images/templates/todo/swagger-login-todo.webp" />
+            <br />
+            You have successfully built and run your project using the bitplatform project templates ❤️
+            <br />
+            <br />
+            In the upcoming sections, you will get acquainted with <b>Blazor modes</b> that will help you produce outputs for Android, iOS, Windows, macOS, and Web!
+            <br />
+            <br />
+            Furthermore, in the <b>Web app deployment type</b> section, you'll understand how easily you can choose between PWA or SPA and with/without Pre Rendering!
+            <br />
+            <br />
+            <b>Stay with us!</b>
         </div>
     </section>
+
 </div>
 
 <NavigationButtons Prev="Database" PrevUrl="/templates/database" Next="Hosting models" NextUrl="/templates/hosting-models" />

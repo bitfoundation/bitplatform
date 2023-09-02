@@ -1,25 +1,25 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitDropdown IsEnabled="IsEnabled"
-                     OnClick="HandleClick"
-                     IsMultiSelect="IsMultiSelect"
-                     IsOpen="IsOpen"
-                     Items="Items"
-                     MultiSelectDelimiter="@MultiSelectDelimiter"
-                     DefaultValues="DefaultValues"
-                     DefaultValue="@DefaultValue"
-                     Placeholder="@Placeholder"
-                     Label="@Label"
-                     Title="@Title"
-                     NotifyOnReselect="NotifyOnReselect"
-                     OnSelectItem="HandleSelectItem"
-                     @bind-Values="TestModel.Values"
-                     IsRequired="IsRequired">
-            <LabelTemplate>
-                @LabelTemplate
-            </LabelTemplate>
-        </BitDropdown>
+    <BitDropdown @bind-Values="TestModel.Values"
+                 IsEnabled="IsEnabled"
+                 OnClick="HandleClick"
+                 IsMultiSelect="IsMultiSelect"
+                 IsOpen="IsOpen"
+                 Items="Items"
+                 MultiSelectDelimiter="@MultiSelectDelimiter"
+                 DefaultValues="DefaultValues"
+                 DefaultValue="@DefaultValue"
+                 Placeholder="@Placeholder"
+                 Label="@Label"
+                 Title="@Title"
+                 IsReselectable="IsReselectable"
+                 OnSelectItem="HandleSelectItem"
+                 IsRequired="IsRequired">
+        <LabelTemplate>
+            @LabelTemplate
+        </LabelTemplate>
+    </BitDropdown>
 
 </EditForm>
 
@@ -38,7 +38,7 @@
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback<BitDropdownItem> OnSelectItem { get; set; }
-    [Parameter] public bool NotifyOnReselect { get; set; } = false;
+    [Parameter] public bool IsReselectable { get; set; } = false;
     [Parameter] public RenderFragment LabelTemplate { get; set; }
 
     public int Counter { get; set; }

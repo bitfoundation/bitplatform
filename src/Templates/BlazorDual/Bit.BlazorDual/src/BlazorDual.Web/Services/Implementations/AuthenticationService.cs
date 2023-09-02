@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using BlazorDual.Shared.Dtos.Account;
+using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Web.Services.Implementations;
 
@@ -13,9 +13,8 @@ public partial class AuthenticationService : IAuthenticationService
 
     public async Task SignIn(SignInRequestDto dto)
     {
-        var response = await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, AppJsonContext.Default.SignInRequestDto);
-
-        var result = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
+        var result = await (await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, AppJsonContext.Default.SignInRequestDto))
+                    .Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
 
         await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result!.AccessToken, result.ExpiresIn);
 

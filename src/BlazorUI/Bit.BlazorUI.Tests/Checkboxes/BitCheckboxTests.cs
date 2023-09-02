@@ -40,16 +40,18 @@ public class BitCheckboxTests : BunitTestContext
         }
 
         Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("bit-chb-ckd"));
+
         chbCheckbox.Click();
+
         Assert.AreEqual(isEnabled, clicked);
         Assert.AreEqual(isEnabled, changed);
     }
 
     [DataTestMethod,
-        DataRow(BitCheckBoxSide.Start),
-        DataRow(BitCheckBoxSide.End),
+        DataRow(BitCheckboxSide.Start),
+        DataRow(BitCheckboxSide.End),
     ]
-    public void BitCheckboxBoxSideTest(BitCheckBoxSide boxSide)
+    public void BitCheckboxBoxSideTest(BitCheckboxSide boxSide)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
@@ -58,13 +60,13 @@ public class BitCheckboxTests : BunitTestContext
 
         var checkBox = component.Find(".bit-chb");
 
-        if (boxSide is BitCheckBoxSide.End)
+        if (boxSide is BitCheckboxSide.End)
         {
-            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-se"));
+            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-end"));
         }
         else
         {
-            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-se"));
+            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-end"));
         }
     }
 
@@ -264,7 +266,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
     }
@@ -280,7 +282,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
         if (ariaLabel is not null)
         {

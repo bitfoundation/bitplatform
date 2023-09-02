@@ -59,7 +59,7 @@ public partial class BitOverlayDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -93,10 +93,10 @@ public partial class BitOverlayDemo
         </p>
     </div>
 </BitOverlay>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private bool BasicIsVisible;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -136,10 +136,10 @@ private bool BasicIsVisible;";
         </p>
     </div>
 </BitOverlay>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool AutoCloseIsVisible;";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -184,11 +184,11 @@ private bool AutoCloseIsVisible;";
     </div>
 </BitOverlay>
 <h3>This is Container</h3>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private bool AbsoluteIsVisible;
 ";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -222,10 +222,10 @@ private bool AbsoluteIsVisible;
         </p>
     </div>
 </BitOverlay>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool AutoToggleIsVisible;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -328,7 +328,7 @@ private bool AutoToggleIsVisible;";
         a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
     </p>
 </div>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool EnabledScrollerIsVisible;
 private bool DisabledScrollerIsVisible;";
 }

@@ -1,4 +1,4 @@
-﻿<ComponentExampleBox Title="Basic" HTMLSourceCode="@example1HTMLCode" CSharpSourceCode="@example1CSharpCode" ExampleId="example21">
+﻿<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example21">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -28,7 +28,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IsSticky" HTMLSourceCode="@example2HTMLCode" CSharpSourceCode="@example2CSharpCode" ExampleId="example22">
+<ComponentExampleBox Title="IsSticky" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example22">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -52,7 +52,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Disabled item" HTMLSourceCode="@example3HTMLCode" CSharpSourceCode="@example3CSharpCode" ExampleId="example23">
+<ComponentExampleBox Title="Disabled item" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example23">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -75,7 +75,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="OnClick" HTMLSourceCode="@example4HTMLCode" CSharpSourceCode="@example4CSharpCode" ExampleId="example24">
+<ComponentExampleBox Title="OnClick" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example24">
     <ExamplePreview>
         <div>Component's OnClick:</div>
         <br />
@@ -127,7 +127,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HTMLSourceCode="@example5HTMLCode" CSharpSourceCode="@example5CSharpCode" ExampleId="example25">
+<ComponentExampleBox Title="Style & Class" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example25">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
@@ -180,7 +180,35 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" HTMLSourceCode="@example6HTMLCode" CSharpSourceCode="@example6CSharpCode" ExampleId="example26">
+<ComponentExampleBox Title="Visibility" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example26">
+    <ExamplePreview>
+        <div class="example-content column">
+            <div style="display: inline-flex">
+                Visible: [ <BitSplitButton Visibility="BitVisibility.Visible"
+                                           Items="basicCustomItems"
+                                           NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                    Key = { Name = nameof(SplitActionItem.Id) },
+                                                                    IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+            <div style="display: inline-flex">
+                Hidden: [ <BitSplitButton Visibility="BitVisibility.Hidden"
+                                          Items="basicCustomItems"
+                                          NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                   Key = { Name = nameof(SplitActionItem.Id) },
+                                                                   IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+            <div style="display: inline-flex">
+                Collapsed: [ <BitSplitButton Visibility="BitVisibility.Collapsed"
+                                             Items="basicCustomItems"
+                                             NameSelectors="@(new() { Text = { Name = nameof(SplitActionItem.Name) },
+                                                                      Key = { Name = nameof(SplitActionItem.Id) },
+                                                                      IconName = { Name = nameof(SplitActionItem.Icon) } })" /> ]
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ItemTemplate" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example27">
     <ExamplePreview>
         <div>Component's ItemTemplate:</div>
         <br />
@@ -255,7 +283,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" HTMLSourceCode="@example7HTMLCode" CSharpSourceCode="@example7CSharpCode" ExampleId="example27">
+<ComponentExampleBox Title="Controlled" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example28">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -286,7 +314,7 @@
         <div class="example-content">
             <div>
                 <BitLabel>OnChange</BitLabel>
-                <BitSplitButton IsSticky="true" 
+                <BitSplitButton IsSticky="true"
                                 Items="basicCustomItems"
                                 OnChange="(SplitActionItem item) => changedSelectedItem = item"
                                 NameSelectors="@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },

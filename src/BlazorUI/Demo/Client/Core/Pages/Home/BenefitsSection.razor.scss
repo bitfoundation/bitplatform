@@ -1,6 +1,6 @@
-@import '../../Styles/bit-css-variables.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .card-list {
     display: flex;
@@ -11,7 +11,7 @@
 
     .benefit-card {
         flex-grow: 0;
-        padding: rem2(20px);
+        padding: rem2(16px);
         margin-top: rem2(20px);
         min-width: rem2(275px);
         min-height: rem2(241px);

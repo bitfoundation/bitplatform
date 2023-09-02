@@ -21,11 +21,11 @@
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.2.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -72,7 +72,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="BlazorDual.Api.Data" />
-        <Using Include="BlazorDual.Api.Models" />
+        <Using Include="BlazorDual.Api.Mappers" />
         <Using Include="BlazorDual.Shared.Enums" />
         <Using Include="BlazorDual.Api.Services.Contracts" />
     </ItemGroup>

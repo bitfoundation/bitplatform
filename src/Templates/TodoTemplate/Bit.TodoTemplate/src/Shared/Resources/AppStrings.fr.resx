@@ -121,7 +121,7 @@
     <value>Requête invalide</value>
   </data>
   <data name="ConflicException" xml:space="preserve">
-    <value>Échec de la simultanéité optimiste, l'objet a été modifié.</value>
+    <value>La demande n'a pas pu être traitée en raison d'un conflit dans la demande</value>
   </data>
   <data name="FileRemoveFailed" xml:space="preserve">
     <value>Une erreur s'est produite lors de la suppression du fichier</value>
@@ -374,7 +374,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Votre mot de passe a été modifié avec succès.</value>
   </data>
   <data name="TermsMessage" xml:space="preserve">
-    <value>je suis d'accord avec le </value>
+    <value>je suis d'accord avec le</value>
   </data>
   <data name="TermsTitle" xml:space="preserve">
     <value>Conditions</value>
@@ -449,13 +449,13 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>L'argument '{0}' ne peut pas être nul, vide ou contenir uniquement des espaces.</value>
   </data>
   <data name="AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties" xml:space="preserve">
-    <value>AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties</value>
+    <value>Le type de métadonnées associé au type « {0} » contient les propriétés ou champs inconnus suivants : {1}. Veuillez vous assurer que les noms de ces membres correspondent aux noms des propriétés du type principal.</value>
   </data>
   <data name="AttributeStore_Unknown_Property" xml:space="preserve">
-    <value>AttributeStore_Unknown_Property</value>
+    <value>Le type '{0}' ne contient pas de propriété publique nommée '{1}'.</value>
   </data>
   <data name="Common_PropertyNotFound" xml:space="preserve">
-    <value>Common_PropertyNotFound</value>
+    <value>La propriété {0}.{1} est introuvable.</value>
   </data>
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' and '{1}' do not match.</value>
@@ -628,12 +628,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
   </data>
-  <data name="CustomGender" xml:space="preserve">
-    <value>Personnalisé</value>
-  </data>
-  <data name="FemaleGender" xml:space="preserve">
-    <value>Femelle</value>
-  </data>
   <data name="Home" xml:space="preserve">
     <value>Maison</value>
   </data>
@@ -663,5 +657,14 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
+  </data>
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>Etes-vous sûr de vouloir supprimer {0}</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="DeleteTodoItem" xml:space="preserve">
+    <value>Supprimer l'élément de tâche</value>
   </data>
 </root>

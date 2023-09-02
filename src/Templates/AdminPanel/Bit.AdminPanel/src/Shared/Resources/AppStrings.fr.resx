@@ -344,7 +344,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Requête invalide</value>
   </data>
   <data name="ConflicException" xml:space="preserve">
-    <value>Échec de la simultanéité optimiste, l'objet a été modifié.</value>
+    <value>La demande n'a pas pu être traitée en raison d'un conflit dans la demande</value>
   </data>
   <data name="FileRemoveFailed" xml:space="preserve">
     <value>Une erreur s'est produite lors de la suppression du fichier</value>
@@ -371,7 +371,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>L'image de l'utilisateur est introuvable</value>
   </data>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Optimistic concurrency failure</value>
+    <value>Échec de concurrence optimiste, l'objet a été modifié.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
@@ -508,19 +508,19 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>L'argument '{0}' ne peut pas être nul, vide ou contenir uniquement des espaces.</value>
   </data>
   <data name="AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties" xml:space="preserve">
-    <value>AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties</value>
+    <value>Le type de métadonnées associé au type « {0} » contient les propriétés ou champs inconnus suivants : {1}. Veuillez vous assurer que les noms de ces membres correspondent aux noms des propriétés du type principal.</value>
   </data>
   <data name="AttributeStore_Unknown_Property" xml:space="preserve">
-    <value>AttributeStore_Unknown_Property</value>
+    <value>Le type '{0}' ne contient pas de propriété publique nommée '{1}'.</value>
   </data>
   <data name="Common_PropertyNotFound" xml:space="preserve">
-    <value>Common_PropertyNotFound</value>
+    <value>La propriété {0}.{1} est introuvable.</value>
   </data>
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
-    <value>CompareAttribute_UnknownProperty</value>
+    <value>Impossible de trouver une propriété nommée {0}.</value>
   </data>
   <data name="CreditCardAttribute_Invalid" xml:space="preserve">
     <value>Le champ {0} n'est pas un numéro de carte de crédit valide.</value>
@@ -663,9 +663,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="IsAcceptPrivacy" xml:space="preserve">
     <value>Accepte-t-il la politique de confidentialité ?</value>
   </data>
-  <data name="PhoneNumber" xml:space="preserve">
-    <value>Numéro de téléphone</value>
-  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nom d'utilisateur</value>
   </data>
@@ -690,9 +687,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
   </data>
-  <data name="FemaleGender" xml:space="preserve">
-    <value>Femelle</value>
-  </data>
   <data name="Home" xml:space="preserve">
     <value>Maison</value>
   </data>
@@ -700,7 +694,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Catégorie</value>
   </data>
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Catégorie introuvable.</value>
+    <value>L'entité de catégorie est introuvable</value>
   </data>
   <data name="Description" xml:space="preserve">
     <value>Description</value>
@@ -803,5 +797,29 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
+  </data>
+  <data name="WaitForResetPasswordEmailResendDelay." xml:space="preserve">
+    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe pour « {0} ». Réessayez plus tard.</value>
+  </data>
+  <data name="YouAreSignInAs" xml:space="preserve">
+    <value>Vous êtes connecté en tant que</value>
+  </data>
+  <data name="SignInAsDifferentUser" xml:space="preserve">
+    <value>Connectez-vous en tant qu'utilisateur différent</value>
+  </data>
+  <data name="EnterCategoryName" xml:space="preserve">
+    <value>Entrez le nom de la catégorie</value>
+  </data>
+  <data name="DeleteProduct" xml:space="preserve">
+    <value>Supprimer le produit</value>
+  </data>
+  <data name="DeleteCategory" xml:space="preserve">
+    <value>Supprimer la catégorie</value>
+  </data>
+  <data name="DefaultColorPicker" xml:space="preserve">
+    <value>Sélecteur de couleurs par défaut</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Dos</value>
   </data>
 </root>

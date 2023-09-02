@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Shared.Dtos.Dashboard;
 
-namespace AdminPanel.Client.Core.Pages;
+namespace AdminPanel.Client.Core.Pages.Home;
 
 public partial class OverallStatsWidget
 {
@@ -18,7 +18,7 @@ public partial class OverallStatsWidget
 
         try
         {
-            _data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(OverallStatsWidget)}",
+            _data = await PrerenderStateService.GetValue($"{nameof(HomePage)}-{nameof(OverallStatsWidget)}",
                             async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData",
                                 AppJsonContext.Default.OverallAnalyticsStatsDataDto)) ?? new();
         }

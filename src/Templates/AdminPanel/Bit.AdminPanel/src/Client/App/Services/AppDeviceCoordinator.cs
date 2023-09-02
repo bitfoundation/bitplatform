@@ -1,6 +1,9 @@
 ﻿//-:cnd:noEmit
 namespace AdminPanel.Client.App.Services;
 
+/// <summary>
+/// More info at <see cref="IBitDeviceCoordinator"/>
+/// </summary>
 public class AppDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()

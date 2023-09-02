@@ -1,54 +1,79 @@
-﻿namespace Bit.BlazorUI;
+﻿// a fork from https://github.com/mariusmuntean/ChartJs.Blazor
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Represents a Chart.js chart.
 /// </summary>
 public partial class BitChart
 {
+    [Inject] private IJSRuntime _js { get; set; }
+
+
+
+    /// <summary>
+    /// The configuration of the chart.
+    /// </summary>
+    [Parameter] public BitChartConfigBase Config { get; set; }
+
+    /// <summary>
+    /// The height of the canvas HTML element. 
+    /// Use <see langword="null"/> when using <see cref="BitChartBaseConfigOptions.AspectRatio"/>.
+    /// </summary>
+    [Parameter] public int? Height { get; set; }
+
     /// <summary>
     /// This event is fired when the chart has been setup through interop and
     /// the JavaScript chart object is available. Use this callback if you need to setup
     /// custom JavaScript options or register plugins.
     /// </summary>
-    [Parameter]
-    public EventCallback SetupCompletedCallback { get; set; }
+    [Parameter] public EventCallback SetupCompletedCallback { get; set; }
 
     /// <summary>
-    /// Gets the injected <see cref="IJSRuntime"/> for the current Blazor application.
+    /// The width of the canvas HTML element.
     /// </summary>
-    [Inject]
-    protected IJSRuntime JsRuntime { get; set; }
+    [Parameter] public int? Width { get; set; }
 
     /// <summary>
-    /// Gets or sets the configuration of the chart.
+    /// Whether the date adapter is required for the current configuration.
+    /// By default BitChart uses the date-fns adapter. you can change the adapter using <see cref="BitChart.DateAdapterScripts"/>.
+    /// for more info check out https://www.chartjs.org/docs/2.9.4/axes/cartesian/time.html#date-adapters
     /// </summary>
-    [Parameter]
-    public BitChartConfigBase Config { get; set; }
+    [Parameter] public bool IsDateAdapterRequired { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of the canvas HTML element.
+    /// The list of scripts required for the customized chartjs date adapter.
+    /// see available adapters here: https://github.com/chartjs/awesome#adapters
     /// </summary>
-    [Parameter]
-    public int? Width { get; set; }
+    [Parameter] public IEnumerable<string>? DateAdapterScripts { get; set; }
 
-    /// <summary>
-    /// Gets or sets the height of the canvas HTML element. Use <see langword="null"/> when using <see cref="BitChartBaseConfigOptions.AspectRatio"/>.
-    /// </summary>
-    [Parameter]
-    public int? Height { get; set; }
 
-    /// <inheritdoc />
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JsRuntime.InitChartJs();
-            await JsRuntime.SetupChart(Config);
+            var scripts = new List<string> { "_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4.js" };
+
+            if (IsDateAdapterRequired && DateAdapterScripts is null)
+            {
+                scripts.Add("_content/Bit.BlazorUI.Extras/chart.js/chartjs-2.9.4-adapter.js");
+            }
+
+            if (DateAdapterScripts is not null)
+            {
+                scripts.AddRange(DateAdapterScripts);
+            }
+
+            await _js.InitChartJs(scripts);
+
+            await _js.SetupChart(Config);
+
             await SetupCompletedCallback.InvokeAsync(this);
         }
         else
         {
-            await JsRuntime.UpdateChart(Config);
+            await _js.UpdateChart(Config);
         }
     }
 
@@ -60,6 +85,6 @@ public partial class BitChart
     /// </summary>
     public Task Update()
     {
-        return JsRuntime.UpdateChart(Config).AsTask();
+        return _js.UpdateChart(Config).AsTask();
     }
 }

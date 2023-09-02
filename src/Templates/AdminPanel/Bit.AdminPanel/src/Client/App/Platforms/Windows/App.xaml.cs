@@ -7,5 +7,5 @@ public partial class App
         InitializeComponent();
     }
 
-    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiAppBuilder().Build();
+    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }

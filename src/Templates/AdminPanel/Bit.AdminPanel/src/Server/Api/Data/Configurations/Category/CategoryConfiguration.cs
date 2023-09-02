@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Server.Api.Models.Categories;
 
-namespace AdminPanel.Server.Api.Data.Configurations.Account;
+namespace AdminPanel.Server.Api.Data.Configurations.Identity;
 
 public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {

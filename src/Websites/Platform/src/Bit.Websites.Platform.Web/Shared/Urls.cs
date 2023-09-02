@@ -28,6 +28,8 @@ public static class Urls
     public const string TodoTemplateNuget = "https://www.nuget.org/packages/Bit.TodoTemplate/";
     public const string TodoTemplateFigma = "https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223";
 
+    public const string BlazorDualNuget = "https://www.nuget.org/packages/Bit.BlazorDual/";
+
     public const string AdminPanelMultiLingual = "https://adminpanel.bitplatform.dev/";
     public const string AdminPanelGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template";
     public const string AdminPanelAppleStore = "https://apps.apple.com/us/app/bit-adminpanel/id6450611349";

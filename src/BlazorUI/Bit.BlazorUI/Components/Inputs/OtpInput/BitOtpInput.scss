@@ -1,0 +1,102 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-otp {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    box-shadow: none;
+    font-weight: 400;
+    position: relative;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-otp-inp {
+            border-color: $color-border-disabled;
+            background-color: $color-background-disabled;
+        }
+    }
+
+    &.bit-inv {
+        .bit-otp-inp {
+            outline: none;
+            border: spacing(0.25) $shape-border-style $color-state-error;
+        }
+    }
+}
+
+.bit-otp-inp {
+    display: flex;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: spacing(1.75);
+    -moz-appearance: textfield; // Firefox
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
+
+    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none
+    }
+
+    &:focus {
+        outline: none;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-otp-ltr {
+    flex-direction: row;
+
+    .bit-otp-inp {
+        margin-right: spacing(1.25);
+
+        &:last-child {
+            margin-right: unset;
+        }
+    }
+}
+
+.bit-otp-rtl {
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+
+    .bit-otp-inp {
+        margin-left: spacing(1.25);
+
+        &:last-child {
+            margin-left: unset;
+        }
+    }
+}
+
+.bit-otp-ttb {
+    flex-direction: column;
+
+    .bit-otp-inp {
+        margin-bottom: spacing(1.25);
+
+        &:last-child {
+            margin-bottom: unset;
+        }
+    }
+}
+
+.bit-otp-btt {
+    flex-direction: column-reverse;
+
+    .bit-otp-inp {
+        margin-top: spacing(1.25);
+
+        &:last-child {
+            margin-top: unset;
+        }
+    }
+}

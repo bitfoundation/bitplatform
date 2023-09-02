@@ -125,6 +125,11 @@ public partial class BitSplitButton<TItem> where TItem : class
     [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
     /// Determines the current selected item that acts as the main button.
     /// </summary>
     [Parameter]
@@ -196,7 +201,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
-        _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+        _calloutId = $"BitSplitButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {

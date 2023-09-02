@@ -1,4 +1,8 @@
-﻿@page "/templates"
+﻿@page "/todo-template"
+@page "/admin-panel"
+@page "/templates"
+@page "/todo-template/overview"
+@page "/admin-panel/overview"
 @page "/templates/overview"
 @inherits AppComponentBase
 
@@ -75,7 +79,9 @@
                 only need a website and don't require iOS, android or desktop apps.
             </BitTypography>
         </div>
-        <div class="page-content-container"></div>
+        <div class="page-content-container">
+            <a class="secondary-btn" href="@Urls.BlazorDualNuget" target="_blank" title="NuGet"><i class="btn-img nuget" />NuGet</a>
+        </div>
     </div>
 </div>
 

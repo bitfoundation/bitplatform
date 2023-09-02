@@ -5,9 +5,9 @@ public partial class ComponentExampleBox
     private bool showCode;
 
     [Parameter] public string Title { get; set; } = default!;
-    [Parameter] public string ExampleId { get; set; } = default!;
-    [Parameter] public string HTMLSourceCode { get; set; } = default!;
-    [Parameter] public string CSharpSourceCode { get; set; } = default!;
+    [Parameter] public string Id { get; set; } = default!;
+    [Parameter] public string HtmlCode { get; set; } = default!;
+    [Parameter] public string CsharpCode { get; set; } = default!;
     [Parameter] public RenderFragment ExamplePreview { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -17,17 +17,17 @@ public partial class ComponentExampleBox
 
     private async Task CopyCodeToClipboard()
     {
-        var code = string.IsNullOrEmpty(CSharpSourceCode) is false
-            ? AppendCodePharaseToCSharpCode(CSharpSourceCode)
+        var code = string.IsNullOrEmpty(CsharpCode) is false
+            ? AppendCodePhraseToCsharpCode(CsharpCode)
             : "";
 
-        await JSRuntime.CopyToClipboard(HTMLSourceCode.Trim() + code);
+        await JSRuntime.CopyToClipboard(HtmlCode.Trim() + code);
     }
 
-    private string AppendCodePharaseToCSharpCode(string cSharpSourceCode)
+    private string AppendCodePhraseToCsharpCode(string cSharpSourceCode)
     {
         string code = $@"{"\n\n"}@code {{
-{@CSharpSourceCode.Trim().Replace("\n", "\n\t")}
+{CsharpCode.Trim().Replace("\n", "\n\t")}
 }}";
         return code;
     }
@@ -36,7 +36,7 @@ public partial class ComponentExampleBox
     {
         var currentUrl = NavigationManager.Uri;
         currentUrl = currentUrl.Contains("#") ? currentUrl.Substring(0, currentUrl.IndexOf("#")) : currentUrl;
-        var exampleUrl = $"{currentUrl}#{ExampleId}";
+        var exampleUrl = $"{currentUrl}#{Id}";
         await JSRuntime.CopyToClipboard(exampleUrl);
     }
 }

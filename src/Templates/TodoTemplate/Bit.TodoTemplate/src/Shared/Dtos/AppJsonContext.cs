@@ -1,4 +1,4 @@
-﻿using TodoTemplate.Shared.Dtos.Account;
+﻿using TodoTemplate.Shared.Dtos.Identity;
 using TodoTemplate.Shared.Dtos.Todo;
 
 namespace TodoTemplate.Shared.Dtos;
@@ -7,6 +7,7 @@ namespace TodoTemplate.Shared.Dtos;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
 [JsonSerializable(typeof(UserDto))]

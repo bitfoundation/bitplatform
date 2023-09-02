@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Shared.Dtos.Account;
+using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Client.Core.Services.Implementations;
 
@@ -13,9 +13,8 @@ public partial class AuthenticationService : IAuthenticationService
 
     public async Task SignIn(SignInRequestDto dto)
     {
-        var response = await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, AppJsonContext.Default.SignInRequestDto);
-
-        var result = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
+        var result = await (await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, AppJsonContext.Default.SignInRequestDto))
+            .Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
 
 #if BlazorHybrid
         Preferences.Set("access_token", result!.AccessToken);

@@ -2,17 +2,14 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (ChildContent is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-}
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
+     class="@ClassBuilder.Value">
     <button @onclick="() => HandleOnClick(SelectedItem)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"

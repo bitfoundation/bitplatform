@@ -13,7 +13,7 @@
                    Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
-                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1NavItemHTMLCode" CSharpSourceCode="@example1NavItemCSharpCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavItemHtmlCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu" />
@@ -21,7 +21,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2NavItemHTMLCode" CSharpSourceCode="@example2NavItemCSharpCode" ExampleId="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavItemHtmlCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
@@ -29,7 +29,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3NavItemHTMLCode" CSharpSourceCode="@example3NavItemCSharpCode" ExampleId="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavItemHtmlCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -60,7 +60,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4NavItemHTMLCode" CSharpSourceCode="@example4NavItemCSharpCode" ExampleId="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavItemHtmlCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -94,7 +94,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HTMLSourceCode="@example5NavItemHTMLCode" CSharpSourceCode="@example5NavItemCSharpCode" ExampleId="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5NavItemHtmlCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="FoodNavMenu"
@@ -113,32 +113,34 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6NavItemHTMLCode" CSharpSourceCode="@example6NavItemCSharpCode" ExampleId="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavItemHtmlCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
-                                                       ToggleButton = new() { Style="color:cyan" },
-                                                       Item = new() { Style="color:red" } })" />
+                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
+                                                           ToggleButton = new() { Style="color:cyan" },
+                                                           Item = new() { Style="color:red" },
+                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1CustomItemHTMLCode" CSharpSourceCode="@example1CustomItemCSharpCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1CustomItemHtmlCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
                                     TextField="@nameof(BitPlatformMenu.Text)"
                                     UrlField="@nameof(BitPlatformMenu.Url)"
+                                    IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
                                     ChildItemsField="@nameof(BitPlatformMenu.Links)" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2CustomItemHTMLCode" CSharpSourceCode="@example2CustomItemCSharpCode" ExampleId="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2CustomItemHtmlCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomCarNavMenu"
@@ -155,7 +157,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3CustomItemHTMLCode" CSharpSourceCode="@example3CustomItemCSharpCode" ExampleId="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3CustomItemHtmlCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -194,7 +196,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4CustomItemHTMLCode" CSharpSourceCode="@example4CustomItemCSharpCode" ExampleId="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4CustomItemHtmlCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -241,7 +243,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HTMLSourceCode="@example5CustomItemHTMLCode" CSharpSourceCode="@example5CustomItemCSharpCode" ExampleId="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5CustomItemHtmlCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="CustomFoodNavMenu"
@@ -264,60 +266,62 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6CustomItemHTMLCode" CSharpSourceCode="@example6CustomItemCSharpCode" ExampleId="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6CustomItemHtmlCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
                                     TextField="@nameof(BitPlatformMenu.Text)"
                                     UrlField="@nameof(BitPlatformMenu.Url)"
+                                    IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
                                     ChildItemsField="@nameof(BitPlatformMenu.Links)"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
-                                                       ToggleButton = new() { Style="color:cyan" },
-                                                       Item = new() { Style="color:red" } })" />
+                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
+                                                           ToggleButton = new() { Style="color:cyan" },
+                                                           Item = new() { Style="color:red" },
+                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <ComponentExampleBox Title="Basic" HTMLSourceCode="@example1NavOptionHTMLCode" ExampleId="example1">
+                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavOptionHtmlCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption">
                                 <BitNavOption Text="Bit Platform"
                                               ExpandAriaLabel="Bit Platform Expanded"
                                               CollapseAriaLabel="Bit Platform Collapsed">
-                                    <BitNavOption Text="Home" Url="https://bitplatform.dev/" Target="_blank" />
+                                    <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
                                     <BitNavOption Text="Products & Services">
                                         <BitNavOption Text="Project Templates">
-                                            <BitNavOption Text="TodoTemplate" Url="https://bitplatform.dev/todo-template/overview" Target="_blank" />
-                                            <BitNavOption Text="AdminPanel" Url="https://bitplatform.dev/admin-panel/overview" Target="_blank" />
+                                            <BitNavOption IconName="@BitIconName.ToDoLogoOutline" Text="TodoTemplate" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
+                                            <BitNavOption IconName="@BitIconName.LocalAdmin" Text="AdminPanel" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
                                         </BitNavOption>
-                                        <BitNavOption Text="BlazorUI" Url="https://bitplatform.dev/components" Target="_blank" />
-                                        <BitNavOption Text="Cloud hosting solutions" IsEnabled="false" />
-                                        <BitNavOption Text="Bit academy" IsEnabled="false" />
+                                        <BitNavOption Text="BlazorUI" IconName="@BitIconName.F12DevTools" Url="https://bitplatform.dev/components" Target="_blank" />
+                                        <BitNavOption Text="Cloud hosting solutions" IconName="@BitIconName.Cloud" IsEnabled="false" />
+                                        <BitNavOption Text="Bit academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Pricing" Url="https://bitplatform.dev/pricing" Target="_blank" />
-                                    <BitNavOption Text="About" Url="https://bitplatform.dev/about-us" Target="_blank" />
-                                    <BitNavOption Text="Contact us" Url="https://bitplatform.dev/contact-us" Target="_blank" />
+                                    <BitNavOption Text="Pricing" IconName="@BitIconName.Money" Url="https://bitplatform.dev/pricing" Target="_blank" />
+                                    <BitNavOption Text="About" IconName="@BitIconName.Info" Url="https://bitplatform.dev/about-us" Target="_blank" />
+                                    <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" Url="https://bitplatform.dev/contact-us" Target="_blank" />
                                 </BitNavOption>
 
                                 <BitNavOption Text="Community"
                                               ExpandAriaLabel="Community Expanded"
                                               CollapseAriaLabel="Community Collapsed">
-                                    <BitNavOption Text="Linkedin" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Twitter" Url="https://twitter.com/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                                    <BitNavOption Text="Linkedin" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="Twitter" IconName="@BitIconName.Globe" Url="https://twitter.com/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="Github repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                                 </BitNavOption>
 
-                                <BitNavOption Text="Iconography" Url="/iconography" Target="_blank" />
+                                <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
                             </BitNav>
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HTMLSourceCode="@example2NavOptionHTMLCode" ExampleId="example2">
+                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavOptionHtmlCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
@@ -355,7 +359,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HTMLSourceCode="@example3NavOptionHTMLCode" CSharpSourceCode="@example3NavOptionCSharpCode" ExampleId="example3">
+                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavOptionHtmlCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -429,7 +433,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HTMLSourceCode="@example4NavOptionHTMLCode" ExampleId="example4">
+                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavOptionHtmlCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -515,7 +519,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HTMLSourceCode="@example5NavOptionHTMLCode" CSharpSourceCode="@example5NavOptionCSharpCode" ExampleId="example5">
+                <ComponentExampleBox Title="Events" HtmlCode="@example5NavOptionHtmlCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Mode="BitNavMode.Manual"
@@ -557,40 +561,41 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HTMLSourceCode="@example6NavOptionHTMLCode" ExampleId="example6">
+                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavOptionHtmlCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green;margin:2px" },
-                                                       ToggleButton = new() { Style="color:cyan" },
-                                                       Item = new() { Style="color:red" } })">
+                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
+                                                           ToggleButton = new() { Style="color:cyan" },
+                                                           Item = new() { Style="color:red" },
+                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })">
                                 <BitNavOption Text="Bit Platform"
                                               ExpandAriaLabel="Bit Platform Expanded"
                                               CollapseAriaLabel="Bit Platform Collapsed">
-                                    <BitNavOption Text="Home" Url="https://bitplatform.dev/" Target="_blank" />
+                                    <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
                                     <BitNavOption Text="Products & Services">
                                         <BitNavOption Text="Project Templates">
-                                            <BitNavOption Text="TodoTemplate" Url="https://bitplatform.dev/todo-template/overview" Target="_blank" />
-                                            <BitNavOption Text="AdminPanel" Url="https://bitplatform.dev/admin-panel/overview" Target="_blank" />
+                                            <BitNavOption IconName="@BitIconName.ToDoLogoOutline" Text="TodoTemplate" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
+                                            <BitNavOption IconName="@BitIconName.LocalAdmin" Text="AdminPanel" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
                                         </BitNavOption>
-                                        <BitNavOption Text="BlazorUI" Url="https://bitplatform.dev/components" Target="_blank" />
-                                        <BitNavOption Text="Cloud hosting solutions" IsEnabled="false" />
-                                        <BitNavOption Text="Bit academy" IsEnabled="false" />
+                                        <BitNavOption Text="BlazorUI" IconName="@BitIconName.F12DevTools" Url="https://bitplatform.dev/components" Target="_blank" />
+                                        <BitNavOption Text="Cloud hosting solutions" IconName="@BitIconName.Cloud" IsEnabled="false" />
+                                        <BitNavOption Text="Bit academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Pricing" Url="https://bitplatform.dev/pricing" Target="_blank" />
-                                    <BitNavOption Text="About" Url="https://bitplatform.dev/about-us" Target="_blank" />
-                                    <BitNavOption Text="Contact us" Url="https://bitplatform.dev/contact-us" Target="_blank" />
+                                    <BitNavOption Text="Pricing" IconName="@BitIconName.Money" Url="https://bitplatform.dev/pricing" Target="_blank" />
+                                    <BitNavOption Text="About" IconName="@BitIconName.Info" Url="https://bitplatform.dev/about-us" Target="_blank" />
+                                    <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" Url="https://bitplatform.dev/contact-us" Target="_blank" />
                                 </BitNavOption>
 
                                 <BitNavOption Text="Community"
                                               ExpandAriaLabel="Community Expanded"
                                               CollapseAriaLabel="Community Collapsed">
-                                    <BitNavOption Text="Linkedin" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Twitter" Url="https://twitter.com/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Github repo" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                                    <BitNavOption Text="Linkedin" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="Twitter" IconName="@BitIconName.Globe" Url="https://twitter.com/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="Github repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                                 </BitNavOption>
 
-                                <BitNavOption Text="Iconography" Url="/iconography" Target="_blank" />
+                                <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
                             </BitNav>
                         </div>
                     </ExamplePreview>
@@ -609,7 +614,7 @@
             Text = "Bit Platform",
             ChildItems = new()
             {
-                new() { Text = "Home", Url = "https://bitplatform.dev/" },
+                new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
@@ -620,18 +625,18 @@
                             Text = "Project Templates",
                             ChildItems = new()
                             {
-                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
-                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
+                                new() { Text = "TodoTemplate", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel", IconName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             }
                         },
-                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     }
                 },
-                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "Pricing", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", IconName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             },
         },
         new()
@@ -639,12 +644,12 @@
             Text = "Community",
             ChildItems = new()
             {
-                new() { Text = "LinkedIn", Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "GitHub repo", Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "LinkedIn", IconName = BitIconName.LinkedInLogo , Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", IconName = BitIconName.Globe , Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "GitHub repo", IconName = BitIconName.GitGraph , Url = "https://github.com/bitfoundation/bitplatform" },
             }
         },
-        new() { Text = "Iconography", Url = "/iconography" },
+        new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     };
     // Grouped
     private static readonly List<BitNavItem> CarNavMenu = new()
@@ -771,7 +776,7 @@
             Text = "Bit Platform",
             Links = new()
             {
-                new() { Text = "Home", Url = "https://bitplatform.dev/" },
+                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
@@ -782,18 +787,18 @@
                             Text = "Project Templates",
                             Links = new()
                             {
-                                new() { Text = "TodoTemplate", Url = "https://bitplatform.dev/todo-template/overview" },
-                                new() { Text = "AdminPanel", Url = "https://bitplatform.dev/admin-panel/overview" },
+                                new() { Text = "TodoTemplate", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             }
                         },
-                        new() { Text = "BlazorUI", Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     }
                 },
-                new() { Text = "Pricing", Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             },
         },
         new()
@@ -801,12 +806,12 @@
             Text = "Community",
             Links = new()
             {
-                new() { Text = "Linkedin", Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "Twitter", Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
             }
         },
-        new() { Text = "Iconography", Url = "/iconography" },
+        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     };
     // Grouped
     private static readonly List<CarMenu> CustomCarNavMenu = new()

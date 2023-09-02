@@ -1,0 +1,43 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<bool>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    @if (LabelTemplate is not null)
+    {
+        <label for="@_buttonId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label class="bit-tgl-lbl" for="@_buttonId">
+            @Label
+        </label>
+    }
+
+    <div class="bit-tgl-cnt">
+        <button @onclick="HandleOnClick"
+                role="@Role"
+                type="button"
+                id="@_buttonId"
+                class="bit-tgl-btn"
+                data-ktp-target="true"
+                data-is-focusable="true"
+                aria-label="@AriaLabel"
+                aria-checked="@_ariaChecked"
+                aria-labelledby="@_labelledById">
+            <span class="bit-tgl-sta"></span>
+        </button>
+        @if (_stateText.HasValue())
+        {
+            <label for="@_buttonId" class="bit-tgl-stx">
+                @_stateText
+            </label>
+        }
+    </div>
+    <input @attributes="InputHtmlAttributes" type="checkbox" value="@CurrentValueAsString" class="bit-input-hidden" />
+</div>

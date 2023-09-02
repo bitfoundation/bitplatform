@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitTypography : BitComponentBase
 {
-    public static Dictionary<BitTypographyVariant, string> VariantMapping = new()
+    protected static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
@@ -69,6 +69,7 @@ public partial class BitTypography : BitComponentBase
         var seq = 0;
         builder.OpenElement(seq++, Component ?? VariantMapping[Variant]);
         builder.AddMultipleAttributes(seq++, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
+        builder.AddAttribute(seq++, "id", UniqueId);
         builder.AddAttribute(seq++, "style", StyleBuilder.Value);
         builder.AddAttribute(seq++, "class", ClassBuilder.Value);
         builder.AddElementReferenceCapture(seq++, v => RootElement = v);

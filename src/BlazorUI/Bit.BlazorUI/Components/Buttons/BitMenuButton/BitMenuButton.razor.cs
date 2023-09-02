@@ -121,6 +121,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitMenuButton.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
@@ -167,7 +172,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
-        _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+        _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         base.OnInitialized();
     }

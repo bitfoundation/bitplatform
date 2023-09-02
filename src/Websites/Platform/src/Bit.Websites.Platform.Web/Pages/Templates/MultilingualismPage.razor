@@ -1,4 +1,6 @@
-﻿@page "/templates/multilingualism"
+﻿@page "/todo-template/multilingualism"
+@page "/admin-panel/multilingualism"
+@page "/templates/multilingualism"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/multilingualism"
@@ -16,7 +18,7 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>How?</BitTypography>
         <div class="section-card-txt">
-            To activate the Multilingual feature of the app, set the <b>EnableMultilingual</b> to true in the <b>Directory.Build.props</b> file.
+            To activate the Multilingual feature of the app, set the <b>EnableMultilingual</b> to true in the <b>src/Directory.Build.props</b> file.
         </div>
         <div class="section-card-txt">
             To add a new Culture, add it to the list of SupportedCultures in the <b>CultureInfoManager</b> class and add the corresponding translations
@@ -42,6 +44,9 @@ public class CustomerDto
         <div class="code-box">@("[AutoInject] private IStrignLocalizer<CustomersManagement> _customersManagementLocalizer;")</div>
         <div class="section-card-txt">
             And use it to access the translations inside that page.
+        </div>
+        <div class="section-card-txt">
+            Note: We'd recommend installing <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResxManager extension</a> for Visual Studio.
         </div>
     </section>
 </div>

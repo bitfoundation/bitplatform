@@ -1,7 +1,7 @@
 ﻿using ImageMagick;
 using Microsoft.Extensions.Primitives;
 using MimeTypes;
-using TodoTemplate.Server.Api.Models.Account;
+using TodoTemplate.Server.Api.Models.Identity;
 using SystemFile = System.IO.File;
 
 namespace TodoTemplate.Server.Api.Controllers;
@@ -59,7 +59,8 @@ public partial class AttachmentController : AppControllerBase
             }
         }
 
-        var resizedFilePath = destFilePath.Replace(Path.GetExtension(destFilePath), "_256.webp");
+        destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_256.webp");
+        var resizedFilePath = Path.Combine(userProfileImagesDir, destFileName);
 
         try
         {
@@ -71,7 +72,7 @@ public partial class AttachmentController : AppControllerBase
 
             sourceImage.Write(resizedFilePath, MagickFormat.WebP);
 
-            user.ProfileImageName = resizedFilePath;
+            user.ProfileImageName = destFileName;
 
             await _userManager.UpdateAsync(user);
         }

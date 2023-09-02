@@ -43,7 +43,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Items, choiceGroupItems);
         });
 
-        var bitChoiceGroup = component.FindAll(".bit-chgi");
+        var bitChoiceGroup = component.FindAll(".bit-chg-icn");
 
         Assert.AreEqual(bitChoiceGroup.Count, choiceGroupItems.Count);
     }
@@ -73,30 +73,32 @@ public class BitChoiceGroupTests : BunitTestContext
     public void BitChoiceGroupShouldRespectInputClick(bool isEnabled)
     {
         var choiceGroupItems = GetChoiceGroupItems();
+        //var value = choiceGroupItems[1].Value;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
+            //parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.Items, choiceGroupItems);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitChoiceGroupImages = component.FindAll(".bit-chgi", true);
-
-        foreach (var element in bitChoiceGroupImages)
+        var itemContainers = component.FindAll(".bit-chg-icn", true);
+        var index = 0;
+        foreach (var itemContainer in itemContainers)
         {
-            if (isEnabled)
-            {
-                var bitChoiceGroup = component.Find(".bit-chgi");
-                var bitChoiceGroupInput = bitChoiceGroup.GetElementsByTagName("input").First();
-
-                bitChoiceGroupInput.Click();
-
-                // TODO: bypassed - BUnit 2-way bound parameters issue
-                // Assert.IsTrue(element.ClassList.Contains($"bit-chgi-checked"));
+            var item = choiceGroupItems[index++];
+            if (isEnabled is false || item.IsEnabled is false)
+            {                
+                Assert.IsTrue(itemContainer.ClassList.Contains("bit-chg-ids"));
             }
             else
             {
-                Assert.IsTrue(element.ClassList.Contains("bit-chgi-dis"));
+                Assert.IsFalse(itemContainer.ClassList.Contains("bit-chg-ids"));
+
+                //var input = itemContainer.GetElementsByTagName("input").First();
+                //input.Click();
+                // TODO: bypassed - BUnit 2-way bound parameters issue
+                //Assert.IsTrue(itemContainer.ClassList.Contains($"bit-chg-ich"));
             }
         }
     }
@@ -118,7 +120,7 @@ public class BitChoiceGroupTests : BunitTestContext
             Assert.AreEqual(element.item.GetAttribute("src"), choiceGroupItems[element.index].ImageSrc);
             Assert.AreEqual(element.item.GetAttribute("alt"), choiceGroupItems[element.index].ImageAlt);
 
-            var bitChoiceGroup = component.Find(".bit-chgi");
+            var bitChoiceGroup = component.Find(".bit-chg-icn");
             var bitChoiceGroupInput = bitChoiceGroup.GetElementsByTagName("input").First();
 
             bitChoiceGroupInput.Click();
@@ -169,7 +171,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.AriaLabelledBy, ariaLabelledBy);
         });
 
-        var bitChoiceGroup = component.Find(".bit-chg").FirstElementChild;
+        var bitChoiceGroup = component.Find(".bit-chg");
         Assert.AreEqual(bitChoiceGroup.GetAttribute("aria-labelledby"), ariaLabelledBy);
     }
 
@@ -239,6 +241,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Female",
+                Value = "v-female",
                 IconName = "ContactHeart",
                 ImageSrc = "https://bit.com/female_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-female_icon.svg.png",
@@ -247,6 +250,7 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Male",
+                Value = "v-male",
                 IconName = "FrontCamera",
                 ImageSrc = "https://bit.com/male_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-male_icon.svg.png",
@@ -255,14 +259,17 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Other",
+                Value = "v-other",
                 IconName = "Group",
                 ImageSrc = "https://bit.com/other_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-other_icon.svg.png",
                 ImageAlt = "other-icon",
+                IsEnabled = false
             },
             new()
             {
                 Text = "Prefer not to say",
+                Value = "v-nosay",
                 IconName = "Emoji2",
                 ImageSrc = "https://bit.com/nottosay_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-nottosay_icon.svg.png",

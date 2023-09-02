@@ -1,6 +1,6 @@
 ﻿using AdminPanel.Server.Api.Models.Products;
 
-namespace AdminPanel.Server.Api.Data.Configurations.Account;
+namespace AdminPanel.Server.Api.Data.Configurations.Identity;
 
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {

@@ -1,4 +1,4 @@
-﻿using BlazorDual.Shared.Dtos.Account;
+﻿using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Shared.Dtos.Todo;
 
 namespace BlazorDual.Shared.Dtos;
@@ -7,6 +7,7 @@ namespace BlazorDual.Shared.Dtos;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
 [JsonSerializable(typeof(UserDto))]

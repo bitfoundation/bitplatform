@@ -18,8 +18,6 @@ public partial class AppComponentBase : ComponentBase
     
     [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
     
-    [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
-
     protected async sealed override Task OnInitializedAsync()
     {
         try

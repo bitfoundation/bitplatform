@@ -4,7 +4,7 @@ public static class IMacServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMacServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in Mac.
+        // Services registered in this class can be injected in macOS.
 
         return services;
     }

@@ -7,10 +7,10 @@ namespace TodoTemplate.Client.App;
 
 public static class MauiProgram
 {
-    public static MauiAppBuilder CreateMauiAppBuilder()
+    public static MauiApp CreateMauiApp()
     {
 #if !BlazorHybrid
-        throw new InvalidOperationException("Please switch to blazor hybrid as described in readme.md");
+        throw new InvalidOperationException("Please switch to blazor hybrid as described in https://bitplatform.dev/templates/hosting-models");
 #endif
 
         var builder = MauiApp.CreateBuilder();
@@ -42,6 +42,8 @@ public static class MauiProgram
         services.AddClientSharedServices();
         services.AddClientAppServices();
 
-        return builder;
+        var mauiApp = builder.Build();
+
+        return mauiApp;
     }
 }

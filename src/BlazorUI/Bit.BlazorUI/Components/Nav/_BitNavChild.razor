@@ -105,7 +105,7 @@
                             var iconName = Nav.GetIconName(Item);
                             @if (iconName.HasValue())
                             {
-                                <i class="bit-nav-iic bit-icon bit-icon--@iconName" aria-hidden="true" />
+                                <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
                             }
                             <span>@text</span>
                         }
@@ -135,7 +135,7 @@
                             var iconName = Nav.GetIconName(Item);
                             @if (iconName.HasValue())
                             {
-                                <i class="bit-nav-iic bit-icon bit-icon--@iconName" aria-hidden="true" />
+                                <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
                             }
                             <span>@text</span>
                         }

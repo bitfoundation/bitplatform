@@ -1,6 +1,9 @@
 ﻿//-:cnd:noEmit
 namespace BlazorDual.Web.Shared;
 
+/// <summary>
+/// https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/handle-errors
+/// </summary>
 public partial class AppErrorBoundary
 {
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
@@ -25,7 +28,7 @@ public partial class AppErrorBoundary
 
     private void Refresh()
     {
-        _navigationManager.NavigateTo(_navigationManager.Uri, true);
+        _navigationManager.ForceReload();
     }
 
     private void GoHome()

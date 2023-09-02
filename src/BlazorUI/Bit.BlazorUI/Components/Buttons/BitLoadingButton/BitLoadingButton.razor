@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        id="@UniqueId"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         type="@_buttonType.GetValue()"

@@ -13,10 +13,15 @@
                       Value="@_searchText"
                       ValueChanged="@HandleValueChanged"
                       OnClear="@HandleOnClear" />
+        @if (_filteredNavItems.Count == 0)
+        {
+            <br />
+            <div>nothing found!</div>
+        }
     </div>
     <div class="nav-menu-list">
         <BitNav Class="@GetNavMenuClass()"
-                Items="_filteredNavLinks"
+                Items="_filteredNavItems"
                 AriaLabel="bit project templates doc nav"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)"
                 ClassStyles="@(new() { SelectedItemContainer = new() { Style = $"background-color:var({BitCss.Var.Color.Background.Primary});" } })" />

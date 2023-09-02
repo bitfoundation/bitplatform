@@ -1,8 +1,9 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<i @ref="RootElement"
-   class="bit-icon bit-icon--@IconName @ClassBuilder.Value"
+<i @ref="RootElement" @attributes="HtmlAttributes"
+   id="@UniqueId"
    style="@StyleBuilder.Value"
+   class="bit-icon bit-icon--@IconName @ClassBuilder.Value"
    role="img"
    aria-label="@AriaLabel" />

@@ -3,16 +3,21 @@
 public class BitNavItem
 {
     /// <summary>
+    /// Aria-current token for active nav links.
+    /// Must be a valid token value, and defaults to 'page'
+    /// </summary>
+    public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
+
+    /// <summary>
     /// Aria label for nav link.
     /// Ignored if collapseAriaLabel or expandAriaLabel is provided
     /// </summary>
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// Aria-current token for active nav links.
-    /// Must be a valid token value, and defaults to 'page'
+    /// A list of items to render as children of the current item
     /// </summary>
-    public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
+    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
 
     /// <summary>
     /// Aria label when items is collapsed and can be expanded
@@ -31,24 +36,19 @@ public class BitNavItem
     public bool ForceAnchor { get; set; }
 
     /// <summary>
-    /// A list of items to render as children of the current item
-    /// </summary>
-    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
-
-    /// <summary>
     /// Name of an icon to render next to this link button
     /// </summary>
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the link is in an expanded state
-    /// </summary>
-    public bool IsExpanded { get; set; }
-
-    /// <summary>
     /// Whether or not the link is disabled
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether or not the link is in an expanded state
+    /// </summary>
+    public bool IsExpanded { get; set; }
 
     /// <summary>
     /// A unique value to use as a key or id of the item
@@ -59,16 +59,6 @@ public class BitNavItem
     /// Custom style for the each item element.
     /// </summary>
     public string? Style { get; set; }
-
-    /// <summary>
-    /// Text to render for this link.
-    /// </summary>
-    public string Text { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Text for title tooltip.
-    /// </summary>
-    public string? Title { get; set; }
 
     /// <summary>
     /// Link target, specifies how to open the link.
@@ -86,7 +76,22 @@ public class BitNavItem
     public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
+    /// Text to render for this link.
+    /// </summary>
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Text for title tooltip.
+    /// </summary>
+    public string? Title { get; set; }
+
+    /// <summary>
     /// URL to navigate to for this link.
     /// </summary>
     public string? Url { get; set; }
+
+    /// <summary>
+    /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.
+    /// </summary>
+    public IEnumerable<string>? AdditionalUrls { get; set; }
 }

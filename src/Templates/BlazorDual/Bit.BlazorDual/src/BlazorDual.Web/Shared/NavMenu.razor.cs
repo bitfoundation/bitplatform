@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using BlazorDual.Shared.Dtos.Account;
+using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Web.Shared;
 
@@ -49,7 +49,7 @@ public partial class NavMenu : IDisposable
             }
         };
 
-        _unsubscribe = PubSubService.Sub(PubSubMessages.PROFILE_UPDATED, payload =>
+        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, payload =>
         {
             if (payload is null) return;
 
@@ -60,10 +60,10 @@ public partial class NavMenu : IDisposable
             StateHasChanged();
         });
 
-        _user = await StateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
+        _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
-        var access_token = await StateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
+        var access_token = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
 
         SetProfileImageUrl();

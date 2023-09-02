@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using TodoTemplate.Server.Api;
-using TodoTemplate.Server.Api.Models.Account;
+using TodoTemplate.Server.Api.Models.Identity;
 using TodoTemplate.Server.Api.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;

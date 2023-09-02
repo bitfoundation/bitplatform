@@ -135,7 +135,7 @@ public partial class BitMessageBarDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
     Info (default) MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
 </BitMessageBar>
@@ -160,7 +160,7 @@ public partial class BitMessageBarDemo
     Blocked MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
 </BitMessageBar>";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 @if (IsInfoMessageBarHidden is false)
 {
     <BitMessageBar MessageBarType=""@BitMessageBarType.Info"" OnDismiss=""() => IsInfoMessageBarHidden = true"">
@@ -216,7 +216,7 @@ public partial class BitMessageBarDemo
         MessageBar with action buttons which defaults to multiline.
     </ChildContent>
 </BitMessageBar>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool IsInfoMessageBarHidden = false;
 private bool IsWarningMessageBarHidden = false;
 private bool IsErrorMessageBarHidden = false;";

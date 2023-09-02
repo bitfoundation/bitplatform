@@ -1,4 +1,4 @@
-﻿using AdminPanel.Shared.Dtos.Account;
+﻿using AdminPanel.Shared.Dtos.Identity;
 using AdminPanel.Shared.Dtos.Categories;
 using AdminPanel.Shared.Dtos.Dashboard;
 using AdminPanel.Shared.Dtos.Products;
@@ -9,6 +9,7 @@ namespace AdminPanel.Shared.Dtos;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(UserDto))]
 [JsonSerializable(typeof(List<UserDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataDto))]

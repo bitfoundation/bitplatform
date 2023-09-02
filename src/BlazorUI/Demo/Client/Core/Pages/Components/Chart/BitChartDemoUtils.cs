@@ -9,7 +9,7 @@ public static class BitChartDemoUtils
     public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
     {
             "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
-        });
+    });
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 

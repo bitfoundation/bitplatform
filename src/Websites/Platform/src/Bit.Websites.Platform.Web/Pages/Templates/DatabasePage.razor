@@ -1,4 +1,6 @@
-﻿@page "/templates/database"
+﻿@page "/todo-template/database"
+@page "/admin-panel/database"
+@page "/templates/database"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/database"
@@ -30,7 +32,7 @@
         <div class="section-card-txt">
             Set <b>Server.Api</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
         </div>
-        <div class="code-box">Add-Migration InitialSchema</div>
+        <div class="code-box">Add-Migration InitialMigration</div>
         <div class="code-box">Update-Database</div>
         <br />
         <div class="section-card-txt">
@@ -38,7 +40,7 @@
         </div>
         <br />
         <div class="section-card-txt">Or open a terminal in your Api project directory and run followings:</div>
-        <div class="code-box">dotnet ef migrations add InitialSchema</div>
+        <div class="code-box">dotnet ef migrations add InitialMigration</div>
         <div class="code-box">dotnet ef database update</div>
     </section>
 </div>

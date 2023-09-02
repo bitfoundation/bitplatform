@@ -207,7 +207,7 @@ public partial class BitToggleButtonDemo
     private bool example32Value;
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitToggleButton OffText=""Primary Unmute"" OnText=""Primary Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 
@@ -216,9 +216,9 @@ public partial class BitToggleButtonDemo
                  ButtonStyle=""BitButtonStyle.Standard"" />
 
 <BitToggleButton IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
-    private readonly string example1CSharpCode = @"";
+    private readonly string example1CsharpCode = @"";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -256,9 +256,14 @@ public partial class BitToggleButtonDemo
                  OffText=""Classed Button : Unmute"" OnText=""Classed Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
                  Classes=""@(new() { Container=""custom-container"", Icon=""custom-icon"", Text=""custom-text"" })"" />";
-    private readonly string example2CSharpCode = @"";
+    private readonly string example2CsharpCode = @"";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
+Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
+Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
+Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
+
+    private readonly string example4HtmlCode = @"
 <BitToggleButton DefaultIsChecked=""true""
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
@@ -272,7 +277,7 @@ public partial class BitToggleButtonDemo
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 <BitLabel>Check status is: @example32Value</BitLabel>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool example31Value;
 private bool example32Value;";
 }

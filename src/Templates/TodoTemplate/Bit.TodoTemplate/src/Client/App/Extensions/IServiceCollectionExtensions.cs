@@ -8,7 +8,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientAppServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in Android, iOS, Windows, and Mac.
+        // Services registered in this class can be injected in Android, iOS, Windows, and macOS.
 
 #if ANDROID
         services.AddClientAndroidServices();
@@ -20,7 +20,7 @@ public static class IServiceCollectionExtensions
         services.AddClientWindowsServices();
 #endif
 
-        services.AddTransient<MainPage>();
+        services.AddScoped<MainPage>();
         services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
 
         return services;

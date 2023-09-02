@@ -55,7 +55,7 @@ public partial class BitColorPickerDemo
     private BitColorPicker ColorPicker;
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLabel>Rgb</BitLabel>
 <BitColorPicker @bind-Color=""BasicRgbColor"" />
 <span>Color: @BasicRgbColor</span>
@@ -63,51 +63,51 @@ public partial class BitColorPickerDemo
 <BitLabel>Hex</BitLabel>
 <BitColorPicker @bind-Color=""BasicHexColor"" />
 <span>Color: @BasicHexColor</span>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private string BasicRgbColor = ""rgb(255,255,255)"";
 private string BasicHexColor = ""#FFFFFF"";
 ";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
 <span>Color: @AlphaRgbColor</span>
 <span>Alpha: @Alpha</span>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private string AlphaRgbColor = ""rgb(255,255,255)"";
 private double Alpha = 1;
 ";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitColorPicker @bind-Color=""TwoWayColor"" ShowPreview=""true"" />
 <BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private string TwoWayColor = ""#FFFFFF"";
 ";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
 <span>Color (Hex): @ColorValue?.Color</span>
 <span>Alpha: @ColorValue?.Alpha</span>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private BitColorValue ColorValue;
 ";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
 <BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
 <span>Color Value: @BoundColor</span>
 <span>Hex: @ColorPicker?.Hex</span>
 <span>Rgb: @ColorPicker?.Rgb</span>
 <span>Rgba: @ColorPicker?.Rgba</span>
 <span>Hsv: @ColorPicker?.Hsv</span>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string BoundColor = ""#FFFFFF"";
 private BitColorPicker ColorPicker;
 ";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .custom-color-picker {
         width: 100px;

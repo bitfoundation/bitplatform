@@ -1,0 +1,95 @@
+﻿@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .example-content {
+        gap: 2rem;
+        display: flex;
+
+        @include sm {
+            flex-direction: column;
+        }
+
+        &.column {
+            flex-direction: column;
+        }
+
+        .output {
+            gap: rem2(5px);
+            display: flex;
+            font-weight: 600;
+            align-items: center;
+            font-size: rem2(16px);
+            margin-top: rem2(20px);
+        }
+    }
+
+    .custom-class {
+        width: 300px;
+        padding: 2rem;
+        border-radius: 25%;
+        background-color: red;
+    }
+
+    .custom-item {
+        color: brown;
+    }
+
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .custom-text {
+        color: blue;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .custom-label {
+        color: $Red20;
+        font-weight: bold;
+    }
+
+    .custom-container {
+        display: flex;
+        gap: rem2(10px);
+        cursor: pointer;
+        align-items: center;
+
+        .custom-circle {
+            width: rem2(20px);
+            height: rem2(20px);
+            border: 1px solid;
+            border-radius: rem2(10px);
+        }
+
+        &:hover {
+            .custom-circle {
+                border-top: rem2(5px) solid #C66;
+                border-left: rem2(5px) solid #66C;
+                border-right: rem2(5px) solid #CC6;
+                border-bottom: rem2(5px) solid #6C6;
+            }
+        }
+
+        &.selected {
+            color: #C66;
+
+            .custom-circle {
+                border-top: rem2(10px) solid #C66;
+                border-left: rem2(10px) solid #66C;
+                border-right: rem2(10px) solid #CC6;
+                border-bottom: rem2(10px) solid #6C6;
+            }
+        }
+    }
+
+    .validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+}

@@ -1,4 +1,4 @@
-﻿using BlazorDual.Api.Models.Account;
+﻿using BlazorDual.Api.Models.Identity;
 
 namespace BlazorDual.Api.Models.Todo;
 

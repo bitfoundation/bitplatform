@@ -2,8 +2,8 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
-using BlazorDual.Api.Models.Account;
-using BlazorDual.Shared.Dtos.Account;
+using BlazorDual.Api.Models.Identity;
+using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Api.Services.Implementations;
 

@@ -35,13 +35,13 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="5.4.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.4.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.4.0">
+		<PackageReference Include="Bit.Bup" Version="5.5.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.5.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.4.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -58,14 +58,13 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
         <Using Include="AdminPanel.Client.Core.Services.Implementations" />
-        <Using Include="AdminPanel.Client.Core.Components" />
+        <Using Include="AdminPanel.Client.Core.Shared" />
     </ItemGroup>
 
     <ItemGroup>
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.dll" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.dll" />
-        <BlazorWebAssemblyLazyLoad Include="Riok.Mapperly.Abstractions.dll" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
@@ -80,7 +79,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="dotnet electronize version" ContinueOnError="true">
+        <Exec Condition="'$(UseElectron)' == 'true'" Command="dotnet electronize version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
         </Exec>
         <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>

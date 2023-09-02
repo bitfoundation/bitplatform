@@ -87,14 +87,14 @@ public partial class App
         }
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
-        await _jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+        await _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
         // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
         // Android, windows and iOS have to set culture programmatically.
-        // Browser is gets handled in Web project's Program.cs
+        // Browser's culture is handled in the Web project's Program.BlazorWebAssembly.cs
 #if BlazorHybrid && MultilingualEnabled
         if (_cultureHasNotBeenSet)
         {

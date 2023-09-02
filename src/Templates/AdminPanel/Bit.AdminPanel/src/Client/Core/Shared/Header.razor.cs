@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Shared.Dtos.Account;
+using AdminPanel.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace AdminPanel.Client.Core.Shared;
@@ -39,7 +39,7 @@ public partial class Header : IDisposable
 
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        _unsubscribe = PubSubService.Sub(PubSubMessages.PROFILE_UPDATED, payload =>
+        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, payload =>
         {
             if (payload is null) return;
 
@@ -50,11 +50,11 @@ public partial class Header : IDisposable
             StateHasChanged();
         });
 
-        _user = await StateService.GetValue($"{nameof(Header)}-User", async () => await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
+        _user = await PrerenderStateService.GetValue($"{nameof(Header)}-User", async () => await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
-        _isUserAuthenticated = await StateService.GetValue($"{nameof(Header)}-IsUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
+        _isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-IsUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
 
-        var access_token = await StateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
+        var access_token = await PrerenderStateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
         
         SetProfileImageUrl();

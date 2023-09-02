@@ -6,7 +6,7 @@ namespace AdminPanel.Client.App;
 
 class Program : MauiApplication
 {
-	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiAppBuilder().CreateMauiApp();
+	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
 	static void Main(string[] args)
 	{

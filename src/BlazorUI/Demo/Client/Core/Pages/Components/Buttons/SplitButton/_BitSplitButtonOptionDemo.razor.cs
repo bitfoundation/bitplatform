@@ -9,7 +9,8 @@ public partial class _BitSplitButtonOptionDemo
     private BitSplitButtonOption? changedSelectedItem;
 
 
-    private readonly string example1HTMLCode = @"
+
+    private readonly string example1HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -27,9 +28,9 @@ public partial class _BitSplitButtonOptionDemo
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" />
 </BitSplitButton>";
-    private readonly string example1CSharpCode = @"";
+    private readonly string example1CsharpCode = @"";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"" IsSticky=""true"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -41,9 +42,9 @@ public partial class _BitSplitButtonOptionDemo
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" />
 </BitSplitButton>";
-    private readonly string example2CSharpCode = @"";
+    private readonly string example2CsharpCode = @"";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"" IsSticky=""true"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" IsEnabled=""false"" />
@@ -55,9 +56,9 @@ public partial class _BitSplitButtonOptionDemo
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" IsEnabled=""false"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" />
 </BitSplitButton>";
-    private readonly string example3CSharpCode = @"";
+    private readonly string example3CsharpCode = @"";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSplitButton IsSticky=""true"" OnClick=""(BitSplitButtonOption item) => example41SelectedItem = item.Text"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -87,11 +88,11 @@ public partial class _BitSplitButtonOptionDemo
 </BitSplitButton>
 
 <div>Clicked item: <b>@example42SelectedItem</b></div>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private string? example41SelectedItem;
 private string? example42SelectedItem;";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -150,9 +151,32 @@ private string? example42SelectedItem;";
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" />
 </BitSplitButton>";
-    private readonly string example5CSharpCode = @"";
+    private readonly string example5CsharpCode = @"";
 
-    private readonly string example6HTMLCode = @"
+    private readonly string example6HtmlCode = @"
+Visible: [
+<BitSplitButton Visibility=""BitVisibility.Visible"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]
+
+Hidden: [
+<BitSplitButton Visibility=""BitVisibility.Hidden"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]
+
+Collapsed: [
+<BitSplitButton Visibility=""BitVisibility.Collapsed"" TItem=""BitSplitButtonOption"">
+    <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitSplitButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitSplitButton> ]";
+    private readonly string example6CsharpCode = @"";
+
+    private readonly string example7HtmlCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -237,11 +261,9 @@ private string? example42SelectedItem;";
         </BitSplitButtonOption>
     </ChildContent>
 </BitSplitButton>";
-    private readonly string example6CSharpCode = @"
-private string example61SelectedItem;
-private string example62SelectedItem;";
+    private readonly string example7CsharpCode = @"";
 
-    private readonly string example7HTMLCode = @"
+    private readonly string example8HtmlCode = @"
 <BitSplitButton @bind-SelectedItem=""twoWaySelectedItem""
                 IsSticky=""true""
                 TItem=""BitSplitButtonOption""
@@ -266,8 +288,7 @@ private string example62SelectedItem;";
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
     <BitSplitButtonOption Text=""Delete"" Key=""delete-key"" IconName=""@BitIconName.Delete"" IsSelected=""true"" />
 </BitSplitButton>";
-    private readonly string example7CSharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitSplitButtonOption? twoWaySelectedItem;
 private BitSplitButtonOption? changedSelectedItem;";
-
 }

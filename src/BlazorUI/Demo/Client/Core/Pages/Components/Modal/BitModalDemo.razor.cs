@@ -178,7 +178,7 @@ public partial class BitModalDemo
 
 
 
-    private readonly string example1HTMLCode = @"
+    private readonly string example1HtmlCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -232,10 +232,10 @@ public partial class BitModalDemo
         </p>
     </div>
 </BitModal>";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private bool IsOpen = false;";
 
-    private readonly string example2HTMLCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -295,11 +295,11 @@ private bool IsOpen = false;";
         </p>
     </div>
 </BitModal>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool IsOpen1 = false;
 private bool IsOpen2 = false;";
 
-    private readonly string example3HTMLCode = @"
+    private readonly string example3HtmlCode = @"
 <style>
     .relative-container {
         margin-top: 1rem;
@@ -406,7 +406,7 @@ private bool IsOpen2 = false;";
     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
     efficitur.
 </div>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example3CsharpCode = @"
 private bool IsOpenInPosition = false;
 private BitModalPosition position;
 
@@ -416,7 +416,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example4HTMLCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -450,7 +450,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     </div>
 </BitModal>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool IsOpenInPosition = false;
 private BitModalPosition position;
 
@@ -460,7 +460,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example5HTMLCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -521,7 +521,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
         </p>
     </div>
 </BitModal>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool IsDraggable = false;
 private bool IsOpen5 = false;
 private bool IsOpen6 = false;

@@ -1,34 +1,35 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.Websites.Platform.Web.Shared;
 
-public partial class MainLayout
+public partial class MainLayout : IDisposable
 {
     [Inject]
-    public NavigationManager NavigationManager { get; set; }
+    public NavigationManager NavigationManager { get; set; } = default!;
 
-    public string CurrentUrl { get; set; }
+    private bool _isTemplateDocRoute;
 
     protected override Task OnInitializedAsync()
     {
         SetCurrentUrl();
+
         NavigationManager.LocationChanged += OnLocationChanged;
 
         return base.OnInitializedAsync();
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         SetCurrentUrl();
+
         StateHasChanged();
     }
 
     private void SetCurrentUrl()
     {
-        CurrentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+
+        _isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
     }
 
     public void Dispose()

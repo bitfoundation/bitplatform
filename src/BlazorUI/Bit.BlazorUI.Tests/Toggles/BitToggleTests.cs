@@ -99,9 +99,14 @@ public class BitToggleTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
-        DataRow(false, "off", "on", "This is the second defaultText", "This is the second label"),
-        DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
-        DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
+        DataRow(false, "on", "off", "This is the second defaultText", "This is the second label"),
+        DataRow(true, "on", "off", null, "This is the Third label"),
+        DataRow(false, "on", "off", "This is the fourth defaultText", null),
+        DataRow(false, "on", "off", null, null),
+        DataRow(false, null, "off", "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, "on", null, "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, null, null, "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, null, null, null, null),
     ]
     public void BitToggleAriaLabelledbyTest(bool value, string onText, string offText, string defaultText, string label)
     {
@@ -115,11 +120,9 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleButton = com.Find("button");
-
-        var labelId = bitToggleButton.Id.Replace("Button", "Label");
-
-        var stateTextId = bitToggleButton.Id.Replace("Button", "StateText");
+        var button = com.Find("button");
+        var labelId = button.Id.Replace("button", "label");
+        var stateTextId = button.Id.Replace("button", "state-text");
 
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
@@ -134,7 +137,7 @@ public class BitToggleTests : BunitTestContext
             ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
         }
 
-        Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
+        Assert.AreEqual(button.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
 
     [DataTestMethod,

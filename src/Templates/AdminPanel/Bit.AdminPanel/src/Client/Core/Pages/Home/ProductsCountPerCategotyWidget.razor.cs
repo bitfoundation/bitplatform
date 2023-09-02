@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core.Pages;
+﻿namespace AdminPanel.Client.Core.Pages.Home;
 
 public partial class ProductsCountPerCategotyWidget
 {
@@ -30,7 +30,7 @@ public partial class ProductsCountPerCategotyWidget
         {
             _isLoading = true;
 
-            var data = await StateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsCountPerCategotyWidget)}",
+            var data = await PrerenderStateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsCountPerCategotyWidget)}",
                                 async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats",
                                     AppJsonContext.Default.ListProductsCountPerCategoryDto)) ?? new();
 

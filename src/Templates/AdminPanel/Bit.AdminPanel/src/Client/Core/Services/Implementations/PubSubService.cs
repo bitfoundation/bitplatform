@@ -1,10 +1,13 @@
 ﻿namespace AdminPanel.Client.Core.Services.Implementations;
 
+/// <summary>
+/// For more information <see cref="IPubSubService"/> docs.
+/// </summary>
 public class PubSubService : IPubSubService
 {
     private readonly ConcurrentDictionary<string, List<Action<object?>>> _handlers = new();
 
-    public void Pub(string message, object? payload)
+    public void Publish(string message, object? payload)
     {
         if (_handlers.TryGetValue(message, out var handlers))
         {
@@ -12,7 +15,7 @@ public class PubSubService : IPubSubService
         }
     }
 
-    public Action Sub(string message, Action<object?> handler)
+    public Action Subscribe(string message, Action<object?> handler)
     {
         var handlers = _handlers.ContainsKey(message)
                             ? _handlers[message]

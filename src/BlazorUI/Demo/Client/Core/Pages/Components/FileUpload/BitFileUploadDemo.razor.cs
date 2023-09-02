@@ -273,7 +273,7 @@ public partial class BitFileUploadDemo
 
     private readonly string example1HtmlCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" />";
-    private readonly string example1CSharpCode = @"
+    private readonly string example1CsharpCode = @"
 private string UploadUrl = $""/Upload"";
 ";
 
@@ -282,7 +282,7 @@ private string UploadUrl = $""/Upload"";
                AutoUploadEnabled=""true""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private string UploadUrl = $""/Upload"";
 private string RemoveUrl = $""/Remove"";
 ";

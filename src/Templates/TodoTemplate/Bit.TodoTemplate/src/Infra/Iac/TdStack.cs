@@ -146,7 +146,7 @@ public class TdStack : Stack
                     new NameValuePairArgs { Name = "SnapshotDebugger_EXTENSION_VERSION", Value = "disabled"},
                     new NameValuePairArgs { Name = "XDT_MicrosoftApplicationInsights_Mode", Value = "recommended" },
                     new NameValuePairArgs { Name = "XDT_MicrosoftApplicationInsights_PreemptSdk", Value = "disabled" },
-                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__DefaulFromEmail", Value = defaultEmailFrom },
+                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__DefaultFromEmail", Value = defaultEmailFrom },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__Host", Value = emailServerHost },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__Port", Value = emailServerPort },
                     new NameValuePairArgs { Name = "AppSettings__EmailSettings__UserName", Value = emailServerUserName },

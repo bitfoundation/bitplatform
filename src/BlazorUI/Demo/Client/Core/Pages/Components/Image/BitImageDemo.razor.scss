@@ -1,0 +1,19 @@
+﻿.visibility-items {
+    white-space: nowrap;
+    align-items: center;
+    display: inline-flex;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        filter: hue-rotate(45deg);
+        background-color: blueviolet;
+    }
+
+    .custom-image {
+        width: 16rem;
+        filter: opacity(25%);
+        border-radius: 1rem 3rem;
+    }
+}

@@ -1,0 +1,54 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<double>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     aria-label="@AriaLabel"
+     aria-readonly="@IsReadOnly"
+     role=@(IsReadOnly ? null : "radiogroup")>
+
+    @for (int item = 1; item <= Max; item++)
+    {
+        var index = item;
+        var percentage = GetPercentage(index);
+
+        <button @onclick="() => HandleOnClick(index)"
+                type="button"
+                role="radio"
+                style="@Styles?.Button"
+                aria-hidden="@IsReadOnly"
+                class="bit-rtg-btn @Classes?.Button"
+                aria-checked="@(index == CurrentValue)"
+                data-is-current="@(index == CurrentValue)"
+                disabled=@(IsEnabled is false || IsReadOnly)
+                tabindex=@(index == CurrentValue ? "0" : "-1")>
+
+            @if (AriaLabelFormat.HasValue())
+            {
+                <span class="bit-rtg-alb">
+                    @string.Format(AriaLabelFormat!, index, Max)
+                </span>
+            }
+
+            <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
+                <i aria-hidden="true"
+                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon"
+                   style="@Styles?.UnselectedIcon">
+                </i>
+                <i aria-hidden="true"
+                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon"
+                   style=@($"width:{percentage}%; {Styles?.SelectedIcon}")>
+                </i>
+            </div>
+        </button>
+    }
+
+    <input @attributes="InputHtmlAttributes"
+           type="number"
+           max="@Max"
+           min="@(AllowZeroStars ? 0 : 1)"
+           value="@CurrentValueAsString"
+           class="bit-input-hidden" />
+</div>
