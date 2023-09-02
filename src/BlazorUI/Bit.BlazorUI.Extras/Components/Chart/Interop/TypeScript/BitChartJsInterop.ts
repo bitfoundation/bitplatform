@@ -20,22 +20,28 @@ interface DelegateHandler extends IMethodHandler {
     ignoredIndices: number[];
 }
 
-class BitChartJsInterop {
+class BitChart {
+    public static initPromise?: Promise<unknown>;
     BlazorCharts = new Map<string, Chart>();
 
-    public initChartJs(scripts: string[]) {
-        return new Promise(async (resolve: any, reject: any) => {
+    public async initChartJs(scripts: string[]) {
+        if (BitChart.initPromise) {
+            await BitChart.initPromise;
+        }
+
+        const allScripts = Array.from(document.scripts).map(s => s.src);
+        const notAppenedScripts = scripts.filter(s => !allScripts.find(as => as.endsWith(s)));
+
+        const promise = new Promise(async (resolve: any, reject: any) => {
             try {
-                if (window.Chart) {
-                    resolve();
-                } else {
-                    for (var url of scripts) await addScript(url);
-                    resolve();
-                }
+                for (let url of notAppenedScripts) await addScript(url);
+                resolve();
             } catch (e: any) {
                 reject(e);
             }
         });
+        BitChart.initPromise = promise;
+        return promise;
 
         async function addScript(url: string) {
             return new Promise((res, rej) => {
@@ -142,7 +148,7 @@ class BitChartJsInterop {
             oldLabels.length = 0;
 
             // add all the new labels
-            for (var i = 0; i < newLabels.length; i++) {
+            for (let i = 0; i < newLabels.length; i++) {
                 oldLabels.push(newLabels[i]);
             }
 
@@ -254,7 +260,7 @@ class BitChartJsInterop {
 
         const assignCallbacks = (axes: any) => {
             if (axes) {
-                for (var i = 0; i < axes.length; i++) {
+                for (let i = 0; i < axes.length; i++) {
                     if (!axes[i].ticks) continue;
                     axes[i].ticks.callback = this.getMethodHandler(axes[i].ticks.callback, undefined);
                     if (!axes[i].ticks.callback) {
@@ -299,7 +305,7 @@ class BitChartJsInterop {
             // but the values passed to chart callbacks should never contain such objects anyway.
             // Also if we don't care about the value, don't bother to stringify.
             const stringifyArgs = (args: any[]) => {
-                for (var i = 0; i < args.length; i++) {
+                for (let i = 0; i < args.length; i++) {
                     if (handler.ignoredIndices.includes(i)) {
                         args[i] = '';
                     } else {
@@ -375,4 +381,4 @@ class BitChartJsInterop {
         return JSON.stringify(object, replacer);
     }
 }
-(window as any)["BitChartJsInterop"] = new BitChartJsInterop();
+(window as any)["BitChartJsInterop"] = new BitChart();

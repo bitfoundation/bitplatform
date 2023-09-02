@@ -226,11 +226,11 @@ public partial class BitTimePicker
 
     protected override void OnInitialized()
     {
-        _labelId = $"TimePicker-Label-{UniqueId}";
-        _textFieldId = $"TimePicker-TextField-{UniqueId}";
-        _wrapperId = $"TimePicker-Wrapper-{UniqueId}";
-        _calloutId = $"TimePicker-Callout-{UniqueId}";
-        _overlayId = $"TimePicker-Overlay-{UniqueId}";
+        _labelId = $"BitTimePicker-{UniqueId}-label";
+        _wrapperId = $"BitTimePicker-{UniqueId}-wrapper";
+        _calloutId = $"BitTimePicker-{UniqueId}-callout";
+        _overlayId = $"BitTimePicker-{UniqueId}-overlay";
+        _textFieldId = $"BitTimePicker-{UniqueId}-text-field";
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;

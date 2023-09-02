@@ -2,9 +2,9 @@
 @inherits BitInputBase<DateTimeOffset?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     id="@UniqueId">
+     class="@ClassBuilder.Value">
 
     @if (LabelTemplate is not null)
     {

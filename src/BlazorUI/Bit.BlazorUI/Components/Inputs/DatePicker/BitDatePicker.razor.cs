@@ -333,13 +333,13 @@ public partial class BitDatePicker
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _labelId = $"DateRangePicker-Label-{UniqueId}";
-        _calloutId = $"DateRangePicker-Callout-{UniqueId}";
-        _overlayId = $"DateRangePicker-Overlay-{UniqueId}";
-        _wrapperId = $"DateRangePicker-Wrapper-{UniqueId}";
-        _textFieldId = $"DateRangePicker-TextField-{UniqueId}";
-        _monthTitleId = $"DateRangePicker-MonthTitle-{UniqueId}";
-        _activeDescendantId = $"DateRangePicker-ActiveDescendant-{UniqueId}";
+        _labelId = $"BitDatePicker-{UniqueId}-label";
+        _calloutId = $"BitDatePicker-{UniqueId}-callout";
+        _overlayId = $"BitDatePicker-{UniqueId}-overlay";
+        _wrapperId = $"BitDatePicker-{UniqueId}-wrapper";
+        _textFieldId = $"BitDatePicker-{UniqueId}-text-field";
+        _monthTitleId = $"BitDatePicker-{UniqueId}-month-title";
+        _activeDescendantId = $"BitDatePicker-{UniqueId}-active-descendant";
 
         return base.OnInitializedAsync();
     }

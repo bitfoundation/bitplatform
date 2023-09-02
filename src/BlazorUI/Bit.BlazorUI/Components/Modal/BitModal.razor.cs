@@ -123,7 +123,7 @@ public partial class BitModal : IDisposable
 
     protected override Task OnInitializedAsync()
     {
-        _containerId = $"BitModal-{UniqueId}-Container";
+        _containerId = $"BitModal-{UniqueId}-container";
 
         return base.OnInitializedAsync();
     }

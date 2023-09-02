@@ -5,13 +5,13 @@ namespace BlazorDual.Web.Services.Implementations;
 // Using this class, persisting the application state on Pre-Rendering mode (explained here: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state) will be very simple in this multi-mode Template project.
 
 #if (BlazorWebAssembly || BlazorServer) && (SpaPrerendered || PwaPrerendered)
-public class StateService : IStateService, IAsyncDisposable
+public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? _subscription;
     private readonly PersistentComponentState _applicationState;
     private readonly ConcurrentDictionary<string, object?> _values = new ConcurrentDictionary<string, object?>();
 
-    public StateService(PersistentComponentState applicationState)
+    public PrerenderStateService(PersistentComponentState applicationState)
     {
         _applicationState = applicationState;
 
@@ -50,7 +50,7 @@ public class StateService : IStateService, IAsyncDisposable
     }
 }
 #else
-public class StateService : IStateService
+public class PrerenderStateService : IPrerenderStateService
 {
     public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {

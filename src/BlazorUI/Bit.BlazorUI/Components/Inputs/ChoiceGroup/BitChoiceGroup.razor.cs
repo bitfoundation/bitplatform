@@ -145,7 +145,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        _labelId = $"ChoiceGroup-{UniqueId}-Label";
+        _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
         if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {

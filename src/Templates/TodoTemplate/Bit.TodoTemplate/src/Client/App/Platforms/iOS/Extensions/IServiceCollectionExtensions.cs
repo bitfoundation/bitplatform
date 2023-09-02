@@ -4,7 +4,7 @@ public static class IiOSServiceCollectionExtensions
 {
     public static IServiceCollection AddClientiOSServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected in iOS.
+        // Services registered in this class can be injected in iOS.
 
         return services;
     }

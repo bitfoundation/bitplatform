@@ -29,12 +29,16 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     private bool _isCalloutOpen;
     private bool _disposed;
 
-    private string _wrapperId => $"{UniqueId}-wrapper";
-    private string _calloutId => $"{UniqueId}-callout";
-    private string _overlayId => $"{UniqueId}-overlay";
-    private string _overflowDropdownId => $"{UniqueId}-overflow-dropdown";
+    private string _wrapperId = default!;
+    private string _calloutId = default!;
+    private string _overlayId = default!;
+    private string _overflowDropdownId = default!;
+
+
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// class HTML attribute for BreadList item.
@@ -150,7 +154,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     /// </summary>
     [Parameter] public Expression<Func<TItem, object>>? TextFieldSelector { get; set; }
 
-    protected override string RootElementClass => "bit-brc";
+
 
     internal void RegisterOptions(BitBreadcrumbOption option)
     {
@@ -173,8 +177,17 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         StateHasChanged();
     }
 
+
+
+    protected override string RootElementClass => "bit-brc";
+
     protected override Task OnInitializedAsync()
     {
+        _wrapperId = $"BitBreadcrumb-{UniqueId}-wrapper";
+        _calloutId = $"BitBreadcrumb-{UniqueId}-callout";
+        _overlayId = $"BitBreadcrumb-{UniqueId}-overlay";
+        _overflowDropdownId = $"BitBreadcrumb-{UniqueId}-overflow-dropdown";
+
         _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
         _internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
         _internalIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
@@ -210,6 +223,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
         await base.OnParametersSetAsync();
     }
+
+
 
     private async Task ToggleCallout()
     {
@@ -391,6 +406,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
         return item.GetValueFromProperty(_internalIsEnabledField, true);
     }
+
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCallout() => _isCalloutOpen = false;

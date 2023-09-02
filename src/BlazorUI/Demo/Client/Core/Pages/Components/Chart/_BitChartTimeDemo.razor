@@ -1,7 +1,7 @@
 ﻿<ComponentExampleBox Title="Time Cartesian Axis" HtmlCode="@htmlCode" CsharpCode="@csharpCode" Id="example7">
     <ExamplePreview>
         <div class="example-desc">
-            The time scale is used to display times and dates. 
+            The time scale is used to display times and dates.
             When building its ticks, it will automatically calculate the most comfortable unit base on the size of the scale.
         </div>
         <div class="chart-wrapper">
@@ -9,7 +9,7 @@
                 <BitChart Config="_config" IsDateAdapterRequired="true" @ref="_chart" />
             </div>
         </div>
-        <div>
+        <div class="buttons-container">
             <BitButton Style="margin:5px" ButtonStyle="BitButtonStyle.Primary" OnClick="RandomizeData">Randomize Data</BitButton>
             <BitButton Style="margin:5px" ButtonStyle="BitButtonStyle.Standard" OnClick="AddDataset">Add Dataset</BitButton>
             <BitButton Style="margin:5px" ButtonStyle="BitButtonStyle.Standard" OnClick="RemoveDataset">Remove Dataset</BitButton>

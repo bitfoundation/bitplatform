@@ -27,7 +27,7 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await StateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
+            var access_token = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
 
             _profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
             _profileImageUrl = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";
@@ -41,7 +41,7 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        _user = await StateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
+        _user = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
 
         UpdateEditProfileData();
     }
@@ -52,7 +52,7 @@ public partial class EditProfilePage
 
         UpdateEditProfileData();
 
-        PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
+        PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
     }
 
     private void UpdateEditProfileData()
@@ -82,7 +82,7 @@ public partial class EditProfilePage
             (await (await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto))!.Patch(_user);
 
-            PubSubService.Pub(PubSubMessages.PROFILE_UPDATED, _user);
+            PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
 
             _editProfileMessageType = BitMessageBarType.Success;
 

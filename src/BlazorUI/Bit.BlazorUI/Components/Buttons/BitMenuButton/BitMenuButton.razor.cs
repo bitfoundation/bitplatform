@@ -172,7 +172,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
-        _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+        _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         base.OnInitialized();
     }

@@ -2,7 +2,8 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      role="@Role">

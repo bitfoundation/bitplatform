@@ -202,7 +202,7 @@ public partial class BitFileUpload : IDisposable
 
     protected override Task OnInitializedAsync()
     {
-        _inputId = $"{RootElementClass}-input-{UniqueId}";
+        _inputId = $"BitFileUpload-{UniqueId}-input";
 
         _dotnetObj = DotNetObjectReference.Create(this);
 

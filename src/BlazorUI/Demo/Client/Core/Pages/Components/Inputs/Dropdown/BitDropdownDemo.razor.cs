@@ -6,283 +6,373 @@ public partial class BitDropdownDemo
     {
         new()
         {
-            Name = "CaretDownTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Optional custom template for chevron icon.",
+            Name = "AutoFocusSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables auto-focusing of the SearchBox input when the callout is open.",
         },
         new()
         {
             Name = "CaretDownIconName",
             Type = "string",
             DefaultValue = "ChevronDown",
-            Description = "Optional chevron icon.",
+            Description = "The icon name of the chevron down element of the dropdown. The default value is ChevronDown.",
+        },
+        new()
+        {
+            Name = "CaretDownTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the chevron down element of the dropdown.",
         },
         new()
         {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Key that will be initially used to set selected item.",
+            Description = "The default key value that will be initially used to set selected item if the Value parameter is not set.",
         },
         new()
         {
             Name = "DefaultValues",
             Type = "List<string>",
             DefaultValue = "new List<string>()",
-            Description = "Keys that will be initially used to set selected items for multiSelect scenarios.",
-        },
-        new()
-        {
-            Name = "IsMultiSelect",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether multiple items are allowed to be selected.",
-        },
-        new()
-        {
-            Name = "IsOpen",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not this dropdown is open.",
-        },
-        new()
-        {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Requires the end user to select an item in the dropdown.",
-        },
-        new()
-        {
-            Name = "Items",
-            Type = "List<BitDropdownItem>?",
-            DefaultValue = "null",
-            Description = "A list of items to display in the dropdown.",
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Type = "RenderFragment<BitDropdownItem>?",
-            DefaultValue = "null",
-            Description = "Optional custom template for dropdown item.",
-        },
-        new()
-        {
-            Name = "Label",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "the label associated with the dropdown.",
-        },
-        new()
-        {
-            Name = "Title",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The title to show when the mouse is placed on the drop down.",
-        },
-        new()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Optional custom template for label.",
-        },
-        new()
-        {
-            Name = "MultiSelectDelimiter",
-            Type = "string",
-            DefaultValue = ", ",
-            Description = "When multiple items are selected, this still will be used to separate values in the dropdown title.",
-        },
-        new()
-        {
-            Name = "NotifyOnReselect",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Optional preference to have OnSelectItem still be called when an already selected item is clicked in single select mode.",
-        },
-        new()
-        {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the action button clicked.",
-        },
-        new()
-        {
-            Name = "OnSelectItem",
-            Type = "EventCallback<BitDropdownItem>",
-            Description = "Callback for when an item is selected.",
-        },
-        new()
-        {
-            Name = "Placeholder",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Input placeholder Text, Displayed until an option is selected.",
-        },
-        new()
-        {
-            Name = "PlaceholderTemplate",
-            Type = "RenderFragment<BitDropdown>?",
-            DefaultValue = "null",
-            Description = "Optional custom template for placeholder Text.",
-        },
-        new()
-        {
-            Name = "Values",
-            Type = "List<string>",
-            DefaultValue = "new List<string>()",
-            Description = "Keys of the selected items for multiSelect scenarios. If you provide this, you must maintain selection state by observing onChange events and passing a new value in when changed.",
-        },
-        new()
-        {
-            Name = "ValuesChanged",
-            Type = "EventCallback<List<string>>",
-            Description = "Callback for when the values changed.",
-        },
-        new()
-        {
-            Name = "TextTemplate",
-            Type = "RenderFragment<BitDropdown>?",
-            DefaultValue = "null",
-            Description = "Optional custom template for selected option displayed in after selection.",
-        },
-        new()
-        {
-            Name = "IsResponsiveModeEnabled",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the drop down items get rendered in a side panel in small screen sizes or not.",
-        },
-        new()
-        {
-            Name = "ShowClearButton",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Clear Button is shown when something is selected.",
-        },
-        new()
-        {
-            Name = "ShowSearchBox",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Search box is enabled for the end user.",
-        },
-        new()
-        {
-            Name = "AutoFocusSearchBox",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Auto focus on search box when dropdown is open.",
-        },
-        new()
-        {
-            Name = "OnSearch",
-            Type = "EventCallback<string>",
-            Description = "Callback for when the search box input value changes.",
-        },
-        new()
-        {
-            Name = "SearchBoxPlaceholder",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Search box input placeholder text.",
-        },
-        new()
-        {
-            Name = "Virtualize",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "virtualize rendering the list, UI rendering to just the parts that are currently visible.",
-        },
-        new()
-        {
-            Name = "ItemSize",
-            Type = "int",
-            DefaultValue = "35",
-            Description = "The height of each item in pixels.",
-        },
-        new()
-        {
-            Name = "ItemsProvider",
-            Type = "BitDropdownItemsProvider<BitDropdownItem>?",
-            DefaultValue = "null",
-            Description = "The function providing items to the list.",
-        },
-        new()
-        {
-            Name = "VirtualizePlaceholder",
-            Type = "RenderFragment<PlaceholderContext>?",
-            DefaultValue = "null",
-            Description = "The template for items that have not yet been loaded in memory.",
-        },
-        new()
-        {
-            Name = "OverscanCount",
-            Type = "int",
-            DefaultValue = "3",
-            Description = "determines how many additional items are rendered before and after the visible region.",
-        },
-        new()
-        {
-            Name = "SelectedItems",
-            Type = "List<BitDropdownItem>",
-            DefaultValue = "new List<BitDropdownItem>()",
-            Description = "The selected items for multiSelect scenarios.",
-        },
-        new()
-        {
-            Name = "SelectedItemsChanged",
-            Type = "EventCallback<List<BitDropdownItem>>",
-            Description = "Callback for when the SelectedItems changed.",
-        },
-        new()
-        {
-            Name = "SelectedItem",
-            Type = "BitDropdownItem?",
-            DefaultValue = "null",
-            Description = "The selected item for singleSelect scenarios.",
-        },
-        new()
-        {
-            Name = "SelectedItemChanged",
-            Type = "EventCallback<BitDropdownItem>",
-            Description = "Callback for when the SelectedItem changed.",
-        },
-        new()
-        {
-            Name = "IsRtl",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Change direction to RTL.",
+            Description = "The default key value that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
         },
         new()
         {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Dropdown opening direction.",
+            Description = "Determines the allowed drop directions of the callout.",
+        },
+        new()
+        {
+            Name = "IsMultiSelect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the multi select mode.",
+        },
+        new()
+        {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines the opening state of the callout.",
+        },
+        new()
+        {
+            Name = "IsRequired",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the required mode of the dropdown.",
+        },
+        new()
+        {
+            Name = "IsReselectable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables calling the select events when the same item is selected in single select mode.",
+        },
+        new()
+        {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode of the component for small screens.",
+        },
+        new()
+        {
+            Name = "IsRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the RTL direction for the component.",
+        },
+        new()
+        {
+            Name = "Items",
+            Type = "List<BitDropdownItem>?",
+            DefaultValue = "null",
+            Description = "The list of items to display in the callout.",
+            LinkType = LinkType.Link,
+            Href = "#dropdown-item"
+        },
+        new()
+        {
+            Name = "ItemSize",
+            Type = "int",
+            DefaultValue = "35",
+            Description = "The height of each item in pixels for virtualization.",
+        },
+        new()
+        {
+            Name = "ItemsProvider",
+            Type = "BitDropdownItemsProvider<BitDropdownItem>?",
+            DefaultValue = "null",
+            Description = "The function providing items to the list for virtualization.",
+        },
+        new()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<BitDropdownItem>?",
+            DefaultValue = "null",
+            Description = "The custom template for rendering the items of the dropdown.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the label element of the dropdown.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the label of the dropdown.",
+        },
+        new()
+        {
+            Name = "MultiSelectDelimiter",
+            Type = "string",
+            DefaultValue = ", ",
+            Description = "The delimiter for joining the values to create the text of the dropdown in multi select mode.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<BitDropdownItem[]>",
+            Description = "The callback that called when selected items change.",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "The click callback for the dropdown.",
+        },
+        new()
+        {
+            Name = "OnSearch",
+            Type = "EventCallback<string>",
+            Description = "The callback that is called when the search value changes.",
+        },
+        new()
+        {
+            Name = "OnSelectItem",
+            Type = "EventCallback<BitDropdownItem>",
+            Description = "The callback that called when an item gets selected.",
+        },
+        new()
+        {
+            Name = "OverscanCount",
+            Type = "int",
+            DefaultValue = "3",
+            Description = "Determines how many additional items are rendered before and after the visible region.",
+        },
+        new()
+        {
+            Name = "Placeholder",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The placeholder text of the dropdown.",
+        },
+        new()
+        {
+            Name = "PlaceholderTemplate",
+            Type = "RenderFragment<BitDropdown>?",
+            DefaultValue = "null",
+            Description = "The custom template for the placeholder of the dropdown.",
+        },
+        new()
+        {
+            Name = "SearchBoxPlaceholder",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The placeholder text of the SearchBox input.",
+        },
+        new()
+        {
+            Name = "SelectedItem",
+            Type = "BitDropdownItem?",
+            DefaultValue = "null",
+            Description = "The selected item in single select mode.",
+        },
+        new()
+        {
+            Name = "SelectedItems",
+            Type = "List<BitDropdownItem>",
+            DefaultValue = "new List<BitDropdownItem>()",
+            Description = "The selected items in multi select mode.",
+        },
+        new()
+        {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the clear button when an item is selected.",
+        },
+        new()
+        {
+            Name = "ShowSearchBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the SearchBox element in the callout.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title to show when the mouse hovers over the dropdown.",
+        },
+        new()
+        {
+            Name = "TextTemplate",
+            Type = "RenderFragment<BitDropdown>?",
+            DefaultValue = "null",
+            Description = "The custom template for the text of the dropdown.",
+        },
+        new()
+        {
+            Name = "Values",
+            Type = "List<string>",
+            DefaultValue = "new List<string>()",
+            Description = "The key values of the selected items in multi select mode.",
+        },
+        new()
+        {
+            Name = "Virtualize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables virtualization to render only the visible items.",
+        },
+        new()
+        {
+            Name = "VirtualizePlaceholder",
+            Type = "RenderFragment<PlaceholderContext>?",
+            DefaultValue = "null",
+            Description = "The template for items that have not yet been rendered in virtualization mode.",
+        }
+    };
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "dropdown-item",
+            Title = "BitDropdownItem",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The aria label attribute for the dropdown item."
+               },
+               new()
+               {
+                   Name = "Data",
+                   Type = "object?",
+                   DefaultValue = "null",
+                   Description = "The custom data for the dropdown item to provide state for the item template."
+               },
+               new()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown item is enabled."
+               },
+               new()
+               {
+                   Name = "IsHidden",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown item is hidden."
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown item is selected."
+               },
+               new()
+               {
+                   Name = "ItemType",
+                   Type = "BitDropdownItemType",
+                   DefaultValue = "BitDropdownItemType.Normal",
+                   Description = "The type of the dropdown item.",
+                   LinkType = LinkType.Link,
+                   Href = "#item-type-enum"
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "The text to render for the dropdown item."
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title attribute for the dropdown item."
+               },
+               new()
+               {
+                   Name = "Value",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "The value of the dropdown item."
+               },
+            },
+        }
+    };
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "item-type-enum",
+            Name = "BitDropdownItemType",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "Normal",
+                    Description = "Dropdown items are being rendered as a normal item.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Header",
+                    Description = "Dropdown items are being rendered as a header, they cannot be selected.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Divider",
+                    Description = "Dropdown items are being rendered as a divider, just draw a line.",
+                    Value = "2",
+                }
+            }
         },
     };
 
 
 
     private readonly string example1HtmlCode = @"
-<BitDropdown Label=""Single select""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select an option"" />
+<BitDropdown Label=""Single select"" Items=""GetDropdownItems()"" Placeholder=""Select an option"" />
 
-<BitDropdown Label=""Multi select""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select options""
-             IsMultiSelect=""true"" />
+<BitDropdown Label=""Multi select"" Items=""GetDropdownItems()"" Placeholder=""Select options"" IsMultiSelect=""true"" />
 
-<BitDropdown Label=""Disabled with defaultValue""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select an option""
-             IsEnabled=""false""
-             DefaultValue=""v-bro"" />";
+<BitDropdown Label=""IsRequired"" Items=""GetDropdownItems()"" Placeholder=""Select an option"" IsRequired=""true"" />
+
+<BitDropdown Label=""Disabled"" Items=""GetDropdownItems()"" Placeholder=""Select an option"" IsEnabled=""false"" />
+
+<BitDropdown Label=""Disabled with default value"" Items=""GetDropdownItems()"" Placeholder=""Select an option"" IsEnabled=""false"" DefaultValue=""v-bro"" />";
     private readonly string example1CsharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -331,20 +421,21 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example2HtmlCode = @"
-<BitDropdown Label=""Single select""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select an option""
-             @bind-Value=""ControlledValue"" />
-<BitLabel>Selected Value: @ControlledValue</BitLabel>
+Visible: [ <BitDropdown @bind-Value=""SelectedValue""
+                        Items=""GetDropdownItems()""
+                        Placeholder=""Select an option""
+                        Visibility=""BitVisibility.Visible"" /> ]
 
-<BitDropdown @bind-Values=""ControlledValues""
-             Label=""Multi select""
-             Items=""GetDropdownItems()""
-             Placeholder=""Select options""
-             IsMultiSelect=""true"" />
-<BitLabel>Selected Value: @string.Join("","", ControlledValues)</BitLabel>";
+Hidden: [ <BitDropdown @bind-Values=""SelectedValues""
+                       Items=""GetDropdownItems()""
+                       Placeholder=""Select options""
+                       Visibility=""BitVisibility.Hidden"" /> ]
+
+Collapsed: [ <BitDropdown @bind-Values=""SelectedValues""
+                          Items=""GetDropdownItems()""
+                          Placeholder=""Select options""
+                          Visibility=""BitVisibility.Collapsed"" /> ]";
     private readonly string example2CsharpCode = @"
-private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()
@@ -392,13 +483,20 @@ private List<BitDropdownItem> GetDropdownItems()
 }";
 
     private readonly string example3HtmlCode = @"
-<BitDropdown Label=""Multi select controlled""
+<BitDropdown @bind-Value=""ControlledValue""
+             Label=""Single select""
+             Items=""GetDropdownItems()""
+             Placeholder=""Select an option"" />
+<BitLabel>Selected Value: @ControlledValue</BitLabel>
+
+<BitDropdown @bind-Values=""ControlledValues""
+             Label=""Multi select""
              Items=""GetDropdownItems()""
              Placeholder=""Select options""
-             @bind-Values=""ControlledValues""
-             IsMultiSelect=""true"" />";
+             IsMultiSelect=""true"" />
+<BitLabel>Selected Value: @string.Join("","", ControlledValues)</BitLabel>";
     private readonly string example3CsharpCode = @"
-private List<string> ControlledValues = new() { ""Apple"", ""Banana"", ""Grape"" };
+private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()
@@ -616,24 +714,19 @@ private List<BitDropdownItem> GetCustomDropdownItems()
 }";
 
     private readonly string example5HtmlCode = @"
-<BitDropdown Label=""Category""
+<BitDropdown @bind-Value=""@CurrentCategory""
+             Label=""Category""
              Items=""Categories""
-             Placeholder=""Select options""
-             @bind-Value=""@CurrentCategory"" />
+             Placeholder=""Select options"" />
 
 <BitDropdown Label=""Product""
-             Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())""
              Placeholder=""Select options""
-             @bind-Value=""@CurrentProduct""
-             IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false"" />
-
-<BitLabel>Current category: @(Categories.FirstOrDefault(c => c.Value == CurrentCategory)?.Text ?? ""-"")</BitLabel>
-<BitLabel>Current product: @(Products.FirstOrDefault(c => c.Value == CurrentProduct)?.Text ?? ""-"")</BitLabel>";
+             IsEnabled=""string.IsNullOrEmpty(CurrentCategory) is false""
+             Items=""@(Products.Where(p => p.Value.StartsWith($""{CurrentCategory}-"")).ToList())"" />";
     private readonly string example5CsharpCode = @"
+private string CurrentCategory;
 private List<BitDropdownItem> Categories = new();
 private List<BitDropdownItem> Products = new();
-private string CurrentCategory;
-private string CurrentProduct;
 
 protected override void OnInitialized()
 {
@@ -655,144 +748,11 @@ protected override void OnInitialized()
 }";
 
     private readonly string example6HtmlCode = @"
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""formValidationDropdownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-
-        <BitDropdown Label=""Select category""
-                     Items=""GetCategoryDropdownItems()""
-                     IsMultiSelect=""false""
-                     @bind-Value=""formValidationDropdownModel.Category""
-                     Placeholder=""Select an option"" />
-
-        <ValidationMessage For=""@(() => formValidationDropdownModel.Category)"" />
-
-        <br />
-
-        <BitDropdown Label=""Select two ptoducts""
-                     Items=""GetProductDropdownItems()""
-                     IsMultiSelect=""true""
-                     @bind-Values=""formValidationDropdownModel.Products""
-                     Placeholder=""Select an option"" />
-
-        <ValidationMessage For=""@(() => formValidationDropdownModel.Products)"" />
-
-        <br />
-
-        <BitButton ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-    private readonly string example6CsharpCode = @"
-public class FormValidationDropdownModel
-{
-    [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
-    [MinLength(1, ErrorMessage = ""The property {0} doesn't have less than {1} elements"")]
-    public List<string> Products { get; set; } = new();
-
-    [Required]
-    public string Category { get; set; }
-}
-
-private FormValidationDropdownModel formValidationDropdownModel = new();
-private string SuccessMessage = string.Empty;
-
-private async Task HandleValidSubmit()
-{
-    SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    SuccessMessage = string.Empty;
-}
-
-private List<BitDropdownItem> GetCategoryDropdownItems()
-{
-    return new()
-    {
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Fruits"",
-            Value = ""f""
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Vegetables"",
-            Value = ""v""
-        }
-    };
-}
-
-private List<BitDropdownItem> GetProductDropdownItems()
-{
-    return new()
-    {
-        new()
-        {
-            ItemType = BitDropdownItemType.Header,
-            Text = ""Fruits""
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Apple"",
-            Value = ""f-app""
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Orange"",
-            Value = ""f-ora"",
-            IsEnabled = false
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Banana"",
-            Value = ""f-ban"",
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Divider,
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Header,
-            Text = ""Vegetables""
-        },
-        new()
-        {
-            ItemType = BitDropdownItemType.Normal,
-            Text = ""Broccoli"",
-            Value = ""v-bro"",
-        }
-    };
-}";
-
-    private readonly string example7HtmlCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetDropdownItems()""
              Placeholder=""Select an option""
              IsResponsiveModeEnabled=true />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private List<BitDropdownItem> GetDropdownItems()
 {
     return new()
@@ -839,7 +799,7 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with search box""
                 Items=""GetDropdownItems()""
                 Placeholder=""Select an option""
@@ -854,7 +814,7 @@ private List<BitDropdownItem> GetDropdownItems()
                 IsResponsiveModeEnabled=""true""
                 ShowSearchBox=""true""
                 SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string ControlledValue = ""Apple"";
 private List<BitDropdownItem> GetDropdownItems()
 {
@@ -902,25 +862,35 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example9HtmlCode = @"
-<BitDropdown Label=""Single select dropdown with virtualization""
+    private readonly string example8HtmlCode = @"
+<BitDropdown Label=""Single select""
              Items=""LargeListOfCategoriesForSingleSelect""
              Virtualize=""true""
-             Placeholder=""Select an option""
-             IsResponsiveModeEnabled=""true""
              ShowSearchBox=""true""
-             SearchBoxPlaceholder=""Search item"" />
+             Placeholder=""Select an option"" />
 
-<BitDropdown Label=""Multi select dropdown with virtualization""
+<BitDropdown Label=""Multi select""
              Items=""LargeListOfCategoriesForMultiSelect""
              Virtualize=""true""
-             Placeholder=""Select options""
              IsMultiSelect=""true""
-             IsResponsiveModeEnabled=""true""
+             Placeholder=""Select options"" />
+
+
+
+<BitDropdown Label=""Single select""
+             ItemsProvider=""LoadDropdownItems""
+             Virtualize=""true""
              ShowSearchBox=""true""
-             SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example9CsharpCode = @"
-private List<BitDropdownItem> LargeListOfCategories = new ();
+             Placeholder=""Select an option"" />
+
+<BitDropdown Label=""Multi select""
+             ItemsProvider=""LoadDropdownItems""
+             Virtualize=""true""
+             IsMultiSelect=""true""
+             Placeholder=""Select options"" />";
+    private readonly string example8CsharpCode = @"
+private List<BitDropdownItem> LargeListOfCategoriesForSingleSelect = new ();
+private List<BitDropdownItem> LargeListOfCategoriesForMultiSelect = new ();
 
 protected override void OnInitialized()
 {
@@ -939,26 +909,8 @@ protected override void OnInitialized()
     }).ToList();
 
     base.OnInitialized();
-}";
+}
 
-    private readonly string example10HtmlCode = @"
-<BitDropdown Label=""Single select dropdown with virtualization""
-             ItemsProvider=""LoadDropdownItems""
-             Virtualize=""true""
-             Placeholder=""Select an option""
-             IsResponsiveModeEnabled=""true""
-             ShowSearchBox=""true""
-             SearchBoxPlaceholder=""Search item"" />
-
-<BitDropdown Label=""Multi select dropdown with virtualization""
-             ItemsProvider=""LoadDropdownItems""
-             Virtualize=""true""
-             Placeholder=""Select options""
-             IsMultiSelect=""true""
-             IsResponsiveModeEnabled=""true""
-             ShowSearchBox=""true""
-             SearchBoxPlaceholder=""Search items"" />";
-    private readonly string example10CsharpCode = @"
 private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDropdownItems(BitDropdownItemsProviderRequest<BitDropdownItem> request)
 {
     try
@@ -996,7 +948,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
     }
 }";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example9HtmlCode = @"
 <BitDropdown Label=""Single select dropdown with Rtl direction""
              Items=""GetArabicDropdownItems()""
              Placeholder=""حدد اختيارا""
@@ -1012,7 +964,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem>> LoadDro
              IsRtl=""true""
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""عناصر البحث"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private List<BitDropdownItem> GetArabicDropdownItems()
 {
     return new()
@@ -1059,7 +1011,7 @@ private List<BitDropdownItem> GetArabicDropdownItems()
     };
 }";
 
-    private readonly string example12HtmlCode = @"
+    private readonly string example10HtmlCode = @"
 <BitDropdown Label=""Auto drop direction""
              Items=""LargeListOfCategoriesDropDirection""
              Virtualize=""true""
@@ -1077,7 +1029,7 @@ private List<BitDropdownItem> GetArabicDropdownItems()
              ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search item""
              DropDirection=""BitDropDirection.TopAndBottom"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private List<BitDropdownItem> LargeListOfCategoriesDropDirection = new();
 
 protected override void OnInitialized()
@@ -1092,7 +1044,7 @@ protected override void OnInitialized()
     base.OnInitialized();
 }";
 
-    private readonly string example13HtmlCode = @"
+    private readonly string example11HtmlCode = @"
 <BitDropdown @bind-Value=""SelectedValue""
              ShowClearButton=""true""
              Label=""Single select dropdown""
@@ -1107,7 +1059,7 @@ protected override void OnInitialized()
              Placeholder=""Select options""
              IsMultiSelect=""true"" />
 <BitLabel>Values: @string.Join(',', SelectedValues)</BitLabel>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? SelectedValue;
 private List<string> SelectedValues = new();
 
@@ -1157,23 +1109,72 @@ private List<BitDropdownItem> GetDropdownItems()
     };
 }";
 
-    private readonly string example14HtmlCode = @"
-Visible: [ <BitDropdown @bind-Value=""SelectedValue""
-                        Items=""GetDropdownItems()""
-                        Placeholder=""Select an option""
-                        Visibility=""BitVisibility.Visible"" /> ]
-                
-Hidden: [ <BitDropdown @bind-Values=""SelectedValues""
-                       Items=""GetDropdownItems()""
-                       Placeholder=""Select options""
-                       Visibility=""BitVisibility.Hidden"" /> ]
-                
-Collapsed: [ <BitDropdown @bind-Values=""SelectedValues""
-                          Items=""GetDropdownItems()""
-                          Placeholder=""Select options""
-                          Visibility=""BitVisibility.Collapsed"" /> ]";
-    private readonly string example14CsharpCode = @"
-private List<BitDropdownItem> GetDropdownItems()
+    private readonly string example12HtmlCode = @"
+<EditForm Model=""formValidationDropdownModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitDropdown Label=""Select category""
+                 Items=""GetCategoryDropdownItems()""
+                 IsMultiSelect=""false""
+                 @bind-Value=""formValidationDropdownModel.Category""
+                 Placeholder=""Select an option"" />
+    <ValidationMessage For=""@(() => formValidationDropdownModel.Category)"" />
+
+    <BitDropdown Label=""Select two products""
+                 Items=""GetProductDropdownItems()""
+                 IsMultiSelect=""true""
+                 @bind-Values=""formValidationDropdownModel.Products""
+                 Placeholder=""Select an option"" />
+    <ValidationMessage For=""@(() => formValidationDropdownModel.Products)"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example12CsharpCode = @"
+public class FormValidationDropdownModel
+{
+    [MaxLength(2, ErrorMessage = ""The property {0} doesn't have more than {1} elements"")]
+    [MinLength(1, ErrorMessage = ""The property {0} doesn't have less than {1} elements"")]
+    public List<string> Products { get; set; } = new();
+
+    [Required]
+    public string Category { get; set; }
+}
+
+private FormValidationDropdownModel formValidationDropdownModel = new();
+
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
+
+private List<BitDropdownItem> GetCategoryDropdownItems()
+{
+    return new()
+    {
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Fruits"",
+            Value = ""f""
+        },
+        new()
+        {
+            ItemType = BitDropdownItemType.Normal,
+            Text = ""Vegetables"",
+            Value = ""v""
+        }
+    };
+}
+
+private List<BitDropdownItem> GetProductDropdownItems()
 {
     return new()
     {

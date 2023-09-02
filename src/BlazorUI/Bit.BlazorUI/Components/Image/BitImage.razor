@@ -1,0 +1,16 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@UniqueId"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     aria-label="@AriaLabel">
+    <img @attributes="ImageAttributes" @onclick="HandleOnClick" @onload="HandleOnLoad" @onerror="HandleOnError" @onloadstart="HandleOnLoadStart"
+         style="@Styles?.Image"
+         class="@GetImageClasses()"
+         alt="@Alt"
+         src="@Src"
+         title="@Title"
+         loading="@Loading" />
+</div>

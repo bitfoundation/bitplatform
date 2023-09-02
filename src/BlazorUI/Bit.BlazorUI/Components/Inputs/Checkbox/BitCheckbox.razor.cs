@@ -149,7 +149,7 @@ public partial class BitCheckbox : IDisposable
 
     protected override void OnInitialized()
     {
-        _inputId = $"checkbox-{UniqueId}";
+        _inputId = $"BitCheckbox-{UniqueId}-input";
 
         OnValueChanged += HandleOnValueChanged;
 
@@ -205,14 +205,12 @@ public partial class BitCheckbox : IDisposable
         }
 
         CurrentValue = !CurrentValue;
+
+        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
-
-        if (IsEnabled is false) return;
-
-        _ = OnChange.InvokeAsync(CurrentValue);
     }
 }

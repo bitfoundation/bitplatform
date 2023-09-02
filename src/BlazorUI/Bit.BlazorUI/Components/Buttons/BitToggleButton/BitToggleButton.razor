@@ -2,14 +2,15 @@
 @inherits BitComponentBase
 
 <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        id="@UniqueId"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         type="button"
-        aria-label="@AriaLabel"
-        aria-describedby="@AriaDescription"
-        aria-hidden="@AriaHidden"
+        title="@GetTitle()"
         tabindex="@_tabIndex"
-        title="@GetTitle()">
+        aria-label="@AriaLabel"
+        aria-hidden="@AriaHidden"
+        aria-describedby="@AriaDescription">
     <span style="@Styles?.Container" class="bit-tgb-con @Classes?.Container">
         @if (ChildContent is not null)
         {
@@ -17,7 +18,11 @@
         }
         else
         {
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
+            var iconName = GetIconName();
+            if (iconName.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@iconName @Classes?.Icon" />
+            }
             <span style="@Styles?.Text" class="bit-tgb-txt @Classes?.Text">@GetText()</span>
         }
     </span>

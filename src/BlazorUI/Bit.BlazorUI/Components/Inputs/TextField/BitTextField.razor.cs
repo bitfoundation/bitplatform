@@ -14,7 +14,7 @@ public partial class BitTextField
     private string focusClass = string.Empty;
 
     private ElementReference _inputRef = default!;
-    private string _textFieldId = string.Empty;
+    private string _inputId = string.Empty;
     private string _inputType = string.Empty;
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
@@ -356,14 +356,14 @@ public partial class BitTextField
 
     protected override Task OnInitializedAsync()
     {
+        _inputId = $"BitTextField-{UniqueId}-input";
+        _labelId = $"BitTextField-{UniqueId}-label";
+        _descriptionId = $"BitTextField-{UniqueId}-description";
+
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
         {
             CurrentValueAsString = DefaultValue;
         }
-
-        _textFieldId = $"TextField-{UniqueId}";
-        _labelId = $"TextField-{UniqueId}-Label";
-        _descriptionId = $"TextField-{UniqueId}-Description";
 
         return base.OnInitializedAsync();
     }

@@ -198,6 +198,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Image/BitImageDemo.razor.css",
+        "inputFile": "Pages/Components/Image/BitImageDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.scss",
         "minify": { "enabled": false },

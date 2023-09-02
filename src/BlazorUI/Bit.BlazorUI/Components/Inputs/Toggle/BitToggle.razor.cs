@@ -68,9 +68,9 @@ public partial class BitToggle
 
     protected override async Task OnInitializedAsync()
     {
-        _buttonId = $"Toggle-{UniqueId}-Button";
-        _labelId = $"Toggle-{UniqueId}-Label";
-        _stateTextId = $"Toggle-{UniqueId}-StateText";
+        _labelId = $"BitToggle-{UniqueId}-label";
+        _buttonId = $"BitToggle-{UniqueId}-button";
+        _stateTextId = $"BitToggle-{UniqueId}-state-text";
 
         SetTexts();
 
@@ -104,15 +104,7 @@ public partial class BitToggle
 
         if (AriaLabel.HasValue()) return;
 
-        if (Label.HasValue())
-        {
-            _labelledById = _labelId;
-        }
-
-        if (_stateText.HasValue())
-        {
-            _labelledById = _labelledById.HasValue() ? $"{_labelId} {_stateTextId}" : _stateTextId;
-        }
+        _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
     }
 
     protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);

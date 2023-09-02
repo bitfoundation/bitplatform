@@ -224,8 +224,8 @@ public partial class BitCalendar
 
     protected override Task OnInitializedAsync()
     {
-        _monthTitleId = $"DateRangePicker-MonthTitle-{UniqueId}";
-        _activeDescendantId = $"DateRangePicker-ActiveDescendant-{UniqueId}";
+        _monthTitleId = $"BitCalendar-{UniqueId}-month-title";
+        _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
 
         return base.OnInitializedAsync();
     }
