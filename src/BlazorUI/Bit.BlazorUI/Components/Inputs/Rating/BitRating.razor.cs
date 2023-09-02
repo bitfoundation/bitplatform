@@ -20,6 +20,11 @@ public partial class BitRating
     [Parameter] public string? AriaLabelFormat { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitRating.
+    /// </summary>
+    [Parameter] public BitRatingClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Default value. Must be a number between _min and max. 
     /// Only provide this if the CurrentValue is an uncontrolled component; otherwise, use the Value property.
     /// </summary>
@@ -65,6 +70,11 @@ public partial class BitRating
     /// Size of rating.
     /// </summary>
     [Parameter] public BitRatingSize Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitRating.
+    /// </summary>
+    [Parameter] public BitRatingClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.
