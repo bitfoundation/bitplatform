@@ -104,15 +104,7 @@ public partial class BitToggle
 
         if (AriaLabel.HasValue()) return;
 
-        if (Label.HasValue())
-        {
-            _labelledById = _labelId;
-        }
-
-        if (_stateText.HasValue())
-        {
-            _labelledById = _labelledById.HasValue() ? $"{_labelId} {_stateTextId}" : _stateTextId;
-        }
+        _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
     }
 
     protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
