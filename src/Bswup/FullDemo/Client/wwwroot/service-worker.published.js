@@ -1,4 +1,4 @@
-// bit version: 5.5.0-pre-07
+// bit version: 5.5.0-pre-08
 
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
