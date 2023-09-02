@@ -201,7 +201,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     protected override void OnInitialized()
     {
         _uniqueId = UniqueId.ToString();
-        _calloutId = $"{RootElementClass}-callout-{UniqueId}";
+        _calloutId = $"BitSplitButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {

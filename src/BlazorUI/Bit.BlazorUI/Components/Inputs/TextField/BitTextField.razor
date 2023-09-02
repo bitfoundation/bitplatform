@@ -8,13 +8,13 @@
     <div class="bit-txt-wrp">
         @if (LabelTemplate is not null)
         {
-            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_inputId">
                 @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_textFieldId">
+            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_inputId">
                 @Label
             </label>
         }
@@ -35,7 +35,7 @@
 
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
-                <textarea @attributes="InputHtmlAttributes"
+                <textarea id="@_inputId" @attributes="InputHtmlAttributes"
                           @ref="@_inputRef"
                           @onclick="@HandleOnClick"
                           @onkeyup="@HandleOnKeyUp"
@@ -46,7 +46,6 @@
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
                           value="@CurrentValue"
-                          id="@_textFieldId"
                           style="@InputStyle"
                           class="bit-txt-inp @InputClass"
                           rows="@Rows"
@@ -63,7 +62,7 @@
             }
             else
             {
-                <input id="@_textFieldId" @attributes="InputHtmlAttributes"
+                <input id="@_inputId" @attributes="InputHtmlAttributes"
                        @ref="@_inputRef"
                        @onclick="@HandleOnClick"
                        @onfocus="@HandleOnFocus"
