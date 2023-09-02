@@ -17,8 +17,9 @@
         <button @onclick="() => HandleOnClick(index)"
                 type="button"
                 role="radio"
-                class="bit-rtg-btn"
+                style="@Styles?.Button"
                 aria-hidden="@IsReadOnly"
+                class="bit-rtg-btn @Classes?.Button"
                 aria-checked="@(index == CurrentValue)"
                 data-is-current="@(index == CurrentValue)"
                 disabled=@(IsEnabled is false || IsReadOnly)
@@ -31,13 +32,14 @@
                 </span>
             }
 
-            <div class="bit-rtg-ict">
+            <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
                 <i aria-hidden="true"
-                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName)">
+                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon"
+                   style="@Styles?.UnselectedIcon">
                 </i>
                 <i aria-hidden="true"
-                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName)"
-                   Style=@($"width:{percentage}%;")>
+                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon"
+                   style=@($"width:{percentage}%; {Styles?.SelectedIcon}")>
                 </i>
             </div>
         </button>

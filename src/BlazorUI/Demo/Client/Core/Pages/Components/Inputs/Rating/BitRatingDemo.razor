@@ -32,7 +32,40 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Max value" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Style & Class" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitRating @bind-Value="@RatingStyleValue" Style="background-color: #888; border-radius: 1rem; margin: 1rem 0" />
+                    <BitRating @bind-Value="@RatingClassValue" Class="custom-class" />
+                </div>
+                <br />
+                <div>
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitRating @bind-Value="@RatingStylesValue"
+                               Styles="@(new() {IconContainer = "background-color: tomato; border-radius: 0.5rem",
+                                                Button = "padding: 0.5rem; background-color: goldenrod"})" />
+                    <br />
+                    <BitRating @bind-Value="@RatingClassesValue"
+                               Classes="@(new() {SelectedIcon = "custom-selected",
+                                                 UnselectedIcon = "custom-unselected"})" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" HtmlCode="@example3HtmlCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div style="display: flex">Visible: [ <BitRating Visibility="BitVisibility.Visible">Visible Rating</BitRating> ]</div>
+                <div style="display: flex">Hidden: [ <BitRating Visibility="BitVisibility.Hidden">Hidden Rating</BitRating> ]</div>
+                <div style="display: flex">Collapsed: [ <BitRating Visibility="BitVisibility.Collapsed">Collapsed Rating</BitRating> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Max value" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -56,7 +89,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom icon" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Custom icon" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -80,7 +113,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Different sizes" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -98,7 +131,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Controlled" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -122,7 +155,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Validation" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -154,6 +187,11 @@
     private double RatingBasicValue;
     private double RatingDisabledValue = 2;
     private double RatingReadonlyValue = 3.5;
+
+    private double RatingStyleValue = 1;
+    private double RatingClassValue = 2;
+    private double RatingStylesValue = 5;
+    private double RatingClassesValue = 3.5;
 
     private double RatingMaxValue1 = 2.5;
     private double RatingMaxValue2 = 5;

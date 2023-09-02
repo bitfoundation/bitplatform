@@ -13,9 +13,25 @@
     }
 }
 
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem2(12px);
+::deep {
+    div.validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+
+    .custom-class {
+        padding: 0.5rem;
+        border: 1px solid red;
+        max-width: max-content;
+    }
+
+    .custom-selected {
+        color: blueviolet;
+    }
+
+    .custom-unselected {
+        color: darkorange;
+    }
 }
 
 .example-box {
