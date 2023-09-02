@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
 using TodoTemplate.Shared.Attributes;
+using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Client.Core.Shared;
 
