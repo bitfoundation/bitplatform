@@ -93,11 +93,11 @@ private bool DefaultTextValue;";
 private bool LabelTemplateValue;";
 
     private readonly string example4HtmlCode = @"
-<BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""Off"" OffText=""On"" />
-<BitToggleButton @bind-IsChecked=""OneWayValue"" Text=""@(OneWayValue ? ""Off"" : ""On"")"" />
+<BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""On"" OffText=""Off"" />
+<BitToggleButton @bind-IsChecked=""OneWayValue"" OnText=""On"" OffText=""Off"" />
 
-<BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""Off"" OffText=""On"" />
-<BitToggleButton @bind-IsChecked=""TwoWayValue"" Text=""@(TwoWayValue ? ""Off"" : ""On"")"" />";
+<BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""On"" OffText=""Off"" />
+<BitToggleButton @bind-IsChecked=""TwoWayValue"" OnText=""On"" OffText=""Off"" />";
     private readonly string example4CsharpCode = @"
 private bool OneWayValue;
 private bool TwoWayValue;";
