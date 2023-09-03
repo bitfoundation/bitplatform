@@ -20,6 +20,15 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitRatingClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#rating-class-styles",
+            Description = "Custom CSS classes for different parts of the BitRating.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "double?",
             DefaultValue = "null",
@@ -70,12 +79,22 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitRatingClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#rating-class-styles",
+            Description = "Custom CSS styles for different parts of the BitRating.",
+        },
+        new()
+        {
             Name = "UnselectedIconName",
             Type = "string",
             DefaultValue = "FavoriteStar",
             Description = "Custom icon name for unselected rating elements.",
         }
     };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -94,9 +113,51 @@ public partial class BitRatingDemo
                 new()
                 {
                     Name = "Large",
-                    Description = " Display rating icon using large size.",
+                    Description = "Display rating icon using large size.",
                     Value = "1",
                 },
+            }
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+
+        new()
+        {
+            Id = "rating-class-styles",
+            Title = "BitRatingClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating's button.",
+                },
+                new()
+                {
+                    Name = "IconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating icon container.",
+                },
+                new()
+                {
+                    Name = "SelectedIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating selected icon.",
+                },
+                new()
+                {
+                    Name = "UnselectedIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating unselected icon.",
+                }
             }
         }
     };
@@ -132,7 +193,7 @@ private double RatingReadonlyValue = 3.5;";
     .custom-unselected {
         color: darkorange;
     }
-<style/>
+</style>
 
 
 <BitRating @bind-Value=""@RatingStyleValue"" Style=""background-color: #888; border-radius: 1rem; margin: 1rem 0"" />
