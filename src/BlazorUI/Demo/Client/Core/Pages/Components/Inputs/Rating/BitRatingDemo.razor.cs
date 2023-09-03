@@ -115,14 +115,13 @@ public partial class BitRatingDemo
                     Name = "Large",
                     Description = "Display rating icon using large size.",
                     Value = "1",
-                },
+                }
             }
         }
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
-
         new()
         {
             Id = "rating-class-styles",
