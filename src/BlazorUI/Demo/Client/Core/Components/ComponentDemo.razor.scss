@@ -4,6 +4,10 @@
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
+    .sec-con {
+        scroll-margin: 80px;
+    }
+
     .table-view {
         width: 100%;
         overflow: auto;
