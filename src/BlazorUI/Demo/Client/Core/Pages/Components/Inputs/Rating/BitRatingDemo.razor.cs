@@ -95,31 +95,6 @@ public partial class BitRatingDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "rating-size-enum",
-            Name = "BitRatingSize",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "Small",
-                    Description = "Display rating icon using small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "Display rating icon using large size.",
-                    Value = "1",
-                }
-            }
-        }
-    };
-
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
@@ -156,6 +131,31 @@ public partial class BitRatingDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the rating unselected icon.",
+                }
+            }
+        }
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "rating-size-enum",
+            Name = "BitRatingSize",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "Small",
+                    Description = "Display rating icon using small size.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Large",
+                    Description = "Display rating icon using large size.",
+                    Value = "1",
                 }
             }
         }
