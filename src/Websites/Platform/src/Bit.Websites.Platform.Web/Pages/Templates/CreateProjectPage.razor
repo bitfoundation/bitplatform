@@ -32,7 +32,12 @@ dotnet new bit-admin
 dotnet new bit-todo
 dotnet new bit-dual</pre>
         <div class="section-card-txt">
-            <b>Note</b>: bit project templates accept project name with --name (default is current folder name), --database default to 'SqlServer' among following options: 'SqlServer', 'Sqlite', 'Other' and --pipeline default to 'GitHub' among the following options: 'GitHub', 'Azure' (AzureDevOps pipelines), 'Other'.
+            <b>Note</b>: bit project templates accept the following parameters:
+            <ul>
+                <li>--name (default is current folder name)</li>
+                <li>--database default to 'SqlServer' among following options: 'SqlServer', 'Sqlite', 'Other'</li>
+                <li>--pipeline default to 'GitHub' among the following options: 'GitHub', 'Azure' (AzureDevOps pipelines), 'Other'</li>
+            </ul>
         </div>
         <pre class="code-box">
 dotnet new bit-admin --name MyProject --database sqlite --pipeline github
@@ -44,11 +49,25 @@ dotnet new bit-dual --name MyProject --database sqlite --pipeline github</pre>
     </section>
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <BitCarousel Style="height:625px" AutoPlay=true InfiniteScrolling=true>
+            <BitCarouselItem>
+                <div class="image-container">
+                    <img src="images/templates/create-new-project-vs-1.webp">
+                </div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <div class="image-container">
+                    <img src="images/templates/create-new-project-vs-2.webp" />
+                </div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <div class="image-container">
+                    <img src="images/templates/create-new-project-vs-3.webp" />
+                </div>
+            </BitCarouselItem>
+        </BitCarousel>
         <div class="section-card-txt">
-            After installing the template using the CLI, you can also create a new project with the Visual Studio:
-        </div>
-        <div class="image-container">
-            <img class="image" alt="Create new project" src="/images/templates/todo/create-project-todo.webp" />
+            <b>Note</b>: In second window of create new project modal, make sure to check <b>Place solution and project in the same directory</b> checkbox.
         </div>
     </section>
 </div>
