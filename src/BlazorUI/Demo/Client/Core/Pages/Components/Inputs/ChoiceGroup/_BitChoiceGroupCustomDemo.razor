@@ -293,27 +293,27 @@
                 Name = "Day",
                 ItemValue = "Day",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:red">@item.Name</span>
-    </div>)
+                                        <div class="custom-circle" />
+                                        <span style="color:red">@item.Name</span>
+                                    </div>)
             },
             new()
             {
                 Name = "Week",
                 ItemValue = "Week",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:green">@item.Name</span>
-    </div>)
+                                        <div class="custom-circle" />
+                                        <span style="color:green">@item.Name</span>
+                                    </div>)
             },
             new()
             {
                 Name = "Month",
                 ItemValue = "Month",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:blue">@item.Name</span>
-    </div>)
+                                        <div class="custom-circle" />
+                                        <span style="color:blue">@item.Name</span>
+                                    </div>)
             }
         };
     }
