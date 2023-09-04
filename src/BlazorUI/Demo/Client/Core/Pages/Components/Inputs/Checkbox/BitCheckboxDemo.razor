@@ -6,7 +6,7 @@
             Description="Checkbox component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Checkbox"
-               ComponentDescription="BitCheckbox is component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes are shown as ☐ when unchecked, or ☑ when checked."
+               ComponentDescription="BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes by default are shown as ☐ when unchecked and ☑ when checked."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
@@ -59,7 +59,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Indeterminate" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Visibility" HtmlCode="@example5HtmlCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-content">
+                <div style="display: flex">Visible: [ <BitCheckbox Visibility="BitVisibility.Visible" Label="Visible Checkbox" /> ]</div>
+                <div style="display: flex">Hidden: [ <BitCheckbox Visibility="BitVisibility.Hidden" Label="Hidden Checkbox" /> ]</div>
+                <div style="display: flex">Collapsed: [ <BitCheckbox Visibility="BitVisibility.Collapsed" Label="Collapsed Checkbox" /> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Indeterminate" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-content">
                 <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="isIndeterminate" />
@@ -68,7 +78,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Controlled" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div><b>Value</b>:</div>
             <br />
@@ -105,7 +115,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="LabelTemplate" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div>
                 <BitCheckbox @bind-Value="labelTemplateValue">
@@ -117,7 +127,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom content" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Custom content" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div class="example-content">
                 <BitCheckbox @bind-Value="customCheckboxValue">
@@ -144,7 +154,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Validation" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))
