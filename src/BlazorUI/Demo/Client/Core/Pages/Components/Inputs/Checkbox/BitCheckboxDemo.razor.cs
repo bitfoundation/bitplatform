@@ -209,6 +209,35 @@ public partial class BitCheckboxDemo
     };
 
 
+    private bool isIndeterminate = true;
+
+    private bool oneWayValue;
+    private bool twoWayValue;
+    private bool oneWayIsIndeterminate = true;
+    private bool twoWayIsIndeterminate = true;
+
+    private bool labelTemplateValue;
+    private bool customCheckboxValue;
+
+    private bool customContentValue;
+    private bool customContentIsIndeterminate = true;
+
+    private string SuccessMessage = string.Empty;
+    private BitCheckboxValidationModel validationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
 
     private readonly string example1HtmlCode = @"
 <BitCheckbox Label=""Basic checkbox"" />
