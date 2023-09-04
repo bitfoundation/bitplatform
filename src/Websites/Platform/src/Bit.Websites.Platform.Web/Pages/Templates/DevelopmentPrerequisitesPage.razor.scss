@@ -26,3 +26,7 @@
 ::deep a {
     color: $bit-color-primary-main;
 }
+
+.code-box {
+    @include CodeBox;
+}
