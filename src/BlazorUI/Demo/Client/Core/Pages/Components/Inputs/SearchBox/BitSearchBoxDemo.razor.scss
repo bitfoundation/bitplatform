@@ -2,23 +2,7 @@
 @import '../../../../Styles/abstracts/_colors.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
 
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-}
-
-::deep .validation-message {
-    color: $Red20;
-    font-size: rem2(12px);
-}
-
-.example-desc{
+.example-desc {
     margin-bottom: rem2(20px) !important;
 }
 
@@ -30,5 +14,44 @@
 
     @include sm {
         width: rem2(200px);
+    }
+}
+
+.visibility-items {
+    align-items: center;
+    white-space: nowrap;
+    display: inline-flex;
+}
+
+.validation-summary {
+    border-left: rem2(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem2(10px);
+
+    .validation-errors {
+        margin: rem2(5px);
+    }
+}
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-clear {
+        color: blueviolet;
+    }
+
+    .custom-search {
+        margin-right: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: tomato;
     }
 }

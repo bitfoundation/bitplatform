@@ -5,30 +5,32 @@
      id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-srb-ict" aria-hidden="true">
-        <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
+    <div style="@Styles?.SearchIconContainer" class="bit-srb-ict @Classes?.SearchIconContainer" aria-hidden="true">
+        <i style="@Styles?.SearchIcon" class="bit-icon bit-icon--@IconName @Classes?.SearchIcon" aria-hidden="true" />
     </div>
     <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
-           class="bit-srb-inp"
            id="@_inputId"
+           style="@Styles?.Input"
+           class="bit-srb-inp @Classes?.Input"
            type="text"
-           aria-label="@AriaLabel"
-           disabled="@(IsEnabled is false)"
-           placeholder="@Placeholder"
            role="searchbox"
            value="@CurrentValue"
-           autocomplete="@Autocomplete" />
+           aria-label="@AriaLabel"
+           placeholder="@Placeholder"
+           autocomplete="@Autocomplete"
+           disabled="@(IsEnabled is false)" />
     @if (CurrentValue.HasValue())
     {
-        <div class="bit-srb-cbc">
+        <div style="@Styles?.ClearButtonContainer" class="bit-srb-cbc @Classes?.ClearButtonContainer">
             <button @onclick="HandleOnClear"
-                    class="bit-srb-cbt"
+                    style="@Styles?.ClearButton"
+                    class="bit-srb-cbt @Classes?.ClearButton"
                     type="button"
-                    aria-label="Clear text"
                     aria-hidden="true"
+                    aria-label="Clear text"
                     disabled="@(CurrentValue.HasNoValue())">
-                <span>
-                    <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+                <span style="@Styles?.ClearButtonIconContainer" class="@Classes?.ClearButtonIconContainer">
+                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
                 </span>
             </button>
         </div>
