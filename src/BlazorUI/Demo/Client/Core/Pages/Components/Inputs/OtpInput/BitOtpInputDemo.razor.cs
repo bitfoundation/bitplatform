@@ -13,6 +13,15 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitOtpInputClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#otpinput-class-styles",
+            Description = "Custom CSS classes for different parts of the BitOtpInput.",
+        },
+        new()
+        {
             Name = "Direction",
             Type = "BitOtpInputDirection",
             LinkType = LinkType.Link,
@@ -72,8 +81,37 @@ public partial class BitOtpInputDemo
             Type = "EventCallback<string?>",
             Description = "Callback for when the OtpInput value change.",
         },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitOtpInputClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#otpinput-class-styles",
+            Description = "Custom CSS styles for different parts of the BitOtpInput.",
+        }
     };
-    
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "otpinput-class-styles",
+            Title = "BitOtpInputClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each input in otp input.",
+                }
+            }
+        }
+    };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -153,6 +191,32 @@ public partial class BitOtpInputDemo
 private string autoFocusOtpInput;";
 
     private readonly string example3HtmlCode = @"
+<style>
+    .custom-class {
+        padding: 1rem;
+        max-width: max-content;
+        background-color: lightskyblue;
+    }
+
+    .custom-input {
+        border-radius: 50%;
+        border: 1px solid red;
+        box-shadow: tomato 0 0 1rem;
+    }
+</style>
+
+<BitOtpInput Length=""4"" Style=""box-shadow: aqua 0 0 0.5rem; max-width: max-content;"" />
+<BitOtpInput Length=""4"" Class=""custom-class"" />
+
+<BitOtpInput Length=""4"" Styles=""@(new() { Input = ""padding: 0.5rem; background-color: goldenrod""})"" />
+<BitOtpInput Length=""4"" Classes=""@(new() { Input = ""custom-input""})"" />";
+
+    private readonly string example4HtmlCode = @"
+Visible: [ <BitOtpInput Length=""4"" Visibility=""BitVisibility.Visible"" /> ]
+Hidden: [ <BitOtpInput Length=""4"" Visibility=""BitVisibility.Hidden"" /> ]
+Collapsed: [ <BitOtpInput Length=""4"" Visibility=""BitVisibility.Collapsed"" /> ]";
+
+    private readonly string example5HtmlCode = @"
 <BitLabel>Text</BitLabel>
 <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Text"" @bind-Value=""textOtpInput"" />
 <BitLabel>Output: [@textOtpInput]</BitLabel>
@@ -164,12 +228,12 @@ private string autoFocusOtpInput;";
 <BitLabel>Password</BitLabel>
 <BitOtpInput Length=""4"" InputType=""BitOtpInputType.Password"" @bind-Value=""passwordOtpInput"" />
 <BitLabel>Output: [@passwordOtpInput]</BitLabel>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string textOtpInput;
 private string numberOtpInput;
 private string passwordOtpInput;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example6HtmlCode = @"
 <BitLabel>Left to right</BitLabel>
 <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.LeftToRight"" @bind-Value=""leftToRightOtpInput"" />
 <BitLabel>Output: [@leftToRightOtpInput]</BitLabel>
@@ -186,13 +250,13 @@ private string passwordOtpInput;";
 <BitLabel>Bottom to top</BitLabel>
 <BitOtpInput Length=""4"" Direction=""BitOtpInputDirection.BottomToTop"" @bind-Value=""BottomToTopOtpInput"" />
 <BitLabel>Output: [@BottomToTopOtpInput]</BitLabel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string leftToRightOtpInput;
 private string rightToLeftOtpInput;
 private string topToBottomOtpInput;
 private string BottomToTopOtpInput;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <BitLabel>One-way</BitLabel>
 <BitOtpInput Length=""4"" Value=""@oneWayBindOtpInput"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayBindOtpInput"" />
@@ -204,12 +268,12 @@ private string BottomToTopOtpInput;";
 <BitLabel>OnChange</BitLabel>
 <BitOtpInput Length=""4"" OnChange=""(value) => onChangeBindOtpInput = value"" />
 <BitLabel>Output: [@onChangeBindOtpInput]</BitLabel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string oneWayBindOtpInput;
 private string twoWayBindOtpInput;
 private string onChangeBindOtpInput;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example8HtmlCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
@@ -253,7 +317,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""Is required."")]
