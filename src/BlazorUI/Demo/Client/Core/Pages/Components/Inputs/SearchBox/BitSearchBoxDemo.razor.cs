@@ -13,6 +13,15 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSearchBoxClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#searchbox-class-styles",
+            Description = "Custom CSS classes for different parts of the BitSearchBox.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -77,6 +86,77 @@ public partial class BitSearchBoxDemo
             DefaultValue = "null",
             Description = "Placeholder for the search box.",
         },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitSearchBoxClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#searchbox-class-styles",
+            Description = "Custom CSS styles for different parts of the BitSearchBox.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "searchbox-class-styles",
+            Title = "BitSearchBoxClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button.",
+                },
+                new()
+                {
+                    Name = "ClearButtonContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button container.",
+                },
+                new()
+                {
+                    Name = "ClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button icon.",
+                },
+                new()
+                {
+                    Name = "ClearButtonIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's clear button icon container.",
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's Input.",
+                },
+                new()
+                {
+                    Name = "SearchIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box search icon.",
+                },
+                new()
+                {
+                    Name = "SearchIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's search icon container.",
+                }
+            }
+        }
     };
 
 
@@ -106,6 +186,39 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
     private readonly string example4HtmlCode = @"
+<style>
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-clear {
+        color: blueviolet;
+    }
+
+    .custom-search {
+        margin-right: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: tomato;
+    }
+</style>
+
+<BitSearchBox Placeholder=""Search"" Style=""background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0"" />
+<BitSearchBox Placeholder=""Search"" Class=""custom-class"" />
+
+<BitSearchBox Placeholder=""Search""
+              Styles=""@(new() {SearchIcon = ""color: darkorange;"",
+                               Input = ""padding: 0.5rem; background-color: goldenrod""})"" />
+<BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value""
+              Classes=""@(new() {ClearButtonIcon = ""custom-clear"",
+                                SearchIconContainer = ""custom-search""})"" />";
+
+    private readonly string example5HtmlCode = @"
+Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
+Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" />  ]
+Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" />  ]";
+
+    private readonly string example6HtmlCode = @"
 <BitLabel>Two-way Bind</BitLabel>
 <BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
@@ -117,18 +230,18 @@ public partial class BitSearchBoxDemo
 <BitLabel>OnSearch (Serach by Enter)</BitLabel>
 <BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
 <BitLabel>Search Value: @OnSearchValue</BitLabel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string TwoWaySearchValue;
 private string OnChangeSearchValue;
 private string OnSearchValue;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
     <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
 </EditForm>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]

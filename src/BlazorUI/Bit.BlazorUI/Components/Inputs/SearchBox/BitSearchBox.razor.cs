@@ -33,6 +33,11 @@ public partial class BitSearchBox
     [Parameter] public string? Autocomplete { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitSearchBox.
+    /// </summary>
+    [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
     /// </summary>
     [Parameter] public string? DefaultValue { get; set; }
@@ -114,6 +119,11 @@ public partial class BitSearchBox
     /// Placeholder for the search box.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitSearchBox.
+    /// </summary>
+    [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
 
 
     protected override string RootElementClass => "bit-srb";
