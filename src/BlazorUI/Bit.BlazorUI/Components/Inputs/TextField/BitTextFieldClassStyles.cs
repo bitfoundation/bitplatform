@@ -48,6 +48,11 @@ public class BitTextFieldClassStyles
     public string? Prefix { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the text field's prefix container.
+    /// </summary>
+    public string? PrefixContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the text field's reveal password.
     /// </summary>
     public string? RevealPassword { get; set; }

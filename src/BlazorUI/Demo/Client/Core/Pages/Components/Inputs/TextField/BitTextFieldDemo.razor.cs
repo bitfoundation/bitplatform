@@ -317,6 +317,13 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "PrefixContainer",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's prefix container."
+                },
+                new()
+                {
                     Name = "RevealPassword",
                     Type = "string?",
                     DefaultValue = null,
