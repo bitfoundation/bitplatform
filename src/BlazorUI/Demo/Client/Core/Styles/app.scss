@@ -19,16 +19,12 @@
 }
 
 .bit-blazor-hybrid {
-    &.bit-windows {
-        * {
-            -webkit-user-drag: none;
-        }
+    &.bit-windows * {
+        -webkit-user-drag: none;
     }
 
-    &.bit-ios {
-        * {
-            overscroll-behavior: none;
-        }
+    &.bit-ios * {
+        overscroll-behavior: none;
     }
 }
 
