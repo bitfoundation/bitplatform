@@ -49,6 +49,11 @@ public partial class BitTextField
     [Parameter] public bool CanRevealPassword { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitTextField.
+    /// </summary>
+    [Parameter] public BitTextFieldClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.
     /// </summary>
     [Parameter] public string? DefaultValue { get; set; }
@@ -246,6 +251,11 @@ public partial class BitTextField
     [Parameter] public string? RevealPasswordAriaLabel { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitTextField.
+    /// </summary>
+    [Parameter] public BitTextFieldClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Suffix displayed after the text field contents. This is not included in the value. 
     /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
     /// </summary>
@@ -272,66 +282,6 @@ public partial class BitTextField
             ClassBuilder.Reset();
         }
     }
-
-    /// <summary>
-    /// Style of the BitTextField's Label
-    /// </summary>
-    [Parameter] public string? LabelStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Label
-    /// </summary>
-    [Parameter] public string? LabelClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Input
-    /// </summary>
-    [Parameter] public string? InputStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Input
-    /// </summary>
-    [Parameter] public string? InputClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Prefix
-    /// </summary>
-    [Parameter] public string? PrefixStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Prefix
-    /// </summary>
-    [Parameter] public string? PrefixClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Suffix
-    /// </summary>
-    [Parameter] public string? SuffixStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Suffix
-    /// </summary>
-    [Parameter] public string? SuffixClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's RevealPassword button
-    /// </summary>
-    [Parameter] public string? RevealPasswordStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's RevealPassword button
-    /// </summary>
-    [Parameter] public string? RevealPasswordClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Description
-    /// </summary>
-    [Parameter] public string? DescriptionStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Description
-    /// </summary>
-    [Parameter] public string? DescriptionClass { get; set; }
 
 
 

@@ -12,11 +12,24 @@
         width: rem2(200px);
     }
 
+    .custom-wrapper {
+        gap: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .visibility-items {
+        align-items: center;
+        white-space: nowrap;
+        display: inline-flex;
+    }
+
     .validation-summary {
-        border-left: rem2(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
         overflow: hidden;
         margin-bottom: rem2(10px);
+        border-left: 0.3rem solid $Red10;
+        background-color: $ErrorBlockRed;
     }
 
     .trimmed-box {
@@ -25,42 +38,38 @@
     }
 
     .form-item {
-        margin-bottom: rem2(15px);
+        margin-bottom: 1rem;
     }
 
     ::deep {
         .validation-message {
             color: $Red20;
-            font-size: rem2(12px);
-            margin-top: rem2(5px);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
             line-height: normal;
         }
 
         .validation-errors {
-            margin: rem2(5px);
+            margin: 0.3rem;
         }
-    }
-}
 
-.custom-wrapper {
-    gap: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-
-    ::deep {
-        .custom-label {
-            color: blue;
-            font-weight: 900;
-            font-size: 18px;
+        .custom-class {
+            border: 1px solid red;
+            box-shadow: aqua 0 0 1rem;
         }
 
         .custom-input {
             color: darkgreen;
             font-weight: 900;
-            font-size: 18px;
+            font-size: 1rem;
             padding: 1rem;
-            height: 50px;
+            height: 3rem;
+        }
+
+        .custom-label {
+            color: blue;
+            font-weight: 900;
+            font-size: 1.25rem;
         }
     }
 }
