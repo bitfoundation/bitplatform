@@ -57,22 +57,6 @@
     {
         <link rel="manifest" href="manifest.json">
     }
-    @if (isElectron)
-    {
-        <style>
-            * {
-                -webkit-user-drag: none;
-                overscroll-behavior: none;
-            }
-
-                *:not(input) {
-                    -webkit-user-select: none;
-                    -moz-user-select: none;
-                    -ms-user-select: none;
-                    user-select: none;
-                }
-        </style>
-    }
 </head>
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
     <div id="app-container">
