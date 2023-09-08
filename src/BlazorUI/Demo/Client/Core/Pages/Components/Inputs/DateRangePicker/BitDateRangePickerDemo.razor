@@ -225,7 +225,16 @@
     <ComponentExampleBox Title="With time" HtmlCode="@example14HtmlCode" CsharpCode="@example14CsharpCode" Id="example14">
         <ExamplePreview>
             <BitDateRangePicker @bind-Value="@selectedDateTimeRange"
+                                Label="Time format 24 hours"
                                 ShowTimePicker="true"
+                                Style="max-width: 300px"
+                                AriaLabel="Select a date"
+                                Placeholder="Select a date..." />
+
+            <BitDateRangePicker @bind-Value="@selectedDateTimeRange"
+                                Label="Time format 12 hours"
+                                ShowTimePicker="true"
+                                TimeFormat="BitTimeFormat.TwelveHours"
                                 Style="max-width: 300px"
                                 AriaLabel="Select a date"
                                 Placeholder="Select a date..." />
