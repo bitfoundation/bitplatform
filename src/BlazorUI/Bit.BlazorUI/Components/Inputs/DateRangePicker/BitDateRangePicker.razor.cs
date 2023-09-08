@@ -1245,7 +1245,6 @@ public partial class BitDateRangePicker
             {
                 _startTimeHour = startTimeHour + 12;
             }
-            
         }
         else
         {
