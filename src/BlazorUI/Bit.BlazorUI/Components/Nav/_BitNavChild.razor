@@ -11,6 +11,7 @@
         var expAriaLabel = Nav.GetExpandAriaLabel(Item);
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
+        var description = Nav.GetDescription(Item);
     }
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
@@ -42,6 +43,10 @@
                 {
                     <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                     <span class="bit-nav-ghd">@text</span>
+                    if (description.HasValue())
+                    {
+                        <span class="bit-nav-des">@description</span>
+                    }
                 }
             </button>
         }
@@ -50,7 +55,7 @@
     {
         <div name="@text"
              class="bit-nav-ict @GetItemContainerClasses()"
-             style="padding: 0 10px 0 @(childItems.Any() ? (Depth * 14) : (Depth * 14) + 30)px;@GetItemContainerStyles()">
+             style="padding-left:@(childItems.Any() ? (Depth * 14) : (Depth * 14) + 30)px; @GetItemContainerStyles()">
 
             @if (childItems.Any())
             {
@@ -103,11 +108,30 @@
                         else
                         {
                             var iconName = Nav.GetIconName(Item);
-                            @if (iconName.HasValue())
+                            if (description.HasValue())
                             {
-                                <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                <div class="bit-nav-itg">
+                                    <div class="bit-nav-iit">
+                                        @if (iconName.HasValue())
+                                        {
+                                            <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                        }
+                                        <span>@text</span>
+                                    </div>
+                                    <span style="@Nav.ClassStyles?.Description?.Style"
+                                          class="bit-nav-des @Nav.ClassStyles?.Description?.Class">
+                                        @description
+                                    </span>
+                                </div>
                             }
-                            <span>@text</span>
+                            else
+                            {
+                                @if (iconName.HasValue())
+                                {
+                                    <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                }
+                                <span>@text</span>
+                            }
                         }
                     </a>
                 }
@@ -138,6 +162,10 @@
                                 <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
                             }
                             <span>@text</span>
+                            if (description.HasValue())
+                            {
+                                <span class="bit-nav-des">@description</span>
+                            }
                         }
                     </button>
                 }

@@ -31,6 +31,16 @@ public partial class BitNavOption : IDisposable
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
+    /// The custom data for the nav option to provide additional state for the option.
+    /// </summary>
+    [Parameter] public object? Data { get; set; }
+
+    /// <summary>
+    /// The description for the nav option.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
     /// Aria label when group is collapsed and can be expanded.
     /// </summary>
     [Parameter] public string? ExpandAriaLabel { get; set; }

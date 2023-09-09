@@ -25,6 +25,16 @@ public class BitNavItem
     public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
+    /// The custom data for the nav item to provide additional state for the item.
+    /// </summary>
+    public object? Data { get; set; }
+
+    /// <summary>
+    /// The description for the nav item.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Aria label when group is collapsed and can be expanded.
     /// </summary>
     public string? ExpandAriaLabel { get; set; }
