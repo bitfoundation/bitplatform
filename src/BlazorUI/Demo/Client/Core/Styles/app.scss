@@ -11,6 +11,23 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+.bit-blazor-hybrid, .bit-blazor-electron {
+    *:not(input) {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+.bit-blazor-hybrid {
+    &.bit-windows * {
+        -webkit-user-drag: none;
+    }
+
+    &.bit-ios * {
+        overscroll-behavior: none;
+    }
+}
+
 html, body, #app-container {
     margin: 0;
     padding: 0;
