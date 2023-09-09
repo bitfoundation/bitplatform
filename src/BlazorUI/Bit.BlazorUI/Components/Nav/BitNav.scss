@@ -49,6 +49,10 @@
     align-items: center;
     height: spacing(5.5);
     border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+
+    .bit-nav-iit {
+        gap: spacing(1.25);
+    }
 }
 
 .bit-nav-ghd {
@@ -69,6 +73,10 @@
     font-weight: normal;
     font-size: spacing(1.5);
     color: $color-foreground-disabled;
+
+    &.bit-nav-ide {
+        padding-left: spacing(2.75);
+    }
 }
 
 .bit-nav-ict {

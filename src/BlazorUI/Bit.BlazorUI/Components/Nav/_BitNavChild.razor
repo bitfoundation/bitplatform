@@ -41,11 +41,22 @@
                 }
                 else
                 {
-                    <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                    <span class="bit-nav-ghd">@text</span>
                     if (description.HasValue())
                     {
-                        <span class="bit-nav-des">@description</span>
+                        <div class="bit-nav-itg">
+                            <div class="bit-nav-iit">
+                                <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                                <span class="bit-nav-ghd">@text</span>
+                            </div>
+                            <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @Nav.ClassStyles?.Description?.Class">
+                                @description
+                            </span>
+                        </div>
+                    }
+                    else
+                    {
+                        <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                        <span class="bit-nav-ghd">@text</span>
                     }
                 }
             </button>
@@ -118,8 +129,7 @@
                                         }
                                         <span>@text</span>
                                     </div>
-                                    <span style="@Nav.ClassStyles?.Description?.Style"
-                                          class="bit-nav-des @Nav.ClassStyles?.Description?.Class">
+                                    <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.ClassStyles?.Description?.Class">
                                         @description
                                     </span>
                                 </div>
@@ -157,14 +167,28 @@
                         else
                         {
                             var iconName = Nav.GetIconName(Item);
-                            @if (iconName.HasValue())
-                            {
-                                <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
-                            }
-                            <span>@text</span>
                             if (description.HasValue())
                             {
-                                <span class="bit-nav-des">@description</span>
+                                <div class="bit-nav-itg">
+                                    <div class="bit-nav-iit">
+                                        @if (iconName.HasValue())
+                                        {
+                                            <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                        }
+                                        <span>@text</span>
+                                    </div>
+                                    <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.ClassStyles?.Description?.Class">
+                                        @description
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                @if (iconName.HasValue())
+                                {
+                                    <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                }
+                                <span>@text</span>
                             }
                         }
                     </button>
