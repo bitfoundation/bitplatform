@@ -1,5 +1,7 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitInputBase<TValue>
+@typeparam TItem
+@typeparam TValue
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@UniqueId"
