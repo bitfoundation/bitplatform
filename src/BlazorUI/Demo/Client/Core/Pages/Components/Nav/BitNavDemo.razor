@@ -135,7 +135,8 @@
                                     UrlField="@nameof(BitPlatformMenu.Url)"
                                     IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
-                                    ChildItemsField="@nameof(BitPlatformMenu.Links)" />
+                                    ChildItemsField="@nameof(BitPlatformMenu.Links)"
+                                    DescriptionField="@nameof(BitPlatformMenu.Comment)" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -152,6 +153,7 @@
                                     CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                     ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
                                     ChildItemsField="@nameof(CarMenu.Links)"
+                                    DescriptionField="@nameof(CarMenu.Comment)"
                                     RenderType="BitNavRenderType.Grouped" />
                         </div>
                     </ExamplePreview>
@@ -167,6 +169,7 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
                                         DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                         Mode="BitNavMode.Manual" />
                             </div>
@@ -184,6 +187,8 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
+                                        DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                         Mode="BitNavMode.Manual"
                                         OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
@@ -210,6 +215,7 @@
                                         CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                         ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
                                         ChildItemsField="@nameof(CarMenu.Links)"
+                                        DescriptionField="@nameof(CarMenu.Comment)"
                                         RenderType="BitNavRenderType.Grouped">
 
                                     <HeaderTemplate Context="item">
@@ -228,6 +234,7 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
                                         Mode="BitNavMode.Manual">
 
                                     <ItemTemplate Context="item">
@@ -251,6 +258,7 @@
                                     IconNameFieldSelector="item => item.Icon"
                                     IsExpandedFieldSelector="item => item.IsExpanded"
                                     ChildItemsFieldSelector="item => item.Childs"
+                                    DescriptionFieldSelector="item => item.Comment"
                                     DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                     Mode="BitNavMode.Manual"
                                     OnItemClick="(FoodMenu item) => CustomClickedItem = item"
@@ -275,6 +283,7 @@
                                     IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
                                     ChildItemsField="@nameof(BitPlatformMenu.Links)"
+                                    DescriptionField="@nameof(BitPlatformMenu.Comment)"
                                     ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
                                                            ToggleButton = new() { Style="color:cyan" },
                                                            Item = new() { Style="color:red" },
@@ -290,6 +299,7 @@
                         <div class="example-box">
                             <BitNav TItem="BitNavOption">
                                 <BitNavOption Text="Bit Platform"
+                                              Description="the bit platform description"
                                               ExpandAriaLabel="Bit Platform Expanded"
                                               CollapseAriaLabel="Bit Platform Collapsed">
                                     <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
@@ -326,6 +336,7 @@
                         <div class="example-box">
                             <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
                                 <BitNavOption Text="Mercedes-Benz"
+                                              Description="Cars manufactured under the brand of Mercedes-Benz"
                                               ExpandAriaLabel="Mercedes-Benz Expanded"
                                               CollapseAriaLabel="Mercedes-Benz Collapsed"
                                               Title="Mercedes-Benz Car Models"
@@ -366,14 +377,17 @@
                                 <BitLabel>Basic</BitLabel>
                                 <BitNav TItem="BitNavOption"
                                         Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods" IconName="@BitIconName.HeartBroken">
-                                        <BitNavOption Text="Burgers">
+                                    <BitNavOption Text="Fast food"
+                                                  Description="List of fast foods"
+                                                  IconName="@BitIconName.HeartBroken"
+                                                  IsExpanded="true">
+                                        <BitNavOption Text="Burger" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
                                             <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
                                         </BitNavOption>
-                                        <BitNavOption Text="Pizzas">
+                                        <BitNavOption Text="Pizza">
                                             <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
                                             <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
                                             <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
@@ -381,7 +395,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruits">
+                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Apple" Key="Apple" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -398,16 +412,17 @@
                             <div class="margin-top">
                                 <BitLabel>Two-Way Bind</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods"
+                                    <BitNavOption Text="Fast food"
+                                                  Description="List of fast foods"
                                                   IconName="@BitIconName.HeartBroken"
                                                   IsExpanded="true">
-                                        <BitNavOption Text="Burgers">
+                                        <BitNavOption Text="Burger" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
                                             <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
                                         </BitNavOption>
-                                        <BitNavOption Text="Pizzas">
+                                        <BitNavOption Text="Pizza">
                                             <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
                                             <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
                                             <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
@@ -415,7 +430,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruits">
+                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Aplle" Key="Aplle" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -590,9 +605,9 @@
                                 <BitNavOption Text="Community"
                                               ExpandAriaLabel="Community Expanded"
                                               CollapseAriaLabel="Community Collapsed">
-                                    <BitNavOption Text="Linkedin" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="LinkedIn" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
                                     <BitNavOption Text="Twitter" IconName="@BitIconName.Globe" Url="https://twitter.com/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Github repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                                    <BitNavOption Text="GitHub repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                                 </BitNavOption>
 
                                 <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
@@ -611,7 +626,8 @@
     {
         new()
         {
-            Text = "Bit Platform",
+            Text = "bit Platform",
+            Description = "the bit platform description",
             ChildItems = new()
             {
                 new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
@@ -661,6 +677,7 @@
             CollapseAriaLabel = "Mercedes-Benz Collapsed",
             Title = "Mercedes-Benz Car Models",
             IsExpanded = true,
+            Description = "Cars manufactured under the brand of Mercedes-Benz",
             ChildItems = new()
             {
                 new()
@@ -714,14 +731,16 @@
     {
         new()
         {
-            Text = "Fast-Food",
+            Text = "Fast food",
             IconName = BitIconName.HeartBroken,
             IsExpanded = true,
+            Description = "List of fast foods",
             ChildItems = new()
             {
                 new()
                 {
-                    Text = "Burgers",
+                    Text = "Burger",
+                    Description = "List of burgers",
                     ChildItems = new()
                     {
                         new() { Text = "Beef Burger" },
@@ -732,7 +751,7 @@
                 },
                 new()
                 {
-                    Text = "Pizzas",
+                    Text = "Pizza",
                     ChildItems = new()
                     {
                         new() { Text = "Cheese Pizza" },
@@ -741,12 +760,12 @@
                         new() { Text = "Meat Pizza" },
                     }
                 },
-                new() { Text    = "French Fries" },
+                new() { Text = "French Fries" },
             }
         },
         new()
         {
-            Text = "Fruits",
+            Text = "Fruit",
             IconName = BitIconName.Health,
             ChildItems = new()
             {
@@ -774,6 +793,7 @@
         new()
         {
             Text = "Bit Platform",
+            Comment = "the bit platform description",
             Links = new()
             {
                 new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
@@ -823,6 +843,7 @@
             CollapsedAriaLabel = "Mercedes-Benz Collapsed",
             Tooltip = "Mercedes-Benz Car Models",
             IsExpandedParent = true,
+            Comment = "Cars manufactured under the brand of Mercedes-Benz",
             Links = new()
             {
                 new()
@@ -876,14 +897,16 @@
     {
         new()
         {
-            Name = "Fast-Food",
+            Name = "Fast food",
             Icon = BitIconName.HeartBroken,
             IsExpanded = true,
+            Comment = "List of fast foods",
             Childs = new()
             {
                 new()
                 {
-                    Name = "Burgers",
+                    Name = "Burger",
+                    Comment = "List of burgers",
                     Childs = new()
                     {
                         new() { Name = "Beef Burger" },
@@ -894,7 +917,7 @@
                 },
                 new()
                 {
-                    Name = "Pizzas",
+                    Name = "Pizza",
                     Childs = new()
                     {
                         new() { Name = "Cheese Pizza" },
@@ -908,7 +931,7 @@
         },
         new()
         {
-            Name = "Fruits",
+            Name = "Fruit",
             Icon = BitIconName.Health,
             Childs = new()
             {

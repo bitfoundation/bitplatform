@@ -17,6 +17,11 @@ public partial class BitOtpInput
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitOtpInput.
+    /// </summary>
+    [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The OtpInput direction in four available directions.
     /// </summary>
     [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
@@ -60,6 +65,11 @@ public partial class BitOtpInput
     /// Callback for when the OtpInput value change.
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitOtpInput.
+    /// </summary>
+    [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
 
 
     protected override string RootElementClass => "bit-otp";

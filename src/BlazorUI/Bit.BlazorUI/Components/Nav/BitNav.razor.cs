@@ -9,6 +9,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     private const string ARIA_LABEL_FIELD = nameof(BitNavItem.AriaLabel);
     private const string CHILD_ITEMS_FIELD = nameof(BitNavItem.ChildItems);
     private const string COLLAPSE_ARIA_LABEL_FIELD = nameof(BitNavItem.CollapseAriaLabel);
+    private const string DATA_FIELD = nameof(BitNavItem.Data);
+    private const string DESCRIPTION_FIELD = nameof(BitNavItem.Description);
     private const string EXPAND_ARIA_LABEL_FIELD = nameof(BitNavItem.ExpandAriaLabel);
     private const string FORCE_ANCHOR_FIELD = nameof(BitNavItem.ForceAnchor);
     private const string ICON_NAME_FIELD = nameof(BitNavItem.IconName);
@@ -32,6 +34,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     private string _internalAriaLabelField = ARIA_LABEL_FIELD;
     private string _internalChildItemsField = CHILD_ITEMS_FIELD;
     private string _internalCollapseAriaLabelField = COLLAPSE_ARIA_LABEL_FIELD;
+    private string _internalDataField = DATA_FIELD;
+    private string _internalDescriptionField = DESCRIPTION_FIELD;
     private string _internalExpandAriaLabelField = EXPAND_ARIA_LABEL_FIELD;
     private string _internalForceAnchorField = FORCE_ANCHOR_FIELD;
     private string _internalIconNameField = ICON_NAME_FIELD;
@@ -111,7 +115,27 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Aria label when group is collapsed.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? CollapseAriaLabelFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? CollapseAriaLabelFieldSelector { get; set; }
+
+    /// <summary>
+    /// The field name of the Data property.
+    /// </summary>
+    [Parameter] public string DataField { get; set; } = DATA_FIELD;
+
+    /// <summary>
+    /// The field selector of the Data property.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object>>? DataFieldSelector { get; set; }
+
+    /// <summary>
+    /// The field name of the Description property.
+    /// </summary>
+    [Parameter] public string DescriptionField { get; set; } = DESCRIPTION_FIELD;
+
+    /// <summary>
+    /// The field selector of the Description property.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, string>>? DescriptionFieldSelector { get; set; }
 
     /// <summary>
     /// The initially selected item in manual mode.
@@ -126,7 +150,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Aria label when group is expanded.
     /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ExpandAriaLabelFieldSelector { get; set; }
+    [Parameter] public Expression<Func<TItem, string>>? ExpandAriaLabelFieldSelector { get; set; }
 
     /// <summary>
     /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
@@ -391,6 +415,21 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(_internalCollapseAriaLabelField);
+    }
+
+    internal string? GetDescription(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Description;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Description;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalDescriptionField);
     }
 
     internal string? GetExpandAriaLabel(TItem item)
@@ -666,6 +705,8 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         _internalAriaLabelField = AriaLabelFieldSelector?.GetName() ?? AriaLabelField;
         _internalChildItemsField = ChildItemsFieldSelector?.GetName() ?? ChildItemsField;
         _internalCollapseAriaLabelField = CollapseAriaLabelFieldSelector?.GetName() ?? CollapseAriaLabelField;
+        _internalDataField = DataFieldSelector?.GetName() ?? DataField;
+        _internalDescriptionField = DescriptionFieldSelector?.GetName() ?? DescriptionField;
         _internalExpandAriaLabelField = ExpandAriaLabelFieldSelector?.GetName() ?? ExpandAriaLabelField;
         _internalForceAnchorField = ForceAnchorFieldSelector?.GetName() ?? ForceAnchorField;
         _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;

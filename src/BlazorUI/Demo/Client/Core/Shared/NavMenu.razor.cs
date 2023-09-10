@@ -7,6 +7,7 @@ public partial class NavMenu : IDisposable
     private bool _disposed;
     private bool _isNavOpen = false;
     private string _searchText = string.Empty;
+    private List<BitNavItem> _flatNavItemList = default!;
     private List<BitNavItem> _filteredNavItems = default!;
     private readonly List<BitNavItem> _allNavItems = new()
     {
@@ -33,18 +34,18 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "CheckBox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
-                new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" } },
-                new() { Text = "Dropdown", Url = "/components/dropdown" },
+                new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" }, Description = "Radio, RadioButton" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect" },
                 new() { Text = "Label",  Url = "/components/label" },
-                new() { Text = "Link", Url = "/components/link" },
+                new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = new string[] { "/components/search-box" } },
-                new() { Text = "Slider", Url = "/components/slider" },
+                new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
                 new() { Text = "SpinButton", Url = "/components/spinbutton", AdditionalUrls = new string[] { "/components/spin-button" } },
-                new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = new string[] { "/components/text-field" } },
-                new() { Text = "NumericTextField", Url = "/components/numerictextfield", AdditionalUrls = new string[] { "/components/numeric-text-field" } },
+                new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = new string[] { "/components/text-field" }, Description = "TextInput" },
+                new() { Text = "NumericTextField", Url = "/components/numerictextfield", AdditionalUrls = new string[] { "/components/numeric-text-field" }, Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = new string[] { "/components/otp-input" } },
-                new() { Text = "Toggle (Switch)", Url = "/components/toggle" }
+                new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" }
             }
         },
         new()
@@ -68,7 +69,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = new string[] { "/components/basic-list" } },
                 new() { Text = "Carousel", Url = "/components/carousel" },
                 new() { Text = "Swiper", Url = "/components/swiper" },
-                new() { Text = "Persona (AvatarView)", Url = "/components/persona" }
+                new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" }
             }
         },
         new()
@@ -77,8 +78,8 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
-                new() { Text = "Nav (TreeList)", Url = "/components/nav" },
-                new() { Text = "Pivot (Tab)", Url = "/components/pivot" },
+                new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
+                new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
             }
         },
         new()
@@ -87,7 +88,7 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "MessageBar", Url = "/components/messagebar", AdditionalUrls = new string[] { "/components/message-bar" } },
-                new() { Text = "SnackBar", Url = "/components/snackbar" },
+                new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },
             }
         },
         new()
@@ -96,7 +97,7 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "ProgressIndicator", Url = "/components/progressindicator", AdditionalUrls = new string[] { "/components/progress-indicator" } },
-                new() { Text = "Spinner (BusyIndicator)", Url = "/components/spinner" },
+                new() { Text = "Spinner", Url = "/components/spinner", Description = "Busy, Waiting, Loading" },
                 new() { Text = "Loading", Url = "/components/loading" }
             },
         },
@@ -105,7 +106,7 @@ public partial class NavMenu : IDisposable
             Text = "Surfaces",
             ChildItems = new()
             {
-                new() { Text = "Accordion (Expander)", Url = "/components/accordion" },
+                new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },
                 new() { Text = "Typography", Url = "/components/typography" },
@@ -140,6 +141,8 @@ public partial class NavMenu : IDisposable
 
     protected override async Task OnInitAsync()
     {
+        _flatNavItemList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+
         HandleClear();
         _navMenuService.OnToggleMenu += ToggleMenu;
 
@@ -176,8 +179,7 @@ public partial class NavMenu : IDisposable
         _filteredNavItems = _allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        _filteredNavItems = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        _filteredNavItems = _flatNavItemList.FindAll(item => text.Split(' ').Where(t => t.HasValue()).Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)

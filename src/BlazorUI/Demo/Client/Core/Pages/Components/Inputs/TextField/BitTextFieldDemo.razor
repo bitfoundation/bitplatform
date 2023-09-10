@@ -8,6 +8,7 @@
 <ComponentDemo ComponentName="TextField"
                ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
         <ExamplePreview>
@@ -177,21 +178,44 @@
 
     <ComponentExampleBox Title="Style & Class" HtmlCode="@example12HtmlCode" Id="example12">
         <ExamplePreview>
-            <div class="custom-wrapper">
-                <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitTextField Placeholder="Enter a text..." Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem" />
+                    <BitTextField Placeholder="Enter a text..." Class="custom-class" />
+                </div>
                 <br />
-                <BitTextField Placeholder="Enter a text..." Label="Custom LabelClass" LabelClass="custom-label" />
-            </div>
-            <br />
-            <div class="custom-wrapper">
-                <BitTextField Placeholder="Enter a text..." Label="Custom InputStyle" InputStyle="color:red" />
-                <br />
-                <BitTextField Placeholder="Enter a text..." Label="Custom InputClass" InputClass="custom-input" />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitTextField Placeholder="Enter a text..."
+                                  IconName="@BitIconName.Microphone"
+                                  Styles="@(new() { Icon = "color: darkorange;",
+                                                    Input = "padding: 0.5rem; background-color: goldenrod"} )" />
+                    <br />
+                    <BitTextField Placeholder="Enter a text..."
+                                  DefaultValue="Custom input class"
+                                  Label="Custom label class"
+                                  Classes="@(new() { FieldGroup = "custom-field",
+                                                     FieldGroupFocus = "field-focus",
+                                                     Input = "custom-input",
+                                                     Label = "custom-label",
+                                                     LabelFocus = "label-focus" } )" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example13HtmlCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Visibility" HtmlCode="@example13HtmlCode" Id="example13">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitTextField Visibility="BitVisibility.Visible" Placeholder="Visible TextField" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitTextField Visibility="BitVisibility.Hidden" Placeholder="Hidden TextField" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitTextField Visibility="BitVisibility.Collapsed" Placeholder="Collapsed TextField" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" HtmlCode="@example14HtmlCode" CsharpCode="@example14CsharpCode" Id="example14">
         <ExamplePreview>
             <div class="example-box">
                 @if (formIsValidSubmit is false)

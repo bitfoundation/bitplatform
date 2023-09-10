@@ -41,9 +41,9 @@ The following apps are our open-source projects powered by the bit platform show
 There are many ways to contribute
 
 * Fork / Star this project 😊
+* Give us a try and use bit platform in your apps
 * Submit [bugs](https://github.com/bitfoundation/bitplatform/issues/new?template=bug_report.yml) & [feature requests](https://github.com/bitfoundation/bitplatform/issues/new?template=feature_request.yml)
-* Checkout our list of [issues](https://github.com/bitfoundation/bitplatform/issues) and submit new PRs 🤩
-* Engage with other developers on [stackoverflow](https://stackoverflow.com/questions/tagged/bitplatform)
+* Check out our [reddit](https://www.reddit.com/r/bitplatform/) to stay up to date on the hottest news of .NET and bit platform
 
 ## **Contributions**
 
