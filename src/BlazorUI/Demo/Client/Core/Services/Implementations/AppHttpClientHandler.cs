@@ -20,27 +20,22 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
         if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
-            if (response.Headers.TryGetValues("Request-ID", out var values) && values is not null && values.Any())
+            if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                var restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken);
+                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo);
 
-                ArgumentNullException.ThrowIfNull(restError, nameof(restError));
+                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
 
-                var exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
-
-                List<object> args = new()
-                {
-                    typeof(KnownException).IsAssignableFrom(exceptionType)
-                        ? new LocalizedString(restError.Key!, restError.Message!)
-                        : restError.Message!
-                };
+                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
                     args.Add(restError.Payload);
                 }
 
-                throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray())!);
+                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
+
+                throw exp;
             }
         }
 
