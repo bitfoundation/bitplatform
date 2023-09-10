@@ -19,19 +19,8 @@ public partial class BitTextField
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
+    private bool _hasFocus;
     private BitTextFieldType _elementType;
-
-    private string _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            if (focusClass == value) return;
-
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -47,6 +36,11 @@ public partial class BitTextField
     /// Whether to show the reveal password button for input type 'password'.
     /// </summary>
     [Parameter] public bool CanRevealPassword { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitTextField.
+    /// </summary>
+    [Parameter] public BitTextFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.
@@ -246,6 +240,11 @@ public partial class BitTextField
     [Parameter] public string? RevealPasswordAriaLabel { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitTextField.
+    /// </summary>
+    [Parameter] public BitTextFieldClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Suffix displayed after the text field contents. This is not included in the value. 
     /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
     /// </summary>
@@ -273,66 +272,6 @@ public partial class BitTextField
         }
     }
 
-    /// <summary>
-    /// Style of the BitTextField's Label
-    /// </summary>
-    [Parameter] public string? LabelStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Label
-    /// </summary>
-    [Parameter] public string? LabelClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Input
-    /// </summary>
-    [Parameter] public string? InputStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Input
-    /// </summary>
-    [Parameter] public string? InputClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Prefix
-    /// </summary>
-    [Parameter] public string? PrefixStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Prefix
-    /// </summary>
-    [Parameter] public string? PrefixClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Suffix
-    /// </summary>
-    [Parameter] public string? SuffixStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Suffix
-    /// </summary>
-    [Parameter] public string? SuffixClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's RevealPassword button
-    /// </summary>
-    [Parameter] public string? RevealPasswordStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's RevealPassword button
-    /// </summary>
-    [Parameter] public string? RevealPasswordClass { get; set; }
-
-    /// <summary>
-    /// Style of the BitTextField's Description
-    /// </summary>
-    [Parameter] public string? DescriptionStyle { get; set; }
-
-    /// <summary>
-    /// CSS class of the BitTextField's Description
-    /// </summary>
-    [Parameter] public string? DescriptionClass { get; set; }
-
 
 
     protected override string RootElementClass => "bit-txt";
@@ -349,9 +288,14 @@ public partial class BitTextField
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focus}" : string.Empty);
 
         ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focus : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -404,7 +348,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-fcs";
+        _hasFocus = true;
         ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
@@ -413,7 +357,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
@@ -422,7 +366,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-fcs";
+        _hasFocus = true;
         ClassBuilder.Reset();
         await OnFocus.InvokeAsync(e);
     }

@@ -6,6 +6,7 @@ public class BitSearchBoxClassStyles
     /// Custom CSS classes/styles for the search box's clear button.
     /// </summary>
     public string? ClearButton { get; set; }
+
     /// <summary>
     /// Custom CSS classes/styles for the search box's clear button container.
     /// </summary>
