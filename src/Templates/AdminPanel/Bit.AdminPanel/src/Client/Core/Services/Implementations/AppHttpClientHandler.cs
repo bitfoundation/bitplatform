@@ -23,7 +23,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
         }
 
 #if MultilingualEnabled && (BlazorServer || BlazorHybrid)
-        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
+        var cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #endif
 
@@ -36,17 +36,19 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
         if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
         {
-            if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
+            if (response.Headers.TryGetValues("Request-ID", out var values) && values is not null && values.Any())
             {
-                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken) ?? new();
+                var restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken);
 
-                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
+                ArgumentNullException.ThrowIfNull(nameof(restError));
+
+                var exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError?.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
 
                 List<object> args = new()
                 {
                     typeof(KnownException).IsAssignableFrom(exceptionType)
-                        ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
-                        : restError.Message ?? string.Empty
+                        ? new LocalizedString(restError!.Key ?? string.Empty, restError.Message ?? string.Empty)
+                        : restError!.Message ?? string.Empty
                 };
 
                 if (exceptionType == typeof(ResourceValidationException))
