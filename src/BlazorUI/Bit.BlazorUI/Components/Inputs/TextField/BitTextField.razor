@@ -8,26 +8,34 @@
     <div style="@Styles?.InputWrapper" class="bit-txt-wrp @Classes?.InputWrapper">
         @if (LabelTemplate is not null)
         {
-            <label style="@Styles?.Label" class="bit-txt-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+            <label id="@_labelId" for="@_inputId">
                 @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label style="@Styles?.Label" class="bit-txt-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+            <label style="@Styles?.Label @(_hasFocus ? Styles?.LabelFocus : "")"
+                   class="bit-txt-lbl @Classes?.Label @(_hasFocus ? Classes?.LabelFocus : "")"
+                   id="@_labelId"
+                   for="@_inputId">
                 @Label
             </label>
         }
 
-        <div style="@Styles?.FieldGroup" class="bit-txt-fgp @Classes?.FieldGroup">
+        <div style="@Styles?.FieldGroup @(_hasFocus ? Styles?.FieldGroupFocus : "")"
+             class="bit-txt-fgp @Classes?.FieldGroup  @(_hasFocus ? Classes?.FieldGroupFocus : "")">
             @if (PrefixTemplate is not null)
             {
                 @PrefixTemplate
             }
             else if (Prefix.HasValue())
             {
-                <div style="@Styles?.PrefixContainer" class="bit-txt-pre @Classes?.PrefixContainer">
-                    <span style="@Styles?.Prefix" class="@Classes?.Prefix">@Prefix</span>
+                <div style="@Styles?.PrefixContainer @(_hasFocus ? Styles?.PrefixContainerFocus : "")"
+                     class="bit-txt-pre @Classes?.PrefixContainer @(_hasFocus ? Classes?.PrefixContainerFocus : "")">
+                    <span style="@Styles?.Prefix @(_hasFocus ? Styles?.PrefixFocus : "")"
+                          class="@Classes?.Prefix @(_hasFocus ? Classes?.PrefixFocus : "")">
+                        @Prefix
+                    </span>
                 </div>
             }
 
@@ -44,8 +52,8 @@
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
                           value="@CurrentValue"
-                          style="@Styles?.Input"
-                          class="bit-txt-inp @Classes?.Input"
+                          style="@Styles?.Input @(_hasFocus ? Styles?.InputFocus : "")"
+                          class="bit-txt-inp @Classes?.Input @(_hasFocus ? Classes?.InputFocus : "")"
                           disabled=@(IsEnabled is false)
                           rows="@Rows"
                           readonly=@IsReadonly
@@ -70,8 +78,8 @@
                        @onkeydown="@HandleOnKeyDown"
                        @onfocusin="@HandleOnFocusIn"
                        @onfocusout="@HandleOnFocusOut"
-                       style="@Styles?.Input"
-                       class="bit-txt-inp @Classes?.Input"
+                       style="@Styles?.Input @(_hasFocus ? Styles?.InputFocus : "")"
+                       class="bit-txt-inp @Classes?.Input @(_hasFocus ? Classes?.InputFocus : "")"
                        disabled=@(IsEnabled is false)
                        readonly=@IsReadonly
                        required=@IsRequired
@@ -88,20 +96,24 @@
             @if (CanRevealPassword && Type == BitTextFieldType.Password)
             {
                 <button @onclick="ToggleRevealPassword"
-                        style="@Styles?.RevealPassword"
-                        class="bit-txt-prb @Classes?.RevealPassword"
+                        style="@Styles?.RevealPassword @(_hasFocus ? Styles?.RevealPasswordFocus : "")"
+                        class="bit-txt-prb @Classes?.RevealPassword @(_hasFocus ? Classes?.RevealPasswordFocus : "")"
                         type="button"
                         aria-label="@RevealPasswordAriaLabel"
                         aria-pressed="@(_elementType == BitTextFieldType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer" class="@Classes?.RevealPasswordIconContainer">
-                        <i style="@Styles?.RevealPasswordIcon" class="bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon" aria-hidden="true" />
+                        <i style="@Styles?.RevealPasswordIcon @(_hasFocus ? Styles?.RevealPasswordIconFocus : "")"
+                           class="bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon @(_hasFocus ? Classes?.RevealPasswordIconFocus : "")"
+                           aria-hidden="true" />
                     </span>
                 </button>
             }
 
             @if (IconName.HasValue())
             {
-                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                <i style="@Styles?.Icon @(_hasFocus ? Styles?.IconFocus : "")"
+                   class="bit-icon bit-icon--@IconName @Classes?.Icon @(_hasFocus ? Classes?.IconFocus : "")"
+                   aria-hidden="true" />
             }
 
             @if (SuffixTemplate is not null)
@@ -110,8 +122,12 @@
             }
             else if (Suffix.HasValue())
             {
-                <div style="@Styles?.SuffixContainer" class="bit-txt-suf @Classes?.SuffixContainer">
-                    <span style="@Styles?.Suffix" class="@Classes?.Suffix">@Suffix</span>
+                <div style="@Styles?.SuffixContainer @(_hasFocus ? Styles?.SuffixContainerFocus : "")"
+                     class="bit-txt-suf @Classes?.SuffixContainer @(_hasFocus ? Classes?.SuffixContainerFocus : "")">
+                    <span style="@Styles?.Suffix @(_hasFocus ? Styles?.SuffixFocus : "")"
+                          class="@Classes?.Suffix @(_hasFocus ? Classes?.SuffixFocus : "")">
+                        @Suffix
+                    </span>
                 </div>
             }
 
@@ -119,14 +135,17 @@
     </div>
     @if (Description.HasValue() || DescriptionTemplate is not null)
     {
-        <span style="@Styles?.DescriptionContainer" class="bit-txt-des @Classes?.DescriptionContainer" id="@_descriptionId">
+        <span style="@Styles?.DescriptionContainer @(_hasFocus ? Styles?.DescriptionContainerFocus : "")"
+              class="bit-txt-des @Classes?.DescriptionContainer @(_hasFocus ? Classes?.DescriptionContainerFocus : "")"
+              id="@_descriptionId">
             @if (DescriptionTemplate is not null)
             {
                 @DescriptionTemplate
             }
             else if (Description.HasValue())
             {
-                <span style="@Styles?.Description" class="@Classes?.Description">
+                <span style="@Styles?.Description @(_hasFocus ? Styles?.DescriptionFocus : "")"
+                      class="@Classes?.Description @(_hasFocus ? Classes?.DescriptionFocus : "")">
                     @Description
                 </span>
             }

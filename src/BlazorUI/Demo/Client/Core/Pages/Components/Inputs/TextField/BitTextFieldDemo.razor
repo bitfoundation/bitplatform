@@ -187,11 +187,19 @@
                 <br />
                 <div class="custom-wrapper">
                     <BitLabel>Styles & Classes:</BitLabel>
-                    <BitTextField Placeholder="Enter a text..." IconName="@BitIconName.Microphone"
-                                  Styles="@(new() {Icon = "color: darkorange;", Input = "padding: 0.5rem; background-color: goldenrod"})" />
+                    <BitTextField Placeholder="Enter a text..."
+                                  IconName="@BitIconName.Microphone"
+                                  Styles="@(new() { Icon = "color: darkorange;",
+                                                    Input = "padding: 0.5rem; background-color: goldenrod"} )" />
                     <br />
-                    <BitTextField Placeholder="Enter a text..." DefaultValue="Custom input class" Label="Custom label class"
-                                  Classes="@(new() { Input = "custom-input", Label = "custom-label"})" />
+                    <BitTextField Placeholder="Enter a text..."
+                                  DefaultValue="Custom input class"
+                                  Label="Custom label class"
+                                  Classes="@(new() { FieldGroup = "custom-field",
+                                                     FieldGroupFocus = "field-focus",
+                                                     Input = "custom-input",
+                                                     Label = "custom-label",
+                                                     LabelFocus = "label-focus" } )" />
                 </div>
             </div>
         </ExamplePreview>

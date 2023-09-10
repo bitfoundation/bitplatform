@@ -19,19 +19,8 @@ public partial class BitTextField
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
     private bool _isPasswordRevealed;
+    private bool _hasFocus;
     private BitTextFieldType _elementType;
-
-    private string _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            if (focusClass == value) return;
-
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -299,9 +288,14 @@ public partial class BitTextField
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focus}" : string.Empty);
 
         ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focus : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -354,7 +348,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-fcs";
+        _hasFocus = true;
         ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
@@ -363,7 +357,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
@@ -372,7 +366,7 @@ public partial class BitTextField
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-fcs";
+        _hasFocus = true;
         ClassBuilder.Reset();
         await OnFocus.InvokeAsync(e);
     }

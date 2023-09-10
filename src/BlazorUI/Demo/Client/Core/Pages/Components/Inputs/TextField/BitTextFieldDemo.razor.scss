@@ -66,10 +66,24 @@
             height: 3rem;
         }
 
+        .custom-field {
+            margin-top: 0.5rem;
+            border-radius: 1rem;
+            background-color: tomato;
+        }
+
+        .field-focus::after {
+            border-radius: 1rem;
+        }
+
         .custom-label {
             color: blue;
             font-weight: 900;
             font-size: 1.25rem;
+        }
+
+        .label-focus {
+            color: chartreuse;
         }
     }
 }

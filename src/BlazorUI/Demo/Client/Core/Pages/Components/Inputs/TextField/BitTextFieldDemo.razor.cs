@@ -268,10 +268,31 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "DescriptionFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's description focus state."
+                },
+                new()
+                {
+                    Name = "DescriptionContainerFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's description container focus state."
+                },
+                new()
+                {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = null,
                     Description = "Custom CSS classes/styles for the text field's label."
+                },
+                new()
+                {
+                    Name = "LabelFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's label focus state."
                 },
                 new()
                 {
@@ -282,6 +303,20 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "FieldGroupFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's field group focus state."
+                },
+                new()
+                {
+                    Name = "Focus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's focus state."
+                },
+                new()
+                {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = null,
@@ -289,10 +324,24 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "IconFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's icon focus state."
+                },
+                new()
+                {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = null,
                     Description = "Custom CSS classes/styles for the text field's input."
+                },
+                new()
+                {
+                    Name = "InputFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's input focus state."
                 },
                 new()
                 {
@@ -324,10 +373,31 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "PrefixFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's prefix focus state."
+                },
+                new()
+                {
+                    Name = "PrefixContainerFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's prefix container focus state."
+                },
+                new()
+                {
                     Name = "RevealPassword",
                     Type = "string?",
                     DefaultValue = null,
                     Description = "Custom CSS classes/styles for the text field's reveal password."
+                },
+                new()
+                {
+                    Name = "RevealPasswordFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's reveal password focus state."
                 },
                 new()
                 {
@@ -345,6 +415,13 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
+                    Name = "RevealPasswordIconFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's reveal password icon focus state."
+                },
+                new()
+                {
                     Name = "Suffix",
                     Type = "string?",
                     DefaultValue = null,
@@ -356,6 +433,20 @@ public partial class BitTextFieldDemo
                     Type = "string?",
                     DefaultValue = null,
                     Description = "Custom CSS classes/styles for the text field's suffix container."
+                },
+                new()
+                {
+                    Name = "SuffixFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's suffix focus state."
+                },
+                new()
+                {
+                    Name = "SuffixContainerFocus",
+                    Type = "string?",
+                    DefaultValue = null,
+                    Description = "Custom CSS classes/styles for the text field's suffix container focus state."
                 }
             }
         }
@@ -532,20 +623,42 @@ private string NotTrimmedValue;";
         height: 3rem;
     }
 
+    .custom-field {
+        margin-top: 0.5rem;
+        border-radius: 1rem;
+        background-color: tomato;
+    }
+
+    .field-focus::after {
+        border-radius: 1rem;
+    }
+
     .custom-label {
         color: blue;
         font-weight: 900;
         font-size: 1.25rem;
+    }
+
+    .label-focus {
+        color: chartreuse;
     }
 </style>
 
 <BitTextField Placeholder=""Enter a text..."" Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem"" />
 <BitTextField Placeholder=""Enter a text..."" Class=""custom-class"" />
 
-<BitTextField Placeholder=""Enter a text..."" IconName=""@BitIconName.Microphone""
-              Styles=""@(new() {Icon = ""color: darkorange;"", Input = ""padding: 0.5rem; background-color: goldenrod""})"" />
-<BitTextField Placeholder=""Enter a text..."" DefaultValue=""Custom input class"" Label=""Custom label class""
-              Classes=""@(new() { Input = ""custom-input"", Label = ""custom-label""})"" />";
+<BitTextField Placeholder=""Enter a text...""
+              IconName=""@BitIconName.Microphone""
+              Styles=""@(new() { Icon = ""color: darkorange;"",
+                                Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
+<BitTextField Placeholder=""Enter a text...""
+              DefaultValue=""Custom input class""
+              Label=""Custom label class""
+              Classes=""@(new() { FieldGroup = ""custom-field"",
+                                 FieldGroupFocus = ""field-focus"",
+                                 Input = ""custom-input"",
+                                 Label = ""custom-label""},
+                                 LabelFocus = ""label-focus"" )"" />";
 
     private readonly string example13HtmlCode = @"
 Visible: [ <BitTextField Visibility=""BitVisibility.Visible"" Placeholder=""Visible TextField"" /> ]
