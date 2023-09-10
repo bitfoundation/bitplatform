@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Globalization;
-using System.Net.Http.Headers;
-
-namespace Bit.Websites.Platform.Web.Services.Implementations;
+﻿namespace Bit.Websites.Platform.Web.Services.Implementations;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {
@@ -24,20 +20,25 @@ public partial class AppHttpClientHandler : HttpClientHandler
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo);
+                var restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken);
 
-                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType) ?? typeof(UnknownException);
+                ArgumentNullException.ThrowIfNull(restError, nameof(restError));
 
-                var args = new List<object> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message };
+                var exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
+
+                List<object> args = new()
+                {
+                    typeof(KnownException).IsAssignableFrom(exceptionType)
+                        ? new LocalizedString(restError.Key!, restError.Message!)
+                        : restError.Message!
+                };
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
                     args.Add(restError.Payload);
                 }
 
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray());
-
-                throw exp;
+                throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray())!);
             }
         }
 
