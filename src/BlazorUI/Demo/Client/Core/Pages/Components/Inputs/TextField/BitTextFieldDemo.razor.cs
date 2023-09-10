@@ -650,15 +650,15 @@ private string NotTrimmedValue;";
 <BitTextField Placeholder=""Enter a text...""
               IconName=""@BitIconName.Microphone""
               Styles=""@(new() { Icon = ""color: darkorange;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
+                                Input = ""padding: 0.5rem; background-color: goldenrod"" } )"" />
 <BitTextField Placeholder=""Enter a text...""
               DefaultValue=""Custom input class""
               Label=""Custom label class""
               Classes=""@(new() { FieldGroup = ""custom-field"",
                                  FieldGroupFocus = ""field-focus"",
                                  Input = ""custom-input"",
-                                 Label = ""custom-label""},
-                                 LabelFocus = ""label-focus"" )"" />";
+                                 Label = ""custom-label"",
+                                 LabelFocus = ""label-focus"" } )"" />";
 
     private readonly string example13HtmlCode = @"
 Visible: [ <BitTextField Visibility=""BitVisibility.Visible"" Placeholder=""Visible TextField"" /> ]
