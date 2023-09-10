@@ -674,17 +674,15 @@ Collapsed: [ <BitTextField Visibility=""BitVisibility.Collapsed"" Placeholder=""
         border-left: 0.3rem solid #d13438;
     }
 
-    ::deep {
-        .validation-message {
-            color: #A4262C;
-            font-size: 0.75rem;
-            margin-top: 0.3rem;
-            line-height: normal;
-        }
+    .validation-message {
+        color: #A4262C;
+        font-size: 0.75rem;
+        margin-top: 0.3rem;
+        line-height: normal;
+    }
 
-        .validation-errors {
-            margin: 0.3rem;
-        }
+    .validation-errors {
+        margin: 0.3rem;
     }
 </style>
 
