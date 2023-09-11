@@ -1191,8 +1191,8 @@ public partial class BitDateRangePicker
 
         CurrentValue = new BitDateRangePickerValue
         {
-            StartDate = GetDateTimeOffset(CurrentValue.StartDate, startTimeHour, _startTimeMinuteView),
-            EndDate = GetDateTimeOffset(CurrentValue.EndDate, endTimeHour, _endTimeMinuteView)
+            StartDate = GetDateTimeOffset(CurrentValue.StartDate, startTimeHour, startTimeMinute),
+            EndDate = GetDateTimeOffset(CurrentValue.EndDate, endTimeHour, endTimeMinute)
         };
     }
 
