@@ -1,17 +1,27 @@
 @namespace Bit.BlazorUI
+@typeparam TItem
+@typeparam TValue
 
-@if (Item.ItemType == BitDropdownItemType.Header)
-{
-    <div class="bit-drp-ihd">@Item.Text</div>
+@{
+    var itemType = Dropdown.GetItemType(Item);
+    var text = Dropdown.GetText(Item);
+    var isHidden = Dropdown.GetIsHidden(Item);
+    var isEnabled = Dropdown.GetIsEnabled(Item);
+    var isSelected = Dropdown.GetIsSelected(Item);
 }
-else if (Item.ItemType == BitDropdownItemType.Normal)
+
+@if (itemType == BitDropdownItemType.Header)
+{
+    <div class="bit-drp-ihd">@text</div>
+}
+else if (itemType == BitDropdownItemType.Normal)
 {
     @if (Dropdown.IsMultiSelect)
     {
-        <div style="@(Item.IsHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
+        <div style="@(isHidden ? " display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
             <button class="bit-drp-mcn" @onclick="@(() => Dropdown.HandleOnItemClick(Item))">
                 <div class="bit-drp-chb">
-                    <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@Item.Text" />
+                    <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@text" />
                 </div>
 
                 @if (Dropdown.ItemTemplate is not null)
@@ -20,7 +30,7 @@ else if (Item.ItemType == BitDropdownItemType.Normal)
                 }
                 else
                 {
-                    <span class="bit-drp-itx">@Item.Text</span>
+                    <span class="bit-drp-itx">@text</span>
                 }
             </button>
         </div>
@@ -30,15 +40,15 @@ else if (Item.ItemType == BitDropdownItemType.Normal)
         <button @onclick="()=> Dropdown.HandleOnItemClick(Item)"
                 type="button"
                 role="option"
-                title="@Item.Title"
-                disabled=@(Item.IsEnabled is false)
-                tabindex="@(Item.IsEnabled ? 0 : -1)"
-                style="@(Item.IsHidden ? "display:none" : string.Empty)"
-                class="bit-drp-itm@(Item.IsSelected ? $" bit-drp-sel" : string.Empty)"
-                aria-label="@Item.AriaLabel"
+                title="@Dropdown.GetTitle(Item)"
+                disabled=@(isEnabled is false)
+                tabindex="@(isEnabled ? 0 : -1)"
+                style="@(isHidden ? " display:none" : string.Empty)"
+                class="bit-drp-itm@(isSelected ? $" bit-drp-sel" : string.Empty)"
+                aria-label="@Dropdown.GetAriaLabel(Item)"
                 aria-setsize="@Dropdown.GetTotalItems()"
-                aria-disabled="@(Item.IsEnabled is false)"
-                aria-selected="@(Item.IsSelected ? "true" : "false")"
+                aria-disabled="@(isEnabled is false)"
+                aria-selected="@(isSelected ? "true" : "false")"
                 aria-posinset="@Dropdown.GetItemPosInSet(Item)">
             @if (Dropdown.ItemTemplate is not null)
             {
@@ -46,12 +56,12 @@ else if (Item.ItemType == BitDropdownItemType.Normal)
             }
             else
             {
-                @Item.Text
+                @text
             }
         </button>
     }
 }
-else if (Item.ItemType == BitDropdownItemType.Divider)
+else if (itemType == BitDropdownItemType.Divider)
 {
     <div class="bit-drp-sep" role="separator"></div>
 }

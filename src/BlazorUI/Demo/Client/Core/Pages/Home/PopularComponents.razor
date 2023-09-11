@@ -81,9 +81,9 @@
                 }
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
-                    <BitDropdown Label="Multi-select Dropdown"
+                    <BitDropdown @bind-Values="SelectedDropdownValues"
+                                 Label="Multi-select Dropdown"
                                  Items="DropdownItems"
-                                 @bind-Values="SelectedDropdownValues"
                                  Placeholder="Select options"
                                  IsMultiSelect="true"
                                  Style="width:290px" />

@@ -54,6 +54,7 @@
                                 <BitDropdown @bind-Value="SelectedItemText"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
+                                             TItem="BitDropdownItem<string>" TValue="string"
                                              OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                             </div>
                         </div>
@@ -195,6 +196,7 @@
                                 <BitDropdown @bind-Value="CustomSelectedFoodName"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
+                                             TItem="BitDropdownItem<string>" TValue="string"
                                              OnSelectItem="(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                             </div>
                         </div>
@@ -440,7 +442,7 @@
                                 </BitNav>
 
                                 <BitDropdown @bind-Value="SelectedOptionKey"
-                                             DefaultValue="French Fries"
+                                             DefaultValue="@("French Fries")"
                                              Label="Pick one"
                                              Items="FoodMenuDropdownItems" />
                             </div>
@@ -953,14 +955,14 @@
     private FoodMenu CustomToggledItem;
 
 
-    private string SelectedOptionKey;
+    private string? SelectedOptionKey;
 
     private BitNavOption ClickedOption;
     private BitNavOption SelectedOption;
     private BitNavOption ToggledOption;
 
 
-    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
+    private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems = new()
     {
         new()
         {

@@ -179,9 +179,9 @@
     </div>
 
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropdownItem item in SelectedItems)
+        @foreach (var item in SelectedItems)
         {
-            <option value="@item.Value" selected>@item.Text</option>
+            <option value="@GetValue(item)" selected>@GetText(item)</option>
         }
     </select>
 </div>

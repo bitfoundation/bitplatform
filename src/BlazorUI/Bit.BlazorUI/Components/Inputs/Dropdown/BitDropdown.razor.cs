@@ -15,7 +15,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private bool isOpen;
     private bool isRequired;
     private bool isResponsive;
-    private IEnumerable<TValue?> values = new List<TValue?>();
+    private ICollection<TValue?>? values = new List<TValue?>();
     private List<TItem> selectedItems = new();
 
     private List<TItem> _items = new();
@@ -70,7 +70,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// <summary>
     /// The default key value that will be initially used to set selected items in multi select mode if the Values parameter is not set.
     /// </summary>
-    [Parameter] public IEnumerable<TValue>? DefaultValues { get; set; }
+    [Parameter] public ICollection<TValue?>? DefaultValues { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -158,7 +158,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// <summary>
     /// The list of items to display in the callout.
     /// </summary>
-    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public ICollection<TItem>? Items { get; set; }
 
     /// <summary>
     /// The height of each item in pixels for virtualization.
@@ -300,20 +300,20 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// The key values of the selected items in multi select mode.
     /// </summary>
     [Parameter]
-    public IEnumerable<TValue?>? Values
+    public ICollection<TValue?>? Values
     {
         get => values;
         set
         {
-            if (value == null || values == value) return;
-            if (values.All(value.Contains) && values.Count() == value.Count()) return;
+            if (values == value) return;
+            if (value is not null && values!.All(value.Contains) && values!.Count() == value.Count()) return;
 
             values = value;
             _ = ValuesChanged.InvokeAsync(value);
         }
     }
-    [Parameter] public EventCallback<IEnumerable<TValue?>> ValuesChanged { get; set; }
-    [Parameter] public Expression<Func<IEnumerable<TValue?>>>? ValuesExpression { get; set; }
+    [Parameter] public EventCallback<ICollection<TValue?>?> ValuesChanged { get; set; }
+    [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }
 
     /// <summary>
     /// Enables virtualization to render only the visible items.
@@ -348,7 +348,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             if (DefaultValues is not null && ValuesHasBeenSet is false)
             {
                 var validValues = DefaultValues.Where(dv => _items.Any(i => comparer.Equals(dv, GetValue(i))));
-                Values = validValues;
+                Values = validValues.ToList();
                 var items = _items.FindAll(i => validValues.Any(vv => comparer.Equals(vv, GetValue(i))));
                 ClearAllItemsIsSelected();
                 items.ForEach(i => SetIsSelected(i, true));
@@ -384,7 +384,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         var value = GetValue(item);
         if (Values.Contains(value))
         {
-            Values = Values.Where(v => EqualityComparer<TValue>.Default.Equals(v, value));
+            Values = Values.Where(v => EqualityComparer<TValue>.Default.Equals(v, value)).ToList();
         }
 
         StateHasChanged();
@@ -423,7 +423,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             CurrentValue = GetValue(SelectedItems.FirstOrDefault());
 
-            Values = SelectedItems.Select(GetValue);
+            Values = SelectedItems.Select(GetValue).ToList();
 
             if (isSelected)
             {
@@ -565,7 +565,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         if (IsMultiSelect)
         {
-            RegisterFieldIdentifier(ValuesExpression, typeof(IEnumerable<string>));
+            RegisterFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
         }
         else
         {
@@ -593,15 +593,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         {
             if (IsMultiSelect)
             {
-                if (Values.Any() is false) return;
+                if (Values is null || Values.Any() is false) return;
 
-                var intersectValues = Values.Intersect(_items.Select(GetValue));
-
-                bool isEqual = intersectValues.OrderBy(i => i).SequenceEqual(Values.OrderBy(v => v));
-
-                if (isEqual) return;
-
-                Values = intersectValues;
+                Values = Values.Where(v => _items.Any(i => comparer.Equals(GetValue(i), v))).ToList();
             }
             else
             {
@@ -631,42 +625,58 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     private void InitSelectedItemsAndText()
     {
+        var comparer = EqualityComparer<TValue>.Default;
+
         if (Items is not null)
         {
             SelectedItems.Clear();
             ClearAllItemsIsSelected();
+
             if (IsMultiSelect)
             {
                 if (ValuesHasBeenSet || _isValuesChanged)
                 {
-                    _items.FindAll(i => Values.Contains(GetValue(i)) && GetItemType(i) == BitDropdownItemType.Normal).ForEach(i => SetIsSelected(i, true));
+                    foreach (var item in _items)
+                    {
+                        if (GetItemType(item) != BitDropdownItemType.Normal) continue;
+                        if (Values!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+                        SetIsSelected(item, true);
+                        SelectedItems.Add(item);
+                    }
                 }
                 else if (DefaultValues is not null && DefaultValues.Any())
                 {
-                    _items.FindAll(i => DefaultValues.Contains(GetValue(i)) && GetItemType(i) == BitDropdownItemType.Normal).ForEach(i => SetIsSelected(i, true));
+                    foreach (var item in _items)
+                    {
+                        if (GetItemType(item) != BitDropdownItemType.Normal) continue;
+                        if (DefaultValues!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+                        SetIsSelected(item, true);
+                        SelectedItems.Add(item);
+                    }
                 }
-
-                SelectedItems.AddRange(_items.FindAll(GetIsSelected));
-
                 _ = SelectedItemsChanged.InvokeAsync(SelectedItems);
             }
             else
             {
-                var comparer = EqualityComparer<TValue>.Default;
-                if (CurrentValue is not null && Items.Any(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal))
+                if (CurrentValue is not null)
                 {
-                    var item = _items.Find(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal)!;
-                    SetIsSelected(item, true);
-                    SelectedItems.Add(item);
-                    _ = SelectedItemChanged.InvokeAsync(item);
+                    var item = _items.Find(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal);
+                    if (item is not null)
+                    {
+                        SetIsSelected(item, true);
+                        SelectedItems.Add(item);
+                    }
                 }
-                else if (DefaultValue is not null && Items.Any(i => comparer.Equals(GetValue(i), DefaultValue) && GetItemType(i) == BitDropdownItemType.Normal))
+                else if (DefaultValue is not null)
                 {
                     var item = _items.Find(i => comparer.Equals(GetValue(i), DefaultValue) && GetItemType(i) == BitDropdownItemType.Normal)!;
-                    SetIsSelected(item, true);
-                    SelectedItems.Add(item);
-                    _ = SelectedItemChanged.InvokeAsync(item);
+                    if (item is not null)
+                    {
+                        SetIsSelected(item, true);
+                        SelectedItems.Add(item);
+                    }
                 }
+                _ = SelectedItemChanged.InvokeAsync(SelectedItem);
             }
             ClassBuilder.Reset();
         }
@@ -862,7 +872,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     }
 
 
-    private string? GetAriaLabel(TItem item)
+    internal string? GetAriaLabel(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -884,7 +894,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
 
-    private string? GetId(TItem item)
+    internal string? GetId(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -906,7 +916,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Id.Name);
     }
 
-    private object? GetData(TItem item)
+    internal object? GetData(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -928,7 +938,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<object?>(NameSelectors.Data.Name);
     }
 
-    private bool GetIsEnabled(TItem item)
+    internal bool GetIsEnabled(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -950,7 +960,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name);
     }
 
-    private bool GetIsHidden(TItem item)
+    internal bool GetIsHidden(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -972,7 +982,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<bool>(NameSelectors.IsHidden.Name);
     }
 
-    private bool GetIsSelected(TItem item)
+    internal bool GetIsSelected(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -994,7 +1004,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<bool>(NameSelectors.IsSelected.Name);
     }
 
-    private BitDropdownItemType GetItemType(TItem item)
+    internal BitDropdownItemType GetItemType(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -1016,7 +1026,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<BitDropdownItemType>(NameSelectors.ItemType.Name);
     }
 
-    private string? GetText(TItem? item)
+    internal string? GetText(TItem? item)
     {
         if (item is null) return null;
 
@@ -1040,7 +1050,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private string? GetTitle(TItem item)
+    internal string? GetTitle(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
@@ -1062,7 +1072,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
-    private TValue? GetValue(TItem? item)
+    internal TValue? GetValue(TItem? item)
     {
         if (item is null) return default;
 

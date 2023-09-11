@@ -68,8 +68,8 @@ public partial class PopularComponents
 
 
 
-    private List<string> SelectedDropdownValues = new() { "f-app", "f-ban" };
-    private static List<BitDropdownItem> DropdownItems = new()
+    private ICollection<string?> SelectedDropdownValues = new List<string?>() { "f-app", "f-ban" };
+    private static List<BitDropdownItem<string>> DropdownItems = new()
     {
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },

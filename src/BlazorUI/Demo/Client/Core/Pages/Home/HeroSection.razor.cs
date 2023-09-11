@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 public partial class HeroSection
 {
-    private List<BitDropdownItem> _productDropdownItems = default!;
+    private List<BitDropdownItem<string>> _productDropdownItems = default!;
     private string _selectedColor = "#0065EF";
     private bool _isToggleChecked = true;
     private bool _isToggleUnChecked = false;
