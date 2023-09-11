@@ -310,6 +310,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             values = value;
             _ = ValuesChanged.InvokeAsync(value);
+
+            EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
     }
     [Parameter] public EventCallback<ICollection<TValue?>?> ValuesChanged { get; set; }
@@ -640,6 +642,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     {
                         if (GetItemType(item) != BitDropdownItemType.Normal) continue;
                         if (Values!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+
                         SetIsSelected(item, true);
                         SelectedItems.Add(item);
                     }
@@ -650,6 +653,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     {
                         if (GetItemType(item) != BitDropdownItemType.Normal) continue;
                         if (DefaultValues!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+
                         SetIsSelected(item, true);
                         SelectedItems.Add(item);
                     }
@@ -770,7 +774,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         return _searchText.HasNoValue()
                 ? _items
-                : _items.FindAll(i => GetText(i)!.Contains(_searchText!, StringComparison.OrdinalIgnoreCase));
+                : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
+                                      && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
     }
 
     private string GetSearchBoxClasses()
@@ -813,7 +818,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             SelectedItems.Clear();
             ClassBuilder.Reset();
 
-            Values = null;
+            Values = new List<TValue?>();
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
@@ -827,12 +832,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                 ClassBuilder.Reset();
             }
 
-            CurrentValue = default;
             await SelectedItemChanged.InvokeAsync(SelectedItem);
         }
 
         _text = string.Empty;
-        CurrentValueAsString = null;
+        CurrentValue = default;
 
         StateHasChanged();
     }

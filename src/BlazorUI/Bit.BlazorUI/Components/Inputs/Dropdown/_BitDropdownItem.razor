@@ -19,7 +19,10 @@ else if (itemType == BitDropdownItemType.Normal)
     @if (Dropdown.IsMultiSelect)
     {
         <div style="@(isHidden ? " display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
-            <button class="bit-drp-mcn" @onclick="@(() => Dropdown.HandleOnItemClick(Item))">
+            <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
+                    type="button"
+                    role="option"
+                    class="bit-drp-mcn">
                 <div class="bit-drp-chb">
                     <i class="bit-drp-chm bit-icon bit-icon--Accept" aria-hidden="true" aria-label="@text" />
                 </div>

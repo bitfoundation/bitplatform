@@ -6,9 +6,9 @@
     .example-content {
         display: flex;
         gap: rem2(20px);
+        width: rem2(304px);
         flex-flow: row wrap;
         align-items: center;
-        max-width: rem2(304px);
 
         &.column {
             flex-direction: column;
@@ -20,18 +20,7 @@
         }
     }
 
-    .validation-summary {
-        border-left: rem2(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
-        overflow: hidden;
-        margin-bottom: rem2(10px);
-
-        .validation-errors {
-            margin: rem2(5px);
-        }
-    }
-
-    div.validation-message {
+    .validation-message {
         color: $Red20;
         font-size: rem2(12px);
     }
