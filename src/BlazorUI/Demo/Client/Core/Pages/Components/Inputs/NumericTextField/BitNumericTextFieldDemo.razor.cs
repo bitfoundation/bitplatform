@@ -479,16 +479,16 @@ private int DisabledValue;";
 
     private readonly string example2HtmlCode = @"
 <BitNumericTextField @bind-Value=""LabelTopValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label Top""
-                        LabelPosition=""BitNumericTextFieldLabelPosition.Top""/>
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label Top""
+                     LabelPosition=""BitNumericTextFieldLabelPosition.Top""/>
 
 <BitNumericTextField @bind-Value=""LabelLeftValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label Left""
-                        LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label Left""
+                     LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
     private readonly string example2CsharpCode = @"
 private int LabelTopValue;
 private int LabelLeftValue;";
@@ -519,10 +519,10 @@ private int LabelTemplateValue;";
                      DecrementIconName=""@BitIconName.DislikeSolid"" />
 
 <BitNumericTextField @bind-Value=""LabelAndIconValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label & Icon""
-                        IconName=""@BitIconName.Lightbulb"" />";
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label & Icon""
+                     IconName=""@BitIconName.Lightbulb"" />";
     private readonly string example4CsharpCode = @"
 private int SpinArrowValue;
 private int LabelAndIconValue;
