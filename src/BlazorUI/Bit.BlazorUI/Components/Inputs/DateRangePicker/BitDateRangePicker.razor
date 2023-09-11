@@ -194,7 +194,7 @@
                             <div class="bit-dtrp-tgrp @(TimeFormat == BitTimeFormat.TwelveHours ? "bit-dtrp-tgrp-ampm" : null)">
                                 <div class="bit-dtrp-twp">
                                     <input @ref="_inputStartTimeHourRef"
-                                           @bind="@_startTimeHour"
+                                           @bind="@_startTimeHourView"
                                            @bind:event="oninput"
                                            @onfocus="HandleOnStartTimeHourFocus"
                                            min="0"
@@ -206,7 +206,7 @@
                                     <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputStartTimeMinuteRef"
                                            @bind:event="oninput"
-                                           @bind="@_startTimeMinute"
+                                           @bind="@_startTimeMinuteView"
                                            @onfocus="HandleOnStartTimeMinuteFocus"
                                            min="0"
                                            max="59"
@@ -219,24 +219,24 @@
                                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                                 {
                                     <div class="bit-dtrp-ampm-ctn">
-                                        <button @onclick="() => HandleOnAmPm(true)"
+                                        <button @onclick="ToggleStartTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@IsAmPmDisabled(true, true)">
-                                            AM
+                                                disabled="@(startTimeHour < 12)">
+                                            @Culture.DateTimeFormat.AMDesignator
                                         </button>
-                                        <button @onclick="() => HandleOnAmPm(true)"
+                                        <button @onclick="ToggleStartTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@IsAmPmDisabled(true, false)">
-                                            PM
+                                                disabled="@(startTimeHour >= 12)">
+                                            @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
                                 }
 
                                 <div class="bit-dtrp-twp">
                                     <input @ref="_inputEndTimeHourRef"
-                                           @bind="@_endTimeHour"
+                                           @bind="@_endTimeHourView"
                                            @bind:event="oninput"
                                            @onfocus="HandleOnEndTimeHourFocus"
                                            min="0"
@@ -248,7 +248,7 @@
                                     <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputEndTimeMinuteRef"
                                            @bind:event="oninput"
-                                           @bind="@_endTimeMinute"
+                                           @bind="@_endTimeMinuteView"
                                            @onfocus="HandleOnEndTimeMinuteFocus"
                                            min="0"
                                            max="59"
@@ -261,17 +261,17 @@
                                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                                 {
                                     <div class="bit-dtrp-ampm-ctn">
-                                        <button @onclick="() => HandleOnAmPm(false)"
+                                        <button @onclick="ToggleEndTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@IsAmPmDisabled(false, true)">
-                                            AM
+                                                disabled="@(endTimeHour < 12)">
+                                            @Culture.DateTimeFormat.AMDesignator
                                         </button>
-                                        <button @onclick="() => HandleOnAmPm(false)"
+                                        <button @onclick="ToggleEndTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@IsAmPmDisabled(false, false)">
-                                            PM
+                                                disabled="@(endTimeHour >= 12)">
+                                            @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
                                 }

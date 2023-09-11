@@ -55,7 +55,7 @@ public partial class BitDateRangePicker
     private int endTimeHour;
     private int endTimeMinute;
 
-    private int _startTimeHour
+    private int _startTimeHourView
     {
         get
         {
@@ -93,7 +93,7 @@ public partial class BitDateRangePicker
         }
     }
 
-    private int _startTimeMinute
+    private int _startTimeMinuteView
     {
         get => startTimeMinute;
         set
@@ -115,7 +115,7 @@ public partial class BitDateRangePicker
         }
     }
 
-    private int _endTimeHour
+    private int _endTimeHourView
     {
         get
         {
@@ -153,7 +153,7 @@ public partial class BitDateRangePicker
         }
     }
 
-    private int _endTimeMinute
+    private int _endTimeMinuteView
     {
         get => endTimeMinute;
         set
@@ -407,7 +407,7 @@ public partial class BitDateRangePicker
     [Parameter] public bool ShowTimePicker { get; set; }
 
     /// <summary>
-    /// Format of select time, in time pickers.
+    /// Time format of the time pickers, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
@@ -1191,8 +1191,8 @@ public partial class BitDateRangePicker
 
         CurrentValue = new BitDateRangePickerValue
         {
-            StartDate = GetDateTimeOffset(CurrentValue.StartDate, startTimeHour, _startTimeMinute),
-            EndDate = GetDateTimeOffset(CurrentValue.EndDate, endTimeHour, _endTimeMinute)
+            StartDate = GetDateTimeOffset(CurrentValue.StartDate, startTimeHour, _startTimeMinuteView),
+            EndDate = GetDateTimeOffset(CurrentValue.EndDate, endTimeHour, _endTimeMinuteView)
         };
     }
 
@@ -1231,46 +1231,18 @@ public partial class BitDateRangePicker
         await _js.SelectText(_inputEndTimeMinuteRef);
     }
 
-    private void HandleOnAmPm(bool isStartTime)
+    private void ToggleStartTimeAmPm()
     {
         if (IsEnabled is false) return;
 
-        if (isStartTime)
-        {
-            if (startTimeHour >= 12)
-            {
-                _startTimeHour = startTimeHour - 12;
-            }
-            else
-            {
-                _startTimeHour = startTimeHour + 12;
-            }
-        }
-        else
-        {
-            if (endTimeHour >= 12)
-            {
-                _endTimeHour = endTimeHour - 12;
-            }
-            else
-            {
-                _endTimeHour = endTimeHour + 12;
-            }
-        }
+        _startTimeHourView = startTimeHour + (startTimeHour >= 12 ? -12 : 12);
     }
 
-    private bool IsAmPmDisabled(bool isStartTime, bool isAm)
+    private void ToggleEndTimeAmPm()
     {
-        if (TimeFormat == BitTimeFormat.TwentyFourHours) return false;
+        if (IsEnabled is false) return;
 
-        if (isStartTime)
-        {
-            return (isAm && startTimeHour < 12) || (isAm is false && startTimeHour >= 12);
-        }
-        else
-        {
-            return (isAm && endTimeHour < 12) || (isAm is false && endTimeHour >= 12);
-        }
+        _endTimeHourView = endTimeHour + (endTimeHour >= 12 ? -12 : 12);
     }
 
     [JSInvokable("CloseCallout")]

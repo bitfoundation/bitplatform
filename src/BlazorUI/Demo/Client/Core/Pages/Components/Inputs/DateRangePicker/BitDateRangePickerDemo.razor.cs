@@ -294,7 +294,7 @@ public partial class BitDateRangePickerDemo
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "Format of select time, in time pickers"
+            Description = "Time format of the time pickers, 24H or 12H"
         },
     };
 
