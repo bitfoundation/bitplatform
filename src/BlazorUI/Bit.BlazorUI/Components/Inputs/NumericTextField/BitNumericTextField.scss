@@ -43,6 +43,12 @@
         .bit-ntf-wrp {
             border-color: $color-state-error;
         }
+
+        &.bit-txt-fcs {
+            .bit-ntf-wrp::after {
+                border-color: $color-state-error;
+            }
+        }
     }
 }
 
@@ -89,6 +95,7 @@
     position: relative;
     box-sizing: border-box;
     border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
@@ -109,9 +116,9 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
+    background: none transparent;
     color: $color-foreground-primary;
     padding: 0 spacing(1) 0 spacing(1.125);
-    background-color: $color-background-primary;
     border-radius: $shape-border-radius 0 0 $shape-border-radius;
 }
 
@@ -167,5 +174,16 @@
         height: spacing(2);
         font-size: spacing(1);
         line-height: spacing(2);
+    }
+}
+
+.bit-ntf-fcs {
+    .bit-ntf-wrp::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        inset: spacing(-0.125);
+        border-radius: $shape-border-radius;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
     }
 }

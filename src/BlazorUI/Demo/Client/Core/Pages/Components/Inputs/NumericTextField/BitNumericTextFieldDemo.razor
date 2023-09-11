@@ -186,7 +186,52 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Style & Class" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitNumericTextField @bind-Value="@StyleValue"
+                                         Placeholder="Enter a text..."
+                                         Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem" />
+                    <BitNumericTextField @bind-Value="@ClassValue"
+                                         Placeholder="Enter a text..."
+                                         Class="custom-class" />
+                </div>
+                <br />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitNumericTextField @bind-Value="@StylesValue"
+                                         Placeholder="Enter a text..."
+                                         Label="Custom label style"
+                                         IconName="@BitIconName.Microphone"
+                                         Styles="@(new() { Icon = "color: darkorange;",
+                                                           Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
+                                                           Input = "padding: 0.5rem; background-color: goldenrod"} )" />
+                    <br />
+                    <BitNumericTextField @bind-Value="@ClassesValue"
+                                         Placeholder="Enter a text..."
+                                         Label="Custom label class"
+                                         Classes="@(new() { InputWrapper = "custom-input-wrapper",
+                                                            InputWrapperFocus = "input-wrapper-focus",
+                                                            Input = "custom-input",
+                                                            LabelFocus = "custom-label-focus" } )" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Visible" Placeholder="Visible NumericTextField" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Hidden" Placeholder="Hidden NumericTextField" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Collapsed" Placeholder="Collapsed NumericTextField" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -251,6 +296,13 @@
     private double OnChangeEventBindedValue;
     private double OnChangeEventReturnedValue;
     private int OnChangeCounter;
+
+    private int VisibilityValue;
+
+    private int StyleValue;
+    private int ClassValue;
+    private int StylesValue;
+    private int ClassesValue;
 
     private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
     {

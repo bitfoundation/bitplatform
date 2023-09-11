@@ -47,6 +47,15 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitNumericTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#numerictextfield-class-styles",
+            Description = "Custom CSS classes for different parts of the BitNumericTextField.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "TValue?",
             DefaultValue = "null",
@@ -145,6 +154,18 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves into the input.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves out of the input.",
+        },
+        new()
+        {
             Name = "OnBlur",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when the control loses focus.",
@@ -155,7 +176,7 @@ public partial class BitNumericTextFieldDemo
             Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
             LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
+            Href = "#numerictextfield-change-value"
         },
         new()
         {
@@ -163,7 +184,7 @@ public partial class BitNumericTextFieldDemo
             Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
             LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
+            Href = "#numerictextfield-change-value"
         },
         new()
         {
@@ -185,6 +206,15 @@ public partial class BitNumericTextFieldDemo
             Type = "TValue?",
             DefaultValue = "null",
             Description = "Difference between two adjacent values of the numeric text field.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitNumericTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#numerictextfield-class-styles",
+            Description = "Custom CSS styles for different parts of the BitNumericTextField.",
         },
         new()
         {
@@ -213,13 +243,14 @@ public partial class BitNumericTextFieldDemo
             Type = "string",
             DefaultValue="The {0} field is not valid.",
             Description = "The message format used for invalid values entered in the input.",
-        },
+        }
     };
+
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
-            Id = "Bit-NumericTextField-ChangeValue",
+            Id = "numerictextfield-change-value",
             Title = "BitNumericTextFieldChangeValue",
             Parameters = new()
             {
@@ -237,10 +268,173 @@ public partial class BitNumericTextFieldDemo
                {
                    Name = "KeyboardEventArgs",
                    Type = "KeyboardEventArgs?",
-               },
+               }
+            }
+        },
+        new()
+        {
+            Id = "numerictextfield-class-styles",
+            Title = "BitNumericTextFieldClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "ArrowContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow container."
+                },
+                new()
+                {
+                    Name = "ArrowContainerFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow container focus state."
+                },
+                new()
+                {
+                    Name = "ArrowDownButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow down button."
+                },
+                new()
+                {
+                    Name = "ArrowDownButtonFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow down button focus state."
+                },
+                new()
+                {
+                    Name = "ArrowDownIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow down icon."
+                },
+                new()
+                {
+                    Name = "ArrowDownIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow down icon container."
+                },
+                new()
+                {
+                    Name = "ArrowDownIconFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow down icon focus state."
+                },
+                new()
+                {
+                    Name = "ArrowUpButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow up button."
+                },
+                new()
+                {
+                    Name = "ArrowUpButtonFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow up button focus state."
+                },
+                new()
+                {
+                    Name = "ArrowUpIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow up icon."
+                },
+                new()
+                {
+                    Name = "ArrowUpIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow up icon container."
+                },
+                new()
+                {
+                    Name = "ArrowUpIconFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's arrow up icon focus state."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's label."
+                },
+                new()
+                {
+                    Name = "LabelContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's label container."
+                },
+                new()
+                {
+                    Name = "LabelFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's label focus state."
+                },
+                new()
+                {
+                    Name = "Focus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's focus state."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's icon."
+                },
+                new()
+                {
+                    Name = "IconFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's icon focus state."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's input."
+                },
+                new()
+                {
+                    Name = "InputFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's input focus state."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field."
+                },
+                new()
+                {
+                    Name = "InputWrapperFocus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field focus state."
+                }
             }
         }
     };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -449,6 +643,71 @@ private void HandleOnChangeEvent(double value)
 
     private readonly string example9HtmlCode = @"
 <style>
+    .custom-class {
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-input {
+        color: darkgreen;
+        font-weight: 900;
+        font-size: 1rem;
+        padding: 1rem;
+        height: 3rem;
+    }
+
+    .custom-input-wrapper {
+        height: auto;
+        border-radius: 1rem;
+        background-color: tomato;
+    }
+
+    .input-wrapper-focus::after {
+        border-radius: 1rem;
+    }
+
+    .custom-label-focus {
+        color: chartreuse;
+    }
+</style>
+
+<BitNumericTextField @bind-Value=""@StyleValue""
+                     Placeholder=""Enter a text...""
+                     Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem"" />
+<BitNumericTextField @bind-Value=""@ClassValue""
+                     Placeholder=""Enter a text...""
+                     Class=""custom-class"" />
+
+<BitNumericTextField @bind-Value=""@StylesValue""
+                     Placeholder=""Enter a text...""
+                     Label=""Custom label style""
+                     IconName=""@BitIconName.Microphone""
+                     Styles=""@(new() { Icon = ""color: darkorange;"",
+                                       Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
+                                       Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
+<BitNumericTextField @bind-Value=""@ClassesValue""
+                     Placeholder=""Enter a text...""
+                     Label=""Custom label class""
+                     Classes=""@(new() { InputWrapper = ""custom-input-wrapper"",
+                                        InputWrapperFocus = ""input-wrapper-focus"",
+                                        Input = ""custom-input"",
+                                        LabelFocus = ""custom-label-focus"" } )"" />";
+    private readonly string example9CsharpCode = @"
+private int StyleValue;
+private int ClassValue;
+private int StylesValue;
+private int ClassesValue;";
+
+    private readonly string example10HtmlCode = @"
+Visible: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" Placeholder=""Visible NumericTextField"" /> ]
+Hidden: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden NumericTextField"" />  ]
+Collapsed: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed NumericTextField"" />  ]";
+    private readonly string example10CsharpCode = @"
+private int VisibilityValue;";
+
+    private readonly string example11HtmlCode = @"
+<style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
         background-color: $ErrorBlockRed;
@@ -492,7 +751,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class BitNumericTextFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
