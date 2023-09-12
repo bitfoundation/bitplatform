@@ -12,6 +12,12 @@ public partial class BitToggle
     private string? _stateTextId;
     private string? _ariaChecked => CurrentValueAsString;
 
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitToggle.
+    /// </summary>
+    [Parameter] public BitToggleClassStyles? Classes { get; set; }
+
     /// <summary>
     /// Default text of the toggle when it is neither ON or OFF.
     /// </summary>
@@ -53,17 +59,27 @@ public partial class BitToggle
     /// </summary>
     [Parameter] public string? Role { get; set; } = "switch";
 
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitToggle.
+    /// </summary>
+    [Parameter] public BitToggleClassStyles? Styles { get; set; }
+
 
 
     protected override string RootElementClass => "bit-tgl";
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Check}" : string.Empty);
 
         ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
 
         ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue() ? $"{RootElementClass}-noo" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => CurrentValue ? Styles?.Check : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

@@ -14,27 +14,28 @@
     }
     else if (Label.HasValue())
     {
-        <label class="bit-tgl-lbl" for="@_buttonId">
+        <label style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label" for="@_buttonId">
             @Label
         </label>
     }
 
-    <div class="bit-tgl-cnt">
+    <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
         <button @onclick="HandleOnClick"
                 role="@Role"
                 type="button"
                 id="@_buttonId"
-                class="bit-tgl-btn"
+                style="@Styles?.Button"
+                class="bit-tgl-btn @Classes?.Button"
                 data-ktp-target="true"
                 data-is-focusable="true"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
                 aria-labelledby="@_labelledById">
-            <span class="bit-tgl-sta"></span>
+            <span style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb"></span>
         </button>
         @if (_stateText.HasValue())
         {
-            <label for="@_buttonId" class="bit-tgl-stx">
+            <label style="@Styles?.Text" class="bit-tgl-stx @Classes?.Text" for="@_buttonId">
                 @_stateText
             </label>
         }

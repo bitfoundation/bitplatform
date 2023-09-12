@@ -6,7 +6,8 @@
 
 <ComponentDemo ComponentName="Toggle"
                ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
-               ComponentParameters="componentParameters">
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
@@ -60,7 +61,48 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitToggle @bind-Value="@StyleValue"
+                               DefaultText="Custom style"
+                               Style="background-color: forestgreen; border-radius: 1rem; padding: 0.5rem" />
+                    <BitToggle @bind-Value="@ClassValue"
+                               DefaultText="Custom class"
+                               Class="custom-class" />
+                </div>
+                <br />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitToggle @bind-Value="@StylesValue"
+                               Label="Custom label style"
+                               Styles="@(new() { Thumb = "background-color: darkorange;",
+                                                 Button = "border-radius: 0.5rem 0 0.5rem 0;",
+                                                 Label = "color: blue; font-weight: 900; font-size: 1.25rem;" } )" />
+                    <br />
+                    <BitToggle @bind-Value="@ClassesValue"
+                               DefaultText="Custom text class"
+                               Classes="@(new() { Text = "custom-text",
+                                                  Button = "custom-button",
+                                                  Check = "custom-check" } )" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Visible" DefaultText="Visible Toggle" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Hidden" DefaultText="Hidden Toggle" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Collapsed" DefaultText="Collapsed Toggle" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -102,6 +144,13 @@
 
     private bool OneWayValue;
     private bool TwoWayValue;
+
+    private bool VisibilityValue;
+
+    private bool StyleValue;
+    private bool ClassValue;
+    private bool StylesValue;
+    private bool ClassesValue;
 
     public BitToggleValidationModel ValidationForm { get; set; } = new();
     private string SuccessMessage = string.Empty;

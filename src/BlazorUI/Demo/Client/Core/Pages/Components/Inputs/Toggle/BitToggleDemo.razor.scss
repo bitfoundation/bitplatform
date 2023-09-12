@@ -2,6 +2,27 @@
 @import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_functions.scss';
 
+.example-box {
+    display: flex;
+    gap: rem2(16px);
+    width: fit-content;
+    flex-flow: column nowrap;
+}
+
+.visibility-items {
+    align-items: center;
+    white-space: nowrap;
+    display: inline-flex;
+}
+
+.custom-wrapper {
+    gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    flex-direction: column;
+}
+
 .validation-summary {
     border-left: rem2(5px) solid $Red10;
     background-color: $ErrorBlockRed;
@@ -18,11 +39,30 @@
     .validation-errors {
         margin: rem2(5px);
     }
-}
 
-.example-box {
-    display: flex;
-    gap: rem2(15px);
-    flex-flow: column nowrap;
-    width: fit-content;
+    .custom-class {
+        width: max-content;
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-text {
+        color: lightskyblue;
+        text-shadow: 0 0 0.5rem red;
+    }
+
+    .custom-button {
+        border-radius: 1rem;
+        background-color: darkslategray;
+    }
+
+    .custom-check .custom-button {
+        border-radius: 1rem;
+        background-color: red;
+    }
+
+    .custom-check .custom-text {
+        color: rebeccapurple;
+    }
 }
