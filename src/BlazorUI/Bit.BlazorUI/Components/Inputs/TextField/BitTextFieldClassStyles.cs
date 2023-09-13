@@ -13,24 +13,9 @@ public class BitTextFieldClassStyles
     public string? DescriptionContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's description focus state.
-    /// </summary>
-    public string? DescriptionFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's description container focus state.
-    /// </summary>
-    public string? DescriptionContainerFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the text field's label.
     /// </summary>
     public string? Label { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's label focus state.
-    /// </summary>
-    public string? LabelFocus { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text field's field group.
@@ -38,14 +23,9 @@ public class BitTextFieldClassStyles
     public string? FieldGroup { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's field group focus state.
+    /// Custom CSS classes/styles of the root element in focus state.
     /// </summary>
-    public string? FieldGroupFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's focus state.
-    /// </summary>
-    public string? Focus { get; set; }
+    public string? Focused { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text field's icon.
@@ -53,19 +33,9 @@ public class BitTextFieldClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's icon focus state.
-    /// </summary>
-    public string? IconFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the text field's input.
     /// </summary>
     public string? Input { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's input focus state.
-    /// </summary>
-    public string? InputFocus { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text field's input icon.
@@ -88,24 +58,9 @@ public class BitTextFieldClassStyles
     public string? PrefixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's prefix container focus state.
-    /// </summary>
-    public string? PrefixFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's prefix container focus state.
-    /// </summary>
-    public string? PrefixContainerFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the text field's reveal password.
     /// </summary>
     public string? RevealPassword { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's reveal password focus state.
-    /// </summary>
-    public string? RevealPasswordFocus { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text field's reveal password icon.
@@ -118,9 +73,9 @@ public class BitTextFieldClassStyles
     public string? RevealPasswordIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's reveal password icon focus state.
+    /// Custom CSS classes/styles for the text field's root element.
     /// </summary>
-    public string? RevealPasswordIconFocus { get; set; }
+    public string? Root { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text field's suffix.
@@ -131,14 +86,4 @@ public class BitTextFieldClassStyles
     /// Custom CSS classes/styles for the text field's suffix container.
     /// </summary>
     public string? SuffixContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's suffix focus state.
-    /// </summary>
-    public string? SuffixFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's suffix container focus state.
-    /// </summary>
-    public string? SuffixContainerFocus { get; set; }
 }
