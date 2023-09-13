@@ -11,8 +11,8 @@
         <div style="@Styles?.LabelContainer" class="bit-ntf-lct @Classes?.LabelContainer">
             @if (IconName.HasValue())
             {
-                <i style="@Styles?.Icon @(_hasFocus ? Styles?.IconFocus : "")"
-                   class="bit-icon bit-icon--@IconName bit-icon--l @Classes?.Icon @(_hasFocus ? Classes?.IconFocus : "")"
+                <i style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@IconName bit-icon--l @Classes?.Icon"
                    aria-hidden="true"
                    role="@GetIconRole"
                    aria-label="@IconAriaLabel" />
@@ -26,8 +26,8 @@
             }
             else if (Label.HasValue())
             {
-                <label style="@Styles?.Label @(_hasFocus ? Styles?.LabelFocus : "")"
-                       class="bit-ntf-lbl @Classes?.Label @(_hasFocus ? Classes?.LabelFocus : "")"
+                <label style="@Styles?.Label"
+                       class="bit-ntf-lbl @Classes?.Label"
                        id="@GetLabelId"
                        for="@_inputId">
                     @Label
@@ -36,8 +36,8 @@
         </div>
     }
 
-    <div style="@Styles?.InputWrapper @(_hasFocus ? Styles?.InputWrapperFocus : "")"
-         class="bit-ntf-wrp @Classes?.InputWrapper @(_hasFocus ? Classes?.InputWrapperFocus : "")"
+    <div style="@Styles?.InputWrapper"
+         class="bit-ntf-wrp @Classes?.InputWrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -51,8 +51,8 @@
                @onkeydown="e => HandleOnKeyDown(e)"
                @onfocusin="e => HandleOnFocusIn(e)"
                @onfocusout="e => HandleOnFocusOut(e)"
-               style="@Styles?.Input @(_hasFocus ? Styles?.InputFocus : "")"
-               class="bit-ntf-inp @Classes?.Input @(_hasFocus ? Classes?.InputFocus : "")"
+               style="@Styles?.Input"
+               class="bit-ntf-inp @Classes?.Input"
                type="text"
                id="@_inputId"
                role="spinbutton"
@@ -69,8 +69,7 @@
                aria-disabled="@(IsEnabled is false)" />
         @if (ShowArrows)
         {
-            <span style="@Styles?.ArrowContainer @(_hasFocus ? Styles?.ArrowContainerFocus : "")"
-                  class="bit-ntf-act @Classes?.ArrowContainer @(_hasFocus ? Classes?.ArrowContainerFocus : "")">
+            <span style="@Styles?.ButtonsContainer" class="bit-ntf-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
@@ -78,14 +77,13 @@
                         type="button"
                         tabindex="-1"
                         date-is-focusable="false"
-                        style="@Styles?.ArrowUpButton @(_hasFocus ? Styles?.ArrowUpButtonFocus : "")"
-                        class="bit-ntf-aup @Classes?.ArrowUpButton @(_hasFocus ? Classes?.ArrowUpButtonFocus : "")"
+                        style="@Styles?.IncrementButton"
+                        class="bit-ntf-aup @Classes?.IncrementButton"
                         aria-label="@IncrementAriaLabel"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)">
-                    <span style="@Styles?.ArrowUpIconContainer" class="bit-ntf-aic @Classes?.ArrowUpIconContainer">
-                        <i style="@Styles?.ArrowUpIcon @(_hasFocus ? Styles?.ArrowUpIconFocus : "")"
-                           class="bit-icon bit-icon--@IncrementIconName bit-icon--s @Classes?.ArrowUpIcon @(_hasFocus ? Classes?.ArrowUpIconFocus : "")" />
+                    <span style="@Styles?.IncrementIconContainer" class="bit-ntf-aic @Classes?.IncrementIconContainer">
+                        <i style="@Styles?.IncrementIcon" class="bit-icon bit-icon--@IncrementIconName bit-icon--s @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -96,14 +94,13 @@
                         type="button"
                         tabindex="-1"
                         date-is-focusable="false"
-                        style="@Styles?.ArrowDownButton @(_hasFocus ? Styles?.ArrowDownButtonFocus : "")"
-                        class="bit-ntf-adn @Classes?.ArrowDownButton @(_hasFocus ? Classes?.ArrowDownButtonFocus : "")"
+                        style="@Styles?.DecrementButton"
+                        class="bit-ntf-adn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
                         aria-label="@DecrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
-                    <span style="@Styles?.ArrowDownIconContainer" class="bit-ntf-aic @Classes?.ArrowDownIconContainer">
-                        <i style="@Styles?.ArrowDownIcon @(_hasFocus ? Styles?.ArrowDownIconFocus : "")"
-                           class="bit-icon bit-icon--@DecrementIconName bit-icon--s @Classes?.ArrowDownIcon @(_hasFocus ? Classes?.ArrowDownIconFocus : "")" />
+                    <span style="@Styles?.DecrementIconContainer" class="bit-ntf-aic @Classes?.DecrementIconContainer">
+                        <i style="@Styles?.DecrementIcon" class="bit-icon bit-icon--@DecrementIconName bit-icon--s @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>

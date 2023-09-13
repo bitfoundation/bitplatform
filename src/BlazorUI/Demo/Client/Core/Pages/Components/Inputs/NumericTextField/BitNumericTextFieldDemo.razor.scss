@@ -62,17 +62,17 @@
         height: 3rem;
     }
 
+    .custom-focus .custom-label {
+        color: chartreuse;
+    }
+
     .custom-input-wrapper {
         height: auto;
         border-radius: 1rem;
         background-color: tomato;
     }
 
-    .input-wrapper-focus::after {
+    .custom-focus .custom-input-wrapper::after {
         border-radius: 1rem;
-    }
-
-    .custom-label-focus {
-        color: chartreuse;
     }
 }

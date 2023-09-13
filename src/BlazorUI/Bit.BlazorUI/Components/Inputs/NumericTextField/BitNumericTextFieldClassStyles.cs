@@ -3,64 +3,39 @@
 public class BitNummericTextFieldClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow container.
+    /// Custom CSS classes/styles for the numeric text field's buttons (inecrement and decrement) container.
     /// </summary>
-    public string? ArrowContainer { get; set; }
+    public string? ButtonsContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow container focus state.
+    /// Custom CSS classes/styles for the numeric text field's decrement button.
     /// </summary>
-    public string? ArrowContainerFocus { get; set; }
+    public string? DecrementButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow down button.
+    /// Custom CSS classes/styles for the numeric text field's decrement icon.
     /// </summary>
-    public string? ArrowDownButton { get; set; }
+    public string? DecrementIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow down button focus state.
+    /// Custom CSS classes/styles for the numeric text field's decrement icon container.
     /// </summary>
-    public string? ArrowDownButtonFocus { get; set; }
+    public string? DecrementIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow down icon.
+    /// Custom CSS classes/styles for the numeric text field's increment button.
     /// </summary>
-    public string? ArrowDownIcon { get; set; }
+    public string? IncrementButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow down icon container.
+    /// Custom CSS classes/styles for the numeric text field's increment icon.
     /// </summary>
-    public string? ArrowDownIconContainer { get; set; }
+    public string? IncrementIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow down icon focus state.
+    /// Custom CSS classes/styles for the numeric text field's increment icon container.
     /// </summary>
-    public string? ArrowDownIconFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow up button.
-    /// </summary>
-    public string? ArrowUpButton { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow up button focus state.
-    /// </summary>
-    public string? ArrowUpButtonFocus { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow up icon.
-    /// </summary>
-    public string? ArrowUpIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow up icon container.
-    /// </summary>
-    public string? ArrowUpIconContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's arrow up icon focus state.
-    /// </summary>
-    public string? ArrowUpIconFocus { get; set; }
+    public string? IncrementIconContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the numeric text field's label.
@@ -73,14 +48,9 @@ public class BitNummericTextFieldClassStyles
     public string? LabelContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's label focus state.
-    /// </summary>
-    public string? LabelFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the numeric text field's focus state.
     /// </summary>
-    public string? Focus { get; set; }
+    public string? Focused { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the numeric text field's icon.
@@ -88,27 +58,12 @@ public class BitNummericTextFieldClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's icon focus state.
-    /// </summary>
-    public string? IconFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the numeric text field's input.
     /// </summary>
     public string? Input { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's input focus state.
-    /// </summary>
-    public string? InputFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the wrapper of label and input in numeric text field.
     /// </summary>
     public string? InputWrapper { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the wrapper of label and input in numeric text field focus state.
-    /// </summary>
-    public string? InputWrapperFocus { get; set; }
 }

@@ -256,12 +256,12 @@ public partial class BitNumericTextField<TValue>
     {
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focus}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => _hasFocus ? Styles?.Focus : string.Empty);
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override async Task OnParametersSetAsync()

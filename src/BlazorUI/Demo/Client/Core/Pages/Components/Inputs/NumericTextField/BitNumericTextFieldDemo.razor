@@ -192,17 +192,17 @@
                 <div class="custom-wrapper">
                     <BitLabel>Component's Style & Class:</BitLabel>
                     <BitNumericTextField @bind-Value="@StyleValue"
-                                         Placeholder="Enter a text..."
+                                         Placeholder="Enter a number..."
                                          Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem" />
                     <BitNumericTextField @bind-Value="@ClassValue"
-                                         Placeholder="Enter a text..."
+                                         Placeholder="Enter a number..."
                                          Class="custom-class" />
                 </div>
                 <br />
                 <div class="custom-wrapper">
                     <BitLabel>Styles & Classes:</BitLabel>
                     <BitNumericTextField @bind-Value="@StylesValue"
-                                         Placeholder="Enter a text..."
+                                         Placeholder="Enter a number..."
                                          Label="Custom label style"
                                          IconName="@BitIconName.Microphone"
                                          Styles="@(new() { Icon = "color: darkorange;",
@@ -210,12 +210,12 @@
                                                            Input = "padding: 0.5rem; background-color: goldenrod"} )" />
                     <br />
                     <BitNumericTextField @bind-Value="@ClassesValue"
-                                         Placeholder="Enter a text..."
+                                         Placeholder="Enter a number..."
                                          Label="Custom label class"
-                                         Classes="@(new() { InputWrapper = "custom-input-wrapper",
-                                                            InputWrapperFocus = "input-wrapper-focus",
-                                                            Input = "custom-input",
-                                                            LabelFocus = "custom-label-focus" } )" />
+                                         Classes="@(new() { Input = "custom-input",
+                                                            Focused = "custom-focus",
+                                                            Label = "custom-label",
+                                                            InputWrapper = "custom-input-wrapper" } )" />
                 </div>
             </div>
         </ExamplePreview>
