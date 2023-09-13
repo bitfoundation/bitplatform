@@ -563,15 +563,16 @@ private string NotTrimmedValue;";
     }
 </style>
 
-<BitTextField Placeholder=""Enter a text..."" Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem"" />
+<BitTextField Placeholder=""Enter a text..."" Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
 <BitTextField Placeholder=""Enter a text..."" Class=""custom-class"" />
 
 <BitTextField Placeholder=""Enter a text...""
               IconName=""@BitIconName.Microphone""
+              Label=""Custom label style""
               Styles=""@(new() { Root = ""background-color: pink;"",
                                 Icon = ""color: darkorange;"",
                                 Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod"" } )"" />
+                                Input = ""padding: 0.5rem; background-color: goldenrod;"" } )"" />
 <BitTextField Placeholder=""Enter a text...""
               DefaultValue=""Custom input class""
               Label=""Custom label class""
