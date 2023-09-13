@@ -48,7 +48,7 @@ public class BitNummericTextFieldClassStyles
     public string? LabelContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's focus state.
+    /// Custom CSS classes/styles of the root element in focus state.
     /// </summary>
     public string? Focused { get; set; }
 
@@ -66,4 +66,9 @@ public class BitNummericTextFieldClassStyles
     /// Custom CSS classes/styles for the wrapper of label and input in numeric text field.
     /// </summary>
     public string? InputWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric text field's root element.
+    /// </summary>
+    public string? Root { get; set; }
 }

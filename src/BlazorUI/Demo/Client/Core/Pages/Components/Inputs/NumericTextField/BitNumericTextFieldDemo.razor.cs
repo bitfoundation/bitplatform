@@ -367,6 +367,13 @@ public partial class BitNumericTextFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's root element."
                 }
             }
         }
@@ -606,6 +613,8 @@ private void HandleOnChangeEvent(double value)
 
     .custom-focus .custom-input-wrapper::after {
         border-radius: 1rem;
+        border-width: 0.25rem;
+        border-color: rebeccapurple;
     }
 </style>
 
@@ -620,7 +629,8 @@ private void HandleOnChangeEvent(double value)
                      Placeholder=""Enter a number...""
                      Label=""Custom label style""
                      IconName=""@BitIconName.Microphone""
-                     Styles=""@(new() { Icon = ""color: darkorange;"",
+                     Styles=""@(new() { Root = ""background-color: pink;"",
+                                       Icon = ""color: red;"",
                                        Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
                                        Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
 <BitNumericTextField @bind-Value=""@ClassesValue""

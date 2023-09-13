@@ -254,13 +254,17 @@ public partial class BitNumericTextField<TValue>
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+
+        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
     }
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => Styles?.Root);
+
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
