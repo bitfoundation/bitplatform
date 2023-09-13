@@ -96,10 +96,10 @@ public partial class BitToggleDemo
                 },
                 new()
                 {
-                    Name = "Check",
+                    Name = "Checked",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the check state of the toggle."
+                    Description = "Custom CSS classes/styles for the checked state of the toggle."
                 },
                 new()
                 {
@@ -121,6 +121,13 @@ public partial class BitToggleDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the label of the toggle."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toggle's root element."
                 },
                 new()
                 {
@@ -205,14 +212,15 @@ private bool TwoWayValue;";
 
 <BitToggle @bind-Value=""@StyleValue""
            DefaultText=""Custom style""
-           Style=""background-color: forestgreen; border-radius: 1rem; padding: 0.5rem"" />
+           Style=""background-color: forestgreen; border-radius: 1rem; padding: 0.5rem;"" />
 <BitToggle @bind-Value=""@ClassValue""
            DefaultText=""Custom class""
            Class=""custom-class"" />
 
 <BitToggle @bind-Value=""@StylesValue""
            Label=""Custom label style""
-           Styles=""@(new() { Thumb = ""background-color: darkorange;"",
+           Styles=""@(new() { Root = ""background-color: pink; padding: 0.5rem;"",
+                             Thumb = ""background-color: darkorange;"",
                              Button = ""border-radius: 0.5rem 0 0.5rem 0;"",
                              Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
 <BitToggle @bind-Value=""@ClassesValue""

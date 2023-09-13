@@ -70,7 +70,9 @@ public partial class BitToggle
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Check}" : string.Empty);
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Checked}" : string.Empty);
 
         ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
 
@@ -79,7 +81,9 @@ public partial class BitToggle
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => CurrentValue ? Styles?.Check : string.Empty);
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => CurrentValue ? Styles?.Checked : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

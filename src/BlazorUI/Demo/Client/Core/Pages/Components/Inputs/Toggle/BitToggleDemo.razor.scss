@@ -57,12 +57,14 @@
         background-color: darkslategray;
     }
 
-    .custom-check .custom-button {
-        border-radius: 1rem;
-        background-color: red;
-    }
+    .custom-check {
+        .custom-text {
+            color: rebeccapurple;
+        }
 
-    .custom-check .custom-text {
-        color: rebeccapurple;
+        .custom-button {
+            border-radius: 1rem;
+            background-color: red;
+        }
     }
 }

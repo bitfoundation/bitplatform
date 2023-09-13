@@ -8,9 +8,9 @@ public class BitToggleClassStyles
     public string? Button { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the check state of the toggle.
+    /// Custom CSS classes/styles for the checked state of the toggle.
     /// </summary>
-    public string? Check { get; set; }
+    public string? Checked { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the container of the toggle.
@@ -26,6 +26,11 @@ public class BitToggleClassStyles
     /// Custom CSS classes/styles for the label of the toggle.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the toggle's root element.
+    /// </summary>
+    public string? Root { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text of the toggle.
