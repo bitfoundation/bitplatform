@@ -222,13 +222,13 @@
                                         <button @onclick="ToggleStartTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@(startTimeHour < 12)">
+                                                disabled="@(_startTimeHour < 12)">
                                             @Culture.DateTimeFormat.AMDesignator
                                         </button>
                                         <button @onclick="ToggleStartTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@(startTimeHour >= 12)">
+                                                disabled="@(_startTimeHour >= 12)">
                                             @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
@@ -264,13 +264,13 @@
                                         <button @onclick="ToggleEndTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@(endTimeHour < 12)">
+                                                disabled="@(_endTimeHour < 12)">
                                             @Culture.DateTimeFormat.AMDesignator
                                         </button>
                                         <button @onclick="ToggleEndTimeAmPm"
                                                 type="button"
                                                 class="bit-dtrp-ampm-btn"
-                                                disabled="@(endTimeHour >= 12)">
+                                                disabled="@(_endTimeHour >= 12)">
                                             @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
