@@ -72,18 +72,16 @@
             background-color: tomato;
         }
 
-        .field-focus::after {
-            border-radius: 1rem;
-        }
+        .custom-focus {
+            .custom-field::after {
+                border-radius: 1rem;
+                border-width: 0.25rem;
+                border-color: rebeccapurple;
+            }
 
-        .custom-label {
-            color: blue;
-            font-weight: 900;
-            font-size: 1.25rem;
-        }
-
-        .label-focus {
-            color: chartreuse;
+            .custom-label {
+                color: chartreuse;
+            }
         }
     }
 }

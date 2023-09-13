@@ -278,6 +278,8 @@ public partial class BitTextField
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
                                     ? $"{RootElementClass}-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
@@ -288,14 +290,16 @@ public partial class BitTextField
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focus}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => _hasFocus ? Styles?.Focus : string.Empty);
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
