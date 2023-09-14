@@ -15,7 +15,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private bool isOpen;
     private bool isRequired;
     private bool isResponsive;
-    private ICollection<TValue?>? values = new List<TValue?>();
+    private ICollection<TValue?>? values = Array.Empty<TValue?>();
     private List<TItem> selectedItems = new();
 
     private List<TItem> _items = new();
@@ -684,7 +684,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     foreach (var item in _items)
                     {
                         if (GetItemType(item) != BitDropdownItemType.Normal) continue;
-                        if (Values!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+                        if (Values is null || Values.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
 
                         SetIsSelected(item, true);
                         SelectedItems.Add(item);
@@ -861,7 +861,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             SelectedItems.Clear();
             ClassBuilder.Reset();
 
-            Values = new List<TValue?>();
+            Values = Array.Empty<TValue?>();
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
