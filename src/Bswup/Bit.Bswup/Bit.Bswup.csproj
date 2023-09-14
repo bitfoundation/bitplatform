@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="wwwroot\" />
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -40,5 +40,5 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
-
+    
 </Project>
