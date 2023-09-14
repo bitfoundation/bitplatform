@@ -1,4 +1,6 @@
-﻿; (function () {
+﻿// bit-bswup.progress version: 5.5.0
+
+; (function () {
     (window as any).startBswupProgress = (autoReload: boolean,
         showLogs: boolean,
         showAssets: boolean,

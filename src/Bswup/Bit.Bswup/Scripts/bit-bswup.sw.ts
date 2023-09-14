@@ -1,4 +1,6 @@
-﻿interface Window {
+﻿// bit-bswup.sw version: 5.5.0
+
+interface Window {
     clients: any
     skipWaiting: any
     importScripts: any
@@ -36,8 +38,8 @@ diag('ASSETS_URL:', ASSETS_URL);
 self.importScripts(ASSETS_URL);
 
 const VERSION = self.assetsManifest.version;
-const CACHE_NAME_PREFIX = 'bit-bswup-';
-const CACHE_NAME = `${CACHE_NAME_PREFIX}${VERSION}`;
+const CACHE_NAME_PREFIX = 'bit-bswup';
+const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -221,7 +223,11 @@ async function createAssetsCache(ignoreProgressReport = false) {
     if (passiveFirstTime) {
         const blazorBootAsset = UNIQUE_ASSETS.find(a => a.url.includes('blazor.boot.json'));
         const blazorBootJson = await (await addCache(false, blazorBootAsset)).json();
-        const blazorResources = Object.keys(blazorBootJson.resources.assembly).concat(Object.keys(blazorBootJson.resources.runtime));
+        const blazorResources = Object.keys(blazorBootJson.resources.assembly)
+            .concat(Object.keys(blazorBootJson.resources.runtime || {})) // before .NET 8
+            .concat(Object.keys(blazorBootJson.resources.jsModuleNative || {})) // after .NET 8
+            .concat(Object.keys(blazorBootJson.resources.jsModuleRuntime || {}))
+            .concat(Object.keys(blazorBootJson.resources.wasmNative || {}));
         const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(`/${r}`))).filter(a => !!a);
 
         diag('blazorBootAsset:', blazorBootAsset);
