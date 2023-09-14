@@ -27,6 +27,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the Dropdown, a list of BitDropdownOption components.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -58,7 +65,7 @@ public partial class BitDropdownDemo
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines the opening state of the callout.",
+            Description = "Determines the opening state of the callout. (two-way bound)",
         },
         new()
         {
@@ -91,7 +98,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "Items",
-            Type = "List<BitDropdownItem>?",
+            Type = "ICollection<TItem>?",
             DefaultValue = "null",
             Description = "The list of items to display in the callout.",
             LinkType = LinkType.Link,
@@ -107,14 +114,14 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "ItemsProvider",
-            Type = "BitDropdownItemsProvider<BitDropdownItem>?",
+            Type = "BitDropdownItemsProvider<TItem>?",
             DefaultValue = "null",
             Description = "The function providing items to the list for virtualization.",
         },
         new()
         {
             Name = "ItemTemplate",
-            Type = "RenderFragment<BitDropdownItem>?",
+            Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The custom template for rendering the items of the dropdown.",
         },
@@ -141,8 +148,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "NameSelectors",
+            Type = "BitDropdownNameSelectors<TItem, TValue>?",
+            DefaultValue = "null",
+            Description = "Names and selectors of the custom input type properties.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors"
+        },
+        new()
+        {
             Name = "OnChange",
-            Type = "EventCallback<BitDropdownItem[]>",
+            Type = "EventCallback<TItem[]>",
             Description = "The callback that called when selected items change.",
         },
         new()
@@ -160,8 +176,15 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnSelectItem",
-            Type = "EventCallback<BitDropdownItem>",
+            Type = "EventCallback<TItem>",
             Description = "The callback that called when an item gets selected.",
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent.",
         },
         new()
         {
@@ -180,7 +203,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "PlaceholderTemplate",
-            Type = "RenderFragment<BitDropdown>?",
+            Type = "RenderFragment<BitDropdown<TItem, TValue>>?",
             DefaultValue = "null",
             Description = "The custom template for the placeholder of the dropdown.",
         },
@@ -194,16 +217,16 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "SelectedItem",
-            Type = "BitDropdownItem?",
+            Type = "TItem?",
             DefaultValue = "null",
-            Description = "The selected item in single select mode.",
+            Description = "The selected item in single select mode. (two-way bound)",
         },
         new()
         {
             Name = "SelectedItems",
-            Type = "List<BitDropdownItem>",
-            DefaultValue = "new List<BitDropdownItem>()",
-            Description = "The selected items in multi select mode.",
+            Type = "List<TItem>",
+            DefaultValue = "new List<TItem>()",
+            Description = "The selected items in multi select mode. (two-way bound)",
         },
         new()
         {
@@ -229,16 +252,16 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "TextTemplate",
-            Type = "RenderFragment<BitDropdown>?",
+            Type = "RenderFragment<<TItem, TValue>>?",
             DefaultValue = "null",
             Description = "The custom template for the text of the dropdown.",
         },
         new()
         {
             Name = "Values",
-            Type = "List<string>",
-            DefaultValue = "new List<string>()",
-            Description = "The key values of the selected items in multi select mode.",
+            Type = "ICollection<TValue?>",
+            DefaultValue = "null",
+            Description = "The key values of the selected items in multi select mode. (two-way bound)",
         },
         new()
         {
@@ -260,7 +283,7 @@ public partial class BitDropdownDemo
         new()
         {
             Id = "dropdown-item",
-            Title = "BitDropdownItem",
+            Title = "BitDropdownItem<TValue>",
             Parameters = new()
             {
                new()
@@ -269,6 +292,13 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The aria label attribute for the dropdown item."
+               },
+               new()
+               {
+                   Name = "Id",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The id for the dropdown item."
                },
                new()
                {
@@ -324,12 +354,210 @@ public partial class BitDropdownDemo
                new()
                {
                    Name = "Value",
-                   Type = "string",
-                   DefaultValue = "string.Empty",
+                   Type = "TValue?",
+                   DefaultValue = "null",
                    Description = "The value of the dropdown item."
                },
             },
-        }
+        },
+        new()
+        {
+            Id = "dropdown-option",
+            Title = "BitDropdownOption<TValue>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The aria label attribute for the dropdown option."
+               },
+               new()
+               {
+                   Name = "Id",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The id for the dropdown option."
+               },
+               new()
+               {
+                   Name = "Data",
+                   Type = "object?",
+                   DefaultValue = "null",
+                   Description = "The custom data for the dropdown option to provide extra state for the template."
+               },
+               new()
+               {
+                   Name = "IsEnabled",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown option is enabled."
+               },
+               new()
+               {
+                   Name = "IsHidden",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown option is hidden."
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "null",
+                   Description = "Determines if the dropdown option is selected."
+               },
+               new()
+               {
+                   Name = "ItemType",
+                   Type = "BitDropdownItemType",
+                   DefaultValue = "BitDropdownItemType.Normal",
+                   Description = "The type of the dropdown option.",
+                   LinkType = LinkType.Link,
+                   Href = "#item-type-enum"
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "The text to render for the dropdown option."
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title attribute for the dropdown option."
+               },
+               new()
+               {
+                   Name = "Value",
+                   Type = "TValue?",
+                   DefaultValue = "null",
+                   Description = "The value of the dropdown option."
+               },
+            },
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitDropdownNameSelectors<TItem, TValue>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.AriaLabel))",
+                   Description = "The AriaLabel field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Id",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Id))",
+                   Description = "The Id field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Data",
+                   Type = "BitNameSelectorPair<TItem, object?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Data))",
+                   Description = "The Data field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsEnabled",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsEnabled))",
+                   Description = "The IsEnabled field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsHidden",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsHidden))",
+                   Description = "The IsHidden field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsSelected))",
+                   Description = "The IsSelected field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "ItemType",
+                   Type = "BitNameSelectorPair<TItem, BitDropdownItemType>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.ItemType))",
+                   Description = "The ItemType field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#item-type-enum"
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Text))",
+                   Description = "The Text field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Title))",
+                   Description = "The Title field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Value",
+                   Type = "BitNameSelectorPair<TItem, TValue?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Value))",
+                   Description = "The Value field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+            },
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair<TItem, TProp>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Name",
+                   Type = "string",
+                   Description = "Custom class property name."
+               },
+               new()
+               {
+                   Name = "Selector",
+                   Type = "Func<TItem, TProp?>?",
+                   Description = "Custom class property selector."
+               }
+            }
+        },
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {

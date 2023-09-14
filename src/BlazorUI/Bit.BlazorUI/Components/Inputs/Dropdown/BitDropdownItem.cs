@@ -13,7 +13,7 @@ public class BitDropdownItem<TValue>
     public string? Id { get; set; }
 
     /// <summary>
-    /// The custom data for the dropdown item to provide state for the item template.
+    /// The custom data for the dropdown item to provide extra state for the template.
     /// </summary>
     public object? Data { get; set; }
 

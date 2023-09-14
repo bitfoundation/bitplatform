@@ -83,7 +83,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public bool IsMultiSelect { get; set; }
 
     /// <summary>
-    /// Determines the opening state of the callout.
+    /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter]
     public bool IsOpen
@@ -216,6 +216,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
 
     /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
     /// Determines how many additional items are rendered before and after the visible region.
     /// </summary>
     [Parameter] public int OverscanCount { get; set; } = 3;
@@ -236,7 +241,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
 
     /// <summary>
-    /// The selected item in single select mode.
+    /// The selected item in single select mode. (two-way bound)
     /// </summary>
     [Parameter]
     public TItem? SelectedItem
@@ -258,7 +263,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
-    /// The selected items in multi select mode.
+    /// The selected items in multi select mode. (two-way bound)
     /// </summary>
     [Parameter]
     public List<TItem> SelectedItems
@@ -297,7 +302,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
 
     /// <summary>
-    /// The key values of the selected items in multi select mode.
+    /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
     [Parameter]
     public ICollection<TValue?>? Values
@@ -347,27 +352,62 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         var comparer = EqualityComparer<TValue>.Default;
         if (IsMultiSelect)
         {
-            if (DefaultValues is not null && ValuesHasBeenSet is false)
+            if (ValuesHasBeenSet || SelectedItemsHasBeenSet)
+            {
+                Values ??= SelectedItems.Select(GetValue).ToArray();
+                if (Values is not null && Values.Any())
+                {
+                    //var validValues = Values.Where(dv => _items.Any(i => comparer.Equals(dv, GetValue(i))));
+                    //Values = validValues.ToArray();
+                    var items = _items.FindAll(i => Values.Any(vv => comparer.Equals(vv, GetValue(i))));
+                    ClearAllItemsIsSelected();
+                    items.ForEach(i => SetIsSelected(i, true));
+                    SelectedItems = items;
+                    _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+                }
+            }
+            else if (DefaultValues is not null)
             {
                 var validValues = DefaultValues.Where(dv => _items.Any(i => comparer.Equals(dv, GetValue(i))));
-                Values = validValues.ToList();
-                var items = _items.FindAll(i => validValues.Any(vv => comparer.Equals(vv, GetValue(i))));
-                ClearAllItemsIsSelected();
-                items.ForEach(i => SetIsSelected(i, true));
-                selectedItems = items;
+                Values = validValues.ToArray();
+                if (Values is not null && Values.Any())
+                {
+                    var items = _items.FindAll(i => validValues.Any(vv => comparer.Equals(vv, GetValue(i))));
+                    ClearAllItemsIsSelected();
+                    items.ForEach(i => SetIsSelected(i, true));
+                    SelectedItems = items;
+                    _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+                }
             }
         }
         else
         {
-            if (CurrentValue is null && DefaultValue is not null && ValueHasBeenSet is false)
+            if (ValueHasBeenSet || SelectedItemHasBeenSet)
             {
-                var item = _items.SingleOrDefault(i => comparer.Equals(GetValue(i), DefaultValue));
+                Value ??= GetValue(SelectedItem);
+                if (Value is not null)
+                {
+                    var item = _items.FirstOrDefault(i => comparer.Equals(GetValue(i), Value));
+                    if (item is not null)
+                    {
+                        CurrentValue = Value;
+                        ClearAllItemsIsSelected();
+                        SetIsSelected(item, true);
+                        SelectedItem = item;
+                        _text = GetText(SelectedItem) ?? string.Empty;
+                    }
+                }
+            }
+            else if (CurrentValue is null && DefaultValue is not null)
+            {
+                var item = _items.FirstOrDefault(i => comparer.Equals(GetValue(i), DefaultValue));
                 if (item is not null)
                 {
                     CurrentValue = DefaultValue;
                     ClearAllItemsIsSelected();
                     SetIsSelected(item, true);
                     SelectedItem = item;
+                    _text = GetText(SelectedItem) ?? string.Empty;
                 }
             }
         }
@@ -386,9 +426,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         }
 
         var value = GetValue(item);
-        if (Values.Contains(value))
+
+        if (Values?.Contains(value) ?? false)
         {
-            Values = Values.Where(v => EqualityComparer<TValue>.Default.Equals(v, value)).ToList();
+            Values = Values.Where(v => EqualityComparer<TValue>.Default.Equals(v, value)).ToArray();
         }
 
         StateHasChanged();
@@ -427,7 +468,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             CurrentValue = GetValue(SelectedItems.FirstOrDefault());
 
-            Values = SelectedItems.Select(GetValue).ToList();
+            Values = SelectedItems.Select(GetValue).ToArray();
 
             if (isSelected)
             {
@@ -439,7 +480,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         {
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            var oldSelectedItem = SelectedItems.SingleOrDefault();
+            var oldSelectedItem = SelectedItem;
 
             var isSameItemSelected = oldSelectedItem == item;
 
@@ -477,7 +518,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         StateHasChanged();
     }
 
-    internal string GetItemCssClasses(TItem item)
+    internal string GetItemWrapperCssClasses(TItem item)
     {
         var stringBuilder = new StringBuilder(RootElementClass);
 
@@ -599,7 +640,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             {
                 if (Values is null || Values.Any() is false) return;
 
-                Values = Values.Where(v => _items.Any(i => comparer.Equals(GetValue(i), v))).ToList();
+                Values = Values.Where(v => _items.Any(i => comparer.Equals(GetValue(i), v))).ToArray();
             }
             else
             {
@@ -616,7 +657,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                 bool isEqual = SelectedItems.Select(GetValue).OrderBy(i => i).SequenceEqual(Values.OrderBy(v => v));
                 if (isEqual) return;
 
-                Values = SelectedItems.Select(GetValue).ToList();
+                Values = SelectedItems.Select(GetValue).ToArray();
             }
             else
             {
@@ -695,7 +736,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             }
             else
             {
-                _text = GetText(SelectedItems.SingleOrDefault()) ?? string.Empty;
+                _text = GetText(SelectedItem) ?? string.Empty;
             }
         }
         else

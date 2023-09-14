@@ -137,16 +137,16 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""GetDataItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
-    <TextTemplate>
+    <TextTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-txt"">
-            <BitIcon IconName=""@((context.Items!.Single(i => i.Value == context.Value).Data as DropdownItemData)!.IconName)"" />
-            <BitLabel>@context.Items!.Single(i => i.Value == context.Value).Text</BitLabel>
+            <BitIcon IconName=""@((dropdown.SelectedItem?.Data as DropdownItemData)?.IconName)"" />
+            <BitLabel>@dropdown.SelectedItem?.Text</BitLabel>
         </div>
     </TextTemplate>
-    <ItemTemplate>
+    <ItemTemplate Context=""item"">
         <div class=""custom-drp custom-drp-item"">
-            <BitIcon IconName=""@((context.Data as DropdownItemData)!.IconName)"" />
-            <BitLabel>@context.Text</BitLabel>
+            <BitIcon IconName=""@((item.Data as DropdownItemData)?.IconName)"" />
+            <BitLabel Style=""text-decoration:underline"">@item.Text</BitLabel>
         </div>
     </ItemTemplate>
 </BitDropdown>
@@ -155,10 +155,10 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""GetDataItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
-    <PlaceholderTemplate>
+    <PlaceholderTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-ph"">
             <BitIcon IconName=""@BitIconName.MessageFill"" />
-            <BitLabel>@context.Placeholder</BitLabel>
+            <BitLabel>@dropdown.Placeholder</BitLabel>
         </div>
     </PlaceholderTemplate>
 </BitDropdown>
@@ -181,6 +181,11 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select an item""
              CaretDownIconName=""@BitIconName.ScrollUpDown"" />";
     private readonly string example4CsharpCode = @"
+public class DropdownItemData
+{
+    public string? IconName { get; set; }
+}
+
 private List<BitDropdownItem<string>> GetDataItems() =>  new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Items"" },
@@ -192,8 +197,7 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
     new() { Text = ""Item d"", Value = ""D"", Data = new DropdownItemData { IconName = ""Train"" } },
     new() { Text = ""Item e"", Value = ""E"", Data = new DropdownItemData { IconName = ""Repair"" } },
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
-};
-";
+};";
 
     private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
@@ -217,11 +221,12 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 };";
 
     private readonly string example6RazorCode = @"
-<BitDropdown Label=""Single select""
+<BitDropdown Label=""Single select & auto focus""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
              SearchBoxPlaceholder=""Search item"" />
 
 <BitDropdown Label=""Multi select""

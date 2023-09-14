@@ -4,6 +4,7 @@
 
 @{
     var itemType = Dropdown.GetItemType(Item);
+    var id = @Dropdown.GetId(Item);
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
     var isEnabled = Dropdown.GetIsEnabled(Item);
@@ -12,14 +13,15 @@
 
 @if (itemType == BitDropdownItemType.Header)
 {
-    <div style="@(isHidden ? "display:none" : "")" class="bit-drp-ihd">@text</div>
+    <div id="@id" style="@(isHidden ? "display:none" : "")" class="bit-drp-ihd">@text</div>
 }
 else if (itemType == BitDropdownItemType.Normal)
 {
     @if (Dropdown.IsMultiSelect)
     {
-        <div style="@(isHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
+        <div style="@(isHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemWrapperCssClasses(Item)">
             <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
+                    id="@id"
                     type="button"
                     role="option"
                     class="bit-drp-mcn">
@@ -41,6 +43,7 @@ else if (itemType == BitDropdownItemType.Normal)
     else
     {
         <button @onclick="()=> Dropdown.HandleOnItemClick(Item)"
+                id="@id"
                 type="button"
                 role="option"
                 title="@Dropdown.GetTitle(Item)"
@@ -66,5 +69,5 @@ else if (itemType == BitDropdownItemType.Normal)
 }
 else if (itemType == BitDropdownItemType.Divider)
 {
-    <div style="@(isHidden ? "display:none" : "")" class="bit-drp-sep" role="separator"></div>
+    <div id="@id" style="@(isHidden ? "display:none" : "")" class="bit-drp-sep" role="separator"></div>
 }

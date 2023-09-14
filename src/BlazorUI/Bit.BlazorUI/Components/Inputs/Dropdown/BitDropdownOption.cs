@@ -18,7 +18,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Id { get; set; }
 
     /// <summary>
-    /// The custom data for the dropdown item to provide state for the dropdown option.
+    /// The custom data for the dropdown item to provide extra state for the template.
     /// </summary>
     [Parameter] public object? Data { get; set; }
 

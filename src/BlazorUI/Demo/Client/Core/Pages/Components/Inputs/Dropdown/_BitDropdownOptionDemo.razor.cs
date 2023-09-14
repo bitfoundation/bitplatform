@@ -6,7 +6,7 @@ public partial class _BitDropdownOptionDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
-    private List<BitDropdownItem<string>> GetBasicItems() => new()
+    private readonly List<BitDropdownItem<string>> basicItems = new()
     {
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
@@ -19,7 +19,7 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
     };
-    private List<BitDropdownItem<string>> GetDataItems() => new()
+    private readonly List<BitDropdownItem<string>> dataItems = new()
     {
         new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
         new() { Text = "Item a", Value = "A", Data = new DropdownItemData { IconName = "Memo" } },
@@ -31,9 +31,7 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
     };
-    private ICollection<BitDropdownItem<string>>? virtualizeItems1;
-    private ICollection<BitDropdownItem<string>>? virtualizeItems2;
-    private List<BitDropdownItem<string>> GetRtlItems() => new()
+    private readonly List<BitDropdownItem<string>> rtlItems = new()
     {
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
@@ -46,7 +44,7 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
     };
-    private ICollection<BitDropdownItem<string>>? dropDirectionItems;
+    private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
 
 
 
@@ -62,10 +60,9 @@ public partial class _BitDropdownOptionDemo
 
     protected override void OnInitialized()
     {
-        virtualizeItems1 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() }).ToArray();
-        virtualizeItems2 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() }).ToArray();
-
-        dropDirectionItems = Enumerable.Range(1, 15).Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $"Category {c}" }).ToArray();
+        dropDirectionItems = Enumerable.Range(1, 15)
+                                       .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $"Category {c}" })
+                                       .ToArray();
 
         base.OnInitialized();
     }
@@ -83,44 +80,5 @@ public partial class _BitDropdownOptionDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
-    }
-
-    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
-    {
-        try
-        {
-            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-            var query = new Dictionary<string, object?>()
-            {
-                { "$top", request.Count == 0 ? 50 : request.Count },
-                { "$skip", request.StartIndex }
-            };
-
-            if (string.IsNullOrEmpty(request.Search) is false)
-            {
-                query.Add("$filter", $"contains(Name,'{request.Search}')");
-            }
-
-            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
-
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
-
-            var items = data!.Items.Select(i => new BitDropdownItem<string>
-            {
-                Text = i.Name,
-                Value = i.Id.ToString(),
-                Data = i,
-                AriaLabel = i.Name,
-                IsEnabled = true,
-                ItemType = BitDropdownItemType.Normal
-            }).ToList();
-
-            return BitDropdownItemsProviderResult.From(items, data!.TotalCount);
-        }
-        catch
-        {
-            return BitDropdownItemsProviderResult.From(new List<BitDropdownItem<string>>(), 0);
-        }
     }
 }

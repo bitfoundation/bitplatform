@@ -217,16 +217,16 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""GetDataCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"">
-    <TextTemplate>
+    <TextTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-txt"">
-            <BitIcon IconName=""@((context.Items!.Single(i => i.Value == context.Value).Payload as DropdownItemData)!.IconName)"" />
-            <BitLabel>@context.Items!.Single(i => i.Value == context.Value).Text</BitLabel>
+            <BitIcon IconName=""@((dropdown.SelectedItem?.Payload as DropdownItemData)?.IconName)"" />
+            <BitLabel>@dropdown.SelectedItem?.Text</BitLabel>
         </div>
     </TextTemplate>
-    <ItemTemplate>
+    <ItemTemplate Context=""item"">
         <div class=""custom-drp custom-drp-item"">
-            <BitIcon IconName=""@((context.Payload as DropdownItemData)!.IconName)"" />
-            <BitLabel>@context.Text</BitLabel>
+            <BitIcon IconName=""@((item.Payload as DropdownItemData)?.IconName)"" />
+            <BitLabel Style=""text-decoration:underline"">@item.Text</BitLabel>
         </div>
     </ItemTemplate>
 </BitDropdown>
@@ -235,10 +235,10 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""GetDataCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"">
-    <PlaceholderTemplate>
+    <PlaceholderTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-ph"">
             <BitIcon IconName=""@BitIconName.MessageFill"" />
-            <BitLabel>@context.Placeholder</BitLabel>
+            <BitLabel>@dropdown.Placeholder</BitLabel>
         </div>
     </PlaceholderTemplate>
 </BitDropdown>
@@ -273,6 +273,11 @@ public class BitDropdownCustom
     public string? Text { get; set; }
     public string? Title { get; set; }
     public string? Value { get; set; }
+}
+
+public class DropdownItemData
+{
+    public string? IconName { get; set; }
 }
 
 private List<BitDropdownCustom> GetDataCustoms() => new()
@@ -352,11 +357,12 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
 };";
 
     private readonly string example6RazorCode = @"
-<BitDropdown Label=""Single select""
+<BitDropdown Label=""Single select & auto foucs""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
              ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
              SearchBoxPlaceholder=""Search item"" />
 
 <BitDropdown Label=""Multi select""
