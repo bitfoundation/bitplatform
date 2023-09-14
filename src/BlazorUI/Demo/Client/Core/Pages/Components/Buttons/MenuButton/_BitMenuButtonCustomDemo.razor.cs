@@ -137,7 +137,7 @@ public partial class _BitMenuButtonCustomDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitMenuButton Text=""Primary""
                Items=""basicCustoms""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
@@ -189,7 +189,7 @@ private List<MenuActionItem> basicCustoms = new()
     }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitMenuButton Text=""Custom Disabled""
                Items=""itemDisabledCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
@@ -272,7 +272,7 @@ protected override void OnInitialized()
     basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
 }";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitMenuButton Text=""IconName""
                Items=""basicCustoms""
                IconName=""@BitIconName.Edit""
@@ -325,7 +325,7 @@ private List<MenuActionItem> basicCustoms = new()
     }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -462,7 +462,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
     }
 };";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 Visible: [ <BitMenuButton Visibility=""BitVisibility.Visible""
                             Text=""Visible menu button""
                             Items=""basicCustoms""
@@ -516,7 +516,7 @@ private List<MenuActionItem> basicCustoms = new()
     }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitMenuButton Items=""basicCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
@@ -578,7 +578,7 @@ private List<MenuActionItem> basicCustoms = new()
     }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .item-template-box {
         display: flex;

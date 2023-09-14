@@ -2,7 +2,7 @@
 
 public partial class _BitDropdownItemDemo
 {
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
@@ -40,7 +40,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <div style=""display:inline-flex;white-space:nowrap;"">
     Visible: [ <BitDropdown DefaultValue=""@("""")""
                             Items=""GetBasicItems()""
@@ -74,7 +74,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitDropdown @bind-Value=""controlledValue""
                 Label=""Single select""
                 Items=""GetBasicItems()""
@@ -105,7 +105,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -195,7 +195,7 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
 };
 ";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
@@ -216,7 +216,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
@@ -246,7 +246,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""virtualizeItems1""
              DefaultValue=""@string.Empty""
@@ -329,7 +329,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
     }
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
@@ -357,7 +357,7 @@ private List<BitDropdownItem<string>> GetRtlItems() => new()
     new() { Text = ""کاهو"", Value = ""v-let"" }
 };";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitDropdown Label=""Auto""
              Items=""dropDirectionItems""
              DefaultValue=""@string.Empty""
@@ -379,7 +379,7 @@ protected override void OnInitialized()
                                     .ToArray();
 }";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
              Label=""Single select dropdown""
              Items=""GetBasicItems()""
@@ -413,7 +413,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>

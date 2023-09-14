@@ -133,7 +133,7 @@ public partial class BitButtonDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => primaryCounter++"">Primary (@primaryCounter)</BitButton>
 
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => standardCounter++"">
@@ -145,7 +145,7 @@ public partial class BitButtonDemo
 private int primaryCounter;
 private int standardCounter;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -157,14 +157,14 @@ private int standardCounter;";
 
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
     Button with AriaDescription
 </BitButton>
@@ -173,7 +173,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Button with AriaHidden
 </BitButton>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
     Open Bit Platform In New Tab
 </BitButton>
@@ -182,7 +182,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Go To Bit Platform
 </BitButton>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-button {
         gap: 0.5rem;
@@ -203,7 +203,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitRollerLoading Size=""30"" />
 </BitButton>";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>

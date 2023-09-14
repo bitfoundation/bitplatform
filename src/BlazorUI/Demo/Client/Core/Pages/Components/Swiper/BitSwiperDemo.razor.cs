@@ -68,7 +68,7 @@ public partial class BitSwiperDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <style>
     .item {
         width: 250px;
@@ -220,7 +220,7 @@ public partial class BitSwiperDemo
     </BitSwiperItem>
 </BitSwiper>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .item {
         width: 250px;

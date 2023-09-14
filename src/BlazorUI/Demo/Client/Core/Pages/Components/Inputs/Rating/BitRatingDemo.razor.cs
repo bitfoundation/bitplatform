@@ -163,7 +163,7 @@ public partial class BitRatingDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitRating @bind-Value=""RatingBasicValue"" />
 <BitLabel>Rate: @RatingBasicValue</BitLabel>
     
@@ -177,7 +177,7 @@ private double RatingBasicValue;
 private double RatingDisabledValue = 2;
 private double RatingReadonlyValue = 3.5;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -210,12 +210,12 @@ private double RatingClassValue = 2;
 private double RatingStylesValue = 5;
 private double RatingClassesValue = 3.5;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitRating Visibility=""""BitVisibility.Visible"""">Visible Rating</BitRating> ]
 Hidden: [ <BitRating Visibility=""""BitVisibility.Hidden"""">Hidden Rating</BitRating> ]
 Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""">Collapsed Rating</BitRating> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
 <BitLabel>Rate: @RatingMaxValue1</BitLabel>
     
@@ -229,7 +229,7 @@ private double RatingMaxValue1 = 2.5;
 private double RatingMaxValue2 = 5;
 private double RatingMaxValue3 = 15;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitRating Icon=""@BitIconName.HeartFill"" UnselectedIcon=""@BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
 <BitLabel>Rate: @RatingCustomIconValue1</BitLabel>
     
@@ -243,7 +243,7 @@ private double RatingCustomIconValue1 = 1.5;
 private double RatingCustomIconValue2 = 2;
 private double RatingCustomIconValue3 = 3;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
 <BitLabel>Rate: @RatingSmallValue</BitLabel>
 
@@ -253,7 +253,7 @@ private double RatingCustomIconValue3 = 3;";
 private double RatingSmallValue = 3;
 private double RatingLargeValue = 3;";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
 <BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Text=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
 
@@ -267,7 +267,7 @@ private double RatingControlledValue1 = 0;
 private double RatingControlledValue2 = 3;
 private double RatingControlledValue3;";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">

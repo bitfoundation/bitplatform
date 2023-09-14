@@ -9,7 +9,7 @@
                ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1HtmlCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
@@ -17,7 +17,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled" RazorCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <BitDatePicker IsEnabled=false
                            Style="max-width: 350px"
@@ -32,7 +32,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Week numbers" RazorCode="@example3HtmlCode" Id="example3">
+    <ComponentExampleBox Title="Week numbers" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
                            ShowWeekNumbers=true
@@ -42,7 +42,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Required" RazorCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Required" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
 
@@ -76,7 +76,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text input" RazorCode="@example5HtmlCode" Id="example5">
+    <ComponentExampleBox Title="Text input" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-desc">
                 The input field will open the BitDatePicker, and clicking the field again will dismiss the BitDatePicker and
@@ -92,7 +92,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Date format" RazorCode="@example6HtmlCode" Id="example6">
+    <ComponentExampleBox Title="Date format" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-desc">
                 Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
@@ -105,7 +105,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Min & Max" RazorCode="@example7HtmlCode" Id="example7">
+    <ComponentExampleBox Title="Min & Max" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div class="example-desc">
                 When date boundaries are set (via MinDate and MaxDate params) the BitDatePicker will not allow out-of-bounds dates to be picked or entered.
@@ -138,7 +138,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom label" RazorCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Custom label" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-desc">
                 In this example, the callout of the BitDatePicker would be opened and closed using an icon button which is customely located in the label.
@@ -155,7 +155,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Two-way binding" RazorCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Two-way binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <BitDatePicker @bind-Value="@selectedDate"
                            Style="max-width: 350px"
@@ -165,14 +165,14 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Jalali calendar" RazorCode="@example10HtmlCode" Id="example10">
+    <ComponentExampleBox Title="Jalali calendar" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</BitLink>.</div>
             <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set <b>InvariantGlobalization</b> to <b>false</b> in the project setting, which causes an extra download size for the website.</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-desc">
                 In this sample, you can see how to implement a custom template for different parts of BitDatePicker.
@@ -232,7 +232,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom icon" RazorCode="@example12HtmlCode" Id="example12">
+    <ComponentExampleBox Title="Custom icon" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <BitDatePicker Style="max-width: 350px"
                            AriaLabel="Select a date"
@@ -241,7 +241,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Error message" RazorCode="@example13HtmlCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Error message" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <div class="example-desc">The custom invalid error message will show when an invalid date is entered.</div>
 
@@ -263,7 +263,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive" RazorCode="@example14HtmlCode" Id="example14">
+    <ComponentExampleBox Title="Responsive" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <BitDatePicker IsResponsive="true"
                            Style="max-width: 350px"
@@ -272,7 +272,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="With time" RazorCode="@example15HtmlCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <ComponentExampleBox Title="With time" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <ExamplePreview>
             <BitDatePicker @bind-Value="@selectedDateTime"
                            Style="max-width: 350px"

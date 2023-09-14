@@ -138,7 +138,7 @@ public partial class BitSnackBarDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitSnackBar @ref=""BasicSnackBarRef""
                 Position=""@BasicSnackBarPosition""
                 AutoDismiss=""@BasicSnackBarAutoDismiss""
@@ -186,7 +186,7 @@ private async Task OpenBasicSnackBar()
     await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
 }";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitSnackBar @ref=""DismissIconName"" DismissIconName=""@BitIconName.Go"" />
 <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 

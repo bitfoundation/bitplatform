@@ -11,7 +11,7 @@
 <ComponentDemo ComponentName="BasicList"
                ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitBasicList" RazorCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="BitBasicList" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <BitBasicList Items="LotsOfPeople"
                           EnableVirtualization="true"
@@ -30,7 +30,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List without virtualization" RazorCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Basic List without virtualization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <BitBasicList Items="FewPeople" Style="border: 1px #a19f9d solid; border-radius: 3px;">
                 <RowTemplate Context="person">
@@ -45,7 +45,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with custom role and class" RazorCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Basic List with custom role and class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <BitBasicList Items="LotsOfPeople" Role="list"
                           EnableVirtualization="true"
@@ -61,7 +61,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with overscan count" RazorCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Basic List with overscan count" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <BitBasicList Items="LotsOfPeople" ItemSize="300" OverscanCount="5"
                           EnableVirtualization="true"
@@ -77,7 +77,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with items provider" RazorCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Basic List with items provider" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <BitBasicList TItem="ProductDto" ItemSize="83"
                           EnableVirtualization="true"
@@ -101,7 +101,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Basic List with Grouped items provider" RazorCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Basic List with Grouped items provider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <BitBasicList TItem="CategoryOrProductDto" ItemSize="83"
                           EnableVirtualization="true"

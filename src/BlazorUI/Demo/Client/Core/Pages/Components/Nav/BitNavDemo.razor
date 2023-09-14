@@ -13,7 +13,7 @@
                    Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
-                <ComponentExampleBox Title="Basic" RazorCode="@example1NavItemHtmlCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1NavItemRazorCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu" />
@@ -21,7 +21,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavItemHtmlCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavItemRazorCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
@@ -29,7 +29,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavItemHtmlCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavItemRazorCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -61,7 +61,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavItemHtmlCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavItemRazorCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -95,7 +95,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" RazorCode="@example5NavItemHtmlCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5NavItemRazorCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="FoodNavMenu"
@@ -114,7 +114,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavItemHtmlCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavItemRazorCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu"
@@ -128,7 +128,7 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <ComponentExampleBox Title="Basic" RazorCode="@example1CustomItemHtmlCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1CustomItemRazorCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -142,7 +142,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" RazorCode="@example2CustomItemHtmlCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2CustomItemRazorCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomCarNavMenu"
@@ -160,7 +160,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3CustomItemHtmlCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3CustomItemRazorCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -203,7 +203,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4CustomItemHtmlCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4CustomItemRazorCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -252,7 +252,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" RazorCode="@example5CustomItemHtmlCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5CustomItemRazorCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="CustomFoodNavMenu"
@@ -276,7 +276,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6CustomItemHtmlCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6CustomItemRazorCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -296,7 +296,7 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <ComponentExampleBox Title="Basic" RazorCode="@example1NavOptionHtmlCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1NavOptionRazorCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption">
@@ -333,7 +333,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavOptionHtmlCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavOptionRazorCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
@@ -372,7 +372,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavOptionHtmlCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavOptionRazorCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -450,7 +450,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavOptionHtmlCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavOptionRazorCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -536,7 +536,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" RazorCode="@example5NavOptionHtmlCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5NavOptionRazorCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Mode="BitNavMode.Manual"
@@ -578,7 +578,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavOptionHtmlCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavOptionRazorCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption"
