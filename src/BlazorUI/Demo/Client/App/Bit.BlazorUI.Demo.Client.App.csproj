@@ -16,7 +16,6 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
-        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF258</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -59,11 +58,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- App icon for Android -->
-        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Include="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
 
-        <!-- App icon for all other platforms -->
+        <!-- App icon for all platforms -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF" />
+        
+        <!-- Customize App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Update="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
