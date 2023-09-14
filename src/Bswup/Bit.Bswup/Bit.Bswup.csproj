@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
@@ -18,7 +18,6 @@
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.1.23421.29" />
     </ItemGroup>
 
     <ItemGroup>
