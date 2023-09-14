@@ -23,10 +23,10 @@ public static class BitChartDemoUtils
 
     public static IEnumerable<int> RandomScalingFactor(int count, int min = 0, int max = 100)
     {
-        int[] factors = new int[count];
+        var factors = new int[count];
         lock (_rng)
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 factors[i] = RandomScalingFactorThreadUnsafe(min, max);
             }
@@ -35,11 +35,12 @@ public static class BitChartDemoUtils
         return factors;
     }
 
-    public static IEnumerable<DateTime> GetNextDays(int count)
+    public static IEnumerable<DateTimeOffset> GetNextDays(int count)
     {
-        DateTime now = DateTime.Now;
-        DateTime[] factors = new DateTime[count];
-        for (int i = 0; i < factors.Length; i++)
+        var now = DateTimeOffset.Now;
+        var factors = new DateTimeOffset[count];
+
+        for (var i = 0; i < factors.Length; i++)
         {
             factors[i] = now.AddDays(i);
         }

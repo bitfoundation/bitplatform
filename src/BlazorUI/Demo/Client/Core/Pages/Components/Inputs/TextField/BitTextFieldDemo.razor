@@ -181,7 +181,7 @@
             <div class="example-box">
                 <div class="custom-wrapper">
                     <BitLabel>Component's Style & Class:</BitLabel>
-                    <BitTextField Placeholder="Enter a text..." Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem" />
+                    <BitTextField Placeholder="Enter a text..." Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;" />
                     <BitTextField Placeholder="Enter a text..." Class="custom-class" />
                 </div>
                 <br />
@@ -189,17 +189,19 @@
                     <BitLabel>Styles & Classes:</BitLabel>
                     <BitTextField Placeholder="Enter a text..."
                                   IconName="@BitIconName.Microphone"
-                                  Styles="@(new() { Icon = "color: darkorange;",
-                                                    Input = "padding: 0.5rem; background-color: goldenrod"} )" />
+                                  Label="Custom label style"
+                                  Styles="@(new() { Root = "background-color: pink;",
+                                                    Icon = "color: darkorange;",
+                                                    Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
+                                                    Input = "padding: 0.5rem; background-color: goldenrod;"} )" />
                     <br />
                     <BitTextField Placeholder="Enter a text..."
                                   DefaultValue="Custom input class"
                                   Label="Custom label class"
                                   Classes="@(new() { FieldGroup = "custom-field",
-                                                     FieldGroupFocus = "field-focus",
+                                                     Focused = "custom-focus",
                                                      Input = "custom-input",
-                                                     Label = "custom-label",
-                                                     LabelFocus = "label-focus" } )" />
+                                                     Label = "custom-label" } )" />
                 </div>
             </div>
         </ExamplePreview>

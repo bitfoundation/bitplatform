@@ -6,43 +6,54 @@
      id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    @if (IconName.HasValue() || Label.HasValue() || LabelTemplate != null)
+    @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)
     {
-        <div class="bit-ntf-lct">
+        <div style="@Styles?.LabelContainer" class="bit-ntf-lct @Classes?.LabelContainer">
             @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName bit-icon--l"
+                <i style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@IconName bit-icon--l @Classes?.Icon"
                    aria-hidden="true"
                    role="@GetIconRole"
                    aria-label="@IconAriaLabel" />
             }
 
-            @if (LabelTemplate != null)
+            @if (LabelTemplate is not null)
             {
-                <label class="bit-ntf-lbl" id="@GetLabelId" for="@_inputId">@LabelTemplate</label>
+                <label id="@GetLabelId" for="@_inputId">
+                    @LabelTemplate
+                </label>
             }
             else if (Label.HasValue())
             {
-                <label class="bit-ntf-lbl" id="@GetLabelId" for="@_inputId">@Label</label>
+                <label style="@Styles?.Label"
+                       class="bit-ntf-lbl @Classes?.Label"
+                       id="@GetLabelId"
+                       for="@_inputId">
+                    @Label
+                </label>
             }
-
         </div>
     }
 
-    <div class="bit-ntf-wrp"
+    <div style="@Styles?.InputWrapper"
+         class="bit-ntf-wrp @Classes?.InputWrapper"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
         <input @ref="@_inputRef"
+               @attributes="@InputHtmlAttributes"
                @onblur="e => HandleOnBlur(e)"
                @onfocus="e => HandleOnFocus(e)"
                @oninput="e => HandleOnChange(e)"
                @onchange="e => HandleOnChange(e)"
                @onkeydown="e => HandleOnKeyDown(e)"
-               @attributes="@InputHtmlAttributes"
+               @onfocusin="e => HandleOnFocusIn(e)"
+               @onfocusout="e => HandleOnFocusOut(e)"
+               style="@Styles?.Input"
+               class="bit-ntf-inp @Classes?.Input"
                type="text"
-               class="bit-ntf-inp"
                id="@_inputId"
                role="spinbutton"
                autocomplete="off"
@@ -58,20 +69,21 @@
                aria-disabled="@(IsEnabled is false)" />
         @if (ShowArrows)
         {
-            <span class="bit-ntf-act">
+            <span style="@Styles?.ButtonsContainer" class="bit-ntf-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Increment, e)"
                         type="button"
                         tabindex="-1"
-                        class="bit-ntf-aup"
                         date-is-focusable="false"
+                        style="@Styles?.IncrementButton"
+                        class="bit-ntf-aup @Classes?.IncrementButton"
                         aria-label="@IncrementAriaLabel"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)">
-                    <span class="bit-ntf-aic">
-                        <i class="bit-icon bit-icon--@IncrementIconName bit-icon--s" />
+                    <span style="@Styles?.IncrementIconContainer" class="bit-ntf-aic @Classes?.IncrementIconContainer">
+                        <i style="@Styles?.IncrementIcon" class="bit-icon bit-icon--@IncrementIconName bit-icon--s @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -81,13 +93,14 @@
                         @onpointerdown="e => HandleOnPointerDown(BitNumericTextFieldAction.Decrement, e)"
                         type="button"
                         tabindex="-1"
-                        class="bit-ntf-adn"
                         date-is-focusable="false"
+                        style="@Styles?.DecrementButton"
+                        class="bit-ntf-adn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
                         aria-label="@DecrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
-                    <span class="bit-ntf-aic">
-                        <i class="bit-icon bit-icon--@DecrementIconName bit-icon--s" />
+                    <span style="@Styles?.DecrementIconContainer" class="bit-ntf-aic @Classes?.DecrementIconContainer">
+                        <i style="@Styles?.DecrementIcon" class="bit-icon bit-icon--@DecrementIconName bit-icon--s @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>

@@ -42,10 +42,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-preview.7.23375.9" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.7.23375.9" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.7.23375.9" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.7.23375.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.1.23421.29" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

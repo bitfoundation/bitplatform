@@ -55,7 +55,7 @@ body:
     label: Anything else?
     description: |
       - Developer's machine Operating System? For example `Windows 10 19041`
-      - .NET Sdk version? For example `7.0.400`
+      - .NET Sdk version? For example `7.0.401`
       - IDE / Version? For example `Visual Studio 17.8 Preview 1`
       - Bit.BlazorUI nuget package's version? (If applicable) For example `5.3.0`
       - Bit.TodoTemplate nuget package's version? (If applicable) For example `4.0.0`

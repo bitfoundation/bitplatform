@@ -50,103 +50,125 @@ public partial class BitDateRangePicker
     private ElementReference _inputStartTimeMinuteRef = default!;
     private ElementReference _inputEndTimeHourRef = default!;
     private ElementReference _inputEndTimeMinuteRef = default!;
-    private int startTimeHour;
-    private int startTimeMinute;
-    private int endTimeHour;
-    private int endTimeMinute;
+    private int _startTimeHour;
+    private int _startTimeMinute;
+    private int _endTimeHour;
+    private int _endTimeMinute;
 
-    private int _startTimeHour
+    private int _startTimeHourView
     {
         get
         {
-            return startTimeHour;
+            if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                if (_startTimeHour > 12)
+                {
+                    return _startTimeHour - 12;
+                }
+
+                if (_startTimeHour == 0)
+                {
+                    return 12;
+                }
+            }
+
+            return _startTimeHour;
         }
         set
         {
             if (value > 23)
             {
-                startTimeHour = 23;
+                _startTimeHour = 23;
             }
             else if (value < 0)
             {
-                startTimeHour = 0;
+                _startTimeHour = 0;
             }
             else
             {
-                startTimeHour = value;
+                _startTimeHour = value;
             }
 
             UpdateTime();
         }
     }
 
-    private int _startTimeMinute
+    private int _startTimeMinuteView
     {
-        get
-        {
-            return startTimeMinute;
-        }
+        get => _startTimeMinute;
         set
         {
             if (value > 59)
             {
-                startTimeMinute = 59;
+                _startTimeMinute = 59;
             }
             else if (value < 0)
             {
-                startTimeMinute = 0;
+                _startTimeMinute = 0;
             }
             else
             {
-                startTimeMinute = value;
+                _startTimeMinute = value;
             }
 
             UpdateTime();
         }
     }
-    private int _endTimeHour
+
+    private int _endTimeHourView
     {
         get
         {
-            return endTimeHour;
+            if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                if (_endTimeHour > 12)
+                {
+                    return _endTimeHour - 12;
+                }
+
+                if (_endTimeHour == 0)
+                {
+                    return 12;
+                }
+            }
+
+            return _endTimeHour;
         }
         set
         {
             if (value > 23)
             {
-                endTimeHour = 23;
+                _endTimeHour = 23;
             }
             else if (value < 0)
             {
-                endTimeHour = 0;
+                _endTimeHour = 0;
             }
             else
             {
-                endTimeHour = value;
+                _endTimeHour = value;
             }
 
             UpdateTime();
         }
     }
-    private int _endTimeMinute
+
+    private int _endTimeMinuteView
     {
-        get
-        {
-            return endTimeMinute;
-        }
+        get => _endTimeMinute;
         set
         {
             if (value > 59)
             {
-                endTimeMinute = 59;
+                _endTimeMinute = 59;
             }
             else if (value < 0)
             {
-                endTimeMinute = 0;
+                _endTimeMinute = 0;
             }
             else
             {
-                endTimeMinute = value;
+                _endTimeMinute = value;
             }
 
             UpdateTime();
@@ -384,6 +406,11 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public bool ShowTimePicker { get; set; }
 
+    /// <summary>
+    /// Time format of the time pickers, 24H or 12H.
+    /// </summary>
+    [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
     protected override string RootElementClass => "bit-dtrp";
 
     protected override Task OnInitializedAsync()
@@ -435,11 +462,11 @@ public partial class BitDateRangePicker
             CurrentValue.EndDate = null;
         }
 
-        startTimeHour = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Hour : 0;
-        startTimeMinute = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Minute : 0;
+        _startTimeHour = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Hour : 0;
+        _startTimeMinute = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Minute : 0;
 
-        endTimeHour = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : 23;
-        endTimeMinute = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Minute : 59;
+        _endTimeHour = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : 23;
+        _endTimeMinute = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Minute : 59;
 
         CreateMonthCalendar(startDateTime);
 
@@ -570,8 +597,8 @@ public partial class BitDateRangePicker
 
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
-        var hour = CurrentValue.StartDate.HasValue is false ? _startTimeHour : _endTimeHour;
-        var minute = CurrentValue.StartDate.HasValue is false ? _startTimeMinute : _endTimeMinute;
+        var hour = CurrentValue.StartDate.HasValue ? _endTimeHour : _startTimeHour;
+        var minute = CurrentValue.StartDate.HasValue ? _endTimeMinute : _startTimeMinute;
 
         var selectedDate = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
         if (CurrentValue.StartDate.HasValue is false)
@@ -1202,6 +1229,20 @@ public partial class BitDateRangePicker
         if (IsEnabled is false || ShowTimePicker is false) return;
 
         await _js.SelectText(_inputEndTimeMinuteRef);
+    }
+
+    private void ToggleStartTimeAmPm()
+    {
+        if (IsEnabled is false) return;
+
+        _startTimeHourView = _startTimeHour + (_startTimeHour >= 12 ? -12 : 12);
+    }
+
+    private void ToggleEndTimeAmPm()
+    {
+        if (IsEnabled is false) return;
+
+        _endTimeHourView = _endTimeHour + (_endTimeHour >= 12 ? -12 : 12);
     }
 
     [JSInvokable("CloseCallout")]
