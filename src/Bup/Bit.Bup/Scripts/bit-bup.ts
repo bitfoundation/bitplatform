@@ -1,4 +1,6 @@
-﻿declare const Blazor: any;
+﻿window['bit-bup version'] = '5.6.0-pre-01';
+
+declare const Blazor: any;
 
 ; (function () {
     const bitBupScript = document.currentScript;
