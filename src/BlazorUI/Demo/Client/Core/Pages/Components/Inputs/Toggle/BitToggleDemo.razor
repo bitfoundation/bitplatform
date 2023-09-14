@@ -7,7 +7,7 @@
 <ComponentDemo ComponentName="Toggle"
                ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle Label="Basic" @bind-Value="BasicValue" />
@@ -17,7 +17,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text & Label" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Text & Label" RazorCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle Label="OnText And OffText" @bind-Value="OnTextValue" OnText="On" OffText="Off" />
@@ -29,7 +29,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle @bind-Value="LabelTemplateValue">
@@ -44,7 +44,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Controlled" RazorCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div style="display:flex; align-items:flex-end">
@@ -60,7 +60,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Validation" RazorCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
