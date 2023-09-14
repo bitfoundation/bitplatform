@@ -98,7 +98,7 @@ public partial class App
 #if BlazorWebAssembly && !BlazorHybrid
         if (args.Path.Contains("chart") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
-            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm" });
             _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif

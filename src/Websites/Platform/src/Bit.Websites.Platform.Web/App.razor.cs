@@ -17,7 +17,7 @@ public partial class App
 #if BlazorWebAssembly
         if (args.Path.Contains("some-lazy-loaded-page") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
         {
-            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.wasm" });
             _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif
