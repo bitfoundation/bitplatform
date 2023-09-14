@@ -12,13 +12,13 @@
 
 @if (itemType == BitDropdownItemType.Header)
 {
-    <div class="bit-drp-ihd">@text</div>
+    <div style="@(isHidden ? "display:none" : "")" class="bit-drp-ihd">@text</div>
 }
 else if (itemType == BitDropdownItemType.Normal)
 {
     @if (Dropdown.IsMultiSelect)
     {
-        <div style="@(isHidden ? " display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
+        <div style="@(isHidden ? "display: none" : string.Empty)" class="@Dropdown.GetItemCssClasses(Item)">
             <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
                     type="button"
                     role="option"
@@ -46,8 +46,8 @@ else if (itemType == BitDropdownItemType.Normal)
                 title="@Dropdown.GetTitle(Item)"
                 disabled=@(isEnabled is false)
                 tabindex="@(isEnabled ? 0 : -1)"
-                style="@(isHidden ? " display:none" : string.Empty)"
-                class="bit-drp-itm@(isSelected ? $" bit-drp-sel" : string.Empty)"
+                style="@(isHidden ? "display:none" : "")"
+                class="bit-drp-itm@(isSelected ? $" bit-drp-sel" : "")"
                 aria-label="@Dropdown.GetAriaLabel(Item)"
                 aria-setsize="@Dropdown.GetTotalItems()"
                 aria-disabled="@(isEnabled is false)"
@@ -66,5 +66,5 @@ else if (itemType == BitDropdownItemType.Normal)
 }
 else if (itemType == BitDropdownItemType.Divider)
 {
-    <div class="bit-drp-sep" role="separator"></div>
+    <div style="@(isHidden ? "display:none" : "")" class="bit-drp-sep" role="separator"></div>
 }

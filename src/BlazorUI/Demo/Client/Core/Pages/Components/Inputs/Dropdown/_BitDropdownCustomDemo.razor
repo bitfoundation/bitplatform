@@ -2,27 +2,23 @@
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Single select"
-                         Items="GetBasicItems()"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>" TValue="string" />
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
 
             <BitDropdown Label="Multi select"
-                         Items="GetBasicItems()"
-                         DefaultValue="@("")"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select items"
                          IsMultiSelect="true" />
 
             <BitDropdown Label="IsRequired"
-                         Items="GetBasicItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          IsRequired="true" />
 
-            <BitDropdown Label="Disabled"
-                         Items="GetBasicItems()"
-                         DefaultValue="@("f-ora")"
-                         Placeholder="Select an item"
-                         IsEnabled="false" />
+            <BitDropdown Label="Disabled" Items="GetBasicCustoms()" Placeholder="Select an item" IsEnabled="false" NameSelectors="nameSelectors" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -31,20 +27,20 @@
     <ExamplePreview>
         <div class="example-content">
             <div style="display:inline-flex;white-space:nowrap;">
-                Visible: [ <BitDropdown DefaultValue="@("")"
-                                        Items="GetBasicItems()"
+                Visible: [ <BitDropdown NameSelectors="nameSelectors"
+                                        Items="GetBasicCustoms()"
                                         Placeholder="Select an item"
                                         Visibility="BitVisibility.Visible" /> ]
             </div>
             <div style="display:inline-flex;white-space:nowrap;">
-                Hidden: [ <BitDropdown DefaultValue="@("")"
-                                       Items="GetBasicItems()"
+                Hidden: [ <BitDropdown NameSelectors="nameSelectors"
+                                       Items="GetBasicCustoms()"
                                        Placeholder="Select items"
                                        Visibility="BitVisibility.Hidden" /> ]
             </div>
             <div style="display:inline-flex;white-space:nowrap;">
-                Collapsed: [ <BitDropdown DefaultValue="@("")"
-                                          Items="GetBasicItems()"
+                Collapsed: [ <BitDropdown NameSelectors="nameSelectors"
+                                          Items="GetBasicCustoms()"
                                           Placeholder="Select items"
                                           Visibility="BitVisibility.Collapsed" /> ]
             </div>
@@ -58,7 +54,8 @@
             <div>
                 <BitDropdown @bind-Value="controlledValue"
                              Label="Single select"
-                             Items="GetBasicItems()"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="Select an item" />
                 <BitLabel>Selected Value: @controlledValue</BitLabel>
             </div>
@@ -66,7 +63,8 @@
             <div>
                 <BitDropdown @bind-Values="controlledValues"
                              Label="Multi select"
-                             Items="GetBasicItems()"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="Select items"
                              IsMultiSelect="true" />
                 <BitLabel>Selected Values: @string.Join(",", controlledValues)</BitLabel>
@@ -79,26 +77,26 @@
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Text & Item templates"
-                         Items="GetDataItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item">
                 <TextTemplate>
                     <div class="custom-drp custom-drp-txt">
-                        <BitIcon IconName="@((context.Items!.Single(i => i.Value == context.Value).Data as DropdownItemData)!.IconName)" />
+                        <BitIcon IconName="@((context.Items!.Single(i => i.Value == context.Value).Payload as DropdownItemData)!.IconName)" />
                         <BitLabel>@context.Items!.Single(i => i.Value == context.Value).Text</BitLabel>
                     </div>
                 </TextTemplate>
                 <ItemTemplate>
                     <div class="custom-drp custom-drp-item">
-                        <BitIcon IconName="@((context.Data as DropdownItemData)!.IconName)" />
+                        <BitIcon IconName="@((context.Payload as DropdownItemData)!.IconName)" />
                         <BitLabel>@context.Text</BitLabel>
                     </div>
                 </ItemTemplate>
             </BitDropdown>
 
             <BitDropdown Label="Placeholder template"
-                         Items="GetDataItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item">
                 <PlaceholderTemplate>
                     <div class="custom-drp custom-drp-ph">
@@ -109,8 +107,8 @@
             </BitDropdown>
 
             <BitDropdown Label="Label template"
-                         Items="GetDataItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item">
                 <LabelTemplate>
                     <div class="custom-drp custom-drp-lbl">
@@ -121,8 +119,8 @@
             </BitDropdown>
 
             <BitDropdown Label="CaretDownIconName"
-                         Items="GetDataItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          CaretDownIconName="@BitIconName.ScrollUpDown" />
         </div>
@@ -134,8 +132,8 @@
         <div class="example-desc">When the <strong>IsResponsive</strong> parameter is true, on small screens the drop down items will render in a side panel.</div>
         <div class="example-content">
             <BitDropdown Label="Responsive Dropdown"
-                         Items="GetBasicItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          IsResponsive=true />
         </div>
@@ -146,15 +144,15 @@
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Single select"
-                         Items="GetBasicItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search item" />
 
             <BitDropdown Label="Multi select"
-                         Items="GetBasicItems()"
-                         DefaultValue="@string.Empty"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select items"
                          IsMultiSelect="true"
                          ShowSearchBox="true"
@@ -169,14 +167,14 @@
         <br />
         <div class="example-content">
             <BitDropdown Label="Single select"
-                         Items="virtualizeItems1"
-                         DefaultValue="@string.Empty"
+                         Items="virtualizeCustoms1"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          Virtualize="true" />
 
             <BitDropdown Label="Multi select"
-                         Items="virtualizeItems2"
-                         DefaultValue="@string.Empty"
+                         Items="virtualizeCustoms2"
+                         NameSelectors="nameSelectors"
                          IsMultiSelect="true"
                          Placeholder="Select items"
                          Virtualize="true" />
@@ -188,15 +186,15 @@
             <BitDropdown Label="Single select"
                          Virtualize="true"
                          ItemsProvider="LoadItems"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>" TValue="string" />
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
 
             <BitDropdown Label="Multi select"
                          Virtualize="true"
                          IsMultiSelect="true"
                          ItemsProvider="LoadItems"
-                         Placeholder="Select items"
-                         TItem="BitDropdownItem<string>" TValue="string" />
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -206,14 +204,14 @@
         <div style="display:flex;justify-content:end">
             <div class="example-content">
                 <BitDropdown Label="تک انتخابی"
-                             Items="GetRtlItems()"
-                             DefaultValue="@string.Empty"
+                             Items="GetRtlCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="لطفا انتخاب کنید"
                              IsRtl="true" />
 
                 <BitDropdown Label="چند انتخابی"
-                             Items="GetRtlItems()"
-                             DefaultValue="@string.Empty"
+                             Items="GetRtlCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="انتخاب چند گزینه ای"
                              IsMultiSelect="true"
                              IsRtl="true" />
@@ -226,14 +224,14 @@
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Auto"
-                         Items="dropDirectionItems"
-                         DefaultValue="@string.Empty"
+                         Items="dropDirectionCustoms"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          DropDirection="BitDropDirection.Auto" />
 
             <BitDropdown Label="TopAndBottom"
-                         Items="dropDirectionItems"
-                         DefaultValue="@string.Empty"
+                         Items="dropDirectionCustoms"
+                         NameSelectors="nameSelectors"
                          Placeholder="Select an item"
                          DropDirection="BitDropDirection.TopAndBottom" />
         </div>
@@ -246,7 +244,8 @@
             <div>
                 <BitDropdown @bind-Value="clearValue"
                              Label="Single select dropdown"
-                             Items="GetBasicItems()"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="Select an option"
                              ShowClearButton="true" />
                 <BitLabel>Value: @clearValue</BitLabel>
@@ -255,7 +254,8 @@
             <div>
                 <BitDropdown @bind-Values="clearValues"
                              Label="Multi select dropdown"
-                             Items="GetBasicItems()"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
                              Placeholder="Select options"
                              IsMultiSelect="true"
                              ShowClearButton="true" />
@@ -275,7 +275,8 @@
 
                     <BitDropdown @bind-Value="validationModel.Category"
                                  Label="Select 1 item"
-                                 Items="GetBasicItems()"
+                                 Items="GetBasicCustoms()"
+                                 NameSelectors="nameSelectors"
                                  Placeholder="Select and item" />
 
                     <ValidationMessage For="@(() => validationModel.Category)" />
@@ -284,7 +285,8 @@
 
                     <BitDropdown @bind-Values="validationModel.Products"
                                  Label="Select min 1 and max 2 items"
-                                 Items="GetBasicItems()"
+                                 Items="GetBasicCustoms()"
+                                 NameSelectors="nameSelectors"
                                  Placeholder="Select items"
                                  IsMultiSelect="true" />
 

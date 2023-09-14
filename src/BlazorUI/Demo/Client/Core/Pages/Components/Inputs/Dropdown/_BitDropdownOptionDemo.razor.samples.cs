@@ -1,30 +1,15 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
-public partial class _BitDropdownItemDemo
+public partial class _BitDropdownOptionDemo
 {
     private readonly string example1HtmlCode = @"
-<BitDropdown Label=""Single select""
-             Items=""GetBasicItems()""
-             Placeholder=""Select an item""
-             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+<BitDropdown Label=""Single select"" Items=""GetBasicItems()"" Placeholder=""Select an item"" TItem=""BitDropdownItem<string>"" TValue=""string"" />
 
-<BitDropdown Label=""Multi select""
-             Items=""GetBasicItems()""
-             DefaultValue=""@("""")""
-             Placeholder=""Select items""
-               IsMultiSelect=""true"" />
+<BitDropdown Label=""Multi select"" Items=""GetBasicItems()"" Placeholder=""Select items"" IsMultiSelect=""true"" DefaultValue=""@("""")"" />
 
-<BitDropdown Label=""IsRequired""
-             Items=""GetBasicItems()""
-             DefaultValue=""@string.Empty""
-             Placeholder=""Select an item""
-             IsRequired=""true"" />
+<BitDropdown Label=""IsRequired"" Items=""GetBasicItems()"" Placeholder=""Select an item"" IsRequired=""true"" DefaultValue=""@string.Empty"" />
 
-<BitDropdown Label=""Disabled""
-             Items=""GetBasicItems()""
-             DefaultValue=""@(""f-ora"")""
-             Placeholder=""Select an item""
-             IsEnabled=""false"" />";
+<BitDropdown Label=""Disabled"" Items=""GetBasicItems()"" Placeholder=""Select an item"" IsEnabled=""false"" DefaultValue=""@(""f-ora"")"" />";
     private readonly string example1CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -280,17 +265,11 @@ private ICollection<BitDropdownItem<string>>? virtualizeItems2;
 
 protected override void OnInitialized()
 {
-    virtualizeItems1 = Enumerable.Range(1, 10_000)
-                                    .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
-                                    .ToArray();
-
-    virtualizeItems2 = Enumerable.Range(1, 10_000)
-                                    .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
-                                    .ToArray();
+    virtualizeItems1 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() }).ToArray();
+    virtualizeItems2 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() }).ToArray();
 }
 
-private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(
-    BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
+private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
 {
     try
     {
@@ -374,9 +353,7 @@ private ICollection<BitDropdownItem<string>>? dropDirectionItems;
 
 protected override void OnInitialized()
 {
-        dropDirectionItems = Enumerable.Range(1, 15)
-                                    .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" })
-                                    .ToArray();
+    dropDirectionItems = Enumerable.Range(1, 15).Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" }).ToArray();
 }";
 
     private readonly string example10HtmlCode = @"

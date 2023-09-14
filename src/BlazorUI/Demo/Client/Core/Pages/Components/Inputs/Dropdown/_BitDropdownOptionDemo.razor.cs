@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
-public partial class _BitDropdownItemDemo
+public partial class _BitDropdownOptionDemo
 {
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
@@ -62,17 +62,10 @@ public partial class _BitDropdownItemDemo
 
     protected override void OnInitialized()
     {
-        virtualizeItems1 = Enumerable.Range(1, 10_000)
-                                     .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
-                                     .ToArray();
+        virtualizeItems1 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() }).ToArray();
+        virtualizeItems2 = Enumerable.Range(1, 10_000).Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() }).ToArray();
 
-        virtualizeItems2 = Enumerable.Range(1, 10_000)
-                                     .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
-                                     .ToArray();
-
-        dropDirectionItems = Enumerable.Range(1, 15)
-                                       .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $"Category {c}" })
-                                       .ToArray();
+        dropDirectionItems = Enumerable.Range(1, 15).Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $"Category {c}" }).ToArray();
 
         base.OnInitialized();
     }
@@ -92,8 +85,7 @@ public partial class _BitDropdownItemDemo
         successMessage = string.Empty;
     }
 
-    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(
-        BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
+    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
     {
         try
         {

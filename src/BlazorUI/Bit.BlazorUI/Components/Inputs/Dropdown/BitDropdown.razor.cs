@@ -359,14 +359,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         }
         else
         {
-            if (CurrentValue is null && DefaultValue is not null && ValueHasBeenSet is false
-                && _items.Any(i => comparer.Equals(GetValue(i), DefaultValue)))
+            if (CurrentValue is null && DefaultValue is not null && ValueHasBeenSet is false)
             {
-                CurrentValue = DefaultValue;
-                var item = _items.Single(i => comparer.Equals(GetValue(i), DefaultValue));
-                ClearAllItemsIsSelected();
-                SetIsSelected(item, true);
-                SelectedItem = item;
+                var item = _items.SingleOrDefault(i => comparer.Equals(GetValue(i), DefaultValue));
+                if (item is not null)
+                {
+                    CurrentValue = DefaultValue;
+                    ClearAllItemsIsSelected();
+                    SetIsSelected(item, true);
+                    SelectedItem = item;
+                }
             }
         }
 

@@ -1,28 +1,13 @@
 ﻿<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
         <div class="example-content">
-            <BitDropdown Label="Single select"
-                         Items="GetBasicItems()"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>" TValue="string" />
+            <BitDropdown Label="Single select" Items="GetBasicItems()" Placeholder="Select an item" TItem="BitDropdownItem<string>" TValue="string" />
 
-            <BitDropdown Label="Multi select"
-                         Items="GetBasicItems()"
-                         DefaultValue="@("")"
-                         Placeholder="Select items"
-                         IsMultiSelect="true" />
+            <BitDropdown Label="Multi select" Items="GetBasicItems()" Placeholder="Select items" IsMultiSelect="true" DefaultValue="@("")" />
 
-            <BitDropdown Label="IsRequired"
-                         Items="GetBasicItems()"
-                         DefaultValue="@string.Empty"
-                         Placeholder="Select an item"
-                         IsRequired="true" />
+            <BitDropdown Label="IsRequired" Items="GetBasicItems()" Placeholder="Select an item" IsRequired="true" DefaultValue="@string.Empty" />
 
-            <BitDropdown Label="Disabled"
-                         Items="GetBasicItems()"
-                         DefaultValue="@("f-ora")"
-                         Placeholder="Select an item"
-                         IsEnabled="false" />
+            <BitDropdown Label="Disabled" Items="GetBasicItems()" Placeholder="Select an item" IsEnabled="false" DefaultValue="@("f-ora")" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

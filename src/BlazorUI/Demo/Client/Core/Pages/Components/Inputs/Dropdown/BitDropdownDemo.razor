@@ -9,18 +9,19 @@
                    ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
                    ComponentParameters="componentParameters"
                    ComponentSubClasses="componentSubClasses"
-                   ComponentSubEnums="componentSubEnums">
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
                 <_BitDropdownItemDemo />
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                @* <_BitDropdownCustomDemo /> *@
+                <_BitDropdownCustomDemo />
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                @* <_BitDropdownOptionDemo /> *@
+                <_BitDropdownOptionDemo />
             </BitPivotItem>
         </BitPivot>
     </ComponentDemo>
