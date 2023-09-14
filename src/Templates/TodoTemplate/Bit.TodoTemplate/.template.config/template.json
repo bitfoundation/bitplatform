@@ -16,6 +16,20 @@
     "sourceName": "TodoTemplate",
     "preferNameDirectory": true,
     "symbols": {
+        //Guid generator for App Id
+        "ApplicationIdGuid": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF257",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<ApplicationIdGuid>"
+                }
+            ]
+        },
         "database": {
             "displayName": "Database",
             "type": "parameter",
