@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
@@ -9,10 +9,10 @@
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
+        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
-        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
-        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
         <!--/+:msbuild-conditional:noEmit -->
 
         <ResolveStaticWebAssetsInputsDependsOn>
@@ -51,12 +51,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-rc.1.23421.29" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.11" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.11" PrivateAssets="all" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.1.23421.29" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

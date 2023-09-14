@@ -59,13 +59,13 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android'
   
   - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android'
 
 - job: build_blazor_hybrid_windows
   displayName: 'build blazor hybrid (windows)'
@@ -95,13 +95,13 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0'
   
   - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0'
 
 - job: build_blazor_hybrid_iOS
   displayName: 'build blazor hybrid (iOS)'
@@ -131,13 +131,13 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-ios'
   
   - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios'
 
 - job: build_blazor_hybrid_maccatalyst
   displayName: 'build blazor hybrid (maccatalyst)'
@@ -167,13 +167,13 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst'
   
   - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst'
 
 - job: build_blazor_api_wasm
   displayName: 'build blazor api + web assembly'

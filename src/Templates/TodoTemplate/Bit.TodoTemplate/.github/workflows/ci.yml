@@ -55,10 +55,10 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -82,10 +82,10 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
@@ -109,10 +109,10 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-ios
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
 
   build_blazor_hybrid_maccatalyst:
     name: build blazor hybrid (maccatalyst)
@@ -136,10 +136,10 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst
       
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly

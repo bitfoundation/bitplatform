@@ -52,7 +52,7 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        dotnet tool install --global dotnet-ef --version 7.0.11
+        dotnet tool install --global dotnet-ef --version 8.0.0-rc.1.23419.6
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/AdminPanel.Server.Api.csproj
 
     - name: Upload ef migrations bundle
@@ -150,19 +150,19 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0
   
     - name: Build exe
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86
+        path: src/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -200,22 +200,22 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net7.0-android
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
   
     - name: Build aab
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Build apk
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net7.0-android
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: src/Client/App/bin/release/net7.0-android/*-Signed.*
+        path: src/Client/App/bin/release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
@@ -246,19 +246,19 @@ jobs:
        run: dotnet workload install maui
 
      - name: Restore workloads
-       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst
+       run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-maccatalyst
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
    
      - name: Build pkg
-       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net7.0-maccatalyst
+       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: mac-pkg-bundle
-         path: src/Client/App/bin/release/net7.0-maccatalyst/*.pkg
+         path: src/Client/App/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
@@ -289,7 +289,7 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore workloads
-      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-ios
+      run: dotnet workload restore src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-ios
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1
@@ -313,16 +313,16 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-ios
+      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
   
     - name: Build ipa
-      run: dotnet publish src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net7.0-ios
+      run: dotnet publish src/Client/App/AdminPanel.Client.App.csproj -m:1 -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: iOS-bundle
-        path: src/Client/App/bin/release/net7.0-ios/ios-arm64/publish/*.ipa
+        path: src/Client/App/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
 
   build_blazor_electron_linux:
      name: build blazor electron (linux)

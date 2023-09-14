@@ -56,7 +56,7 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        dotnet tool install --global dotnet-ef --version 7.0.11
+        dotnet tool install --global dotnet-ef --version 8.0.0-rc.1.23419.6
         dotnet ef migrations bundle --self-contained -r linux-x64 --project src/BlazorDual.Api/BlazorDual.Api.csproj
 
     - name: Upload ef migrations bundle

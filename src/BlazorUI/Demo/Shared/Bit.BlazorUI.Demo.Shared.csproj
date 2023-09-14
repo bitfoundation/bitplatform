@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,9 +13,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.11" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23419.4" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-rc.1.23419.4" />
         <PackageReference Include="System.Text.Json" Version="8.0.0-rc.1.23419.4" />
     </ItemGroup>
 

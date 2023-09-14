@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -9,7 +9,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.11" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.1.23421.29" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
 

@@ -51,7 +51,7 @@ jobs:
       targetType: 'inline'
       script: |
         dotnet new tool-manifest
-        dotnet tool install dotnet-ef --version 7.0.11
+        dotnet tool install dotnet-ef --version 8.0.0-rc.1.23419.6
         dotnet dotnet-ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/TodoTemplate.Server.Api.csproj
       failOnStderr: true
 
@@ -182,24 +182,24 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-windows10.0.19041.0'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0'
 
   - task: Bash@3
     displayName: 'Build (To generate CSS/JS files)'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:Configuration=Release -f net7.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:Configuration=Release -f net8.0-windows10.0.19041.0'
 
   - task: Bash@3
     displayName: 'Build exe'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net7.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
     inputs:
-      targetPath: 'src/Client/App/bin/release/net7.0-windows10.0.19041.0/win10-x86'
+      targetPath: 'src/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86'
       artifact: 'win-exe-bundle'
       publishLocation: 'pipeline'
 
@@ -231,7 +231,7 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-android'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android'
 
   - task: DownloadSecureFile@1
     displayName: Download TodoTemplate keystore file
@@ -255,23 +255,23 @@ jobs:
     displayName: 'Build (To generate CSS/JS files)'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net7.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android'
 
   - task: Bash@3
     displayName: 'Build aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net7.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - task: Bash@3
     displayName: 'Build apk'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net7.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - script: |
       mkdir drop
-      cp ./src/Client/App/bin/release/net7.0-android/*-Signed.* drop/
+      cp ./src/Client/App/bin/release/net8.0-android/*-Signed.* drop/
     failOnStderr: true
     displayName: Copy apk/aab files to drop folder
 
@@ -317,23 +317,23 @@ jobs:
     displayName: 'Restore workloads'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net7.0-maccatalyst'
+      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst'
 
   - task: Bash@3
     displayName: 'Build (To generate CSS/JS files)'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:Configuration=Release -f net7.0-maccatalyst'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:Configuration=Release -f net8.0-maccatalyst'
 
   - task: Bash@3
     displayName: 'Build pkg'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net7.0-maccatalyst'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
 
   - script: |
       mkdir drop
-      cp ./src/Client/App/bin/Release/net7.0-maccatalyst/*.pkg drop/
+      cp ./src/Client/App/bin/Release/net8.0-maccatalyst/*.pkg drop/
     failOnStderr: true
     displayName: Copy pkg file to drop folder
 

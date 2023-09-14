@@ -94,14 +94,6 @@ public partial class App
         // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
         // Android, windows and iOS have to set culture programmatically.
         // Browser is gets handled in Web project's Program.cs
-#if BlazorHybrid && MultilingualEnabled
-        if (_cultureHasNotBeenSet)
-        {
-            _cultureHasNotBeenSet = false;
-            var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
-            CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
-        }
-#endif
 
 #if BlazorWebAssembly && !BlazorHybrid
         if (args.Path.Contains("chart") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)

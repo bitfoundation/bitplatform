@@ -1,17 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!--/-:msbuild-conditional:noEmit -->
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
-        <InvariantGlobalization Condition=" '$(MultilingualEnabled)' == 'false' ">true</InvariantGlobalization>
-        <BlazorWebAssemblyLoadAllGlobalizationData Condition=" '$(MultilingualEnabled)' == 'true' ">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
-        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
+        <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
+        <HybridGlobalization>true</HybridGlobalization>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <!--/+:msbuild-conditional:noEmit -->
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
@@ -46,8 +48,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.11" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.11" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
 
@@ -62,9 +64,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
-        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.dll" />
-        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.dll" />
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
