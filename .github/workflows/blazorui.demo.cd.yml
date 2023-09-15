@@ -42,7 +42,7 @@ jobs:
       run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
       run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
@@ -106,7 +106,7 @@ jobs:
       run: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0
   
     - name: Build exe
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-windows10.0.19041.0
@@ -153,7 +153,7 @@ jobs:
       run: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
   
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
   
     - name: Build aab
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
@@ -214,7 +214,7 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
   
     - name: Build ipa
       run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
@@ -254,7 +254,7 @@ jobs:
        run: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
+       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
    
      - name: Build pkg
        run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-maccatalyst
@@ -299,7 +299,7 @@ jobs:
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/BlazorUI/Demo/Directory.Build.props > temp.xml && mv temp.xml src/BlazorUI/Demo/Directory.Build.props
    
      - name: Build (To generate CSS/JS files)
-       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets./Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras./Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons./Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
+       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
        run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux
