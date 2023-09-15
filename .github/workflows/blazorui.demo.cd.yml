@@ -41,11 +41,8 @@ jobs:
     - name: Install wasm
       run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
-    - name: Restore nuget packages
-      run: dotnet restore src/BlazorUI/Bit-BlazorUI.sln
-
     - name: MSBuild
-      run: dotnet msbuild --no-restore src/BlazorUI/Bit-BlazorUI.sln
+      run: dotnet msbuild src/BlazorUI/Bit-BlazorUI.sln
       
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
