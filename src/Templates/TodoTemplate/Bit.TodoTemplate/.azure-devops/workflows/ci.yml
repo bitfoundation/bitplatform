@@ -53,13 +53,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
-
-  - task: Bash@3
-    displayName: 'Restore workloads'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android'
+      script: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
   
   - task: Bash@3
     displayName: 'Build'
@@ -89,13 +83,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
-
-  - task: Bash@3
-    displayName: 'Restore workloads'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0'
+      script: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
   
   - task: Bash@3
     displayName: 'Build'
@@ -125,13 +113,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
-
-  - task: Bash@3
-    displayName: 'Restore workloads'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-ios'
+      script: dotnet workload install maui maui-ios --sdk-version=8.0.100-rc.1.23455.8
   
   - task: Bash@3
     displayName: 'Build'
@@ -161,13 +143,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
-
-  - task: Bash@3
-    displayName: 'Restore workloads'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst'
+      script: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
   
   - task: Bash@3
     displayName: 'Build'
@@ -194,10 +170,10 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
-    displayName: 'Restore workloads'
+    displayName: 'Install wasm'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+      script: 'dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8'
 
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'

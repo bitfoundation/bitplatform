@@ -51,11 +51,8 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install Maui
-      run: dotnet workload install maui
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-android
+    - name: Install maui
+      run: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
@@ -78,11 +75,8 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install Maui
-      run: dotnet workload install maui
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-windows10.0.19041.0
+    - name: Install maui
+      run: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0
@@ -105,11 +99,8 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install Maui
-      run: dotnet workload install maui
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-ios
+    - name: Install maui
+      run: dotnet workload install maui maui-ios --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
@@ -132,11 +123,8 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install Maui
-      run: dotnet workload install maui
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -f net8.0-maccatalyst
+    - name: Install maui
+      run: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
       
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
@@ -162,8 +150,8 @@ jobs:
     - name: Switch to blazor wasm
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
 
-    - name: Restore workloads
-      run: dotnet workload restore src/Client/Web/TodoTemplate.Client.Web.csproj -p:BlazorMode=BlazorWebAssembly
+    - name: Install wasm
+      run: dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
       
     - name: Build
       run: dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
