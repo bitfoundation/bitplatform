@@ -161,21 +161,21 @@ public partial class BitSearchBoxDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLabel>Basic</BitLabel>
 <BitSearchBox Placeholder=""Search"" />
     
 <BitLabel>Disabled</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitLabel>Basic Underlined SearchBox</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
 
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitLabel>SearchBox with fixed icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
 
@@ -185,7 +185,7 @@ public partial class BitSearchBoxDemo
 <BitLabel>SearchBox with custom icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-class {
         border: 1px solid red;
@@ -213,12 +213,12 @@ public partial class BitSearchBoxDemo
               Classes=""@(new() {ClearButtonIcon = ""custom-clear"",
                                 SearchIconContainer = ""custom-search""})"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
 Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" />  ]
 Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" />  ]";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <BitLabel>Two-way Bind</BitLabel>
 <BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
@@ -235,7 +235,7 @@ private string TwoWaySearchValue;
 private string OnChangeSearchValue;
 private string OnSearchValue;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />

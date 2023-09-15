@@ -85,7 +85,7 @@ public partial class _BitChoiceGroupItemDemo
     }
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitChoiceGroup Label=""Basic Items"" Items=""basicItems"" DefaultValue=""basicItems[1].Value"" />";
     private readonly string example1CsharpCode = @"
 private readonly List<BitChoiceGroupItem> basicItems<string> = new()
@@ -96,7 +96,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
                 IsEnabled=""false""
                 Items=""basicItems""
@@ -122,7 +122,7 @@ private readonly List<BitChoiceGroupItem> disabledItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitChoiceGroup Label=""Image Items"" Items=""imageItems"" DefaultValue=""@(""Bar"")"" />
 
 <BitChoiceGroup Label=""Icon Items"" Items=""iconItems"" DefaultValue=""@(""Day"")"" />";
@@ -156,7 +156,7 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 };";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""basicItems"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
 
 <BitChoiceGroup Label=""Disabled"" Items=""basicItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
@@ -202,7 +202,7 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 };";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .custom-class {
         width: 17rem;
@@ -272,7 +272,7 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
     new() { Text = ""Item D"", Value = ""D"", Style = ""color:green"" }
 };";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 Visible: [ <BitChoiceGroup Visibility=""BitVisibility.Visible""
                            Items=""basicItems""
                            LayoutFlow=""BitLayoutFlow.Horizontal""
@@ -296,7 +296,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .custom-label {
         color: #A4262C;
@@ -320,7 +320,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -422,7 +422,7 @@ protected override void OnInitialized()
     };
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example9HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Items=""basicItems"" Value=""@oneWayValue"" />
 <BitTextField @bind-Value=""oneWayValue"" />
 
@@ -440,7 +440,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     new() { Text = ""Item D"", Value = ""D"" }
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example10HtmlCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""rtlItems"" DefaultValue=""@(""A"")"" IsRtl=""true"" />
 
 <BitChoiceGroup Label=""Disabled"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"" />";
@@ -453,7 +453,7 @@ private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
     new() { Text = ""بخش ت"", Value = ""D"" }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example11HtmlCode = @"
 <style>
     .validation-message {
         color: #A4262C;

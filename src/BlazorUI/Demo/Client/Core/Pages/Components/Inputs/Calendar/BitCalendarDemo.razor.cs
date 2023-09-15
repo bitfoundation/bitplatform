@@ -186,16 +186,16 @@ public partial class BitCalendarDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitCalendar AriaLabel=""Select a date"" />";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitCalendar IsEnabled=false AriaLabel=""Select a date"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitCalendar ShowWeekNumbers=true AriaLabel=""Select a date"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <EditForm Model=""formValidationCalendarModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -241,11 +241,11 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <BitCalendar @bind-Value=""@formattedDateTime"" AriaLabel=""Select a date."" DateFormat=""dd=MM(yy)"" />
 <BitLabel>Selected DateTime: @formattedDateTime.ToString()</BitLabel>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <BitCalendar AriaLabel=""Select a date""
              MaxDate=""DateTimeOffset.Now.AddDays(5)""
              MinDate=""DateTimeOffset.Now.AddDays(-5)"" />
@@ -258,13 +258,13 @@ private void HandleInvalidSubmit()
              MaxDate=""DateTimeOffset.Now.AddYears(1)""
              MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" AriaLabel=""Select a date"" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
     private readonly string example7CsharpCode = @"
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <BitCalendar DateFormat=""yyyy/MM/dd hh:mm tt"" 
              Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
              GoToToday=""برو به امروز"" />
@@ -273,7 +273,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
              Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
              GoToToday=""Boro be emrouz"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example9HtmlCode = @"
 <style>
     .weekend-cell {
         color: red;
@@ -349,7 +349,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 
     private readonly string example9CsharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example10HtmlCode = @"
 <BitCalendar MonthPickerPosition=""@monthPickerPosition"" AriaLabel=""Select a date"" />
 <BitToggleButton Text=""Toggle month picker position"" OnChange=""ToggleMonthPickerPosition"" />
 
@@ -364,7 +364,7 @@ private void ToggleMonthPickerPosition(bool newState)
     monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides;
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example11HtmlCode = @"
 <BitCalendar @bind-Value=""@selectedDateTime"" ShowTimePicker=""true"" AriaLabel=""Select a date"" />
 <BitLabel>Selected DateTime: @selectedDateTime.ToString()</BitLabel>";
     private readonly string example11CsharpCode = @"

@@ -135,7 +135,7 @@ public partial class BitMessageBarDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitMessageBar MessageBarType=""@BitMessageBarType.Info"">
     Info (default) MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
 </BitMessageBar>
@@ -160,7 +160,7 @@ public partial class BitMessageBarDemo
     Blocked MessageBar. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
 </BitMessageBar>";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 @if (IsInfoMessageBarHidden is false)
 {
     <BitMessageBar MessageBarType=""@BitMessageBarType.Info"" OnDismiss=""() => IsInfoMessageBarHidden = true"">

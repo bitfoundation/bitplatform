@@ -59,7 +59,7 @@ public partial class BitOverlayDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -96,7 +96,7 @@ public partial class BitOverlayDemo
     private readonly string example1CsharpCode = @"
 private bool BasicIsVisible;";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -139,7 +139,7 @@ private bool BasicIsVisible;";
     private readonly string example2CsharpCode = @"
 private bool AutoCloseIsVisible;";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -188,7 +188,7 @@ private bool AutoCloseIsVisible;";
 private bool AbsoluteIsVisible;
 ";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;
@@ -225,7 +225,7 @@ private bool AbsoluteIsVisible;
     private readonly string example4CsharpCode = @"
 private bool AutoToggleIsVisible;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .overlay {
         z-index: 9999;

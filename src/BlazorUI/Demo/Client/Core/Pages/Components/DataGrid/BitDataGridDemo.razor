@@ -15,7 +15,7 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="grid1">
                 <div class="grid1-container">
@@ -41,7 +41,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Virtualizing" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Virtualizing" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="grid2">
                 <BitDataGrid ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize="true" @ref="dataGrid">
@@ -61,7 +61,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OData" Id="example3" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode">
+    <ComponentExampleBox Title="OData" Id="example3" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode">
         <ExamplePreview>
             <div class="grid2">
                 <BitDataGrid ItemKey="(p => p.Id)" ItemsProvider="@productsItemsProvider" TGridItem="ProductDto" Virtualize="true" @ref="productsDataGrid">

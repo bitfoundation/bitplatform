@@ -6,7 +6,7 @@ public partial class ComponentExampleBox
 
     [Parameter] public string Title { get; set; } = default!;
     [Parameter] public string Id { get; set; } = default!;
-    [Parameter] public string RazorCode { get; set; } = default!;
+    [Parameter] public string HtmlCode { get; set; } = default!;
     [Parameter] public string CsharpCode { get; set; } = default!;
     [Parameter] public RenderFragment ExamplePreview { get; set; } = default!;
 
@@ -21,7 +21,7 @@ public partial class ComponentExampleBox
             ? AppendCodePhraseToCsharpCode(CsharpCode)
             : "";
 
-        await JSRuntime.CopyToClipboard(RazorCode.Trim() + code);
+        await JSRuntime.CopyToClipboard(HtmlCode.Trim() + code);
     }
 
     private string AppendCodePhraseToCsharpCode(string cSharpSourceCode)

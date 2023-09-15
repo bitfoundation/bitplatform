@@ -219,12 +219,12 @@ public partial class BitCompoundButtonDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitCompoundButton Text=""Primary"" SecondaryText=""This Button is a compound button"" />
 <BitCompoundButton Text=""Standard"" SecondaryText=""This Button is a compound button"" ButtonStyle=""BitButtonStyle.Standard"" />
 <BitCompoundButton IsEnabled=""false"" Text=""Disabled"" SecondaryText=""This Button is a disabled compound button"" />";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -235,22 +235,22 @@ public partial class BitCompoundButtonDemo
 <BitCompoundButton Style=""color:darkblue; font-weight:bold"" Text=""Styled"" SecondaryText=""This is styled compound button"" />
 <BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" Class=""custom-class"" Text=""Classed"" SecondaryText=""This is classed compound button"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 Visible: [ <BitCompoundButton Visibility=""BitVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton> ]
 Hidden: [ <BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitVisibility.Hidden""></BitCompoundButton> ]
 Collapsed: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitVisibility.Collapsed""></BitCompoundButton> ]";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitCompoundButton Text=""AriaDescription"" SecondaryText=""This is a compound button with AriaDescription"" AriaDescription=""Button with AriaDescription"" />
 
 <BitCompoundButton Text=""AriaHidden"" SecondaryText=""This is a compound button with AriaHidden""  ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <BitCompoundButton Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Text=""Open the site"" SecondaryText=""Open Bit Platform In New Tab"" />
 
 <BitCompoundButton Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"" Text=""Open the site"" SecondaryText=""Go To Bit Platform"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -305,7 +305,7 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <BitCompoundButton>
     <PrimaryTemplate>
         <span style=""color:red"">Primary Template!</span>
@@ -326,7 +326,7 @@ private void HandleInvalidSubmit()
     </SecondaryTemplate>
 </BitCompoundButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
  <BitCompoundButton SecondaryText=""This is secondary text""
                     ClassStyles=""@(new() {
                                               Container = new() { Style = ""line-height:2"" },

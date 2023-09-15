@@ -239,21 +239,21 @@ public partial class BitCheckboxDemo
     }
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitCheckbox Label=""Basic checkbox"" />
 <BitCheckbox Label=""Disable checkbox"" IsEnabled=""false"" />
 <BitCheckbox Label=""Disable checked checkbox"" IsEnabled=""false"" Value=""true"" />";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitCheckbox Label=""Custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.Heart"" />
 <BitCheckbox Label=""Disabled custom checkmark checkbox"" CheckmarkIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitCheckbox Label=""BitCheckboxSide.End - Basic Checkbox"" BoxSide=""@BitCheckboxSide.End"" />
 <BitCheckbox Label=""BitCheckboxSide.End - Disable Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" />
 <BitCheckbox Label=""BitCheckboxSide.End - Disable Checked Checkbox"" BoxSide=""@BitCheckboxSide.End"" IsEnabled=""false"" Value=""true"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-class {
         color: brown;
@@ -283,19 +283,19 @@ public partial class BitCheckboxDemo
 
 <BitCheckbox Label=""Classes"" Classes=""@(new() { Label=""custom-label"", Box=""custom-box"" })"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 Visible: [ <BitCheckbox Visibility=""BitVisibility.Visible"" Label=""Visible Checkbox"" /> ]
 Hidden: [ <BitCheckbox Visibility=""BitVisibility.Hidden"" Label=""Hidden Checkbox"" /> ]
 Collapsed: [ <BitCheckbox Visibility=""BitVisibility.Collapsed"" Label=""Collapsed Checkbox"" /> ]";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <BitCheckbox Label=""Indeterminate checkbox"" @bind-IsIndeterminate=""isIndeterminate"" />
 <BitCheckbox Label=""Disabled indeterminate checkbox"" IsIndeterminate=""true"" IsEnabled=""false"" />";
     private readonly string example6CsharpCode = @"
 private bool isIndeterminate = true;
 ";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <BitCheckbox Label=""One-way checked checkbox (Fixed)"" Value=""true"" />
 
 <BitCheckbox Label=""One-way controlled checkbox"" Value=""oneWayValue"" />
@@ -319,7 +319,7 @@ private bool oneWayIsIndeterminate = true;
 private bool twoWayIsIndeterminate = true;
 ";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <BitCheckbox @bind-Value=""labelTemplateValue"">
     <LabelTemplate>
         <span style=""@(labelTemplateValue ? ""color: green;"" : ""color: red;"")"">Label Template</span>
@@ -329,7 +329,7 @@ private bool twoWayIsIndeterminate = true;
 private bool labelTemplateValue;
 ";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example9HtmlCode = @"
 <style>
     .custom-checkbox {
         gap: 0.5rem;
@@ -373,7 +373,7 @@ private bool customContentValue;
 private bool customContentIsIndeterminate = true;
 ";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example10HtmlCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>

@@ -29,11 +29,11 @@ public partial class BitLabelDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLabel>I'm a Label</BitLabel>
 <BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .custom-class {
         padding: 0 0.5rem;
@@ -45,14 +45,14 @@ public partial class BitLabelDemo
 <BitLabel Style=""color: dodgerblue; font-weight:bold"">I'm a Label with Style</BitLabel>
 <BitLabel Class=""custom-class"">I'm a Label with Class</BitLabel>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitLabel IsRequired=""true"">I'm a required Label</BitLabel>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitLabel For=""label-input"">A Label for An Input</BitLabel>
 <input type=""text"" name=""label-input"" id=""label-input"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 Visible: [ <BitLabel Visibility=""BitVisibility.Visible"">Visible Label</BitLabel> ]
 Hidden: [ <BitLabel Visibility=""BitVisibility.Hidden"">Hidden Label</BitLabel> ]
 Collapsed: [ <BitLabel Visibility=""BitVisibility.Collapsed"">Collapsed Label</BitLabel> ]";

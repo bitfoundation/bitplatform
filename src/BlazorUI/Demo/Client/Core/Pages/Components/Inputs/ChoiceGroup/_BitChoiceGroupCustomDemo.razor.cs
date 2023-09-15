@@ -85,7 +85,7 @@ public partial class _BitChoiceGroupCustomDemo
     }
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitChoiceGroup Label=""Basic Customs""
                 Items=""basicCustoms""
                 DefaultValue=""basicCustoms[1].ItemValue""
@@ -105,7 +105,7 @@ private readonly List<ChoiceModel> basicCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 };";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
                 IsEnabled=""false""
                 Items=""basicCustoms""
@@ -142,7 +142,7 @@ private readonly List<ChoiceModel> disabledCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 };";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitChoiceGroup Label=""Image Customs""
                 DefaultValue=""@(""Bar"")""
                 Items=""imageCustoms""
@@ -202,7 +202,7 @@ private readonly List<ChoiceModel> iconCustoms = new()
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 };";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitChoiceGroup Label=""Basic""
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
@@ -285,7 +285,7 @@ private readonly List<ChoiceModel> iconCustoms = new()
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 };";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .custom-class {
         width: 17rem;
@@ -371,7 +371,7 @@ private readonly List<ChoiceModel> itemStyleClassCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"", Style = ""color:green"" }
 };";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 Visible: [ <BitChoiceGroup Visibility=""BitVisibility.Visible""
                                   Items=""basicCustoms""
                                   LayoutFlow=""BitLayoutFlow.Horizontal""
@@ -404,7 +404,7 @@ private readonly List<ChoiceModel> basicCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .custom-label {
         color: #A4262C;
@@ -436,7 +436,7 @@ private readonly List<ChoiceModel> basicCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -553,7 +553,7 @@ protected override void OnInitialized()
     };
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example9HtmlCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
@@ -581,7 +581,7 @@ private readonly List<ChoiceModel> basicCustoms = new()
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example10HtmlCode = @"
 <BitChoiceGroup Label=""Basic""
                 IsRtl=""true""
                 DefaultValue=""@(""A"")""
@@ -609,7 +609,7 @@ private readonly List<ChoiceModel> rtlCustoms = new()
     new() { Name = ""ویژه ت"", ItemValue = ""D"" }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example11HtmlCode = @"
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
     <div>

@@ -217,17 +217,17 @@ public partial class BitSpinButtonDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSpinButton Label=""Basic"" />
 
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSpinButton Label=""Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
 
 <BitSpinButton Label=""Left Label"" IconName=""@BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSpinButton>
     <LabelTemplate>
         <div style=""display:flex; align-items: center; gap: 10px"">
@@ -237,12 +237,12 @@ public partial class BitSpinButtonDemo
     </LabelTemplate>
 </BitSpinButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSpinButton Label=""Like and Dislike""
                IncrementButtonIconName=""@BitIconName.LikeSolid""
                DecrementButtonIconName=""@BitIconName.DislikeSolid"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <BitSpinButton Label=""Min: -10, Max: 10""
                Min=""-10""
                Max=""10"" />
@@ -257,7 +257,7 @@ public partial class BitSpinButtonDemo
                Max=""1""
                Step=""0.1"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <BitSpinButton Label=""Height""
                IconName=""@BitIconName.AutoHeight""
                DefaultValue=""150""
@@ -269,7 +269,7 @@ public partial class BitSpinButtonDemo
                Step=""0.5""
                Suffix="" kg"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
 <BitRating @bind-Value=""OneWayValue"" />
 
@@ -279,7 +279,7 @@ public partial class BitSpinButtonDemo
 private double OneWayValue = 3;
 private double TwoWayValue = 5;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <BitSpinButton @bind-Value=""IncrementEventValue""
                Label=""OnIncrement / OnDecrement""
                Step=""0.1""
@@ -309,7 +309,7 @@ private void HandleOnChangeEvent(double value)
     OnChangeClickedCounter++;
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example9HtmlCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">

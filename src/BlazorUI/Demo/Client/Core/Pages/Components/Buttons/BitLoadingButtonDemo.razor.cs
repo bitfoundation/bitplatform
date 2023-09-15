@@ -473,7 +473,7 @@ public partial class BitLoadingButtonDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitLoadingButton IsLoading=""BasicPrimaryIsLoading""
                   ButtonStyle=""BitButtonStyle.Primary""
                   OnClick=""BasicPrimaryOnClick"">
@@ -518,7 +518,7 @@ private void Example1ToggleOnChange()
     BasicStandardIsLoading = Example1Toggle;
 }";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -569,7 +569,7 @@ private void Example1ToggleOnChange()
     StyleClassStandardIsLoading = Example2Toggle;
 }";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 Visible: [ <BitLoadingButton IsLoading=""VisibilityIsLoading"" Visibility=""BitVisibility.Visible"" OnClick=""VisibilityOnClick"">Visible loading button</BitLoadingButton> ]
 Hidden: [ <BitLoadingButton Visibility=""BitVisibility.Hidden"">Hidden loading button</BitLoadingButton> ]
 Collapsed: [ <BitLoadingButton Visibility=""BitVisibility.Collapsed"">Collapsed loading button</BitLoadingButton> ]";
@@ -583,7 +583,7 @@ private async Task VisibilityOnClick()
     VisibilityIsLoading = false;
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitLoadingButton IsLoading=""LoadingLabelPrimaryIsLoading""
                   LoadingLabel=""Loading...""
                   ButtonStyle=""BitButtonStyle.Primary""
@@ -628,7 +628,7 @@ private void Example3ToggleOnChange()
     LoadingLabelStandardIsLoading = Example3Toggle;
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <BitLoadingButton IsLoading=""TopPositionIsLoading""
                   LoadingLabel=""Loading...""
                   LoadingLabelPosition=""BitLabelPosition.Top""
@@ -711,7 +711,7 @@ private void Example4ToggleOnChange()
     LeftPositionIsLoading = Example4Toggle;
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <style>
     .custom-loading {
         display: flex;
@@ -776,7 +776,7 @@ private void Example5ToggleOnChange()
     RollerIsLoading = Example5Toggle;
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -831,7 +831,7 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <BitLoadingButton IsLoading=""ClassStylesPrimaryIsLoading""
                   ButtonStyle=""BitButtonStyle.Primary""
                   OnClick=""ClassStylesPrimaryOnClick""

@@ -71,7 +71,7 @@ public partial class BitProgressIndicatorDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""@Description""
                       PercentComplete=""@CompletedPercent""
@@ -103,7 +103,7 @@ private async Task StartProgress()
     }
 }";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitProgressIndicator Label=""Example title""
                       Description=""Example description"" 
                       BarHeight=""20"" />";

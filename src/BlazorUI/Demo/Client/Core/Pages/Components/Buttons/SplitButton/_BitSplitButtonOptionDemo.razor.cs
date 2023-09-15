@@ -10,7 +10,7 @@ public partial class _BitSplitButtonOptionDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -30,7 +30,7 @@ public partial class _BitSplitButtonOptionDemo
 </BitSplitButton>";
     private readonly string example1CsharpCode = @"";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"" IsSticky=""true"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -44,7 +44,7 @@ public partial class _BitSplitButtonOptionDemo
 </BitSplitButton>";
     private readonly string example2CsharpCode = @"";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSplitButton TItem=""BitSplitButtonOption"" IsSticky=""true"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" IsEnabled=""false"" />
@@ -58,7 +58,7 @@ public partial class _BitSplitButtonOptionDemo
 </BitSplitButton>";
     private readonly string example3CsharpCode = @"";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSplitButton IsSticky=""true"" OnClick=""(BitSplitButtonOption item) => example41SelectedItem = item.Text"">
     <BitSplitButtonOption Text=""Add"" Key=""add-key"" IconName=""@BitIconName.Add"" />
     <BitSplitButtonOption Text=""Edit"" Key=""edit-key"" IconName=""@BitIconName.Edit"" />
@@ -92,7 +92,7 @@ public partial class _BitSplitButtonOptionDemo
 private string? example41SelectedItem;
 private string? example42SelectedItem;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -153,7 +153,7 @@ private string? example42SelectedItem;";
 </BitSplitButton>";
     private readonly string example5CsharpCode = @"";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 Visible: [
 <BitSplitButton Visibility=""BitVisibility.Visible"" TItem=""BitSplitButtonOption"">
     <BitSplitButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
@@ -176,7 +176,7 @@ Collapsed: [
 </BitSplitButton> ]";
     private readonly string example6CsharpCode = @"";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -263,7 +263,7 @@ Collapsed: [
 </BitSplitButton>";
     private readonly string example7CsharpCode = @"";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example8HtmlCode = @"
 <BitSplitButton @bind-SelectedItem=""twoWaySelectedItem""
                 IsSticky=""true""
                 TItem=""BitSplitButtonOption""

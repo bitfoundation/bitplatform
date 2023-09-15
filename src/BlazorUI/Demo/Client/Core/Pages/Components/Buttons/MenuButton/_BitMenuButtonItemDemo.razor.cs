@@ -138,7 +138,7 @@ public partial class _BitMenuButtonItemDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitMenuButton Text=""Primary""
                Items=""basicItems""
                OnItemClick=""(BitMenuButtonItem item) => example1SelectedItem = item.Key"" />
@@ -176,7 +176,7 @@ private List<BitMenuButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitMenuButton Text=""Item Disabled""
                Items=""itemDisabledItems""
                OnItemClick=""(BitMenuButtonItem item) => example2SelectedItem = item.Key"" />
@@ -242,7 +242,7 @@ protected override void OnInitialized()
     basicItemsOnClick.ForEach(i => i.OnClick = onClick);
 }";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitMenuButton Text=""IconName""
                Items=""basicItems""
                IconName=""@BitIconName.Edit""
@@ -281,7 +281,7 @@ private List<BitMenuButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -391,7 +391,7 @@ private List<BitMenuButtonItem> itemStyleClassItems = new()
     }
 };";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 Visible: [ <BitMenuButton Visibility=""BitVisibility.Visible""
                           Text=""Visible menu button""
                           Items=""basicItems""
@@ -429,7 +429,7 @@ private List<BitMenuButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example6HtmlCode = @"
 <BitMenuButton Items=""basicItems"" OnItemClick=""(BitMenuButtonItem item) => example6SelectedItem = item.Key"">
     <HeaderTemplate>
         <BitIcon IconName=""@BitIconName.Warning"" />
@@ -476,7 +476,7 @@ private List<BitMenuButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example7HtmlCode = @"
 <style>
     .item-template-box {
         display: flex;

@@ -147,7 +147,7 @@ public partial class BitSliderDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string example1HtmlCode = @"
 <BitSlider Label=""Basic slider"" />
 <br />
 <br />
@@ -194,7 +194,7 @@ public partial class BitSliderDemo
     private readonly string example1CsharpCode = @"
 private double? sliderHorizontalValue = 2;";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example2HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -222,7 +222,7 @@ private double? sliderHorizontalValue = 2;";
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example3HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""0""
            Max=""10""
@@ -269,7 +269,7 @@ private void ResetBitSliderRangedValues()
     sliderRangedUpperValue = 7;
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example4HtmlCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -307,7 +307,7 @@ private void ResetBitSliderRangedValues()
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example5HtmlCode = @"
 <BitSlider Max=""10""
            DefaultUpperValue=""3""
            DefaultLowerValue=""5""
