@@ -58,7 +58,10 @@ jobs:
     - name: Install wasm and maui
       run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
-    - name: MSBuild
+    - name: Restore
+      run: dotnet restore src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
+
+    - name: Restore nuget packages
       run: dotnet msbuild src/Bit-CI.sln -m:1 /p:WarningLevel=0 /p:RunCodeAnalysis=false
       
     - name: Test
