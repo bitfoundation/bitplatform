@@ -23,38 +23,38 @@ jobs:
       with:
         node-version: 18
 
-    - name: dotnet msbuild BlazorUI
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build BlazorUI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
 
-    - name: dotnet msbuild BlazorUI.Extras
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build BlazorUI.Extras
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
 
-    - name: dotnet msbuild BlazorUI.Assets
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build BlazorUI.Assets
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Assets
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output . --configuration Release
 
-    - name: dotnet msbuild BlazorUI.Icons
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build BlazorUI.Icons
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Icons
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
       
-    - name: dotnet msbuild Bswup
-      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build Bswup
+      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
-    - name: dotnet msbuild Bup
-      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build Bup
+      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Bup
       run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
       
-    - name: dotnet msbuild Butil
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
+    - name: dotnet build Butil
+      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false /p:WarningLevel=0 /p:RunCodeAnalysis=false
     - name: dotnet pack Butil
       run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
             

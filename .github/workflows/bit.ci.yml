@@ -28,7 +28,7 @@ jobs:
       run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
     - name: MSBuild prerelease
-      run: dotnet msbuild src/Bit-CI-release.sln
+      run: dotnet build src/Bit-CI-release.sln
 
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
@@ -56,7 +56,7 @@ jobs:
       run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Restore nuget packages
-      run: dotnet msbuild src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
+      run: dotnet build src/Bit-CI.sln /p:WarningLevel=0 /p:RunCodeAnalysis=false
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
