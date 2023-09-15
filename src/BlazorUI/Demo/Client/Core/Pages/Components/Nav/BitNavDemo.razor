@@ -54,8 +54,7 @@
                                 <BitDropdown @bind-Value="SelectedItemText"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
-                                             TItem="BitDropdownItem<string>" TValue="string"
-                                             OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
+                                             OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                             </div>
                         </div>
                     </ExamplePreview>
@@ -196,8 +195,7 @@
                                 <BitDropdown @bind-Value="CustomSelectedFoodName"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
-                                             TItem="BitDropdownItem<string>" TValue="string"
-                                             OnSelectItem="(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
+                                             OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                             </div>
                         </div>
                     </ExamplePreview>
