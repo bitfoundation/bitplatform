@@ -451,14 +451,14 @@ private BitDateRangePickerValue selectedDateRange = new()
 };";
 
     private readonly string example8HtmlCode = @"
-<BitDateRangePicker DateFormat=""dd-MM-yyyy"" 
+<BitDateRangePicker DateFormat=""dd-MM-yyyy""
                     Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                     GoToToday=""برو به امروز""
                     ValueFormat=""شروع: {0}, پایان: {1}""
                     Style=""max-width: 300px"">
 </BitDateRangePicker>
 
-<BitDateRangePicker DateFormat=""dd-MM-yyyy"" 
+<BitDateRangePicker DateFormat=""dd-MM-yyyy""
                     Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                     GoToToday=""Boro be emrouz""
                     ValueFormat=""شروع: {0}, پایان: {1}""

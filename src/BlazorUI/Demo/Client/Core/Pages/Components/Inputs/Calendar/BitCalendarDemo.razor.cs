@@ -265,13 +265,13 @@ private void HandleInvalidSubmit()
 private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
 
     private readonly string example8HtmlCode = @"
-<BitCalendar DateFormat=""yyyy/MM/dd hh:mm tt"" 
-             Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
-             GoToToday=""برو به امروز"" />
+<BitCalendar DateFormat=""yyyy/MM/dd hh:mm tt""
+                Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
+                GoToToday=""برو به امروز"" />
 
-<BitCalendar DateFormat=""yyyy/MM/dd hh:mm tt"" 
-             Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
-             GoToToday=""Boro be emrouz"" />";
+<BitCalendar DateFormat=""yyyy/MM/dd hh:mm tt""
+                Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
+                GoToToday=""Boro be emrouz"" />";
 
     private readonly string example9HtmlCode = @"
 <style>
