@@ -42,7 +42,7 @@ jobs:
       run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
     - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -p:Configuration=Release && dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -m:1 -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
       run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
