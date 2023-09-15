@@ -12,7 +12,6 @@
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
-        <HybridGlobalization>true</HybridGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <!--/+:msbuild-conditional:noEmit -->
         <ResolveStaticWebAssetsInputsDependsOn>
