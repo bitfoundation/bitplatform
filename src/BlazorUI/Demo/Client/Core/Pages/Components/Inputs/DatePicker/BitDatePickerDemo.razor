@@ -165,9 +165,12 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Jalali calendar" HtmlCode="@example10HtmlCode" Id="example10">
+    <ComponentExampleBox Title="Localization" HtmlCode="@example10HtmlCode" Id="example10">
         <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitDatePicker. You can also provide your own class for any custom culture of your interest. For more information, you can visit <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</BitLink>.</div>
+            <div class="example-desc">
+                By default, BitDatePicker picks the current culture. You can also provide your own instance of CultureInfo for any custom culture.
+                <br /> To see an example, visit the following <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs" Target="_blank">link</BitLink>.
+            </div>
             <div class="example-content">
                 <BitDatePicker DateFormat="yyyy/MM/dd hh:mm tt"
                                Culture="CultureInfoHelper.GetFaIrCultureByFarsiNames()"
