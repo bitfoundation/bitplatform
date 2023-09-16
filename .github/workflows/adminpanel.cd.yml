@@ -173,7 +173,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/release/net8.0-android/*-Signed.*
+        path: src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/bin/Release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)

@@ -162,7 +162,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: src/BlazorUI/Demo/Client/App/bin/release/net8.0-android/*-Signed.*
+        path: src/BlazorUI/Demo/Client/App/bin/Release/net8.0-android/*-Signed.*
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
