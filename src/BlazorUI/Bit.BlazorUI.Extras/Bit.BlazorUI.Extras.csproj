@@ -8,7 +8,7 @@
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net7.0'">
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -51,7 +51,7 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net7.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
         <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.65.1 typescript@5.1.6 esbuild@0.19.0 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
