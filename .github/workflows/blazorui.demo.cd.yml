@@ -150,7 +150,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
   
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
