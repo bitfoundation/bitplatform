@@ -13,6 +13,15 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSliderClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#slider-class-styles",
+            Description = "Custom CSS classes for different parts of the BitSlider.",
+        },
+        new()
+        {
             Name = "DefaultLowerValue",
             Type = "double?",
             DefaultValue = "null",
@@ -124,6 +133,15 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitSliderClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#slider-class-styles",
+            Description = "Custom CSS styles for different parts of the BitSlider.",
+        },
+        new()
+        {
             Name = "UpperValue",
             Type = "double?",
             DefaultValue = "null",
@@ -142,6 +160,81 @@ public partial class BitSliderDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom formatter for the Slider value.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "slider-class-styles",
+            Title = "BitSliderClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's container."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's input."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's label."
+                },
+                new()
+                {
+                    Name = "Progress",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's progress."
+                },
+                new()
+                {
+                    Name = "LowerValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's lower value label."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's root element."
+                },
+                new()
+                {
+                    Name = "UpperValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's upper value label."
+                },
+                new()
+                {
+                    Name = "ValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's value label."
+                },
+                new()
+                {
+                    Name = "ZeroTick",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's zero tick."
+                }
+            }
         }
     };
 
@@ -308,6 +401,57 @@ private void ResetBitSliderRangedValues()
            IsOriginFromZero=""true"" />";
 
     private readonly string example5HtmlCode = @"
+<style>
+    .custom-class {
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-container {
+        height: auto;
+        padding-left: 1rem;
+        border-radius: 1rem;
+        background-color: dodgerblue;
+    }
+
+    .custom-input::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid green;
+    }
+
+    .custom-input:hover::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid darkgreen;
+    }
+
+    .custom-input::-webkit-slider-runnable-track {
+        background: linear-gradient(seagreen, seagreen) 0/var(--sx) 100% no-repeat, white;
+    }
+
+    .custom-input:hover::-webkit-slider-runnable-track {
+        background: linear-gradient(green, green) 0/var(--sx) 100% no-repeat, white;
+    }
+</style>
+
+<BitSlider Style=""background-color: tomato; border-radius: 1rem; padding: 0.5rem;"" />
+<BitSlider Class=""custom-class"" />
+
+<BitSlider Label=""Custom label style""
+           Styles=""@(new() { Root = ""background-color: pink;"",
+                             ValueLabel = ""color: red;"",
+                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
+                             Input = ""padding: 0.5rem; background-color: goldenrod;"" } )"" />
+<BitSlider DefaultValue=""5""
+           Classes=""@(new() { Input = ""custom-input"",
+                              Container = ""custom-container"" } )"" />";
+
+    private readonly string example6HtmlCode = @"
+Visible: [ <BitSlider Visibility=""BitVisibility.Visible"" Label=""Visible Slider"" /> ]
+Hidden: [ <BitSlider Visibility=""BitVisibility.Hidden"" Label=""Hidden Slider"" /> ]
+Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" Label=""Collapsed Slider"" /> ]";
+
+    private readonly string example7HtmlCode = @"
 <BitSlider Max=""10""
            DefaultUpperValue=""3""
            DefaultLowerValue=""5""

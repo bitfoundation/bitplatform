@@ -38,6 +38,11 @@ public partial class BitSlider
     [Parameter] public Func<double, string>? AriaValueText { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitSlider.
+    /// </summary>
+    [Parameter] public BitSliderClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The default lower value of the ranged Slider.
     /// </summary>
     [Parameter] public double? DefaultLowerValue { get; set; }
@@ -181,6 +186,11 @@ public partial class BitSlider
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitSlider.
+    /// </summary>
+    [Parameter] public BitSliderClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The upper value of the ranged Slider.
     /// </summary>
     [Parameter]
@@ -227,9 +237,16 @@ public partial class BitSlider
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()

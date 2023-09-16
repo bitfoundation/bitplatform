@@ -7,7 +7,7 @@
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
     {
-        <label class="bit-sld-lbl" @ref="_labelRef">@Label</label>
+        <label style="@Styles?.Label" class="bit-sld-lbl @Classes?.Label" @ref="_labelRef">@Label</label>
     }
 
     @if (IsRanged)
@@ -15,23 +15,26 @@
         @if (ShowValue && IsVertical)
         {
             <label @ref="_valueLabelRef"
-                   class="bit-sld-vlb"
+                   style="@Styles?.LowerValueLabel"
+                   class="bit-sld-vlb @Classes?.LowerValueLabel"
                    for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
         }
 
         <div @ref="_containerRef"
-             class="bit-sld-cnt"
-             style="@(IsVertical ? _styleContainer : null)">
+             class="bit-sld-cnt @Classes?.Container"
+             style="@(IsVertical ? _styleContainer : null) @Styles?.Container">
+
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-sld-vlb">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
+
             <div @attributes="@SliderBoxHtmlAttributes"
-                 style="@_styleProgress"
                  id="@_sliderBoxId"
-                 class="bit-sld-box">
+                 style="@_styleProgress @Styles?.Progress"
+                 class="bit-sld-box @Classes?.Progress">
 
                 <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
                        id="@_minInputId"
@@ -39,9 +42,11 @@
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       disabled=@(IsEnabled is false)
                        role="slider"
+                       style="@Styles?.Input"
+                       class="@Classes?.Input"
                        tabindex="@GetTabIndex"
+                       disabled=@(IsEnabled is false)
                        data-is-focusable="@(IsEnabled is false)"
                        aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
@@ -55,9 +60,11 @@
                        min="@Min"
                        max="@Max"
                        step="@Step"
-                       disabled=@(IsEnabled is false)
                        role="slider"
+                       style="@Styles?.Input"
+                       class="@Classes?.Input"
                        tabindex="@GetTabIndex"
+                       disabled=@(IsEnabled is false)
                        data-is-focusable="@(IsEnabled is false)"
                        aria-disabled="@(IsEnabled is false)"
                        aria-label="@Label"
@@ -68,44 +75,45 @@
 
                 @if (IsOriginFromZero)
                 {
-                    <span class="bit-sld-ztk" style="left: calc(50% - 1px);"></span>
+                    <span style="left: calc(50% - 1px); @Styles?.ZeroTick" class="bit-sld-ztk @Classes?.ZeroTick"></span>
                 }
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-sld-vlb">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label class="bit-sld-vlb">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
     {
-        <div @ref="_containerRef" class="bit-sld-cnt">
+        <div @ref="_containerRef" style="@Styles?.Container" class="bit-sld-cnt @Classes?.Container">
             <input @bind-value="@Value" @oninput="@HandleOnInput"
                    type="range"
                    min="@Min"
                    max="@Max"
                    step="@Step"
-                   style="@_styleProgress"
+                   style="@_styleProgress @Styles?.Input"
+                   class="@Classes?.Input"
                    disabled=@(IsEnabled is false) />
 
             @if (IsOriginFromZero)
             {
-                <span class="bit-sld-ztk" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);")"></span>
+                <span class="bit-sld-ztk @Classes?.ZeroTick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);") @Styles?.ZeroTick"></span>
             }
 
             @if (ShowValue && IsVertical is false)
             {
-                <label class="bit-sld-vlb">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label class="bit-sld-vlb">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>
