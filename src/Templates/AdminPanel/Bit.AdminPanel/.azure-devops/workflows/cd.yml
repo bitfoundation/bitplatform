@@ -200,7 +200,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'ubuntu-22.04'
 
   steps:
   - task: UseDotNet@2
@@ -218,7 +218,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
+      script: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
 
   - task: DownloadSecureFile@1
     displayName: Download AdminPanel keystore file
