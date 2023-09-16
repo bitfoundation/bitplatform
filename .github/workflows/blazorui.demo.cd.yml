@@ -103,7 +103,8 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23455.8 --source https://api.nuget.org/v3/index.json
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23455.8 --skip-sign-check --source https://api.nuget.org/v3/index.json
+      # https://github.com/dotnet/maui/issues/17330#issuecomment-1716593275
   
     - name: Build (To generate CSS/JS files)
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -f net8.0-windows10.0.19041.0
