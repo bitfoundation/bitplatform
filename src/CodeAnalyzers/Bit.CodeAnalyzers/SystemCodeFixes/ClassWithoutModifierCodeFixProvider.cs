@@ -26,13 +26,13 @@ public class ClassWithoutModifierCodeFixProvider : CodeFixProvider
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-        Diagnostic diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics.First();
 
-        SyntaxNode node = root.FindNode(context.Span);
+        var node = root.FindNode(context.Span);
 
-        if (node is ClassDeclarationSyntax == false)
+        if (node is ClassDeclarationSyntax is false)
             return;
 
         context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => AddPublicModifierToClass(context.Document, node, c), equivalenceKey: Title), diagnostic);
@@ -40,15 +40,15 @@ public class ClassWithoutModifierCodeFixProvider : CodeFixProvider
 
     private async Task<Document> AddPublicModifierToClass(Document document, SyntaxNode node, CancellationToken cancellationToken)
     {
-        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-        ClassDeclarationSyntax convertedNode = (ClassDeclarationSyntax)node;
+        var convertedNode = (ClassDeclarationSyntax)node;
 
-        ClassDeclarationSyntax? newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+        var newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
-        SyntaxNode newRoot = root.ReplaceNode(node, newNode);
+        var newRoot = root.ReplaceNode(node, newNode);
 
-        Document newDocument = document.WithSyntaxRoot(newRoot);
+        var newDocument = document.WithSyntaxRoot(newRoot);
 
         return newDocument;
     }
