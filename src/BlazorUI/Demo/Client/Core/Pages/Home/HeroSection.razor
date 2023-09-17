@@ -19,7 +19,8 @@
                              Items="_productDropdownItems"
                              IsMultiSelect="true"
                              Placeholder="Select an option"
-                             Style="width: 326px; margin: 20px 0 20px 0" />
+                             Style="width: 326px; margin: 20px 0 20px 0"
+                             TItem="BitDropdownItem<string>" TValue="string" />
             </div>
             <div class="component-box @BitCss.Class.Color.Background.Primary">
                 <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
