@@ -22,7 +22,11 @@
     overflow: hidden;
     user-select: none;
     position: relative;
-    touch-action: none;
+    touch-action: pan-y;
+
+    :first-child {
+        display: unset;
+    }
 }
 
 .bit-csl-lbt,
