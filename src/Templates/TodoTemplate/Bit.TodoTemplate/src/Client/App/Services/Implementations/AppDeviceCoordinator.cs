@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace TodoTemplate.Client.App.Services;
+namespace TodoTemplate.Client.App.Services.Implementations;
 
 /// <summary>
 /// More info at <see cref="IBitDeviceCoordinator"/>

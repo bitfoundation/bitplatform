@@ -3,11 +3,18 @@ using System.Diagnostics;
 
 namespace TodoTemplate.Client.Core.Services.Implementations;
 
-public abstract partial class ExceptionHandlerBase : IExceptionHandler
+public abstract class ExceptionHandlerBase : IExceptionHandler
 {
-    [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
-    [AutoInject] IAuthenticationService _authenticationService = default!;
-    [AutoInject] MessageBoxService _messageBoxService = default!;
+    private readonly IStringLocalizer<AppStrings> _localizer = default!;
+    private readonly IAuthenticationService _authenticationService = default!;
+    private readonly MessageBoxService _messageBoxService = default!;
+
+    public ExceptionHandlerBase(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
+    {
+        _localizer = localizer;
+        _authenticationService = authenticationService;
+        _messageBoxService = messageBoxService;
+    }
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {

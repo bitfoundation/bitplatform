@@ -1,8 +1,13 @@
 ﻿
 namespace TodoTemplate.Client.Web.Services.Implementations;
 
-public partial class WebExceptionHandler : ExceptionHandlerBase
+public class WebExceptionHandler : ExceptionHandlerBase
 {
+    public WebExceptionHandler(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
+    : base(localizer, authenticationService, messageBoxService)
+    {
+    }
+
     public override void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
         base.Handle(exception, parameters);

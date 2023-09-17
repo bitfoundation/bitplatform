@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Client.App;
-using TodoTemplate.Client.App.Services;
+using TodoTemplate.Client.App.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
