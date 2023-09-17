@@ -12,7 +12,7 @@ public partial class _BitDropdownItemDemo
              Items=""GetBasicItems()""
              DefaultValue=""@("""")""
              Placeholder=""Select items""
-               IsMultiSelect=""true"" />
+             IsMultiSelect=""true"" />
 
 <BitDropdown Label=""IsRequired""
              Items=""GetBasicItems()""
@@ -49,9 +49,9 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 </div>
 <div style=""display:inline-flex;white-space:nowrap;"">
     Hidden: [ <BitDropdown DefaultValue=""@("""")""
-                            Items=""GetBasicItems()""
-                            Placeholder=""Select items""
-                            Visibility=""BitVisibility.Hidden"" /> ]
+                           Items=""GetBasicItems()""
+                           Placeholder=""Select items""
+                           Visibility=""BitVisibility.Hidden"" /> ]
 </div>
 <div style=""display:inline-flex;white-space:nowrap;"">
     Collapsed: [ <BitDropdown DefaultValue=""@("""")""
@@ -76,16 +76,16 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
     private readonly string example3HtmlCode = @"
 <BitDropdown @bind-Value=""controlledValue""
-                Label=""Single select""
-                Items=""GetBasicItems()""
-                Placeholder=""Select an item"" />
+             Label=""Single select""
+             Items=""GetBasicItems()""
+             Placeholder=""Select an item"" />
 <BitLabel>Selected Value: @controlledValue</BitLabel>
 
 <BitDropdown @bind-Values=""controlledValues""
-                Label=""Multi select""
-                Items=""GetBasicItems()""
-                Placeholder=""Select items""
-                IsMultiSelect=""true"" />
+             Label=""Multi select""
+             Items=""GetBasicItems()""
+             Placeholder=""Select items""
+             IsMultiSelect=""true"" />
 <BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
@@ -286,12 +286,12 @@ private ICollection<BitDropdownItem<string>>? virtualizeItems2;
 protected override void OnInitialized()
 {
     virtualizeItems1 = Enumerable.Range(1, 10_000)
-                                    .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
-                                    .ToArray();
+                                 .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
+                                 .ToArray();
 
     virtualizeItems2 = Enumerable.Range(1, 10_000)
-                                    .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
-                                    .ToArray();
+                                 .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
+                                 .ToArray();
 }
 
 private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(
@@ -380,8 +380,8 @@ private ICollection<BitDropdownItem<string>>? dropDirectionItems;
 protected override void OnInitialized()
 {
         dropDirectionItems = Enumerable.Range(1, 15)
-                                    .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" })
-                                    .ToArray();
+                                       .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" })
+                                       .ToArray();
 }";
 
     private readonly string example10HtmlCode = @"
