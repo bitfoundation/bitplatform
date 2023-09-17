@@ -1,5 +1,11 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitInputBase<TValue>
+@typeparam TItem
+@typeparam TValue
+
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@UniqueId"
@@ -177,9 +183,9 @@
     </div>
 
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (BitDropdownItem item in SelectedItems)
+        @foreach (var item in SelectedItems)
         {
-            <option value="@item.Value" selected>@item.Text</option>
+            <option value="@GetValue(item)" selected>@GetText(item)</option>
         }
     </select>
 </div>

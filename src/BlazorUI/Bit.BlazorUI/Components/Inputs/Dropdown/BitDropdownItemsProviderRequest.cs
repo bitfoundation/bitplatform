@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public struct BitDropdownItemsProviderRequest<TDropdownItem>
+public struct BitDropdownItemsProviderRequest<TItem>
 {
     public int StartIndex { get; }
 
