@@ -279,7 +279,7 @@ public partial class BitImageDemo
         filter: opacity(25%);
         border-radius: 1rem 3rem;
     }
-<style>
+</style>
 
 <BitImage Alt=""Styled BitImage""
           Style=""border: 2px solid goldenrod; border-radius: 5px; width: 258px;""
