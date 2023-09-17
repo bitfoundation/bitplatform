@@ -52,7 +52,9 @@ public static class MauiProgram
         }
         catch (Exception ex)
         {
+#if Android || iOS || Mac || Windows
             Microsoft.AppCenter.Crashes.Crashes.TrackError(ex);
+#endif
             throw;
         }
     }
