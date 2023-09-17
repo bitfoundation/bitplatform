@@ -29,7 +29,6 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
-        <TrimMode>link</TrimMode>
         <EnableLLVM>true</EnableLLVM>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
@@ -49,7 +48,6 @@
     </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-        <LinkDescription Include="Platforms\Android\LinkDesc.xml" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0 -->
