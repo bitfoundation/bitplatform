@@ -186,7 +186,7 @@ public partial class BitSlider
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitSlider.
+    /// Custom CSS styles for different parts of the BitSlider.
     /// </summary>
     [Parameter] public BitSliderClassStyles? Styles { get; set; }
 
