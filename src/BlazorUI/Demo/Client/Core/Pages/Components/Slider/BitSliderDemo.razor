@@ -160,8 +160,8 @@
                 <BitSlider Label="Formatted value"
                            Max="100"
                            ValueFormat="P00"
-                           DefaultUpperValue="30"
-                           DefaultLowerValue="60"
+                           DefaultLowerValue="30"
+                           DefaultUpperValue="60"
                            IsRanged="true"
                            IsVertical="true" />
 
@@ -197,6 +197,16 @@
                     
                     <BitSlider DefaultValue="5"
                                Classes="@(new() { ValueInput = "custom-input",
+                                                  Container = "custom-container" } )" />
+                    
+                    <BitSlider IsRanged="true" 
+                               Max="100"
+                               ValueFormat="P00"
+                               DefaultLowerValue="30"
+                               DefaultUpperValue="60"
+                               Classes="@(new() { LowerValueInput = "custom-input",
+                                                  UpperValueInput = "custom-input",
+                                                  SliderBox = "custom-slider-box",
                                                   Container = "custom-container" } )" />
                 </div>
             </div>

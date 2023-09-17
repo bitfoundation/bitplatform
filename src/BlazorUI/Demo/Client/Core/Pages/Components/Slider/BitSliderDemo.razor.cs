@@ -392,8 +392,8 @@ private void ResetBitSliderRangedValues()
 <BitSlider Label=""Formatted value""
            Max=""100""
            ValueFormat=""P00""
-           DefaultUpperValue=""30""
-           DefaultLowerValue=""60""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""60""
            IsRanged=""true""
            IsVertical=""true"" />
 
@@ -439,6 +439,32 @@ private void ResetBitSliderRangedValues()
     .custom-input:hover::-webkit-slider-runnable-track {
         background: linear-gradient(green, green) 0/var(--sx) 100% no-repeat, white;
     }
+
+    .custom-slider-box {
+        background: linear-gradient(0deg, red calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover {
+        background: linear-gradient(0deg, tomato calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover::before {
+        background-color: brown;
+    }
+
+    .custom-slider-box::before {
+        background-color: darkred;
+    }
+
+    .custom-slider-box .custom-input::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid slategray;
+    }
+
+    .custom-slider-box .custom-input:hover::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid dimgray;
+    }
 </style>
 
 <BitSlider Style=""background-color: tomato; border-radius: 1rem; padding: 0.5rem;"" />
@@ -451,6 +477,15 @@ private void ResetBitSliderRangedValues()
                              Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
 <BitSlider DefaultValue=""5""
            Classes=""@(new() { ValueInput = ""custom-input"",
+                              Container = ""custom-container"" } )"" />
+<BitSlider IsRanged=""true"" 
+           Max=""100""
+           ValueFormat=""P00""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""60""
+           Classes=""@(new() { LowerValueInput = ""custom-input"",
+                              UpperValueInput = ""custom-input"",
+                              SliderBox = ""custom-slider-box"",
                               Container = ""custom-container"" } )"" />";
 
     private readonly string example6HtmlCode = @"
