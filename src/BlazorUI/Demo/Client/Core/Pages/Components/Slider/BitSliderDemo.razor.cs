@@ -180,17 +180,24 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
-                    Name = "Input",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's input."
-                },
-                new()
-                {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the sider's label."
+                },
+                new()
+                {
+                    Name = "UpperValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                },
+                new()
+                {
+                    Name = "LowerValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's lower value input."
                 },
                 new()
                 {
@@ -201,10 +208,10 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
-                    Name = "LowerValue",
+                    Name = "LowerValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value."
+                    Description = "Custom CSS classes/styles for the sider's lower value input."
                 },
                 new()
                 {
@@ -215,17 +222,17 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
-                    Name = "UpperValue",
+                    Name = "UpperValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value."
+                    Description = "Custom CSS classes/styles for the sider's upper value input."
                 },
                 new()
                 {
-                    Name = "Value",
+                    Name = "ValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's value."
+                    Description = "Custom CSS classes/styles for the sider's value input."
                 },
                 new()
                 {
@@ -440,10 +447,10 @@ private void ResetBitSliderRangedValues()
 <BitSlider Label=""Custom label style""
            Styles=""@(new() { Root = ""background-color: pink;"",
                              ValueLabel = ""color: red;"",
-                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                             Input = ""padding: 0.5rem; background-color: goldenrod;"" } )"" />
+                             ValueInput = ""padding: 0.5rem; background-color: goldenrod;"",
+                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
 <BitSlider DefaultValue=""5""
-           Classes=""@(new() { Input = ""custom-input"",
+           Classes=""@(new() { ValueInput = ""custom-input"",
                               Container = ""custom-container"" } )"" />";
 
     private readonly string example6HtmlCode = @"

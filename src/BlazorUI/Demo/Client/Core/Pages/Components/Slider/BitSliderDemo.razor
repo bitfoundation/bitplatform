@@ -191,12 +191,12 @@
                     <BitLabel>Styles & Classes:</BitLabel>
                     <BitSlider Label="Custom label style"
                                Styles="@(new() { Root = "background-color: pink;",
-                                                 Value = "color: red;",
-                                                 Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
-                                                 Input = "padding: 0.5rem; background-color: goldenrod;" } )" />
+                                                 ValueLabel = "color: red;",
+                                                 ValueInput = "padding: 0.5rem; background-color: goldenrod;",
+                                                 Label = "color: blue; font-weight: 900; font-size: 1.25rem;" } )" />
                     
                     <BitSlider DefaultValue="5"
-                               Classes="@(new() { Input = "custom-input",
+                               Classes="@(new() { ValueInput = "custom-input",
                                                   Container = "custom-container" } )" />
                 </div>
             </div>

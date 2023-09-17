@@ -15,8 +15,8 @@
         @if (ShowValue && IsVertical)
         {
             <label @ref="_valueLabelRef"
-                   style="@Styles?.LowerValue"
-                   class="bit-sld-vlb @Classes?.LowerValue"
+                   style="@Styles?.UpperValueLabel"
+                   class="bit-sld-vlb @Classes?.UpperValueLabel"
                    for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
@@ -28,7 +28,7 @@
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.LowerValue" class="bit-sld-vlb @Classes?.LowerValue">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
 
             <div @attributes="@SliderBoxHtmlAttributes"
@@ -43,8 +43,8 @@
                        max="@Max"
                        step="@Step"
                        role="slider"
-                       style="@Styles?.Input"
-                       class="@Classes?.Input"
+                       style="@Styles?.LowerValueInput"
+                       class="@Classes?.LowerValueInput"
                        tabindex="@GetTabIndex"
                        disabled=@(IsEnabled is false)
                        data-is-focusable="@(IsEnabled is false)"
@@ -61,8 +61,8 @@
                        max="@Max"
                        step="@Step"
                        role="slider"
-                       style="@Styles?.Input"
-                       class="@Classes?.Input"
+                       style="@Styles?.UpperValueInput"
+                       class="@Classes?.UpperValueInput"
                        tabindex="@GetTabIndex"
                        disabled=@(IsEnabled is false)
                        data-is-focusable="@(IsEnabled is false)"
@@ -80,13 +80,13 @@
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.UpperValue" class="bit-sld-vlb @Classes?.UpperValue">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.LowerValue" class="bit-sld-vlb @Classes?.LowerValue">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
@@ -97,8 +97,8 @@
                    min="@Min"
                    max="@Max"
                    step="@Step"
-                   style="@_styleProgress @Styles?.Input"
-                   class="@Classes?.Input"
+                   style="@_styleProgress @Styles?.ValueInput"
+                   class="@Classes?.ValueInput"
                    disabled=@(IsEnabled is false) />
 
             @if (IsOriginFromZero)
@@ -108,12 +108,12 @@
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.Value" class="bit-sld-vlb @Classes?.Value">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.Value" class="bit-sld-vlb @Classes?.Value">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>
