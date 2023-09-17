@@ -1,5 +1,4 @@
-﻿
-namespace TodoTemplate.Client.Web.Services.Implementations;
+﻿namespace TodoTemplate.Client.Web.Services.Implementations;
 
 public class WebExceptionHandler : ExceptionHandlerBase
 {
