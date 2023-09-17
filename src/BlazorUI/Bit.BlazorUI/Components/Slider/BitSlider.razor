@@ -15,8 +15,8 @@
         @if (ShowValue && IsVertical)
         {
             <label @ref="_valueLabelRef"
-                   style="@Styles?.LowerValueLabel"
-                   class="bit-sld-vlb @Classes?.LowerValueLabel"
+                   style="@Styles?.LowerValue"
+                   class="bit-sld-vlb @Classes?.LowerValue"
                    for="@_sliderBoxId">
                 @GetValueDisplay(upperValue.GetValueOrDefault())
             </label>
@@ -28,13 +28,13 @@
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label style="@Styles?.LowerValue" class="bit-sld-vlb @Classes?.LowerValue">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
             }
 
             <div @attributes="@SliderBoxHtmlAttributes"
                  id="@_sliderBoxId"
-                 style="@_styleProgress @Styles?.Progress"
-                 class="bit-sld-box @Classes?.Progress">
+                 style="@_styleProgress @Styles?.SliderBox"
+                 class="bit-sld-box @Classes?.SliderBox">
 
                 <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
                        id="@_minInputId"
@@ -75,18 +75,18 @@
 
                 @if (IsOriginFromZero)
                 {
-                    <span style="left: calc(50% - 1px); @Styles?.ZeroTick" class="bit-sld-ztk @Classes?.ZeroTick"></span>
+                    <span style="left: calc(50% - 1px); @Styles?.OriginFromZero" class="bit-sld-ztk @Classes?.OriginFromZero"></span>
                 }
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label style="@Styles?.UpperValue" class="bit-sld-vlb @Classes?.UpperValue">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label style="@Styles?.LowerValue" class="bit-sld-vlb @Classes?.LowerValue">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
         }
     }
     else
@@ -103,17 +103,17 @@
 
             @if (IsOriginFromZero)
             {
-                <span class="bit-sld-ztk @Classes?.ZeroTick" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);") @Styles?.ZeroTick"></span>
+                <span class="bit-sld-ztk @Classes?.OriginFromZero" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);") @Styles?.OriginFromZero"></span>
             }
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label style="@Styles?.Value" class="bit-sld-vlb @Classes?.Value">@GetValueDisplay(Value.GetValueOrDefault())</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label style="@Styles?.Value" class="bit-sld-vlb @Classes?.Value">@GetValueDisplay(Value.GetValueOrDefault())</label>
         }
     }
 </div>

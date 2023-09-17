@@ -194,17 +194,17 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
-                    Name = "Progress",
+                    Name = "SliderBox",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's progress."
+                    Description = "Custom CSS classes/styles for the sider's box."
                 },
                 new()
                 {
-                    Name = "LowerValueLabel",
+                    Name = "LowerValue",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value label."
+                    Description = "Custom CSS classes/styles for the sider's lower value."
                 },
                 new()
                 {
@@ -215,24 +215,24 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
-                    Name = "UpperValueLabel",
+                    Name = "UpperValue",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value label."
+                    Description = "Custom CSS classes/styles for the sider's upper value."
                 },
                 new()
                 {
-                    Name = "ValueLabel",
+                    Name = "Value",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's value label."
+                    Description = "Custom CSS classes/styles for the sider's value."
                 },
                 new()
                 {
-                    Name = "ZeroTick",
+                    Name = "OriginFromZero",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's zero tick."
+                    Description = "Custom CSS classes/styles for the sider's origin from zero."
                 }
             }
         }

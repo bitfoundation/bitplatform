@@ -18,14 +18,14 @@ public class BitSliderClassStyles
     public string? Label { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the sider's progress.
+    /// Custom CSS classes/styles for the sider's box.
     /// </summary>
-    public string? Progress { get; set; }
+    public string? SliderBox { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the sider's lower value label.
+    /// Custom CSS classes/styles for the sider's lower value.
     /// </summary>
-    public string? LowerValueLabel { get; set; }
+    public string? LowerValue { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the sider's root element.
@@ -33,17 +33,17 @@ public class BitSliderClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the sider's upper value label.
+    /// Custom CSS classes/styles for the sider's upper value.
     /// </summary>
-    public string? UpperValueLabel { get; set; }
+    public string? UpperValue { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the sider's value label.
+    /// Custom CSS classes/styles for the sider's value.
     /// </summary>
-    public string? ValueLabel { get; set; }
+    public string? Value { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the sider's zero tick.
+    /// Custom CSS classes/styles for the sider's origin from zero.
     /// </summary>
-    public string? ZeroTick { get; set; }
+    public string? OriginFromZero { get; set; }
 }
