@@ -3,13 +3,13 @@ using System.Diagnostics;
 
 namespace TodoTemplate.Client.Core.Services.Implementations;
 
-public partial class ExceptionHandler : IExceptionHandler
+public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
     [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
     [AutoInject] IAuthenticationService _authenticationService = default!;
     [AutoInject] MessageBoxService _messageBoxService = default!;
 
-    public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
+    public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
         if (exception is UnauthorizedException)
         {

@@ -8,6 +8,12 @@ public static class MauiProgram
 {
     public static MauiAppBuilder CreateMauiAppBuilder()
     {
+#if Android || iOS || Mac || Windows
+        string appSecret = OperatingSystem.IsWindows() ? "a206e212-6427-414f-b4f3-83fa5eec4f1d"
+                         : OperatingSystem.IsAndroid() ? "c87802e3-0fa5-4938-b539-086b06d40726" : "f76345b1-9069-4477-afbe-a2be2a2ed46d";
+        Microsoft.AppCenter.AppCenter.Start(appSecret, typeof(Microsoft.AppCenter.Crashes.Crashes));
+#endif
+
 #if !BlazorHybrid
         throw new InvalidOperationException("Please switch to blazor hybrid as described in readme.md");
 #endif
