@@ -1,46 +1,55 @@
-class BitCalloutComponent {
+interface BitCallout {
     calloutId: string;
-    overlayId: string;
-    objRef: DotNetObject | null;
+    overlayId?: string;
+    dotnetObj?: DotNetObject;
+    isResponsive?: boolean;
+    scrollContainerId?: string;
+}
 
-    constructor() {
-        this.calloutId = "";
-        this.overlayId = "";
-        this.objRef = null;
-    }
-
-    update(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        this.calloutId = calloutId;
-        this.overlayId = overlayId;
-        this.objRef = obj;
-    }
+enum BitDropDirection {
+    Auto,
+    TopAndBottom
 }
 
 class BitCallouts {
-    static currentDropdownCalloutId = "";
-    static currentCallout: BitCalloutComponent = new BitCalloutComponent();
-    static currentDropdownCalloutResponsiveModeIsEnabled = false;
+    public static readonly MIN_MOBILE_WIDTH = 320;
+    public static readonly MAX_MOBILE_WIDTH = 640;
+    private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
-    static replaceCurrentCallout(calloutId: string, overlayId: string, obj: DotNetObject | null) {
-        if (BitCallouts.currentCallout.calloutId.length === 0) {
-            BitCallouts.currentCallout.update(calloutId, overlayId, obj);
+    private static _Current: BitCallout = BitCallouts.DEFAULT_CALLOUT;
+
+    public static getCurrent() {
+        return { ...this._Current };
+    }
+
+    public static reset() {
+        BitCallouts._Current = BitCallouts.DEFAULT_CALLOUT;
+    }
+
+    public static replaceCurrent(callout?: BitCallout) {
+        callout = callout || BitCallouts.DEFAULT_CALLOUT;
+        const current = BitCallouts._Current;
+
+        if (current.calloutId.length === 0) {
+            BitCallouts._Current = callout;
             return;
         }
 
-        if (calloutId !== BitCallouts.currentCallout.calloutId) {
-            const callout = document.getElementById(BitCallouts.currentCallout.calloutId);
-            if (callout == null) return;
+        //close the previous one
+        if (callout.calloutId !== current.calloutId) {
+            const previousCallout = document.getElementById(current.calloutId);
+            previousCallout && (previousCallout.style.display = 'none');
 
-            const overlay = document.getElementById(BitCallouts.currentCallout.overlayId);
+            const overlay = current.overlayId && document.getElementById(current.overlayId);
+            overlay && (overlay.style.display = 'none');
 
-            callout.style.display = "none";
-            overlay && (overlay.style.display = "none");
-            BitCallouts.currentCallout.objRef?.invokeMethodAsync("CloseCallout");
-            BitCallouts.currentCallout.update(calloutId, overlayId, obj);
+            current.dotnetObj?.invokeMethodAsync('CloseCallout');
+
+            BitCallouts._Current = callout;
         }
     }
 
-    static toggleCallout(componentId: string, calloutId: string, isCalloutOpen: boolean, dotNetObj: DotNetObject) {
+    static toggle1(componentId: string, calloutId: string, isCalloutOpen: boolean, dotnetObj: DotNetObject) {
         const component = document.getElementById(componentId);
         if (component == null) return;
 
@@ -48,11 +57,11 @@ class BitCallouts {
         if (callout == null) return;
 
         if (!isCalloutOpen) {
-            callout.style.display = "none";
-            BitCallouts.currentCallout.update("", "", null);
+            callout.style.display = 'none';
+            BitCallouts.reset();
         } else {
-            BitCallouts.replaceCurrentCallout(calloutId, "", dotNetObj);
-            callout.style.display = "block";
+            BitCallouts.replaceCurrent({ calloutId, dotnetObj });
+            callout.style.display = 'block';
 
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
@@ -62,36 +71,132 @@ class BitCallouts {
 
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 
-            const lengthToScreenBottom = window.innerHeight - (componentHeight + componentY);
-            const lengthToScreenRight = window.innerWidth - (componentWidth + componentX);
+            const distanceToScreenBottom = window.innerHeight - (componentHeight + componentY);
+            const distanceToScreenRight = window.innerWidth - (componentWidth + componentX);
 
-            if (lengthToScreenBottom >= calloutHeight) {        // show callout to the bottom
-                callout.style.top = componentY + componentHeight + 1 + "px";
-                callout.style.left = componentX + "px";
-                callout.style.right = "unset";
-                callout.style.bottom = "unset";
+            if (distanceToScreenBottom >= calloutHeight) {        // show callout to the bottom
+                callout.style.top = componentY + componentHeight + 1 + 'px';
+                callout.style.left = componentX + 'px';
+                callout.style.right = 'unset';
+                callout.style.bottom = 'unset';
             } else if (componentY >= calloutHeight) {           // show callout to the top
-                callout.style.bottom = lengthToScreenBottom + componentHeight + 1 + "px";
-                callout.style.left = componentX + "px";
-                callout.style.right = "unset";
-                callout.style.top = "unset";
-            } else if (lengthToScreenRight >= calloutWidth) {   // show callout to the right
-                callout.style.left = componentX + componentWidth + 1 + "px";
-                callout.style.bottom = "2px";
-                callout.style.right = "unset";
-                callout.style.top = "unset";
+                callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
+                callout.style.left = componentX + 'px';
+                callout.style.right = 'unset';
+                callout.style.top = 'unset';
+            } else if (distanceToScreenRight >= calloutWidth) {   // show callout to the right
+                callout.style.left = componentX + componentWidth + 1 + 'px';
+                callout.style.bottom = '2px';
+                callout.style.right = 'unset';
+                callout.style.top = 'unset';
             } else {                                            // show callout to the left
-                callout.style.left = componentX - calloutWidth - 1 + "px";
-                callout.style.bottom = "2px";
-                callout.style.top = "unset";
-                callout.style.right = "unset";
+                callout.style.left = componentX - calloutWidth - 1 + 'px';
+                callout.style.bottom = '2px';
+                callout.style.top = 'unset';
+                callout.style.right = 'unset';
             }
         }
     }
 
-    static clearCallout(calloutId: string) {
-        if (BitCallouts.currentCallout.calloutId !== calloutId) return;
+    static toggle(
+        dotnetObj: DotNetObject,
+        componentId: string,
+        calloutId: string,
+        isCalloutOpen: boolean,
+        isResponsive: boolean,
+        dropDirection: BitDropDirection,
+        isRtl: boolean,
+        scrollContainerId: string,
+        scrollOffset: number
+    ) {
+        const component = document.getElementById(componentId);
+        if (component == null) return;
 
-        BitCallouts.replaceCurrentCallout("", "", null);
+        const callout = document.getElementById(calloutId);
+        if (callout == null) return;
+
+        const scrollContainer = (scrollContainerId ? document.getElementById(scrollContainerId) : document.createElement('dummy'))!;
+
+        if (!isCalloutOpen) {
+            callout.style.display = 'none';
+            BitCallouts.reset();
+        } else {
+            BitCallouts.replaceCurrent({ dotnetObj, calloutId, isResponsive, scrollContainerId });
+            callout.style.display = 'block';
+
+            const componentWidth = component.offsetWidth;
+            const componentHeight = component.offsetHeight;
+
+            const calloutHeight = callout.offsetHeight;
+            const calloutWidth = callout.offsetWidth;
+
+            const { x: componentX, y: componentY } = component.getBoundingClientRect();
+
+            const distanceToScreenBottom = window.innerHeight - (componentHeight + componentY);
+            const distanceToScreenRight = window.innerWidth - (componentWidth + componentX);
+
+            let width = componentWidth;
+
+            if (isResponsive && componentWidth < BitCallouts.MIN_MOBILE_WIDTH && window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH) {
+                width = window.innerWidth > BitCallouts.MIN_MOBILE_WIDTH ? BitCallouts.MIN_MOBILE_WIDTH : window.innerWidth;
+            }
+
+            callout.style.width = width + 'px';
+
+            //clear last style
+            callout.style.top = '';
+            callout.style.left = '';
+            callout.style.right = '';
+            callout.style.bottom = '';
+            callout.style.height = '';
+            callout.style.maxHeight = '';
+            scrollContainer.style.height = '';
+            scrollContainer.style.maxHeight = '';
+
+            if (window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && isResponsive) {
+                callout.style.top = '0';
+                callout.style[isRtl ? 'left' : 'right'] = '0';
+                callout.style.maxHeight = window.innerHeight + 'px';
+                setTimeout(() => {
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollContainer.getBoundingClientRect().y - 10) + 'px';
+                    scrollContainer.style.height = scrollContainer.style.maxHeight;
+                });
+
+            } else if (dropDirection == BitDropDirection.TopAndBottom) {
+                callout.style.left = componentX + 'px';
+
+                if (calloutHeight <= distanceToScreenBottom || distanceToScreenBottom >= componentY) {
+                    callout.style.top = componentY + componentHeight + 1 + 'px';
+                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - 10) + 'px';
+                } else {
+                    callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
+                    scrollContainer.style.maxHeight = (componentY - scrollOffset - 10) + 'px';
+                }
+            } else {
+                if (distanceToScreenBottom >= calloutHeight) {
+                    callout.style.left = componentX + 'px';
+                    callout.style.top = componentY + componentHeight + 1 + 'px';
+                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - 10) + 'px';
+                } else if (componentY >= calloutHeight) {
+                    callout.style.left = componentX + 'px';
+                    callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
+                    scrollContainer.style.maxHeight = (componentY - scrollOffset - 10) + 'px';
+                } else if (distanceToScreenRight >= calloutWidth) {
+                    callout.style.bottom = '2px';
+                    callout.style.left = componentX + componentWidth + 1 + 'px';
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - 10) + 'px';
+                } else {
+                    callout.style.bottom = '2px';
+                    callout.style.left = componentX - calloutWidth - 1 + 'px';
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - 10) + 'px';
+                }
+            }
+        }
+    }
+
+    static clear(calloutId: string) {
+        if (BitCallouts._Current.calloutId !== calloutId) return;
+
+        BitCallouts.replaceCurrent();
     }
 }

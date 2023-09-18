@@ -1,25 +1,25 @@
 ﻿class BitDateRangePicker {
-    static toggleDateRangePickerCallout(dotnetObjReference: DotNetObject,
+    static toggleDateRangePickerCallout(dotnetObj: DotNetObject,
         dateRangePickerId: string,
-        dateRangePickerCalloutId: string,
-        dateRangePickerOverlayId: string,
+        calloutId: string,
+        overlayId: string,
         isOpen: boolean) {
 
         const dateRangePicker = document.getElementById(dateRangePickerId);
         if (dateRangePicker == null) return;
 
-        const dateRangePickerCallout = document.getElementById(dateRangePickerCalloutId);
+        const dateRangePickerCallout = document.getElementById(calloutId);
         if (dateRangePickerCallout == null) return;
 
-        const dateRangePickerOverlay = document.getElementById(dateRangePickerOverlayId);
+        const dateRangePickerOverlay = document.getElementById(overlayId);
         if (dateRangePickerOverlay == null) return;
 
         if (isOpen) {
             dateRangePickerCallout.style.display = "none";
             dateRangePickerOverlay.style.display = "none";
-            BitCallouts.currentCallout.update("", "", null);
+            BitCallouts.reset();
         } else {
-            BitCallouts.replaceCurrentCallout(dateRangePickerCalloutId, dateRangePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrent({ calloutId, overlayId, dotnetObj });
             dateRangePickerCallout.style.display = "block";
             dateRangePickerOverlay.style.display = "block";
             const dateRangePickerCalloutHeight = dateRangePickerCallout.offsetHeight;

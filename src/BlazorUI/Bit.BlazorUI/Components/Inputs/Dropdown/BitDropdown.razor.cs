@@ -15,24 +15,24 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private bool isOpen;
     private bool isRequired;
     private bool isResponsive;
-    private ICollection<TValue?>? values = Array.Empty<TValue?>();
     private List<TItem> selectedItems = new();
+    private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
     private List<TItem> _items = new();
 
-    private string? _dropdownId;
-    private string? _dropdownLabelId;
-    private string? _dropdownTextContainerId;
-    private string? _dropdownCalloutId;
-    private string? _dropdownOverlayId;
+    private string _dropdownId = string.Empty;
+    private string _calloutId = string.Empty;
+    private string _scrollContainerId = string.Empty;
+
+    private string _labelId = string.Empty;
+    private string _dropdownTextContainerId = string.Empty;
 
     private string? _text;
     private int? _totalItems;
     private string? _searchText;
     private bool _isValuesChanged;
     private bool _inputSearchHasFocus;
-    private ElementReference _searchInputElement;
-    private ElementReference _scrollWrapperElement;
+    private ElementReference _searchInputRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
 
@@ -341,6 +341,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+        StateHasChanged();
     }
 
 
@@ -501,9 +502,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             CurrentValue = GetValue(item);
 
-            await ToggleCallout();
-
-            IsOpen = false;
+            await CloseCallout();
 
             await ClearSearchBox();
 
@@ -571,9 +570,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     protected override void OnInitialized()
     {
         _dropdownId = $"Dropdown-{UniqueId}";
-        _dropdownLabelId = $"{_dropdownId}-label";
-        _dropdownOverlayId = $"{_dropdownId}-overlay";
-        _dropdownCalloutId = $"{_dropdownId}-callout";
+        _calloutId = $"{_dropdownId}-callout";
+        _scrollContainerId = $"{_dropdownId}-scroll-container";
+
+        _labelId = $"{_dropdownId}-label";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
 
         if (ItemsProvider is null && Items is null)
@@ -602,6 +602,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         InitValues();
         InitSelectedItemsAndText();
     }
+
 
     protected override bool TryParseValueFromString(string? value, out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
     => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
@@ -752,9 +753,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         if (IsOpen is false) return;
 
-        await ToggleCallout();
-
         IsOpen = false;
+        await ToggleCallout();
 
         StateHasChanged();
     }
@@ -764,9 +764,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
+        IsOpen = true;
         await ToggleCallout();
-
-        IsOpen = !IsOpen;
 
         await OnClick.InvokeAsync(e);
         await FocusOnSearchBox();
@@ -810,7 +809,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
 
-        await _searchInputElement.FocusAsync();
+        await _searchInputRef.FocusAsync();
     }
 
     private List<TItem> GetSearchedItems()
@@ -839,7 +838,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return className.ToString();
     }
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_dropdownLabelId} {_dropdownTextContainerId}" : $"{_dropdownTextContainerId}";
+    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : $"{_dropdownTextContainerId}";
 
     private async Task SearchVirtualized()
     {
@@ -886,9 +885,17 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     private async Task ToggleCallout()
     {
-        await _js.InvokeVoidAsync("BitDropdown.toggleDropdownCallout",
-            _dotnetObj, UniqueId, _dropdownId, _dropdownCalloutId, _dropdownOverlayId, _scrollWrapperElement,
-            DropDirection, IsOpen, IsResponsive, IsRtl, ShowSearchBox);
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj,
+                                _dropdownId,
+                                _calloutId,
+                                IsOpen,
+                                IsResponsive,
+                                DropDirection,
+                                IsRtl,
+                                _scrollContainerId,
+                                ShowSearchBox ? 32 : 0);
     }
 
 

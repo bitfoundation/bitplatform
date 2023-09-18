@@ -459,8 +459,7 @@ public partial class BitSplitButton<TItem> where TItem : class
             await InvokeItemClick(item);
         }
 
-        _isCalloutOpen = false;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+        await CloseCallout();
     }
 
     private async Task InvokeItemClick(TItem item)
@@ -488,19 +487,23 @@ public partial class BitSplitButton<TItem> where TItem : class
         }
     }
 
-
     private async Task OpenCallout()
     {
-        if (IsEnabled is false) return;
-
         _isCalloutOpen = true;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+        await ToggleCallout();
     }
 
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+        await ToggleCallout();
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj, _uniqueId, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
     }
 
 

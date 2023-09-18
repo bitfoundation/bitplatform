@@ -360,8 +360,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     {
         if (IsEnabled is false) return;
 
-        _isCalloutOpen = true;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+        await OpenCallout();
 
         await OnClick.InvokeAsync(e);
     }
@@ -397,10 +396,23 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         }
     }
 
+    private async Task OpenCallout()
+    {
+        _isCalloutOpen = true;
+        await ToggleCallout();
+    }
+
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
-        await _js.ToggleCallout(_uniqueId, _calloutId, _isCalloutOpen, _dotnetObj);
+        await ToggleCallout();
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj, _uniqueId, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
     }
 
 

@@ -1,25 +1,25 @@
 ﻿class BitDatePicker {
-    static toggleDatePickerCallout(dotnetObjReference: DotNetObject,
+    static toggleDatePickerCallout(dotnetObj: DotNetObject,
         datePickerId: string,
-        datePickerCalloutId: string,
-        datePickerOverlayId: string,
+        calloutId: string,
+        overlayId: string,
         isOpen: boolean) {
 
         const datePicker = document.getElementById(datePickerId);
         if (datePicker == null) return;
 
-        const datePickerCallout = document.getElementById(datePickerCalloutId);
+        const datePickerCallout = document.getElementById(calloutId);
         if (datePickerCallout == null) return;
 
-        const datePickerOverlay = document.getElementById(datePickerOverlayId);
+        const datePickerOverlay = document.getElementById(overlayId);
         if (datePickerOverlay == null) return;
 
         if (isOpen) {
             datePickerCallout.style.display = "none";
             datePickerOverlay.style.display = "none";
-            BitCallouts.currentCallout.update("", "", null);
+            BitCallouts.reset();
         } else {
-            BitCallouts.replaceCurrentCallout(datePickerCalloutId, datePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrent({ calloutId, overlayId, dotnetObj });
             datePickerCallout.style.display = "block";
             datePickerOverlay.style.display = "block";
             const datePickerCalloutHeight = datePickerCallout.offsetHeight;
