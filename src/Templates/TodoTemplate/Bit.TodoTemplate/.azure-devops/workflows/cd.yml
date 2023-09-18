@@ -62,10 +62,10 @@ jobs:
       targetFiles: 'src/Client/Core/appsettings.json'
 
   - task: Bash@3
-    displayName: 'Build (To generate CSS/JS files)'
+    displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Web/TodoTemplate.Client.Web.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+      script: 'dotnet build src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Publish'
@@ -178,10 +178,10 @@ jobs:
       script: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
 
   - task: Bash@3
-    displayName: 'Build (To generate CSS/JS files)'
+    displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build exe'
@@ -239,10 +239,10 @@ jobs:
       targetFiles: 'src/Client/Core/appsettings.json'
   
   - task: Bash@3
-    displayName: 'Build (To generate CSS/JS files)'
+    displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android'
+      script: 'dotnet build src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build aab'
@@ -301,10 +301,10 @@ jobs:
       script: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
 
   - task: Bash@3
-    displayName: 'Build (To generate CSS/JS files)'
+    displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:Configuration=Release -f net8.0-maccatalyst'
+      script: 'dotnet build src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build pkg'

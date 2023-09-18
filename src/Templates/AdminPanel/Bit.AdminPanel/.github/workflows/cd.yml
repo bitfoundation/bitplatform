@@ -42,8 +42,8 @@ jobs:
     - name: Install wasm
       run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
       
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+    - name: Generate CSS/JS files
+      run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
       run: dotnet publish src/Server/Api/AdminPanel.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
@@ -147,8 +147,8 @@ jobs:
     - name: Install maui
       run: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
   
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+    - name: Generate CSS/JS files
+      run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
@@ -194,8 +194,8 @@ jobs:
     - name: Install maui
       run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
   
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
+    - name: Generate CSS/JS files
+      run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=AdminPanel -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
@@ -237,8 +237,8 @@ jobs:
      - name: Install maui
        run: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
    
-     - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
+     - name: Generate CSS/JS files
+       run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
        run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
@@ -298,8 +298,8 @@ jobs:
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
+    - name: Generate CSS/JS files
+      run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
       run: dotnet publish src/Client/App/AdminPanel.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
@@ -343,8 +343,11 @@ jobs:
      - name: Switch to BlazorElectron
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/Directory.Build.props > temp.xml && mv temp.xml src/Directory.Build.props
    
-     - name: Build (To generate CSS/JS files)
-       run: dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -p:Configuration=Release
+     - name: Generate CSS/JS files
+       run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+
+     - name: Restore electron .net
+       run: dotnet build src/Client/Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks
    
      - name: Build app image
        run: cd src/Client/Web/ && dotnet electronize build /target linux

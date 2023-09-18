@@ -46,8 +46,8 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+    - name: Generate CSS/JS files
+      run: dotnet build src/BlazorDual.Web/BlazorDual.Web.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
       run: dotnet publish src/BlazorDual.Api/BlazorDual.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
