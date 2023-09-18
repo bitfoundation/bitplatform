@@ -1,6 +1,6 @@
 ﻿class BitBreadcrumb {
     static toggleOverflowCallout(
-        dotnetObjReference: DotNetObject,
+        dotnetObj: DotNetObject,
         dropdownWrapperId: string,
         dropdownId: string,
         calloutId: string,
@@ -22,11 +22,9 @@
         if (isCalloutOpen) {
             dropdownCallout.style.display = "none";
             dropdownOverlay.style.display = "none";
-            BitCallouts.currentCallout.update("", "", null);
-            BitCallouts.currentDropdownCalloutId = "";
+            BitCallouts.reset();
         } else {
-            BitCallouts.currentDropdownCalloutId = calloutId;
-            BitCallouts.replaceCurrentCallout(calloutId, overlayId, dotnetObjReference);
+            BitCallouts.replaceCurrent({ calloutId, overlayId, dotnetObj });
             dropdownCallout.style.display = "block";
             dropdownOverlay.style.display = "block";
 
