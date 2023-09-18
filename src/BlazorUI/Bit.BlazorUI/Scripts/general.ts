@@ -9,7 +9,7 @@
 //})
 
 window.addEventListener('scroll', (e: Event) => {
-    const currentCallout = BitCallouts.getCurrent();
+    const currentCallout = BitCallouts.current;
     if ((window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && currentCallout.isResponsive)) return;
 
     const target = e.target as HTMLElement;

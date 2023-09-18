@@ -16,22 +16,18 @@ class BitCallouts {
     public static readonly MAX_MOBILE_WIDTH = 640;
     private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
-    private static _Current: BitCallout = BitCallouts.DEFAULT_CALLOUT;
-
-    public static getCurrent() {
-        return { ...this._Current };
-    }
+    public static current: BitCallout = BitCallouts.DEFAULT_CALLOUT;
 
     public static reset() {
-        BitCallouts._Current = BitCallouts.DEFAULT_CALLOUT;
+        BitCallouts.current = BitCallouts.DEFAULT_CALLOUT;
     }
 
     public static replaceCurrent(callout?: BitCallout) {
         callout = callout || BitCallouts.DEFAULT_CALLOUT;
-        const current = BitCallouts._Current;
+        const current = BitCallouts.current;
 
         if (current.calloutId.length === 0) {
-            BitCallouts._Current = callout;
+            BitCallouts.current = callout;
             return;
         }
 
@@ -45,7 +41,7 @@ class BitCallouts {
 
             current.dotnetObj?.invokeMethodAsync('CloseCallout');
 
-            BitCallouts._Current = callout;
+            BitCallouts.current = callout;
         }
     }
 
@@ -146,7 +142,7 @@ class BitCallouts {
     }
 
     static clear(calloutId: string) {
-        if (BitCallouts._Current.calloutId !== calloutId) return;
+        if (BitCallouts.current.calloutId !== calloutId) return;
 
         BitCallouts.replaceCurrent();
     }
