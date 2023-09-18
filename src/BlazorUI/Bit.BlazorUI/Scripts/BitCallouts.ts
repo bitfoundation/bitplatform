@@ -49,55 +49,6 @@ class BitCallouts {
         }
     }
 
-    static toggle1(componentId: string, calloutId: string, isCalloutOpen: boolean, dotnetObj: DotNetObject) {
-        const component = document.getElementById(componentId);
-        if (component == null) return;
-
-        const callout = document.getElementById(calloutId);
-        if (callout == null) return;
-
-        if (!isCalloutOpen) {
-            callout.style.display = 'none';
-            BitCallouts.reset();
-        } else {
-            BitCallouts.replaceCurrent({ calloutId, dotnetObj });
-            callout.style.display = 'block';
-
-            const componentWidth = component.offsetWidth;
-            const componentHeight = component.offsetHeight;
-
-            const calloutHeight = callout.offsetHeight;
-            const calloutWidth = callout.offsetWidth;
-
-            const { x: componentX, y: componentY } = component.getBoundingClientRect();
-
-            const distanceToScreenBottom = window.innerHeight - (componentHeight + componentY);
-            const distanceToScreenRight = window.innerWidth - (componentWidth + componentX);
-
-            if (distanceToScreenBottom >= calloutHeight) {        // show callout to the bottom
-                callout.style.top = componentY + componentHeight + 1 + 'px';
-                callout.style.left = componentX + 'px';
-                callout.style.right = 'unset';
-                callout.style.bottom = 'unset';
-            } else if (componentY >= calloutHeight) {           // show callout to the top
-                callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
-                callout.style.left = componentX + 'px';
-                callout.style.right = 'unset';
-                callout.style.top = 'unset';
-            } else if (distanceToScreenRight >= calloutWidth) {   // show callout to the right
-                callout.style.left = componentX + componentWidth + 1 + 'px';
-                callout.style.bottom = '2px';
-                callout.style.right = 'unset';
-                callout.style.top = 'unset';
-            } else {                                            // show callout to the left
-                callout.style.left = componentX - calloutWidth - 1 + 'px';
-                callout.style.bottom = '2px';
-                callout.style.top = 'unset';
-                callout.style.right = 'unset';
-            }
-        }
-    }
-
     static toggle(
         dotnetObj: DotNetObject,
         componentId: string,
