@@ -224,7 +224,7 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitNummericTextField.
+    /// Custom CSS styles for different parts of the BitNummericTextField.
     /// </summary>
     [Parameter] public BitNummericTextFieldClassStyles? Styles { get; set; }
 
