@@ -28,6 +28,7 @@ main {
         padding: rem2(40px);
         max-width: calc(100% - $NavMenuWidth);
         background-color: $bit-color-background-secondary;
+        padding-bottom: 0;
 
         @include md {
             max-width: 100%;
@@ -56,6 +57,10 @@ main {
         box-shadow: $bit-box-shadow-callout;
         color: $bit-color-foreground-secondary;
         background-color: $bit-color-background-primary;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
     .title {
