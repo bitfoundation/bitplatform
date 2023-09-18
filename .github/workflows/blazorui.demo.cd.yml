@@ -166,7 +166,7 @@ jobs:
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
-    runs-on: macos-12
+    runs-on: macOS-13
   
     steps:
      
@@ -227,7 +227,7 @@ jobs:
 
   # build_blazor_hybrid_maccatalyst:
   #    name: build blazor hybrid (maccatalyst)
-  #    runs-on: macos-12
+  #    runs-on: macOS-13
    
   #    steps:
       

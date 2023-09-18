@@ -273,7 +273,7 @@ jobs:
   displayName: 'build blazor hybrid (maccatalyst)'
 
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macOS-13'
 
   steps:
   - task: UseDotNet@2
