@@ -115,7 +115,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{06
 		Websites\Platform\.gitignore = Websites\Platform\.gitignore
 		Websites\Platform\Clean.bat = Websites\Platform\Clean.bat
 		Websites\Platform\src\Directory.Build.props = Websites\Platform\src\Directory.Build.props
-		Websites\Platform\global.json = Websites\Platform\global.json
 		Websites\Platform\README.md = Websites\Platform\README.md
 	EndProjectSection
 EndProject
@@ -124,7 +123,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sales", "Sales", "{9FBD6994
 		Websites\Sales\.gitignore = Websites\Sales\.gitignore
 		Websites\Sales\Clean.bat = Websites\Sales\Clean.bat
 		Websites\Sales\src\Directory.Build.props = Websites\Sales\src\Directory.Build.props
-		Websites\Sales\global.json = Websites\Sales\global.json
 		Websites\Sales\README.md = Websites\Sales\README.md
 	EndProjectSection
 EndProject
@@ -304,7 +302,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Careers", "Careers", "{E70A
 		Websites\Careers\.gitignore = Websites\Careers\.gitignore
 		Websites\Careers\Clean.bat = Websites\Careers\Clean.bat
 		Websites\Careers\src\Directory.Build.props = Websites\Careers\src\Directory.Build.props
-		Websites\Careers\global.json = Websites\Careers\global.json
 		Websites\Careers\README.md = Websites\Careers\README.md
 	EndProjectSection
 EndProject
