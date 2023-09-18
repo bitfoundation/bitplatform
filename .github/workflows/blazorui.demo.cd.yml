@@ -117,56 +117,56 @@ jobs:
   #       name: win-exe-bundle
   #       path: src/BlazorUI/Demo/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86
   
-  build_blazor_hybrid_android:
-    name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+  # build_blazor_hybrid_android:
+  #   name: build blazor hybrid (android)
+  #   runs-on: ubuntu-22.04
   
-    steps:
+  #   steps:
      
-    - name: Checkout source code
-      uses: actions/checkout@v3
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v3
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v3
+  #     with:
+  #       global-json-file: src/global.json
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
+  #   - uses: actions/setup-node@v3
+  #     with:
+  #       node-version: 18
   
-    - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1
-      with:
-          fileDir: './src/BlazorUI/Demo/Client/App/'
-          fileName: 'BitBlazorUIDemo.keystore'
-          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+  #   - name: Extract Android signing key from env
+  #     uses: timheuer/base64-to-file@v1
+  #     with:
+  #         fileDir: './src/BlazorUI/Demo/Client/App/'
+  #         fileName: 'BitBlazorUIDemo.keystore'
+  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-    - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
-      with:
-        files: 'src/BlazorUI/Demo/Client/Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  #   - name: Update appsettings.json api server address
+  #     uses: microsoft/variable-substitution@v1 
+  #     with:
+  #       files: 'src/BlazorUI/Demo/Client/Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
-    - name: Install maui
-      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
+  #   - name: Install maui
+  #     run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
   
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
+  #   - name: Build (To generate CSS/JS files)
+  #     run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
   
-    - name: Build aab
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
+  #   - name: Build aab
+  #     run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
   
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: android-bundle
-        path: src/BlazorUI/Demo/Client/App/bin/Release/net8.0-android/*-Signed.*
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: android-bundle
+  #       path: src/BlazorUI/Demo/Client/App/bin/Release/net8.0-android/*-Signed.*
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
-    runs-on: macOS-13
+    runs-on: macos-13
   
     steps:
      
@@ -227,7 +227,7 @@ jobs:
 
   # build_blazor_hybrid_maccatalyst:
   #    name: build blazor hybrid (maccatalyst)
-  #    runs-on: macOS-13
+  #    runs-on: macos-13
    
   #    steps:
       

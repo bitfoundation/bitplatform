@@ -95,7 +95,7 @@ jobs:
   displayName: 'build blazor hybrid (iOS)'
 
   pool:
-    vmImage: 'macOS-13'
+    vmImage: 'macos-13'
 
   steps:
   - task: UseDotNet@2
@@ -125,7 +125,7 @@ jobs:
   displayName: 'build blazor hybrid (maccatalyst)'
 
   pool:
-    vmImage: 'macOS-13'
+    vmImage: 'macos-13'
 
   steps:
   - task: UseDotNet@2
