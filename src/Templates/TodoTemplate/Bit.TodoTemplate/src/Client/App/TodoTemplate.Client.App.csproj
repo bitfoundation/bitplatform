@@ -38,7 +38,6 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
-        <MtouchLink>Full</MtouchLink>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
     </PropertyGroup>
