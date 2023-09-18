@@ -11,8 +11,9 @@ public class BitOverlayTests : BunitTestContext
     {
         var com = RenderComponent<BitOverlay>();
         var element = com.Find(".bit-ovl");
-        Assert.IsTrue(element.HasAttribute("id"));
-        //how to check if body(as default scroll selector) has overflow:hidden?
+
+        Assert.IsFalse(element.ClassList.Contains("bit-ovl-vis")); //shouldn't be visible when rendered
+
     }
 
     [TestMethod]
@@ -77,5 +78,16 @@ public class BitOverlayTests : BunitTestContext
 
     //AutoToggleScroll must test
 
+    [TestMethod]
+    public void GivenAutoToggleScrollTrue_ShouldHasBodyWithOverflowHidden()
+    {
+        // var com = RenderComponent<BitOverlayWrappedByBody>();
+
+        // var body = com.Find("body");
+
+        // var bodyStyle = body.GetAttribute("style");
+
+        // Assert.IsTrue(bodyStyle.Contains("overflow: hidden"));
+    }
 
 }
