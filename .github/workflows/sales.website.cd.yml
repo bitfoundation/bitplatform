@@ -41,8 +41,8 @@ jobs:
       env:
         ApiServerAddress: 'api/'
       
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+    - name: Generate CSS/JS files
+      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Api/Bit.Websites.Sales.Api.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
       run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web

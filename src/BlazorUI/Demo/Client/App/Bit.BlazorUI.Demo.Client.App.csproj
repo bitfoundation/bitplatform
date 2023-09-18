@@ -46,7 +46,7 @@
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0 -->
-        <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android /p:UseInterpreter=false -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
         <!-- dotnet build -t:FinishAotProfiling -f net8.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>

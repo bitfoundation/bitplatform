@@ -41,7 +41,7 @@ jobs:
     - name: Install wasm
       run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
 
-    - name: Build (To generate CSS/JS files)
+    - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
@@ -105,7 +105,7 @@ jobs:
     - name: Install maui
       run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23455.8
   
-    - name: Build (To generate CSS/JS files)
+    - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Build exe
@@ -152,7 +152,7 @@ jobs:
     - name: Install maui
       run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
   
-    - name: Build (To generate CSS/JS files)
+    - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
   
     - name: Build aab
@@ -213,7 +213,7 @@ jobs:
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-    - name: Build (To generate CSS/JS files)
+    - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
   
     - name: Build ipa
@@ -253,7 +253,7 @@ jobs:
      - name: Install maui
        run: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
    
-     - name: Build (To generate CSS/JS files)
+     - name: Generate CSS/JS files
        run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
    
      - name: Build pkg
@@ -298,7 +298,7 @@ jobs:
      - name: Switch to BlazorElectron
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/BlazorUI/Demo/Directory.Build.props > temp.xml && mv temp.xml src/BlazorUI/Demo/Directory.Build.props
    
-     - name: Build (To generate CSS/JS files)
+     - name: Generate CSS/JS files
        run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
    
      - name: Build app image
