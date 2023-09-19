@@ -409,7 +409,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelFragment);
         });
 
-        var drpLabelChild = component.Find("div > :first-child");
+        var drpLabelChild = component.Find("div > label > :first-child");
         drpLabelChild.MarkupMatches(labelFragment);
     }
 
