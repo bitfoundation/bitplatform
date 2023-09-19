@@ -6,7 +6,7 @@
 /// </summary>
 public class AppExceptionHandler : ExceptionHandlerBase
 {
-    protected AppExceptionHandler(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
+    public AppExceptionHandler(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
         : base(localizer, authenticationService, messageBoxService)
     {
 
