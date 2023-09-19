@@ -63,6 +63,115 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 };";
 
     private readonly string example2HtmlCode = @"
+<style>
+    .custom-class {
+        padding: 1rem;
+        border-radius: 4px;
+        background-color: midnightblue;
+    }
+
+    .custom-fruit {
+        border-top: 1px solid gray;
+        background-color: darkslateblue;
+    }
+
+    .custom-veg {
+        font-size: 18px;
+        text-decoration: overline underline line-through;
+    }
+
+    .custom-label {
+        color: darkred;
+        font-size: 12px;
+    }
+
+    .custom-text {
+        color: darkblue;
+        font-size: 16px;
+    }
+</style>
+
+<BitDropdown Label=""Styled Dropdown""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""Classed Dropdown""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             Class=""custom-class"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+
+
+<BitDropdown Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in styleClassItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" Style=""@item.Style"" Class=""@item.Class"" />
+    }
+</BitDropdown>
+
+
+
+<BitDropdown Label=""Styles""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""Classes""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>";
+    private readonly string example2CsharpCode = @"
+private readonly List<BitDropdownItem<string>> basicItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private readonly List<BitDropdownItem<string>> styleClassItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""background-color:darkred"" },
+    new() { Text = ""Apple"", Value = ""f-app"", Class = ""custom-fruit"" },
+    new() { Text = ""Banana"", Value = ""f-ban"", Class = ""custom-fruit"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false, Class = ""custom-fruit"" },
+    new() { Text = ""Grape"", Value = ""f-gra"", Class = ""custom-fruit"" },
+    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding:5px; background:darkgreen"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""background-color:darkblue"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", Class = ""custom-veg"" },
+    new() { Text = ""Carrot"", Value = ""v-car"", Class = ""custom-veg"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
+};";
+
+    private readonly string example3HtmlCode = @"
 <BitDropdown @bind-Value=""controlledValue""
              Label=""Single select""
              Placeholder=""Select an item""
@@ -92,7 +201,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     }
 </BitDropdown>
 <BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>";
-    private readonly string example2CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
 
@@ -110,7 +219,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example4HtmlCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -204,7 +313,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
     }
 </BitDropdown>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private readonly List<BitDropdownItem<string>> dataItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Items"" },
@@ -218,7 +327,7 @@ private readonly List<BitDropdownItem<string>> dataItems = new()
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example5HtmlCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Placeholder=""Select an item""
              IsResponsive=true
@@ -234,9 +343,9 @@ private readonly List<BitDropdownItem<string>> dataItems = new()
     <BitDropdownOption Text=""Carrot"" Value=""@(""f-car"")"" />
     <BitDropdownOption Text=""Lettuce"" Value=""@(""f-let"")"" />
 </BitDropdown>";
-    private readonly string example4CsharpCode = @"";
+    private readonly string example5CsharpCode = @"";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example6HtmlCode = @"
 <BitDropdown Label=""Single select & auto focus""
              Placeholder=""Select an item""
              ShowSearchBox=""true""
@@ -260,7 +369,7 @@ private readonly List<BitDropdownItem<string>> dataItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private readonly List<BitDropdownItem<string>> basicItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
@@ -275,7 +384,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example7HtmlCode = @"
 <BitDropdown Label=""تک انتخابی""
              Placeholder=""لطفا انتخاب کنید""
              IsRtl=""true""
@@ -296,7 +405,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private readonly List<BitDropdownItem<string>> rtlItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
@@ -311,7 +420,7 @@ private readonly List<BitDropdownItem<string>> rtlItems = new()
     new() { Text = ""کاهو"", Value = ""v-let"" }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example8HtmlCode = @"
 <BitDropdown Label=""Auto""
              Placeholder=""Select an item""
              DropDirection=""BitDropDirection.Auto""
@@ -331,7 +440,7 @@ private readonly List<BitDropdownItem<string>> rtlItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
     }
 </BitDropdown>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
 
 protected override void OnInitialized()
@@ -341,7 +450,7 @@ protected override void OnInitialized()
                                    .ToArray();
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example9HtmlCode = @"
 <BitDropdown @bind-Value=""clearValue""
              Label=""Single select dropdown""
              Placeholder=""Select an option""
@@ -367,7 +476,7 @@ protected override void OnInitialized()
     }
 </BitDropdown>
 <BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string? clearValue = ""f-app"";
 private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
 
@@ -385,7 +494,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example10HtmlCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>
@@ -423,7 +532,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class FormValidationDropdownModel
 {
     [MaxLength(2, ErrorMessage = ""The property {0} have more than {1} elements"")]

@@ -4,6 +4,8 @@ public class BitDropdownCustom
 {
     public string? Label { get; set; }
 
+    public string? CssClass { get; set; }
+
     public string? Key { get; set; }
 
     public object? Payload { get; set; }
@@ -15,6 +17,8 @@ public class BitDropdownCustom
     public bool IsSelected { get; set; }
 
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+
+    public string? CssStyle { get; set; }
 
     public string? Text { get; set; }
 
