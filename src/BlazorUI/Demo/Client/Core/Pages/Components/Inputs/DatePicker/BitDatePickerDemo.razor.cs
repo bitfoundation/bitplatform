@@ -639,19 +639,19 @@ private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
     private readonly string example15HtmlCode = @"
 <BitDatePicker @bind-Value=""@selectedDateTime""
-                           Label=""Time format 24 hours""
-                           Style=""max-width: 350px""
-                           ShowTimePicker=""true""
-                           AriaLabel=""Select a date""
-                           Placeholder=""Select a date..."" />
+                Label=""Time format 24 hours""
+                Style=""max-width: 350px""
+                ShowTimePicker=""true""
+                AriaLabel=""Select a date""
+                Placeholder=""Select a date..."" />
 
 <BitDatePicker @bind-Value=""@selectedDateTime""
-                           Label=""Time format 12 hours""
-                           Style=""max-width: 350px""
-                           ShowTimePicker=""true""
-                           TimeFormat=""BitTimeFormat.TwelveHours""
-                           AriaLabel=""Select a date""
-                           Placeholder=""Select a date..."" />";
+                Label=""Time format 12 hours""
+                Style=""max-width: 350px""
+                ShowTimePicker=""true""
+                TimeFormat=""BitTimeFormat.TwelveHours""
+                AriaLabel=""Select a date""
+                Placeholder=""Select a date..."" />";
     private readonly string example15CsharpCode = @"
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 }
