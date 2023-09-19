@@ -152,11 +152,11 @@ public partial class BitIconButtonDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitIconButton IconName=""@BitIconName.Emoji"" />
 <BitIconButton IconName=""@BitIconName.EmojiDisappointed"" IsEnabled=""false"" />";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-icon-button {
         width: 3rem;
@@ -175,20 +175,20 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""@BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
 <BitIconButton IconName=""@BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitVisibility.Visible"" /> ]
 Hidden: [ <BitIconButton Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with AriaDescription"" />
 <BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with AriaHidden"" />";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open Bit Platform In New Tab"" />
 <BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To Bit Platform"" />";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>

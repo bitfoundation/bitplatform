@@ -204,7 +204,7 @@ public partial class BitPanelDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitButton OnClick=@(() => IsBasicPanelOpen = true)>Open Panel</BitButton>
 
 <BitPanel @bind-IsOpen=""IsBasicPanelOpen"">
@@ -213,7 +213,7 @@ public partial class BitPanelDemo
     private readonly string example1CsharpCode = @"
 private bool IsBasicPanelOpen = false;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitLabel>Panel with header text</BitLabel>
 <BitButton OnClick=@(() => IsPanelWithHeaderTextOpen = true)>Open Panel</BitButton>
 
@@ -259,7 +259,7 @@ private bool IsBasicPanelOpen = false;";
 private bool IsPanelWithHeaderTextOpen = false;
 private bool IsPanelWithCustomHeaderOpen = false;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitLabel>Panel with custom footer content</BitLabel>
 <BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
 
@@ -284,7 +284,7 @@ private bool IsPanelWithCustomHeaderOpen = false;";
     private readonly string example3CsharpCode = @"
 private bool IsPanelWithFooterOpen = false;";
     
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitLabel>Panel with IsBlocking = true</BitLabel>
 <BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
 
@@ -333,7 +333,7 @@ private bool IsAutoToggleScrollPanelOpen = false;
 
 private BitPanel bitPanelRef = default!;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Left)"">Left</BitButton>

@@ -406,7 +406,7 @@ public partial class BitNumericTextFieldDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitNumericTextField @bind-Value=""BasicValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -421,7 +421,7 @@ public partial class BitNumericTextFieldDemo
 private int BasicValue;
 private int DisabledValue;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitNumericTextField @bind-Value=""LabelTopValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -437,7 +437,7 @@ private int DisabledValue;";
 private int LabelTopValue;
 private int LabelLeftValue;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
     <LabelTemplate>
         <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
@@ -447,7 +447,7 @@ private int LabelLeftValue;";
     private readonly string example3CsharpCode = @"
 private int LabelTemplateValue;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitNumericTextField @bind-Value=""SpinArrowValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -472,7 +472,7 @@ private int SpinArrowValue;
 private int LabelAndIconValue;
 private int SpinArrowWithIconValue;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitNumericTextField @bind-Value=""MinMaxValue1""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -498,7 +498,7 @@ private int MinMaxValue1;
 private int MinMaxValue2;
 private decimal MinMaxValue3;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitNumericTextField @bind-Value=""SuffixValue1""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -518,7 +518,7 @@ private decimal MinMaxValue3;";
 private int SuffixValue1;
 private decimal SuffixValue2;";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitNumericTextField Value=""OneWayValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -535,7 +535,7 @@ private double OneWayValue;
 private double TwoWayValue;
 ";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
                      Placeholder=""Enter a number...""
                      Step=""@(0.1)""
@@ -585,7 +585,7 @@ private void HandleOnChangeEvent(double value)
     OnChangeCounter++;
 }";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .custom-class {
         margin-left: 0.5rem;
@@ -646,14 +646,14 @@ private int ClassValue;
 private int StylesValue;
 private int ClassesValue;";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 Visible: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" Placeholder=""Visible NumericTextField"" /> ]
 Hidden: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden NumericTextField"" />  ]
 Collapsed: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed NumericTextField"" />  ]";
     private readonly string example10CsharpCode = @"
 private int VisibilityValue;";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;

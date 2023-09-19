@@ -2,7 +2,7 @@
 
 public partial class _BitDropdownOptionDemo
 {
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -62,7 +62,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -171,7 +171,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitDropdown @bind-Value=""controlledValue""
              Label=""Single select""
              Placeholder=""Select an item""
@@ -219,7 +219,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -327,7 +327,7 @@ private readonly List<BitDropdownItem<string>> dataItems = new()
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
 };";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Placeholder=""Select an item""
              IsResponsive=true
@@ -345,7 +345,7 @@ private readonly List<BitDropdownItem<string>> dataItems = new()
 </BitDropdown>";
     private readonly string example5CsharpCode = @"";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
              Placeholder=""Select an item""
              ShowSearchBox=""true""
@@ -384,7 +384,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Placeholder=""لطفا انتخاب کنید""
              IsRtl=""true""
@@ -420,7 +420,7 @@ private readonly List<BitDropdownItem<string>> rtlItems = new()
     new() { Text = ""کاهو"", Value = ""v-let"" }
 };";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropdown Label=""Auto""
              Placeholder=""Select an item""
              DropDirection=""BitDropDirection.Auto""
@@ -450,7 +450,7 @@ protected override void OnInitialized()
                                    .ToArray();
 }";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
              Label=""Single select dropdown""
              Placeholder=""Select an option""
@@ -494,7 +494,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>
