@@ -13,6 +13,11 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? AriaLabel { get; set; }
 
     /// <summary>
+    /// Custom CSS class for the dropdown option.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
     /// The id for the dropdown option.
     /// </summary>
     [Parameter] public string? Id { get; set; }
@@ -41,6 +46,11 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     /// The type of the dropdown option.
     /// </summary>
     [Parameter] public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;
+
+    /// <summary>
+    /// Custom CSS style for the dropdown option.
+    /// </summary>
+    [Parameter] public string? Style { get; set; }
 
     /// <summary>
     /// The text to render for the dropdown option.

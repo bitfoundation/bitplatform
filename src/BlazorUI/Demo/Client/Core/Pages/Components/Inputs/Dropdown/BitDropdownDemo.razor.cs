@@ -34,6 +34,15 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitDropdownClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitDropdown.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -244,6 +253,15 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitDropdownClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitDropdown.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
@@ -295,6 +313,13 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Class",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS class for the dropdown item."
+               },
+               new()
+               {
                    Name = "Id",
                    Type = "string?",
                    DefaultValue = "null",
@@ -339,6 +364,13 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Style",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS style for the dropdown item."
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
@@ -372,6 +404,13 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The aria label attribute for the dropdown option."
+               },
+               new()
+               {
+                   Name = "Class",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS class for the dropdown option."
                },
                new()
                {
@@ -419,6 +458,13 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Style",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS style for the dropdown option."
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
@@ -452,6 +498,15 @@ public partial class BitDropdownDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitDropdownItem<TValue>.AriaLabel))",
                    Description = "The AriaLabel field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Class",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Class))",
+                   Description = "The CSS Class field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -511,6 +566,15 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Style",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Style))",
+                   Description = "The CSS Style field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitDropdownItem<TValue>.Text))",
@@ -558,6 +622,203 @@ public partial class BitDropdownDemo
                }
             }
         },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitDropdownClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Label",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the main container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "TextContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ClearButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the clear button of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "CaretDownIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the caret down icon of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Callout",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ResponsiveLabelContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the responsive panel's label container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ResponsiveLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the responsive panel label of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ResponsiveCloseButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the responsive panel's close button of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ResponsiveCloseIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the responsive panel's close icon of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxIconContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box's icon container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box icon of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxInput",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box input of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxClearButtonContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box's clear button container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxClearButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box's clear button of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchBoxClearIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the search box's clear icon of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ScrollContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the scroll container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemHeader",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item header of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item wrapper of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item button of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemCheckBox",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item check box of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemCheckIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item check icon of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item text of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemDivider",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item divider of the BitDropdown."
+               },
+            },
+        }
     };
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {

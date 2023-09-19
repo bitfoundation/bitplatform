@@ -63,34 +63,77 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
 };";
 
     private readonly string example2HtmlCode = @"
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Visible: [ <BitDropdown NameSelectors=""nameSelectors""
-                            Items=""GetBasicCustoms()""
-                            Placeholder=""Select an item""
-                            Visibility=""BitVisibility.Visible"" /> ]
-</div>
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Hidden: [ <BitDropdown NameSelectors=""nameSelectors""
-                           Items=""GetBasicCustoms()""
-                           Placeholder=""Select items""
-                           Visibility=""BitVisibility.Hidden"" /> ]
-</div>
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Collapsed: [ <BitDropdown NameSelectors=""nameSelectors""
-                              Items=""GetBasicCustoms()""
-                              Placeholder=""Select items""
-                              Visibility=""BitVisibility.Collapsed"" /> ]
-</div>";
+<style>
+    .custom-class {
+        padding: 1rem;
+        border-radius: 4px;
+        background-color: midnightblue;
+    }
+
+    .custom-fruit {
+        border-top: 1px solid gray;
+        background-color: darkslateblue;
+    }
+
+    .custom-veg {
+        font-size: 18px;
+        text-decoration: overline underline line-through;
+    }
+
+    .custom-label {
+        color: darkred;
+        font-size: 12px;
+    }
+
+    .custom-text {
+        color: darkblue;
+        font-size: 16px;
+    }
+</style>
+
+<BitDropdown Label=""Styled Dropdown""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"" />
+
+<BitDropdown Label=""Classed Dropdown""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             Class=""custom-class"" />
+
+
+
+<BitDropdown Items=""GetStyleClassCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"" />
+
+
+
+<BitDropdown Label=""Styles""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"" />
+
+<BitDropdown Label=""Classes""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"" />";
     private readonly string example2CsharpCode = @"
 public class BitDropdownCustom
 {
     public string? Label { get; set; }
+    public string? CssClass { get; set; }
     public string? Key { get; set; }
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
     public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? CssStyle { get; set; }
     public string? Text { get; set; }
     public string? Title { get; set; }
     public string? Value { get; set; }
@@ -110,15 +153,31 @@ private List<BitDropdownCustom> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
+private List<BitDropdownCustom> GetStyleClassCustoms() => new()
+{
+    new() { Type = BitDropdownItemType.Header, Text = ""Fruits"", CssStyle = ""background-color:darkred"" },
+    new() { Text = ""Apple"", Value = ""f-app"", CssClass = ""custom-fruit"" },
+    new() { Text = ""Banana"", Value = ""f-ban"", CssClass = ""custom-fruit"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true, CssClass = ""custom-fruit"" },
+    new() { Text = ""Grape"", Value = ""f-gra"", CssClass = ""custom-fruit"" },
+    new() { Type = BitDropdownItemType.Divider, CssStyle = ""padding:5px; background:darkgreen"" },
+    new() { Type = BitDropdownItemType.Header, Text = ""Vegetables"", CssStyle = ""background-color:darkblue"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", CssClass = ""custom-veg"" },
+    new() { Text = ""Carrot"", Value = ""v-car"", CssClass = ""custom-veg"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"", CssClass = ""custom-veg"" }
+};
+
 private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
+    Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
     IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
+    Style = { Selector = c => c.CssStyle },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },

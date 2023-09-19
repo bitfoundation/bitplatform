@@ -8,6 +8,11 @@ public class BitDropdownNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitDropdownItem<TValue>.AriaLabel));
 
     /// <summary>
+    /// The CSS Class field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitDropdownItem<TValue>.Class));
+
+    /// <summary>
     /// The Id field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Id { get; set; } = new(nameof(BitDropdownItem<TValue>.Id));
@@ -36,6 +41,11 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// The ItemType field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, BitDropdownItemType> ItemType { get; set; } = new(nameof(BitDropdownItem<TValue>.ItemType));
+
+    /// <summary>
+    /// The CSS Style field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitDropdownItem<TValue>.Style));
 
     /// <summary>
     /// The Text field name and selector of the custom input class.

@@ -41,24 +41,65 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 };";
 
     private readonly string example2HtmlCode = @"
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Visible: [ <BitDropdown DefaultValue=""@("""")""
-                            Items=""GetBasicItems()""
-                            Placeholder=""Select an item""
-                            Visibility=""BitVisibility.Visible"" /> ]
-</div>
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Hidden: [ <BitDropdown DefaultValue=""@("""")""
-                           Items=""GetBasicItems()""
-                           Placeholder=""Select items""
-                           Visibility=""BitVisibility.Hidden"" /> ]
-</div>
-<div style=""display:inline-flex;white-space:nowrap;"">
-    Collapsed: [ <BitDropdown DefaultValue=""@("""")""
-                              Items=""GetBasicItems()""
-                              Placeholder=""Select items""
-                              Visibility=""BitVisibility.Collapsed"" /> ]
-</div>";
+<style>
+    .custom-class {
+        padding: 1rem;
+        border-radius: 4px;
+        background-color: midnightblue;
+    }
+
+    .custom-fruit {
+        border-top: 1px solid gray;
+        background-color: darkslateblue;
+    }
+
+    .custom-veg {
+        font-size: 18px;
+        text-decoration: overline underline line-through;
+    }
+
+    .custom-label {
+        color: darkred;
+        font-size: 12px;
+    }
+
+    .custom-text {
+        color: darkblue;
+        font-size: 16px;
+    }
+</style>
+
+<BitDropdown Label=""Styled Dropdown""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"" />
+
+<BitDropdown Label=""Classed Dropdown""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             Class=""custom-class"" />
+
+
+
+<BitDropdown Items=""GetStyleClassItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"" />
+
+
+
+<BitDropdown Label=""Styles""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"" />
+
+<BitDropdown Label=""Classes""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"" />";
     private readonly string example2CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -72,6 +113,20 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Broccoli"", Value = ""v-bro"" },
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private List<BitDropdownItem<string>> GetStyleClassItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""background-color:darkred"" },
+    new() { Text = ""Apple"", Value = ""f-app"", Class = ""custom-fruit"" },
+    new() { Text = ""Banana"", Value = ""f-ban"", Class = ""custom-fruit"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false, Class = ""custom-fruit"" },
+    new() { Text = ""Grape"", Value = ""f-gra"", Class = ""custom-fruit"" },
+    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding:5px; background:darkgreen"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""background-color:darkblue"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", Class = ""custom-veg"" },
+    new() { Text = ""Carrot"", Value = ""v-car"", Class = ""custom-veg"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
 };";
 
     private readonly string example3HtmlCode = @"

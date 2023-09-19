@@ -9,12 +9,14 @@ public partial class _BitDropdownCustomDemo
     private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new() 
     {
         AriaLabel = { Selector = c => c.Label },
+        Class = { Selector = c => c.CssClass },
         Id = { Selector = c => c.Key },
         Data = { Selector = c => c.Payload },
         IsEnabled = { Selector = c => c.Disabled is false },
         IsHidden = { Selector = c => c.Visible is false },
         IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
         ItemType = { Selector = c => c.Type },
+        Style = { Selector = c => c.CssStyle },
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
@@ -62,6 +64,19 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "کاهو", Value = "v-let" }
     };
     private ICollection<BitDropdownCustom>? dropDirectionCustoms;
+    private List<BitDropdownCustom> GetStyleClassCustoms() => new()
+    {
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits", CssStyle = "background-color:darkred" },
+        new() { Text = "Apple", Value = "f-app", CssClass = "custom-fruit" },
+        new() { Text = "Banana", Value = "f-ban", CssClass = "custom-fruit" },
+        new() { Text = "Orange", Value = "f-ora", Disabled = true, CssClass = "custom-fruit" },
+        new() { Text = "Grape", Value = "f-gra", CssClass = "custom-fruit" },
+        new() { Type = BitDropdownItemType.Divider, CssStyle = "padding:5px; background:darkgreen" },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables", CssStyle = "background-color:darkblue" },
+        new() { Text = "Broccoli", Value = "v-bro", CssClass = "custom-veg" },
+        new() { Text = "Carrot", Value = "v-car", CssClass = "custom-veg" },
+        new() { Text = "Lettuce", Value = "v-let", CssClass = "custom-veg" }
+    };
 
 
 
