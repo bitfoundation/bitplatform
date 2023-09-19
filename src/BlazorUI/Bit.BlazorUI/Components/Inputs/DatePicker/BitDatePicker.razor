@@ -191,21 +191,21 @@
 
                         @if (ShowTimePicker)
                         {
-                            <div class="bit-dtp-time-grp">
+                            <div class="bit-dtp-tgrp">
                                 <div class="bit-dtp-time-wrp">
                                     <input @ref="_inputTimeHourRef"
-                                           @bind="@_timeHour"
+                                           @bind="@_timeHourView"
                                            @bind:event="oninput"
                                            @onfocus="HandleOnTimeHourFocus"
                                            min="0"
-                                           max="23"
+                                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                            type="number"
                                            inputmode="numeric"
                                            class="bit-dtp-tinp"
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                     <span class="bit-dtp-tdiv">:</span>
                                     <input @ref="_inputTimeMinuteRef"
-                                           @bind="@_timeMinute"
+                                           @bind="@_timeMinuteView"
                                            @bind:event="oninput"
                                            @onfocus="HandleOnTimeMinuteFocus"
                                            min="0"
@@ -215,6 +215,24 @@
                                            class="bit-dtp-tinp"
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                 </div>
+
+                                @if (TimeFormat == BitTimeFormat.TwelveHours)
+                                {
+                                    <div class="bit-dtp-ampm-ctn">
+                                        <button @onclick="ToggleTimeAmPm"
+                                                type="button"
+                                                class="bit-dtp-ampm-btn"
+                                                disabled="@(_timeHour < 12)">
+                                            @Culture.DateTimeFormat.AMDesignator
+                                        </button>
+                                        <button @onclick="ToggleTimeAmPm"
+                                                type="button"
+                                                class="bit-dtp-ampm-btn"
+                                                disabled="@(_timeHour >= 12)">
+                                            @Culture.DateTimeFormat.PMDesignator
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         }
                     </div>
@@ -357,7 +375,7 @@
                         {
                             <button @onclick="HandleGoToToday"
                                     type="button"
-                                    class="bit-dtp-gtd-btn"
+                                    class="bit-dtp-gtd-btn bit-dtp-gtd-btn-bs"
                                     disabled="@IsGoTodayDisabled()">
                                 @GoToToday
                             </button>
