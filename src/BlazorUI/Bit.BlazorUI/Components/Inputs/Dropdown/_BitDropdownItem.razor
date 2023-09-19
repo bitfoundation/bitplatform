@@ -24,7 +24,7 @@
     {
         @if (Dropdown.IsMultiSelect)
         {
-            <div style="@(isHidden ? "display: none" : string.Empty) @Dropdown.Styles?.ItemWrapper"
+            <div style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
                  class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
                 <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
                         id="@id"
