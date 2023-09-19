@@ -8,6 +8,11 @@ public class BitDropdownItem<TValue>
     public string? AriaLabel { get; set; }
 
     /// <summary>
+    /// Custom CSS class for the dropdown item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
     /// The id for the dropdown item.
     /// </summary>
     public string? Id { get; set; }
@@ -36,6 +41,11 @@ public class BitDropdownItem<TValue>
     /// The type of the dropdown item.
     /// </summary>
     public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;
+
+    /// <summary>
+    /// Custom CSS style for the dropdown item.
+    /// </summary>
+    public string? Style { get; set; }
 
     /// <summary>
     /// The text to render for the dropdown item.

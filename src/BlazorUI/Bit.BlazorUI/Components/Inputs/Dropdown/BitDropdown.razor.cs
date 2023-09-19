@@ -63,6 +63,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitDropdown.
+    /// </summary>
+    [Parameter] public BitDropdownClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The default key value that will be initially used to set selected item if the Value parameter is not set.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
@@ -290,6 +295,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// Shows the SearchBox element in the callout.
     /// </summary>
     [Parameter] public bool ShowSearchBox { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitDropdown.
+    /// </summary>
+    [Parameter] public BitDropdownClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The title to show when the mouse hovers over the dropdown.
@@ -558,6 +568,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     protected override string RootElementClass => "bit-drp";
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
 
         ClassBuilder.Register(() => IsResponsive ? $"{RootElementClass}-rsp" : string.Empty);
@@ -565,6 +577,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
 
         ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        ClassBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
@@ -948,6 +965,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
 
+    internal string? GetClass(TItem item)
+    {
+        if (item is BitDropdownItem<TValue> dropdownItem)
+        {
+            return dropdownItem.Class;
+        }
+
+        if (item is BitDropdownOption<TValue> dropdownOption)
+        {
+            return dropdownOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
+    }
+
     internal string? GetId(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
@@ -1078,6 +1117,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         }
 
         return item.GetValueFromProperty<BitDropdownItemType>(NameSelectors.ItemType.Name);
+    }
+
+    internal string? GetStyle(TItem item)
+    {
+        if (item is BitDropdownItem<TValue> dropdownItem)
+        {
+            return dropdownItem.Style;
+        }
+
+        if (item is BitDropdownOption<TValue> dropdownOption)
+        {
+            return dropdownOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
     internal string? GetText(TItem? item)

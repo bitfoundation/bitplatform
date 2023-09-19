@@ -21,7 +21,7 @@
     }
     else if (Label.HasValue())
     {
-        <label class="bit-drp-lbl" id="@_labelId">
+        <label style="@Styles?.Label" class="bit-drp-lbl @Classes?.Label" id="@_labelId">
             @Label
         </label>
     }
@@ -30,7 +30,8 @@
          title="@Title"
          role="combobox"
          id="@_dropdownId"
-         class="bit-drp-wrp"
+         style="@Styles?.Container"
+         class="bit-drp-wrp @Classes?.Container"
          tabindex=@(IsEnabled ? 0 : -1)
          aria-haspopup="listbox"
          aria-required="@IsRequired"
@@ -39,8 +40,9 @@
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-controls="@(IsOpen ? _calloutId : null)">
 
-        <span class="bit-drp-tcn"
-              id="@_dropdownTextContainerId"
+        <span id="@_dropdownTextContainerId"
+              style="@Styles?.TextContainer"
+              class="bit-drp-tcn @Classes?.TextContainer"
               aria-live="polite"
               aria-atomic="true"
               aria-invalid="false">
@@ -71,7 +73,10 @@
 
         @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
         {
-            <button type="button" @onclick:stopPropagation @onclick="Clear" class="bit-drp-icn bit-drp-clr">
+            <button @onclick="Clear" @onclick:stopPropagation
+                    type="button"
+                    style="@Styles?.ClearButton"
+                    class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
                 <i class="bit-icon bit-icon--Cancel" />
             </button>
         }
@@ -83,37 +88,50 @@
             }
             else
             {
-                <i class="bit-icon bit-icon--@CaretDownIconName" aria-hidden="true" />
+                <i aria-hidden="true"
+                   style="@Styles?.CaretDownIcon"
+                   class="bit-icon bit-icon--@CaretDownIconName @Classes?.CaretDownIcon" />
             }
         </span>
     </div>
 
     <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none");"
-         class="bit-drp-ovl"></div>
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-drp-ovl @Classes?.Overlay"></div>
 
-    <div class="bit-drp-cal" id="@_calloutId" tabindex="0" role="listbox" aria-labelledby="@_labelId">
+    <div id="@_calloutId"
+         tabindex="0"
+         role="listbox"
+         style="@Styles?.Callout"
+         class="bit-drp-cal @Classes?.Callout"
+         aria-labelledby="@_labelId">
         @if (IsResponsive)
         {
-            <div class="bit-drp-rlc">
+            <div style="@Styles?.ResponsiveLabelContainer"
+                 class="bit-drp-rlc @Classes?.ResponsiveLabelContainer">
                 @if (LabelTemplate is not null)
                 {
                     @LabelTemplate
                 }
                 else if (Label.HasValue())
                 {
-                    <label class="bit-drp-lbl">@Label</label>
+                    <label style="@Styles?.ResponsiveLabel"
+                           class="bit-drp-lbl @Classes?.ResponsiveLabel">
+                        @Label
+                    </label>
                 }
 
                 <button @onclick="CloseCallout"
-                        class="bit-drp-cls"
                         type="button"
+                        title="Close"
                         aria-label="Close"
-                        aria-describedby="Close"
                         aria-hidden="Close"
-                        title="Close">
+                        aria-describedby="Close"
+                        style="@Styles?.ResponsiveCloseButton"
+                        class="bit-drp-cls @Classes?.ResponsiveCloseButton">
                     <span>
-                        <i class="bit-icon bit-icon--Cancel" />
+                        <i style="@Styles?.ResponsiveCloseIcon"
+                           class="bit-icon bit-icon--Cancel @Classes?.ResponsiveCloseIcon" />
                     </span>
                 </button>
             </div>
@@ -121,29 +139,39 @@
 
         @if (ShowSearchBox)
         {
-            <div class="@GetSearchBoxClasses()">
-                <div class="bit-drp-sic" aria-hidden="true">
-                    <i class="bit-icon bit-icon--Search" aria-hidden="true" />
+            <div style="@Styles?.SearchBoxContainer"
+                 class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
+                <div aria-hidden="true"
+                     style="@Styles?.SearchBoxIconContainer"
+                     class="bit-drp-sic @Classes?.SearchBoxIconContainer">
+                    <i aria-hidden="true"
+                       style="@Styles?.SearchBoxIcon"
+                       class="bit-icon bit-icon--Search @Classes?.SearchBoxIcon" />
                 </div>
                 <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
                        type="text"
                        role="searchbox"
-                       class="bit-drp-sin"
                        value="@_searchText"
                        aria-label="Search text"
-                       placeholder="@SearchBoxPlaceholder" />
+                       placeholder="@SearchBoxPlaceholder"
+                       style="@Styles?.SearchBoxInput"
+                       class="bit-drp-sin @Classes?.SearchBoxInput" />
 
                 @if (_searchText.HasValue())
                 {
-                    <div class="bit-drp-sbcc">
+                    <div style="@Styles?.SearchBoxClearButtonContainer"
+                         class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
                         <button @onclick="HandleSearchBoxOnClear"
                                 type="button"
-                                class="bit-drp-sbc"
+                                style="@Styles?.SearchBoxClearButton"
+                                class="bit-drp-sbc @Classes?.SearchBoxClearButton"
                                 aria-hidden="true"
                                 aria-label="Clear text"
                                 disabled="@(_searchText.HasNoValue())">
                             <span>
-                                <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+                                <i aria-hidden="true"
+                                   style="@Styles?.SearchBoxClearIcon"
+                                   class="bit-icon bit-icon--Cancel @Classes?.SearchBoxClearIcon" />
                             </span>
                         </button>
                     </div>
@@ -151,7 +179,9 @@
             </div>
         }
 
-        <div id="@_scrollContainerId" class="bit-drp-scn">
+        <div id="@_scrollContainerId"
+             style="@Styles?.ScrollContainer"
+             class="bit-drp-scn @Classes?.ScrollContainer">
             @if (Virtualize)
             {
                 if (ItemsProvider is null)

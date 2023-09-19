@@ -559,11 +559,12 @@
     }
 }
 
-.bit-dtp-time-grp {
+.bit-dtp-tgrp {
     display: flex;
     align-items: center;
     justify-content: center;
     padding-bottom: spacing(0.5);
+    gap: spacing(1);
 }
 
 .bit-dtp-time-wrp {
@@ -577,6 +578,36 @@
     &:focus {
         outline: none;
         border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-dtp-ampm-ctn {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-dtp-ampm-btn {
+    border: none;
+    overflow: visible;
+    outline: transparent;
+    padding: 0;
+    font-size: spacing(1.5);
+    box-sizing: content-box;
+    background-color: transparent;
+    color: $color-foreground-primary;
+    margin: 0;
+
+    @media (hover: hover) {
+        &:hover {
+            cursor: pointer;
+            background-color: transparent;
+            color: $color-action-hover-primary;
+        }
+    }
+
+    &:disabled {
+        pointer-events: none;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -614,7 +645,6 @@
     position: relative;
     outline: transparent;
     align-self: flex-end;
-    bottom: spacing(-1.5);
     height: spacing(3.75);
     padding: 0 spacing(0.5);
     font-size: spacing(1.5);
@@ -623,6 +653,10 @@
     background-color: transparent;
     color: $color-foreground-primary;
     margin: spacing(0.375) spacing(0.5) 0 0;
+
+    &.bit-dtp-gtd-btn-bs {
+        bottom: spacing(-1.5);
+    }
 
     @media (hover: hover) {
         &:hover {

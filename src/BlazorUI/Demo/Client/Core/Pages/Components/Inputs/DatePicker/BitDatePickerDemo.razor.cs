@@ -273,6 +273,15 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Show time picker for select times.",
+        },
+        new()
+        {
+            Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            LinkType = LinkType.Link,
+            Href = "#time-format-enum",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "Time format of the time pickers, 24H or 12H"
         }
     };
 
@@ -323,6 +332,27 @@ public partial class BitDatePickerDemo
                     Name = "Right",
                     Description = "Show the icon at the right side.",
                     Value = "1",
+                }
+            }
+        },
+        new()
+        {
+            Id = "time-format-enum",
+            Name = "BitTimeFormat",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "TwentyFourHours",
+                    Description="Show time pickers in 24 hours format.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "TwelveHours",
+                    Description="Show time pickers in 12 hours format.",
+                    Value="1",
                 }
             }
         }
@@ -609,8 +639,17 @@ private FormValidationDatePickerModel formValidationDatePickerModel = new();";
 
     private readonly string example15HtmlCode = @"
 <BitDatePicker @bind-Value=""@selectedDateTime""
+               Label=""Time format 24 hours""
                Style=""max-width: 350px""
                ShowTimePicker=""true""
+               AriaLabel=""Select a date""
+               Placeholder=""Select a date..."" />
+
+<BitDatePicker @bind-Value=""@selectedDateTime""
+               Label=""Time format 12 hours""
+               Style=""max-width: 350px""
+               ShowTimePicker=""true""
+               TimeFormat=""BitTimeFormat.TwelveHours""
                AriaLabel=""Select a date""
                Placeholder=""Select a date..."" />";
     private readonly string example15CsharpCode = @"

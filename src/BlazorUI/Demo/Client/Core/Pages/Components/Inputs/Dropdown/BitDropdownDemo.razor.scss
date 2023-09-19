@@ -6,18 +6,44 @@
     .example-content {
         display: flex;
         gap: rem2(20px);
-        width: rem2(304px);
         flex-flow: row wrap;
         align-items: center;
+        max-width: rem2(304px);
 
         &.column {
             flex-direction: column;
-            align-items: flex-start; 
+            align-items: flex-start;
         }
 
         & > div {
             width: 100%;
         }
+    }
+
+    .custom-class {
+        padding: 1rem;
+        border-radius: 4px;
+        background-color: midnightblue;
+    }
+
+    .custom-fruit {
+        border-top: 1px solid gray;
+        background-color: darkslateblue;
+    }
+
+    .custom-veg {
+        font-size: 18px;
+        text-decoration: overline underline line-through;
+    }
+
+    .custom-label {
+        color: darkred;
+        font-size: 12px;
+    }
+
+    .custom-text {
+        color: darkblue;
+        font-size: 16px;
     }
 
     .validation-message {

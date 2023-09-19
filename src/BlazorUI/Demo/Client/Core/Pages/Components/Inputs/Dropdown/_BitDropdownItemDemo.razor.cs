@@ -47,6 +47,19 @@ public partial class _BitDropdownItemDemo
         new() { Text = "کاهو", Value = "v-let" }
     };
     private ICollection<BitDropdownItem<string>>? dropDirectionItems;
+    private List<BitDropdownItem<string>> GetStyleClassItems() => new()
+    {
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "background-color:darkred" },
+        new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
+        new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
+        new() { Text = "Orange", Value = "f-ora", IsEnabled = false, Class = "custom-fruit" },
+        new() { Text = "Grape", Value = "f-gra", Class = "custom-fruit" },
+        new() { ItemType = BitDropdownItemType.Divider, Style = "padding:5px; background:darkgreen" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables", Style = "background-color:darkblue" },
+        new() { Text = "Broccoli", Value = "v-bro", Class = "custom-veg" },
+        new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
+        new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
+    };
 
 
 
