@@ -37,9 +37,9 @@
                 <div class="sort-drp-container">
                     <BitDropdown Class="sort-todo-drp"
                                  Items="_sortItems"
-                                 OnSelectItem="SortTodoItems"
+                                 OnSelectItem="(BitDropdownItem<string> item) => SortTodoItems(item)"
                                  DefaultValue="@_sortItems[0].Value"
-                                 IsResponsiveModeEnabled="true">
+                                 IsResponsive="true">
                         <CaretDownTemplate>
                             <BitIcon IconName="@BitIconName.Sort" Class="sort-todo-icn" />
                         </CaretDownTemplate>
