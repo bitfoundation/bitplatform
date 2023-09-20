@@ -29,8 +29,8 @@
         {
             <BitDropdown @bind-Value="SelectedCulture"
                          Class="culture-drp"
-                         Items="GetCultures()"
-                         OnSelectItem="(BitDropdownItem<string> item) => WrapHandled(OnCultureChanged)" />
+                         Items="_cultures"
+                         OnSelectItem="(BitDropdownItem<string> item) => OnCultureChanged()" />
         }
         <div class="footer-contact">info@bitplatform.dev</div>
         <div class="footer-copyright">Made with <span class="text--red">♥</span> by bit platform</div>

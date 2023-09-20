@@ -6,6 +6,17 @@ public partial class Footer
     [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
+    private BitDropdownItem<string>[] _cultures = default!;
+
+    protected override Task OnInitAsync()
+    {
+        _cultures = CultureInfoManager.SupportedCultures
+                                      .Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name })
+                                      .ToArray();
+        return base.OnInitAsync();
+    }
+
+
 #if MultilingualEnabled
     protected async override Task OnAfterFirstRenderAsync()
     {
@@ -36,9 +47,6 @@ public partial class Footer
 
         NavigationManager.ForceReload();
     }
-
-    private static List<BitDropdownItem<string>> GetCultures() =>
-        CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name }).ToList();
 
     private async Task ToggleTheme()
     {

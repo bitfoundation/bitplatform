@@ -4,6 +4,16 @@ namespace AdminPanel.Client.Core.Shared;
 
 public partial class Footer
 {
+    private BitDropdownItem<string>[] _cultures = default!;
+
+    protected override Task OnInitAsync()
+    {
+        _cultures = CultureInfoManager.SupportedCultures
+                                      .Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name })
+                                      .ToArray();
+        return base.OnInitAsync();
+    }
+
 #if MultilingualEnabled
 
     protected async override Task OnAfterFirstRenderAsync()
@@ -34,10 +44,5 @@ public partial class Footer
 #endif
 
         NavigationManager.ForceReload();
-    }
-
-    private static List<BitDropdownItem<string>> GetCultures()
-    {
-        return CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name }).ToList();
     }
 }
