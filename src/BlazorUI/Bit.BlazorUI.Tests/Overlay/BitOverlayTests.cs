@@ -6,8 +6,9 @@ namespace Bit.BlazorUI.Tests.Overlay;
 [TestClass]
 public class BitOverlayTests : BunitTestContext
 {
+
     [TestMethod]
-    public void GivenEmptyComponent_ShouldRenderMarkupCorrectly()
+    public void BitOverlayInitialTest()
     {
         var com = RenderComponent<BitOverlay>();
         var element = com.Find(".bit-ovl");
@@ -17,11 +18,12 @@ public class BitOverlayTests : BunitTestContext
     }
 
     [TestMethod]
-    public void GivenIsVisible_ShouldHasProperClass()
+    public void BitOverlayIsVisibleTest()
     {
+        var isVisible = true;
         var com = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Add(p => p.IsVisible, true);
+            parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
         });
 
         var element = com.Find(".bit-ovl");
@@ -30,7 +32,7 @@ public class BitOverlayTests : BunitTestContext
     }
 
     [TestMethod]
-    public void GivenClickOnVisibleComponent_ShouldInVisibleComponent()
+    public void BitOverlayAutoCloseTest()
     {
         var isVisible = true;
         var com = RenderComponent<BitOverlay>(parameters =>
@@ -46,7 +48,7 @@ public class BitOverlayTests : BunitTestContext
     }
 
     [TestMethod]
-    public void GivenClickOnVisibleDisabledAutoCloseComponent_ShouldntInVisibleComponent()
+    public void BitOverlayDisabledAutoCloseTest()
     {
         var isVisible = true;
         var com = RenderComponent<BitOverlay>(parameters =>
@@ -62,9 +64,8 @@ public class BitOverlayTests : BunitTestContext
         Assert.IsTrue(element.ClassList.Contains("bit-ovl-vis"));
     }
 
-
     [TestMethod]
-    public void GivenAbsoluteTrue_ShouldHasProperClass()
+    public void BitOverlayAbsolutePositionTest()
     {
         var com = RenderComponent<BitOverlay>(parameters =>
         {
@@ -76,18 +77,22 @@ public class BitOverlayTests : BunitTestContext
         Assert.IsTrue(element.ClassList.Contains("bit-ovl-abs"));
     }
 
-    //AutoToggleScroll must test
-
     [TestMethod]
-    public void GivenAutoToggleScrollTrue_ShouldHasBodyWithOverflowHidden()
+    public void BitOverlayAutoToggleScrollTest()
     {
-        // var com = RenderComponent<BitOverlayWrappedByBody>();
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        // var body = com.Find("body");
+        var isVisible = true;
+        var com = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
+        });
 
-        // var bodyStyle = body.GetAttribute("style");
+        var element = com.Find(".bit-ovl");
+        element.Click();
 
-        // Assert.IsTrue(bodyStyle.Contains("overflow: hidden"));
+        //AutoToggleScroll is false by default so it should invoke "BitOverlay.toggleScroll" once and then once again on closing component
+        Context.JSInterop.VerifyInvoke("BitOverlay.toggleScroll", 2);
     }
 
 }
