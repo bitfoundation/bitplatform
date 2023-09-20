@@ -114,7 +114,7 @@ public partial class _BitChartBarDemo
 
 
 
-    private readonly string htmlCode = @"
+    private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
 <div>
