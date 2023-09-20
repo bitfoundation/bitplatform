@@ -2,7 +2,7 @@
 
 public partial class _BitDropdownCustomDemo
 {
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -62,7 +62,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -183,7 +183,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitDropdown @bind-Value=""controlledValue""
              Label=""Single select""
              Items=""GetBasicCustoms()""
@@ -244,7 +244,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -366,7 +366,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -415,7 +415,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitDropdown Label=""Single select & auto foucs""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -474,7 +474,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""virtualizeCustoms1""
              NameSelectors=""nameSelectors""
@@ -585,7 +585,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownCustom>> LoadI
     }
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
@@ -641,7 +641,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitDropdown Label=""Auto""
              Items=""dropDirectionCustoms""
              NameSelectors=""nameSelectors""
@@ -677,7 +677,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
              Label=""Single select dropdown""
              Items=""GetBasicCustoms()""
@@ -741,7 +741,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>

@@ -175,12 +175,12 @@ public partial class BitActionButtonDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
 
 <BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user (Disabled)</BitActionButton>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-action-button {
         color: #111;
@@ -199,14 +199,14 @@ public partial class BitActionButtonDemo
     Classed Action Button
 </BitActionButton>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitVisibility.Visible"">Visible Action Button</BitActionButton> ]
 
 Hidden: [ <BitActionButton Visibility=""BitVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
 
 Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
     Action Button with AriaDescription
 </BitActionButton>
@@ -215,7 +215,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     Action Button with AriaHidden
 </BitActionButton>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
     Open Bit Platform In New Tab
 </BitActionButton>
@@ -224,7 +224,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     Go To Bit Platform
 </BitActionButton>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-btn-ctn {
         gap: 0.5rem;
@@ -239,7 +239,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     </div>
 </BitActionButton>";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -296,7 +296,7 @@ private void HandleInvalidSubmit()
     formIsValidSubmit = false;
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         gap: 5px;

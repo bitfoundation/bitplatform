@@ -153,7 +153,7 @@ public partial class _BitSplitButtonCustomDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitSplitButton Items=""basicCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
                                          Key = { Name = nameof(SplitActionItem.Id) },
@@ -200,7 +200,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""basicCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
@@ -243,7 +243,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""disabledCustomItems""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },
@@ -287,7 +287,7 @@ private List<SplitActionItem> disabledCustomItems = new()
     }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""basicCustomItems""
                 OnClick=""(SplitActionItem item) => example41SelectedItem = item""
@@ -364,7 +364,7 @@ protected override void OnInitialized()
     itemsOnClick.ForEach(i => i.Clicked = onClick);
 }";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -482,7 +482,7 @@ private List<SplitActionItem> itemStyleClassCustoms = new()
     }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 Visible: [ <BitSplitButton Visibility=""BitVisibility.Visible""
                            Items=""basicCustomItems""
                            NameSelectors=""@(new() { Text = { Name = nameof(SplitActionItem.Name) },
@@ -530,7 +530,7 @@ private List<SplitActionItem> basicCustomItems = new()
     }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -652,7 +652,7 @@ private List<SplitActionItem> itemTemplateCustoms2 = new()
     }
 };";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitSplitButton Items=""basicCustomItems""
                 DefaultSelectedItem=""basicCustomItems[1]""
                 NameSelectors=""@(new() { IconName = { Name = nameof(SplitActionItem.Icon) },

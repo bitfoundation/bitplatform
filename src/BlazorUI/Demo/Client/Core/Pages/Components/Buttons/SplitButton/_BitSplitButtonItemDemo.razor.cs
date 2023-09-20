@@ -153,7 +153,7 @@ public partial class _BitSplitButtonItemDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitSplitButton Items=""basicItems"" />
     
 <BitSplitButton Items=""basicItems"" ButtonStyle=""BitButtonStyle.Standard"" />
@@ -182,7 +182,7 @@ private List<BitSplitButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitSplitButton IsSticky=""true"" Items=""basicItems"" />
         
 <BitSplitButton IsSticky=""true"" Items=""basicItems"" ButtonStyle=""BitButtonStyle.Standard"" />";
@@ -209,7 +209,7 @@ private List<BitSplitButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitSplitButton Items=""disabledItems"" IsSticky=""true"" />
         
 <BitSplitButton Items=""disabledItems"" ButtonStyle=""BitButtonStyle.Standard"" />";
@@ -237,7 +237,7 @@ private List<BitSplitButtonItem> disabledItems = new()
     }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitSplitButton IsSticky=""true""
                 Items=""basicItems""
                 OnClick=""(BitSplitButtonItem item) => example41SelectedItem = item"" />
@@ -313,7 +313,7 @@ protected override void OnInitialized()
     itemsOnClick.ForEach(i => i.OnClick = onClick);
 }";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -402,7 +402,7 @@ private List<BitSplitButtonItem> itemStyleClassItems = new()
     }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 Visible: [ <BitSplitButton Visibility=""BitVisibility.Visible"" Items=""basicItems"" /> ]
 
 Hidden: [ <BitSplitButton Visibility=""BitVisibility.Hidden"" Items=""basicItems"" /> ]
@@ -431,7 +431,7 @@ private List<BitSplitButtonItem> basicItems = new()
     }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .item-template-box {
         gap: 6px;
@@ -530,7 +530,7 @@ private List<BitSplitButtonItem> itemTemplateItems2 = new()
     }
 };";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitSplitButton Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
 
       

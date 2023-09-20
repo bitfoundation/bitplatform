@@ -339,7 +339,7 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     };
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <style scoped>
     .grid {
         width: 100%;
@@ -570,7 +570,7 @@ public class MedalsModel
 }
 ";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 
@@ -807,7 +807,7 @@ public class Openfda
 }
 ";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager

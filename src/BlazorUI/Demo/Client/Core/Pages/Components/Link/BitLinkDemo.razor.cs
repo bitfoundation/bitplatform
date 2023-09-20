@@ -42,12 +42,12 @@ public partial class BitLinkDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled Link</BitLink>
 ";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 0 0.5rem;
@@ -59,16 +59,16 @@ public partial class BitLinkDemo
 <BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_parent"">Parent target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_self"">Self target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>";
     private readonly string example5CsharpCode = @"
 [Inject] private NavigationManager Navigation { get; set; } = default!;
@@ -80,12 +80,12 @@ private void LinkOnClick()
     Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
 }";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 Visible: [ <BitLink Visibility=""BitVisibility.Visible"">Visible Link</BitLink> ]
 Hidden: [ <BitLink Visibility=""BitVisibility.Hidden"">Hidden Link</BitLink> ]
 Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</BitLink> ]";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitLink Style=""scroll-margin: 70px"" id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit

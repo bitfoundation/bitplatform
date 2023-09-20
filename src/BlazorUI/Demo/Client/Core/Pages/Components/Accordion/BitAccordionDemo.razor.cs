@@ -62,7 +62,7 @@ public partial class BitAccordionDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitAccordion Title=""Accordion 1"">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
 </BitAccordion>
@@ -77,7 +77,7 @@ public partial class BitAccordionDemo
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
 </BitAccordion>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitAccordion Title=""General settings"" Description=""I am an accordion"">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
 </BitAccordion>
@@ -94,7 +94,7 @@ public partial class BitAccordionDemo
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae.
 </BitAccordion>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitAccordion Title=""General settings""
               Description=""I am an accordion""
               OnClick=""() => controlledAccordionExpandedItem = 1""
@@ -118,7 +118,7 @@ public partial class BitAccordionDemo
     private readonly string example3CsharpCode = @"
 private byte controlledAccordionExpandedItem = 1;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" Style=""margin-right: 10px;"" />
 <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Expanded"" OffText=""Collapsed"" />
 
@@ -132,7 +132,7 @@ private byte controlledAccordionExpandedItem = 1;";
 private bool AccordionToggleIsEnabled;
 private bool AccordionToggleIsExpanded;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-header {
         flex-grow: 1;
