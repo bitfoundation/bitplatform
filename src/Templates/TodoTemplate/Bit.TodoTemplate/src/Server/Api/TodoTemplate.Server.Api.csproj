@@ -89,6 +89,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Include=".config\dotnet-tools.json" />
         <Compile Update="**\*.Designer.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
