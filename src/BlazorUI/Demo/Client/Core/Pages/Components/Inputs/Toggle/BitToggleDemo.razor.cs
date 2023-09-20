@@ -6,6 +6,15 @@ public partial class BitToggleDemo
     {
         new()
         {
+            Name = "Classes",
+            Type = "BittoggleClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#toggle-class-styles",
+            Description = "Custom CSS classes for different parts of the BitToggle.",
+        },
+        new()
+        {
             Name = "DefaultText",
             Type = "string?",
             DefaultValue = "null",
@@ -59,11 +68,81 @@ public partial class BitToggleDemo
             DefaultValue = "switch",
             Description = "Denotes role of the toggle, default is switch.",
         },
+        new()
+        {
+            Name = "Styles",
+            Type = "BittoggleClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#toggle-class-styles",
+            Description = "Custom CSS styles for different parts of the BitToggle.",
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "toggle-class-styles",
+            Title = "BitToggleClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button of the toggle."
+                },
+                new()
+                {
+                    Name = "Checked",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the checked state of the toggle."
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the toggle."
+                },
+                new()
+                {
+                    Name = "Thumb",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the thumb of the toggle."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the label of the toggle."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toggle's root element."
+                },
+                new()
+                {
+                    Name = "Text",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text of the toggle."
+                }
+            }
+        }
     };
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
 
 <BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />";
@@ -71,7 +150,7 @@ public partial class BitToggleDemo
 private bool BasicValue;
 private bool DisabledValue;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
@@ -82,7 +161,7 @@ private bool OnTextValue;
 private bool InLineLabelValue;
 private bool DefaultTextValue;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitToggle @bind-Value=""LabelTemplateValue"">
     <LabelTemplate>
         <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
@@ -92,7 +171,7 @@ private bool DefaultTextValue;";
     private readonly string example3CsharpCode = @"
 private bool LabelTemplateValue;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""On"" OffText=""Off"" />
 <BitToggleButton @bind-IsChecked=""OneWayValue"" OnText=""On"" OffText=""Off"" />
 
@@ -102,7 +181,68 @@ private bool LabelTemplateValue;";
 private bool OneWayValue;
 private bool TwoWayValue;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
+<style>
+    .custom-class {
+        width: max-content;
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-text {
+        color: lightskyblue;
+        text-shadow: 0 0 0.5rem red;
+    }
+
+    .custom-button {
+        border-radius: 1rem;
+        background-color: darkslategray;
+    }
+
+    .custom-check .custom-button {
+        border-radius: 1rem;
+        background-color: red;
+    }
+
+    .custom-check .custom-text {
+        color: rebeccapurple;
+    }
+</style>
+
+<BitToggle @bind-Value=""@StyleValue""
+           DefaultText=""Custom style""
+           Style=""background-color: forestgreen; border-radius: 1rem; padding: 0.5rem;"" />
+<BitToggle @bind-Value=""@ClassValue""
+           DefaultText=""Custom class""
+           Class=""custom-class"" />
+
+<BitToggle @bind-Value=""@StylesValue""
+           Label=""Custom label style""
+           Styles=""@(new() { Root = ""background-color: pink; padding: 0.5rem;"",
+                             Thumb = ""background-color: darkorange;"",
+                             Button = ""border-radius: 0.5rem 0 0.5rem 0;"",
+                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
+<BitToggle @bind-Value=""@ClassesValue""
+           DefaultText=""Custom text class""
+           Classes=""@(new() { Text = ""custom-text"",
+                              Button = ""custom-button"",
+                              Check = ""custom-check"" } )"" />
+";
+    private readonly string example5CsharpCode = @"
+private bool StyleValue;
+private bool ClassValue;
+private bool StylesValue;
+private bool ClassesValue;";
+
+    private readonly string example6RazorCode = @"
+Visible: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" DefaultText=""Visible Toggle"" /> ]
+Hidden: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" DefaultText=""Hidden Toggle"" />  ]
+Collapsed: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" DefaultText=""Collapsed Toggle"" />  ]";
+    private readonly string example6CsharpCode = @"
+private bool VisibilityValue;";
+
+    private readonly string example7RazorCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
@@ -146,7 +286,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example5CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]

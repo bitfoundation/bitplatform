@@ -1,8 +1,8 @@
 ﻿class BitTimePicker {
-    static toggleTimePickerCallout(dotnetObjReference: DotNetObject,
+    static toggleTimePickerCallout(dotnetObj: DotNetObject,
         timePickerId: string,
-        timePickerCalloutId: string,
-        timePickerOverlayId: string,
+        calloutId: string,
+        overlayId: string,
         isOpen: boolean,
         isResponsive: boolean) {
 
@@ -10,20 +10,20 @@
         if (timePicker == null)
             return;
 
-        const timePickerCallout = document.getElementById(timePickerCalloutId);
+        const timePickerCallout = document.getElementById(calloutId);
         if (timePickerCallout == null)
             return;
 
-        const timePickerOverlay = document.getElementById(timePickerOverlayId);
+        const timePickerOverlay = document.getElementById(overlayId);
         if (timePickerOverlay == null)
             return;
 
         if (isOpen) {
             timePickerCallout.style.display = "none";
             timePickerOverlay.style.display = "none";
-            BitCallouts.currentCallout.update("", "", null);
+            BitCallouts.reset();
         } else {
-            BitCallouts.replaceCurrentCallout(timePickerCalloutId, timePickerOverlayId, dotnetObjReference);
+            BitCallouts.replaceCurrent({ calloutId, overlayId, dotnetObj });
             timePickerCallout.style.display = "block";
             timePickerOverlay.style.display = "block";
             const timePickerCalloutHeight = timePickerCallout.offsetHeight;

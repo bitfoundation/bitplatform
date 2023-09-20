@@ -8,8 +8,9 @@
 <ComponentDemo ComponentName="TextField"
                ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic" />
@@ -25,7 +26,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="AutoFocus" HtmlCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="AutoFocus" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." AutoFocus="true" Label="Auto focused" />
@@ -33,7 +34,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsUnderlined" HtmlCode="@example3HtmlCode" Id="example3">
+    <ComponentExampleBox Title="IsUnderlined" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic" IsUnderlined="true" />
@@ -45,7 +46,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="HasBorder" HtmlCode="@example4HtmlCode" Id="example4">
+    <ComponentExampleBox Title="HasBorder" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Basic No Border" HasBorder="false" />
@@ -57,7 +58,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsMultiline" HtmlCode="@example5HtmlCode" Id="example5">
+    <ComponentExampleBox Title="IsMultiline" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text..." Label="Resizable (By default)" IsMultiline="true" />
@@ -69,7 +70,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" HtmlCode="@example6HtmlCode" Id="example6">
+    <ComponentExampleBox Title="Icon" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter an email..." Label="Email Icon" IconName="@BitIconName.EditMail" />
@@ -79,7 +80,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Prefix & Suffix" HtmlCode="@example7HtmlCode" Id="example7">
+    <ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Label="With Prefix" Prefix="https://" />
@@ -93,7 +94,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" HtmlCode="@example8HtmlCode" Id="example8">
+    <ComponentExampleBox Title="Templates" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a text...">
@@ -123,7 +124,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Password types" HtmlCode="@example9HtmlCode" Id="example9">
+    <ComponentExampleBox Title="Password types" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Placeholder="Enter a password..." Label="Password" Type="BitTextFieldType.Password" />
@@ -133,7 +134,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Controlled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -158,7 +159,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsTrimmed" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="IsTrimmed" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-desc">The trim property removes whitespaces from both sides of a string.</div>
             <div class="example-box">
@@ -175,23 +176,48 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" HtmlCode="@example12HtmlCode" Id="example12">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
-            <div class="custom-wrapper">
-                <BitTextField Placeholder="Enter a text..." Label="Custom LabelStyle" LabelStyle="color:green" />
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitTextField Placeholder="Enter a text..." Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;" />
+                    <BitTextField Placeholder="Enter a text..." Class="custom-class" />
+                </div>
                 <br />
-                <BitTextField Placeholder="Enter a text..." Label="Custom LabelClass" LabelClass="custom-label" />
-            </div>
-            <br />
-            <div class="custom-wrapper">
-                <BitTextField Placeholder="Enter a text..." Label="Custom InputStyle" InputStyle="color:red" />
-                <br />
-                <BitTextField Placeholder="Enter a text..." Label="Custom InputClass" InputClass="custom-input" />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitTextField Placeholder="Enter a text..."
+                                  IconName="@BitIconName.Microphone"
+                                  Label="Custom label style"
+                                  Styles="@(new() { Root = "background-color: pink;",
+                                                    Icon = "color: darkorange;",
+                                                    Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
+                                                    Input = "padding: 0.5rem; background-color: goldenrod;"} )" />
+                    <br />
+                    <BitTextField Placeholder="Enter a text..."
+                                  DefaultValue="Custom input class"
+                                  Label="Custom label class"
+                                  Classes="@(new() { FieldGroup = "custom-field",
+                                                     Focused = "custom-focus",
+                                                     Input = "custom-input",
+                                                     Label = "custom-label" } )" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example13HtmlCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitTextField Visibility="BitVisibility.Visible" Placeholder="Visible TextField" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitTextField Visibility="BitVisibility.Hidden" Placeholder="Hidden TextField" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitTextField Visibility="BitVisibility.Collapsed" Placeholder="Collapsed TextField" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <ExamplePreview>
             <div class="example-box">
                 @if (formIsValidSubmit is false)

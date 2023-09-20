@@ -49,6 +49,10 @@
     align-items: center;
     height: spacing(5.5);
     border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+
+    .bit-nav-iit {
+        gap: spacing(1.25);
+    }
 }
 
 .bit-nav-ghd {
@@ -56,12 +60,32 @@
     font-size: spacing(2.25);
 }
 
+.bit-nav-itg {
+    padding: spacing(1) 0;
+}
+
+.bit-nav-iit {
+    display: flex;
+    align-items: center;
+}
+
+.bit-nav-des {
+    font-weight: normal;
+    font-size: spacing(1.5);
+    color: $color-foreground-disabled;
+
+    &.bit-nav-ide {
+        padding-left: spacing(2.75);
+    }
+}
+
 .bit-nav-ict {
     width: 100%;
     display: flex;
-    height: spacing(5.5);
     flex-flow: row nowrap;
     box-sizing: border-box;
+    min-height: spacing(5.5);
+    padding: 0 spacing(1) 0 0;
     border-radius: $shape-border-radius;
 
     button, a {

@@ -2,6 +2,24 @@
 @import '../../../../Styles/abstracts/_colors.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
 
+.example-box {
+    display: flex;
+    gap: rem2(10px);
+    flex-flow: column nowrap;
+
+    &.row {
+        gap: rem2(40px);
+        flex-flow: row wrap;
+        margin-top: rem2(20px);
+    }
+}
+
+.visibility-items {
+    align-items: center;
+    white-space: nowrap;
+    display: inline-flex;
+}
+
 .validation-summary {
     border-left: rem2(5px) solid $Red10;
     background-color: $ErrorBlockRed;
@@ -18,16 +36,16 @@
     .validation-errors {
         margin: rem2(5px);
     }
-}
 
-.example-box {
-    display: flex;
-    gap: rem2(10px);
-    flex-flow: column nowrap;
+    .custom-class {
+        padding: 1rem;
+        max-width: max-content;
+        background-color: lightskyblue;
+    }
 
-    &.row {
-        gap: rem2(40px);
-        flex-flow: row wrap;
-        margin-top: rem2(20px);
+    .custom-input {
+        border-radius: 50%;
+        border: 1px solid red;
+        box-shadow: tomato 0 0 1rem;
     }
 }

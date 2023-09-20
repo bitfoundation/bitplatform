@@ -48,53 +48,63 @@ public partial class BitDatePicker
     private string? _activeDescendantId;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
-    private int timeHour;
-    private int timeMinute;
+    private int _timeHour;
+    private int _timeMinute;
 
-    private int _timeHour
+    private int _timeHourView
     {
         get
         {
-            return timeHour;
+            if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                if (_timeHour > 12)
+                {
+                    return _timeHour - 12;
+                }
+
+                if (_timeHour == 0)
+                {
+                    return 12;
+                }
+            }
+
+            return _timeHour;
         }
         set
         {
             if (value > 23)
             {
-                timeHour = 23;
+                _timeHour = 23;
             }
             else if (value < 0)
             {
-                timeHour = 0;
+                _timeHour = 0;
             }
             else
             {
-                timeHour = value;
+                _timeHour = value;
             }
 
             UpdateTime();
         }
     }
 
-    private int _timeMinute
+    private int _timeMinuteView
     {
-        get
-        {
-            return timeMinute;
-        }
+        get => _timeMinute;
         set
         {
             if (value > 59)
             {
-                timeMinute = 59;
+                _timeMinute = 59;
             }
             else if (value < 0)
             {
-                timeMinute = 0;
+                _timeMinute = 0;
             }
             else
             {
-                timeMinute = value;
+                _timeMinute = value;
             }
 
             UpdateTime();
@@ -326,6 +336,11 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public bool ShowTimePicker { get; set; }
 
+    /// <summary>
+    /// Time format of the time pickers, 24H or 12H.
+    /// </summary>
+    [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
 
     protected override string RootElementClass { get; } = "bit-dtp";
 
@@ -371,8 +386,8 @@ public partial class BitDatePicker
             dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now).DateTime;
         }
 
-        timeHour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        timeMinute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _timeHour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
+        _timeMinute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
 
         CreateMonthCalendar(dateTime);
 
@@ -1016,6 +1031,13 @@ public partial class BitDatePicker
         if (IsEnabled is false || ShowTimePicker is false) return;
 
         await _js.SelectText(_inputTimeMinuteRef);
+    }
+
+    private void ToggleTimeAmPm()
+    {
+        if (IsEnabled is false) return;
+
+        _timeHourView = _timeHour + (_timeHour >= 12 ? -12 : 12);
     }
 
     [JSInvokable("CloseCallout")]

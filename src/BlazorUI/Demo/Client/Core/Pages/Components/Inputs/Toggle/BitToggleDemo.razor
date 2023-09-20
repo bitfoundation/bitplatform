@@ -6,8 +6,9 @@
 
 <ComponentDemo ComponentName="Toggle"
                ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
-               ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle Label="Basic" @bind-Value="BasicValue" />
@@ -17,7 +18,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text & Label" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Text & Label" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle Label="OnText And OffText" @bind-Value="OnTextValue" OnText="On" OffText="Off" />
@@ -29,7 +30,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggle @bind-Value="LabelTemplateValue">
@@ -44,7 +45,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Controlled" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <div style="display:flex; align-items:flex-end">
@@ -60,7 +61,49 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitToggle @bind-Value="@StyleValue"
+                               DefaultText="Custom style"
+                               Style="background-color: forestgreen; border-radius: 1rem; padding: 0.5rem;" />
+                    <BitToggle @bind-Value="@ClassValue"
+                               DefaultText="Custom class"
+                               Class="custom-class" />
+                </div>
+                <br />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitToggle @bind-Value="@StylesValue"
+                               Label="Custom label style"
+                               Styles="@(new() { Root = "background-color: pink; padding: 0.5rem;",
+                                                 Thumb = "background-color: darkorange;",
+                                                 Button = "border-radius: 0.5rem 0 0.5rem 0;",
+                                                 Label = "color: blue; font-weight: 900; font-size: 1.25rem;" } )" />
+                    <br />
+                    <BitToggle @bind-Value="@ClassesValue"
+                               DefaultText="Custom text class"
+                               Classes="@(new() { Text = "custom-text",
+                                                  Button = "custom-button",
+                                                  Checked = "custom-check" } )" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Visible" DefaultText="Visible Toggle" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Hidden" DefaultText="Hidden Toggle" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitToggle @bind-Value="@VisibilityValue" Visibility="BitVisibility.Collapsed" DefaultText="Collapsed Toggle" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -102,6 +145,13 @@
 
     private bool OneWayValue;
     private bool TwoWayValue;
+
+    private bool VisibilityValue;
+
+    private bool StyleValue;
+    private bool ClassValue;
+    private bool StylesValue;
+    private bool ClassesValue;
 
     public BitToggleValidationModel ValidationForm { get; set; } = new();
     private string SuccessMessage = string.Empty;

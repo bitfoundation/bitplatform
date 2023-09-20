@@ -1,4 +1,6 @@
-﻿; (function () {
+﻿window['bit-bup.progress version'] = '5.6.0';
+
+; (function () {
     (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {
         const appEl = document.querySelector(appContainerSelector) as HTMLElement;
         const bupEl = document.getElementById('bit-bup');

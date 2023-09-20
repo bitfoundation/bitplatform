@@ -640,13 +640,46 @@
     }
 }
 
+.bit-dtrp-tgrp-ampm {
+    gap: spacing(1)
+}
+
+.bit-dtrp-ampm-ctn {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-dtrp-ampm-btn {
+    border: none;
+    overflow: visible;
+    outline: transparent;
+    padding: 0;
+    font-size: spacing(1.5);
+    box-sizing: content-box;
+    background-color: transparent;
+    color: $color-foreground-primary;
+    margin: 0;
+
+    @media (hover: hover) {
+        &:hover {
+            cursor: pointer;
+            background-color: transparent;
+            color: $color-action-hover-primary;
+        }
+    }
+
+    &:disabled {
+        pointer-events: none;
+        color: $color-foreground-disabled;
+    }
+}
+
 .bit-dtrp-gtd-btn {
     border: none;
     overflow: visible;
     position: relative;
     outline: transparent;
     align-self: flex-end;
-    bottom: spacing(-1.5);
     height: spacing(3.75);
     padding: 0 spacing(0.5);
     font-size: spacing(1.5);

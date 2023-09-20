@@ -34,12 +34,12 @@
 
             <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
                 <i aria-hidden="true"
-                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon"
-                   style="@Styles?.UnselectedIcon">
+                   style="@Styles?.UnselectedIcon"
+                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon">
                 </i>
                 <i aria-hidden="true"
-                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon"
-                   style=@($"width:{percentage}%; {Styles?.SelectedIcon}")>
+                   style=@($"width:{percentage}%; {Styles?.SelectedIcon}")
+                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon">
                 </i>
             </div>
         </button>

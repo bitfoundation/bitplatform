@@ -55,7 +55,7 @@ public partial class BitColorPickerDemo
     private BitColorPicker ColorPicker;
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitLabel>Rgb</BitLabel>
 <BitColorPicker @bind-Color=""BasicRgbColor"" />
 <span>Color: @BasicRgbColor</span>
@@ -68,7 +68,7 @@ private string BasicRgbColor = ""rgb(255,255,255)"";
 private string BasicHexColor = ""#FFFFFF"";
 ";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
 <span>Color: @AlphaRgbColor</span>
 <span>Alpha: @Alpha</span>";
@@ -77,17 +77,17 @@ private string AlphaRgbColor = ""rgb(255,255,255)"";
 private double Alpha = 1;
 ";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitColorPicker @bind-Color=""TwoWayColor"" ShowPreview=""true"" />
 <BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />";
     private readonly string example4CsharpCode = @"
 private string TwoWayColor = ""#FFFFFF"";
 ";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
 <span>Color (Hex): @ColorValue?.Color</span>
 <span>Alpha: @ColorValue?.Alpha</span>";
@@ -95,7 +95,7 @@ private string TwoWayColor = ""#FFFFFF"";
 private BitColorValue ColorValue;
 ";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
 <span>Color Value: @BoundColor</span>
 <span>Hex: @ColorPicker?.Hex</span>
@@ -107,7 +107,7 @@ private string BoundColor = ""#FFFFFF"";
 private BitColorPicker ColorPicker;
 ";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-color-picker {
         width: 100px;

@@ -47,6 +47,15 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitNumericTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#numerictextfield-class-styles",
+            Description = "Custom CSS classes for different parts of the BitNumericTextField.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "TValue?",
             DefaultValue = "null",
@@ -145,6 +154,18 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves into the input.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves out of the input.",
+        },
+        new()
+        {
             Name = "OnBlur",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when the control loses focus.",
@@ -155,7 +176,7 @@ public partial class BitNumericTextFieldDemo
             Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
             LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
+            Href = "#numerictextfield-change-value"
         },
         new()
         {
@@ -163,7 +184,7 @@ public partial class BitNumericTextFieldDemo
             Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
             LinkType = LinkType.Link,
-            Href = "#Bit-NumericTextField-ChangeValue"
+            Href = "#numerictextfield-change-value"
         },
         new()
         {
@@ -185,6 +206,15 @@ public partial class BitNumericTextFieldDemo
             Type = "TValue?",
             DefaultValue = "null",
             Description = "Difference between two adjacent values of the numeric text field.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitNumericTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#numerictextfield-class-styles",
+            Description = "Custom CSS styles for different parts of the BitNumericTextField.",
         },
         new()
         {
@@ -213,13 +243,14 @@ public partial class BitNumericTextFieldDemo
             Type = "string",
             DefaultValue="The {0} field is not valid.",
             Description = "The message format used for invalid values entered in the input.",
-        },
+        }
     };
+
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
-            Id = "Bit-NumericTextField-ChangeValue",
+            Id = "numerictextfield-change-value",
             Title = "BitNumericTextFieldChangeValue",
             Parameters = new()
             {
@@ -237,10 +268,117 @@ public partial class BitNumericTextFieldDemo
                {
                    Name = "KeyboardEventArgs",
                    Type = "KeyboardEventArgs?",
-               },
+               }
+            }
+        },
+        new()
+        {
+            Id = "numerictextfield-class-styles",
+            Title = "BitNumericTextFieldClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "ButtonsContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's buttons (inecrement and decrement) container."
+                },
+                new()
+                {
+                    Name = "DecrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's decrement button."
+                },
+                new()
+                {
+                    Name = "DecrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon."
+                },
+                new()
+                {
+                    Name = "DecrementIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon container."
+                },
+                new()
+                {
+                    Name = "IncrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's increment button."
+                },
+                new()
+                {
+                    Name = "IncrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's increment icon."
+                },
+                new()
+                {
+                    Name = "IncrementIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's increment icon container."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's label."
+                },
+                new()
+                {
+                    Name = "LabelContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's label container."
+                },
+                new()
+                {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's focus state."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's icon."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's input."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric text field's root element."
+                }
             }
         }
     };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -268,7 +406,7 @@ public partial class BitNumericTextFieldDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitNumericTextField @bind-Value=""BasicValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -283,23 +421,23 @@ public partial class BitNumericTextFieldDemo
 private int BasicValue;
 private int DisabledValue;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitNumericTextField @bind-Value=""LabelTopValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label Top""
-                        LabelPosition=""BitNumericTextFieldLabelPosition.Top""/>
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label Top""
+                     LabelPosition=""BitNumericTextFieldLabelPosition.Top""/>
 
 <BitNumericTextField @bind-Value=""LabelLeftValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label Left""
-                        LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label Left""
+                     LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
     private readonly string example2CsharpCode = @"
 private int LabelTopValue;
 private int LabelLeftValue;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
     <LabelTemplate>
         <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
@@ -309,7 +447,7 @@ private int LabelLeftValue;";
     private readonly string example3CsharpCode = @"
 private int LabelTemplateValue;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitNumericTextField @bind-Value=""SpinArrowValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -325,16 +463,16 @@ private int LabelTemplateValue;";
                      DecrementIconName=""@BitIconName.DislikeSolid"" />
 
 <BitNumericTextField @bind-Value=""LabelAndIconValue""
-                        Placeholder=""Enter a number...""
-                        Step=""@(1)""
-                        Label=""Label & Icon""
-                        IconName=""@BitIconName.Lightbulb"" />";
+                     Placeholder=""Enter a number...""
+                     Step=""@(1)""
+                     Label=""Label & Icon""
+                     IconName=""@BitIconName.Lightbulb"" />";
     private readonly string example4CsharpCode = @"
 private int SpinArrowValue;
 private int LabelAndIconValue;
 private int SpinArrowWithIconValue;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitNumericTextField @bind-Value=""MinMaxValue1""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -360,7 +498,7 @@ private int MinMaxValue1;
 private int MinMaxValue2;
 private decimal MinMaxValue3;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitNumericTextField @bind-Value=""SuffixValue1""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -380,7 +518,7 @@ private decimal MinMaxValue3;";
 private int SuffixValue1;
 private decimal SuffixValue2;";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitNumericTextField Value=""OneWayValue""
                      Placeholder=""Enter a number...""
                      Step=""@(1)""
@@ -397,7 +535,7 @@ private double OneWayValue;
 private double TwoWayValue;
 ";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
                      Placeholder=""Enter a number...""
                      Step=""@(0.1)""
@@ -447,7 +585,75 @@ private void HandleOnChangeEvent(double value)
     OnChangeCounter++;
 }";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
+<style>
+    .custom-class {
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-input {
+        color: darkgreen;
+        font-weight: 900;
+        font-size: 1rem;
+        padding: 1rem;
+        height: 3rem;
+    }
+
+    .custom-focus .custom-label {
+        color: chartreuse;
+    }
+
+    .custom-input-wrapper {
+        height: auto;
+        border-radius: 1rem;
+        background-color: tomato;
+    }
+
+    .custom-focus .custom-input-wrapper::after {
+        border-radius: 1rem;
+        border-width: 0.25rem;
+        border-color: rebeccapurple;
+    }
+</style>
+
+<BitNumericTextField @bind-Value=""@StyleValue""
+                     Placeholder=""Enter a number...""
+                     Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem"" />
+<BitNumericTextField @bind-Value=""@ClassValue""
+                     Placeholder=""Enter a number...""
+                     Class=""custom-class"" />
+
+<BitNumericTextField @bind-Value=""@StylesValue""
+                     Placeholder=""Enter a number...""
+                     Label=""Custom label style""
+                     IconName=""@BitIconName.Microphone""
+                     Styles=""@(new() { Root = ""background-color: pink;"",
+                                       Icon = ""color: red;"",
+                                       Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
+                                       Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
+<BitNumericTextField @bind-Value=""@ClassesValue""
+                     Placeholder=""Enter a number...""
+                     Label=""Custom label class""
+                     Classes=""@(new() { Input = ""custom-input"",
+                                        Focused = ""custom-focus"",
+                                        Label = ""custom-label"",
+                                        InputWrapper = ""custom-input-wrapper"" } )"" />";
+    private readonly string example9CsharpCode = @"
+private int StyleValue;
+private int ClassValue;
+private int StylesValue;
+private int ClassesValue;";
+
+    private readonly string example10RazorCode = @"
+Visible: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" Placeholder=""Visible NumericTextField"" /> ]
+Hidden: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden NumericTextField"" />  ]
+Collapsed: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed NumericTextField"" />  ]";
+    private readonly string example10CsharpCode = @"
+private int VisibilityValue;";
+
+    private readonly string example11RazorCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;
@@ -492,7 +698,7 @@ else
         @SuccessMessage
     </BitMessageBar>
 }";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class BitNumericTextFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]

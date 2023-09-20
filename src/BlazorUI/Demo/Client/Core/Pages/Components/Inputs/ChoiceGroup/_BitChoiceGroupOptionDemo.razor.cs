@@ -22,7 +22,7 @@ public partial class _BitChoiceGroupOptionDemo
     }
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitChoiceGroup Label=""Basic Options"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -30,7 +30,7 @@ public partial class _BitChoiceGroupOptionDemo
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
                 IsEnabled=""false""
                 DefaultValue=""@(""A"")""
@@ -50,7 +50,7 @@ public partial class _BitChoiceGroupOptionDemo
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitChoiceGroup Label=""Image Options""
                 DefaultValue=""@(""Bar"")""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
@@ -76,10 +76,46 @@ public partial class _BitChoiceGroupOptionDemo
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
+<BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Disabled"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Image"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Bar"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitChoiceGroupOption Text=""Bar""
+                          Value=""@(""Bar"")""
+                          ImageAlt=""Alt for Bar image""
+                          ImageSize=""@(new BitSize(32, 32))"" 
+                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
+    <BitChoiceGroupOption Text=""Pie""
+                          Value=""@(""Pie"")""
+                          ImageAlt=""Alt for Pie image""
+                          ImageSize=""@(new BitSize(32, 32))"" 
+                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
+                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+</BitChoiceGroup>";
+
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        width: 300px;
+        width: 17rem;
         padding: 2rem;
         border-radius: 25%;
         background-color: red;
@@ -150,7 +186,44 @@ public partial class _BitChoiceGroupOptionDemo
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example6RazorCode = @"
+Visible: [
+<BitChoiceGroup Visibility=""BitVisibility.Visible""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<string>""
+                DefaultValue=""@(""B"")""
+                TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup> ]
+
+Hidden: [
+<BitChoiceGroup Visibility=""BitVisibility.Hidden""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<string>""
+                DefaultValue=""@(""B"")""
+                TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup> ]
+
+Collapsed: [
+<BitChoiceGroup Visibility=""BitVisibility.Collapsed""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<string>""
+                DefaultValue=""@(""B"")""
+                TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup> ]";
+
+    private readonly string example7RazorCode = @"
 <style>
     .custom-label {
         color: #A4262C;
@@ -172,7 +245,7 @@ public partial class _BitChoiceGroupOptionDemo
     </Options>
 </BitChoiceGroup>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-container {
         display: flex;
@@ -265,12 +338,12 @@ public partial class _BitChoiceGroupOptionDemo
         </Template>
     </BitChoiceGroupOption>
 </BitChoiceGroup>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";
 private string itemTemplateValue2 = ""Day"";";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
@@ -289,47 +362,11 @@ private string itemTemplateValue2 = ""Day"";";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 <BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";";
 
-    private readonly string example8HtmlCode = @"
-<BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup Label=""Disabled"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup Label=""Image"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Bar"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
-    <BitChoiceGroupOption Text=""Bar""
-                         Value=""@(""Bar"")""
-                         ImageAlt=""Alt for Bar image""
-                         ImageSize=""@(new BitSize(32, 32))"" 
-                         ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
-                         SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
-    <BitChoiceGroupOption Text=""Pie""
-                         Value=""@(""Pie"")""
-                         ImageAlt=""Alt for Pie image""
-                         ImageSize=""@(new BitSize(32, 32))"" 
-                         ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
-                         SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
-</BitChoiceGroup>
-
-<BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"">
-    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
-    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
-</BitChoiceGroup>";
-
-    private readonly string example9HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" IsRtl=""true"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
@@ -344,7 +381,7 @@ private string twoWayValue = ""A"";";
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example11RazorCode = @"
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
     <div>
@@ -358,7 +395,7 @@ private string twoWayValue = ""A"";";
     </div>
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]

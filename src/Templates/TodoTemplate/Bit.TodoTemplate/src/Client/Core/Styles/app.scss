@@ -8,6 +8,23 @@
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
 
+.bit-blazor-hybrid, .bit-blazor-electron {
+    *:not(input) {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+.bit-blazor-hybrid {
+    &.bit-windows * {
+        -webkit-user-drag: none;
+    }
+
+    &.bit-ios * {
+        overscroll-behavior: none;
+    }
+}
+
 h1, h2, h3, h4, h5 {
     margin: 0;
 }

@@ -1,4 +1,6 @@
-﻿declare const Blazor: any;
+﻿window['bit-bswup version'] = '5.6.0';
+
+declare const Blazor: any;
 
 class BitBswup {
     public static async checkForUpdate() {

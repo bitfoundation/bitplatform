@@ -2,5 +2,5 @@
 
 public class DropdownItemData
 {
-    public string IconName { get; set; }
+    public string? IconName { get; set; }
 }

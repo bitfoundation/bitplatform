@@ -1,4 +1,4 @@
-﻿<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <ExamplePreview>
         <BitChoiceGroup Label="Basic Options" DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
@@ -9,7 +9,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Disabled" HtmlCode="@example2HtmlCode" Id="example2">
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" Id="example2">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="Disabled ChoiceGroup"
@@ -34,7 +34,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Images and Icons" HtmlCode="@example3HtmlCode" Id="example3">
+<ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" Id="example3">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="Image Options"
@@ -65,7 +65,48 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HtmlCode="@example4HtmlCode" Id="example4">
+<ComponentExampleBox Title="Horizontal" RazorCode="@example4RazorCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-content column">
+            <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Disabled" TItem="BitChoiceGroupOption<string>" TValue="string" IsEnabled="false" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Image" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Bar")" LayoutFlow="BitLayoutFlow.Horizontal">
+                <BitChoiceGroupOption Text="Bar"
+                                      Value="@("Bar")"
+                                      ImageAlt="Alt for Bar image"
+                                      ImageSize="@(new BitSize(32, 32))"
+                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
+                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" />
+                <BitChoiceGroupOption Text="Pie"
+                                      Value="@("Pie")"
+                                      ImageAlt="Alt for Pie image"
+                                      ImageSize="@(new BitSize(32, 32))"
+                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
+                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png" />
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Icon" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Day")" LayoutFlow="BitLayoutFlow.Horizontal">
+                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
+                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
+                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
+            </BitChoiceGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
@@ -126,7 +167,53 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example5HtmlCode" Id="example5">
+<ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
+    <ExamplePreview>
+        <div class="example-content column">
+            <div class="visibility-items">
+                Visible: [ &nbsp;
+                <BitChoiceGroup Visibility="BitVisibility.Visible"
+                                LayoutFlow="BitLayoutFlow.Horizontal"
+                                TItem="BitChoiceGroupOption<string>"
+                                DefaultValue="@("B")"
+                                TValue="string">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup> ]
+            </div>
+            <div class="visibility-items">
+                Hidden: [ &nbsp;
+                <BitChoiceGroup Visibility="BitVisibility.Hidden"
+                                LayoutFlow="BitLayoutFlow.Horizontal"
+                                TItem="BitChoiceGroupOption<string>"
+                                DefaultValue="@("B")"
+                                TValue="string">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup> ]
+            </div>
+            <div class="visibility-items">
+                Collapsed: [
+                <BitChoiceGroup Visibility="BitVisibility.Collapsed"
+                                LayoutFlow="BitLayoutFlow.Horizontal"
+                                TItem="BitChoiceGroupOption<string>"
+                                DefaultValue="@("B")"
+                                TValue="string">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup> ]
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="LabelTemplate" RazorCode="@example7RazorCode" Id="example7">
     <ExamplePreview>
         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
             <LabelTemplate>
@@ -144,7 +231,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item Templates" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Item Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
@@ -210,7 +297,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -244,48 +331,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" HtmlCode="@example8HtmlCode" Id="example8">
-    <ExamplePreview>
-        <div class="example-content column">
-            <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
-                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-            </BitChoiceGroup>
-
-            <BitChoiceGroup Label="Disabled" TItem="BitChoiceGroupOption<string>" TValue="string" IsEnabled="false" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal">
-                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-            </BitChoiceGroup>
-
-            <BitChoiceGroup Label="Image" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Bar")" LayoutFlow="BitLayoutFlow.Horizontal">
-                <BitChoiceGroupOption Text="Bar"
-                                      Value="@("Bar")"
-                                      ImageAlt="Alt for Bar image"
-                                      ImageSize="@(new BitSize(32, 32))"
-                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"
-                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png" />
-                <BitChoiceGroupOption Text="Pie"
-                                      Value="@("Pie")"
-                                      ImageAlt="Alt for Pie image"
-                                      ImageSize="@(new BitSize(32, 32))"
-                                      ImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"
-                                      SelectedImageSrc="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png" />
-            </BitChoiceGroup>
-
-            <BitChoiceGroup Label="Icon" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("Day")" LayoutFlow="BitLayoutFlow.Horizontal">
-                <BitChoiceGroupOption Text="Day" Value="@("Day")" IconName="@BitIconName.CalendarDay" />
-                <BitChoiceGroupOption Text="Week" Value="@("Week")" IconName="@BitIconName.CalendarWeek" />
-                <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" IsEnabled="false" />
-            </BitChoiceGroup>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="RTL" HtmlCode="@example9HtmlCode" Id="example9">
+<ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
     <ExamplePreview>
         <div class="example-content column">
             <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
@@ -305,7 +351,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         @if (string.IsNullOrEmpty(successMessage))
         {

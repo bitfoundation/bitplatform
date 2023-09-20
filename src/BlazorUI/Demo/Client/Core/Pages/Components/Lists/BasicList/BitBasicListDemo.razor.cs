@@ -135,7 +135,7 @@ public partial class BitBasicListDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitBasicList Items=""LotsOfPeople""
               EnableVirtualization=""true""
               Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
@@ -168,7 +168,7 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitBasicList Items=""FewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
     <RowTemplate Context=""person"">
         <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
@@ -197,7 +197,7 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .list-item {
         padding: 16px 20px;
@@ -240,7 +240,7 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitBasicList Items=""LotsOfPeople"" ItemSize=""300"" OverscanCount=""5""
               EnableVirtualization=""true""
               Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
@@ -270,7 +270,7 @@ public class Person
     public string Job { get; set; }
 }";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitBasicList TItem=""ProductDto"" ItemSize=""83""
               EnableVirtualization=""true""
               ItemsProvider=""@ProductsProvider""
@@ -332,7 +332,7 @@ public class ProductDto
 [JsonSerializable(typeof(PagedResult<ProductDto>))]
 public partial class AppJsonContext : JsonSerializerContext { }";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitBasicList TItem=""CategoryOrProductDto"" ItemSize=""83""
               EnableVirtualization=""true""
               ItemsProvider=""@CategoriesAndProductsProvider""

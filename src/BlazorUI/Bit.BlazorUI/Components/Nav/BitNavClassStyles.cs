@@ -3,6 +3,11 @@
 public class BitNavClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for description.
+    /// </summary>
+    public BitClassStylePair? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for item.
     /// </summary>
     public BitClassStylePair? Item { get; set; }

@@ -8,6 +8,11 @@ public class BitRatingClassStyles
     public string? Button { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the rating icon container.
+    /// </summary>
+    public string? IconContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the rating selected icon.
     /// </summary>
     public string? SelectedIcon { get; set; }
@@ -16,9 +21,4 @@ public class BitRatingClassStyles
     /// Custom CSS classes/styles for the rating unselected icon.
     /// </summary>
     public string? UnselectedIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the rating icon container.
-    /// </summary>
-    public string? IconContainer { get; set; }
 }

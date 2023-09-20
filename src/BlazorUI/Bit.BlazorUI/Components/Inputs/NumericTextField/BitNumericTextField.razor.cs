@@ -25,6 +25,7 @@ public partial class BitNumericTextField<TValue>
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private readonly Type _typeOfValue;
+    private bool _hasFocus;
     private readonly bool _isDecimals;
     private readonly double _minGenericValue;
     private readonly double _maxGenericValue;
@@ -70,6 +71,11 @@ public partial class BitNumericTextField<TValue>
     /// 
     /// </summary>
     [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitNummericTextField.
+    /// </summary>
+    [Parameter] public BitNummericTextFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Initial value of the numeric text field.
@@ -164,7 +170,17 @@ public partial class BitNumericTextField<TValue>
     [Parameter] public EventCallback<TValue> OnChange { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input.
+    /// Callback for when focus moves into the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves out of the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
@@ -208,6 +224,11 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitNummericTextField.
+    /// </summary>
+    [Parameter] public BitNummericTextFieldClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// A text is shown after the numeric text field value.
     /// </summary>
     [Parameter] public string Suffix { get; set; } = string.Empty;
@@ -233,7 +254,18 @@ public partial class BitNumericTextField<TValue>
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -427,13 +459,33 @@ public partial class BitNumericTextField<TValue>
         await CheckIntermediateValueAndSetValue();
     }
 
+    private async Task HandleOnFocusIn(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        _hasFocus = true;
+        ClassBuilder.Reset();
+        await _js.SelectText(_inputRef);
+        await OnFocusIn.InvokeAsync(e);
+    }
+
+    private async Task HandleOnFocusOut(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        _hasFocus = false;
+        ClassBuilder.Reset();
+        await OnFocusOut.InvokeAsync(e);
+    }
+
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnFocus.InvokeAsync(e);
-            await _js.SelectText(_inputRef);
-        }
+        if (IsEnabled is false) return;
+
+        _hasFocus = true;
+        ClassBuilder.Reset();
+        await _js.SelectText(_inputRef);
+        await OnFocus.InvokeAsync(e);
     }
 
     private int CalculatePrecision(TValue? value)

@@ -146,7 +146,6 @@ public partial class BitCarousel : IDisposable
         {
             _internalScrollItemsCount = VisibleItemsCount;
         }
-        await _js.PreventDefault(_carousel, "touchmove");
 
         await ResetDimensionsAsync();
     }

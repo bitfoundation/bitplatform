@@ -27,6 +27,15 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#textfield-class-styles",
+            Description = "Custom CSS classes for different parts of the BitTextField.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -202,6 +211,15 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitTextFieldClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#textfield-class-styles",
+            Description = "Custom CSS styles for different parts of the BitTextField.",
+        },
+        new()
+        {
             Name = "Suffix",
             Type = "string?",
             DefaultValue = "null",
@@ -222,92 +240,141 @@ public partial class BitTextFieldDemo
             Description = "Input type.",
             LinkType = LinkType.Link,
             Href = "#text-field-type-enum"
-        },
-        new()
-        {
-            Name = "LabelStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's Label.",
-        },
-        new()
-        {
-            Name = "LabelClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's Label.",
-        },
-        new()
-        {
-            Name = "InputStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's Input.",
-        },
-        new()
-        {
-            Name = "InputClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's Input.",
-        },
-        new()
-        {
-            Name = "PrefixStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's Prefix.",
-        },
-        new()
-        {
-            Name = "PrefixClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's Prefix.",
-        },
-        new()
-        {
-            Name = "SuffixStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's Suffix.",
-        },
-        new()
-        {
-            Name = "SuffixClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's Suffix.",
-        },
-        new()
-        {
-            Name = "RevealPasswordStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's RevealPassword button.",
-        },
-        new()
-        {
-            Name = "RevealPasswordClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's RevealPassword button.",
-        },
-        new()
-        {
-            Name = "DescriptionStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Style of the BitTextField's Description.",
-        },
-        new()
-        {
-            Name = "DescriptionClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "CSS class of the BitTextField's Description.",
-        },
+        }
     };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "textfield-class-styles",
+            Title = "BitTextFieldClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's description."
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's description container."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's label."
+                },
+                new()
+                {
+                    Name = "FieldGroup",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's field group."
+                },
+                new()
+                {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles of the root element in focus state."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's icon."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's input."
+                },
+                new()
+                {
+                    Name = "InputIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's input icon."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the text field."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's prefix."
+                },
+                new()
+                {
+                    Name = "PrefixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's prefix container."
+                },
+                new()
+                {
+                    Name = "RevealPassword",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's reveal password."
+                },
+                new()
+                {
+                    Name = "RevealPasswordIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's reveal password icon."
+                },
+                new()
+                {
+                    Name = "RevealPasswordIconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's reveal password icon container."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's root element."
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's suffix."
+                },
+                new()
+                {
+                    Name = "SuffixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text field's suffix container."
+                }
+            }
+        }
+    };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -359,7 +426,7 @@ public partial class BitTextFieldDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsEnabled=""false"" />
@@ -369,36 +436,36 @@ public partial class BitTextFieldDemo
 <BitTextField Placeholder=""Enter a text..."" Label=""IsRequired"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />";
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" AutoFocus=""true"" Label=""Auto focused"" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic"" IsUnderlined=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Required No Border"" HasBorder=""false"" IsRequired=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
 
 <BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""@BitIconName.EditMail"" />
 
 <BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitTextField Label=""With Prefix"" Prefix=""https://"" />
 
 <BitTextField Label=""With Suffix"" Suffix="".com"" />
@@ -407,7 +474,7 @@ public partial class BitTextFieldDemo
 
 <BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."">
     <LabelTemplate>
         <BitLabel Style=""color: coral;"">This is custom Label</BitLabel>
@@ -432,12 +499,12 @@ public partial class BitTextFieldDemo
     </SuffixTemplate>
 </BitTextField>";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitTextField Placeholder=""Enter a password..."" Label=""Password"" Type=""BitTextFieldType.Password"" />
 
 <BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""One-way"" Value=""@OneWayValue"" />
 <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""OneWayValue"" />
 
@@ -454,7 +521,7 @@ private string TwoWayValue;
 private string OnChangeValue;
 private string ReadOnlyValue = ""this is readonly value"";";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 <BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
 <pre class=""trimmed-box"">[@TrimmedValue]</pre>
 
@@ -464,49 +531,79 @@ private string ReadOnlyValue = ""this is readonly value"";";
 private string TrimmedValue;
 private string NotTrimmedValue;";
 
-    private readonly string example12HtmlCode = @"
+    private readonly string example12RazorCode = @"
 <style>
-    .custom-label {
-        color: blue;
-        font-weight: 900;
-        font-size: 18px;
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
     }
 
     .custom-input {
         color: darkgreen;
         font-weight: 900;
-        font-size: 18px;
+        font-size: 1rem;
         padding: 1rem;
-        height: 50px;
+        height: 3rem;
+    }
+
+    .custom-field {
+        margin-top: 0.5rem;
+        border-radius: 1rem;
+        background-color: tomato;
+    }
+
+    .custom-focus .custom-field::after {
+        border-radius: 1rem;
+        border-width: 0.25rem;
+        border-color: rebeccapurple;
+    }
+
+    .custom-focus .custom-label {
+        color: chartreuse;
     }
 </style>
 
-<BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelStyle"" LabelStyle=""color:green"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Custom LabelClass"" LabelClass=""custom-label"" />
+<BitTextField Placeholder=""Enter a text..."" Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
+<BitTextField Placeholder=""Enter a text..."" Class=""custom-class"" />
 
-<BitTextField Placeholder=""Enter a text..."" Label=""Custom InputStyle"" InputStyle=""color:red"" />
-<BitTextField Placeholder=""Enter a text..."" Label=""Custom InputClass"" InputClass=""custom-input"" />";
+<BitTextField Placeholder=""Enter a text...""
+              IconName=""@BitIconName.Microphone""
+              Label=""Custom label style""
+              Styles=""@(new() { Root = ""background-color: pink;"",
+                                Icon = ""color: darkorange;"",
+                                Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
+                                Input = ""padding: 0.5rem; background-color: goldenrod;"" } )"" />
+<BitTextField Placeholder=""Enter a text...""
+              DefaultValue=""Custom input class""
+              Label=""Custom label class""
+              Classes=""@(new() { FieldGroup = ""custom-field"",
+                                 Focused = ""custom-focus"",
+                                 Input = ""custom-input"",
+                                 Label = ""custom-label"" } )"" />";
 
-    private readonly string example13HtmlCode = @"
+    private readonly string example13RazorCode = @"
+Visible: [ <BitTextField Visibility=""BitVisibility.Visible"" Placeholder=""Visible TextField"" /> ]
+Hidden: [ <BitTextField Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden TextField"" />  ]
+Collapsed: [ <BitTextField Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed TextField"" />  ]";
+
+    private readonly string example14RazorCode = @"
 <style>
     .validation-summary {
         overflow: hidden;
-        margin-bottom: 10px;
+        margin-bottom: 0.6rem;
         background-color: #FDE7E9;
-        border-left: 5px solid #d13438;
+        border-left: 0.3rem solid #d13438;
     }
 
-    ::deep {
-        .validation-message {
-            color: #A4262C;
-            font-size: 12px;
-            margin-top: 5px;
-            line-height: normal;
-        }
+    .validation-message {
+        color: #A4262C;
+        font-size: 0.75rem;
+        margin-top: 0.3rem;
+        line-height: normal;
+    }
 
-        .validation-errors {
-            margin: 5px;
-        }
+    .validation-errors {
+        margin: 0.3rem;
     }
 </style>
 
@@ -549,7 +646,7 @@ else
         The form is valid to submit successfully.
     </BitMessageBar>
 }";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required]

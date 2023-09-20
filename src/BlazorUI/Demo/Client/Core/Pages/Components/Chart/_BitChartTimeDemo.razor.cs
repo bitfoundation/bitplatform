@@ -194,7 +194,7 @@ public partial class _BitChartTimeDemo
 
 
 
-    private readonly string htmlCode = @"
+    private readonly string razorCode = @"
 <BitChart Config=""_config"" IsDateAdapterRequired=""true"" @ref=""_chart"" />
 
 <div>

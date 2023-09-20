@@ -247,12 +247,12 @@ public partial class BitImageDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitImage Alt=""Basic BitImage"" Src=""images/bit-logo-blue.png"" />
 
 <BitImage Alt=""Disabled BitImage"" IsEnabled=""false"" Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitImage Width=""144""
           Alt=""BitImage with width""
           Src=""images/bit-logo-blue.png"" />
@@ -266,7 +266,7 @@ public partial class BitImageDemo
           Alt=""BitImage with width and height""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -279,7 +279,7 @@ public partial class BitImageDemo
         filter: opacity(25%);
         border-radius: 1rem 3rem;
     }
-<style>
+</style>
 
 <BitImage Alt=""Styled BitImage""
           Style=""border: 2px solid goldenrod; border-radius: 5px; width: 258px;""
@@ -298,7 +298,7 @@ public partial class BitImageDemo
           Classes=""@(new() { Image = ""custom-image"" })""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 Visible: [
 <BitImage Alt=""Visible BitImage""
           Width=""194""
@@ -320,7 +320,7 @@ Collapsed: [
           Visibility=""BitVisibility.Collapsed""
           Src=""images/bit-logo-blue.png"" /> ]";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitImage Height=""96""
           Alt=""ImageFit: None BitImage""
           ImageFit=""BitImageFit.None""
@@ -357,7 +357,7 @@ Collapsed: [
           Style=""background-color: #00ffff17""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitImage Height=""96""
           Alt=""Landscape BitImage with ImageFit: CenterCover""
           Style=""background-color: #00ffff17""
@@ -389,6 +389,6 @@ Collapsed: [
           CoverStyle=""BitImageCoverStyle.Portrait""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitImage Alt=""Maximized BitImage"" MaximizeFrame=""true"" Src=""images/bit-logo-blue.png"" />";
 }

@@ -24,10 +24,16 @@
             font-size: rem2(16px);
             margin-top: rem2(20px);
         }
+
+        .visibility-items {
+            align-items: center;
+            white-space: nowrap;
+            display: inline-flex;
+        }
     }
 
     .custom-class {
-        width: 300px;
+        width: 17rem;
         padding: 2rem;
         border-radius: 25%;
         background-color: red;

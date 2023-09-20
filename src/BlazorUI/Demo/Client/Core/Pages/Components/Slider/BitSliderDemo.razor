@@ -6,8 +6,9 @@
 
 <ComponentDemo ComponentName="Slider"
                ComponentDescription="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
-               ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <BitSlider Label="Basic slider" />
             <br />
@@ -55,7 +56,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical slider" HtmlCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="Vertical slider" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="flex-container">
                 <BitSlider Label="Basic"
@@ -88,7 +89,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Range slider" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Range slider" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <BitSlider Label="Basic"
                        Min="0"
@@ -134,7 +135,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical Range Slider" HtmlCode="@example4HtmlCode" Id="example4">
+    <ComponentExampleBox Title="Vertical Range Slider" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="flex-container">
                 <BitSlider Label="Basic"
@@ -159,8 +160,8 @@
                 <BitSlider Label="Formatted value"
                            Max="100"
                            ValueFormat="P00"
-                           DefaultUpperValue="30"
-                           DefaultLowerValue="60"
+                           DefaultLowerValue="30"
+                           DefaultUpperValue="60"
                            IsRanged="true"
                            IsVertical="true" />
 
@@ -177,7 +178,52 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="SliderBoxHtmlAttributes" HtmlCode="@example5HtmlCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div class="flex-container column">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitSlider Style="background-color: tomato; border-radius: 1rem; padding: 0.5rem;" />
+                    <BitSlider Class="custom-class" />
+                </div>
+                <br />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitSlider Label="Custom label style"
+                               Styles="@(new() { Root = "background-color: pink;",
+                                                 ValueLabel = "color: red;",
+                                                 ValueInput = "padding: 0.5rem; background-color: goldenrod;",
+                                                 Label = "color: blue; font-weight: 900; font-size: 1.25rem;" } )" />
+                    
+                    <BitSlider DefaultValue="5"
+                               Classes="@(new() { ValueInput = "custom-input",
+                                                  Container = "custom-container" } )" />
+                    
+                    <BitSlider IsRanged="true" 
+                               Max="100"
+                               ValueFormat="P00"
+                               DefaultLowerValue="30"
+                               DefaultUpperValue="60"
+                               Classes="@(new() { LowerValueInput = "custom-input",
+                                                  UpperValueInput = "custom-input",
+                                                  SliderBox = "custom-slider-box",
+                                                  Container = "custom-container" } )" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div class="flex-container column">
+                <div class="visibility-items">Visible: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Visible" Label="Visible Slider" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Hidden" Label="Hidden Slider" /> ]</div>
+                <div class="visibility-items">Collapsed: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Collapsed" Label="Collapsed Slider" /> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="SliderBoxHtmlAttributes" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitSlider Max="10"
                        DefaultUpperValue="3"

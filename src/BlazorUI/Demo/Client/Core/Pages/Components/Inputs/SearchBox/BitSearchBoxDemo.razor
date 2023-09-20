@@ -7,8 +7,9 @@
 
 <ComponentDemo ComponentName="SearchBox"
                ComponentDescription="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
-               ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -24,7 +25,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="IsUnderlined" HtmlCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="IsUnderlined" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -40,7 +41,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" HtmlCode="@example3HtmlCode" Id="example3">
+    <ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -61,7 +62,40 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitSearchBox Placeholder="Search" Style="background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0" />
+                    <BitSearchBox Placeholder="Search" Class="custom-class" />
+                </div>
+                <br />
+                <div>
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitSearchBox Placeholder="Search"
+                                  Styles="@(new() {SearchIcon = "color: darkorange;",
+                                                   Input = "padding: 0.5rem; background-color: goldenrod"})" />
+                    <br />
+                    <BitSearchBox Placeholder="Search" DefaultValue="This is default value"
+                                  Classes="@(new() {ClearButtonIcon = "custom-clear",
+                                                    SearchIconContainer = "custom-search"})" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitSearchBox Visibility="BitVisibility.Visible" Placeholder="Visible SearchBox" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitSearchBox Visibility="BitVisibility.Hidden" Placeholder="Hidden SearchBox" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitSearchBox Visibility="BitVisibility.Collapsed" Placeholder="Collapsed SearchBox" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Controlled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -85,7 +119,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <EditForm Model="ValidationSearchBoxModel">

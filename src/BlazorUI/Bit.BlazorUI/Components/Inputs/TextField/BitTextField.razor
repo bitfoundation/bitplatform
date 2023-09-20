@@ -5,31 +5,34 @@
      id="@UniqueId"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-txt-wrp">
+    <div style="@Styles?.InputWrapper" class="bit-txt-wrp @Classes?.InputWrapper">
         @if (LabelTemplate is not null)
         {
-            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_inputId">
+            <label id="@_labelId" for="@_inputId">
                 @LabelTemplate
             </label>
         }
         else if (Label.HasValue())
         {
-            <label style="@LabelStyle" class="bit-txt-lbl @LabelClass" id="@_labelId" for="@_inputId">
+            <label style="@Styles?.Label"
+                   class="bit-txt-lbl @Classes?.Label"
+                   id="@_labelId"
+                   for="@_inputId">
                 @Label
             </label>
         }
 
-        <div class="bit-txt-fgp">
+        <div style="@Styles?.FieldGroup" class="bit-txt-fgp @Classes?.FieldGroup">
             @if (PrefixTemplate is not null)
             {
-                <span>
-                    @PrefixTemplate
-                </span>
+                @PrefixTemplate
             }
             else if (Prefix.HasValue())
             {
-                <div style="@PrefixStyle" class="bit-txt-pre @PrefixClass">
-                    <span>@Prefix</span>
+                <div style="@Styles?.PrefixContainer" class="bit-txt-pre @Classes?.PrefixContainer">
+                    <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                        @Prefix
+                    </span>
                 </div>
             }
 
@@ -46,14 +49,14 @@
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
                           value="@CurrentValue"
-                          style="@InputStyle"
-                          class="bit-txt-inp @InputClass"
-                          rows="@Rows"
+                          style="@Styles?.Input"
+                          class="bit-txt-inp @Classes?.Input"
                           disabled=@(IsEnabled is false)
+                          rows="@Rows"
                           readonly=@IsReadonly
                           required=@IsRequired
-                          placeholder="@Placeholder"
                           maxlength="@MaxLength"
+                          placeholder="@Placeholder"
                           aria-label="@AriaLabel"
                           aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                           aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)">
@@ -72,50 +75,54 @@
                        @onkeydown="@HandleOnKeyDown"
                        @onfocusin="@HandleOnFocusIn"
                        @onfocusout="@HandleOnFocusOut"
-                       style="@InputStyle"
-                       class="bit-txt-inp @InputClass"
+                       style="@Styles?.Input"
+                       class="bit-txt-inp @Classes?.Input"
                        disabled=@(IsEnabled is false)
                        readonly=@IsReadonly
                        required=@IsRequired
                        type="@_inputType"
                        value="@CurrentValue"
-                       placeholder="@Placeholder"
                        maxlength="@MaxLength"
+                       placeholder="@Placeholder"
+                       autocomplete="@AutoComplete"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                       aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)"
-                       autocomplete="@AutoComplete" />
+                       aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
             }
 
             @if (CanRevealPassword && Type == BitTextFieldType.Password)
             {
                 <button @onclick="ToggleRevealPassword"
-                        style="@RevealPasswordStyle"
-                        class="bit-txt-prb @RevealPasswordClass"
+                        style="@Styles?.RevealPassword"
+                        class="bit-txt-prb @Classes?.RevealPassword"
                         type="button"
                         aria-label="@RevealPasswordAriaLabel"
                         aria-pressed="@(_elementType == BitTextFieldType.Text ? "true" : "false")">
-                    <span>
-                        <i class="bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide3" : "View")" aria-hidden="true" />
+                    <span style="@Styles?.RevealPasswordIconContainer" class="@Classes?.RevealPasswordIconContainer">
+                        <i style="@Styles?.RevealPasswordIcon"
+                           class="bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
+                           aria-hidden="true" />
                     </span>
                 </button>
             }
 
             @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
+                <i style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@IconName @Classes?.Icon"
+                   aria-hidden="true" />
             }
 
             @if (SuffixTemplate is not null)
             {
-                <span>
-                    @SuffixTemplate
-                </span>
+                @SuffixTemplate
             }
             else if (Suffix.HasValue())
             {
-                <div style="@SuffixStyle" class="bit-txt-suf @SuffixClass">
-                    <span>@Suffix</span>
+                <div style="@Styles?.SuffixContainer" class="bit-txt-suf @Classes?.SuffixContainer">
+                    <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                        @Suffix
+                    </span>
                 </div>
             }
 
@@ -123,16 +130,18 @@
     </div>
     @if (Description.HasValue() || DescriptionTemplate is not null)
     {
-        <span class="bit-txt-des" id="@_descriptionId">
+        <span style="@Styles?.DescriptionContainer"
+              class="bit-txt-des @Classes?.DescriptionContainer"
+              id="@_descriptionId">
             @if (DescriptionTemplate is not null)
             {
-                <span>
-                    @DescriptionTemplate
-                </span>
+                @DescriptionTemplate
             }
             else if (Description.HasValue())
             {
-                <span style="@DescriptionStyle" class="@DescriptionClass">@Description</span>
+                <span style="@Styles?.Description" class="@Classes?.Description">
+                    @Description
+                </span>
             }
         </span>
     }

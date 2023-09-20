@@ -8,20 +8,19 @@
 //    Bit.init();
 //})
 
-window.addEventListener('scroll', (e: any) => {
-    const minimumWidthForDropdownNormalOpen = 640;
-    if ((BitCallouts.currentDropdownCalloutId
-          && window.innerWidth < minimumWidthForDropdownNormalOpen
-          && BitCallouts.currentDropdownCalloutResponsiveModeIsEnabled)
-        || (e.target.id && BitCallouts.currentDropdownCalloutId === e.target.id)) return;
+window.addEventListener('scroll', (e: Event) => {
+    const currentCallout = BitCallouts.current;
+    if ((window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && currentCallout.isResponsive)) return;
 
-    BitCallouts.replaceCurrentCallout("", "", null);
+    const target = e.target as HTMLElement;
+    if (target?.id && target.id == currentCallout.scrollContainerId) return;
+
+    BitCallouts.replaceCurrent();
 }, true);
 
 window.addEventListener('resize', (e: any) => {
-    const isMobile = window.screen.width < 640;
     const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
-    if (isMobile && resizeTriggeredByKeyboardOpen) return;
+    if (window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && resizeTriggeredByKeyboardOpen) return;
 
-    BitCallouts.replaceCurrentCallout("", "", null);
+    BitCallouts.replaceCurrent();
 }, true);

@@ -13,6 +13,15 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSliderClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#slider-class-styles",
+            Description = "Custom CSS classes for different parts of the BitSlider.",
+        },
+        new()
+        {
             Name = "DefaultLowerValue",
             Type = "double?",
             DefaultValue = "null",
@@ -124,6 +133,15 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitSliderClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#slider-class-styles",
+            Description = "Custom CSS styles for different parts of the BitSlider.",
+        },
+        new()
+        {
             Name = "UpperValue",
             Type = "double?",
             DefaultValue = "null",
@@ -145,9 +163,91 @@ public partial class BitSliderDemo
         }
     };
 
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "slider-class-styles",
+            Title = "BitSliderClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's container."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's label."
+                },
+                new()
+                {
+                    Name = "UpperValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                },
+                new()
+                {
+                    Name = "LowerValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's lower value input."
+                },
+                new()
+                {
+                    Name = "SliderBox",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's box."
+                },
+                new()
+                {
+                    Name = "LowerValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's lower value input."
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's root element."
+                },
+                new()
+                {
+                    Name = "UpperValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                },
+                new()
+                {
+                    Name = "ValueInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's value input."
+                },
+                new()
+                {
+                    Name = "OriginFromZero",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sider's origin from zero."
+                }
+            }
+        }
+    };
 
 
-    private readonly string example1HtmlCode = @"
+
+    private readonly string example1RazorCode = @"
 <BitSlider Label=""Basic slider"" />
 <br />
 <br />
@@ -194,7 +294,7 @@ public partial class BitSliderDemo
     private readonly string example1CsharpCode = @"
 private double? sliderHorizontalValue = 2;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -222,7 +322,7 @@ private double? sliderHorizontalValue = 2;";
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""0""
            Max=""10""
@@ -269,7 +369,7 @@ private void ResetBitSliderRangedValues()
     sliderRangedUpperValue = 7;
 }";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -292,8 +392,8 @@ private void ResetBitSliderRangedValues()
 <BitSlider Label=""Formatted value""
            Max=""100""
            ValueFormat=""P00""
-           DefaultUpperValue=""30""
-           DefaultLowerValue=""60""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""60""
            IsRanged=""true""
            IsVertical=""true"" />
 
@@ -307,7 +407,93 @@ private void ResetBitSliderRangedValues()
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
+<style>
+    .custom-class {
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-container {
+        height: auto;
+        padding-left: 1rem;
+        border-radius: 1rem;
+        background-color: dodgerblue;
+    }
+
+    .custom-input::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid green;
+    }
+
+    .custom-input:hover::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid darkgreen;
+    }
+
+    .custom-input::-webkit-slider-runnable-track {
+        background: linear-gradient(seagreen, seagreen) 0/var(--sx) 100% no-repeat, white;
+    }
+
+    .custom-input:hover::-webkit-slider-runnable-track {
+        background: linear-gradient(green, green) 0/var(--sx) 100% no-repeat, white;
+    }
+
+    .custom-slider-box {
+        background: linear-gradient(0deg, red calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover {
+        background: linear-gradient(0deg, tomato calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover::before {
+        background-color: brown;
+    }
+
+    .custom-slider-box::before {
+        background-color: darkred;
+    }
+
+    .custom-slider-box .custom-input::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid slategray;
+    }
+
+    .custom-slider-box .custom-input:hover::-webkit-slider-thumb {
+        background-color: white;
+        border: 0.25rem solid dimgray;
+    }
+</style>
+
+<BitSlider Style=""background-color: tomato; border-radius: 1rem; padding: 0.5rem;"" />
+<BitSlider Class=""custom-class"" />
+
+<BitSlider Label=""Custom label style""
+           Styles=""@(new() { Root = ""background-color: pink;"",
+                             ValueLabel = ""color: red;"",
+                             ValueInput = ""padding: 0.5rem; background-color: goldenrod;"",
+                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
+<BitSlider DefaultValue=""5""
+           Classes=""@(new() { ValueInput = ""custom-input"",
+                              Container = ""custom-container"" } )"" />
+<BitSlider IsRanged=""true"" 
+           Max=""100""
+           ValueFormat=""P00""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""60""
+           Classes=""@(new() { LowerValueInput = ""custom-input"",
+                              UpperValueInput = ""custom-input"",
+                              SliderBox = ""custom-slider-box"",
+                              Container = ""custom-container"" } )"" />";
+
+    private readonly string example6RazorCode = @"
+Visible: [ <BitSlider Visibility=""BitVisibility.Visible"" Label=""Visible Slider"" /> ]
+Hidden: [ <BitSlider Visibility=""BitVisibility.Hidden"" Label=""Hidden Slider"" /> ]
+Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" Label=""Collapsed Slider"" /> ]";
+
+    private readonly string example7RazorCode = @"
 <BitSlider Max=""10""
            DefaultUpperValue=""3""
            DefaultLowerValue=""5""

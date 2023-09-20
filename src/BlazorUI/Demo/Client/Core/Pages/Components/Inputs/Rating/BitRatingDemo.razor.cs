@@ -20,6 +20,15 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitRatingClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#rating-class-styles",
+            Description = "Custom CSS classes for different parts of the BitRating.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "double?",
             DefaultValue = "null",
@@ -70,12 +79,63 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitRatingClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#rating-class-styles",
+            Description = "Custom CSS styles for different parts of the BitRating.",
+        },
+        new()
+        {
             Name = "UnselectedIconName",
             Type = "string",
             DefaultValue = "FavoriteStar",
             Description = "Custom icon name for unselected rating elements.",
         }
     };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "rating-class-styles",
+            Title = "BitRatingClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating's button.",
+                },
+                new()
+                {
+                    Name = "IconContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating icon container.",
+                },
+                new()
+                {
+                    Name = "SelectedIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating selected icon.",
+                },
+                new()
+                {
+                    Name = "UnselectedIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the rating unselected icon.",
+                }
+            }
+        }
+    };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -94,16 +154,16 @@ public partial class BitRatingDemo
                 new()
                 {
                     Name = "Large",
-                    Description = " Display rating icon using large size.",
+                    Description = "Display rating icon using large size.",
                     Value = "1",
-                },
+                }
             }
         }
     };
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitRating @bind-Value=""RatingBasicValue"" />
 <BitLabel>Rate: @RatingBasicValue</BitLabel>
     
@@ -117,7 +177,7 @@ private double RatingBasicValue;
 private double RatingDisabledValue = 2;
 private double RatingReadonlyValue = 3.5;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -132,7 +192,7 @@ private double RatingReadonlyValue = 3.5;";
     .custom-unselected {
         color: darkorange;
     }
-<style/>
+</style>
 
 
 <BitRating @bind-Value=""@RatingStyleValue"" Style=""background-color: #888; border-radius: 1rem; margin: 1rem 0"" />
@@ -150,12 +210,12 @@ private double RatingClassValue = 2;
 private double RatingStylesValue = 5;
 private double RatingClassesValue = 3.5;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitRating Visibility=""""BitVisibility.Visible"""">Visible Rating</BitRating> ]
 Hidden: [ <BitRating Visibility=""""BitVisibility.Hidden"""">Hidden Rating</BitRating> ]
 Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""">Collapsed Rating</BitRating> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
 <BitLabel>Rate: @RatingMaxValue1</BitLabel>
     
@@ -169,7 +229,7 @@ private double RatingMaxValue1 = 2.5;
 private double RatingMaxValue2 = 5;
 private double RatingMaxValue3 = 15;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitRating Icon=""@BitIconName.HeartFill"" UnselectedIcon=""@BitIconName.Heart"" @bind-Value=""RatingCustomIconValue1"" />
 <BitLabel>Rate: @RatingCustomIconValue1</BitLabel>
     
@@ -183,7 +243,7 @@ private double RatingCustomIconValue1 = 1.5;
 private double RatingCustomIconValue2 = 2;
 private double RatingCustomIconValue3 = 3;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitRating Size=""BitRatingSize.Small"" @bind-Value=""RatingSmallValue"" />
 <BitLabel>Rate: @RatingSmallValue</BitLabel>
 
@@ -193,7 +253,7 @@ private double RatingCustomIconValue3 = 3;";
 private double RatingSmallValue = 3;
 private double RatingLargeValue = 3;";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitRating AllowZeroStars=""true"" Value=""RatingControlledValue1"" />
 <BitToggleButton OnChange=""(v) =>  RatingControlledValue1 = v ? 5 : 0"" Text=""@(RatingControlledValue1 == 5 ? ""Unstar All"" : ""Star All"")"" />
 
@@ -207,7 +267,7 @@ private double RatingControlledValue1 = 0;
 private double RatingControlledValue2 = 3;
 private double RatingControlledValue3;";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">

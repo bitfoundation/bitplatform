@@ -21,10 +21,10 @@
     <div class="bit-dtrp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-dtrp-fld-grp @(AllowTextInput ? "bit-dtrp-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
-            @onfocusin="@HandleOnFocusIn"
-            @onfocusout="@HandleOnFocusOut"
-            @onfocus="@HandleOnFocus"
-            @onchange="@HandleOnChange"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   @onfocus="@HandleOnFocus"
+                   @onchange="@HandleOnChange"
                    type="text"
                    role="combobox"
                    id="@_textFieldId"
@@ -191,23 +191,23 @@
 
                         @if (ShowTimePicker)
                         {
-                            <div class="bit-dtrp-tgrp">
+                            <div class="bit-dtrp-tgrp @(TimeFormat == BitTimeFormat.TwelveHours ? "bit-dtrp-tgrp-ampm" : null)">
                                 <div class="bit-dtrp-twp">
                                     <input @ref="_inputStartTimeHourRef"
-                                    @bind="@_startTimeHour"
-                                    @bind:event="oninput"
-                                    @onfocus="HandleOnStartTimeHourFocus"
+                                           @bind="@_startTimeHourView"
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnStartTimeHourFocus"
                                            min="0"
-                                           max="23"
+                                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                            type="number"
                                            inputmode="numeric"
                                            class="bit-dtrp-tinp"
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                     <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputStartTimeMinuteRef"
-                                    @bind:event="oninput"
-                                    @bind="@_startTimeMinute"
-                                    @onfocus="HandleOnStartTimeMinuteFocus"
+                                           @bind:event="oninput"
+                                           @bind="@_startTimeMinuteView"
+                                           @onfocus="HandleOnStartTimeMinuteFocus"
                                            min="0"
                                            max="59"
                                            type="number"
@@ -216,22 +216,40 @@
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                 </div>
 
+                                @if (TimeFormat == BitTimeFormat.TwelveHours)
+                                {
+                                    <div class="bit-dtrp-ampm-ctn">
+                                        <button @onclick="ToggleStartTimeAmPm"
+                                                type="button"
+                                                class="bit-dtrp-ampm-btn"
+                                                disabled="@(_startTimeHour < 12)">
+                                            @Culture.DateTimeFormat.AMDesignator
+                                        </button>
+                                        <button @onclick="ToggleStartTimeAmPm"
+                                                type="button"
+                                                class="bit-dtrp-ampm-btn"
+                                                disabled="@(_startTimeHour >= 12)">
+                                            @Culture.DateTimeFormat.PMDesignator
+                                        </button>
+                                    </div>
+                                }
+
                                 <div class="bit-dtrp-twp">
                                     <input @ref="_inputEndTimeHourRef"
-                                    @bind="@_endTimeHour"
-                                    @bind:event="oninput"
-                                    @onfocus="HandleOnEndTimeHourFocus"
+                                           @bind="@_endTimeHourView"
+                                           @bind:event="oninput"
+                                           @onfocus="HandleOnEndTimeHourFocus"
                                            min="0"
-                                           max="23"
+                                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                            type="number"
                                            inputmode="numeric"
                                            class="bit-dtrp-tinp"
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                     <span class="bit-dtrp-tdiv">:</span>
                                     <input @ref="_inputEndTimeMinuteRef"
-                                    @bind:event="oninput"
-                                    @bind="@_endTimeMinute"
-                                    @onfocus="HandleOnEndTimeMinuteFocus"
+                                           @bind:event="oninput"
+                                           @bind="@_endTimeMinuteView"
+                                           @onfocus="HandleOnEndTimeMinuteFocus"
                                            min="0"
                                            max="59"
                                            type="number"
@@ -239,6 +257,24 @@
                                            class="bit-dtrp-tinp"
                                            autocomplete="@BitAutoCompleteValue.NewPassword" />
                                 </div>
+
+                                @if (TimeFormat == BitTimeFormat.TwelveHours)
+                                {
+                                    <div class="bit-dtrp-ampm-ctn">
+                                        <button @onclick="ToggleEndTimeAmPm"
+                                                type="button"
+                                                class="bit-dtrp-ampm-btn"
+                                                disabled="@(_endTimeHour < 12)">
+                                            @Culture.DateTimeFormat.AMDesignator
+                                        </button>
+                                        <button @onclick="ToggleEndTimeAmPm"
+                                                type="button"
+                                                class="bit-dtrp-ampm-btn"
+                                                disabled="@(_endTimeHour >= 12)">
+                                            @Culture.DateTimeFormat.PMDesignator
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         }
                     </div>

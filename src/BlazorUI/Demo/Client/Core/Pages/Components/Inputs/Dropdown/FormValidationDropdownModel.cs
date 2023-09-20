@@ -2,9 +2,9 @@
 
 public class FormValidationDropdownModel
 {
-    [MaxLength(2, ErrorMessage = "The property {0} doesn't have more than {1} elements")]
-    [MinLength(1, ErrorMessage = "The property {0} doesn't have less than {1} elements")]
-    public List<string> Products { get; set; } = new();
+    [MaxLength(2, ErrorMessage = "The property {0} have more than {1} elements")]
+    [MinLength(1, ErrorMessage = "The property {0} doesn't have at least {1} elements")]
+    public ICollection<string?> Products { get; set; } = new List<string?>();
 
     [Required]
     public string Category { get; set; }

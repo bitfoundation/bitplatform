@@ -10,7 +10,7 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="BasicValue"
@@ -27,7 +27,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
     
-    <ComponentExampleBox Title="LabelPosition" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="LabelPosition" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="LabelTopValue"
@@ -45,7 +45,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="LabelTemplateValue" Placeholder="Enter a number..." Step="@(1)">
@@ -60,7 +60,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SpinArrowValue"
@@ -86,7 +86,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Min & Max" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Min & Max" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="MinMaxValue1"
@@ -113,7 +113,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Suffix" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Suffix" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <BitNumericTextField @bind-Value="SuffixValue1"
@@ -135,7 +135,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Controlled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -157,7 +157,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-box">
                 <div class="column">
@@ -186,7 +186,53 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="custom-wrapper">
+                    <BitLabel>Component's Style & Class:</BitLabel>
+                    <BitNumericTextField @bind-Value="@StyleValue"
+                                         Placeholder="Enter a number..."
+                                         Style="background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem" />
+                    <BitNumericTextField @bind-Value="@ClassValue"
+                                         Placeholder="Enter a number..."
+                                         Class="custom-class" />
+                </div>
+                <br />
+                <div class="custom-wrapper">
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <BitNumericTextField @bind-Value="@StylesValue"
+                                         Placeholder="Enter a number..."
+                                         Label="Custom label style"
+                                         IconName="@BitIconName.Microphone"
+                                         Styles="@(new() { Root = "background-color: pink;",
+                                                           Icon = "color: red;",
+                                                           Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
+                                                           Input = "padding: 0.5rem; background-color: goldenrod"} )" />
+                    <br />
+                    <BitNumericTextField @bind-Value="@ClassesValue"
+                                         Placeholder="Enter a number..."
+                                         Label="Custom label class"
+                                         Classes="@(new() { Input = "custom-input",
+                                                            Focused = "custom-focus",
+                                                            Label = "custom-label",
+                                                            InputWrapper = "custom-input-wrapper" } )" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div class="example-box">
+                <div class="visibility-items">Visible: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Visible" Placeholder="Visible NumericTextField" /> ]</div>
+                <div class="visibility-items">Hidden: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Hidden" Placeholder="Hidden NumericTextField" />  ]</div>
+                <div class="visibility-items">Collapsed: [ <BitNumericTextField @bind-Value="@VisibilityValue" Visibility="BitVisibility.Collapsed" Placeholder="Collapsed NumericTextField" />  ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -251,6 +297,13 @@
     private double OnChangeEventBindedValue;
     private double OnChangeEventReturnedValue;
     private int OnChangeCounter;
+
+    private int VisibilityValue;
+
+    private int StyleValue;
+    private int ClassValue;
+    private int StylesValue;
+    private int ClassesValue;
 
     private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
     {

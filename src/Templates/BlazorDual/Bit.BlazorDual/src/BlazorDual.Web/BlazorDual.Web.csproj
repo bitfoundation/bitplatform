@@ -38,25 +38,25 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.5.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.5.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.5.0" />
-        <PackageReference Include="Bit.Bup" Version="5.5.0" />
-        <PackageReference Include="Bit.Bswup" Version="5.5.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.5.0">
+        <PackageReference Include="Bit.BlazorUI" Version="5.6.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.6.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.6.0" />
+        <PackageReference Include="Bit.Bup" Version="5.6.0" />
+        <PackageReference Include="Bit.Bswup" Version="5.6.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="5.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.5.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="5.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.11" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.10" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.10" PrivateAssets="all" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.11" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.11" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.11" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

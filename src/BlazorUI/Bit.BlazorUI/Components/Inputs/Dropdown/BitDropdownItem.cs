@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitDropdownItem
+public class BitDropdownItem<TValue>
 {
     /// <summary>
     /// The aria label attribute for the dropdown item.
@@ -8,7 +8,17 @@ public class BitDropdownItem
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// The custom data for the dropdown item to provide state for the item template.
+    /// Custom CSS class for the dropdown item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// The id for the dropdown item.
+    /// </summary>
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// The custom data for the dropdown item to provide extra state for the template.
     /// </summary>
     public object? Data { get; set; }
 
@@ -33,9 +43,14 @@ public class BitDropdownItem
     public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;
 
     /// <summary>
+    /// Custom CSS style for the dropdown item.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>
     /// The text to render for the dropdown item.
     /// </summary>
-    public string Text { get; set; } = string.Empty;
+    public string? Text { get; set; }
 
     /// <summary>
     /// The title attribute for the dropdown item.
@@ -45,5 +60,5 @@ public class BitDropdownItem
     /// <summary>
     /// The value of the dropdown item.
     /// </summary>
-    public string Value { get; set; } = string.Empty;
+    public TValue? Value { get; set; }
 }

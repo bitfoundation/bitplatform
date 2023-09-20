@@ -7,4 +7,5 @@ public class BitPlatformMenu
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public List<BitPlatformMenu> Links { get; set; } = new();
+    public string? Comment { get; set; }
 }

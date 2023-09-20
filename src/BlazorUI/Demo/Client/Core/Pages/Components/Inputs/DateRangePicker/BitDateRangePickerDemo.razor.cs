@@ -287,6 +287,15 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "false",
             Description = "Show time picker for select times.",
         },
+        new()
+        {
+            Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            LinkType = LinkType.Link,
+            Href = "#time-format-enum",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "Time format of the time pickers, 24H or 12H"
+        },
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -337,17 +346,38 @@ public partial class BitDateRangePickerDemo
                     Value="1",
                 }
             }
+        },
+        new()
+        {
+            Id = "time-format-enum",
+            Name = "BitTimeFormat",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "TwentyFourHours",
+                    Description="Show time pickers in 24 hours format.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "TwelveHours",
+                    Description="Show time pickers in 12 hours format.",
+                    Value="1",
+                }
+            }
         }
     };
     
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitDateRangePicker IsEnabled=false
                     Style=""max-width: 300px""
                     AriaLabel=""Select dates""
@@ -359,20 +389,20 @@ public partial class BitDateRangePickerDemo
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     ShowWeekNumbers=true
                     ShowMonthPickerAsOverlay=true
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates...""
                     DateFormat=""dd=MM(yy)"" />";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     Placeholder=""Select dates...""
@@ -391,7 +421,7 @@ public partial class BitDateRangePickerDemo
                     MaxDate=""DateTimeOffset.Now.AddYears(1)""
                     MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitDateRangePicker @ref=""dateRangePicker""
                     Style=""max-width: 300px""
                     AriaLabel=""Select dates""
@@ -407,7 +437,7 @@ private async Task OpenCallout()
     await dateRangePicker.OpenCallout();
 }";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     @bind-Value=""@selectedDateRange""
                     AriaLabel=""select dates""
@@ -420,7 +450,7 @@ private BitDateRangePickerValue selectedDateRange = new()
     EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
 };";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
                     Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                     GoToToday=""برو به امروز""
@@ -433,7 +463,7 @@ private BitDateRangePickerValue selectedDateRange = new()
                     Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .weekend-cell {
         color: red;
@@ -525,37 +555,47 @@ private BitDateRangePickerValue selectedDateRange = new()
     private readonly string example9CsharpCode = @"
 private CultureInfo Culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     ValueFormat=""Dep: {0}, Arr: {1}""
                     DateFormat=""dd=MM(yy)""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AriaLabel=""Select dates""
                     IconName=""@BitIconName.Airplane""
                     Placeholder=""Select dates..."" />";
 
-    private readonly string example12HtmlCode = @"
+    private readonly string example12RazorCode = @"
 <BitDateRangePicker IsResponsive=""true""
                     Style=""max-width: 300px""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
 
-    private readonly string example13HtmlCode = @"
+    private readonly string example13RazorCode = @"
 <BitDateRangePicker Style=""max-width: 300px""
                     AutoClose=""false""
                     AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
 
-    private readonly string example14HtmlCode = @"
+    private readonly string example14RazorCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
+                    Label=""Time format 24 hours""
                     ShowTimePicker=""true""
                     Style=""max-width: 300px""
                     AriaLabel=""Select a date""
+                    Placeholder=""Select a date..."" />
+
+<BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
+                    Label=""Time format 12 hours""
+                    ShowTimePicker=""true""
+                    TimeFormat=""BitTimeFormat.TwelveHours""
+                    Style=""max-width: 300px""
+                    AriaLabel=""Select a date""
                     Placeholder=""Select a date..."" />";
+
     private readonly string example14CsharpCode = @"
 private BitDateRangePickerValue selectedDateTimeRange = new()
 {

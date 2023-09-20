@@ -30,7 +30,7 @@
                 <BitDropdown @bind-Value="_selectedCategoyId"
                              IsMultiSelect="false"
                              Items="_allCategoryList"
-                             OnSelectItem="(item => { _product.CategoryId = int.Parse(item.Value); _product.CategoryName = item.Text; })"
+                             OnSelectItem="((BitDropdownItem<string> item) => { _product.CategoryId = int.Parse(item.Value); _product.CategoryName = item.Text; })"
                              Placeholder="@Localizer[(nameof(AppStrings.SelectACategory))]"
                              Label="@Localizer[(nameof(AppStrings.SelectCategory))]" />
                 <ValidationMessage For="@(() => _product.CategoryId)" />

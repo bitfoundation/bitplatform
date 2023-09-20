@@ -13,7 +13,7 @@
                    Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
         <BitPivot ClassStyles="@(new() { Header = new() { Class = "pivot-sticky-header" } })">
             <BitPivotItem HeaderText="Item">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavItemHtmlCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1NavItemRazorCode" CsharpCode="@example1NavItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu" />
@@ -21,7 +21,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavItemHtmlCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavItemRazorCode" CsharpCode="@example2NavItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
@@ -29,7 +29,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavItemHtmlCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavItemRazorCode" CsharpCode="@example3NavItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -54,13 +54,13 @@
                                 <BitDropdown @bind-Value="SelectedItemText"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
-                                             OnSelectItem="(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
+                                             OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
                             </div>
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavItemHtmlCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavItemRazorCode" CsharpCode="@example4NavItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -94,7 +94,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5NavItemHtmlCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5NavItemRazorCode" CsharpCode="@example5NavItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="FoodNavMenu"
@@ -113,7 +113,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavItemHtmlCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavItemRazorCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu"
@@ -127,7 +127,7 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1CustomItemHtmlCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1CustomItemRazorCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -135,12 +135,13 @@
                                     UrlField="@nameof(BitPlatformMenu.Url)"
                                     IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
-                                    ChildItemsField="@nameof(BitPlatformMenu.Links)" />
+                                    ChildItemsField="@nameof(BitPlatformMenu.Links)"
+                                    DescriptionField="@nameof(BitPlatformMenu.Comment)" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2CustomItemHtmlCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2CustomItemRazorCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomCarNavMenu"
@@ -152,12 +153,13 @@
                                     CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                     ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
                                     ChildItemsField="@nameof(CarMenu.Links)"
+                                    DescriptionField="@nameof(CarMenu.Comment)"
                                     RenderType="BitNavRenderType.Grouped" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3CustomItemHtmlCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3CustomItemRazorCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -167,6 +169,7 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
                                         DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                         Mode="BitNavMode.Manual" />
                             </div>
@@ -184,19 +187,21 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
+                                        DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                         Mode="BitNavMode.Manual"
                                         OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.FirstOrDefault(i => i.Text == item.Name)?.Text" />
 
                                 <BitDropdown @bind-Value="CustomSelectedFoodName"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
-                                             OnSelectItem="(item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
+                                             OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).FirstOrDefault(i => i.Name == item.Value)" />
                             </div>
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4CustomItemHtmlCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4CustomItemRazorCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -210,6 +215,7 @@
                                         CollapseAriaLabelField="@nameof(CarMenu.CollapsedAriaLabel)"
                                         ExpandAriaLabelField="@nameof(CarMenu.ExpandedAriaLabel)"
                                         ChildItemsField="@nameof(CarMenu.Links)"
+                                        DescriptionField="@nameof(CarMenu.Comment)"
                                         RenderType="BitNavRenderType.Grouped">
 
                                     <HeaderTemplate Context="item">
@@ -228,6 +234,7 @@
                                         IconNameFieldSelector="item => item.Icon"
                                         IsExpandedFieldSelector="item => item.IsExpanded"
                                         ChildItemsFieldSelector="item => item.Childs"
+                                        DescriptionFieldSelector="item => item.Comment"
                                         Mode="BitNavMode.Manual">
 
                                     <ItemTemplate Context="item">
@@ -243,7 +250,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5CustomItemHtmlCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5CustomItemRazorCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="CustomFoodNavMenu"
@@ -251,6 +258,7 @@
                                     IconNameFieldSelector="item => item.Icon"
                                     IsExpandedFieldSelector="item => item.IsExpanded"
                                     ChildItemsFieldSelector="item => item.Childs"
+                                    DescriptionFieldSelector="item => item.Comment"
                                     DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                     Mode="BitNavMode.Manual"
                                     OnItemClick="(FoodMenu item) => CustomClickedItem = item"
@@ -266,7 +274,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6CustomItemHtmlCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6CustomItemRazorCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="CustomBitPlatformNavMenu"
@@ -275,6 +283,7 @@
                                     IconNameField="@nameof(BitPlatformMenu.Icon)"
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
                                     ChildItemsField="@nameof(BitPlatformMenu.Links)"
+                                    DescriptionField="@nameof(BitPlatformMenu.Comment)"
                                     ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
                                                            ToggleButton = new() { Style="color:cyan" },
                                                            Item = new() { Style="color:red" },
@@ -285,11 +294,12 @@
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <ComponentExampleBox Title="Basic" HtmlCode="@example1NavOptionHtmlCode" Id="example1">
+                <ComponentExampleBox Title="Basic" RazorCode="@example1NavOptionRazorCode" Id="example1">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption">
                                 <BitNavOption Text="Bit Platform"
+                                              Description="the bit platform description"
                                               ExpandAriaLabel="Bit Platform Expanded"
                                               CollapseAriaLabel="Bit Platform Collapsed">
                                     <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
@@ -321,11 +331,12 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Grouped" HtmlCode="@example2NavOptionHtmlCode" Id="example2">
+                <ComponentExampleBox Title="Grouped" RazorCode="@example2NavOptionRazorCode" Id="example2">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
                                 <BitNavOption Text="Mercedes-Benz"
+                                              Description="Cars manufactured under the brand of Mercedes-Benz"
                                               ExpandAriaLabel="Mercedes-Benz Expanded"
                                               CollapseAriaLabel="Mercedes-Benz Collapsed"
                                               Title="Mercedes-Benz Car Models"
@@ -359,21 +370,24 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Manual Mode" HtmlCode="@example3NavOptionHtmlCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
+                <ComponentExampleBox Title="Manual Mode" RazorCode="@example3NavOptionRazorCode" CsharpCode="@example3NavOptionCsharpCode" Id="example3">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
                                 <BitLabel>Basic</BitLabel>
                                 <BitNav TItem="BitNavOption"
                                         Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods" IconName="@BitIconName.HeartBroken">
-                                        <BitNavOption Text="Burgers">
+                                    <BitNavOption Text="Fast food"
+                                                  Description="List of fast foods"
+                                                  IconName="@BitIconName.HeartBroken"
+                                                  IsExpanded="true">
+                                        <BitNavOption Text="Burger" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
                                             <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
                                         </BitNavOption>
-                                        <BitNavOption Text="Pizzas">
+                                        <BitNavOption Text="Pizza">
                                             <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
                                             <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
                                             <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
@@ -381,7 +395,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruits">
+                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Apple" Key="Apple" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -398,16 +412,17 @@
                             <div class="margin-top">
                                 <BitLabel>Two-Way Bind</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast-Foods"
+                                    <BitNavOption Text="Fast food"
+                                                  Description="List of fast foods"
                                                   IconName="@BitIconName.HeartBroken"
                                                   IsExpanded="true">
-                                        <BitNavOption Text="Burgers">
+                                        <BitNavOption Text="Burger" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
                                             <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
                                         </BitNavOption>
-                                        <BitNavOption Text="Pizzas">
+                                        <BitNavOption Text="Pizza">
                                             <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
                                             <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
                                             <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
@@ -415,7 +430,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruits">
+                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Aplle" Key="Aplle" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -425,7 +440,7 @@
                                 </BitNav>
 
                                 <BitDropdown @bind-Value="SelectedOptionKey"
-                                             DefaultValue="French Fries"
+                                             DefaultValue="@("French Fries")"
                                              Label="Pick one"
                                              Items="FoodMenuDropdownItems" />
                             </div>
@@ -433,7 +448,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Templates" HtmlCode="@example4NavOptionHtmlCode" Id="example4">
+                <ComponentExampleBox Title="Custom Templates" RazorCode="@example4NavOptionRazorCode" Id="example4">
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
@@ -519,7 +534,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Events" HtmlCode="@example5NavOptionHtmlCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
+                <ComponentExampleBox Title="Events" RazorCode="@example5NavOptionRazorCode" CsharpCode="@example5NavOptionCsharpCode" Id="example5">
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Mode="BitNavMode.Manual"
@@ -561,7 +576,7 @@
                     </ExamplePreview>
                 </ComponentExampleBox>
 
-                <ComponentExampleBox Title="Custom Styles" HtmlCode="@example6NavOptionHtmlCode" Id="example6">
+                <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavOptionRazorCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption"
@@ -590,9 +605,9 @@
                                 <BitNavOption Text="Community"
                                               ExpandAriaLabel="Community Expanded"
                                               CollapseAriaLabel="Community Collapsed">
-                                    <BitNavOption Text="Linkedin" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
+                                    <BitNavOption Text="LinkedIn" IconName="@BitIconName.LinkedInLogo" Url="https://www.linkedin.com/company/bitplatformhq" Target="_blank" />
                                     <BitNavOption Text="Twitter" IconName="@BitIconName.Globe" Url="https://twitter.com/bitplatformhq" Target="_blank" />
-                                    <BitNavOption Text="Github repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+                                    <BitNavOption Text="GitHub repo" IconName="@BitIconName.GitGraph" Url="https://github.com/bitfoundation/bitplatform" Target="_blank" />
                                 </BitNavOption>
 
                                 <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
@@ -611,7 +626,8 @@
     {
         new()
         {
-            Text = "Bit Platform",
+            Text = "bit Platform",
+            Description = "the bit platform description",
             ChildItems = new()
             {
                 new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
@@ -661,6 +677,7 @@
             CollapseAriaLabel = "Mercedes-Benz Collapsed",
             Title = "Mercedes-Benz Car Models",
             IsExpanded = true,
+            Description = "Cars manufactured under the brand of Mercedes-Benz",
             ChildItems = new()
             {
                 new()
@@ -714,14 +731,16 @@
     {
         new()
         {
-            Text = "Fast-Food",
+            Text = "Fast food",
             IconName = BitIconName.HeartBroken,
             IsExpanded = true,
+            Description = "List of fast foods",
             ChildItems = new()
             {
                 new()
                 {
-                    Text = "Burgers",
+                    Text = "Burger",
+                    Description = "List of burgers",
                     ChildItems = new()
                     {
                         new() { Text = "Beef Burger" },
@@ -732,7 +751,7 @@
                 },
                 new()
                 {
-                    Text = "Pizzas",
+                    Text = "Pizza",
                     ChildItems = new()
                     {
                         new() { Text = "Cheese Pizza" },
@@ -741,12 +760,12 @@
                         new() { Text = "Meat Pizza" },
                     }
                 },
-                new() { Text    = "French Fries" },
+                new() { Text = "French Fries" },
             }
         },
         new()
         {
-            Text = "Fruits",
+            Text = "Fruit",
             IconName = BitIconName.Health,
             ChildItems = new()
             {
@@ -774,6 +793,7 @@
         new()
         {
             Text = "Bit Platform",
+            Comment = "the bit platform description",
             Links = new()
             {
                 new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
@@ -823,6 +843,7 @@
             CollapsedAriaLabel = "Mercedes-Benz Collapsed",
             Tooltip = "Mercedes-Benz Car Models",
             IsExpandedParent = true,
+            Comment = "Cars manufactured under the brand of Mercedes-Benz",
             Links = new()
             {
                 new()
@@ -876,14 +897,16 @@
     {
         new()
         {
-            Name = "Fast-Food",
+            Name = "Fast food",
             Icon = BitIconName.HeartBroken,
             IsExpanded = true,
+            Comment = "List of fast foods",
             Childs = new()
             {
                 new()
                 {
-                    Name = "Burgers",
+                    Name = "Burger",
+                    Comment = "List of burgers",
                     Childs = new()
                     {
                         new() { Name = "Beef Burger" },
@@ -894,7 +917,7 @@
                 },
                 new()
                 {
-                    Name = "Pizzas",
+                    Name = "Pizza",
                     Childs = new()
                     {
                         new() { Name = "Cheese Pizza" },
@@ -908,7 +931,7 @@
         },
         new()
         {
-            Name = "Fruits",
+            Name = "Fruit",
             Icon = BitIconName.Health,
             Childs = new()
             {
@@ -930,14 +953,14 @@
     private FoodMenu CustomToggledItem;
 
 
-    private string SelectedOptionKey;
+    private string? SelectedOptionKey;
 
     private BitNavOption ClickedOption;
     private BitNavOption SelectedOption;
     private BitNavOption ToggledOption;
 
 
-    private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
+    private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems = new()
     {
         new()
         {
