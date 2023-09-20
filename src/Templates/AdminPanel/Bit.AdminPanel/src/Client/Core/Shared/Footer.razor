@@ -7,7 +7,7 @@
             {
                 <BitDropdown @bind-Value="SelectedCulture"
                              Items="_cultures"
-                             OnSelectItem="(BitDropdownItem<string> item) => OnCultureChanged()" />
+                             OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
             }
         </div>
         <div class="footer-social-lnk-grp">
