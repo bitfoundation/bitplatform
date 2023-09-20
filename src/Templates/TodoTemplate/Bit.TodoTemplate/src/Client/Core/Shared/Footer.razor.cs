@@ -34,7 +34,7 @@ public partial class Footer
         await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
 #endif
 
-        NavigationManager.ForceReload();
+        NavigationManager.Refresh(forceReload: true);
     }
 
     private static List<BitDropdownItem<string>> GetCultures() =>
