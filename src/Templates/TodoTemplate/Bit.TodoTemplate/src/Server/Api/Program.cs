@@ -7,6 +7,10 @@ if (OperatingSystem.IsWindows())
 // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
     builder.WebHost.UseUrls("https://localhost:5041", "http://localhost:5040", "https://*:5041", "http://*:5040");
 }
+else
+{
+    builder.WebHost.UseUrls("https://localhost:5041", "http://localhost:5040");
+}
 #endif
 
 TodoTemplate.Server.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
