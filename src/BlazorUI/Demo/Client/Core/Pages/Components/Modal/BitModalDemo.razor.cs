@@ -178,7 +178,7 @@ public partial class BitModalDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -235,7 +235,7 @@ public partial class BitModalDemo
     private readonly string example1CsharpCode = @"
 private bool IsOpen = false;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -299,7 +299,7 @@ private bool IsOpen = false;";
 private bool IsOpen1 = false;
 private bool IsOpen2 = false;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .relative-container {
         margin-top: 1rem;
@@ -416,7 +416,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .modal-header {
         display: flex;
@@ -460,7 +460,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .modal-header {
         display: flex;

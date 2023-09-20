@@ -49,7 +49,7 @@ public partial class _BitChartHorizontalBarDemo
 
 
 
-    private readonly string htmlCode = @"
+    private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;

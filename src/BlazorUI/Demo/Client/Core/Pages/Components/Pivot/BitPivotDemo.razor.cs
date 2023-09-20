@@ -295,7 +295,7 @@ public partial class BitPivotDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitPivot>
     <BitPivotItem HeaderText=""File"">
         <div style=""margin-top:10px"">
@@ -317,7 +317,7 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""Files"" IconName=""@BitIconName.Info"">
         <div style=""margin-top:10px"">
@@ -351,7 +351,7 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitPivot LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem HeaderText=""Large File"">
         <div style=""margin-top:10px"">
@@ -373,7 +373,7 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"">
     <BitPivotItem HeaderText=""File tab"">
         <div style=""margin-top:10px"">
@@ -395,7 +395,7 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem HeaderText=""Large File tab"">
         <div style=""margin-top:10px"">
@@ -417,7 +417,7 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitPivot @bind-SelectedKey=""OverridePivotSelectedKey"" LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
         <div style=""margin-top:10px"">
@@ -462,7 +462,7 @@ public partial class BitPivotDemo
     private readonly string example6CsharpCode = @"
 private string OverridePivotSelectedKey = ""1"";";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <div style=""margin-bottom:25px;border:1px solid #afafaf;width:fit-content;padding:10px;"">
     @if (SelectedKey == ""Foo"")
     {
@@ -495,7 +495,7 @@ private string OverridePivotSelectedKey = ""1"";";
     private readonly string example7CsharpCode = @"
 private string SelectedKey = ""Foo"";";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <div style=""margin-bottom:25px"">
     Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
 </div>
@@ -535,7 +535,7 @@ private string SelectedKey = ""Foo"";";
     private readonly string example8CsharpCode = @"
 private BitPivotItem SelectedPivotItem;";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
     <BitPivotItem HeaderText=""Foo"">
         <div style=""margin-top:10px"">
@@ -567,7 +567,7 @@ private void TogglePivotItemVisibility()
     PivotItemVisibility = PivotItemVisibility == BitVisibility.Visible ? BitVisibility.Collapsed : BitVisibility.Visible;
 }";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitPivot>
     <BitPivotItem>
         <Header>
@@ -612,7 +612,7 @@ private void TogglePivotItemVisibility()
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .subtitle {
         padding: 20px 0 10px 0;
@@ -720,7 +720,7 @@ private void TogglePivotItemVisibility()
     </BitPivot>
 </div>";
 
-    private readonly string example12HtmlCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => PivotEnabled = !PivotEnabled"">Toggle Pivot's IsEnabled</BitButton>
 <BitButton OnClick=""() => PivotItemEnabled = !PivotItemEnabled"">Toggle Pivot Item's IsEnabled</BitButton>
 

@@ -433,7 +433,7 @@ public partial class BitBreadcrumbDemo
         }
     }
 
-    private readonly string example1BreadcrumbItemHtmlCode = @"
+    private readonly string example1BreadcrumbItemRazorCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" />
@@ -447,7 +447,7 @@ public partial class BitBreadcrumbDemo
     <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
 </div>
 ";
-    private readonly string example1CustomItemHtmlCode = @"
+    private readonly string example1CustomItemRazorCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -477,7 +477,7 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
 </div>
 ";
-    private readonly string example1BreadcrumbOptionHtmlCode = @"
+    private readonly string example1BreadcrumbOptionRazorCode = @"
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"">
@@ -509,7 +509,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example2BreadcrumbItemHtmlCode = @"
+    private readonly string example2BreadcrumbItemRazorCode = @"
 <div>
     <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""1"" />
@@ -535,7 +535,7 @@ public partial class BitBreadcrumbDemo
     <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 </div>
 ";
-    private readonly string example2CustomItemHtmlCode = @"
+    private readonly string example2CustomItemRazorCode = @"
 <div>
     <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -600,7 +600,7 @@ public partial class BitBreadcrumbDemo
                     OverflowIndex=""2"" />
 </div>
 ";
-    private readonly string example2BreadcrumbOptionHtmlCode = @"
+    private readonly string example2BreadcrumbOptionRazorCode = @"
 <div>
     <BitLabel>MaxDisplayedOptions (1)</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""1"">
@@ -657,7 +657,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example3BreadcrumbItemHtmlCode = @"
+    private readonly string example3BreadcrumbItemRazorCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb Items=""BreadcrumbItems""
@@ -673,7 +673,7 @@ public partial class BitBreadcrumbDemo
                    OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
-    private readonly string example3CustomItemHtmlCode = @"
+    private readonly string example3CustomItemRazorCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
@@ -699,7 +699,7 @@ public partial class BitBreadcrumbDemo
                     OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
-    private readonly string example3BreadcrumbOptionHtmlCode = @"
+    private readonly string example3BreadcrumbOptionRazorCode = @"
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIcon=""@BitIconName.ChevronDown"">
@@ -721,7 +721,7 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example4BreadcrumbItemHtmlCode = @"
+    private readonly string example4BreadcrumbItemRazorCode = @"
 <style>
     .custom-item {
         color: red;
@@ -765,7 +765,7 @@ public partial class BitBreadcrumbDemo
                    SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
-    private readonly string example4CustomItemHtmlCode = @"
+    private readonly string example4CustomItemRazorCode = @"
 <style>
     .custom-item {
         color: red;
@@ -829,7 +829,7 @@ public partial class BitBreadcrumbDemo
                     SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
-    private readonly string example4BreadcrumbOptionHtmlCode = @"
+    private readonly string example4BreadcrumbOptionRazorCode = @"
 <style>
     .custom-item {
         color: red;
@@ -892,14 +892,14 @@ public partial class BitBreadcrumbDemo
 </div>
 ";
 
-    private readonly string example5BreadcrumbItemHtmlCode = @"
+    private readonly string example5BreadcrumbItemRazorCode = @"
 <BitBreadcrumb Items=""@BreadcrumbItemsWithControlled""
                 MaxDisplayedItems=""3""
                 OverflowIndex=""2""
                 OnItemClick=""(BitBreadcrumbItem item) => HandleOnItemClick(item)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
-    private readonly string example5CustomItemHtmlCode = @"
+    private readonly string example5CustomItemRazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithControlled""
                 TextField=""@nameof(PageInfoModel.Name)""
                 HrefField=""@nameof(PageInfoModel.Address)""
@@ -911,7 +911,7 @@ public partial class BitBreadcrumbDemo
                 OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
-    private readonly string example5BreadcrumbOptionHtmlCode = @"
+    private readonly string example5BreadcrumbOptionRazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" SelectedItemStyle=""color:red; background:lightgreen;"">
     <BitBreadcrumbOption Text=""Option 1"" IsSelected=""@(SelectedOptionNumber == 1)"" OnClick=""() => SelectedOptionNumber = 1"" />
     <BitBreadcrumbOption Text=""Option 2"" IsSelected=""@(SelectedOptionNumber == 2)"" OnClick=""() => SelectedOptionNumber = 2"" />
@@ -922,7 +922,7 @@ public partial class BitBreadcrumbDemo
 </BitBreadcrumb>
 ";
 
-    private readonly string example6BreadcrumbItemHtmlCode = @"
+    private readonly string example6BreadcrumbItemRazorCode = @"
 <div>
     <BitBreadcrumb Items=""@BreadcrumbItemsWithCustomized""
                     MaxDisplayedItems=""@MaxDisplayedItems""
@@ -940,7 +940,7 @@ public partial class BitBreadcrumbDemo
     </div>
 </div>
 ";
-    private readonly string example6CustomItemHtmlCode = @"
+    private readonly string example6CustomItemRazorCode = @"
 <div>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithCustomized""
                     TextField=""@nameof(PageInfoModel.Name)""
@@ -963,7 +963,7 @@ public partial class BitBreadcrumbDemo
     </div>
 </div>
 ";
-    private readonly string example6BreadcrumbOptionHtmlCode = @"
+    private readonly string example6BreadcrumbOptionRazorCode = @"
 <div>
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""@MaxDisplayedItems"" OverflowIndex=""@OverflowIndex"">
         @for (int i = 0; i < ItemsCount; i++)

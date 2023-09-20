@@ -109,7 +109,7 @@ public partial class BitCarouselDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <style>
     .number {
         position: absolute;
@@ -144,7 +144,7 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .image {
         width: 100%;
@@ -193,7 +193,7 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .image {
         width: 100%;
@@ -246,7 +246,7 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .image {
         width: 100%;
@@ -344,7 +344,7 @@ private void GoTo()
     carousel.GoTo(index);
 }";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .image {
         width: 100%;
@@ -411,7 +411,7 @@ private void GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .item {
         text-align: center;
@@ -439,7 +439,7 @@ private void GoTo()
     </BitCarousel>
 </div>";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .item {
         text-align: center;

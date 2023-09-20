@@ -142,7 +142,7 @@ public partial class BitToggleDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
 
 <BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />";
@@ -150,7 +150,7 @@ public partial class BitToggleDemo
 private bool BasicValue;
 private bool DisabledValue;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
@@ -161,7 +161,7 @@ private bool OnTextValue;
 private bool InLineLabelValue;
 private bool DefaultTextValue;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitToggle @bind-Value=""LabelTemplateValue"">
     <LabelTemplate>
         <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
@@ -171,7 +171,7 @@ private bool DefaultTextValue;";
     private readonly string example3CsharpCode = @"
 private bool LabelTemplateValue;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""On"" OffText=""Off"" />
 <BitToggleButton @bind-IsChecked=""OneWayValue"" OnText=""On"" OffText=""Off"" />
 
@@ -181,7 +181,7 @@ private bool LabelTemplateValue;";
 private bool OneWayValue;
 private bool TwoWayValue;";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         width: max-content;
@@ -235,14 +235,14 @@ private bool ClassValue;
 private bool StylesValue;
 private bool ClassesValue;";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 Visible: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" DefaultText=""Visible Toggle"" /> ]
 Hidden: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" DefaultText=""Hidden Toggle"" />  ]
 Collapsed: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" DefaultText=""Collapsed Toggle"" />  ]";
     private readonly string example6CsharpCode = @"
 private bool VisibilityValue;";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .validation-summary {
         border-left: rem(5px) solid $Red10;

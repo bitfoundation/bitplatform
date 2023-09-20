@@ -1,10 +1,10 @@
-<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
         <BitChoiceGroup Label="Basic Items" Items="basicItems" DefaultValue="basicItems[1].Value" />
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Disabled" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="Disabled ChoiceGroup"
@@ -19,7 +19,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Images and Icons" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="Image Items" Items="imageItems" DefaultValue="@("Bar")" />
@@ -28,7 +28,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div class="example-content column">
             <BitChoiceGroup Label="Basic" Items="basicItems" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" />
@@ -39,7 +39,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
@@ -80,7 +80,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Visibility" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div class="example-content column">
             <div class="visibility-items">
@@ -105,7 +105,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="LabelTemplate" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="LabelTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <BitChoiceGroup Items="basicItems" DefaultValue="@("A")">
             <LabelTemplate>
@@ -117,7 +117,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item Templates" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Item Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div class="example-content">
             <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
@@ -145,7 +145,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -165,7 +165,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div class="example-content column">
             <BitChoiceGroup Label="Basic" Items="rtlItems" DefaultValue="@("A")" IsRtl="true" />
@@ -174,7 +174,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+<ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         @if (string.IsNullOrEmpty(successMessage))
         {
