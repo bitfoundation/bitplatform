@@ -689,6 +689,10 @@
     color: $color-foreground-primary;
     margin: spacing(0.375) spacing(0.5) 0 0;
 
+    &.bit-dtrp-gtd-btn-bs {
+        bottom: spacing(-1.5);
+    }
+
     @media (hover: hover) {
         &:hover {
             cursor: pointer;
