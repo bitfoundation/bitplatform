@@ -22,10 +22,6 @@
     &.bit-windows * {
         -webkit-user-drag: none;
     }
-
-    &.bit-ios * {
-        overscroll-behavior: none;
-    }
 }
 
 html, body, #app-container {
