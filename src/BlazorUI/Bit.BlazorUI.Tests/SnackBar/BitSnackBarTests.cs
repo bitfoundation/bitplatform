@@ -103,22 +103,26 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitSnackBarType.Info),
-        DataRow(BitSnackBarType.Warning),
-        DataRow(BitSnackBarType.Success),
-        DataRow(BitSnackBarType.Error),
-        DataRow(BitSnackBarType.SevereWarning),
-        DataRow(null)
+        DataRow("title", BitSnackBarType.Info),
+        DataRow("title", BitSnackBarType.Warning),
+        DataRow("title", BitSnackBarType.Success),
+        DataRow("title", BitSnackBarType.Error),
+        DataRow("title", BitSnackBarType.SevereWarning),
+        DataRow("title", null)
     ]
     [TestMethod]
-    public async Task BitSnackBarTypeTest(BitSnackBarType? type)
+    public async Task BitSnackBarTypeTest(string title, BitSnackBarType? type)
     {
         var com = RenderComponent<BitSnackBar>();
 
         if (type.HasValue)
-            await com.Instance.Show("title", string.Empty, type);
+        {
+            await com.Instance.Show(title, type: type);
+        }
         else
-            await com.Instance.Show("title");
+        {
+            await com.Instance.Show(title);
+        }
 
         var element = com.Find(".bit-snb-itm");
 
@@ -135,12 +139,15 @@ public class BitSnackBarTests : BunitTestContext
         Assert.IsTrue(element.ClassList.Contains(typeClass));
     }
 
+    [DataTestMethod,
+        DataRow("title")
+    ]
     [TestMethod]
-    public async Task BitSnackBarCloseButtonTest()
+    public async Task BitSnackBarCloseButtonTest(string title)
     {
         var com = RenderComponent<BitSnackBar>();
 
-        await com.Instance.Show("title");
+        await com.Instance.Show(title);
 
         var closeButton = com.Find(".bit-snb-cbt");
         closeButton.Click();
@@ -150,47 +157,57 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual(0, items.Count);
     }
 
+    [DataTestMethod,
+        DataRow("title", "Go"),
+        DataRow("title", "Cancel")
+    ]
     [TestMethod]
-    public async Task BitSnackBarDismissIconNameTest()
+    public async Task BitSnackBarDismissIconNameTest(string title, string iconName)
     {
         var com = RenderComponent<BitSnackBar>(
             parameters =>
             {
-                parameters.Add(x => x.DismissIconName, "Go");
+                parameters.Add(x => x.DismissIconName, iconName);
             }
         );
 
-        await com.Instance.Show("title");
+        await com.Instance.Show(title);
 
         var closeButtonIcon = com.Find(".bit-snb-cbt > .bit-icon");
 
-        Assert.IsTrue(closeButtonIcon.ClassList.Contains("bit-icon--Go"));
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
+    [DataTestMethod,
+        DataRow("title")
+    ]
     [TestMethod]
-    public async Task BitSnackBarTitleTemplateTest()
+    public async Task BitSnackBarTitleTemplateTest(string title)
     {
         var wrappedCom = RenderComponent<BitSnackBarWithTitleTemplate>();
 
         var com = wrappedCom.FindComponent<BitSnackBar>();
 
-        await com.Instance.Show("title");
+        await com.Instance.Show(title);
 
         var titleTemplateElements = com.FindAll(".bit-snb-hdr > *").ToList();
         //remove button
         titleTemplateElements.RemoveAt(0);
 
-        Assert.AreEqual("<span>title</span><span>second element</span>", string.Join(string.Empty, titleTemplateElements.Select(x => x.OuterHtml).ToArray()));
+        Assert.AreEqual($"<span>{title}</span><span></span>", string.Join(string.Empty, titleTemplateElements.Select(x => x.OuterHtml).ToArray()));
     }
 
+    [DataTestMethod,
+        DataRow("title", "body")
+    ]
     [TestMethod]
-    public async Task BitSnackBarBodyTemplateTest()
+    public async Task BitSnackBarBodyTemplateTest(string title, string body)
     {
         var wrappedCom = RenderComponent<BitSnackBarWithBodyTemplate>();
 
         var com = wrappedCom.FindComponent<BitSnackBar>();
 
-        await com.Instance.Show("title", "body");
+        await com.Instance.Show(title, body);
 
         var itemTemplateElements = com.FindAll(".bit-snb-itm > *").ToList();
         //remove title
@@ -198,7 +215,7 @@ public class BitSnackBarTests : BunitTestContext
         //remove progressbar
         itemTemplateElements.RemoveAt(itemTemplateElements.Count - 1);
 
-        Assert.AreEqual("<p>body</p><span>second element</span>", string.Join(string.Empty, itemTemplateElements.Select(x => x.OuterHtml).ToArray()));
+        Assert.AreEqual($"<p>{body}</p><span></span>", string.Join(string.Empty, itemTemplateElements.Select(x => x.OuterHtml).ToArray()));
     }
 
 
