@@ -79,11 +79,17 @@ jobs:
       targetPath: 'api-web'
       artifact: 'api-web-bundle'
       publishLocation: 'pipeline'
+
+  - task: Bash@3
+    displayName: 'Build migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: 'cd src/BlazorDual.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project BlazorDual.Api.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'efbundle'
+      targetPath: 'src/BlazorDual.Api/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 
