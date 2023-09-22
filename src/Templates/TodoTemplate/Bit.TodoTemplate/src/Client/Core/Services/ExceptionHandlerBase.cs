@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
 
-namespace TodoTemplate.Client.Core.Services.Implementations;
+namespace TodoTemplate.Client.Core.Services;
 
 public abstract class ExceptionHandlerBase : IExceptionHandler
 {

@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Server.Api.Services.Implementations;
+﻿namespace TodoTemplate.Server.Api.Services;
 
 public partial class UserInformationProvider : IUserInformationProvider
 {

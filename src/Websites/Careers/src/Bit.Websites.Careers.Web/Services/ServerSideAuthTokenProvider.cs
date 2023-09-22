@@ -3,7 +3,7 @@ using System.Reflection;
 #endif
 
 
-namespace Bit.Websites.Careers.Web.Services.Implementations;
+namespace Bit.Websites.Careers.Web.Services;
 
 #if BlazorServer
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider

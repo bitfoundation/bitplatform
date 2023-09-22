@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text;
 
-namespace BlazorDual.Web.Services.Implementations;
+namespace BlazorDual.Web.Services;
 
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {

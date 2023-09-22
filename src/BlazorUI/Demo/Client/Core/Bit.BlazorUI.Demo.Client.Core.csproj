@@ -43,7 +43,7 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Models" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

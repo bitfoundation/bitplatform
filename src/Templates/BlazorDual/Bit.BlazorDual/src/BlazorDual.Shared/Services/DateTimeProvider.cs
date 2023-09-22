@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Shared.Services.Implementations;
+﻿namespace BlazorDual.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

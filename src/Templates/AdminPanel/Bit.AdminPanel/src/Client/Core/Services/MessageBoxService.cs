@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Core.Services.Implementations;
+﻿namespace AdminPanel.Client.Core.Services;
 public partial class MessageBoxService
 {
     [AutoInject] IPubSubService _pubSubService = default!;

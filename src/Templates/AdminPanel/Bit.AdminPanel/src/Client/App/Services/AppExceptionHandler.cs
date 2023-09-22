@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.App.Services.Implementations;
+﻿namespace AdminPanel.Client.App.Services;
 
 /// <summary>
 /// You can easily install AppCenter, Firebase Crashlytics, and other exception tracking libraries in your Client.App project.

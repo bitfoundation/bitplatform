@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Web.Services.Implementations;
+﻿namespace Bit.BlazorUI.Demo.Client.Web.Services;
 public partial class WebExceptionHandler : ExceptionHandlerBase
 {
     public WebExceptionHandler(IStringLocalizer<AppStrings> localizer)

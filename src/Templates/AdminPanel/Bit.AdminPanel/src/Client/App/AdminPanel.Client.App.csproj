@@ -57,7 +57,7 @@
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="AdminPanel.Client.Core.Shared" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
-        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Services" />
 
     </ItemGroup>
 

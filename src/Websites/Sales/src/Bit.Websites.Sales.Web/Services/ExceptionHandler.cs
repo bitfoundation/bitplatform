@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Bit.Websites.Sales.Web.Services.Implementations;
+namespace Bit.Websites.Sales.Web.Services;
 
 public partial class ExceptionHandler : IExceptionHandler
 {

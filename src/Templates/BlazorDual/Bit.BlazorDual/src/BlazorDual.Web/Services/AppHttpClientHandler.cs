@@ -3,7 +3,7 @@ using System.Net;
 using System.Globalization;
 using System.Net.Http.Headers;
 
-namespace BlazorDual.Web.Services.Implementations;
+namespace BlazorDual.Web.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Services.Implementations;
+﻿namespace BlazorDual.Web.Services;
 
 public partial class MessageBoxService
 {

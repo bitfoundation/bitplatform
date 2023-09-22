@@ -3,7 +3,7 @@
 using System.Reflection;
 #endif
 
-namespace AdminPanel.Client.Web.Services.Implementations;
+namespace AdminPanel.Client.Web.Services;
 
 /// <summary>
 /// The <see cref="ClientSideAuthTokenProvider"/> reads the token from the cookie,

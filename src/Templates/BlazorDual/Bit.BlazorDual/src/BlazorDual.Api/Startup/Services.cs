@@ -5,12 +5,12 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorDual.Api.Services.Implementations;
+using BlazorDual.Api.Services;
 using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
-using BlazorDual.Web.Services.Implementations;
-using BlazorDual.Web.Services.Implementations;
+using BlazorDual.Web.Services;
+using BlazorDual.Web.Services;
 #endif
 
 namespace BlazorDual.Api.Startup;

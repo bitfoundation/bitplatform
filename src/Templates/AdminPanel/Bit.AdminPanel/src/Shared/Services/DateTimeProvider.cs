@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Shared.Services.Implementations;
+﻿namespace AdminPanel.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

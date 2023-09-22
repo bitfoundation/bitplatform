@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-namespace AdminPanel.Client.Core.Services.Implementations;
+namespace AdminPanel.Client.Core.Services;
 
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {

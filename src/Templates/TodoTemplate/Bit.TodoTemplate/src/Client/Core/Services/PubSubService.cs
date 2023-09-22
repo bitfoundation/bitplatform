@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Core.Services.Implementations;
+﻿namespace TodoTemplate.Client.Core.Services;
 
 /// <summary>
 /// For more information <see cref="IPubSubService"/> docs.

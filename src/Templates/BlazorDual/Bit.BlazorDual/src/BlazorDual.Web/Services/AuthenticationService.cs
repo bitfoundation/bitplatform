@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using BlazorDual.Shared.Dtos.Identity;
 
-namespace BlazorDual.Web.Services.Implementations;
+namespace BlazorDual.Web.Services;
 
 public partial class AuthenticationService : IAuthenticationService
 {

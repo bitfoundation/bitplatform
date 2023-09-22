@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using TodoTemplate.Shared.Dtos.Identity;
 
-namespace TodoTemplate.Client.Core.Services.Implementations;
+namespace TodoTemplate.Client.Core.Services;
 
 public partial class AuthenticationService : IAuthenticationService
 {

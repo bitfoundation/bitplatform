@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Client.App;
-using AdminPanel.Client.App.Services.Implementations;
+using AdminPanel.Client.App.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

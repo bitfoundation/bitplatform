@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Web.Services.Implementations;
+﻿namespace TodoTemplate.Client.Web.Services;
 
 public class WebDeviceCoordinator : IBitDeviceCoordinator
 {

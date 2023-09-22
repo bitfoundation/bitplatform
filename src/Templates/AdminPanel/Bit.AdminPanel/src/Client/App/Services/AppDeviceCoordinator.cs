@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace AdminPanel.Client.App.Services.Implementations;
+namespace AdminPanel.Client.App.Services;
 
 /// <summary>
 /// More info at <see cref="IBitDeviceCoordinator"/>

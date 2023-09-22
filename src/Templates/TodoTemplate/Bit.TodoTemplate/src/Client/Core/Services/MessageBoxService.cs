@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Client.Core.Services.Implementations;
+﻿namespace TodoTemplate.Client.Core.Services;
 public partial class MessageBoxService
 {
     [AutoInject] IPubSubService _pubSubService = default!;

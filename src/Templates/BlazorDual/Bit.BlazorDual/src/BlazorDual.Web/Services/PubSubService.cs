@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Services.Implementations;
+﻿namespace BlazorDual.Web.Services;
 
 /// <summary>
 /// For more information <see cref="IPubSubService"/> docs.

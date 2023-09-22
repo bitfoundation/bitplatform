@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
 
-namespace AdminPanel.Client.Core.Services.Implementations;
+namespace AdminPanel.Client.Core.Services;
 
 public abstract class ExceptionHandlerBase : IExceptionHandler
 {

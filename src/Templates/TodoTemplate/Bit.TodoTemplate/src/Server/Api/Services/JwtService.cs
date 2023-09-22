@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using TodoTemplate.Server.Api.Models.Identity;
 using TodoTemplate.Shared.Dtos.Identity;
 
-namespace TodoTemplate.Server.Api.Services.Implementations;
+namespace TodoTemplate.Server.Api.Services;
 
 public partial class JwtService : IJwtService
 {

@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
-using Bit.Websites.Careers.Web.Services.Implementations;
-using Bit.Websites.Careers.Web.Services.Implementations;
+using Bit.Websites.Careers.Web.Services;
+using Bit.Websites.Careers.Web.Services;
 #endif
 
 namespace Bit.Websites.Careers.Api.Startup;

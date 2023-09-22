@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace TodoTemplate.Client.Core.Services.Implementations;
+namespace TodoTemplate.Client.Core.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

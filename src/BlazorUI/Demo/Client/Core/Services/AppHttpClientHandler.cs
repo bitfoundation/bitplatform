@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Bit.BlazorUI.Demo.Client.Core.Services.Implementations;
+namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

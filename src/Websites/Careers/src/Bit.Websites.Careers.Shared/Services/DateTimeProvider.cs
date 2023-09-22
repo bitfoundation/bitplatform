@@ -1,4 +1,4 @@
-﻿namespace Bit.Websites.Careers.Shared.Services.Implementations;
+﻿namespace Bit.Websites.Careers.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

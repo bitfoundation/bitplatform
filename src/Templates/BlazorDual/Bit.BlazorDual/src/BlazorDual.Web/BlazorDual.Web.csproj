@@ -26,7 +26,7 @@
         <!-- In the Blazor WebAssembly mode, the API project will host the web app itself -->
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Host.cshtml" />
         <Content Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Pages\_Layout.cshtml" />
-        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Services\ServerSideAuthTokenProvider.cs" />
         <Compile Condition="'$(BlazorMode)' != 'BlazorServer'" Remove="Extensions\HttpRequestExtensions.cs" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
@@ -67,7 +67,7 @@
         <Using Include="Bit.BlazorUI" />
         <Using Include="BlazorDual.Web.Shared" />
         <Using Include="BlazorDual.Web.Services.Contracts" />
-        <Using Include="BlazorDual.Web.Services.Implementations" />
+        <Using Include="BlazorDual.Web.Services" />
         <Using Include="BlazorDual.Shared" />
 
         <Watch Remove="*.scss" />

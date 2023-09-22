@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using AdminPanel.Shared.Dtos.Identity;
 
-namespace AdminPanel.Client.Core.Services.Implementations;
+namespace AdminPanel.Client.Core.Services;
 
 public partial class AuthenticationService : IAuthenticationService
 {

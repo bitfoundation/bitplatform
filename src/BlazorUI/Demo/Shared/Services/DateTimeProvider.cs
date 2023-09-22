@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Shared.Services.Implementations;
+﻿namespace Bit.BlazorUI.Demo.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

@@ -2,7 +2,7 @@
 #if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using TodoTemplate.Client.Web.Services.Implementations;
+using TodoTemplate.Client.Web.Services;
 
 namespace TodoTemplate.Client.Web.Startup;
 

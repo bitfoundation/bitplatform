@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text;
 
-namespace TodoTemplate.Client.Core.Services.Implementations;
+namespace TodoTemplate.Client.Core.Services;
 
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {

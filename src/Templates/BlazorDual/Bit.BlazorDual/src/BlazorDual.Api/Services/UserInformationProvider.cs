@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Api.Services.Implementations;
+﻿namespace BlazorDual.Api.Services;
 
 public partial class UserInformationProvider : IUserInformationProvider
 {

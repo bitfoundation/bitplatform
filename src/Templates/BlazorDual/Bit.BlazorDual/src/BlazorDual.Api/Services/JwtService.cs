@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using BlazorDual.Api.Models.Identity;
 using BlazorDual.Shared.Dtos.Identity;
 
-namespace BlazorDual.Api.Services.Implementations;
+namespace BlazorDual.Api.Services;
 
 public partial class JwtService : IJwtService
 {

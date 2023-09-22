@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.App.Services.Implementations;
+﻿namespace Bit.BlazorUI.Demo.Client.App.Services;
 
 public class AppDeviceCoordinator : IBitDeviceCoordinator
 {

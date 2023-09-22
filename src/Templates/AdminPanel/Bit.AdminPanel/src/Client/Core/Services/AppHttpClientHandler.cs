@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Globalization;
 #endif
 
-namespace AdminPanel.Client.Core.Services.Implementations;
+namespace AdminPanel.Client.Core.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

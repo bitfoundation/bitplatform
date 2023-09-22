@@ -4,7 +4,7 @@ using System.Reflection;
 #endif
 
 
-namespace BlazorDual.Web.Services.Implementations;
+namespace BlazorDual.Web.Services;
 
 /// <summary>
 /// The <see cref="ClientSideAuthTokenProvider"/> reads the token from the cookie,

@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using AdminPanel.Server.Api.Models.Identity;
 using AdminPanel.Shared.Dtos.Identity;
 
-namespace AdminPanel.Server.Api.Services.Implementations;
+namespace AdminPanel.Server.Api.Services;
 
 public partial class JwtService : IJwtService
 {

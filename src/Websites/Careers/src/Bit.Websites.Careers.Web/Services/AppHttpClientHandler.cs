@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Net.Http.Headers;
 
-namespace Bit.Websites.Careers.Web.Services.Implementations;
+namespace Bit.Websites.Careers.Web.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

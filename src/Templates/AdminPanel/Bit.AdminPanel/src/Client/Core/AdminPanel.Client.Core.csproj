@@ -45,7 +45,7 @@
         <Using Include="AdminPanel.Shared" />
         <Using Include="AdminPanel.Client.Core.Shared" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
-        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

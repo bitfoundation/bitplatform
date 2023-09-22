@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Server.Api.Services.Implementations;
+﻿namespace AdminPanel.Server.Api.Services;
 
 public partial class UserInformationProvider : IUserInformationProvider
 {

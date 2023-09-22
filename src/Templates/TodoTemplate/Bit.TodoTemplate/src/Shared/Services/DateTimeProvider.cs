@@ -1,4 +1,4 @@
-﻿namespace TodoTemplate.Shared.Services.Implementations;
+﻿namespace TodoTemplate.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

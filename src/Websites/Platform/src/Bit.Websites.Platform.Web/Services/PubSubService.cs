@@ -1,4 +1,4 @@
-﻿namespace Bit.Websites.Platform.Web.Services.Implementations;
+﻿namespace Bit.Websites.Platform.Web.Services;
 
 public class PubSubService : IPubSubService
 {

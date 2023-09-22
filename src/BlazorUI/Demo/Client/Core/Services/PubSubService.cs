@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Services.Implementations;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public class PubSubService : IPubSubService
 {

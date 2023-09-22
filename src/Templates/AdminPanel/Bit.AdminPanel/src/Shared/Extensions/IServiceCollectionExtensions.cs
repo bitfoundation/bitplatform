@@ -1,4 +1,4 @@
-﻿using AdminPanel.Shared.Services.Implementations;
+﻿using AdminPanel.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

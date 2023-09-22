@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Bit.BlazorUI.Demo.Client.Core.Services.Implementations;
+namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public abstract class ExceptionHandlerBase : IExceptionHandler
 {

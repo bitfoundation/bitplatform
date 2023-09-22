@@ -1,4 +1,4 @@
-﻿namespace AdminPanel.Client.Web.Services.Implementations;
+﻿namespace AdminPanel.Client.Web.Services;
 
 public class WebExceptionHandler : ExceptionHandlerBase
 {
