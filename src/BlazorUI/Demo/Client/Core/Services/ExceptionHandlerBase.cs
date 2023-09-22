@@ -2,20 +2,15 @@
 
 namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
-public abstract class ExceptionHandlerBase : IExceptionHandler
+public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
-    private readonly IStringLocalizer<AppStrings> _localizer = default!;
-
-    protected ExceptionHandlerBase(IStringLocalizer<AppStrings> localizer)
-    {
-        _localizer = localizer;
-    }
+    [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
 #if DEBUG
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
-        _ = MessageBox.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = MessageBox.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
         Console.WriteLine(exceptionMessage);
         Debugger.Break();
 #else

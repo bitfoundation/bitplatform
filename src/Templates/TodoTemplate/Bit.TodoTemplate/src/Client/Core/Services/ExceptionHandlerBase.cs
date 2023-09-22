@@ -3,17 +3,17 @@ using System.Diagnostics;
 
 namespace TodoTemplate.Client.Core.Services;
 
-public abstract class ExceptionHandlerBase : IExceptionHandler
+public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
-    private readonly IStringLocalizer<AppStrings> _localizer = default!;
-    private readonly IAuthenticationService _authenticationService = default!;
-    private readonly MessageBoxService _messageBoxService = default!;
+    [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
+    [AutoInject] protected readonly IAuthenticationService AuthenticationService = default!;
+    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
 
     public ExceptionHandlerBase(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
     {
-        _localizer = localizer;
-        _authenticationService = authenticationService;
-        _messageBoxService = messageBoxService;
+        Localizer = localizer;
+        AuthenticationService = authenticationService;
+        MessageBoxService = messageBoxService;
     }
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
@@ -27,7 +27,7 @@ public abstract class ExceptionHandlerBase : IExceptionHandler
 
 #if DEBUG
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
-        _ = _messageBoxService.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
         _ = Console.Out.WriteLineAsync(exceptionMessage);
         Debugger.Break();
 #else
@@ -46,9 +46,9 @@ public abstract class ExceptionHandlerBase : IExceptionHandler
     {
         try
         {
-            await _messageBoxService.Show(_localizer[nameof(AppStrings.YouNeedToSignIn)], _localizer[nameof(AppStrings.Error)]);
+            await MessageBoxService.Show(Localizer[nameof(AppStrings.YouNeedToSignIn)], Localizer[nameof(AppStrings.Error)]);
 
-            await _authenticationService.SignOut();
+            await AuthenticationService.SignOut();
         }
         catch (Exception exp)
         {
