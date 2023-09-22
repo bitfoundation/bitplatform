@@ -26,11 +26,11 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 #else
         if (exception is KnownException knownException)
         {
-            _messageBoxService.Show(knownException.Message, _localizer[nameof(AppStrings.Error)]);
+            MessageBoxService.Show(knownException.Message, Localizer[nameof(AppStrings.Error)]);
         }
         else
         {
-            _messageBoxService.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
+            MessageBoxService.Show(Localizer[nameof(AppStrings.UnknownException)], Localizer[nameof(AppStrings.Error)]);
         }
 #endif
     }

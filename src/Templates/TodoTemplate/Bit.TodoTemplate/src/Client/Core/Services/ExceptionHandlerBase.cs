@@ -9,13 +9,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     [AutoInject] protected readonly IAuthenticationService AuthenticationService = default!;
     [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
 
-    public ExceptionHandlerBase(IStringLocalizer<AppStrings> localizer, IAuthenticationService authenticationService, MessageBoxService messageBoxService)
-    {
-        Localizer = localizer;
-        AuthenticationService = authenticationService;
-        MessageBoxService = messageBoxService;
-    }
-
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
         if (exception is UnauthorizedException)
@@ -33,11 +26,11 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 #else
         if (exception is KnownException knownException)
         {
-            _ = _messageBoxService.Show(knownException.Message, _localizer[nameof(AppStrings.Error)]);
+            _ = MessageBoxService.Show(knownException.Message, Localizer[nameof(AppStrings.Error)]);
         }
         else
         {
-            _ = _messageBoxService.Show(_localizer[nameof(AppStrings.UnknownException)], _localizer[nameof(AppStrings.Error)]);
+            _ = MessageBoxService.Show(Localizer[nameof(AppStrings.UnknownException)], Localizer[nameof(AppStrings.Error)]);
         }
 #endif
     }
