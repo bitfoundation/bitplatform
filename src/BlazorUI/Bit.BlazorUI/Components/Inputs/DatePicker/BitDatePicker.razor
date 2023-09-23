@@ -375,7 +375,7 @@
                         {
                             <button @onclick="HandleGoToToday"
                                     type="button"
-                                    class="bit-dtp-gtd-btn bit-dtp-gtd-btn-bs"
+                                    class="bit-dtp-gtd-btn @(ShowTimePicker ? "bit-dtp-gtd-btn-bs" : "")"
                                     disabled="@IsGoTodayDisabled()">
                                 @GoToToday
                             </button>
