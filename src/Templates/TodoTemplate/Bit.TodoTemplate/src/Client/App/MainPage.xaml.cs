@@ -27,6 +27,8 @@ public partial class MainPage
 #elif IOS || MACCATALYST
             handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
             
+            handler.PlatformView.ScrollView.Bounces = false;
+            
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG
@@ -38,6 +40,8 @@ public partial class MainPage
 #endif
 #elif ANDROID
             handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            
+            handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
