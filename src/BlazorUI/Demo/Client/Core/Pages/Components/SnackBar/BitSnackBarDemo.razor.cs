@@ -27,6 +27,15 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSnackBarClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-class-styles",
+            Description = "Custom CSS classes for different parts of the BitSnackBar.",
+        },
+        new()
+        {
             Name = "DismissIconName",
             Type = "string?",
             DefaultValue = "null",
@@ -46,6 +55,15 @@ public partial class BitSnackBarDemo
             Description = "The position of SnackBar to show.",
             LinkType = LinkType.Link,
             Href = "#snackbar-position-enum"
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitSnackBarClassStyles?",
+            DefaultValue = "null",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-class-styles",
+            Description = "Custom CSS styles for different parts of the BitSnackBar.",
         },
         new()
         {
@@ -136,6 +154,74 @@ public partial class BitSnackBarDemo
         },
     };
 
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "snackbar-class-styles",
+            Title = "BitSnackBarClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main container of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "DismissButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the dismiss button of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "DismissIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the dismiss icon of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the title of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the body of the BitSnackBar."
+                },
+                new()
+                {
+                    Name = "Progress",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the progress of the BitSnackBar."
+                }
+            }
+        }
+    };
+
 
 
     private readonly string example1RazorCode = @"
@@ -217,5 +303,80 @@ private async Task OpenBasicSnackBar()
 private BitSnackBar DismissIconName = new();
 private BitSnackBar TitleTemplate = new();
 private BitSnackBar BodyTemplate = new();
-private string? BodyTemplateAnswer;";
+
+private string? BodyTemplateAnswer;
+
+private async Task OpenDismissIconName()
+{
+    await DismissIconName.Success(""This is title"", ""This is body"");
+}
+
+private async Task OpenTitleTemplate()
+{
+    await TitleTemplate.Warning(""This is title"", ""This is body"");
+}
+
+private async Task OpenBodyTemplate()
+{
+    await BodyTemplate.Error(""This is title"", ""This is body"");
+}";
+
+    private readonly string example3RazorCode = @"
+<style>
+    .custom-class {
+        background-color: tomato;
+        box-shadow: gold 0 0 1rem;
+    }
+
+    .custom-container {
+        border: 1px solid gold;
+    }
+
+    .custom-progress {
+        background-color: gold;
+    }
+</style>
+
+
+<BitSnackBar @ref=""SnackBarStyle"" Style=""background-color: dodgerblue; border-radius: 0.5rem;"" />
+<BitButton OnClick=""OpenSnackBarStyle"">Custom style</BitButton>
+
+<BitSnackBar @ref=""SnackBarClass"" Class=""custom-class"" />
+<BitButton OnClick=""OpenSnackBarClass"">Custom class</BitButton>
+                    
+
+<BitSnackBar @ref=""SnackBarStyles""
+             Styles=""@(new() { Container = ""width: 16rem; background-color: purple;"",
+                               Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
+<BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
+                    
+<BitSnackBar @ref=""SnackBarClasses"" 
+             Classes=""@(new() { Container = ""custom-container"",
+                                Progress = ""custom-progress"" })"" />
+<BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";
+    private readonly string example3CsharpCode = @"
+private BitSnackBar SnackBarStyle = new();
+private BitSnackBar SnackBarClass = new();
+private BitSnackBar SnackBarStyles = new();
+private BitSnackBar SnackBarClasses = new();
+
+private async Task OpenSnackBarStyle()
+{
+    await SnackBarStyle.Show(""This is title"", ""This is body"", null);
+}
+
+private async Task OpenSnackBarClass()
+{
+    await SnackBarClass.Show(""This is title"", ""This is body"", null);
+}
+
+private async Task OpenSnackBarStyles()
+{
+    await SnackBarStyles.Show(""This is title"", ""This is body"");
+}
+
+private async Task OpenSnackBarClasses()
+{
+    await SnackBarClasses.Show(""This is title"", ""This is body"");
+}";
 }
