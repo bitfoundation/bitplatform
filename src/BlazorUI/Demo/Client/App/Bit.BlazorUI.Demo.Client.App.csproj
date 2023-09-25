@@ -71,7 +71,7 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Components" />
-        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Implementations" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>

@@ -55,7 +55,7 @@
         <Using Include="Bit.Websites.Sales.Web.Components" />
         <Using Include="Bit.Websites.Sales.Web.Shared" />
         <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
-        <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
+        <Using Include="Bit.Websites.Sales.Web.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

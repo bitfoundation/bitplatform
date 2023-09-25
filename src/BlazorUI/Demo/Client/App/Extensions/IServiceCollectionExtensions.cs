@@ -1,5 +1,5 @@
 ﻿using Bit.BlazorUI.Demo.Client.App;
-using Bit.BlazorUI.Demo.Client.App.Services.Implementations;
+using Bit.BlazorUI.Demo.Client.App.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

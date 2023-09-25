@@ -45,7 +45,7 @@
         <Using Include="TodoTemplate.Shared" />
         <Using Include="TodoTemplate.Client.Core.Shared" />
         <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
-        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Core.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

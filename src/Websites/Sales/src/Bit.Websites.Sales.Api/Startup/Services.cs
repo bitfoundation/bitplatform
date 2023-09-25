@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Sales.Api.Services;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
-using Bit.Websites.Sales.Web.Services.Implementations;
-using Bit.Websites.Sales.Web.Services.Implementations;
+using Bit.Websites.Sales.Web.Services;
+using Bit.Websites.Sales.Web.Services;
 #endif
 
 namespace Bit.Websites.Sales.Api.Startup;

@@ -30,7 +30,7 @@
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
-        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\Implementations\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\ServerSideAuthTokenProvider.cs" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
         <!--/+:msbuild-conditional:noEmit -->
     </ItemGroup>
@@ -58,7 +58,7 @@
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="AdminPanel.Client.Core.Services.Contracts" />
-        <Using Include="AdminPanel.Client.Core.Services.Implementations" />
+        <Using Include="AdminPanel.Client.Core.Services" />
         <Using Include="AdminPanel.Client.Core.Shared" />
     </ItemGroup>
 

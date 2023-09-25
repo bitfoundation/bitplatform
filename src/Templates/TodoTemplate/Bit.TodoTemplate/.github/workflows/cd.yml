@@ -50,15 +50,13 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        dotnet new tool-manifest
-        dotnet tool install dotnet-ef --version 8.0.0-rc.1.23419.6
-        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/TodoTemplate.Server.Api.csproj
+        cd src/Server/Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project TodoTemplate.Server.Api.csproj
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v3
       with:
         name: migrations-bundle
-        path: efbundle
+        path: src/Server/Api/efbundle
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3

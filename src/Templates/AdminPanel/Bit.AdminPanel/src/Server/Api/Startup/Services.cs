@@ -2,14 +2,14 @@
 using System.IO.Compression;
 using System.Net;
 using System.Net.Mail;
-using AdminPanel.Server.Api.Services.Implementations;
+using AdminPanel.Server.Api.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
-using AdminPanel.Client.Web.Services.Implementations;
-using AdminPanel.Client.Core.Services.Implementations;
+using AdminPanel.Client.Web.Services;
+using AdminPanel.Client.Core.Services;
 using Microsoft.AspNetCore.Components;
 #endif
 
