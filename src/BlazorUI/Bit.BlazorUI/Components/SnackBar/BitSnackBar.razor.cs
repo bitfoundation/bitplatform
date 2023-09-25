@@ -64,13 +64,15 @@ public partial class BitSnackBar
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
 
-    public async Task Show(string title, string? body = "", BitSnackBarType? type = BitSnackBarType.Info)
+    public async Task Show(string title, string body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
         {
             Title = title,
             Body = body,
-            Type = type
+            Type = type,
+            CssClass = cssClass,
+            CssStyle = cssStyle
         };
 
         if (AutoDismiss)
@@ -137,8 +139,6 @@ public partial class BitSnackBar
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append($"{RootElementClass}-itm");
-
         className.Append(' ').Append(item.Type switch
         {
             BitSnackBarType.Info => $"{RootElementClass}-info",
@@ -149,9 +149,9 @@ public partial class BitSnackBar
             _ => string.Empty
         });
 
-        if (string.IsNullOrEmpty(Classes?.Container) is false)
+        if (item.CssClass?.HasValue() ?? false)
         {
-            className.Append(' ').Append(Classes?.Container);
+            className.Append(' ').Append(item.CssClass);
         }
 
         return className.ToString();

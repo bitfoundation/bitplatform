@@ -116,15 +116,21 @@ public partial class BitSnackBarDemo
         },
         new()
         {
-            Id = "SnackBar-type-enum",
+            Id = "snackbar-type-enum",
             Name = "BitSnackBarType",
             Items = new()
             {
                 new()
                 {
+                    Name = "None",
+                    Description = "None styled SnackBar",
+                    Value = "0",
+                },
+                new()
+                {
                     Name = "Info",
                     Description = "Info styled SnackBar",
-                    Value = "0",
+                    Value = "1",
                 },
                 new()
                 {
@@ -136,22 +142,22 @@ public partial class BitSnackBarDemo
                 {
                     Name = "Success",
                     Description = "Success styled SnackBar",
-                    Value = "1",
+                    Value = "3",
                 },
                 new()
                 {
                     Name = "Error",
                     Description = "Error styled SnackBar",
-                    Value = "3",
+                    Value = "4",
                 },
                 new()
                 {
                     Name = "SevereWarning",
                     Description = "Severe Warning styled SnackBar",
-                    Value = "2",
-                },
+                    Value = "5",
+                }
             }
-        },
+        }
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -213,10 +219,10 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
-                    Name = "Progress",
+                    Name = "ProgressBar",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the progress of the BitSnackBar."
+                    Description = "Custom CSS classes/styles for the progress bar of the BitSnackBar."
                 }
             }
         }
@@ -225,20 +231,20 @@ public partial class BitSnackBarDemo
 
 
     private readonly string example1RazorCode = @"
-<BitSnackBar @ref=""BasicSnackBarRef""
-                Position=""@BasicSnackBarPosition""
-                AutoDismiss=""@BasicSnackBarAutoDismiss""
-                AutoDismissTime=""TimeSpan.FromSeconds(BasicSnackBarDismissSeconds)"" />
+<BitSnackBar @ref=""basicSnackBarRef""
+             Position=""@basicSnackBarPosition""
+             AutoDismiss=""@basicSnackBarAutoDismiss""
+             AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
 
-<BitChoiceGroup @bind-Value=""BasicSnackBarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackBarType>"" TValue=""BitSnackBarType"">
+<BitChoiceGroup @bind-Value=""basicSnackBarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackBarType>"" TValue=""BitSnackBarType"">
     <BitChoiceGroupOption Text=""Info"" Value=""BitSnackBarType.Info"" />
     <BitChoiceGroupOption Text=""Success"" Value=""BitSnackBarType.Success"" />
     <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.Warning"" />
-    <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.SevereWarning"" />
+    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitSnackBarType.SevereWarning"" />
     <BitChoiceGroupOption Text=""Error"" Value=""BitSnackBarType.Error"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup @bind-Value=""BasicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
+<BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
     <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackBarPosition.TopLeft"" />
     <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
     <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackBarPosition.TopRight"" />
@@ -247,36 +253,32 @@ public partial class BitSnackBarDemo
     <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
 </BitChoiceGroup>
 
-<div>
-    <BitTextField @bind-Value=""BasicSnackBarTitle"" Label=""Title"" />
-    <BitTextField @bind-Value=""BasicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" />
-</div>
+<BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
+<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" DefaultValue=""This is a body!"" />
 
-<div>
-    <BitToggle @bind-Value=""BasicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
-    <BitNumericTextField @bind-Value=""BasicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
-</div>
+<BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
+<BitNumericTextField @bind-Value=""basicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
 
 <BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackBar"">Show</BitButton>";
     private readonly string example1CsharpCode = @"
-private BitSnackBar BasicSnackBarRef = new();
-private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
-private BitSnackBarPosition BasicSnackBarPosition = BitSnackBarPosition.BottomRight;
-private string BasicSnackBarTitle = string.Empty;
-private string? BasicSnackBarBody;
-private bool BasicSnackBarAutoDismiss = true;
-private int BasicSnackBarDismissSeconds = 3;
+private BitSnackBar basicSnackBarRef = new();
+private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
+private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+private string basicSnackBarTitle = string.Empty;
+private string basicSnackBarBody = string.Empty;
+private bool basicSnackBarAutoDismiss = true;
+private int basicSnackBarDismissSeconds = 3;
 
 private async Task OpenBasicSnackBar()
 {
-    await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
+    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarType);
 }";
 
     private readonly string example2RazorCode = @"
-<BitSnackBar @ref=""DismissIconName"" DismissIconName=""@BitIconName.Go"" />
+<BitSnackBar @ref=""dismissIconNameRef"" DismissIconName=""@BitIconName.Go"" />
 <BitButton OnClick=""OpenDismissIconName"">Dismiss Icon Name</BitButton>
 
-<BitSnackBar @ref=""TitleTemplate"" AutoDismiss=""false"">
+<BitSnackBar @ref=""titleTemplateRef"" AutoDismiss=""false"">
     <TitleTemplate Context=""title"">
         <div style=""display: flex; flex-direction: row; gap: 10px;"">
             <span>@title</span>
@@ -286,39 +288,39 @@ private async Task OpenBasicSnackBar()
 </BitSnackBar>
 <BitButton OnClick=""OpenTitleTemplate"">Title Template</BitButton>
 
-<BitSnackBar @ref=""BodyTemplate"" AutoDismiss=""false"">
+<BitSnackBar @ref=""bodyTemplateRef"" AutoDismiss=""false"">
     <BodyTemplate Context=""body"">
         <div style=""display: flex; flex-flow: column nowrap; gap: 5px;"">
             <span style=""font-size: 12px; margin-bottom: 5px;"">@body</span>
             <div style=""display: flex; gap: 10px;"">
-                <BitButton OnClick=""@(() => BodyTemplateAnswer = ""Yes"")"">Yes</BitButton>
-                <BitButton OnClick=""@(() => BodyTemplateAnswer = ""No"")"">No</BitButton>
+                <BitButton OnClick=""@(() => bodyTemplateAnswer = ""Yes"")"">Yes</BitButton>
+                <BitButton OnClick=""@(() => bodyTemplateAnswer = ""No"")"">No</BitButton>
             </div>
-            <span>Answer: @BodyTemplateAnswer</span>
+            <span>Answer: @bodyTemplateAnswer</span>
         </div>
     </BodyTemplate>
 </BitSnackBar>
 <BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>";
     private readonly string example2CsharpCode = @"
-private BitSnackBar DismissIconName = new();
-private BitSnackBar TitleTemplate = new();
-private BitSnackBar BodyTemplate = new();
+private BitSnackBar dismissIconNameRef = new();
+private BitSnackBar titleTemplateRef = new();
+private BitSnackBar bodyTemplateRef = new();
 
-private string? BodyTemplateAnswer;
+private string? bodyTemplateAnswer;
 
 private async Task OpenDismissIconName()
 {
-    await DismissIconName.Success(""This is title"", ""This is body"");
+    await dismissIconNameRef.Success(""This is title"", ""This is body"");
 }
 
 private async Task OpenTitleTemplate()
 {
-    await TitleTemplate.Warning(""This is title"", ""This is body"");
+    await titleTemplateRef.Warning(""This is title"", ""This is body"");
 }
 
 private async Task OpenBodyTemplate()
 {
-    await BodyTemplate.Error(""This is title"", ""This is body"");
+    await bodyTemplateRef.Error(""This is title"", ""This is body"");
 }";
 
     private readonly string example3RazorCode = @"
@@ -338,45 +340,44 @@ private async Task OpenBodyTemplate()
 </style>
 
 
-<BitSnackBar @ref=""SnackBarStyle"" Style=""background-color: dodgerblue; border-radius: 0.5rem;"" />
+<BitSnackBar @ref=""snackBarStyleRef"" />
 <BitButton OnClick=""OpenSnackBarStyle"">Custom style</BitButton>
 
-<BitSnackBar @ref=""SnackBarClass"" Class=""custom-class"" />
-<BitButton OnClick=""OpenSnackBarClass"">Custom class</BitButton>
-                    
+<BitSnackBar @ref=""snackBarClassRef"" />
+<BitButton OnClick=""OpenSnackBarClass"">Custom style</BitButton>
 
-<BitSnackBar @ref=""SnackBarStyles""
+<BitSnackBar @ref=""snackBarStylesRef""
              Styles=""@(new() { Container = ""width: 16rem; background-color: purple;"",
                                Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
 <BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
-                    
-<BitSnackBar @ref=""SnackBarClasses"" 
+
+<BitSnackBar @ref=""snackBarClassesRef"" 
              Classes=""@(new() { Container = ""custom-container"",
-                                Progress = ""custom-progress"" })"" />
+                                ProgressBar = ""custom-progress"" })"" />
 <BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";
     private readonly string example3CsharpCode = @"
-private BitSnackBar SnackBarStyle = new();
-private BitSnackBar SnackBarClass = new();
-private BitSnackBar SnackBarStyles = new();
-private BitSnackBar SnackBarClasses = new();
+private BitSnackBar snackBarStyleRef = new();
+private BitSnackBar snackBarClassRef = new();
+private BitSnackBar snackBarStylesRef = new();
+private BitSnackBar snackBarClassesRef = new();
 
 private async Task OpenSnackBarStyle()
 {
-    await SnackBarStyle.Show(""This is title"", ""This is body"", null);
+    await snackBarClassRef.Show(""This is title"", ""This is body"", cssStyle: ""background-color: dodgerblue; border-radius: 0.5rem;"");
 }
 
 private async Task OpenSnackBarClass()
 {
-    await SnackBarClass.Show(""This is title"", ""This is body"", null);
+    await snackBarStyleRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"");
 }
 
 private async Task OpenSnackBarStyles()
 {
-    await SnackBarStyles.Show(""This is title"", ""This is body"");
+    await snackBarStylesRef.Show(""This is title"", ""This is body"");
 }
 
 private async Task OpenSnackBarClasses()
 {
-    await SnackBarClasses.Show(""This is title"", ""This is body"");
+    await snackBarClassesRef.Show(""This is title"", ""This is body"");
 }";
 }

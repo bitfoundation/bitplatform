@@ -38,7 +38,7 @@ public class BitSnackBarClassStyles
     public string? Body { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the progress of the BitSnackBar.
+    /// Custom CSS classes/styles for the progress bar of the BitSnackBar.
     /// </summary>
-    public string? Progress { get; set; }
+    public string? ProgressBar { get; set; }
 }
