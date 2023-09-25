@@ -4,7 +4,7 @@
 @if (Href.HasValue() && IsEnabled)
 {
     <a @ref="RootElement" @attributes="HtmlAttributes"
-       id="@UniqueId"
+       id="@_Id"
        href="@Href"
        title="@Title"
        target="@Target"
@@ -22,7 +22,7 @@
 else
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-            id="@UniqueId"
+            id="@_Id"
             title="@Title"
             tabindex="@_tabIndex"
             aria-label="@AriaLabel"

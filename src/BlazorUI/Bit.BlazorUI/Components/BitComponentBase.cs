@@ -7,9 +7,14 @@ public abstract partial class BitComponentBase : ComponentBase
     private bool isEnabled = true;
     private BitVisibility visibility;
 
-    protected bool Rendered { get; private set; }
 
     private Guid _uniqueId = Guid.NewGuid();
+
+
+    protected bool Rendered { get; private set; }
+
+    protected string _Id => Id ?? _uniqueId.ToString();
+
 
     /// <summary>
     /// The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.
@@ -47,6 +52,11 @@ public abstract partial class BitComponentBase : ComponentBase
     /// Capture and render additional attributes in addition to the component's parameters
     /// </summary>
     [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Custom id attribute for the root element. if null the UniqueId will be used instead.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
 
     /// <summary>
     /// Whether or not the component is enabled.
@@ -106,8 +116,8 @@ public abstract partial class BitComponentBase : ComponentBase
         {
             switch (parameter.Key)
             {
-                case nameof(Style):
-                    Style = (string?)parameter.Value;
+                case nameof(AriaLabel):
+                    AriaLabel = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -116,18 +126,23 @@ public abstract partial class BitComponentBase : ComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Id):
+                    Id = (string?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(IsEnabled):
                     IsEnabled = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(Visibility):
-                    Visibility = (BitVisibility)parameter.Value;
+                case nameof(Style):
+                    Style = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(AriaLabel):
-                    AriaLabel = (string?)parameter.Value;
+                case nameof(Visibility):
+                    Visibility = (BitVisibility)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
