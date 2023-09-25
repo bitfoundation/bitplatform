@@ -28,7 +28,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
 
     /// <summary>
-    /// The aria-label of the control for the benefit of screen readers
+    /// The aria-label of the control for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaLabel { get; set; }
 
@@ -49,7 +49,7 @@ public abstract partial class BitComponentBase : ComponentBase
     }
 
     /// <summary>
-    /// Capture and render additional attributes in addition to the component's parameters
+    /// Capture and render additional attributes in addition to the component's parameters.
     /// </summary>
     [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
 
