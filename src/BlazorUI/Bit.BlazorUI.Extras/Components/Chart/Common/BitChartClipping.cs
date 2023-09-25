@@ -130,7 +130,7 @@ internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
         if (!obj.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out JToken token))
             return null;
 
-        if (token.Type == JTokenType.Boolean && (bool)token == false)
+        if (token.Type == JTokenType.Boolean && (bool)token is false)
             return null;
 
         if (token.Type == JTokenType.Integer)
