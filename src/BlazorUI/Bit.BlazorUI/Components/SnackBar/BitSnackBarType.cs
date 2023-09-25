@@ -4,6 +4,11 @@ namespace Bit.BlazorUI;
 public enum BitSnackBarType
 {
     /// <summary>
+    /// None styled SnackBar
+    /// </summary>
+    None,
+
+    /// <summary>
     /// Info styled SnackBar
     /// </summary>
     Info,

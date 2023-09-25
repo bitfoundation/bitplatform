@@ -3,6 +3,7 @@
 .bit-snb {
     display: flex;
     position: fixed;
+    max-width: 100%;
     gap: spacing(1.25);
     flex-flow: column nowrap;
     z-index: $zindex-snackbar;
@@ -20,14 +21,16 @@
 
 .bit-snb-itm {
     display: flex;
+    gap: spacing(1);
     position: relative;
-    width: spacing(27.5);
     padding: spacing(1.25);
+    min-width: spacing(27.5);
     flex-flow: column nowrap;
     min-height: spacing(8.75);
     border-radius: spacing(0.375);
     justify-content: space-between;
     color: $color-foreground-primary;
+    background-color: $color-background-secondary;
 }
 
 .bit-snb-pbr {
@@ -40,6 +43,8 @@
 }
 
 .bit-snb-bdy {
+    overflow: auto;
+    white-space: pre;
     font-size: spacing(1.5);
 }
 
