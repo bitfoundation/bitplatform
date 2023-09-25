@@ -7,23 +7,25 @@
 <ComponentDemo ComponentName="SnackBar"
                ComponentDescription="SnackBars provide brief notifications. The component is also known as a toast."
                ComponentParameters="componentParameters"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Type & Position" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitSnackBar @ref="BasicSnackBarRef"
-                             Position="@BasicSnackBarPosition"
-                             AutoDismiss="@BasicSnackBarAutoDismiss"
-                             AutoDismissTime="TimeSpan.FromSeconds(BasicSnackBarDismissSeconds)" />
+                <BitSnackBar @ref="basicSnackBarRef"
+                             Position="@basicSnackBarPosition"
+                             AutoDismiss="@basicSnackBarAutoDismiss"
+                             AutoDismissTime="TimeSpan.FromSeconds(basicSnackBarDismissSeconds)" />
 
-                <BitChoiceGroup @bind-Value="BasicSnackBarType" Label="Type" TItem="BitChoiceGroupOption<BitSnackBarType>" TValue="BitSnackBarType">
+                <BitChoiceGroup @bind-Value="basicSnackBarType" Label="Type" TItem="BitChoiceGroupOption<BitSnackBarType>" TValue="BitSnackBarType">
                     <BitChoiceGroupOption Text="Info" Value="BitSnackBarType.Info" />
                     <BitChoiceGroupOption Text="Success" Value="BitSnackBarType.Success" />
                     <BitChoiceGroupOption Text="Warning" Value="BitSnackBarType.Warning" />
                     <BitChoiceGroupOption Text="SevereWarning" Value="BitSnackBarType.SevereWarning" />
                     <BitChoiceGroupOption Text="Error" Value="BitSnackBarType.Error" />
                 </BitChoiceGroup>
-                <BitChoiceGroup @bind-Value="BasicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
+
+                <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
                     <BitChoiceGroupOption Text="TopLeft" Value="BitSnackBarPosition.TopLeft" />
                     <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
                     <BitChoiceGroupOption Text="TopRight" Value="BitSnackBarPosition.TopRight" />
@@ -32,32 +34,28 @@
                     <BitChoiceGroupOption Text="BottomRight" Value="BitSnackBarPosition.BottomRight" />
                 </BitChoiceGroup>
                 <div>
-                    <BitTextField @bind-Value="BasicSnackBarTitle" Label="Title" DefaultValue="Title" />
-                    <BitTextField @bind-Value="BasicSnackBarBody" Label="Body" IsMultiline="true" Rows="6" DefaultValue="This is a body!" />
+                    <BitTextField @bind-Value="basicSnackBarTitle" Label="Title" DefaultValue="Title" />
+                    <BitTextField @bind-Value="basicSnackBarBody" Label="Body" IsMultiline="true" Rows="6" DefaultValue="This is a body!" />
                 </div>
                 <div>
-                    <BitToggle @bind-Value="BasicSnackBarAutoDismiss" Label="Auto Dismiss" />
-                    <BitNumericTextField @bind-Value="BasicSnackBarDismissSeconds" Step="1" Min="1" Label="Dismiss Time (based on second)" />
+                    <BitToggle @bind-Value="basicSnackBarAutoDismiss" Label="Auto Dismiss" />
+                    <BitNumericTextField @bind-Value="basicSnackBarDismissSeconds" Step="1" Min="1" Label="Dismiss Time (based on second)" />
                 </div>
             </div>
             <BitButton Style="margin-top: 20px;" OnClick="OpenBasicSnackBar">Show</BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Templates" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
-            <div class="example-desc">
-                SnackBar can be customized in various ways, such as changing the dismiss icon by the DismissIconName parameter,
-                TitleTemplate parameter as a RenderFragment in Title container and BodyTemplate as a RenderFragment in Body(Content) container.
-            </div>
             <div class="example-box">
                 <div>
-                    <BitSnackBar @ref="DismissIconName" DismissIconName="@BitIconName.Go" />
+                    <BitSnackBar @ref="dismissIconNameRef" DismissIconName="@BitIconName.Go" />
                     <BitButton OnClick="OpenDismissIconName">Dismiss Icon Name</BitButton>
                 </div>
 
                 <div>
-                    <BitSnackBar @ref="TitleTemplate" AutoDismiss="false">
+                    <BitSnackBar @ref="titleTemplateRef" AutoDismiss="false">
                         <TitleTemplate Context="title">
                             <div style="display: flex; flex-direction: row; gap: 10px;">
                                 <span>@title</span>
@@ -69,15 +67,15 @@
                 </div>
 
                 <div>
-                    <BitSnackBar @ref="BodyTemplate" AutoDismiss="false">
+                    <BitSnackBar @ref="bodyTemplateRef" AutoDismiss="false">
                         <BodyTemplate Context="body">
                             <div style="display: flex; flex-flow: column nowrap; gap: 5px;">
                                 <span style="font-size: 12px; margin-bottom: 5px;">@body</span>
                                 <div style="display: flex; gap: 10px;">
-                                    <BitButton OnClick="@(() => BodyTemplateAnswer = "Yes")">Yes</BitButton>
-                                    <BitButton OnClick="@(() => BodyTemplateAnswer = "No")">No</BitButton>
+                                    <BitButton OnClick="@(() => bodyTemplateAnswer = "Yes")">Yes</BitButton>
+                                    <BitButton OnClick="@(() => bodyTemplateAnswer = "No")">No</BitButton>
                                 </div>
-                                <span>Answer: @BodyTemplateAnswer</span>
+                                <span>Answer: @bodyTemplateAnswer</span>
                             </div>
                         </BodyTemplate>
                     </BitSnackBar>
@@ -86,39 +84,103 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-box column">
+                <div>
+                    <BitLabel>Item's Style & Class:</BitLabel>
+                    <div>
+                        <BitSnackBar @ref="snackBarStyleRef" />
+                        <BitButton OnClick="OpenSnackBarStyle">Custom style</BitButton>
+                    </div>
+                    <br />
+                    <div>
+                        <BitSnackBar @ref="snackBarClassRef" />
+                        <BitButton OnClick="OpenSnackBarClass">Custom style</BitButton>
+                    </div>
+                </div>
+                <br />
+                <div>
+                    <BitLabel>Styles & Classes:</BitLabel>
+                    <div>
+                        <BitSnackBar @ref="snackBarStylesRef"
+                                     Styles="@(new() { Container = "width: 16rem; background-color: purple;",
+                                                       Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
+                        <BitButton OnClick="OpenSnackBarStyles">Custom styles</BitButton>
+                    </div>
+                    <br />
+                    <div>
+                        <BitSnackBar @ref="snackBarClassesRef" 
+                                     Classes="@(new() { Container = "custom-container",
+                                                        ProgressBar = "custom-progress" })" />
+                        <BitButton OnClick="OpenSnackBarClasses">Custom classes</BitButton>
+                    </div>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
 
 @code {
-    private BitSnackBar BasicSnackBarRef = new();
-    private BitSnackBarType BasicSnackBarType = BitSnackBarType.Info;
-    private BitSnackBarPosition BasicSnackBarPosition = BitSnackBarPosition.BottomRight;
-    private string BasicSnackBarTitle = string.Empty;
-    private string? BasicSnackBarBody;
-    private bool BasicSnackBarAutoDismiss = true;
-    private int BasicSnackBarDismissSeconds = 3;
+    private BitSnackBar basicSnackBarRef = new();
+    private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
+    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+    private string basicSnackBarTitle = string.Empty;
+    private string basicSnackBarBody = string.Empty;
+    private bool basicSnackBarAutoDismiss = true;
+    private int basicSnackBarDismissSeconds = 3;
 
     private async Task OpenBasicSnackBar()
     {
-        await BasicSnackBarRef.Show(BasicSnackBarTitle, BasicSnackBarBody, BasicSnackBarType);
+        await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarType);
     }
 
 
-    private BitSnackBar DismissIconName = new();
-    private BitSnackBar TitleTemplate = new();
-    private BitSnackBar BodyTemplate = new();
+    private BitSnackBar dismissIconNameRef = new();
+    private BitSnackBar titleTemplateRef = new();
+    private BitSnackBar bodyTemplateRef = new();
 
-    private string? BodyTemplateAnswer;
+    private string? bodyTemplateAnswer;
 
     private async Task OpenDismissIconName()
     {
-        await DismissIconName.Success("This is title", "This is body");
+        await dismissIconNameRef.Success("This is title", "This is body");
     }
+
     private async Task OpenTitleTemplate()
     {
-        await TitleTemplate.Warning("This is title", "This is body");
+        await titleTemplateRef.Warning("This is title", "This is body");
     }
+
     private async Task OpenBodyTemplate()
     {
-        await BodyTemplate.Error("This is title", "This is body");
+        await bodyTemplateRef.Error("This is title", "This is body");
+    }
+
+
+    private BitSnackBar snackBarStyleRef = new();
+    private BitSnackBar snackBarClassRef = new();
+    private BitSnackBar snackBarStylesRef = new();
+    private BitSnackBar snackBarClassesRef = new();
+
+    private async Task OpenSnackBarStyle()
+    {
+        await snackBarClassRef.Show("This is title", "This is body", cssStyle: "background-color: dodgerblue; border-radius: 0.5rem;");
+    }
+
+    private async Task OpenSnackBarClass()
+    {
+        await snackBarStyleRef.Show("This is title", "This is body", cssClass: "custom-class");
+    }
+
+    private async Task OpenSnackBarStyles()
+    {
+        await snackBarStylesRef.Show("This is title", "This is body");
+    }
+
+    private async Task OpenSnackBarClasses()
+    {
+        await snackBarClassesRef.Show("This is title", "This is body");
     }
 }

@@ -426,11 +426,11 @@ public partial class BitDatePicker
 
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", UniqueId, _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", _Id, _calloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -513,7 +513,7 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
@@ -740,7 +740,7 @@ public partial class BitDatePicker
 
     private async Task CloseCallout()
     {
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
         StateHasChanged();
     }

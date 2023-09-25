@@ -17,10 +17,31 @@ public partial class ComponentDemo
     {
         new()
         {
+            Name = "AriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label of the control for the benefit of screen readers.",
+        },
+        new()
+        {
             Name = "Class",
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom CSS class for the root element of the component.",
+        },
+        new()
+        {
+            Name = "HtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new Dictionary<string, object>()",
+            Description = "Capture and render additional attributes in addition to the component's parameters.",
+        },
+        new()
+        {
+            Name = "Id",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom id attribute for the root element. if null the UniqueId will be used instead.",
         },
         new()
         {

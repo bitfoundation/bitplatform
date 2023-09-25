@@ -8,7 +8,7 @@
         if (Href.StartsWith("#"))
         {
             <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
-               id="@UniqueId"
+               id="@_Id"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value">
                 @ChildContent
@@ -17,7 +17,7 @@
         else
         {
             <a @ref="RootElement" @attributes="HtmlAttributes"
-               id="@UniqueId"
+               id="@_Id"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value"
                href="@Href"
@@ -29,7 +29,7 @@
     else
     {
         <a @ref="RootElement" @attributes="HtmlAttributes"
-           id="@UniqueId"
+           id="@_Id"
            style="@StyleBuilder.Value"
            class="@ClassBuilder.Value">
             @ChildContent
@@ -39,7 +39,7 @@
 else
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
-            id="@UniqueId"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="button"

@@ -1,4 +1,5 @@
-﻿using System.Timers;
+﻿using System.Text;
+using System.Timers;
 
 namespace Bit.BlazorUI;
 
@@ -22,6 +23,11 @@ public partial class BitSnackBar
     /// Used to customize how content inside the Body is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? BodyTemplate { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitSnackBar.
+    /// </summary>
+    [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Dismiss Icon in SnackBar.
@@ -48,18 +54,25 @@ public partial class BitSnackBar
     }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitSnackBar.
+    /// </summary>
+    [Parameter] public BitSnackBarClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the Title is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
 
-    public async Task Show(string title, string? body = "", BitSnackBarType? type = BitSnackBarType.Info)
+    public async Task Show(string title, string body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
         {
             Title = title,
             Body = body,
-            Type = type
+            Type = type,
+            CssClass = cssClass,
+            CssStyle = cssStyle
         };
 
         if (AutoDismiss)
@@ -92,6 +105,8 @@ public partial class BitSnackBar
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Position switch
         {
             BitSnackBarPosition.TopLeft => $"{RootElementClass}-tlf",
@@ -102,6 +117,11 @@ public partial class BitSnackBar
             BitSnackBarPosition.BottomRight => $"{RootElementClass}-brt",
             _ => string.Empty
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
 
@@ -115,13 +135,25 @@ public partial class BitSnackBar
         InvokeAsync(StateHasChanged);
     }
 
-    private string GetItemClasses(BitSnackBarItem item) => item.Type switch
+    private string GetItemClasses(BitSnackBarItem item)
     {
-        BitSnackBarType.Info => $"{RootElementClass}-info",
-        BitSnackBarType.Warning => $"{RootElementClass}-warning",
-        BitSnackBarType.Success => $"{RootElementClass}-success",
-        BitSnackBarType.Error => $"{RootElementClass}-error",
-        BitSnackBarType.SevereWarning => $"{RootElementClass}-severe-warning",
-        _ => string.Empty
-    };
+        StringBuilder className = new StringBuilder();
+
+        className.Append(' ').Append(item.Type switch
+        {
+            BitSnackBarType.Info => $"{RootElementClass}-info",
+            BitSnackBarType.Warning => $"{RootElementClass}-warning",
+            BitSnackBarType.Success => $"{RootElementClass}-success",
+            BitSnackBarType.Error => $"{RootElementClass}-error",
+            BitSnackBarType.SevereWarning => $"{RootElementClass}-severe-warning",
+            _ => string.Empty
+        });
+
+        if (item.CssClass?.HasValue() ?? false)
+        {
+            className.Append(' ').Append(item.CssClass);
+        }
+
+        return className.ToString();
+    }
 }

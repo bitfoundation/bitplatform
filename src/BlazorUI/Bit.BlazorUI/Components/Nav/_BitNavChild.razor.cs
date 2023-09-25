@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -8,7 +6,7 @@ namespace Bit.BlazorUI;
 public partial class _BitNavChild<TItem> where TItem : class
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private static Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
+    private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavAriaCurrent.Page] = "page",
         [BitNavAriaCurrent.Step] = "step",
@@ -29,10 +27,10 @@ public partial class _BitNavChild<TItem> where TItem : class
     [Parameter] public int Depth { get; set; }
 
 
-    private async void HandleOnClick()
+    private async Task HandleOnClick()
     {
         if (Nav is null) return;
-        if (Nav.GetIsEnabled(Item) == false) return;
+        if (Nav.GetIsEnabled(Item) is false) return;
 
         if (Nav.GetChildItems(Item).Any() && Nav.GetUrl(Item).HasNoValue())
         {

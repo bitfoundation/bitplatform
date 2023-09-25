@@ -2,7 +2,7 @@
 @inherits BitInputBase<DateTimeOffset?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
@@ -375,7 +375,7 @@
                         {
                             <button @onclick="HandleGoToToday"
                                     type="button"
-                                    class="bit-dtp-gtd-btn bit-dtp-gtd-btn-bs"
+                                    class="bit-dtp-gtd-btn @(ShowTimePicker ? "bit-dtp-gtd-btn-bs" : "")"
                                     disabled="@IsGoTodayDisabled()">
                                 @GoToToday
                             </button>
