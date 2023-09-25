@@ -4,7 +4,7 @@
 @if (Href.HasValue() && IsEnabled)
 {
     <a @ref="RootElement" @attributes="HtmlAttributes"
-       id="@UniqueId"
+       id="@_Id"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        href="@Href"
@@ -20,7 +20,7 @@
 else
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-            id="@UniqueId"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             title="@Title"

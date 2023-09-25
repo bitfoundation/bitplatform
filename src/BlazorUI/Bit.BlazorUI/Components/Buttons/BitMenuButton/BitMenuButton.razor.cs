@@ -7,8 +7,6 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private bool isCalloutOpen;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
-
-    private string _uniqueId = default!;
     private string _calloutId = default!;
 
 
@@ -171,7 +169,6 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
     protected override void OnInitialized()
     {
-        _uniqueId = UniqueId.ToString();
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         base.OnInitialized();
@@ -412,7 +409,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj, _uniqueId, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
+        await _js.ToggleCallout(_dotnetObj, _Id, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
     }
 
 

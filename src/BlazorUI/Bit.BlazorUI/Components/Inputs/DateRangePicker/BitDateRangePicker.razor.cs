@@ -513,11 +513,11 @@ public partial class BitDateRangePicker
 
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
 
-        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDateRangePicker.checkMonthPickerWidth", UniqueId, _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDateRangePicker.checkMonthPickerWidth", _Id, _calloutId, IsResponsive);
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -610,7 +610,7 @@ public partial class BitDateRangePicker
             CurrentValue.EndDate = selectedDate;
             if (AutoClose)
             {
-                await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+                await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
                 IsOpen = false;
             }
         }
@@ -873,7 +873,7 @@ public partial class BitDateRangePicker
 
     private async Task CloseCallout()
     {
-        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen);
+        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
 
         IsOpen = false;
 

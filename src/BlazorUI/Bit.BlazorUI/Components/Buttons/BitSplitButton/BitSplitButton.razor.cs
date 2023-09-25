@@ -10,8 +10,6 @@ public partial class BitSplitButton<TItem> where TItem : class
     private TItem? selectedItem;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
-
-    private string _uniqueId = default!;
     private string _calloutId = default!;
 
 
@@ -200,7 +198,6 @@ public partial class BitSplitButton<TItem> where TItem : class
 
     protected override void OnInitialized()
     {
-        _uniqueId = UniqueId.ToString();
         _calloutId = $"BitSplitButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -503,7 +500,7 @@ public partial class BitSplitButton<TItem> where TItem : class
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj, _uniqueId, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
+        await _js.ToggleCallout(_dotnetObj, _Id, _calloutId, _isCalloutOpen, false, BitDropDirection.TopAndBottom, false, "", 0);
     }
 
 
