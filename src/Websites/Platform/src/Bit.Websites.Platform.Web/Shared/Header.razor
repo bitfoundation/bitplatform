@@ -61,10 +61,10 @@
 
         </div>
         <div class="right-section">
-            <div class="github-container">
+            <a class="github-container" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo">
                 <img src="https://img.shields.io/github/stars/bitfoundation/bitplatform.svg" alt="GitHub stars" title="GitHub stars" width="68" height="20" />
-                <a class="github-btn" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo"></a>
-            </div>
+                <span class="github-btn"></span>
+            </a>
 
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
                 <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
