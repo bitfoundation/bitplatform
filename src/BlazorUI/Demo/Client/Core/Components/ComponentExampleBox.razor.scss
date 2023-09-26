@@ -7,7 +7,7 @@
     width: 100%;
     display: flex;
     max-width: 100%;
-    scroll-margin: 80px;
+    scroll-margin: rem(80px);
     flex-flow: column nowrap;
     margin-bottom: rem2(36px);
     justify-content: flex-start;
