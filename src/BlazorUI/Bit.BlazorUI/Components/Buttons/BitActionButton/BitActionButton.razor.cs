@@ -40,9 +40,9 @@ public partial class BitActionButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitActionButton.
+    /// Custom CSS classes for different parts of the BitActionButton.
     /// </summary>
-    [Parameter] public BitActionButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
@@ -60,6 +60,11 @@ public partial class BitActionButton
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitActionButton.
+    /// </summary>
+    [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// If Href provided, specifies how to open the link
     /// </summary>
     [Parameter] public string? Target { get; set; }
@@ -71,6 +76,16 @@ public partial class BitActionButton
 
 
     protected override string RootElementClass => "bit-acb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnParametersSet()
     {
