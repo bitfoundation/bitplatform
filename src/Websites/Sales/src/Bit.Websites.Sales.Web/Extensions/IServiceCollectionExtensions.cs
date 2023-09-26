@@ -1,4 +1,4 @@
-﻿using Bit.Websites.Sales.Web.Services.Implementations;
+﻿using Bit.Websites.Sales.Web.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

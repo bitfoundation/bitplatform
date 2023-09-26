@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using BlazorDual.Web.Services;
 using BlazorDual.Web.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -8,8 +9,8 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
         services.AddScoped<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
+        services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddBitBlazorUIServices();
 
         services.AddTransient<AppHttpClientHandler>();

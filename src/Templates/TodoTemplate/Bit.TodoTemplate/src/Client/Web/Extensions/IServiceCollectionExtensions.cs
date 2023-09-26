@@ -1,4 +1,5 @@
-﻿using TodoTemplate.Client.Web.Services.Implementations;
+﻿using TodoTemplate.Client.Web.Services;
+using TodoTemplate.Client.Web.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +9,7 @@ public static class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in web (blazor web assembly & blazor server)
         services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddScoped<IExceptionHandler, WebExceptionHandler>();
 
         return services;
     }
