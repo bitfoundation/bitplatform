@@ -3,17 +3,22 @@
 public class BitActionButtonClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the internal container of the BitActionButton.
+    /// Custom CSS classes/styles for the root element of the BitActionButton.
     /// </summary>
-    public BitClassStylePair? Container { get; set; }
+    public string? Root { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the main container of the BitActionButton.
+    /// </summary>
+    public string? Container { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the Icon of the BitActionButton.
     /// </summary>
-    public BitClassStylePair? Icon { get; set; }
+    public string? Icon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the content of the BitActionButton.
     /// </summary>
-    public BitClassStylePair? Content { get; set; }
+    public string? Content { get; set; }
 }

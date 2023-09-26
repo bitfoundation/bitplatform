@@ -14,11 +14,14 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-acb-ictn @ClassStyles?.Container?.Class">
-            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
-            <span style="@ClassStyles?.Content?.Style" class="bit-acb-con @ClassStyles?.Content?.Class">
-                @ChildContent
-            </span>
+        <span style="@Styles?.Container" class="bit-acb-ictn @Classes?.Container">
+            <i style="@Classes?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            @if (ChildContent is not null)
+            {
+                <span style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
+                    @ChildContent
+                </span>
+            }
         </span>
     </a>
 }
@@ -34,11 +37,14 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-acb-ictn @ClassStyles?.Container?.Class">
-            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
-            <span style="@ClassStyles?.Content?.Style" class="bit-acb-con @ClassStyles?.Content?.Class">
-                @ChildContent
-            </span>
+        <span style="@Styles?.Container" class="bit-acb-ictn @Classes?.Container">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            @if (ChildContent is not null)
+            {
+                <span style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
+                    @ChildContent
+                </span>
+            }
         </span>
     </button>
 }
