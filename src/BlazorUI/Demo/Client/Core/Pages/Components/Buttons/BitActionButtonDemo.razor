@@ -21,12 +21,24 @@
 
     <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div class="buttons-container">
+            <div class="buttons-container column">
+                <BitLabel>Component's Style & Class:</BitLabel>
                 <BitActionButton IconName="@BitIconName.ThisPC" Style="border:2px solid #777">
                     Styled Action Button
                 </BitActionButton>
-                <BitActionButton IconName="@BitIconName.ThisPC" Class="custom-action-button">
+                <BitActionButton IconName="@BitIconName.ThisPC" Class="custom-class">
                     Classed Action Button
+                </BitActionButton>
+            </div>
+            <br /><br />
+            <div class="buttons-container column">
+                <BitLabel>Styles & Classes:</BitLabel>
+                <BitActionButton IconName="@BitIconName.AddFriend" Classes="@(new() { Container = "custom-container" })">
+                    Action Button Classes
+                </BitActionButton>
+
+                <BitActionButton IconName="@BitIconName.AddFriend" Styles="@(new() { Icon = "color:green", Content = "color:tomato" })">
+                    Action Button Styles
                 </BitActionButton>
             </div>
         </ExamplePreview>
@@ -111,20 +123,6 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
-    <ComponentExampleBox Title="ClassStyles" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div class="buttons-container">
-                <BitActionButton IconName="@BitIconName.AddFriend"
-                                 ClassStyles="@(new() { Container = new() { Class = "custom-class" },
-                                                        Icon = new() { Style = "color:green" },
-                                                        Content = new() { Style = "color:blue" } })">
-                    Create account
-                </BitActionButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
 </ComponentDemo>
 
 @code {

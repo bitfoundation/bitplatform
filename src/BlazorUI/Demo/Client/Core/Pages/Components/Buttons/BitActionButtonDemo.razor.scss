@@ -2,6 +2,11 @@
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
+
+    &.column {
+        flex-flow: column;
+        max-width: max-content;
+    }
 }
 
 .buttons-container-grid {
@@ -19,25 +24,26 @@
 }
 
 ::deep {
-    .custom-action-button {
+    .custom-class {
         border-radius: 1rem;
         border: 2px solid #777;
     }
 
-    .custom-btn-ctn {
-        gap: 0.5rem;
+    .custom-container {
+        gap: 5px;
+        color: gold;
+        padding: 8px;
         display: flex;
+        flex-flow: column;
+        background-color: purple;
     }
 
     .validation-message {
         color: red;
     }
 
-    .custom-class {
-        gap: 5px;
-        padding: 8px;
+    .custom-btn-ctn {
+        gap: 0.5rem;
         display: flex;
-        flex-flow: column;
-        background-color: aqua;
     }
 }
