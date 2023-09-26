@@ -6,15 +6,15 @@
             Description="CompoundButton component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="CompoundButton"
-               ComponentDescription="Buttons give people a way to trigger an action. They’re typically found in forms, dialog panels, and dialogs. Some buttons are specialized for particular tasks, such as navigation, repeated actions, or presenting menus."
+               ComponentDescription="CompoundButton is a button containing a secondary text describing the main action of the button."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton SecondaryText="This Button is a compound button">Primary</BitCompoundButton>
-                <BitCompoundButton SecondaryText="This Button is a compound button" ButtonStyle="BitButtonStyle.Standard">Standard</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is the secondary text">Primary</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Standard</BitCompoundButton>
                 <BitCompoundButton IsEnabled="false" SecondaryText="This Button is a disabled compound button">Disabled</BitCompoundButton>
             </div>
         </ExamplePreview>
@@ -23,8 +23,8 @@
     <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitCompoundButton Style="color:darkblue; font-weight:bold" SecondaryText="This is styled compound button">Styled</BitCompoundButton>
-                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-class" SecondaryText="This is classed compound button">Classed</BitCompoundButton>
+                <BitCompoundButton Style="color:darkblue; font-weight:bold" SecondaryText="This is a styled compound button">Styled</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-class" SecondaryText="This is a classed compound button">Classed</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
