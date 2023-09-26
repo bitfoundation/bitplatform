@@ -7,8 +7,9 @@
     width: 100%;
     display: flex;
     max-width: 100%;
-    margin-bottom: rem2(36px);
+    scroll-margin: 80px;
     flex-flow: column nowrap;
+    margin-bottom: rem2(36px);
     justify-content: flex-start;
 }
 
