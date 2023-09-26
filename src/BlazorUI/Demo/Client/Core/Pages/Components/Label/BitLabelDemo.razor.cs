@@ -34,9 +34,14 @@ public partial class BitLabelDemo
 <BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>";
 
     private readonly string example2RazorCode = @"
+Visible: [ <BitLabel Visibility=""BitVisibility.Visible"">Visible Label</BitLabel> ]
+Hidden: [ <BitLabel Visibility=""BitVisibility.Hidden"">Hidden Label</BitLabel> ]
+Collapsed: [ <BitLabel Visibility=""BitVisibility.Collapsed"">Collapsed Label</BitLabel> ]";
+
+    private readonly string example3RazorCode = @"
 <style>
     .custom-class {
-        padding: 0 0.5rem;
+        padding: 0.5rem;
         border: 1px solid red;
         max-width: max-content;
     }
@@ -45,16 +50,11 @@ public partial class BitLabelDemo
 <BitLabel Style=""color: dodgerblue; font-weight:bold"">I'm a Label with Style</BitLabel>
 <BitLabel Class=""custom-class"">I'm a Label with Class</BitLabel>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitLabel IsRequired=""true"">I'm a required Label</BitLabel>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitLabel For=""label-input"">A Label for An Input</BitLabel>
 <input type=""text"" name=""label-input"" id=""label-input"" />";
-
-    private readonly string example5RazorCode = @"
-Visible: [ <BitLabel Visibility=""BitVisibility.Visible"">Visible Label</BitLabel> ]
-Hidden: [ <BitLabel Visibility=""BitVisibility.Hidden"">Hidden Label</BitLabel> ]
-Collapsed: [ <BitLabel Visibility=""BitVisibility.Collapsed"">Collapsed Label</BitLabel> ]";
 
 }
