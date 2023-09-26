@@ -451,15 +451,17 @@ private BitDateRangePickerValue selectedDateRange = new()
 };";
 
     private readonly string example8RazorCode = @"
-<BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
+<BitDateRangePicker DateFormat=""dd-MM-yyyy""
                     Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
                     GoToToday=""برو به امروز""
+                    ValueFormat=""شروع: {0}, پایان: {1}""
                     Style=""max-width: 300px"">
 </BitDateRangePicker>
 
-<BitDateRangePicker DateFormat=""yyyy/MM/dd hh:mm tt"" 
+<BitDateRangePicker DateFormat=""dd-MM-yyyy""
                     Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
                     GoToToday=""Boro be emrouz""
+                    ValueFormat=""شروع: {0}, پایان: {1}""
                     Style=""max-width: 300px"">
 </BitDateRangePicker>";
 
