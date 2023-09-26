@@ -33,7 +33,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div style="display:flex;align-items:center">Visible: [ <BitRating Visibility="BitVisibility.Visible">Visible Rating</BitRating> ]</div>
+                <div style="display:flex;align-items:center">Hidden: [ <BitRating Visibility="BitVisibility.Hidden">Hidden Rating</BitRating> ]</div>
+                <div style="display:flex;align-items:center">Collapsed: [ <BitRating Visibility="BitVisibility.Collapsed">Collapsed Rating</BitRating> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -52,16 +62,6 @@
                                Classes="@(new() {SelectedIcon = "custom-selected",
                                                  UnselectedIcon = "custom-unselected"})" />
                 </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Visibility" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div class="example-box">
-                <div style="display: flex">Visible: [ <BitRating Visibility="BitVisibility.Visible">Visible Rating</BitRating> ]</div>
-                <div style="display: flex">Hidden: [ <BitRating Visibility="BitVisibility.Hidden">Hidden Rating</BitRating> ]</div>
-                <div style="display: flex">Collapsed: [ <BitRating Visibility="BitVisibility.Collapsed">Collapsed Rating</BitRating> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -90,7 +90,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom icon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -114,7 +114,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Different sizes" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -132,7 +132,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <div>

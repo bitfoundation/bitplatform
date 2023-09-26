@@ -178,6 +178,11 @@ private double RatingDisabledValue = 2;
 private double RatingReadonlyValue = 3.5;";
 
     private readonly string example2RazorCode = @"
+Visible: [ <BitRating Visibility=""""BitVisibility.Visible"""">Visible Rating</BitRating> ]
+Hidden: [ <BitRating Visibility=""""BitVisibility.Hidden"""">Hidden Rating</BitRating> ]
+Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""">Collapsed Rating</BitRating> ]";
+
+    private readonly string example3RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -204,16 +209,11 @@ private double RatingReadonlyValue = 3.5;";
 <BitRating @bind-Value=""@RatingClassesValue""
            Classes=""@(new() {SelectedIcon = ""custom-selected"",
                              UnselectedIcon = ""custom-unselected""})"" />";
-    private readonly string example2CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private double RatingStyleValue = 1;
 private double RatingClassValue = 2;
 private double RatingStylesValue = 5;
 private double RatingClassesValue = 3.5;";
-
-    private readonly string example3RazorCode = @"
-Visible: [ <BitRating Visibility=""""BitVisibility.Visible"""">Visible Rating</BitRating> ]
-Hidden: [ <BitRating Visibility=""""BitVisibility.Hidden"""">Hidden Rating</BitRating> ]
-Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""">Collapsed Rating</BitRating> ]";
 
     private readonly string example4RazorCode = @"
 <BitRating Max=""6"" @bind-Value=""RatingMaxValue1"" />
