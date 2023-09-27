@@ -44,16 +44,6 @@ jobs:
       script: |
           'dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8'
 
-  - task: Bash@3
-    displayName: 'Build migrations bundle'
-    inputs:
-      targetType: 'inline'
-      script: |
-        dotnet new tool-manifest
-        dotnet tool install dotnet-ef --version 8.0.0-rc.1.23419.6
-        dotnet ef migrations bundle --self-contained -r linux-x64 --project src/Server/Api/AdminPanel.Server.Api.csproj
-      failOnStderr: true
-
   - task: FileTransform@1
     displayName: Update appsettings.json
     inputs:

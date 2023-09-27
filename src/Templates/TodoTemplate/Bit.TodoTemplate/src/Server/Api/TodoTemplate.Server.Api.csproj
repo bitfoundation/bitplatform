@@ -21,7 +21,7 @@
         <!--/+:msbuild-conditional:noEmit -->
 
         <EmbeddedResource Include="Resources\*.cshtml" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.2.0" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.3.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="5.6.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -59,7 +59,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.1.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
-        <PackageReference Include="Riok.Mapperly" Version="3.1.0" />
+        <PackageReference Include="Riok.Mapperly" Version="3.2.0" />
     </ItemGroup>
 
     <ItemGroup>
