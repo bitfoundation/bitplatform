@@ -6,11 +6,6 @@ public partial class AppHttpClientHandler : HttpClientHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
-        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
-        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
-#endif
-
         var response = await base.SendAsync(request, cancellationToken);
 
         if (response.StatusCode is HttpStatusCode.Unauthorized)
