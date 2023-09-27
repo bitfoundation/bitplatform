@@ -1,5 +1,4 @@
 ﻿using ImageMagick;
-using Microsoft.Extensions.Primitives;
 using MimeTypes;
 using TodoTemplate.Server.Api.Models.Identity;
 using SystemFile = System.IO.File;

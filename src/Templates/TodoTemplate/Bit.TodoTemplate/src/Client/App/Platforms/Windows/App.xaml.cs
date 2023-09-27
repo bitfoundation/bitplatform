@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-
-namespace TodoTemplate.Client.App.Platforms.Windows;
+﻿namespace TodoTemplate.Client.App.Platforms.Windows;
 
 public partial class App
 {

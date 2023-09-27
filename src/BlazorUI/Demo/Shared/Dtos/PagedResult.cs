@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Bit.BlazorUI.Demo.Shared.Dtos;
+﻿namespace Bit.BlazorUI.Demo.Shared.Dtos;
 
 public class PagedResult<T>
 {

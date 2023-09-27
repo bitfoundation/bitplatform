@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 

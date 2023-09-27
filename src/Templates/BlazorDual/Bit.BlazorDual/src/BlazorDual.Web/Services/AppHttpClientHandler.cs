@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.Net;
-using System.Globalization;
 using System.Net.Http.Headers;
 
 namespace BlazorDual.Web.Services;

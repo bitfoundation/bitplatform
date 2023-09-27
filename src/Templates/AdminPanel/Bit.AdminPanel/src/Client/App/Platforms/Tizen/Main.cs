@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-
-namespace AdminPanel.Client.App;
+﻿namespace AdminPanel.Client.App;
 
 class Program : MauiApplication
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-
-namespace Bit.BlazorUI.Demo.Client.App;
+﻿namespace Bit.BlazorUI.Demo.Client.App;
 
 class Program : MauiApplication
 {

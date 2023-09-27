@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using TodoTemplate.Shared.Dtos.Identity;
+﻿using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Client.Core.Pages.Identity;
 

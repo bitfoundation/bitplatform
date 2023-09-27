@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+﻿using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 namespace Bit.BlazorUI.Demo.Shared.Dtos;
 

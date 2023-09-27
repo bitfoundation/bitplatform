@@ -1,8 +1,4 @@
-﻿using Bit.Websites.Platform.Web;
-using Bit.Websites.Platform.Web.Shared;
-#if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿#if BlazorServer
 #endif
 
 namespace Bit.Websites.Platform.Web;

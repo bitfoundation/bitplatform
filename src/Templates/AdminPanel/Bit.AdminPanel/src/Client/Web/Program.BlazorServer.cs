@@ -1,9 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Core.Shared;
-#if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-#endif
 
 namespace AdminPanel.Client.Web;
 

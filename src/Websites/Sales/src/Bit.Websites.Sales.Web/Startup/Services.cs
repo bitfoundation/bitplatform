@@ -1,7 +1,6 @@
 ﻿#if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using Bit.Websites.Sales.Web.Services;
 
 namespace Bit.Websites.Sales.Web.Startup;
 

@@ -45,6 +45,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="System.Globalization" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="System.Net.Http" />
         <Using Include="System.Resources" />

@@ -1,8 +1,5 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Client.Core.Shared;
 #if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 #endif
 
 namespace TodoTemplate.Client.Web;

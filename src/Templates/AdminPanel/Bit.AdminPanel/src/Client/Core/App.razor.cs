@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace AdminPanel.Client.Core;
@@ -8,7 +6,7 @@ namespace AdminPanel.Client.Core;
 public partial class App
 {
 #if BlazorWebAssembly && !BlazorHybrid
-    private List<Assembly> _lazyLoadedAssemblies = new();
+    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
     [AutoInject] private AuthenticationStateProvider _authenticationStateProvider = default!;
 #endif

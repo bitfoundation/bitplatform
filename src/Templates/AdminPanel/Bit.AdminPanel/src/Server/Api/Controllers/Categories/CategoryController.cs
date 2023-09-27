@@ -1,5 +1,4 @@
-﻿using AdminPanel.Server.Api.Models;
-using AdminPanel.Server.Api.Models.Categories;
+﻿using AdminPanel.Server.Api.Models.Categories;
 using AdminPanel.Shared.Dtos.Categories;
 
 namespace AdminPanel.Server.Api.Controllers;

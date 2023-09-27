@@ -1,6 +1,4 @@
-﻿using Bit.Websites.Platform.Web.Services;
-
-namespace Bit.Websites.Platform.Web.Shared;
+﻿namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class NavMenu : IDisposable
 {

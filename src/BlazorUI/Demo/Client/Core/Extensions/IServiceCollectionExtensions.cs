@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {

@@ -1,9 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Net;
 using System.Net.Http.Headers;
-#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
-using System.Globalization;
-#endif
 
 namespace AdminPanel.Client.Core.Services;
 

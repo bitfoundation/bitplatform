@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Globalization;
-using System.Net.Http.Headers;
 
 namespace Bit.Websites.Platform.Web.Services;
 

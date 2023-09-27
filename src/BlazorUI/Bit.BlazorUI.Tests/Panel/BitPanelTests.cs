@@ -1,5 +1,4 @@
 ﻿using Bunit;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Panel;
