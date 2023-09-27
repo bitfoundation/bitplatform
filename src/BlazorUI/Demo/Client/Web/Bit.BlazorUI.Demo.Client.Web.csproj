@@ -12,6 +12,8 @@
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)

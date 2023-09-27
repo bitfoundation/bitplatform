@@ -6,9 +6,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <!--/-:msbuild-conditional:noEmit -->
-        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
-        <!--/+:msbuild-conditional:noEmit -->
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
     </PropertyGroup>
 
     <ItemGroup>
