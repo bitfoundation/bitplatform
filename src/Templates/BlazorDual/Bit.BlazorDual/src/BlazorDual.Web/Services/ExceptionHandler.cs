@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
 
-namespace TodoTemplate.Client.Core.Services.Implementations;
+namespace BlazorDual.Web.Services;
 
 public partial class ExceptionHandler : IExceptionHandler
 {

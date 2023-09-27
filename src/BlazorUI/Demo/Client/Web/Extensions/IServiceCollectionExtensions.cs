@@ -8,6 +8,7 @@ public static class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in web (blazor web assembly & blzor server)
         services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddScoped<IExceptionHandler, WebExceptionHandler>();
 
         return services;
     }

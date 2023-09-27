@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using BlazorDual.Web.Services;
 using BlazorDual.Web.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
