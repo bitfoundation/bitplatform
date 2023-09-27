@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace BlazorDual.Shared.Infra;
 public class CultureInfoManager

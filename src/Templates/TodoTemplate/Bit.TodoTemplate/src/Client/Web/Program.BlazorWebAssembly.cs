@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Client.Core.Shared;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif

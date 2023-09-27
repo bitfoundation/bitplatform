@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 
 namespace Bit.Websites.Platform.Api.Services;
 

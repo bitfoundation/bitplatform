@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
@@ -10,8 +10,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.11" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.11" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
 
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
@@ -21,6 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
 </Project>

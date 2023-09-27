@@ -1,6 +1,4 @@
-﻿using TodoTemplate.Client.Core.Services;
-
-namespace TodoTemplate.Client.Web.Services;
+﻿namespace TodoTemplate.Client.Web.Services;
 
 public partial class WebExceptionHandler : ExceptionHandlerBase
 {

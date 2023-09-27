@@ -2,7 +2,7 @@
 #if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using AdminPanel.Client.Web.Services.Implementations;
+using AdminPanel.Client.Web.Services;
 
 namespace AdminPanel.Client.Web.Startup;
 

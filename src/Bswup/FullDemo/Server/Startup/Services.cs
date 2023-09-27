@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 
 namespace Bit.Bswup.Demo.Server.Startup;

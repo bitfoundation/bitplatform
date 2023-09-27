@@ -1,6 +1,4 @@
-﻿using TodoTemplate.Client.Core.Services;
-
-namespace TodoTemplate.Client.App.Services;
+﻿namespace TodoTemplate.Client.App.Services;
 
 /// <summary>
 /// You can easily install AppCenter, Firebase Crashlytics, and other exception tracking libraries in your Client.App project.

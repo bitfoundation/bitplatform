@@ -24,7 +24,7 @@ public partial class AppErrorBoundary
 
     private void Refresh()
     {
-        _navigationManager.ForceReload();
+        _navigationManager.Refresh(forceReload: true);
     }
 
     private void GoHome()

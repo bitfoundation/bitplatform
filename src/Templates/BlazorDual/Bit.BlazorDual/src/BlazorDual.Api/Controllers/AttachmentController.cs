@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-using MimeTypes;
+﻿using MimeTypes;
 using BlazorDual.Api.Models.Identity;
 using SystemFile = System.IO.File;
 using ImageMagick;

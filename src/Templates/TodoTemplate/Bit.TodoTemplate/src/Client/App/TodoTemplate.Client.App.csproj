@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0-android;net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net7.0-android</TargetFrameworks>
+        <TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net8.0-android</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-        <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
         <OutputType>Exe</OutputType>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
@@ -34,42 +34,39 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+        <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
-        <MtouchLink>Full</MtouchLink>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
     </PropertyGroup>
-
-    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
-        <LinkDescription Include="Platforms\iOS\LinkDesc.xml" />
-    </ItemGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -v 7.0.0 -->
-        <!-- dotnet build -t:BuildAndStartAotProfiling -f net7.0-android /p:UseInterpreter=false -->
-        <!-- dotnet build -t:FinishAotProfiling -f net7.0-android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net8.0-android -->
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
     <ItemGroup>
 
         <Using Include="TodoTemplate.Client.Core.Shared" />
-        <Using Include="TodoTemplate.Client.Core.Services.Implementations" />
+        <Using Include="TodoTemplate.Client.Core.Services" />
         <Using Include="TodoTemplate.Client.Core.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     
     </ItemGroup>
 
     <ItemGroup>
-        <!-- App icon for Android -->
-        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Include="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68"/>
 
-        <!-- App icon for all other platforms -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF"/>
+        <!-- App icon for all platforms -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF" />
+
+        <!-- Customize App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Update="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
@@ -85,7 +82,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
         <PackageReference Include="Bit.BlazorUI" Version="5.6.1" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="5.6.1" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="5.6.1" />
@@ -103,5 +99,23 @@
     <ItemGroup>
       <ProjectReference Include="..\Core\TodoTemplate.Client.Core.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.1.9171" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.0-rc.1.9171" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.1.9171" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.0-rc.1.9171" />
+    </ItemGroup>
+
+    <!-- Build Properties must be defined within these property groups to ensure successful publishing
+       to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
+        <UseHardenedRuntime>true</UseHardenedRuntime>
+    </PropertyGroup>
 
 </Project>

@@ -1,7 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-
-namespace Bit.BlazorUI.Demo.Client.Web.Services;
-
+﻿namespace Bit.BlazorUI.Demo.Client.Web.Services;
 public partial class WebExceptionHandler : ExceptionHandlerBase
 {
     public override void Handle(Exception exception, IDictionary<string, object?>? parameters = null)

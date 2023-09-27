@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using TodoTemplate.Shared.Exceptions;
 
 namespace TodoTemplate.Server.Api.Middlewares;
 

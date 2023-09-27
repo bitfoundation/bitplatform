@@ -1,5 +1,4 @@
 ﻿using AdminPanel.Client.Web.Services;
-using AdminPanel.Client.Web.Services.Implementations;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

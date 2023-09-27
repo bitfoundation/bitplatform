@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using Bit.Websites.Platform.Shared.Exceptions;
 
 namespace Bit.Websites.Platform.Api.Middlewares;
 

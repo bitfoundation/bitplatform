@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using TodoTemplate.Client.Core.Services.Implementations;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions

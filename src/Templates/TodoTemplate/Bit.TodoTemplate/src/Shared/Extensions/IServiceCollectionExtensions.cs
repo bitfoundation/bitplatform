@@ -1,4 +1,4 @@
-﻿using TodoTemplate.Shared.Services.Implementations;
+﻿using TodoTemplate.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Core.Shared;
-
 #if BlazorElectron
 using ElectronNET.API;
 using ElectronNET.API.Entities;

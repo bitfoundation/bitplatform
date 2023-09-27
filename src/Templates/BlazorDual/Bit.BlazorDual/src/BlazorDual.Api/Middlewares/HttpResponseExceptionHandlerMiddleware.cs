@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using BlazorDual.Shared.Exceptions;
 
 namespace BlazorDual.Api.Middlewares;
 

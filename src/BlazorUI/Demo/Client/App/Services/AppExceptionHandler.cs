@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-using Microsoft.AppCenter.Crashes;
+﻿using Microsoft.AppCenter.Crashes;
 
 namespace Bit.BlazorUI.Demo.Client.App.Services;
 

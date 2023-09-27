@@ -1,6 +1,4 @@
-﻿using Bit.Websites.Sales.Web.Services;
-
-namespace Microsoft.Extensions.DependencyInjection;
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
