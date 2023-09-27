@@ -33,7 +33,12 @@ internal static class ObjectExtensions
         Type targetType = typeof(T);
         targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+        if (targetType == typeof(string) && value.ToString().HasNoValue())
+        {
+            return default;
+        }
+
+        return (T)Convert.ChangeType(targetType == typeof(string) ? value.ToString()! : value, targetType, CultureInfo.InvariantCulture);
     }
 
     internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
@@ -48,7 +53,12 @@ internal static class ObjectExtensions
         Type targetType = typeof(T);
         targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+        if (targetType == typeof(string) && value.ToString().HasNoValue())
+        {
+            return defaultValue;
+        }
+
+        return (T)Convert.ChangeType(targetType == typeof(string) ? value.ToString()! : value, targetType, CultureInfo.InvariantCulture);
     }
 
     internal static T? ConvertTo<T>(this object? obj)
