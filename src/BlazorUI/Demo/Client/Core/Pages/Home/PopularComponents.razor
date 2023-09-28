@@ -8,6 +8,7 @@
             @foreach (var com in Components)
             {
                 <button @onclick="(() => SelectComponent(com))"
+                        type="button"
                         class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Class.Color.Foreground.Primary">
                     <div class="component-icon">
                         <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
@@ -27,7 +28,7 @@
             @foreach (var com in Components)
             {
                 <BitCarouselItem Style="width: 100%">
-                    <button class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)">
+                    <button type="button" class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)">
                         <div class="component-icon">
                             <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                         </div>
