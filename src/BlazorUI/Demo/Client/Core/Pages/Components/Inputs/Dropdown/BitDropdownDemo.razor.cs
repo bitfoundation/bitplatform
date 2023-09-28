@@ -225,6 +225,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "SearchFunction",
+            Type = "Func<ICollection<TItem>, string, ICollection<TItem>>?",
+            DefaultValue = "null",
+            Description = "Custom search function to be used in place of the default search algorithm.",
+        },
+        new()
+        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",

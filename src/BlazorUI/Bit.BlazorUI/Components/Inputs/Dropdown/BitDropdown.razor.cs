@@ -246,6 +246,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
 
     /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
+
+    /// <summary>
     /// The selected item in single select mode. (two-way bound)
     /// </summary>
     [Parameter]
@@ -833,8 +838,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         return _searchText.HasNoValue()
                 ? _items
-                : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
-                                      && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
+                : SearchFunction is not null
+                    ? [.. SearchFunction.Invoke(_items, _searchText!)]
+                    : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
+                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
     }
 
     private string GetSearchBoxClasses()
