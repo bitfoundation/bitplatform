@@ -226,7 +226,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     Open Bit Platform In New Tab
 </BitActionButton>
 
-<BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"">
     Go To Bit Platform
 </BitActionButton>";
 
