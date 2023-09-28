@@ -1043,7 +1043,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             return dropdownOption.IsEnabled;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return true;
 
         if (NameSelectors.IsEnabled.Selector is not null)
         {
