@@ -1050,7 +1050,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             return NameSelectors.IsEnabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name);
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     internal bool GetIsHidden(TItem item)
