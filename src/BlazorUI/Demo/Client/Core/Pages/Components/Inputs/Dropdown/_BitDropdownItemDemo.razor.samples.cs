@@ -290,6 +290,26 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select items""
              IsMultiSelect=""true""
              ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />
+
+
+
+<BitDropdown Label=""Single select & auto focus""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
+             SearchBoxPlaceholder=""Search item"" />
+
+<BitDropdown Label=""Multi select""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select items""
+             IsMultiSelect=""true""
+             ShowSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search items"" />";
     private readonly string example6CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()

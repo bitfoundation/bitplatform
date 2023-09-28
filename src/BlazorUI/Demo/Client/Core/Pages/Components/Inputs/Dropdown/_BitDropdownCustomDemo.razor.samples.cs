@@ -430,6 +430,26 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select items""
              IsMultiSelect=""true""
              ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />
+
+
+
+<BitDropdown Label=""Single select & auto focus""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
+             SearchBoxPlaceholder=""Search item"" />
+
+<BitDropdown Label=""Multi select""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select items""
+             IsMultiSelect=""true""
+             ShowSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search items"" />";
     private readonly string example6CsharpCode = @"
 public class BitDropdownCustom
