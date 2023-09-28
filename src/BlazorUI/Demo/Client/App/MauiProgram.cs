@@ -10,7 +10,7 @@ public static class MauiProgram
     {
         try
         {
-            // For MacCatalyst support there's still some issues with AppCenter
+            // For MacCatalyst there's still some issues with AppCenter
             // https://github.com/microsoft/appcenter-sdk-dotnet/issues/1755
             // https://github.com/microsoft/appcenter-sdk-dotnet/issues/1702
 #if Android || iOS || Windows
