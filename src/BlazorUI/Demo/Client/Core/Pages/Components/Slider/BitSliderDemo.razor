@@ -56,7 +56,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical slider" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="flex-container column">
+                <div style="display:flex">Visible: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Visible" /> ]</div>
+                <div style="display:flex">Hidden: [ <BitSlider Visibility="BitVisibility.Hidden" /> ]</div>
+                <div style="display:flex">Collapsed: [ <BitSlider Visibility="BitVisibility.Collapsed" /> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Vertical" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="flex-container">
                 <BitSlider Label="Basic"
@@ -89,7 +99,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Range slider" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Range" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <BitSlider Label="Basic"
                        Min="0"
@@ -135,7 +145,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical Range Slider" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Vertical & Range" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="flex-container">
                 <BitSlider Label="Basic"
@@ -178,7 +188,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="flex-container column">
                 <div class="custom-wrapper">
@@ -209,16 +219,6 @@
                                                   SliderBox = "custom-slider-box",
                                                   Container = "custom-container" } )" />
                 </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
-        <ExamplePreview>
-            <div class="flex-container column">
-                <div class="visibility-items">Visible: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Visible" Label="Visible Slider" /> ]</div>
-                <div class="visibility-items">Hidden: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Hidden" Label="Hidden Slider" /> ]</div>
-                <div class="visibility-items">Collapsed: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Collapsed" Label="Collapsed Slider" /> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

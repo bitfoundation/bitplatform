@@ -35,21 +35,13 @@
 
 .box-content {
     width: 100%;
-    overflow: auto;
     position: relative;
     min-height: rem2(70px);
     box-sizing: border-box;
-
-    &::-webkit-scrollbar {
-        width: rem2(6px);
-    }
-
-    &::-webkit-scrollbar:horizontal {
-        height: rem2(8px);
-    }
 }
 
 .example-container {
+    overflow: auto;
     padding: rem2(24px);
 
     @include lt-lg {
@@ -57,11 +49,11 @@
     }
 
     &::-webkit-scrollbar {
-        width: rem2(10px);
+        width: rem2(6px);
     }
 
     &::-webkit-scrollbar:horizontal {
-        height: rem2(10px);
+        height: rem2(8px);
     }
 }
 
