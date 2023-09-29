@@ -2,9 +2,10 @@
 
 public partial class BitScrollablePane
 {
+    private BitScrollbarVisibility scrollbarVisibility = BitScrollbarVisibility.Auto;
+
     private int? _tabIndex;
     private string? _ariaLabel;
-    private BitScrollbarVisibility _scrollbarVisibility = BitScrollbarVisibility.Auto;
 
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.
@@ -21,18 +22,15 @@ public partial class BitScrollablePane
     /// </summary>
     [Parameter] public BitScrollbarVisibility ScrollbarVisibility
     {
-        get => _scrollbarVisibility;
+        get => scrollbarVisibility;
         set
         {
-            _scrollbarVisibility = value;
+            if (scrollbarVisibility == value) return;
+
+            scrollbarVisibility = value;
             ClassBuilder.Reset();
         }
     }
-
-    /// <summary>
-    /// If ScrollContainerFocus is set to true, use this to give the container an accessible name.
-    /// </summary>
-    [Parameter] public string? ScrollContainerAriaLabel { get; set; }
 
     /// <summary>
     /// Makes the scrollable container focusable, to aid with keyboard-only scrolling Should only be set to true if the scrollable region will not contain any other focusable items.
@@ -58,7 +56,7 @@ public partial class BitScrollablePane
         if (ScrollContainerFocus)
         {
             _tabIndex = 0;
-            _ariaLabel = ScrollContainerAriaLabel;
+            _ariaLabel = AriaLabel;
         }
 
         base.OnParametersSet();

@@ -28,13 +28,6 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Name = "ScrollContainerAriaLabel",
-            Type = "string?",
-            DefaultValue= "null",
-            Description = "If ScrollContainerFocus is set to true, use this to give the container an accessible name.",
-        },
-        new()
-        {
             Name = "ScrollContainerFocus",
             Type = "bool",
             DefaultValue= "false",
