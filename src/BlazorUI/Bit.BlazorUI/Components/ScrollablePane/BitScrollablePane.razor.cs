@@ -13,6 +13,11 @@ public partial class BitScrollablePane
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// The height of the ScrollablePane.
+    /// </summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>
     /// Callback for when the ScrollablePane scrolled.
     /// </summary>
     [Parameter] public EventCallback OnScroll { get; set; }
@@ -37,6 +42,11 @@ public partial class BitScrollablePane
     /// </summary>
     [Parameter] public bool ScrollContainerFocus { get; set; }
 
+    /// <summary>
+    /// The width of the ScrollablePane.
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
 
 
     protected override string RootElementClass => "bit-scp";
@@ -49,6 +59,12 @@ public partial class BitScrollablePane
             BitScrollbarVisibility.Scroll => $"{RootElementClass}-scr",
             _ => $"{RootElementClass}-aut"
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
+        StyleBuilder.Register(() => Height.HasValue() ? $"height: {Height}" : string.Empty);
     }
 
     protected override void OnParametersSet()
