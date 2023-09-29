@@ -86,7 +86,7 @@ public partial class BitScrollablePaneDemo
         height: 2.75rem;
         margin: 0.5rem 0.5rem;
         padding: 0.5rem 1.25rem;
-        background-color: $bit-color-background-secondary;
+        background-color: #f2f2f2;
     }
 
     .horizontal-scroll-item {
@@ -94,7 +94,7 @@ public partial class BitScrollablePaneDemo
         height: 2.75rem;
         margin: 0.5rem 0.5rem;
         padding: 0.5rem 1.25rem;
-        background-color: $bit-color-background-secondary;
+        background-color: #f2f2f2;
     }
 
     .custom-scroll-container {
