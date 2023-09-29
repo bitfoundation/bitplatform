@@ -113,8 +113,10 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
+        <div>Two-way binding:</div>
+        <br />
         <div class="example-content">
             <div>
                 <BitDropdown @bind-Value="controlledValue"
@@ -134,7 +136,6 @@
                 </BitDropdown>
                 <BitLabel>Selected Value: @controlledValue</BitLabel>
             </div>
-            <br />
             <div>
                 <BitDropdown @bind-Values="controlledValues"
                              Label="Multi select"
@@ -147,6 +148,69 @@
                     }
                 </BitDropdown>
                 <BitLabel>Selected Values: @string.Join(",", controlledValues)</BitLabel>
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>OnChange:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             Placeholder="Select an item"
+                             TItem="BitDropdownOption<string>" TValue="string"
+                             OnChange="(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             IsMultiSelect="true"
+                             Placeholder="Select items"
+                             TItem="BitDropdownOption<string>" TValue="string"
+                             OnChange="(BitDropdownOption<string>[] items) => changedItems = items">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</BitLabel>
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>OnSelectItem:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             DefaultValue="@string.Empty"
+                             Placeholder="Select an item"
+                             TItem="BitDropdownOption<string>" TValue="string"
+                             OnSelectItem="(BitDropdownOption<string> item) => selectedItem1 = item">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             IsMultiSelect="true"
+                             DefaultValue="@string.Empty"
+                             Placeholder="Select items"
+                             TItem="BitDropdownOption<string>" TValue="string"
+                             OnSelectItem="(BitDropdownOption<string> item) => selectedItem2 = item">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
