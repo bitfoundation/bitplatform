@@ -249,52 +249,50 @@ public partial class BitSliderDemo
 
     private readonly string example1RazorCode = @"
 <BitSlider Label=""Basic slider"" />
-<br />
-<br />
+
 <BitSlider Label=""Disabled slider""
-            Min=""50""
-            Max=""500""
-            Step=""50""
-            DefaultValue=""300""
-            IsEnabled=""false"" />
-<br />
-<br />
+           Min=""50""
+           Max=""500""
+           Step=""50""
+           DefaultValue=""300""
+           IsEnabled=""false"" />
+
 <BitSlider Label=""Snapping slider""
-            Min=""0""
-            Max=""50""
-            Step=""10""
-            DefaultValue=""20"" />
-<br />
-<br />
+           Min=""0""
+           Max=""50""
+           Step=""10""
+           DefaultValue=""20"" />
+
 <BitSlider @bind-Value=""sliderHorizontalValue""
-            Label=""Controlled slider""
-            Max=""10"" />
+           Label=""Controlled slider""
+           Max=""10"" />
 <BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 2"">Reset value</BitButton>
-<br />
-<br />
-<br />
+
 <BitSlider Label=""Formatted value""
-            Max=""100""
-            DefaultValue=""31""
-            ValueFormat=""P00"" />
-<br />
-<br />
+           Max=""100""
+           DefaultValue=""31""
+           ValueFormat=""P00"" />
+
 <BitSlider Label=""Formatted value""
-            Max=""1000""
-            DefaultValue=""319""
-            ValueFormat=""P01"" />
-<br />
-<br />
+           Max=""1000""
+           DefaultValue=""319""
+           ValueFormat=""P01"" />
+
 <BitSlider Label=""Origin from zero""
-            Min=""-5""
-            Max=""5""
-            Step=""1""
-            DefaultValue=""2""
-            IsOriginFromZero=""true"" />";
+           Min=""-5""
+           Max=""5""
+           Step=""1""
+           DefaultValue=""2""
+           IsOriginFromZero=""true"" />";
     private readonly string example1CsharpCode = @"
 private double? sliderHorizontalValue = 2;";
 
     private readonly string example2RazorCode = @"
+Visible: [ <BitSlider Visibility=""BitVisibility.Visible"" /> ]
+Hidden: [ <BitSlider Visibility=""BitVisibility.Hidden"" /> ]
+Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
+
+    private readonly string example3RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -322,7 +320,7 @@ private double? sliderHorizontalValue = 2;";
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""0""
            Max=""10""
@@ -360,7 +358,7 @@ private double? sliderHorizontalValue = 2;";
            DefaultUpperValue=""2""
            IsRanged=""true""
            IsOriginFromZero=""true"" />";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private double? sliderRangedLowerValue = 3;
 private double? sliderRangedUpperValue = 7;
 private void ResetBitSliderRangedValues()
@@ -369,7 +367,7 @@ private void ResetBitSliderRangedValues()
     sliderRangedUpperValue = 7;
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitSlider Label=""Basic""
            Min=""1""
            Max=""5""
@@ -407,7 +405,7 @@ private void ResetBitSliderRangedValues()
            IsVertical=""true""
            IsOriginFromZero=""true"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         margin-left: 0.5rem;
@@ -487,11 +485,6 @@ private void ResetBitSliderRangedValues()
                               UpperValueInput = ""custom-input"",
                               SliderBox = ""custom-slider-box"",
                               Container = ""custom-container"" } )"" />";
-
-    private readonly string example6RazorCode = @"
-Visible: [ <BitSlider Visibility=""BitVisibility.Visible"" Label=""Visible Slider"" /> ]
-Hidden: [ <BitSlider Visibility=""BitVisibility.Hidden"" Label=""Hidden Slider"" /> ]
-Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" Label=""Collapsed Slider"" /> ]";
 
     private readonly string example7RazorCode = @"
 <BitSlider Max=""10""
