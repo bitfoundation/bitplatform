@@ -109,6 +109,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },
+                new() { Text = "ScrollablePane", Url = "/components/scrollablepane" },
                 new() { Text = "Typography", Url = "/components/typography" },
             },
         },

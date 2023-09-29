@@ -1,0 +1,57 @@
+﻿@page "/components/scrollablepane"
+@page "/components/scrollable-pane"
+
+<PageOutlet Url="components/scrollablepane"
+            Title="BitScrollablePane"
+            Description="scrollablepane component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="ScrollablePane"
+                   ComponentDescription="A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen."
+                   ComponentParameters="componentParameters"
+                   ComponentSubEnums="componentSubEnums">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <div>
+                    <BitScrollablePane Style="height: 19rem;">
+                        @for (int i = 0; i < 25; i++)
+                        {
+                            var index = i;
+                            <div class="vertical-scroll-item">@index</div>
+                        }
+                    </BitScrollablePane>
+                    <br /><br />
+                    <BitScrollablePane Class="custom-scroll-container">
+                        @for (int i = 0; i < 25; i++)
+                        {
+                            var index = i;
+                            <div class="horizontal-scroll-item">@index</div>
+                        }
+                    </BitScrollablePane>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Scrollbar visibility" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <ExamplePreview>
+                <div>
+                    <BitScrollablePane @bind-ScrollbarVisibility="@scrollbarVisibility" Style="height: 19rem;">
+                        @for (int i = 0; i < itemsCount; i++)
+                        {
+                            var index = i;
+                            <div class="vertical-scroll-item">@index</div>
+                        }
+                    </BitScrollablePane>
+                    <br />
+                    <BitSpinButton Min="0" @bind-Value="@itemsCount" Label="Items count" Style="max-width: 19rem" />
+                    <br />
+                    <BitChoiceGroup @bind-Value="scrollbarVisibility" Label="Scrollbar visibility" TItem="BitChoiceGroupOption<BitScrollbarVisibility>" TValue="BitScrollbarVisibility">
+                        <BitChoiceGroupOption Text="Auto" Value="BitScrollbarVisibility.Auto" />
+                        <BitChoiceGroupOption Text="Hidden" Value="BitScrollbarVisibility.Hidden" />
+                        <BitChoiceGroupOption Text="Scroll" Value="BitScrollbarVisibility.Scroll" />
+                    </BitChoiceGroup>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>
