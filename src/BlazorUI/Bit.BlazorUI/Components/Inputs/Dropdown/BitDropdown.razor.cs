@@ -486,10 +486,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             Values = SelectedItems.Select(GetValue).ToArray();
 
-            if (isSelected)
-            {
-                await OnSelectItem.InvokeAsync(item);
-            }
+            await OnSelectItem.InvokeAsync(item);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else

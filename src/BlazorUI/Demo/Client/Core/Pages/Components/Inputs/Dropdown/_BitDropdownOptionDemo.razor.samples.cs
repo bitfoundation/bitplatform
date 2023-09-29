@@ -189,7 +189,6 @@ private readonly List<BitDropdownItem<string>> styleClassItems = new()
 </BitDropdown>
 <BitLabel>Selected Value: @controlledValue</BitLabel>
 
-
 <BitDropdown @bind-Values=""controlledValues""
              Label=""Multi select""
              Placeholder=""Select items""
@@ -200,10 +199,69 @@ private readonly List<BitDropdownItem<string>> styleClassItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>";
+<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             OnChange=""(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+
+<BitDropdown Label=""Multi select""
+             IsMultiSelect=""true""
+             Placeholder=""Select items""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             OnChange=""(BitDropdownOption<string>[] items) => changedItems = items"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             OnSelectItem=""(BitDropdownOption<string> item) => selectedItem1 = item"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+
+<BitDropdown Label=""Multi select""
+             IsMultiSelect=""true""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select items""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             OnSelectItem=""(BitDropdownOption<string> item) => selectedItem2 = item"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+
+private BitDropdownOption<string>? changedItem;
+private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
+
+private BitDropdownOption<string>? selectedItem1;
+private BitDropdownOption<string>? selectedItem2;
 
 private readonly List<BitDropdownItem<string>> basicItems = new()
 {
