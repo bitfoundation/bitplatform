@@ -144,7 +144,7 @@ public partial class BitScrollablePaneDemo
     <BitChoiceGroupOption Text=""Hidden"" Value=""BitScrollbarVisibility.Hidden"" />
     <BitChoiceGroupOption Text=""Scroll"" Value=""BitScrollbarVisibility.Scroll"" />
 </BitChoiceGroup>";
-    private string example2CsharpCode = @"
+    private readonly string example2CsharpCode = @"
 private double itemsCount = 25;
 private BitScrollbarVisibility scrollbarVisibility;
 ";
