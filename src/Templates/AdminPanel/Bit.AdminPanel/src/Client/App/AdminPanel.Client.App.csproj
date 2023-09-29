@@ -83,14 +83,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="6.0.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="6.0.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="6.0.0-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="6.0.0-pre-01">
+        <PackageReference Include="Bit.BlazorUI" Version="6.0.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="6.0.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="6.0.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="6.0.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="6.0.0-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="6.0.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
