@@ -43,7 +43,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "ChangeHandler",
             Type = "EventCallback<BitSpinButtonAction>",
-            Description = "",
+            Description = "?",
         },
         new()
         {
@@ -115,7 +115,7 @@ public partial class BitSpinButtonDemo
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
+            Description = "Custom Label content for spin button.",
         },
         new()
         {

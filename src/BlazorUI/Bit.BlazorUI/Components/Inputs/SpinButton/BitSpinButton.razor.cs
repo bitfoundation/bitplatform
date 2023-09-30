@@ -25,18 +25,18 @@ public partial class BitSpinButton
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Detailed description of the input for the benefit of screen readers
+    /// Detailed description of the input for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// The position in the parent set (if in a set)
+    /// The position in the parent set (if in a set).
     /// </summary>
     [Parameter]
     public int? AriaPositionInSet { get; set; }
 
     /// <summary>
-    /// The total size of the parent set (if in a set)
+    /// The total size of the parent set (if in a set).
     /// </summary>
     [Parameter]
     public int? AriaSetSize { get; set; }
@@ -54,52 +54,52 @@ public partial class BitSpinButton
     public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// 
+    /// ?
     /// </summary>
     [Parameter] public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
 
     /// <summary>
-    /// Accessible label text for the decrement button (for screen reader users)
+    /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     [Parameter] public string? DecrementButtonAriaLabel { get; set; }
 
     /// <summary>
-    /// Custom icon name for the decrement button
+    /// Custom icon name for the decrement button.
     /// </summary>
     [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
-    /// Initial value of the spin button 
+    /// Initial value of the spin button.
     /// </summary>
     [Parameter] public double? DefaultValue { get; set; }
 
     /// <summary>
-    /// The aria label of the icon for the benefit of screen readers
+    /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
 
     /// <summary>
-    /// Icon name for an icon to display alongside the spin button's label
+    /// Icon name for an icon to display alongside the spin button's label.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Accessible label text for the increment button (for screen reader users)
+    /// Accessible label text for the increment button (for screen reader users).
     /// </summary>
     [Parameter] public string? IncrementButtonAriaLabel { get; set; }
 
     /// <summary>
-    /// Custom icon name for the increment button
+    /// Custom icon name for the increment button.
     /// </summary>
     [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
-    /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers
+    /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
 
     /// <summary>
-    /// The position of the label in regards to the spin button
+    /// The position of the label in regards to the spin button.
     /// </summary>
     [Parameter]
     public BitSpinButtonLabelPosition LabelPosition
@@ -115,17 +115,17 @@ public partial class BitSpinButton
     }
 
     /// <summary>
-    /// Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+    /// Custom Label content for spin button.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Max value of the spin button. If not provided, the spin button has max value of double type
+    /// Max value of the spin button. If not provided, the spin button has max value of double type.
     /// </summary>
     [Parameter] public double? Max { get; set; }
 
     /// <summary>
-    /// Min value of the spin button. If not provided, the spin button has minimum value of double type
+    /// Min value of the spin button. If not provided, the spin button has minimum value of double type.
     /// </summary>
     [Parameter] public double? Min { get; set; }
 
@@ -135,47 +135,47 @@ public partial class BitSpinButton
     [Parameter] public BitSpinButtonMode Mode { get; set; } = BitSpinButtonMode.Stack;
 
     /// <summary>
-    /// Callback for when the control loses focus
+    /// Callback for when the control loses focus.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
-    /// Callback for when the spin button value change
+    /// Callback for when the spin button value change.
     /// </summary>
     [Parameter] public EventCallback<double> OnChange { get; set; }
 
     /// <summary>
-    /// Callback for when the decrement button or down arrow key is pressed
+    /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<BitSpinButtonChangeValue> OnDecrement { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Callback for when focus moves into the input.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// Callback for when the increment button or up arrow key is pressed
+    /// Callback for when the increment button or up arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<BitSpinButtonChangeValue> OnIncrement { get; set; }
 
     /// <summary>
-    /// How many decimal places the value should be rounded to
+    /// How many decimal places the value should be rounded to.
     /// </summary>
     [Parameter] public int? Precision { get; set; }
 
     /// <summary>
-    /// Difference between two adjacent values of the spin button
+    /// Difference between two adjacent values of the spin button.
     /// </summary>
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
-    /// A text is shown after the spin button value
+    /// A text is shown after the spin button value.
     /// </summary>
     [Parameter] public string Suffix { get; set; } = string.Empty;
 
     /// <summary>
-    /// A more descriptive title for the control, visible on its tooltip
+    /// A more descriptive title for the control, visible on its tooltip.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
