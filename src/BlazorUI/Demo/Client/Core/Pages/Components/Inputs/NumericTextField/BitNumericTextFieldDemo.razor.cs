@@ -282,7 +282,7 @@ public partial class BitNumericTextFieldDemo
                     Name = "ButtonsContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's buttons (inecrement and decrement) container."
+                    Description = "Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container."
                 },
                 new()
                 {
