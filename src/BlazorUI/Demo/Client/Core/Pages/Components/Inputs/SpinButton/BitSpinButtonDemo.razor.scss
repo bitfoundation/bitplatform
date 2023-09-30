@@ -2,25 +2,10 @@
 @import '../../../../Styles/abstracts/_colors.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
 
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-}
-
-::deep .validation-message {
-    color: $Red20;
-    font-size: rem2(12px);
-}
 
 .example-box {
     display: flex;
-    gap: rem2(10px);
+    gap: rem2(16px);
     width: rem2(300px);
     flex-direction: column;
 
@@ -32,4 +17,8 @@
 .column {
     display: flex;
     flex-direction: column;
+}
+
+::deep .validation-message {
+    color: red;
 }
