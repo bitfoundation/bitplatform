@@ -21,7 +21,8 @@
     <ComponentExampleBox Title="Mode" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Stack" Mode="BitSpinButtonMode.Stack" />
+                <BitSpinButton Label="Compact" Mode="BitSpinButtonMode.Compact" />
+                <BitSpinButton Label="Inline" Mode="BitSpinButtonMode.Inline" />
                 <BitSpinButton Label="Spread" Mode="BitSpinButtonMode.Spread" />
             </div>
         </ExamplePreview>
@@ -58,10 +59,15 @@
                                IncrementButtonIconName="@BitIconName.LikeSolid"
                                DecrementButtonIconName="@BitIconName.DislikeSolid" />
 
+                <BitSpinButton Label="Back & Forward"
+                               Mode="BitSpinButtonMode.Inline"
+                               DecrementButtonIconName="@BitIconName.Back"
+                               IncrementButtonIconName="@BitIconName.Forward" />
+
                 <BitSpinButton Label="Plus and Minus"
                                Mode="BitSpinButtonMode.Spread"
-                               IncrementButtonIconName="@BitIconName.CalculatorAddition"
-                               DecrementButtonIconName="@BitIconName.CalculatorSubtract" />
+                               DecrementButtonIconName="@BitIconName.CalculatorSubtract"
+                               IncrementButtonIconName="@BitIconName.CalculatorAddition" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
