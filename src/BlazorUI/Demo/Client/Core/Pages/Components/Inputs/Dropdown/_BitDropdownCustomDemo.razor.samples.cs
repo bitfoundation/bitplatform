@@ -18,7 +18,13 @@ public partial class _BitDropdownCustomDemo
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             IsRequired=""true"" />";
+             IsRequired=""true"" />
+
+<BitDropdown Label=""Disabled""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             IsEnabled=""false"" />";
     private readonly string example1CsharpCode = @"
 public class BitDropdownCustom
 {
@@ -197,10 +203,55 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>";
+<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             Items=""GetBasicCustoms()""
+             Placeholder=""Select an item""
+             NameSelectors=""nameSelectors""
+             TItem=""BitDropdownCustom"" TValue=""string""
+             OnChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
+<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+
+<BitDropdown Label=""Multi select""
+             IsMultiSelect=""true""
+             Items=""GetBasicCustoms()""
+             Placeholder=""Select items""
+             NameSelectors=""nameSelectors""
+             TItem=""BitDropdownCustom"" TValue=""string""
+             OnChange=""(BitDropdownCustom[] items) => changedItems = items"" />
+<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             Items=""GetBasicCustoms()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             NameSelectors=""nameSelectors""
+             OnSelectItem=""(BitDropdownCustom item) => selectedItem1 = item"" />
+<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+
+<BitDropdown Label=""Multi select""
+             IsMultiSelect=""true""
+             Items=""GetBasicCustoms()""
+             Placeholder=""Select items""
+             DefaultValue=""@string.Empty""
+             NameSelectors=""nameSelectors""
+             OnSelectItem=""(BitDropdownCustom item) => selectedItem2 = item"" />
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string? controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+
+private BitDropdownCustom? changedItem;
+private BitDropdownCustom[] changedItems = Array.Empty<BitDropdownCustom>();
+
+private BitDropdownCustom? selectedItem1;
+private BitDropdownCustom? selectedItem2;
 
 public class BitDropdownCustom
 {
@@ -430,6 +481,26 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select items""
              IsMultiSelect=""true""
              ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />
+
+
+
+<BitDropdown Label=""Single select & auto focus""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
+             SearchBoxPlaceholder=""Search item"" />
+
+<BitDropdown Label=""Multi select""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select items""
+             IsMultiSelect=""true""
+             ShowSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search items"" />";
     private readonly string example6CsharpCode = @"
 public class BitDropdownCustom

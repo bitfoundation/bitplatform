@@ -2,7 +2,6 @@
 #if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorDual.Web.Services.Implementations;
 
 namespace BlazorDual.Web.Startup;
 

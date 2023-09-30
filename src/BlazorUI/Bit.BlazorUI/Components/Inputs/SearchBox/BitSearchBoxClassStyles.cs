@@ -3,6 +3,11 @@
 public class BitSearchBoxClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the search box.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's clear button.
     /// </summary>
     public string? ClearButton { get; set; }

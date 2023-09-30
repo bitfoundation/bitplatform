@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+﻿namespace Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 public class Meta
 {

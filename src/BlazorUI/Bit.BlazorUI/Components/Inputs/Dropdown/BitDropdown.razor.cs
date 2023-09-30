@@ -246,6 +246,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
 
     /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
+
+    /// <summary>
     /// The selected item in single select mode. (two-way bound)
     /// </summary>
     [Parameter]
@@ -481,10 +486,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             Values = SelectedItems.Select(GetValue).ToArray();
 
-            if (isSelected)
-            {
-                await OnSelectItem.InvokeAsync(item);
-            }
+            await OnSelectItem.InvokeAsync(item);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
@@ -833,8 +835,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         return _searchText.HasNoValue()
                 ? _items
-                : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
-                                      && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
+                : SearchFunction is not null
+                    ? [.. SearchFunction.Invoke(_items, _searchText!)]
+                    : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
+                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
     }
 
     private string GetSearchBoxClasses()
@@ -1043,14 +1047,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             return dropdownOption.IsEnabled;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return true;
 
         if (NameSelectors.IsEnabled.Selector is not null)
         {
             return NameSelectors.IsEnabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name);
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     internal bool GetIsHidden(TItem item)

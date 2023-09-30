@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using Bit.BlazorUI.Demo.Shared.Exceptions;
 
 namespace Bit.BlazorUI.Demo.Server.Api.Middlewares;
 

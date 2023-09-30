@@ -83,6 +83,12 @@ public partial class _BitDropdownCustomDemo
     private string? controlledValue = "f-app";
     private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
 
+    private BitDropdownCustom? changedItem;
+    private BitDropdownCustom[] changedItems = Array.Empty<BitDropdownCustom>();
+
+    private BitDropdownCustom? selectedItem1;
+    private BitDropdownCustom? selectedItem2;
+
     private string? clearValue = "f-app";
     private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
 

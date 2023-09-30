@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bit.Butil;
+﻿namespace Bit.Butil;
 
 public static class Console
 {

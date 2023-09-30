@@ -1,7 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components.Routing;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitThemeProvider : ComponentBase
 {

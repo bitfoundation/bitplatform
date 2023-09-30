@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-
-namespace TodoTemplate.Client.App;
+﻿namespace TodoTemplate.Client.App;
 
 class Program : MauiApplication
 {

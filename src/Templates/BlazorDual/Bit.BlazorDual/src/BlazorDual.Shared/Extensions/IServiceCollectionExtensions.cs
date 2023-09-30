@@ -1,4 +1,4 @@
-﻿using BlazorDual.Shared.Services.Implementations;
+﻿using BlazorDual.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace TodoTemplate.Shared.Infra;
 public class CultureInfoManager

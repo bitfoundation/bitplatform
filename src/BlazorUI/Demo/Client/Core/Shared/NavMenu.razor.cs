@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class NavMenu : IDisposable
 {

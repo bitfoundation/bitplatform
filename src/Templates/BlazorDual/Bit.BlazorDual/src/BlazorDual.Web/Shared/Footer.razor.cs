@@ -36,7 +36,7 @@ public partial class Footer
 
         await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
 
-        NavigationManager.ForceReload();
+        NavigationManager.Refresh(forceReload: true);
     }
 
     private async Task ToggleTheme()

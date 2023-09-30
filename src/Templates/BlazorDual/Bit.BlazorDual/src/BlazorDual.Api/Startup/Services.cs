@@ -1,15 +1,14 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
+using System.Net;
 using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorDual.Api.Services.Implementations;
-using Microsoft.Extensions.DependencyInjection;
+using BlazorDual.Api.Services;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
-using BlazorDual.Web.Services.Implementations;
-using BlazorDual.Web.Services.Implementations;
+using BlazorDual.Web.Services;
 #endif
 
 namespace BlazorDual.Api.Startup;
@@ -139,7 +138,10 @@ public static class Services
         {
             if (appSettings.EmailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password);
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port)
+                {
+                    Credentials = new NetworkCredential(appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password)
+                });
             }
             else
             {

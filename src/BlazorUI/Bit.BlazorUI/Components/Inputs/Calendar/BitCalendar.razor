@@ -16,12 +16,12 @@
                         @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay && IsMonthPickerVisible)
                         {
                             <button @onclick="@ToggleMonthPickerAsOverlay"
-                            tabindex="0"
-                            type="button"
-                            aria-live="polite"
-                            aria-atomic="true"
-                            class="bit-cal-pkr-tit"
-                            aria-label="@($"{_monthTitle}, change month")">
+                                    tabindex="0"
+                                    type="button"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    class="bit-cal-pkr-tit"
+                                    aria-label="@($"{_monthTitle}, change month")">
                                 <span id="@_monthTitleId">@_monthTitle</span>
                             </button>
                         }
@@ -36,28 +36,28 @@
                         }
                         <div class="bit-cal-nav-btn-ctn">
                             <button @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)"
-                            type="button"
-                            class="bit-cal-nav-btn"
-                            title="@GoToPrevMonthTitle"
-                            disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
-                            aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
+                                    type="button"
+                                    class="bit-cal-nav-btn"
+                                    title="@GoToPrevMonthTitle"
+                                    disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
+                                    aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
                                 <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                             </button>
                             <button @onclick="() => HandleOnMonthChange(ChangeDirection.Next)"
-                            type="button"
-                            class="bit-cal-nav-btn"
-                            title="@GoToNextMonthTitle"
-                            disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
-                            aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)">
+                                    type="button"
+                                    class="bit-cal-nav-btn"
+                                    title="@GoToNextMonthTitle"
+                                    disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
+                                    aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)">
                                 <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                             </button>
                         </div>
                     </div>
                     <table role="grid"
-                    aria-readonly="true"
-                    aria-multiselectable="false"
-                    aria-labelledby="@_monthTitleId"
-                    aria-activedescendant="@_activeDescendantId">
+                           aria-readonly="true"
+                           aria-multiselectable="false"
+                           aria-labelledby="@_monthTitleId"
+                           aria-activedescendant="@_activeDescendantId">
                         <tbody>
                             <tr>
                                 @if (ShowWeekNumbers)
@@ -97,15 +97,15 @@
                                         var localDay = day;
                                         <td class="bit-cal-dc @GetDateElClass(localDay, localWeek)" role="presentation">
                                             <button @onclick="() => SelectDate(localDay, localWeek)"
-                                            type="button"
-                                            role="gridcell"
-                                            class="bit-cal-dbtn"
-                                            aria-readonly="true"
-                                            aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
-                                            aria-disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
-                                            tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
-                                            aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                                    type="button"
+                                                    role="gridcell"
+                                                    class="bit-cal-dbtn"
+                                                    aria-readonly="true"
+                                                    aria-label="@GetDateAriaLabel(localWeek, localDay)"
+                                                    disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
+                                                    aria-disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
+                                                    tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                                    aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
                                                 @if (DayCellTemplate is not null)
                                                 {
                                                     @DayCellTemplate(GetDayCellDate(localDay, localWeek))
@@ -125,9 +125,9 @@
                     @if ((MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay || IsMonthPickerVisible is false) && ShowGoToToday)
                     {
                         <button @onclick="HandleGoToToday"
-                        type="button"
-                        class="bit-cal-gtd-btn"
-                        disabled="@IsGoTodayDisabled()">
+                                type="button"
+                                class="bit-cal-gtd-btn"
+                                disabled="@IsGoTodayDisabled()">
                             @GoToToday
                         </button>
                     }
@@ -137,9 +137,9 @@
                         <div class="bit-cal-time-grp">
                             <div class="bit-cal-time-wrp">
                             <input @ref="_inputTimeHourRef"
-                            @bind="@_timeHour"
-                            @bind:event="oninput"
-                            @onfocus="HandleOnTimeHourFocus"
+                                   @bind="@_timeHour"
+                                   @bind:event="oninput"
+                                   @onfocus="HandleOnTimeHourFocus"
                                     min="0"
                                     max="23"
                                     type="number"
@@ -148,15 +148,15 @@
                                     autocomplete="@BitAutoCompleteValue.NewPassword" />
                             <span class="bit-cal-tdiv">:</span>
                             <input @ref="_inputTimeMinuteRef"
-                            @bind="@_timeMinute"
-                            @bind:event="oninput"
-                            @onfocus="HandleOnTimeMinuteFocus"
-                                    min="0"
-                                    max="59"
-                                    type="number"
-                                    inputmode="numeric"
-                                    class="bit-cal-tinp"
-                                    autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                   @bind="@_timeMinute"
+                                   @bind:event="oninput"
+                                   @onfocus="HandleOnTimeMinuteFocus"
+                                   min="0"
+                                   max="59"
+                                   type="number"
+                                   inputmode="numeric"
+                                   class="bit-cal-tinp"
+                                   autocomplete="@BitAutoCompleteValue.NewPassword" />
                         </div>
                     </div>
                 }

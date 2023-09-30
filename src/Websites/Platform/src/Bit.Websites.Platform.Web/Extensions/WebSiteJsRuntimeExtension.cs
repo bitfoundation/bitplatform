@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
-namespace Microsoft.JSInterop;
+﻿namespace Microsoft.JSInterop;
 
 public static class WebSiteJsRuntimeExtension
 {

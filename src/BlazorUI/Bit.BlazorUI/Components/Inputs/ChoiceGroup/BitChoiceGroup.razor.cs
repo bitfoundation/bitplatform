@@ -259,7 +259,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             return NameSelectors.IsEnabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     private string? GetIconName(TItem item)

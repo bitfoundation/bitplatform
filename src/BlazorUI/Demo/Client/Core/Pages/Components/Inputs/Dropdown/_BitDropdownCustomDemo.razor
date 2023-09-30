@@ -18,7 +18,11 @@
                          Placeholder="Select an item"
                          IsRequired="true" />
 
-            <BitDropdown Label="Disabled" Items="GetBasicCustoms()" Placeholder="Select an item" IsEnabled="false" NameSelectors="nameSelectors" />
+            <BitDropdown Label="Disabled"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         IsEnabled="false" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -67,8 +71,10 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
+        <div>Two-way binding:</div>
+        <br />
         <div class="example-content">
             <div>
                 <BitDropdown @bind-Value="controlledValue"
@@ -78,7 +84,6 @@
                              Placeholder="Select an item" />
                 <BitLabel>Selected Value: @controlledValue</BitLabel>
             </div>
-            <br />
             <div>
                 <BitDropdown @bind-Values="controlledValues"
                              Label="Multi select"
@@ -87,6 +92,55 @@
                              Placeholder="Select items"
                              IsMultiSelect="true" />
                 <BitLabel>Selected Values: @string.Join(",", controlledValues)</BitLabel>
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>OnChange:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             Items="GetBasicCustoms()"
+                             Placeholder="Select an item"
+                             NameSelectors="nameSelectors"
+                             TItem="BitDropdownCustom" TValue="string"
+                             OnChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
+                <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             IsMultiSelect="true"
+                             Items="GetBasicCustoms()"
+                             Placeholder="Select items"
+                             NameSelectors="nameSelectors"
+                             TItem="BitDropdownCustom" TValue="string"
+                             OnChange="(BitDropdownCustom[] items) => changedItems = items" />
+                <BitLabel>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</BitLabel>
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>OnSelectItem:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             Items="GetBasicCustoms()"
+                             DefaultValue="@string.Empty"
+                             Placeholder="Select an item"
+                             NameSelectors="nameSelectors"
+                             OnSelectItem="(BitDropdownCustom item) => selectedItem1 = item" />
+                <BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             IsMultiSelect="true"
+                             Items="GetBasicCustoms()"
+                             Placeholder="Select items"
+                             DefaultValue="@string.Empty"
+                             NameSelectors="nameSelectors"
+                             OnSelectItem="(BitDropdownCustom item) => selectedItem2 = item" />
+                <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
@@ -161,6 +215,8 @@
 
 <ComponentExampleBox Title="SearchBox" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
+        <div>Default search function:</div>
+        <br />
         <div class="example-content">
             <BitDropdown Label="Single select & auto focus"
                          Items="GetBasicCustoms()"
@@ -176,6 +232,28 @@
                          Placeholder="Select items"
                          IsMultiSelect="true"
                          ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search items" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Custom search function:</div>
+        <br />
+        <div class="example-content">
+            <BitDropdown Label="Single select & auto focus"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         ShowSearchBox="true"
+                         AutoFocusSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
+                         SearchBoxPlaceholder="Search item" />
+
+            <BitDropdown Label="Multi select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items"
+                         IsMultiSelect="true"
+                         ShowSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
                          SearchBoxPlaceholder="Search items" />
         </div>
     </ExamplePreview>

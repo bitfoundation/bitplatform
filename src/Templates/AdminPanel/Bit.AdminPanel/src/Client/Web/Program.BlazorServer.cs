@@ -1,9 +1,4 @@
 ﻿//-:cnd:noEmit
-using AdminPanel.Client.Core.Shared;
-#if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-#endif
 
 namespace AdminPanel.Client.Web;
 
@@ -21,6 +16,10 @@ public partial class Program
         {
             // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
             builder.WebHost.UseUrls("https://localhost:4031", "http://localhost:4030", "https://*:4031", "http://*:4030");
+        }
+        else
+        {
+            builder.WebHost.UseUrls("https://localhost:4031", "http://localhost:4030");
         }
 #endif
 
