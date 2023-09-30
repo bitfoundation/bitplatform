@@ -1,0 +1,9 @@
+﻿@import "../../../Styles/abstracts/_functions.scss";
+@import "../../../Styles/abstracts/_bit-css-variables.scss";
+
+.vertical-scroll-item {
+    height: 2.75rem;
+    margin: 0.5rem 0.5rem;
+    padding: 0.5rem 1.25rem;
+    background-color: $bit-color-background-secondary;
+}
