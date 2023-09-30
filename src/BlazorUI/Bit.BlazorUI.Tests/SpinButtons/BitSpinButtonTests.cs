@@ -188,7 +188,7 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
         });
 
-        var spbWrapper = component.Find(".bit-spb-wrp");
+        var spbWrapper = component.Find(".bit-spb-cnt");
 
         if (string.IsNullOrEmpty(title) is false)
         {
