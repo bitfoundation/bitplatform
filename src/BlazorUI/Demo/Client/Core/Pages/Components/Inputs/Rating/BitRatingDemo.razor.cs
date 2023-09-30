@@ -106,6 +106,13 @@ public partial class BitRatingDemo
             {
                 new()
                 {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the rating.",
+                },
+                new()
+                {
                     Name = "Button",
                     Type = "string?",
                     DefaultValue = "null",
