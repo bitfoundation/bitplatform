@@ -54,11 +54,6 @@ public partial class BitSpinButton
     public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// ?
-    /// </summary>
-    [Parameter] public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
-
-    /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     [Parameter] public string? DecrementButtonAriaLabel { get; set; }
@@ -184,8 +179,9 @@ public partial class BitSpinButton
     /// </summary>
     [Parameter] public string ValidationMessage { get; set; } = "The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
 
-    protected override string RootElementClass => "bit-spb";
 
+
+    protected override string RootElementClass => "bit-spb";
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
@@ -227,34 +223,35 @@ public partial class BitSpinButton
             SetDisplayValue();
         }
 
-        if (ChangeHandler.HasDelegate is false)
+        await base.OnParametersSetAsync();
+    }
+
+
+    private async Task ApplyValueChange(BitSpinButtonAction action)
+    {
+        double result = 0;
+        bool isValid = false;
+
+        switch (action)
         {
-            ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
-            {
-                double result = 0;
-                bool isValid = false;
+            case BitSpinButtonAction.Increment:
+                result = CurrentValue + Step;
+                isValid = result <= _max && result >= _min;
+                break;
 
-                switch (action)
-                {
-                    case BitSpinButtonAction.Increment:
-                        result = CurrentValue + Step;
-                        isValid = result <= _max && result >= _min;
-                        break;
-
-                    case BitSpinButtonAction.Decrement:
-                        result = CurrentValue - Step;
-                        isValid = result <= _max && result >= _min;
-                        break;
-                }
-
-                if (isValid is false) return;
-
-                SetValue(result);
-                await OnChange.InvokeAsync(CurrentValue);
-            });
+            case BitSpinButtonAction.Decrement:
+                result = CurrentValue - Step;
+                isValid = result <= _max && result >= _min;
+                break;
         }
 
-        await base.OnParametersSetAsync();
+        if (isValid is false) return;
+
+        SetValue(result);
+
+        await OnChange.InvokeAsync(CurrentValue);
+
+        StateHasChanged();
     }
 
     private async Task HandleOnPointerDown(BitSpinButtonAction action, MouseEventArgs e)
@@ -296,7 +293,7 @@ public partial class BitSpinButton
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        await ChangeHandler.InvokeAsync(action);
+        await ApplyValueChange(action);
 
         if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
         {
@@ -329,7 +326,7 @@ public partial class BitSpinButton
             case "ArrowUp":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
+                    await ApplyValueChange(BitSpinButtonAction.Increment);
 
                     if (OnIncrement.HasDelegate is true)
                     {
@@ -348,7 +345,7 @@ public partial class BitSpinButton
             case "ArrowDown":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+                    await ApplyValueChange(BitSpinButtonAction.Decrement);
 
                     if (OnDecrement.HasDelegate is true)
                     {
