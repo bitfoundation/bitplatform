@@ -7,10 +7,3 @@
     padding: 0.5rem 1.25rem;
     background-color: $bit-color-background-secondary;
 }
-
-::deep {
-    .custom-scroll-container {
-        display: flex;
-        white-space: nowrap;
-    }
-}
