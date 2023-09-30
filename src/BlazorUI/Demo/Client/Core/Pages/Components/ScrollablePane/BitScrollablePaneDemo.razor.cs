@@ -254,7 +254,7 @@ public partial class BitScrollablePaneDemo
     }
 </BitScrollablePane>
 
-<BitSpinButton Min=""0"" @bind-Value=""@itemsCount"" Label=""Items count"" Style=""max-width: 19rem"" />
+<BitSpinButton Min=""0"" @bind-Value=""@itemsCount"" Mode=""@BitSpinButtonMode.Spread"" Label=""Items count"" Style=""max-width: 19rem"" />
                     
 <BitChoiceGroup @bind-Value=""scrollbarVisibility"" Label=""Scrollbar visibility"" TItem=""BitChoiceGroupOption<BitScrollbarVisibility>"" TValue=""BitScrollbarVisibility"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarVisibility.Auto"" />
@@ -284,7 +284,7 @@ private BitScrollbarVisibility scrollbarVisibility;
     }
 </BitScrollablePane>
 
-<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Label=""Items count"" Style=""max-width: 19rem"" />
+<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Mode=""@BitSpinButtonMode.Spread"" Label=""Items count"" Style=""max-width: 19rem"" />
 
 <BitChoiceGroup @bind-Value=""scrollbarGutter"" Label=""Scrollbar gutter"" TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
