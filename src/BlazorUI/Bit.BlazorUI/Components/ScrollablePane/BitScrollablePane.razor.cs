@@ -2,6 +2,7 @@
 
 public partial class BitScrollablePane
 {
+    private BitScrollbarGutter scrollbarGutter = BitScrollbarGutter.Auto;
     private BitScrollbarVisibility scrollbarVisibility = BitScrollbarVisibility.Auto;
 
     private int? _tabIndex;
@@ -21,6 +22,21 @@ public partial class BitScrollablePane
     /// Callback for when the ScrollablePane scrolled.
     /// </summary>
     [Parameter] public EventCallback OnScroll { get; set; }
+
+    /// <summary>
+    /// Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
+    /// </summary>
+    [Parameter] public BitScrollbarGutter ScrollbarGutter
+    {
+        get => scrollbarGutter;
+        set
+        {
+            if (scrollbarGutter == value) return;
+
+            scrollbarGutter = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Controls the visibility of scrollbars in the ScrollablePane.
@@ -58,6 +74,13 @@ public partial class BitScrollablePane
             BitScrollbarVisibility.Hidden => $"{RootElementClass}-hdn",
             BitScrollbarVisibility.Scroll => $"{RootElementClass}-scr",
             _ => $"{RootElementClass}-aut"
+        });
+
+        ClassBuilder.Register(() => ScrollbarGutter switch
+        {
+            BitScrollbarGutter.Stable => $"{RootElementClass}-gst",
+            BitScrollbarGutter.BothEdges => $"{RootElementClass}-gbe",
+            _ => $"{RootElementClass}-gat"
         });
     }
 

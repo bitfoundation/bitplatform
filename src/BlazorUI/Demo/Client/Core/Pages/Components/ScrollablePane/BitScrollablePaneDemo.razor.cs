@@ -26,6 +26,15 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "ScrollbarGutter",
+            Type = "BitScrollbarGutter",
+            DefaultValue= "BitScrollbarGutter.Auto",
+            Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
+            Href = "#scrollbar-gutter-enum",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "ScrollbarVisibility",
             Type = "BitScrollbarVisibility",
             DefaultValue= "BitScrollbarVisibility.Auto",
@@ -77,13 +86,43 @@ public partial class BitScrollablePaneDemo
                     Description = "Scrollbars are always visible, allowing users to scroll through the content even if it doesn't overflow the visible area."
                 }
             }
+        },
+        new()
+        {
+            Id = "scrollbar-gutter-enum",
+            Name = "ScrollbarGutter",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new() 
+                {
+                    Name = "Auto",
+                    Value = "0",
+                    Description = "The initial value. Classic scrollbars create a gutter when overflow is scroll, or when overflow is auto and the box is overflowing. Overlay scrollbars do not consume space."
+                },
+                new() 
+                { 
+                    Name = "Stable",
+                    Value = "1",
+                    Description = "When using classic scrollbars, the gutter will be present if overflow is auto, scroll, or hidden even if the box is not overflowing.When using overlay scrollbars, the gutter will not be present."
+                },
+                new() 
+                { 
+                    Name = "BothEdges",
+                    Value = "2",
+                    Description = "If a gutter would be present on one of the inline start/end edges of the box, another will be present on the opposite edge as well."
+                }
+            }
         }
     };
 
 
 
-    private double itemsCount = 25;
+    private double visibilityItemsCount = 25;
     private BitScrollbarVisibility scrollbarVisibility;
+
+    private double gutterItemsCount = 25;
+    private BitScrollbarGutter scrollbarGutter;
 
 
 
@@ -267,4 +306,34 @@ private BitScrollbarVisibility scrollbarVisibility;
         mollis. Curabitur ultricies leo ac metus venenatis elementum.
     </p>
 </BitScrollablePane>";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .vertical-scroll-item {
+        height: 2.75rem;
+        margin: 0.5rem 0.5rem;
+        padding: 0.5rem 1.25rem;
+        background-color: #f2f2f2;
+    }
+</style>
+                    
+<BitScrollablePane @bind-ScrollbarGutter=""@scrollbarGutter"" Height=""19rem"">
+    @for (int i = 0; i < gutterItemsCount; i++)
+    {
+        var index = i;
+        <div class=""vertical-scroll-item"">@index</div>
+    }
+</BitScrollablePane>
+
+<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Label=""Items count"" Style=""max-width: 19rem"" />
+
+<BitChoiceGroup @bind-Value=""scrollbarGutter"" Label=""Scrollbar gutter"" TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
+    <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
+    <BitChoiceGroupOption Text=""Stable"" Value=""BitScrollbarGutter.Stable"" />
+    <BitChoiceGroupOption Text=""BothEdges"" Value=""BitScrollbarGutter.BothEdges"" />
+</BitChoiceGroup>";
+    private readonly string example4CsharpCode = @"
+private double gutterItemsCount = 25;
+private BitScrollbarGutter scrollbarGutter;
+";
 }

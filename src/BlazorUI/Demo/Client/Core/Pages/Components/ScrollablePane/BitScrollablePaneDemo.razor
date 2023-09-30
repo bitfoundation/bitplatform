@@ -74,14 +74,14 @@
             <ExamplePreview>
                 <div>
                     <BitScrollablePane @bind-ScrollbarVisibility="@scrollbarVisibility" Height="19rem">
-                        @for (int i = 0; i < itemsCount; i++)
+                        @for (int i = 0; i < visibilityItemsCount; i++)
                         {
                             var index = i;
                             <div class="vertical-scroll-item">@index</div>
                         }
                     </BitScrollablePane>
                     <br />
-                    <BitSpinButton Min="0" @bind-Value="@itemsCount" Label="Items count" Style="max-width: 19rem" />
+                    <BitSpinButton Min="0" @bind-Value="@visibilityItemsCount" Label="Items count" Style="max-width: 19rem" />
                     <br />
                     <BitChoiceGroup @bind-Value="scrollbarVisibility" Label="Scrollbar visibility" TItem="BitChoiceGroupOption<BitScrollbarVisibility>" TValue="BitScrollbarVisibility">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarVisibility.Auto" />
@@ -178,6 +178,28 @@
                             mollis. Curabitur ultricies leo ac metus venenatis elementum.
                         </p>
                     </BitScrollablePane>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <ExamplePreview>
+                <div>
+                    <BitScrollablePane @bind-ScrollbarGutter="@scrollbarGutter" Height="19rem">
+                        @for (int i = 0; i < gutterItemsCount; i++)
+                        {
+                            var index = i;
+                            <div class="vertical-scroll-item">@index</div>
+                        }
+                    </BitScrollablePane>
+                    <br />
+                    <BitSpinButton Min="0" @bind-Value="@gutterItemsCount" Label="Items count" Style="max-width: 19rem" />
+                    <br />
+                    <BitChoiceGroup @bind-Value="scrollbarGutter" Label="Scrollbar gutter" TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
+                        <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
+                        <BitChoiceGroupOption Text="Stable" Value="BitScrollbarGutter.Stable" />
+                        <BitChoiceGroupOption Text="BothEdges" Value="BitScrollbarGutter.BothEdges" />
+                    </BitChoiceGroup>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>

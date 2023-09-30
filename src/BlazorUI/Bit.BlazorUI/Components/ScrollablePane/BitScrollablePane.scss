@@ -13,3 +13,15 @@
 .bit-scp-scr {
     overflow-y: scroll;
 }
+
+.bit-scp-gat {
+    scrollbar-gutter: auto;
+}
+
+.bit-scp-gst {
+    scrollbar-gutter: stable;
+}
+
+.bit-scp-gbe {
+    scrollbar-gutter: stable both-edges;
+}
