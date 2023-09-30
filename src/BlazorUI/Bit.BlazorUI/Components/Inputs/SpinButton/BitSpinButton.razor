@@ -36,6 +36,7 @@
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
+
         @if (Mode == BitSpinButtonMode.Spread)
         {
             <button @ref="_buttonDecrement"
@@ -76,7 +77,7 @@
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)" />
 
-        @if (Mode == BitSpinButtonMode.Stack)
+        @if (Mode == BitSpinButtonMode.Compact)
         {
             <span class="bit-spb-opr">
                 <button @ref="_buttonIncrement"
@@ -109,6 +110,39 @@
                     </span>
                 </button>
             </span>
+        }
+
+        @if (Mode == BitSpinButtonMode.Inline)
+        {
+            <button @ref="_buttonDecrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Decrement, e)"
+                    type="button"
+                    tabindex="-1"
+                    class="bit-spb-sbn"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@DecrementButtonAriaLabel">
+                <span class="bit-spb-iwp">
+                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@DecrementButtonIconName" />
+                </span>
+            </button>
+
+            <button @ref="_buttonIncrement"
+                    @onpointerup="HandleOnPointerUpOrOut"
+                    @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Increment, e)"
+                    type="button"
+                    tabindex="-1"
+                    class="bit-spb-sbn"
+                    disabled="@(IsEnabled is false)"
+                    aria-disabled="@(IsEnabled is false)"
+                    aria-label="@IncrementButtonAriaLabel">
+                <span class="bit-spb-iwp">
+                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@IncrementButtonIconName" />
+                </span>
+            </button>
         }
 
         @if (Mode == BitSpinButtonMode.Spread)

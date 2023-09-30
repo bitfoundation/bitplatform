@@ -127,7 +127,7 @@ public partial class BitSpinButton
     /// <summary>
     /// Determines how the spinning buttons should be rendered.
     /// </summary>
-    [Parameter] public BitSpinButtonMode Mode { get; set; } = BitSpinButtonMode.Stack;
+    [Parameter] public BitSpinButtonMode Mode { get; set; } = BitSpinButtonMode.Compact;
 
     /// <summary>
     /// Callback for when the control loses focus.

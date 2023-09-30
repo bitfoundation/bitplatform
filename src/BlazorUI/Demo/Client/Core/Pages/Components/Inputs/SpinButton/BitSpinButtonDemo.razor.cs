@@ -135,7 +135,7 @@ public partial class BitSpinButtonDemo
         {
             Name = "Mode",
             Type = "BitSpinButtonMode",
-            DefaultValue = "BitSpinButtonMode.Stack",
+            DefaultValue = "BitSpinButtonMode.Compact",
             Description = "Determines how the spinning buttons should be rendered.",
             LinkType = LinkType.Link,
             Href = "#spinMode-enum",
@@ -239,8 +239,14 @@ public partial class BitSpinButtonDemo
             {
                 new()
                 {
-                    Name= "Stack",
-                    Description="Spinning buttons render as a stack at the end of the input.",
+                    Name= "Compact",
+                    Description="Spinning buttons render as a compact stack at the end of the input.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Inline",
+                    Description="Spinning buttons render inlined at the end of the input.",
                     Value="0",
                 },
                 new()
@@ -261,7 +267,9 @@ public partial class BitSpinButtonDemo
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitSpinButton Label=""Stack"" Mode=""BitSpinButtonMode.Stack"" />
+<BitSpinButton Label=""Compact"" Mode=""BitSpinButtonMode.Compact"" />
+
+<BitSpinButton Label=""Inline"" Mode=""BitSpinButtonMode.Inline"" />
 
 <BitSpinButton Label=""Spread"" Mode=""BitSpinButtonMode.Spread"" />";
 
@@ -284,6 +292,11 @@ public partial class BitSpinButtonDemo
 <BitSpinButton Label=""Like and Dislike""
                IncrementButtonIconName=""@BitIconName.LikeSolid""
                DecrementButtonIconName=""@BitIconName.DislikeSolid"" />
+
+<BitSpinButton Label=""Back & Forward""
+               Mode=""BitSpinButtonMode.Inline""
+               DecrementButtonIconName=""@BitIconName.Back""
+               IncrementButtonIconName=""@BitIconName.Forward"" />
 
 <BitSpinButton Label=""Plus and Minus""
                Mode=""BitSpinButtonMode.Spread""
