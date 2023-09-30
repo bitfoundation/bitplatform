@@ -227,7 +227,7 @@ public partial class BitSpinButton
     }
 
 
-    private async Task ChangeHandler(BitSpinButtonAction action)
+    private async Task ApplyValueChange(BitSpinButtonAction action)
     {
         double result = 0;
         bool isValid = false;
@@ -293,7 +293,7 @@ public partial class BitSpinButton
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        await ChangeHandler(action);
+        await ApplyValueChange(action);
 
         if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
         {
@@ -326,7 +326,7 @@ public partial class BitSpinButton
             case "ArrowUp":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler(BitSpinButtonAction.Increment);
+                    await ApplyValueChange(BitSpinButtonAction.Increment);
 
                     if (OnIncrement.HasDelegate is true)
                     {
@@ -345,7 +345,7 @@ public partial class BitSpinButton
             case "ArrowDown":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler(BitSpinButtonAction.Decrement);
+                    await ApplyValueChange(BitSpinButtonAction.Decrement);
 
                     if (OnDecrement.HasDelegate is true)
                     {
