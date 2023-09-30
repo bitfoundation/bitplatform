@@ -7,10 +7,11 @@
      class="@ClassBuilder.Value">
     @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)
     {
-        <div class="bit-spb-lct">
+        <div style="@Styles?.LabelContainer" class="bit-spb-lct @Classes?.LabelContainer">
             @if (IconName.HasValue())
             {
-                <i class="bit-icon bit-icon--@IconName bit-icon--l"
+                <i style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@IconName @Classes?.Icon bit-icon--l"
                    aria-hidden="true"
                    role="@GetIconRole"
                    aria-label="@IconAriaLabel" />
@@ -18,20 +19,24 @@
 
             @if (LabelTemplate is not null)
             {
-                <label class="bit-spb-lbl" id="@GetLabelId" for="@_inputId">
+                <label id="@GetLabelId" for="@_inputId">
                     @LabelTemplate
                 </label>
             }
             else if (Label.HasValue())
             {
-                <label class="bit-spb-lbl" id="@GetLabelId" for="@_inputId">
+                <label id="@GetLabelId"
+                       for="@_inputId"
+                       style="@Styles?.Label"
+                       class="bit-spb-lbl @Classes?.Label">
                     @Label
                 </label>
             }
         </div>
     }
 
-    <div class="bit-spb-wrp"
+    <div style="@Styles?.Container"
+         class="bit-spb-cnt @Classes?.Container"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -39,18 +44,20 @@
 
         @if (Mode == BitSpinButtonMode.Spread)
         {
-            <button @ref="_buttonDecrement"
+            <button @ref="_decrementBtnRef"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Decrement, e)"
                     type="button"
                     tabindex="-1"
-                    class="bit-spb-sbn"
+                    style="@Styles?.DecrementButton"
+                    class="bit-spb-sbn @Classes?.DecrementButton"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
-                    aria-label="@DecrementButtonAriaLabel">
-                <span class="bit-spb-iwp">
-                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@DecrementButtonIconName" />
+                    aria-label="@DecrementAriaLabel">
+                <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
+                    <i style="@Styles?.DecrementIcon"
+                       class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
                 </span>
             </button>
         }
@@ -66,7 +73,8 @@
                id="@_inputId"
                role="spinbutton"
                autocomplete="off"
-               class="bit-spb-inp@(Mode == BitSpinButtonMode.Spread ? " bit-spb-cin" : "")"
+               style="@Styles?.Input"
+               class="bit-spb-inp@(Mode == BitSpinButtonMode.Spread ? " bit-spb-cin" : "") @Classes?.Input"
                aria-valuemin="@_min"
                aria-valuemax="@_max"
                value="@_intermediateValue"
@@ -79,34 +87,38 @@
 
         @if (Mode == BitSpinButtonMode.Compact)
         {
-            <span class="bit-spb-opr">
-                <button @ref="_buttonIncrement"
+            <span style="@Styles?.CompactButtonsWrapper" class="bit-spb-opr @Classes?.CompactButtonsWrapper">
+                <button @ref="_incrementBtnRef"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Increment, e)"
                         type="button"
                         tabindex="-1"
-                        class="bit-spb-btn"
+                        style="@Styles?.IncrementButton"
+                        class="bit-spb-btn @Classes?.IncrementButton"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)"
-                        aria-label="@IncrementButtonAriaLabel">
-                    <span class="bit-spb-iwp">
-                        <i class="bit-spb-ico bit-icon bit-icon--@IncrementButtonIconName" />
+                        aria-label="@IncrementAriaLabel">
+                    <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
+                        <i style="@Styles?.IncrementIcon"
+                           class="bit-spb-ico bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
-                <button @ref="_buttonDecrement"
+                <button @ref="_decrementBtnRef"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Decrement, e)"
                         type="button"
                         tabindex="-1"
-                        class="bit-spb-btn"
+                        style="@Styles?.DecrementButton"
+                        class="bit-spb-btn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)"
-                        aria-label="@DecrementButtonAriaLabel">
-                    <span class="bit-spb-iwp">
-                        <i class="bit-spb-ico bit-icon bit-icon--@DecrementButtonIconName" />
+                        aria-label="@DecrementAriaLabel">
+                    <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
+                        <i style="@Styles?.DecrementIcon"
+                           class="bit-spb-ico bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>
@@ -114,51 +126,57 @@
 
         @if (Mode == BitSpinButtonMode.Inline)
         {
-            <button @ref="_buttonDecrement"
+            <button @ref="_decrementBtnRef"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Decrement, e)"
                     type="button"
                     tabindex="-1"
-                    class="bit-spb-sbn"
+                    style="@Styles?.DecrementButton"
+                    class="bit-spb-sbn @Classes?.DecrementButton"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
-                    aria-label="@DecrementButtonAriaLabel">
-                <span class="bit-spb-iwp">
-                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@DecrementButtonIconName" />
+                    aria-label="@DecrementAriaLabel">
+                <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
+                    <i style="@Styles?.DecrementIcon"
+                       class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
                 </span>
             </button>
 
-            <button @ref="_buttonIncrement"
+            <button @ref="_incrementBtnRef"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Increment, e)"
                     type="button"
                     tabindex="-1"
-                    class="bit-spb-sbn"
+                    style="@Styles?.IncrementButton"
+                    class="bit-spb-sbn @Classes?.IncrementButton"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
-                    aria-label="@IncrementButtonAriaLabel">
-                <span class="bit-spb-iwp">
-                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@IncrementButtonIconName" />
+                    aria-label="@IncrementAriaLabel">
+                <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
+                    <i style="@Styles?.IncrementIcon"
+                       class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
                 </span>
             </button>
         }
 
         @if (Mode == BitSpinButtonMode.Spread)
         {
-            <button @ref="_buttonIncrement"
+            <button @ref="_incrementBtnRef"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="e => HandleOnPointerDown(BitSpinButtonAction.Increment, e)"
                     type="button"
                     tabindex="-1"
-                    class="bit-spb-sbn"
+                    style="@Styles?.IncrementButton"
+                    class="bit-spb-sbn @Classes?.IncrementButton"
                     disabled="@(IsEnabled is false)"
                     aria-disabled="@(IsEnabled is false)"
-                    aria-label="@IncrementButtonAriaLabel">
-                <span class="bit-spb-iwp">
-                    <i class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@IncrementButtonIconName" />
+                    aria-label="@IncrementAriaLabel">
+                <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
+                    <i style="@Styles?.IncrementIcon"
+                       class="bit-spb-ico bit-spn-sbi bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
                 </span>
             </button>
         }

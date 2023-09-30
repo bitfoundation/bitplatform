@@ -78,8 +78,8 @@ public class BitSpinButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
-            parameters.Add(p => p.IncrementButtonIconName, iconName);
-            parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.IncrementIconName, iconName);
+            parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
@@ -107,8 +107,8 @@ public class BitSpinButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
-            parameters.Add(p => p.DecrementButtonIconName, iconName);
-            parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.DecrementIconName, iconName);
+            parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 

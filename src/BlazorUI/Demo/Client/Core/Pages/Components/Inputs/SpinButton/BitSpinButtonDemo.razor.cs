@@ -41,20 +41,29 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSpinButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitSpinButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "ChangeHandler",
             Type = "EventCallback<BitSpinButtonAction>",
             Description = "?",
         },
         new()
         {
-            Name = "DecrementButtonAriaLabel",
+            Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "Accessible label text for the decrement button (for screen reader users).",
         },
         new()
         {
-            Name = "DecrementButtonIconName",
+            Name = "DecrementIconName",
             Type = "string",
             DefaultValue = "ChevronDownSmall",
             Description = "Custom icon name for the decrement button.",
@@ -82,14 +91,14 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "IncrementButtonAriaLabel",
+            Name = "IncrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new()
         {
-            Name = "IncrementButtonIconName",
+            Name = "IncrementIconName",
             Type = "string",
             DefaultValue = "ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
@@ -186,6 +195,15 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitSpinButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitSpinButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "Suffix",
             Type = "string",
             DefaultValue = "string.Empty",
@@ -205,6 +223,110 @@ public partial class BitSpinButtonDemo
             DefaultValue = "\"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.\"",
             Description = "The message format used for invalid values entered in the input.",
         },
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitSpinButtonClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the spin button.",
+                },
+                new()
+                {
+                    Name = "LabelContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's label container.",
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's icon.",
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's label.",
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's container.",
+                },
+                new()
+                {
+                    Name = "DecrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement button container.",
+                },
+                new()
+                {
+                    Name = "DecrementIconWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement icon wrapper.",
+                },
+                new()
+                {
+                    Name = "DecrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement icon.",
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's input.",
+                },
+                new()
+                {
+                    Name = "CompactButtonsWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's buttons wrapper in Compact mode.",
+                },
+                new()
+                {
+                    Name = "IncrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                },
+                new()
+                {
+                    Name = "IncrementIconWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                },
+                new()
+                {
+                    Name = "IncrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                }
+            }
+        }
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -274,11 +396,43 @@ public partial class BitSpinButtonDemo
 <BitSpinButton Label=""Spread"" Mode=""BitSpinButtonMode.Spread"" />";
 
     private readonly string example3RazorCode = @"
+<style>
+    .custom-class {
+        padding: 1rem;
+        background: darkblue;
+        border-radius: 0.5rem;
+    }
+
+    .custom-input {
+        color: darkred;
+        font-size: 18px;
+    }
+
+    .custom-wrapper {
+        background-color: darkcyan;
+    }
+</style>
+
+<BitSpinButton Label=""Styled"" Style=""background:darkred;padding:1rem"" />
+
+<BitSpinButton Label=""Classed"" Class=""custom-class"" />
+
+
+
+<BitSpinButton Label=""Styles"" Styles=""@(new() { LabelContainer = ""background:darkred;padding:1.5rem"",
+                                                Label = ""font-size:22px;color:chartreuse"",
+                                                DecrementButton = ""background:blue"",
+                                                IncrementButton = ""background:green"",})"" />
+
+<BitSpinButton Label=""Classes"" Classes=""@(new() { Input = ""custom-input"",
+                                                  CompactButtonsWrapper = ""custom-wrapper"" })"" />";
+
+    private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
 
 <BitSpinButton Label=""Left Label"" IconName=""@BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitSpinButton>
     <LabelTemplate>
         <div style=""display:flex; align-items: center; gap: 10px"">
@@ -288,22 +442,22 @@ public partial class BitSpinButtonDemo
     </LabelTemplate>
 </BitSpinButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitSpinButton Label=""Like and Dislike""
-               IncrementButtonIconName=""@BitIconName.LikeSolid""
-               DecrementButtonIconName=""@BitIconName.DislikeSolid"" />
+               IncrementIconName=""@BitIconName.LikeSolid""
+               DecrementIconName=""@BitIconName.DislikeSolid"" />
 
 <BitSpinButton Label=""Back & Forward""
                Mode=""BitSpinButtonMode.Inline""
-               DecrementButtonIconName=""@BitIconName.Back""
-               IncrementButtonIconName=""@BitIconName.Forward"" />
+               DecrementIconName=""@BitIconName.Back""
+               IncrementIconName=""@BitIconName.Forward"" />
 
 <BitSpinButton Label=""Plus and Minus""
                Mode=""BitSpinButtonMode.Spread""
-               IncrementButtonIconName=""@BitIconName.CalculatorAddition""
-               DecrementButtonIconName=""@BitIconName.CalculatorSubtract"" />";
+               IncrementIconName=""@BitIconName.CalculatorAddition""
+               DecrementIconName=""@BitIconName.CalculatorSubtract"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitSpinButton Label=""Min: -10, Max: 10""
                Min=""-10""
                Max=""10"" />
@@ -318,7 +472,7 @@ public partial class BitSpinButtonDemo
                Max=""1""
                Step=""0.1"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitSpinButton Label=""Height""
                IconName=""@BitIconName.AutoHeight""
                DefaultValue=""150""
@@ -330,17 +484,17 @@ public partial class BitSpinButtonDemo
                Step=""0.5""
                Suffix="" kg"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
 <BitRating @bind-Value=""OneWayValue"" />
 
 <BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
 <BitRating @bind-Value=""TwoWayValue"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private double OneWayValue = 3;
 private double TwoWayValue = 5;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSpinButton @bind-Value=""IncrementEventValue""
                Label=""OnIncrement / OnDecrement""
                Step=""0.1""
@@ -355,7 +509,7 @@ private double TwoWayValue = 5;";
                OnChange=""HandleOnChangeEvent""/>
 <BitLabel>OnChange Clicked Counter: @OnChangeClickedCounter</BitLabel>
 <BitLabel>OnChange Returned Value: @OnChangeEventReturnedValue</BitLabel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private double IncrementEventValue;
 private int OnIncrementCounter;
 private int OnDecrementCounter;
@@ -370,7 +524,7 @@ private void HandleOnChangeEvent(double value)
     OnChangeClickedCounter++;
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -386,7 +540,7 @@ private void HandleOnChangeEvent(double value)
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]

@@ -19,6 +19,23 @@
     flex-direction: column;
 }
 
-::deep .validation-message {
-    color: red;
+::deep {
+    .custom-class {
+        padding: 1rem;
+        background: darkblue;
+        border-radius: 0.5rem;
+    }
+
+    .custom-input {
+        color: darkcyan;
+        font-size: 18px;
+    }
+
+    .custom-wrapper {
+        background-color: darkorchid;
+    }
+
+    .validation-message {
+        color: red;
+    }
 }

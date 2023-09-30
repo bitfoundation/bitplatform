@@ -16,7 +16,7 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-spb-wrp {
+        .bit-spb-cnt {
             cursor: default;
             color: $color-foreground-disabled;
             border: none $color-border-disabled;
@@ -41,7 +41,7 @@
     }
 
     &.bit-inv {
-        .bit-spb-wrp {
+        .bit-spb-cnt {
             border-color: $color-state-error;
         }
     }
@@ -74,7 +74,7 @@
     }
 }
 
-.bit-spb-wrp {
+.bit-spb-cnt {
     width: 100%;
     display: flex;
     height: spacing(4);
