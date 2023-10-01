@@ -129,6 +129,8 @@ public partial class BitOtpInput
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Direction switch
         {
             BitOtpInputDirection.LeftToRight => $"{RootElementClass}-ltr",
@@ -138,6 +140,12 @@ public partial class BitOtpInput
             _ => string.Empty
         });
     }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
