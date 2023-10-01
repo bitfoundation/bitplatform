@@ -139,11 +139,17 @@ public partial class BitCheckbox : IDisposable
     protected override string RootElementClass => "bit-chb";
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
 
         ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-ckd" : string.Empty);
 
         ClassBuilder.Register(() => BoxSide == BitCheckboxSide.End ? $"{RootElementClass}-end" : string.Empty);
+    }
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()

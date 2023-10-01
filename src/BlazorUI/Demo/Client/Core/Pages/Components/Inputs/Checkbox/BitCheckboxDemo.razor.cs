@@ -151,6 +151,13 @@ public partial class BitCheckboxDemo
             Title = "BitCheckboxClassStyles",
             Parameters = new()
             {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitCheckBox.",
+                },
                new()
                {
                    Name = "Container",
