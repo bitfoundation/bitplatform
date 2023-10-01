@@ -207,7 +207,7 @@ jobs:
        run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:TargetFramework=net8.0-maccatalyst -p:TargetFrameworks=net8.0-maccatalyst
+       run: dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/App/AdminPanel.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:TargetFrameworks=net8.0;net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
