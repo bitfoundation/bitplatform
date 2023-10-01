@@ -372,6 +372,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Sticky/BitStickyDemo.razor.css",
+        "inputFile": "Pages/Components/Sticky/BitStickyDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.css",
         "inputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.scss",
         "minify": { "enabled": false },
