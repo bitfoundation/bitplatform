@@ -1,0 +1,47 @@
+﻿@import "../../../Styles/abstracts/_bit-css-variables.scss";
+
+.custom-vertical-scroll {
+    height: 16rem;
+    overflow: auto;
+    max-width: 32rem;
+}
+
+.custom-horizontal-scroll {
+    height: 16rem;
+    display: flex;
+    overflow: auto;
+    max-width: 32rem;
+    white-space: pre;
+}
+
+::deep {
+    .custom-sticky {
+        background-color: $bit-color-background-secondary;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
+    .custom-sticky-bottom {
+        background-color: $bit-color-background-secondary;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    .custom-sticky-topandbottom {
+        background-color: $bit-color-background-secondary;
+        border: 1px solid $bit-color-border-secondary;
+    }
+
+    .custom-sticky-left {
+        background-color: $bit-color-background-secondary;
+        border-left: 1px solid $bit-color-border-secondary;
+    }
+
+    .custom-sticky-right {
+        background-color: $bit-color-background-secondary;
+        border-right: 1px solid $bit-color-border-secondary;
+    }
+
+    .custom-sticky-leftandright {
+        background-color: $bit-color-background-secondary;
+        border: 1px solid $bit-color-border-secondary;
+    }
+}
