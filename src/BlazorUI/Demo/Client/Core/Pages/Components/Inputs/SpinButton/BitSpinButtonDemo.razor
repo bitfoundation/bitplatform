@@ -8,6 +8,7 @@
 <ComponentDemo ComponentName="SpinButton"
                ComponentDescription="A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
@@ -28,7 +29,31 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelPosition" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-box">
+                <BitSpinButton Label="Styled" Style="background:darkred;padding:1rem" />
+
+                <BitSpinButton Label="Classed" Class="custom-class" />
+            </div>
+            <br /><br /><br /><br />
+            <div>Styles & Classes:</div>
+            <br />
+            <div class="example-box">
+                <BitSpinButton Label="Styles" Styles="@(new() { LabelContainer = "background:darkred;padding:1.5rem",
+                                                                Label = "font-size:22px;color:chartreuse",
+                                                                DecrementButton = "background:blue",
+                                                                IncrementButton = "background:green",})" />
+
+                <BitSpinButton Label="Classes" Classes="@(new() { Input = "custom-input",
+                                                                  CompactButtonsWrapper = "custom-wrapper" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="LabelPosition" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Label & Icon" IconName="@BitIconName.Lightbulb" />
@@ -37,7 +62,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton>
@@ -52,27 +77,27 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Icons" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Like and Dislike"
-                               IncrementButtonIconName="@BitIconName.LikeSolid"
-                               DecrementButtonIconName="@BitIconName.DislikeSolid" />
+                               IncrementIconName="@BitIconName.LikeSolid"
+                               DecrementIconName="@BitIconName.DislikeSolid" />
 
                 <BitSpinButton Label="Back & Forward"
                                Mode="BitSpinButtonMode.Inline"
-                               DecrementButtonIconName="@BitIconName.Back"
-                               IncrementButtonIconName="@BitIconName.Forward" />
+                               DecrementIconName="@BitIconName.Back"
+                               IncrementIconName="@BitIconName.Forward" />
 
                 <BitSpinButton Label="Plus and Minus"
                                Mode="BitSpinButtonMode.Spread"
-                               DecrementButtonIconName="@BitIconName.CalculatorSubtract"
-                               IncrementButtonIconName="@BitIconName.CalculatorAddition" />
+                               DecrementIconName="@BitIconName.CalculatorSubtract"
+                               IncrementIconName="@BitIconName.CalculatorAddition" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Min, Max, Step" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Min, Max, Step" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Min: -10, Max: 10" Min="-10" Max="10" />
@@ -82,7 +107,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Suffix" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Suffix" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Height"
@@ -99,7 +124,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -114,7 +139,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div class="example-box">
                 <div class="column">
@@ -139,7 +164,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))

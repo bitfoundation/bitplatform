@@ -19,8 +19,8 @@ public partial class BitSpinButton
     private string _inputId = default!;
 
     private ElementReference _inputRef;
-    private ElementReference _buttonIncrement;
-    private ElementReference _buttonDecrement;
+    private ElementReference _incrementBtnRef;
+    private ElementReference _decrementBtnRef;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -32,36 +32,37 @@ public partial class BitSpinButton
     /// <summary>
     /// The position in the parent set (if in a set).
     /// </summary>
-    [Parameter]
-    public int? AriaPositionInSet { get; set; }
+    [Parameter] public int? AriaPositionInSet { get; set; }
 
     /// <summary>
     /// The total size of the parent set (if in a set).
     /// </summary>
-    [Parameter]
-    public int? AriaSetSize { get; set; }
+    [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
     /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
     /// </summary>
-    [Parameter]
-    public double? AriaValueNow { get; set; }
+    [Parameter] public double? AriaValueNow { get; set; }
 
     /// <summary>
     /// Sets the control's aria-valuetext.
     /// </summary>
-    [Parameter]
-    public string? AriaValueText { get; set; }
+    [Parameter] public string? AriaValueText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitSpinButton.
+    /// </summary>
+    [Parameter] public BitSpinButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
-    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
+    [Parameter] public string? DecrementAriaLabel { get; set; }
 
     /// <summary>
     /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
+    [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
     /// Initial value of the spin button.
@@ -81,12 +82,12 @@ public partial class BitSpinButton
     /// <summary>
     /// Accessible label text for the increment button (for screen reader users).
     /// </summary>
-    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+    [Parameter] public string? IncrementAriaLabel { get; set; }
 
     /// <summary>
     /// Custom icon name for the increment button.
     /// </summary>
-    [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
+    [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
     /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.
@@ -165,6 +166,11 @@ public partial class BitSpinButton
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitSpinButton.
+    /// </summary>
+    [Parameter] public BitSpinButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// A text is shown after the spin button value.
     /// </summary>
     [Parameter] public string Suffix { get; set; } = string.Empty;
@@ -184,7 +190,12 @@ public partial class BitSpinButton
     protected override string RootElementClass => "bit-spb";
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
+    }
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override Task OnInitializedAsync()
@@ -259,11 +270,11 @@ public partial class BitSpinButton
         //Change focus from input to spin button
         if (action == BitSpinButtonAction.Increment)
         {
-            await _buttonIncrement.FocusAsync();
+            await _incrementBtnRef.FocusAsync();
         }
         else
         {
-            await _buttonDecrement.FocusAsync();
+            await _decrementBtnRef.FocusAsync();
         }
 
         await HandlePointerDownAction(action, e);
