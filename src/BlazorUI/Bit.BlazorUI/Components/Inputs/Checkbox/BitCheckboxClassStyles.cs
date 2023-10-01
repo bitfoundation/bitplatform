@@ -3,6 +3,11 @@
 public class BitCheckboxClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitCheckBox.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the BitCheckbox.
     /// </summary>
     public string? Container { get; set; }
