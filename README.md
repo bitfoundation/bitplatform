@@ -13,7 +13,7 @@
 
 ![image](https://user-images.githubusercontent.com/6169846/271820882-0d816266-ebd1-4c2b-a3b7-296b35248536.png)
 <br/>
-Join us and start contributing to bitplatform in [hacktoberfest](https://hacktoberfest.com/). you can find the up-for-grabs issues [here](https://github.com/bitfoundation/bitplatform/labels/up%20for%20grabs).
+Join us and start contributing to bit platform in [hacktoberfest](https://hacktoberfest.com/). you can find the up-for-grabs issues [here](https://github.com/bitfoundation/bitplatform/labels/up%20for%20grabs).
 
 <hr />
 <br/>
