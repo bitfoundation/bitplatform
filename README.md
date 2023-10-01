@@ -51,7 +51,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 * [Contributing](CONTRIBUTING.md) explains what kinds of contributions we welcome.
 * [Build Instructions](docs/how-to-build.md) explains how to build and test.
-* [Get Up and Running on bitplatform](docs/up-and-running.md) explains how to get the latest builds and their libraries to test them in your own projects.
+* [Get Up and Running on bit platform](docs/up-and-running.md) explains how to get the latest builds and their libraries to test them in your own projects.
 
 ## **Contributions**
 
