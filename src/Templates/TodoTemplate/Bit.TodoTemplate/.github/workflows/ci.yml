@@ -35,7 +35,7 @@ jobs:
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: windows-2022
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -52,7 +52,7 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
+      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
