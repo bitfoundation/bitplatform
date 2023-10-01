@@ -183,7 +183,7 @@ jobs:
     displayName: 'Build exe'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -p:TargetFramework=net8.0-windows10.0.19041.0'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -244,13 +244,13 @@ jobs:
     displayName: 'Build aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -p:TargetFramework=net8.0-android'
 
   - task: Bash@3
     displayName: 'Build apk'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=TodoTemplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -p:TargetFramework=net8.0-android'
 
   - script: |
       mkdir drop
@@ -306,7 +306,7 @@ jobs:
     displayName: 'Build pkg'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
+      script: 'dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:TargetFramework=net8.0-maccatalyst'
 
   - script: |
       mkdir drop
