@@ -52,10 +52,10 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23463.5
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:TargetFramework=net8.0-android
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -76,10 +76,10 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui-windows --sdk-version=8.0.100-rc.1.23463.5
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:TargetFramework=net8.0-windows10.0.19041.0
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
@@ -100,10 +100,10 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui-ios --sdk-version=8.0.100-rc.1.23463.5
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:TargetFramework=net8.0-ios
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
 
   build_blazor_hybrid_maccatalyst:
     name: build blazor hybrid (maccatalyst)
@@ -124,10 +124,10 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui-maccatalyst --sdk-version=8.0.100-rc.1.23463.5
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
       
     - name: Build
-      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:TargetFramework=net8.0-maccatalyst
+      run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
 
   build_blazor_api_wasm:
     name: build blazor api + web assembly
