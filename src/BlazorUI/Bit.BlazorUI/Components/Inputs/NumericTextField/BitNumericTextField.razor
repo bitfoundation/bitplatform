@@ -12,7 +12,7 @@
             @if (IconName.HasValue())
             {
                 <i style="@Styles?.Icon"
-                   class="bit-icon bit-icon--@IconName bit-icon--l @Classes?.Icon"
+                   class="bit-ntf-lic bit-icon bit-icon--@IconName @Classes?.Icon"
                    aria-hidden="true"
                    role="@GetIconRole"
                    aria-label="@IconAriaLabel" />
@@ -83,7 +83,8 @@
                         disabled="@(IsEnabled is false)"
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-ntf-aic @Classes?.IncrementIconContainer">
-                        <i style="@Styles?.IncrementIcon" class="bit-icon bit-icon--@IncrementIconName bit-icon--s @Classes?.IncrementIcon" />
+                        <i style="@Styles?.IncrementIcon"
+                           class="bit-ntf-bic bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -100,7 +101,8 @@
                         aria-label="@DecrementAriaLabel"
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-ntf-aic @Classes?.DecrementIconContainer">
-                        <i style="@Styles?.DecrementIcon" class="bit-icon bit-icon--@DecrementIconName bit-icon--s @Classes?.DecrementIcon" />
+                        <i style="@Styles?.DecrementIcon"
+                           class="bit-ntf-bic bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>

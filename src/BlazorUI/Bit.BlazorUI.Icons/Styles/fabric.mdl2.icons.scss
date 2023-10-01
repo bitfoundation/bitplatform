@@ -13,22 +13,6 @@
     font-weight: normal;
 }
 
-.bit-icon--xs {
-    font-size: 10px;
-}
-
-.bit-icon--s {
-    font-size: 12px;
-}
-
-.bit-icon--m {
-    font-size: 16px;
-}
-
-.bit-icon--l {
-    font-size: 20px;
-}
-
 // Mixins
 .bit-icon--12PointStar:before { content: "\F505"; }
 .bit-icon--6PointStar:before { content: "\F504"; }
