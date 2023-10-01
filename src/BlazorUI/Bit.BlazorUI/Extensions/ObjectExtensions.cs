@@ -20,27 +20,7 @@ internal static class ObjectExtensions
         return null;
     }
 
-    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName)
-    {
-        var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
-
-        if (value is null)
-        {
-            return default;
-        }
-
-        Type targetType = typeof(T);
-        targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-        if (targetType == typeof(string) && value.ToString().HasNoValue())
-        {
-            return default;
-        }
-
-        return (T)Convert.ChangeType(targetType == typeof(string) ? value.ToString()! : value, targetType, CultureInfo.InvariantCulture);
-    }
-
-    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
+    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue = default)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
@@ -52,12 +32,19 @@ internal static class ObjectExtensions
         Type targetType = typeof(T);
         targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-        if (targetType == typeof(string) && value.ToString().HasNoValue())
+        if (targetType == typeof(object))
         {
-            return defaultValue;
+            return (T)value;
         }
 
-        return (T)Convert.ChangeType(targetType == typeof(string) ? value.ToString()! : value, targetType, CultureInfo.InvariantCulture);
+        if (targetType == typeof(string))
+        {
+            value = value.ToString();
+
+            if (value is null) return defaultValue;
+        }
+
+        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
     internal static T? ConvertTo<T>(this object? obj)
