@@ -35,7 +35,7 @@ jobs:
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: windows-2022
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -52,7 +52,7 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui maui-android --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
@@ -76,7 +76,7 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui maui-windows --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0
@@ -100,7 +100,7 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui maui-ios --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
@@ -124,7 +124,7 @@ jobs:
         node-version: 18
 
     - name: Install maui
-      run: dotnet workload install maui maui-maccatalyst --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
       
     - name: Build
       run: dotnet build src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
@@ -151,7 +151,7 @@ jobs:
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/TodoTemplate.Client.Web.csproj
 
     - name: Install wasm
-      run: dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
+      run: dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23463.5
       
     - name: Build
       run: dotnet build src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

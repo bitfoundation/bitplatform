@@ -25,7 +25,7 @@ jobs:
         node-version: 18
       
     - name: Install wasm and maui
-      run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
+      run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23463.5
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.sln
@@ -53,7 +53,7 @@ jobs:
         node-version: 18
 
     - name: Install wasm and maui
-      run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23455.8
+      run:  dotnet workload install maui-android wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23463.5
 
     - name: Build
       run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
