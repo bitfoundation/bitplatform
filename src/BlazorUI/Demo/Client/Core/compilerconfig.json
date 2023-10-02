@@ -360,6 +360,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.css",
+        "inputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss",
         "minify": { "enabled": false },

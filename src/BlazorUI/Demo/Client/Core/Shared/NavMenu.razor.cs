@@ -119,6 +119,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
+                new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
             },
         },
