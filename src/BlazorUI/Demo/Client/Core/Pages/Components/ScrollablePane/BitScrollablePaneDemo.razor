@@ -12,32 +12,34 @@
                    ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <ExamplePreview>
-                <BitScrollablePane Style="height: 22rem;">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                        efficitur.
-                    </p>
-                    <p>
-                        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-                        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-                        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-                        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-                        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-                    </p>
-                    <p>
-                        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-                        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-                        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-                        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-                        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-                    </p>
-                </BitScrollablePane>
+                <div style="max-width: 32rem;">
+                    <BitScrollablePane Style="height: 22rem;">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                        <p>
+                            Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                            faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                            magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                            nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                            rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                        </p>
+                        <p>
+                            Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                            consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                            et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                            finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                            mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                        </p>
+                    </BitScrollablePane>
+                </div>
             </ExamplePreview>
         </ComponentExampleBox>
 
@@ -133,8 +135,8 @@
 
         <ComponentExampleBox Title="Scrollbar visibility" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
-                <div>
-                    <BitScrollablePane @bind-ScrollbarVisibility="@scrollbarVisibility" Height="19rem">
+                <div style="max-width: 19rem;">
+                    <BitScrollablePane ScrollbarVisibility="@scrollbarVisibility" Height="16rem">
                         @for (int i = 0; i < visibilityItemsCount; i++)
                         {
                             var index = i;
@@ -142,7 +144,7 @@
                         }
                     </BitScrollablePane>
                     <br />
-                    <BitSpinButton Min="0" @bind-Value="@visibilityItemsCount" Mode="@BitSpinButtonMode.Spread" Label="Items count" Style="max-width: 19rem" />
+                    <BitSpinButton Min="0" @bind-Value="@visibilityItemsCount" Mode="@BitSpinButtonMode.Inline" Label="Items count"/>
                     <br />
                     <BitChoiceGroup @bind-Value="scrollbarVisibility" Label="Scrollbar visibility" TItem="BitChoiceGroupOption<BitScrollbarVisibility>" TValue="BitScrollbarVisibility">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarVisibility.Auto" />
@@ -155,8 +157,8 @@
 
         <ComponentExampleBox Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <ExamplePreview>
-                <div>
-                    <BitScrollablePane @bind-ScrollbarGutter="@scrollbarGutter" Height="19rem">
+                <div style="max-width: 19rem;">
+                    <BitScrollablePane ScrollbarGutter="@scrollbarGutter" Height="16rem">
                         @for (int i = 0; i < gutterItemsCount; i++)
                         {
                             var index = i;
@@ -164,7 +166,7 @@
                         }
                     </BitScrollablePane>
                     <br />
-                    <BitSpinButton Min="0" @bind-Value="@gutterItemsCount" Mode="@BitSpinButtonMode.Spread" Label="Items count" Style="max-width: 19rem" />
+                    <BitSpinButton Min="0" @bind-Value="@gutterItemsCount" Mode="@BitSpinButtonMode.Inline" Label="Items count" />
                     <br />
                     <BitChoiceGroup @bind-Value="scrollbarGutter" Label="Scrollbar gutter" TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
