@@ -63,7 +63,7 @@ public partial class BitScrollablePaneDemo
         new()
         {
             Id = "scrollbar-visibility-enum",
-            Name = "ScrollbarVisibility",
+            Name = "BitScrollbarVisibility",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
@@ -90,7 +90,7 @@ public partial class BitScrollablePaneDemo
         new()
         {
             Id = "scrollbar-gutter-enum",
-            Name = "ScrollbarGutter",
+            Name = "BitScrollbarGutter",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
@@ -127,7 +127,7 @@ public partial class BitScrollablePaneDemo
 
 
     private readonly string example1RazorCode = @"
-<BitScrollablePane Style=""height: 22rem;"">
+<BitScrollablePane Style=""height: 22rem; max-width: 32rem;"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -246,7 +246,7 @@ public partial class BitScrollablePaneDemo
     }
 </style>
                     
-<BitScrollablePane @bind-ScrollbarVisibility=""@scrollbarVisibility"" Height=""19rem;"">
+<BitScrollablePane ScrollbarVisibility=""@scrollbarVisibility"" Height=""16rem;"">
     @for (int i = 0; i < itemsCount; i++)
     {
         var index = i;
@@ -254,7 +254,7 @@ public partial class BitScrollablePaneDemo
     }
 </BitScrollablePane>
 
-<BitSpinButton Min=""0"" @bind-Value=""@itemsCount"" Mode=""@BitSpinButtonMode.Spread"" Label=""Items count"" Style=""max-width: 19rem"" />
+<BitSpinButton Min=""0"" @bind-Value=""@itemsCount"" Mode=""@BitSpinButtonMode.Inline"" Label=""Items count"" />
                     
 <BitChoiceGroup @bind-Value=""scrollbarVisibility"" Label=""Scrollbar visibility"" TItem=""BitChoiceGroupOption<BitScrollbarVisibility>"" TValue=""BitScrollbarVisibility"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarVisibility.Auto"" />
@@ -276,7 +276,7 @@ private BitScrollbarVisibility scrollbarVisibility;
     }
 </style>
                     
-<BitScrollablePane @bind-ScrollbarGutter=""@scrollbarGutter"" Height=""19rem"">
+<BitScrollablePane ScrollbarGutter=""@scrollbarGutter"" Height=""16rem"">
     @for (int i = 0; i < gutterItemsCount; i++)
     {
         var index = i;
@@ -284,7 +284,7 @@ private BitScrollbarVisibility scrollbarVisibility;
     }
 </BitScrollablePane>
 
-<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Mode=""@BitSpinButtonMode.Spread"" Label=""Items count"" Style=""max-width: 19rem"" />
+<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Mode=""@BitSpinButtonMode.Inline"" Label=""Items count"" />
 
 <BitChoiceGroup @bind-Value=""scrollbarGutter"" Label=""Scrollbar gutter"" TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />

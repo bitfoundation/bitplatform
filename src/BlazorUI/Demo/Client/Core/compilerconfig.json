@@ -354,6 +354,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.css",
+        "inputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss",
         "minify": { "enabled": false },

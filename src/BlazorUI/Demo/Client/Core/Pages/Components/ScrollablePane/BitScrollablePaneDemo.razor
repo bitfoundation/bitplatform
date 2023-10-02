@@ -12,7 +12,7 @@
                    ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <ExamplePreview>
-                <BitScrollablePane Style="height: 22rem;">
+                <BitScrollablePane Style="height: 22rem; max-width: 32rem;">
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -133,8 +133,8 @@
 
         <ComponentExampleBox Title="Scrollbar visibility" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
-                <div>
-                    <BitScrollablePane @bind-ScrollbarVisibility="@scrollbarVisibility" Height="19rem">
+                <div style="max-width: 19rem;">
+                    <BitScrollablePane ScrollbarVisibility="@scrollbarVisibility" Height="16rem">
                         @for (int i = 0; i < visibilityItemsCount; i++)
                         {
                             var index = i;
@@ -142,7 +142,7 @@
                         }
                     </BitScrollablePane>
                     <br />
-                    <BitSpinButton Min="0" @bind-Value="@visibilityItemsCount" Mode="@BitSpinButtonMode.Spread" Label="Items count" Style="max-width: 19rem" />
+                    <BitSpinButton Min="0" @bind-Value="@visibilityItemsCount" Mode="@BitSpinButtonMode.Inline" Label="Items count"/>
                     <br />
                     <BitChoiceGroup @bind-Value="scrollbarVisibility" Label="Scrollbar visibility" TItem="BitChoiceGroupOption<BitScrollbarVisibility>" TValue="BitScrollbarVisibility">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarVisibility.Auto" />
@@ -155,8 +155,8 @@
 
         <ComponentExampleBox Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <ExamplePreview>
-                <div>
-                    <BitScrollablePane @bind-ScrollbarGutter="@scrollbarGutter" Height="19rem">
+                <div style="max-width: 19rem;">
+                    <BitScrollablePane ScrollbarGutter="@scrollbarGutter" Height="16rem">
                         @for (int i = 0; i < gutterItemsCount; i++)
                         {
                             var index = i;
@@ -164,7 +164,7 @@
                         }
                     </BitScrollablePane>
                     <br />
-                    <BitSpinButton Min="0" @bind-Value="@gutterItemsCount" Mode="@BitSpinButtonMode.Spread" Label="Items count" Style="max-width: 19rem" />
+                    <BitSpinButton Min="0" @bind-Value="@gutterItemsCount" Mode="@BitSpinButtonMode.Inline" Label="Items count" />
                     <br />
                     <BitChoiceGroup @bind-Value="scrollbarGutter" Label="Scrollbar gutter" TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
