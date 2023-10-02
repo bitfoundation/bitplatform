@@ -956,9 +956,9 @@ public partial class BitDatePicker
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
         var currentValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
-        var currentValueYear = Culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
-        var currentValueMonth = Culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
-        var currentValueDay = Culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue.DateTime);
+        var currentValueYear = Culture.Calendar.GetYear(currentValue.DateTime);
+        var currentValueMonth = Culture.Calendar.GetMonth(currentValue.DateTime);
+        var currentValueDay = Culture.Calendar.GetDayOfMonth(currentValue.DateTime);
 
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || (AllowTextInput && currentValueDay != _currentDay))
         {
@@ -1017,7 +1017,10 @@ public partial class BitDatePicker
     {
         if (CurrentValue.HasValue is false) return;
 
-        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(CurrentValue.Value.Year, CurrentValue.Value.Month, CurrentValue.Value.Day, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
+        var currentValueYear = Culture.Calendar.GetYear(CurrentValue.Value.LocalDateTime);
+        var currentValueMonth = Culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
+        var currentValueDay = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
+        CurrentValue = new DateTimeOffset(Culture.DateTimeFormat.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
     }
     private async Task HandleOnTimeHourFocus()
     {

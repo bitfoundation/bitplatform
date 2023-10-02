@@ -731,4 +731,8 @@
         text-align: right;
         padding: 0 spacing(1.25) 0 spacing(0.5);
     }
+
+    .bit-dtp-time-wrp {
+        flex-direction: row-reverse;
+    }
 }
