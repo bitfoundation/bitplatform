@@ -127,7 +127,7 @@ public partial class BitScrollablePaneDemo
 
 
     private readonly string example1RazorCode = @"
-<BitScrollablePane Style=""height: 22rem; max-width: 32rem;"">
+<BitScrollablePane Style=""height: 22rem;"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
