@@ -36,7 +36,7 @@
     }
 
     <div style="@Styles?.Container"
-         class="bit-spb-cnt @Classes?.Container"
+         class="bit-spb-cnt @(ShowInput ? "" : "bit-spb-hdi") @Classes?.Container"
          title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
@@ -53,6 +53,7 @@
                     style="@Styles?.DecrementButton"
                     class="bit-spb-sbn @Classes?.DecrementButton"
                     disabled="@(IsEnabled is false)"
+                    title="@DecrementTitle"
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@DecrementAriaLabel">
                 <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
@@ -62,28 +63,32 @@
             </button>
         }
 
-        <input @ref="@_inputRef"
-               @attributes="InputHtmlAttributes"
-               @onblur="e => HandleOnBlur(e)"
-               @onfocus="e => HandleOnFocus(e)"
-               @oninput="e => HandleOnChange(e)"
-               @onchange="e => HandleOnChange(e)"
-               @onkeydown="e => HandleOnKeyDown(e)"
-               type="text"
-               id="@_inputId"
-               role="spinbutton"
-               autocomplete="off"
-               style="@Styles?.Input"
-               class="bit-spb-inp@(Mode == BitSpinButtonMode.Spread ? " bit-spb-cin" : "") @Classes?.Input"
-               aria-valuemin="@_min"
-               aria-valuemax="@_max"
-               value="@_intermediateValue"
-               aria-labelledby="@GetLabelId"
-               disabled="@(IsEnabled is false)"
-               aria-valuenow="@GetAriaValueNow"
-               aria-valuetext="@GetAriaValueText"
-               aria-describedby="@AriaDescription"
-               aria-disabled="@(IsEnabled is false)" />
+        @if (ShowInput)
+        {
+            <input @ref="@_inputRef"
+                   @attributes="InputHtmlAttributes"
+                   @onblur="e => HandleOnBlur(e)"
+                   @onfocus="e => HandleOnFocus(e)"
+                   @oninput="e => HandleOnChange(e)"
+                   @onchange="e => HandleOnChange(e)"
+                   @onkeydown="e => HandleOnKeyDown(e)"
+                   type="text"
+                   id="@_inputId"
+                   role="spinbutton"
+                   autocomplete="off"
+                   style="@Styles?.Input"
+                   class="bit-spb-inp@(Mode == BitSpinButtonMode.Spread ? " bit-spb-cin" : "") @Classes?.Input"
+                   aria-valuemin="@_min"
+                   aria-valuemax="@_max"
+                   value="@_intermediateValue"
+                   readonly="@IsInputReadOnly"
+                   aria-labelledby="@GetLabelId"
+                   disabled="@(IsEnabled is false)"
+                   aria-valuenow="@GetAriaValueNow"
+                   aria-valuetext="@GetAriaValueText"
+                   aria-describedby="@AriaDescription"
+                   aria-disabled="@(IsEnabled is false)" />
+        }
 
         @if (Mode == BitSpinButtonMode.Compact)
         {
@@ -97,6 +102,7 @@
                         style="@Styles?.IncrementButton"
                         class="bit-spb-btn @Classes?.IncrementButton"
                         disabled="@(IsEnabled is false)"
+                        title="@IncrementTitle"
                         aria-disabled="@(IsEnabled is false)"
                         aria-label="@IncrementAriaLabel">
                     <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
@@ -114,6 +120,7 @@
                         style="@Styles?.DecrementButton"
                         class="bit-spb-btn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
+                        title="@DecrementTitle"
                         aria-disabled="@(IsEnabled is false)"
                         aria-label="@DecrementAriaLabel">
                     <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
@@ -135,6 +142,7 @@
                     style="@Styles?.DecrementButton"
                     class="bit-spb-sbn @Classes?.DecrementButton"
                     disabled="@(IsEnabled is false)"
+                    title="@DecrementTitle"
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@DecrementAriaLabel">
                 <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
@@ -152,6 +160,7 @@
                     style="@Styles?.IncrementButton"
                     class="bit-spb-sbn @Classes?.IncrementButton"
                     disabled="@(IsEnabled is false)"
+                    title="@IncrementTitle"
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@IncrementAriaLabel">
                 <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
@@ -172,6 +181,7 @@
                     style="@Styles?.IncrementButton"
                     class="bit-spb-sbn @Classes?.IncrementButton"
                     disabled="@(IsEnabled is false)"
+                    title="@IncrementTitle"
                     aria-disabled="@(IsEnabled is false)"
                     aria-label="@IncrementAriaLabel">
                 <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">

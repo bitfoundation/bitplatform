@@ -70,6 +70,13 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "DecrementTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title to show when the mouse is placed on the decrement button.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "double?",
             DefaultValue = "null",
@@ -99,9 +106,23 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "IncrementIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom icon name for the increment button.",
+        },
+        new()
+        {
+            Name = "IncrementTitle",
             Type = "string",
             DefaultValue = "ChevronUpSmall",
-            Description = "Custom icon name for the increment button.",
+            Description = "The title to show when the mouse is placed on the increment button.",
+        },
+        new()
+        {
+            Name = "IsInputReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the input is readonly.",
         },
         new()
         {
@@ -185,6 +206,13 @@ public partial class BitSpinButtonDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "How many decimal places the value should be rounded to.",
+        },
+        new()
+        {
+            Name = "ShowInput",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "If false, the input is hidden.",
         },
         new()
         {
@@ -349,6 +377,18 @@ public partial class BitSpinButtonDemo
                     Name= "Left",
                     Description="The label shows on the left side of the spin button.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Right",
+                    Description="The label shows on the right side of the spin button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the spin button.",
+                    Value="3",
                 }
             }
         },
@@ -428,9 +468,10 @@ public partial class BitSpinButtonDemo
                                                   CompactButtonsWrapper = ""custom-wrapper"" })"" />";
 
     private readonly string example4RazorCode = @"
-<BitSpinButton Label=""Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
-
-<BitSpinButton Label=""Left Label"" IconName=""@BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
+<BitSpinButton Label=""Top Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
+<BitSpinButton Label=""Left Label"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
+<BitSpinButton Label=""Left Right"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
+<BitSpinButton Label=""Left Bottom"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />";
 
     private readonly string example5RazorCode = @"
 <BitSpinButton>
@@ -525,6 +566,22 @@ private void HandleOnChangeEvent(double value)
 }";
 
     private readonly string example11RazorCode = @"
+<BitSpinButton ShowInput=""false""
+               IncrementTitle=""Add""
+               DecrementTitle=""Remove""
+               @bind-Value=""showInputValue""
+               Mode=""BitSpinButtonMode.Inline""
+               Label=""@showInputValue.ToString()""
+               IncrementIconName=""@BitIconName.Add""
+               DecrementIconName=""@BitIconName.Remove""
+               LabelPosition=""@BitSpinButtonLabelPosition.Right"" />";
+    private readonly string example11CsharpCode = @"
+private double showInputValue;";
+
+    private readonly string example12RazorCode = @"
+<BitSpinButton IsInputReadOnly=""true"" />";
+
+    private readonly string example13RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -540,7 +597,7 @@ private void HandleOnChangeEvent(double value)
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
