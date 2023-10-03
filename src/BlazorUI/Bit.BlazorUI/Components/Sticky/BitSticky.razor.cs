@@ -2,7 +2,7 @@
 
 public partial class BitSticky
 {
-    private BitStickyPosition stickyPosition = BitStickyPosition.Top;
+    private BitStickyPosition? position;
 
 
 
@@ -22,24 +22,25 @@ public partial class BitSticky
     [Parameter] public string? Left { get; set; }
 
     /// <summary>
-    /// Specifying the horizontal position of a positioned element from right.
-    /// </summary>
-    [Parameter] public string? Right { get; set; }
-
-    /// <summary>
     /// Region to render sticky component in.
     /// </summary>
-    [Parameter] public BitStickyPosition StickyPosition
+    [Parameter]
+    public BitStickyPosition? Position
     {
-        get => stickyPosition;
+        get => position;
         set
         {
-            if (stickyPosition == value) return;
+            if (position == value) return;
 
-            stickyPosition = value;
+            position = value;
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Specifying the horizontal position of a positioned element from right.
+    /// </summary>
+    [Parameter] public string? Right { get; set; }
 
     /// <summary>
     /// Specifying the vertical position of a positioned element from top.
@@ -51,14 +52,17 @@ public partial class BitSticky
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => StickyPosition switch
+        ClassBuilder.Register(() => Position switch
         {
+            BitStickyPosition.Top => $"{RootElementClass}-top",
             BitStickyPosition.Bottom => $"{RootElementClass}-btm",
             BitStickyPosition.TopAndBottom => $"{RootElementClass}-tab",
             BitStickyPosition.Left => $"{RootElementClass}-lft",
-            BitStickyPosition.Right => $"{RootElementClass}-rit",
+            BitStickyPosition.Right => $"{RootElementClass}-rgt",
             BitStickyPosition.LeftAndRight => $"{RootElementClass}-lar",
-            _ => $"{RootElementClass}-top"
+            _ => (Top is null && Bottom is null && Left is null && Right is null)
+                    ? $"{RootElementClass}-top"
+                    : string.Empty
         });
     }
 
