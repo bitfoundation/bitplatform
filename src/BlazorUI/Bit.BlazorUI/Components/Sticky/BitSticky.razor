@@ -1,8 +1,9 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
+<div id="@_Id"
+     @ref="RootElement"
+     @attributes="HtmlAttributes"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @ChildContent
