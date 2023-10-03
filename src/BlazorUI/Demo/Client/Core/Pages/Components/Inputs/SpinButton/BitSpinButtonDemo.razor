@@ -13,7 +13,9 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Basic" />
+                <BitSpinButton Label="Basic"
+                               IncrementTitle="Increment"
+                               DecrementTitle="Decrement" />
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
             </div>
         </ExamplePreview>
@@ -170,14 +172,9 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton ShowInput="false"
-                               IncrementTitle="Add"
-                               DecrementTitle="Remove"
                                @bind-Value="showInputValue"
                                Mode="BitSpinButtonMode.Inline"
-                               Label="@showInputValue.ToString()"
-                               IncrementIconName="@BitIconName.Add"
-                               DecrementIconName="@BitIconName.Remove"
-                               LabelPosition="@BitSpinButtonLabelPosition.Right" />
+                               Label="@showInputValue.ToString()" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -217,40 +214,3 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private double OneWayValue = 3;
-    private double TwoWayValue = 5;
-
-    private double IncrementEventValue;
-    private int OnIncrementCounter;
-    private int OnDecrementCounter;
-
-    private double OnChangeEventBindedValue;
-    private double OnChangeEventReturnedValue;
-    private int OnChangeClickedCounter;
-    private void HandleOnChangeEvent(double value)
-    {
-        OnChangeEventReturnedValue = value;
-
-        OnChangeClickedCounter++;
-    }
-
-    private double showInputValue;
-
-    private string SuccessMessage = string.Empty;
-    private BitSpinButtonValidationModel ValidationModel = new();
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
-}

@@ -423,8 +423,48 @@ public partial class BitSpinButtonDemo
 
 
 
+    private double OneWayValue = 3;
+    private double TwoWayValue = 5;
+
+    private double IncrementEventValue;
+    private int OnIncrementCounter;
+    private int OnDecrementCounter;
+
+    private double OnChangeEventBindedValue;
+    private double OnChangeEventReturnedValue;
+    private int OnChangeClickedCounter;
+
+    private void HandleOnChangeEvent(double value)
+    {
+        OnChangeEventReturnedValue = value;
+
+        OnChangeClickedCounter++;
+    }
+
+    private double showInputValue;
+
+    private string SuccessMessage = string.Empty;
+    private BitSpinButtonValidationModel ValidationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+
+
     private readonly string example1RazorCode = @"
-<BitSpinButton Label=""Basic"" />
+<BitSpinButton Label=""Basic""
+               IncrementTitle=""Increment""
+               DecrementTitle=""Decrement"" />
 
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />";
 
@@ -567,14 +607,9 @@ private void HandleOnChangeEvent(double value)
 
     private readonly string example11RazorCode = @"
 <BitSpinButton ShowInput=""false""
-               IncrementTitle=""Add""
-               DecrementTitle=""Remove""
-               @bind-Value=""showInputValue""
-               Mode=""BitSpinButtonMode.Inline""
-               Label=""@showInputValue.ToString()""
-               IncrementIconName=""@BitIconName.Add""
-               DecrementIconName=""@BitIconName.Remove""
-               LabelPosition=""@BitSpinButtonLabelPosition.Right"" />";
+                @bind-Value=""showInputValue""
+                Mode=""BitSpinButtonMode.Inline""
+                Label=""@showInputValue.ToString()"" />";
     private readonly string example11CsharpCode = @"
 private double showInputValue;";
 
