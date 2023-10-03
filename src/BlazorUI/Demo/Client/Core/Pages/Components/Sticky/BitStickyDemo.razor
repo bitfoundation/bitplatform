@@ -41,9 +41,9 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Top-Bottom" RazorCode="@example2RazorCode" Id="example2">
+        <ComponentExampleBox Title="Vertical Positions" RazorCode="@example2RazorCode" Id="example2">
             <ExamplePreview>
-                <div style="text-decoration:underline;text-underline-offset:.25rem">Try scrolling the containers to see the sticky components in action:</div>
+                <div class="description">Try scrolling the containers to see the sticky components in action:</div>
                 <br />
                 <br />
                 <br />
@@ -52,7 +52,10 @@
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non.
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida.
                     </p>
                     <BitSticky Class="sticky" Position="@BitStickyPosition.Top">Stick to Top</BitSticky>
                     <p>
@@ -160,9 +163,9 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Left-Right" RazorCode="@example3RazorCode" Id="example3">
+        <ComponentExampleBox Title="Horizontal Positions" RazorCode="@example3RazorCode" Id="example3">
             <ExamplePreview>
-                <div style="text-decoration:underline;text-underline-offset:.25rem">Try scrolling the containers to see the sticky components in action:</div>
+                <div class="description">Try scrolling the containers to see the sticky components in action:</div>
                 <br />
                 <br />
                 <br />
@@ -198,6 +201,173 @@
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
                     </p>
                     <BitSticky Class="sticky" Position="@BitStickyPosition.LeftAndRight">Stick to Left and Right</BitSticky>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Customized Vertical" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <div class="description">Try scrolling the containers to see the sticky components in action:</div>
+                <br />
+                <br />
+                <br />
+                <div><b>Top=10px</b>:</div>
+                <div class="vertical-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida.
+                    </p>
+                    <BitSticky Class="sticky" Top="10px">Top customized</BitSticky>
+                    <p>
+                        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                    </p>
+                    <p>
+                        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                        mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                    </p>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                        efficitur.
+                    </p>
+                </div>
+                <br />
+                <br />
+                <br />
+                <div><b>Bottom=1rem</b>:</div>
+                <div class="vertical-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non.
+                    </p>
+                    <p>
+                        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                    </p>
+                    <p>
+                        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                        mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                    </p>
+                    <BitSticky Class="sticky" Bottom="1rem">Bottom customized</BitSticky>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                        efficitur.
+                    </p>
+                </div>
+                <br />
+                <br />
+                <br />
+                <div><b>Top=1rem and Bottom=10px</b>:</div>
+                <div class="vertical-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                        efficitur.
+                    </p>
+                    <p>
+                        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                    </p>
+                    <BitSticky Class="sticky" Top="1rem" Bottom="10px">Top and Bottom customized</BitSticky>
+                    <p>
+                        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                        mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                    </p>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                        efficitur.
+                    </p>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Customized Horizontal" RazorCode="@example5RazorCode" Id="example5">
+            <ExamplePreview>
+                <div class="description">Try scrolling the containers to see the sticky components in action:</div>
+                <br />
+                <br />
+                <br />
+                <div><b>Left=10px</b>:</div>
+                <div class="horizontal-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                    <BitSticky Class="sticky" Left="10px">Left customized</BitSticky>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                </div>
+                <br />
+                <br />
+                <br />
+                <div><b>Right=1rem</b>:</div>
+                <div class="horizontal-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                    <BitSticky Class="sticky" Right="1rem">Right customized</BitSticky>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                </div>
+                <br />
+                <br />
+                <br />
+                <div><b>Left=1rem and Right=10px</b>:</div>
+                <div class="horizontal-container">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
+                    </p>
+                    <BitSticky Class="sticky" Left="1rem" Right="10px">Left and Right customized</BitSticky>
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
                     </p>

@@ -2,7 +2,7 @@
 
 public partial class BitSticky
 {
-    private BitStickyPosition position = BitStickyPosition.Top;
+    private BitStickyPosition? position;
 
 
 
@@ -25,7 +25,7 @@ public partial class BitSticky
     /// Region to render sticky component in.
     /// </summary>
     [Parameter]
-    public BitStickyPosition Position
+    public BitStickyPosition? Position
     {
         get => position;
         set
@@ -60,7 +60,9 @@ public partial class BitSticky
             BitStickyPosition.Left => $"{RootElementClass}-lft",
             BitStickyPosition.Right => $"{RootElementClass}-rgt",
             BitStickyPosition.LeftAndRight => $"{RootElementClass}-lar",
-            _ => string.Empty
+            _ => (Top is null && Bottom is null && Left is null && Right is null)
+                    ? $"{RootElementClass}-top"
+                    : string.Empty
         });
     }
 
