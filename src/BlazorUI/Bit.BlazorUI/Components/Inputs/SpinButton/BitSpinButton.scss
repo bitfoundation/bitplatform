@@ -79,10 +79,10 @@
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     border: $shape-border-width $shape-border-style $color-border-primary;
+}
 
-    &.bit-spb-hdi {
-        width: max-content;
-    }
+.bit-spb-hdi {
+    width: max-content;
 }
 
 .bit-spb-inp {

@@ -470,8 +470,8 @@ public partial class BitSpinButtonDemo
     private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Top Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
 <BitSpinButton Label=""Left Label"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
-<BitSpinButton Label=""Left Right"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
-<BitSpinButton Label=""Left Bottom"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />";
+<BitSpinButton Label=""Right Label"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
+<BitSpinButton Label=""Bottom Label"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />";
 
     private readonly string example5RazorCode = @"
 <BitSpinButton>
