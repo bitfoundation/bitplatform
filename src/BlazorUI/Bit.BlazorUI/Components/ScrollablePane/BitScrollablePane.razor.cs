@@ -5,9 +5,6 @@ public partial class BitScrollablePane
     private BitScrollbarGutter scrollbarGutter = BitScrollbarGutter.Auto;
     private BitScrollbarVisibility scrollbarVisibility = BitScrollbarVisibility.Auto;
 
-    private int? _tabIndex;
-    private string? _ariaLabel;
-
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.
     /// </summary>
@@ -26,7 +23,8 @@ public partial class BitScrollablePane
     /// <summary>
     /// Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
     /// </summary>
-    [Parameter] public BitScrollbarGutter ScrollbarGutter
+    [Parameter] 
+    public BitScrollbarGutter ScrollbarGutter
     {
         get => scrollbarGutter;
         set
@@ -41,7 +39,8 @@ public partial class BitScrollablePane
     /// <summary>
     /// Controls the visibility of scrollbars in the ScrollablePane.
     /// </summary>
-    [Parameter] public BitScrollbarVisibility ScrollbarVisibility
+    [Parameter] 
+    public BitScrollbarVisibility ScrollbarVisibility
     {
         get => scrollbarVisibility;
         set
@@ -52,11 +51,6 @@ public partial class BitScrollablePane
             ClassBuilder.Reset();
         }
     }
-
-    /// <summary>
-    /// Makes the scrollable container focusable, to aid with keyboard-only scrolling Should only be set to true if the scrollable region will not contain any other focusable items.
-    /// </summary>
-    [Parameter] public bool ScrollContainerFocus { get; set; }
 
     /// <summary>
     /// The width of the ScrollablePane.
@@ -86,18 +80,7 @@ public partial class BitScrollablePane
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Width.HasValue() ? $"width: {Width}" : string.Empty);
-        StyleBuilder.Register(() => Height.HasValue() ? $"height: {Height}" : string.Empty);
-    }
-
-    protected override void OnParametersSet()
-    {
-        if (ScrollContainerFocus)
-        {
-            _tabIndex = 0;
-            _ariaLabel = AriaLabel;
-        }
-
-        base.OnParametersSet();
+        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 }
