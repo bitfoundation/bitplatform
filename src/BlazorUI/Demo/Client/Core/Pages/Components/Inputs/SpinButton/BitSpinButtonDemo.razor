@@ -13,7 +13,9 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Basic" />
+                <BitSpinButton Label="Basic"
+                               IncrementTitle="Increment"
+                               DecrementTitle="Decrement" />
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
             </div>
         </ExamplePreview>
@@ -56,8 +58,10 @@
     <ComponentExampleBox Title="LabelPosition" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Label & Icon" IconName="@BitIconName.Lightbulb" />
-                <BitSpinButton Label="Left Label" IconName="@BitIconName.Lightbulb" LabelPosition="BitSpinButtonLabelPosition.Left" />
+                <BitSpinButton Label="Top Label & Icon" IconName="@BitIconName.Lightbulb" />
+                <BitSpinButton Label="Left Label" LabelPosition="BitSpinButtonLabelPosition.Left" />
+                <BitSpinButton Label="Right Label" LabelPosition="BitSpinButtonLabelPosition.Right" />
+                <BitSpinButton Label="Bottom Label" LabelPosition="BitSpinButtonLabelPosition.Bottom" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -164,7 +168,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="ShowInput" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitSpinButton ShowInput="false"
+                               @bind-Value="showInputValue"
+                               Mode="BitSpinButtonMode.Inline"
+                               Label="@showInputValue.ToString()" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Readonly" RazorCode="@example12RazorCode" Id="example12">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitSpinButton IsInputReadOnly="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -191,38 +214,3 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private double OneWayValue = 3;
-    private double TwoWayValue = 5;
-
-    private double IncrementEventValue;
-    private int OnIncrementCounter;
-    private int OnDecrementCounter;
-
-    private double OnChangeEventBindedValue;
-    private double OnChangeEventReturnedValue;
-    private int OnChangeClickedCounter;
-    private void HandleOnChangeEvent(double value)
-    {
-        OnChangeEventReturnedValue = value;
-
-        OnChangeClickedCounter++;
-    }
-
-    private string SuccessMessage = string.Empty;
-    private BitSpinButtonValidationModel ValidationModel = new();
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
-}

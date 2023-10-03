@@ -14,8 +14,8 @@ public partial class BitSpinButton
     private double _min;
     private double _max;
     private int _precision;
-    private string? _intermediateValue;
     private Timer? _pointerDownTimer;
+    private string? _intermediateValue;
     private string _inputId = default!;
 
     private ElementReference _inputRef;
@@ -65,6 +65,11 @@ public partial class BitSpinButton
     [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
+    /// The title to show when the mouse is placed on the decrement button.
+    /// </summary>
+    [Parameter] public string? DecrementTitle { get; set; }
+
+    /// <summary>
     /// Initial value of the spin button.
     /// </summary>
     [Parameter] public double? DefaultValue { get; set; }
@@ -88,6 +93,16 @@ public partial class BitSpinButton
     /// Custom icon name for the increment button.
     /// </summary>
     [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
+
+    /// <summary>
+    /// The title to show when the mouse is placed on the increment button.
+    /// </summary>
+    [Parameter] public string? IncrementTitle { get; set; }
+
+    /// <summary>
+    /// If true, the input is readonly.
+    /// </summary>
+    [Parameter] public bool IsInputReadOnly { get; set; }
 
     /// <summary>
     /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.
@@ -161,6 +176,11 @@ public partial class BitSpinButton
     [Parameter] public int? Precision { get; set; }
 
     /// <summary>
+    /// If false, the input is hidden.
+    /// </summary>
+    [Parameter] public bool ShowInput { get; set; } = true;
+
+    /// <summary>
     /// Difference between two adjacent values of the spin button.
     /// </summary>
     [Parameter] public double Step { get; set; } = 1;
@@ -188,11 +208,20 @@ public partial class BitSpinButton
 
 
     protected override string RootElementClass => "bit-spb";
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
+
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitSpinButtonLabelPosition.Bottom => $"{RootElementClass}-lbt",
+            BitSpinButtonLabelPosition.Left => $"{RootElementClass}-llf",
+            BitSpinButtonLabelPosition.Right => $"{RootElementClass}-lrt",
+            _ => $"{RootElementClass}-ltp"
+        });
     }
+
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
@@ -294,6 +323,7 @@ public partial class BitSpinButton
     private void HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (IsInputReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         _intermediateValue = GetCleanValue(e.Value?.ToString());
@@ -330,6 +360,7 @@ public partial class BitSpinButton
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (IsInputReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         switch (e.Key)

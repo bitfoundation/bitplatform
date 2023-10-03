@@ -52,7 +52,6 @@
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
-    margin-right: spacing(1.25);
     justify-content: flex-start;
 
     .bit-spb-lbl {
@@ -80,6 +79,10 @@
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     border: $shape-border-width $shape-border-style $color-border-primary;
+}
+
+.bit-spb-hdi {
+    width: max-content;
 }
 
 .bit-spb-inp {
@@ -128,13 +131,14 @@
     border: none;
     outline: none;
     display: block;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
     position: relative;
     text-align: center;
     width: spacing(2.875);
     text-decoration: none;
     box-sizing: border-box;
+    -webkit-user-select: none;
     background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
@@ -180,6 +184,24 @@
     align-items: flex-start;
 }
 
+.bit-spb-lbt {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+}
+
 .bit-spb-llf {
     flex-direction: row;
+
+    .bit-spb-lct {
+        margin-right: spacing(1.25);
+    }
+}
+
+.bit-spb-lrt {
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+
+    .bit-spb-lct {
+        margin-left: spacing(1.25);
+    }
 }
