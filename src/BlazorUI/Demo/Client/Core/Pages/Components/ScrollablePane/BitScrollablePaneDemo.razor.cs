@@ -30,7 +30,7 @@ public partial class BitScrollablePaneDemo
             Type = "BitScrollbarGutter",
             DefaultValue= "BitScrollbarGutter.Auto",
             Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
-            Href = "#scrollbar-gutter-enum",
+            Href = "#scrollbarGutter-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -39,15 +39,8 @@ public partial class BitScrollablePaneDemo
             Type = "BitScrollbarVisibility",
             DefaultValue= "BitScrollbarVisibility.Auto",
             Description = "Controls the visibility of scrollbars in the ScrollablePane.",
-            Href = "#scrollbar-visibility-enum",
+            Href = "#scrollbarVisibility-enum",
             LinkType = LinkType.Link,
-        },
-        new()
-        {
-            Name = "ScrollContainerFocus",
-            Type = "bool",
-            DefaultValue= "false",
-            Description = "Makes the scrollable container focusable, to aid with keyboard-only scrolling Should only be set to true if the scrollable region will not contain any other focusable items.",
         },
         new()
         {
@@ -62,7 +55,7 @@ public partial class BitScrollablePaneDemo
     {
         new()
         {
-            Id = "scrollbar-visibility-enum",
+            Id = "scrollbarVisibility-enum",
             Name = "BitScrollbarVisibility",
             Description = "",
             Items = new List<ComponentEnumItem>()
@@ -89,7 +82,7 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Id = "scrollbar-gutter-enum",
+            Id = "scrollbarGutter-enum",
             Name = "BitScrollbarGutter",
             Description = "",
             Items = new List<ComponentEnumItem>()
@@ -118,181 +111,178 @@ public partial class BitScrollablePaneDemo
 
 
 
-    private double visibilityItemsCount = 25;
+    private double visibilityItemsCount = 10;
     private BitScrollbarVisibility scrollbarVisibility;
 
-    private double gutterItemsCount = 25;
+    private double gutterItemsCount = 10;
     private BitScrollbarGutter scrollbarGutter;
 
 
 
     private readonly string example1RazorCode = @"
-<BitScrollablePane Style=""height: 22rem;"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-    <p>
-        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-    </p>
-    <p>
-        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-    </p>
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+</style>
+
+<BitScrollablePane Style=""height: 22rem;"" Class=""pane"">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+    efficitur.
+    <br />
+    Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+    faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+    magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+    nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+    rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+    <br />
+    Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+    consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+    et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+    finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+    mollis. Curabitur ultricies leo ac metus venenatis elementum.
 </BitScrollablePane>";
 
     private readonly string example2RazorCode = @"
-<BitScrollablePane Height=""16rem"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-    <p>
-        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-    </p>
-    <p>
-        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-    </p>
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+</style>
+
+<BitScrollablePane Height=""16rem"" Class=""pane"">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+    efficitur.
+    <br />
+    Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+    faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+    magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+    nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+    rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+    <br />
+    Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+    consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+    et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+    finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+    mollis. Curabitur ultricies leo ac metus venenatis elementum.
 </BitScrollablePane>
 
-<BitScrollablePane Width=""50%"" Style=""white-space: nowrap;"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-    <p>
-        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-    </p>
-    <p>
-        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-    </p>
-</BitScrollablePane>
-
-<BitScrollablePane Width=""256px"" Height=""352px"">
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </p>
-    <p>
-        Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-        faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-        magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-        nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-        rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
-    </p>
-    <p>
-        Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-        consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-        et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-        finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-        mollis. Curabitur ultricies leo ac metus venenatis elementum.
-    </p>
+<BitScrollablePane Width=""300px"" Class=""pane"" Style=""white-space:nowrap"">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst.
+    <br />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst.
+    <br />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst.
+    <br />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst.
+    <br />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst.
 </BitScrollablePane>";
 
     private readonly string example3RazorCode = @"
 <style>
-    .vertical-scroll-item {
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+
+    .item {
+        color: black;
         height: 2.75rem;
-        margin: 0.5rem 0.5rem;
+        margin: 0.5rem 0;
+        background-color: #777;
         padding: 0.5rem 1.25rem;
-        background-color: #f2f2f2;
     }
 </style>
                     
-<BitScrollablePane ScrollbarVisibility=""@scrollbarVisibility"" Height=""16rem;"">
-    @for (int i = 0; i < itemsCount; i++)
-    {
-        var index = i;
-        <div class=""vertical-scroll-item"">@index</div>
-    }
-</BitScrollablePane>
-
-<BitSpinButton Min=""0"" @bind-Value=""@itemsCount"" Mode=""@BitSpinButtonMode.Inline"" Label=""Items count"" />
-                    
-<BitChoiceGroup @bind-Value=""scrollbarVisibility"" Label=""Scrollbar visibility"" TItem=""BitChoiceGroupOption<BitScrollbarVisibility>"" TValue=""BitScrollbarVisibility"">
+<BitChoiceGroup Label=""Scrollbar visibility""
+                @bind-Value=""scrollbarVisibility""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<BitScrollbarVisibility>"" TValue=""BitScrollbarVisibility"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarVisibility.Auto"" />
     <BitChoiceGroupOption Text=""Hidden"" Value=""BitScrollbarVisibility.Hidden"" />
     <BitChoiceGroupOption Text=""Scroll"" Value=""BitScrollbarVisibility.Scroll"" />
-</BitChoiceGroup>";
+</BitChoiceGroup>
+
+<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@visibilityItemsCount"" />
+
+<BitScrollablePane ScrollbarVisibility=""@scrollbarVisibility"" Height=""16rem"" Class=""pane"">
+    @for (int i = 0; i < visibilityItemsCount; i++)
+    {
+        var index = i;
+        <div class=""item"">@index</div>
+    }
+</BitScrollablePane>";
     private readonly string example3CsharpCode = @"
-private double itemsCount = 25;
+private double itemsCount = 10;
 private BitScrollbarVisibility scrollbarVisibility;
 ";
 
     private readonly string example4RazorCode = @"
 <style>
-    .vertical-scroll-item {
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+
+    .item {
+        color: black;
         height: 2.75rem;
-        margin: 0.5rem 0.5rem;
+        margin: 0.5rem 0;
+        background-color: #777;
         padding: 0.5rem 1.25rem;
-        background-color: #f2f2f2;
     }
 </style>
                     
-<BitScrollablePane ScrollbarGutter=""@scrollbarGutter"" Height=""16rem"">
-    @for (int i = 0; i < gutterItemsCount; i++)
-    {
-        var index = i;
-        <div class=""vertical-scroll-item"">@index</div>
-    }
-</BitScrollablePane>
-
-<BitSpinButton Min=""0"" @bind-Value=""@gutterItemsCount"" Mode=""@BitSpinButtonMode.Inline"" Label=""Items count"" />
-
-<BitChoiceGroup @bind-Value=""scrollbarGutter"" Label=""Scrollbar gutter"" TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
+<BitChoiceGroup Label=""Scrollbar gutter""
+                @bind-Value=""scrollbarGutter""
+                LayoutFlow=""BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
     <BitChoiceGroupOption Text=""Stable"" Value=""BitScrollbarGutter.Stable"" />
     <BitChoiceGroupOption Text=""BothEdges"" Value=""BitScrollbarGutter.BothEdges"" />
-</BitChoiceGroup>";
+</BitChoiceGroup>
+
+<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@gutterItemsCount"" />
+
+<BitScrollablePane ScrollbarGutter=""@scrollbarGutter"" Height=""16rem"" Class=""pane"">
+    @for (int i = 0; i < gutterItemsCount; i++)
+    {
+        var index = i;
+        <div class=""item"">@index</div>
+    }
+</BitScrollablePane>";
     private readonly string example4CsharpCode = @"
-private double gutterItemsCount = 25;
+private double gutterItemsCount = 10;
 private BitScrollbarGutter scrollbarGutter;
 ";
 }

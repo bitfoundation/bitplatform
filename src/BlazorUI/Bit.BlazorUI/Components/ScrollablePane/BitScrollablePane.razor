@@ -1,10 +1,10 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onscroll="OnScroll"
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     @onscroll="OnScroll"
      id="@_Id"
-     tabindex="@_tabIndex"
-     aria-label="@_ariaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     @ChildContent

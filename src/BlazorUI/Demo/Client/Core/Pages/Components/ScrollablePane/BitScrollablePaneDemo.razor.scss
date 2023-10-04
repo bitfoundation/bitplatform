@@ -1,8 +1,16 @@
 ﻿@import "../../../Styles/abstracts/_bit-css-variables.scss";
 
-.vertical-scroll-item {
+.item {
+    color: black;
     height: 2.75rem;
-    margin: 0.5rem 0.5rem;
+    margin: 0.5rem 0;
+    background-color: #777;
     padding: 0.5rem 1.25rem;
-    background-color: $bit-color-background-secondary;
+}
+
+::deep {
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
 }
