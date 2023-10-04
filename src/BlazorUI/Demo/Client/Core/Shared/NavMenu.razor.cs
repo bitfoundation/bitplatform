@@ -13,16 +13,6 @@ public partial class NavMenu : IDisposable
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
         {
-            Text = "Basic",
-            ChildItems = new()
-            {
-                new() { Text = "Label",  Url = "/components/label" },
-                new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
-                new() { Text = "Typography", Url = "/components/typography" },
-            }
-        },
-        new()
-        {
             Text = "Buttons",
             ChildItems = new()
             {
@@ -125,9 +115,12 @@ public partial class NavMenu : IDisposable
             {
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
+                new() { Text = "Label",  Url = "/components/label" },
+                new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
+                new() { Text = "Typography", Url = "/components/typography" },
             },
         },
         new()
