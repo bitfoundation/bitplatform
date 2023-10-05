@@ -135,18 +135,30 @@ public partial class BitScrollablePane
 
 
         // Auto is the default value which is already set on the root element
-        StyleBuilder.Register(() => Overflow is not null && Overflow is not BitOverflow.Auto
-            ? $"overflow:{_OverflowMap[Overflow.Value]}"
-            : string.Empty);
-        StyleBuilder.Register(() => (OverflowX is not null && OverflowY is not null && OverflowX is not BitOverflow.Auto && OverflowY is not BitOverflow.Auto)
-            ? $"overflow:{_OverflowMap[OverflowX.Value]} {_OverflowMap[OverflowY.Value]}"
-            : string.Empty);
-        StyleBuilder.Register(() => OverflowX is not null && OverflowX is not BitOverflow.Auto
-            ? $"overflow-x:{_OverflowMap[OverflowX.Value]}"
-            : string.Empty);
-        StyleBuilder.Register(() => OverflowY is not null && OverflowY is not BitOverflow.Auto
-            ? $"overflow-y:{_OverflowMap[OverflowY.Value]}"
-            : string.Empty);
+        StyleBuilder.Register(register =>
+        {
+            if (OverflowX is not null && OverflowY is not null)
+            {
+                return $"overflow:{_OverflowMap[OverflowX.Value]} {_OverflowMap[OverflowY.Value]}";
+            }
+
+            if (Overflow is not null && Overflow is not BitOverflow.Auto)
+            {
+                register($"overflow:{_OverflowMap[Overflow.Value]}");
+            }
+
+            if (OverflowX is not null && OverflowX is not BitOverflow.Auto)
+            {
+                register($"overflow-x:{_OverflowMap[OverflowX.Value]}");
+            }
+
+            if (OverflowY is not null && OverflowY is not BitOverflow.Auto)
+            {
+                register($"overflow-y:{_OverflowMap[OverflowY.Value]}");
+            }
+
+            return string.Empty;
+        });
 
         // Auto is the default value which is already set on the root element 
         StyleBuilder.Register(() => Gutter is not null && Gutter is not BitScrollbarGutter.Auto
