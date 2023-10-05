@@ -26,20 +26,38 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
-            Name = "ScrollbarGutter",
-            Type = "BitScrollbarGutter",
-            DefaultValue= "BitScrollbarGutter.Auto",
-            Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
-            Href = "#scrollbarGutter-enum",
+            Name = "Overflow",
+            Type = "BitOverflow?",
+            DefaultValue= "null",
+            Description = "Controls the visibility of scrollbars in the ScrollablePane.",
+            Href = "#overflow-enum",
             LinkType = LinkType.Link,
         },
         new()
         {
-            Name = "ScrollbarVisibility",
-            Type = "BitScrollbarVisibility",
-            DefaultValue= "BitScrollbarVisibility.Auto",
-            Description = "Controls the visibility of scrollbars in the ScrollablePane.",
-            Href = "#scrollbarVisibility-enum",
+            Name = "OverflowX",
+            Type = "BitOverflow?",
+            DefaultValue= "null",
+            Description = "Controls the visibility of X-axis scrollbar in the ScrollablePane.",
+            Href = "#overflow-enum",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "OverflowY",
+            Type = "BitOverflow?",
+            DefaultValue= "null",
+            Description = "Controls the visibility of Y-axis scrollbar in the ScrollablePane.",
+            Href = "#overflow-enum",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "ScrollbarGutter",
+            Type = "BitScrollbarGutter?",
+            DefaultValue= "null",
+            Description = "Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.",
+            Href = "#scrollbarGutter-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -55,8 +73,8 @@ public partial class BitScrollablePaneDemo
     {
         new()
         {
-            Id = "scrollbarVisibility-enum",
-            Name = "BitScrollbarVisibility",
+            Id = "overflow-enum",
+            Name = "BitOverflow",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
@@ -72,11 +90,17 @@ public partial class BitScrollablePaneDemo
                     Value = "1",
                     Description = "Scrollbars are always hidden, even if the content overflows the visible area."
                 },
-                new() 
-                { 
+                new()
+                {
                     Name = "Scroll",
                     Value = "2",
                     Description = "Scrollbars are always visible, allowing users to scroll through the content even if it doesn't overflow the visible area."
+                },
+                new()
+                {
+                    Name = "Visible",
+                    Value = "3",
+                    Description = "Overflow content is not clipped and may be visible outside the element's padding box."
                 }
             }
         },
@@ -111,11 +135,11 @@ public partial class BitScrollablePaneDemo
 
 
 
-    private double visibilityItemsCount = 10;
-    private BitScrollbarVisibility scrollbarVisibility;
+    private double overflowItemsCount = 6;
+    private BitOverflow overflow;
 
-    private double gutterItemsCount = 10;
-    private BitScrollbarGutter scrollbarGutter;
+    private double gutterItemsCount = 6;
+    private BitScrollbarGutter gutter;
 
 
 
@@ -127,7 +151,7 @@ public partial class BitScrollablePaneDemo
     }
 </style>
 
-<BitScrollablePane Style=""height: 22rem;"" Class=""pane"">
+<BitScrollablePane Style=""height:350px;"" Class=""pane"">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -137,17 +161,32 @@ public partial class BitScrollablePaneDemo
     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
     efficitur.
     <br />
-    Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
-    faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
-    magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
-    nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
-    rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+    efficitur.
     <br />
-    Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
-    consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
-    et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
-    finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
-    mollis. Curabitur ultricies leo ac metus venenatis elementum.
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+    efficitur.
+    <br />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+    efficitur.
 </BitScrollablePane>";
 
     private readonly string example2RazorCode = @"
@@ -158,7 +197,7 @@ public partial class BitScrollablePaneDemo
     }
 </style>
 
-<BitScrollablePane Height=""16rem"" Class=""pane"">
+<BitScrollablePane Height=""15rem"" Class=""pane"">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -224,27 +263,28 @@ public partial class BitScrollablePaneDemo
     }
 </style>
                     
-<BitChoiceGroup Label=""Scrollbar visibility""
-                @bind-Value=""scrollbarVisibility""
+<BitChoiceGroup Label=""Overflow""
+                @bind-Value=""overflow""
                 LayoutFlow=""BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<BitScrollbarVisibility>"" TValue=""BitScrollbarVisibility"">
-    <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarVisibility.Auto"" />
-    <BitChoiceGroupOption Text=""Hidden"" Value=""BitScrollbarVisibility.Hidden"" />
-    <BitChoiceGroupOption Text=""Scroll"" Value=""BitScrollbarVisibility.Scroll"" />
+                TItem=""BitChoiceGroupOption<BitOverflow>"" TValue=""BitOverflow"">
+    <BitChoiceGroupOption Text=""Auto"" Value=""BitOverflow.Auto"" />
+    <BitChoiceGroupOption Text=""Hidden"" Value=""BitOverflow.Hidden"" />
+    <BitChoiceGroupOption Text=""Scroll"" Value=""BitOverflow.Scroll"" />
+    <BitChoiceGroupOption Text=""Visible"" Value=""BitOverflow.Visible"" />
 </BitChoiceGroup>
 
-<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@visibilityItemsCount"" />
+<BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@overflowItemsCount"" />
 
-<BitScrollablePane ScrollbarVisibility=""@scrollbarVisibility"" Height=""16rem"" Class=""pane"">
-    @for (int i = 0; i < visibilityItemsCount; i++)
+<BitScrollablePane Overflow=""@overflow"" Height=""16rem"" Class=""pane"">
+    @for (int i = 0; i < overflowItemsCount; i++)
     {
         var index = i;
         <div class=""item"">@index</div>
     }
 </BitScrollablePane>";
     private readonly string example3CsharpCode = @"
-private double itemsCount = 10;
-private BitScrollbarVisibility scrollbarVisibility;
+private double overflowItemsCount = 6;
+private BitOverflow overflow;
 ";
 
     private readonly string example4RazorCode = @"
@@ -264,7 +304,7 @@ private BitScrollbarVisibility scrollbarVisibility;
 </style>
                     
 <BitChoiceGroup Label=""Scrollbar gutter""
-                @bind-Value=""scrollbarGutter""
+                @bind-Value=""gutter""
                 LayoutFlow=""BitLayoutFlow.Horizontal""
                 TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
@@ -274,7 +314,7 @@ private BitScrollbarVisibility scrollbarVisibility;
 
 <BitSpinButton Label=""Items count"" Min=""4"" @bind-Value=""@gutterItemsCount"" />
 
-<BitScrollablePane ScrollbarGutter=""@scrollbarGutter"" Height=""16rem"" Class=""pane"">
+<BitScrollablePane Gutter=""@gutter"" Height=""16rem"" Class=""pane"">
     @for (int i = 0; i < gutterItemsCount; i++)
     {
         var index = i;
@@ -282,7 +322,7 @@ private BitScrollbarVisibility scrollbarVisibility;
     }
 </BitScrollablePane>";
     private readonly string example4CsharpCode = @"
-private double gutterItemsCount = 10;
-private BitScrollbarGutter scrollbarGutter;
+private double gutterItemsCount = 6;
+private BitScrollbarGutter gutter;
 ";
 }
