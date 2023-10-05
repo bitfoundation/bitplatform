@@ -2,8 +2,21 @@
 
 public partial class BitScrollablePane
 {
-    private BitScrollbarGutter scrollbarGutter = BitScrollbarGutter.Auto;
-    private BitScrollbarVisibility scrollbarVisibility = BitScrollbarVisibility.Auto;
+    private static readonly Dictionary<BitOverflow, string> _OverflowMap = new()
+    {
+        { BitOverflow.Auto, "auto" },
+        { BitOverflow.Hidden, "hidden" },
+        { BitOverflow.Scroll, "scroll" },
+        { BitOverflow.Visible, "visible" },
+    };
+
+
+    private string? height;
+    private BitOverflow? overflow;
+    private BitOverflow? overflowX;
+    private BitOverflow? overflowY;
+    private BitScrollbarGutter? gutter;
+    private string? width;
 
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.
@@ -13,7 +26,18 @@ public partial class BitScrollablePane
     /// <summary>
     /// The height of the ScrollablePane.
     /// </summary>
-    [Parameter] public string? Height { get; set; }
+    [Parameter]
+    public string? Height
+    {
+        get => height;
+        set
+        {
+            if (height == value) return;
+
+            height = value;
+            StyleBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Callback for when the ScrollablePane scrolled.
@@ -21,66 +45,112 @@ public partial class BitScrollablePane
     [Parameter] public EventCallback OnScroll { get; set; }
 
     /// <summary>
-    /// Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
+    /// Controls the visibility of scrollbars in the ScrollablePane.
     /// </summary>
-    [Parameter] 
-    public BitScrollbarGutter ScrollbarGutter
+    [Parameter]
+    public BitOverflow? Overflow
     {
-        get => scrollbarGutter;
+        get => overflow;
         set
         {
-            if (scrollbarGutter == value) return;
+            if (overflow == value) return;
 
-            scrollbarGutter = value;
-            ClassBuilder.Reset();
+            overflow = value;
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
-    /// Controls the visibility of scrollbars in the ScrollablePane.
+    /// Controls the visibility of X-axis scrollbar in the ScrollablePane.
     /// </summary>
-    [Parameter] 
-    public BitScrollbarVisibility ScrollbarVisibility
+    [Parameter]
+    public BitOverflow? OverflowX
     {
-        get => scrollbarVisibility;
+        get => overflowX;
         set
         {
-            if (scrollbarVisibility == value) return;
+            if (overflowX == value) return;
 
-            scrollbarVisibility = value;
-            ClassBuilder.Reset();
+            overflowX = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Controls the visibility of Y-axis scrollbar in the ScrollablePane.
+    /// </summary>
+    [Parameter]
+    public BitOverflow? OverflowY
+    {
+        get => overflowY;
+        set
+        {
+            if (overflowY == value) return;
+
+            overflowY = value;
+            StyleBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Allows to reserve space for the scrollbar, preventing unwanted layout changes as the content grows while also avoiding unnecessary visuals when scrolling isn't needed.
+    /// </summary>
+    [Parameter]
+    public BitScrollbarGutter? Gutter
+    {
+        get => gutter;
+        set
+        {
+            if (gutter == value) return;
+
+            gutter = value;
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
     /// The width of the ScrollablePane.
     /// </summary>
-    [Parameter] public string? Width { get; set; }
+    [Parameter]
+    public string? Width
+    {
+        get => width;
+        set
+        {
+            if (width == value) return;
+
+            width = value;
+            StyleBuilder.Reset();
+        }
+    }
 
 
 
     protected override string RootElementClass => "bit-scp";
 
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => ScrollbarVisibility switch
-        {
-            BitScrollbarVisibility.Hidden => $"{RootElementClass}-hdn",
-            BitScrollbarVisibility.Scroll => $"{RootElementClass}-scr",
-            _ => $"{RootElementClass}-aut"
-        });
-
-        ClassBuilder.Register(() => ScrollbarGutter switch
-        {
-            BitScrollbarGutter.Stable => $"{RootElementClass}-gst",
-            BitScrollbarGutter.BothEdges => $"{RootElementClass}-gbe",
-            _ => $"{RootElementClass}-gat"
-        });
-    }
-
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
+        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+
+
+        // Auto is the default value which is already set on the root element
+        StyleBuilder.Register(() => Overflow is not null && Overflow is not BitOverflow.Auto
+            ? $"overflow:{_OverflowMap[Overflow.Value]}"
+            : string.Empty);
+        StyleBuilder.Register(() => (OverflowX is not null && OverflowY is not null && OverflowX is not BitOverflow.Auto && OverflowY is not BitOverflow.Auto)
+            ? $"overflow:{_OverflowMap[OverflowX.Value]} {_OverflowMap[OverflowY.Value]}"
+            : string.Empty);
+        StyleBuilder.Register(() => OverflowX is not null && OverflowX is not BitOverflow.Auto
+            ? $"overflow-x:{_OverflowMap[OverflowX.Value]}"
+            : string.Empty);
+        StyleBuilder.Register(() => OverflowY is not null && OverflowY is not BitOverflow.Auto
+            ? $"overflow-y:{_OverflowMap[OverflowY.Value]}"
+            : string.Empty);
+
+        // Auto is the default value which is already set on the root element 
+        StyleBuilder.Register(() => Gutter is not null && Gutter is not BitScrollbarGutter.Auto
+                ? $"scrollbar-gutter:stable{(Gutter is BitScrollbarGutter.BothEdges ? " both-edges" : "")}"
+                : string.Empty);
     }
 }
