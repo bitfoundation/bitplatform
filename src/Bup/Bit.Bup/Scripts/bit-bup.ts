@@ -1,4 +1,4 @@
-﻿window['bit-bup version'] = '6.0.0-pre-03';
+﻿window['bit-bup version'] = '6.0.0-pre-04';
 
 declare const Blazor: any;
 
