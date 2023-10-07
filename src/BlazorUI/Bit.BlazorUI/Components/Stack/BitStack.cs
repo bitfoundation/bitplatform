@@ -6,20 +6,11 @@ public partial class BitStack : BitComponentBase
 {
     private string? gap;
     private string? grow;
-    private string? padding;
-    private string? height;
-    private string? width;
-    private string? maxWidth;
-    private string? maxHeight;
-    private string? minWidth;
-    private string? minHeight;
     private bool wrap;
     private bool grows;
     private bool reversed;
     private bool horizontal;
-    private bool verticalFill;
     private bool disableShrink;
-    private bool horizontalFill;
     private BitStackAlignment verticalAlign = BitStackAlignment.Start;
     private BitStackAlignment horizontalAlign = BitStackAlignment.Start;
 
@@ -94,22 +85,6 @@ public partial class BitStack : BitComponentBase
     }
 
     /// <summary>
-    /// Defines the height of the Stack.
-    /// </summary>
-    [Parameter]
-    public string? Height
-    {
-        get => height;
-        set
-        {
-            if (height == value) return;
-
-            height = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
     [Parameter] public bool Horizontal
@@ -140,97 +115,6 @@ public partial class BitStack : BitComponentBase
     }
 
     /// <summary>
-    /// Defines whether the Stack should take up 100% of the height of its parent. This property is required to be set to true when using the grow flag on children in vertical oriented Stacks. Stacks are rendered as block elements and grow horizontally to the container already.
-    /// </summary>
-    [Parameter]
-    public bool HorizontalFill
-    {
-        get => horizontalFill;
-        set
-        {
-            if (horizontalFill == value) return;
-
-            horizontalFill = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the maximum height that the Stack can take.
-    /// </summary>
-    [Parameter] public string? MaxHeight
-    {
-        get => maxHeight;
-        set
-        {
-            if (maxHeight == value) return;
-
-            maxHeight = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the maximum width that the Stack can take.
-    /// </summary>
-    [Parameter] public string? MaxWidth
-    {
-        get => maxWidth;
-        set
-        {
-            if (maxWidth == value) return;
-
-            maxWidth = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the minimum height that the Stack can take.
-    /// </summary>
-    [Parameter] public string? MinHeight
-    {
-        get => minHeight;
-        set
-        {
-            if (minHeight == value) return;
-
-            minHeight = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the minimum width that the Stack can take.
-    /// </summary>
-    [Parameter] public string? MinWidth
-    {
-        get => minWidth;
-        set
-        {
-            if (minWidth == value) return;
-
-            minWidth = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the inner padding of the Stack.
-    /// </summary>
-    [Parameter] public string? Padding
-    {
-        get => padding;
-        set
-        {
-            if (padding == value) return;
-
-            padding = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Defines whether to render Stack children in the opposite direction (bottom-to-top if it's a vertical Stack and right-to-left if it's a horizontal Stack).
     /// </summary>
     [Parameter] public bool Reversed
@@ -257,37 +141,6 @@ public partial class BitStack : BitComponentBase
 
             verticalAlign = value;
             ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines whether the Stack should take up 100% of the height of its parent. This property is required to be set to true when using the grow flag on children in vertical oriented Stacks. Stacks are rendered as block elements and grow horizontally to the container already.
-    /// </summary>
-    [Parameter] public bool VerticalFill
-    {
-        get => verticalFill;
-        set
-        {
-            if (verticalFill == value) return;
-
-            verticalFill = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Defines the width of the Stack.
-    /// </summary>
-    [Parameter]
-    public string? Width
-    {
-        get => width;
-        set
-        {
-            if (width == value) return;
-
-            width = value;
-            StyleBuilder.Reset();
         }
     }
 
@@ -352,20 +205,6 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => Gap.HasValue() ? $"gap: {Gap}" : string.Empty);
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow: {(Grow.HasValue() ? Grow : "1")}" : string.Empty);
-
-        StyleBuilder.Register(() => (Height.HasValue() || VerticalFill) ? $"height: {(Height.HasValue() ? Height : "100%")}" : string.Empty);
-
-        StyleBuilder.Register(() => (Width.HasValue() || HorizontalFill) ? $"width: {(Width.HasValue() ? Width : "100%")}" : string.Empty);
-
-        StyleBuilder.Register(() => MaxHeight.HasValue() ? $"max-height: {MaxHeight}" : string.Empty);
-
-        StyleBuilder.Register(() => MaxWidth.HasValue() ? $"max-width: {MaxWidth}" : string.Empty);
-
-        StyleBuilder.Register(() => MinHeight.HasValue() ? $"min-height: {MinHeight}" : string.Empty);
-
-        StyleBuilder.Register(() => MinWidth.HasValue() ? $"min-width: {MinWidth}" : string.Empty);
-
-        StyleBuilder.Register(() => Padding.HasValue() ? $"padding: {Padding}" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

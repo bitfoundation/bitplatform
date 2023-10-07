@@ -43,22 +43,14 @@
              </ExamplePreview>
          </ComponentExampleBox>
 
-         <ComponentExampleBox Title="Nested" RazorCode="@example2RazorCode" Id="example2">
+         <ComponentExampleBox Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
              <ExamplePreview>
                  <div style="color: white;">
-                     <BitStack Style="background-color: lightskyblue;">
-                         <BitStack Class="stack-item">Item 1</BitStack>
-                         <BitStack Class="stack-item">Item 2</BitStack>
-                         <BitStack Class="stack-item">Item 3</BitStack>
-                     </BitStack>
-                 </div>
-             </ExamplePreview>
-         </ComponentExampleBox>
-
-         <ComponentExampleBox Title="Gap" RazorCode="@example3RazorCode" Id="example4">
-             <ExamplePreview>
-                 <div style="color: white;">
-                     <BitStack Gap="1rem" Style="background-color: lightskyblue; height: 18rem;">
+                     <BitSlider Max="10"
+                                @bind-Value="@gap"
+                                Label="Change the gap between child items:" />
+                     <br /><br />
+                     <BitStack Gap="@($"{gap}rem")" Style="background-color: lightskyblue; min-height: 18rem;">
                          <div class="item">Item 1</div>
                          <div class="item">Item 2</div>
                          <div class="item">Item 3</div>
@@ -67,25 +59,34 @@
              </ExamplePreview>
          </ComponentExampleBox>
 
-         <ComponentExampleBox Title="Width & Height" RazorCode="@example4RazorCode" Id="example4">
+         <ComponentExampleBox Title="Nested stack" RazorCode="@example3RazorCode" Id="example3">
              <ExamplePreview>
                  <div style="color: white;">
-                     <BitStack Height="18rem" Gap="0.5rem" Style="background-color: lightskyblue;">
-                         <BitStack Width="5rem" Style="background-color: dodgerblue;">Item 1</BitStack>
-                         <BitStack MinWidth="50%" Style="background-color: dodgerblue;">Item 2</BitStack>
-                         <BitStack MinHeight="48px" Style="background-color: dodgerblue;">Item 3</BitStack>
-                         <BitStack Width="100%" MaxWidth="8rem" Style="background-color: dodgerblue;">Item 5</BitStack>
-                         <BitStack Height="100%" MaxHeight="80px" Style="background-color: dodgerblue;">Item 4</BitStack>
+                     <BitStack Horizontal Gap="1rem" Style="background-color: lightskyblue; height: 10.5rem">
+                         <BitStack Horizontal Style="background-color: #a19f9d; height: 100%;">
+                             <div class="item">Item 1</div>
+                             <div class="item">Item 2</div>
+                             <div class="item">Item 3</div>
+                         </BitStack>
+                         <BitStack Horizontal Reversed Style="background-color: #605e5c; height: 100%;">
+                             <div class="item">Item 1</div>
+                             <div class="item">Item 2</div>
+                             <div class="item">Item 3</div>
+                         </BitStack>
+                         <BitStack Reversed Style="background-color: #323130; min-width: 10.5rem;">
+                             <div class="item">Item 1</div>
+                             <div class="item">Item 2</div>
+                             <div class="item">Item 3</div>
+                         </BitStack>
                      </BitStack>
                  </div>
              </ExamplePreview>
          </ComponentExampleBox>
 
-         <ComponentExampleBox Title="Alignment" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+         <ComponentExampleBox Title="Alignment" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
              <ExamplePreview>
                  <div style="color: white;">
-                     <BitStack Style="background-color: lightskyblue;"
-                               Height="18rem"
+                     <BitStack Style="background-color: lightskyblue; height: 18rem;"
                                Reversed="isReversed"
                                Horizontal="isHorizontal"
                                VerticalAlign="verticalAlign"
@@ -133,30 +134,14 @@
              </ExamplePreview>
          </ComponentExampleBox>
 
-         <ComponentExampleBox Title="Padding" RazorCode="@example6RazorCode" Id="example6">
+         <ComponentExampleBox Title="Wrap" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
              <ExamplePreview>
-                 <div style="color: white;">
-                     <BitStack Padding="1rem" Height="18rem" Style="background-color: lightskyblue;">
-                         <div class="item">Item 1</div>
-                         <div class="item">Item 2</div>
-                         <div class="item">Item 3</div>
-                     </BitStack>
-                 </div>
-             </ExamplePreview>
-         </ComponentExampleBox>
-
-         <ComponentExampleBox Title="Wrap" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-             <ExamplePreview>
-                 <div style="color: white;">
-                     <BitSlider Max="18"
-                                @bind-Value="@stackHeight"
-                                Label="Change the stack height to see how child items wrap onto multiple rows:" />
-                     <br /><br />
-                     <BitStack Wrap
-                               Padding="1rem"
-                               MinWidth="max-content"
-                               Height="@($"{stackHeight}rem")"
-                               Style="background-color: lightskyblue;">
+                 <BitSlider Max="18"
+                            @bind-Value="@stackHeight"
+                            Label="Change the stack height to see how child items wrap onto multiple rows:" />
+                 <br /><br />
+                 <div style="color: white; overflow: auto;">
+                     <BitStack Wrap Style="@($"height: {stackHeight}rem; background-color: lightskyblue; min-width: max-content;")">
                          @for (int i = 0; i < 20; i++)
                         {
                             var index = i;
@@ -167,59 +152,26 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Fill" RazorCode="@example8RazorCode" Id="example8">
+        <ComponentExampleBox Title="Disable shrink" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <ExamplePreview>
                 <div style="color: white;">
-                    <BitStack Gap="1rem" Height="18rem" Style="background-color: lightskyblue;">
-                        <BitStack HorizontalFill
-                                   Padding="0.5rem"
-                                   Style="background-color: dodgerblue;"
-                                   VerticalAlign="BitStackAlignment.Center"
-                                   HorizontalAlign="BitStackAlignment.Center">
-                             Horizontal fill
-                         </BitStack>
-                         <BitStack Padding="0.5rem"
-                                   Style="background-color: dodgerblue;"
-                                   VerticalAlign="BitStackAlignment.Center"
-                                   HorizontalAlign="BitStackAlignment.Center">
-                             Normal
-                         </BitStack>
-                         <BitStack VerticalFill
-                                   Padding="0.5rem"
-                                   Style="background-color: dodgerblue;"
-                                   VerticalAlign="BitStackAlignment.Center"
-                                   HorizontalAlign="BitStackAlignment.Center">
-                             Vertical fill
-                         </BitStack>
-                     </BitStack>
-                 </div>
-             </ExamplePreview>
-         </ComponentExampleBox>
-
-         <ComponentExampleBox Title="Disable shrink" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-             <ExamplePreview>
-                 <div style="color: white;">
-                     <BitSlider Max="12"
-                                @bind-Value="@shrinkStackHeight"
-                                Label="Change the stack height to see how child items shrink:" />
-                     <br /><br />
-                     <BitStack Gap="0.5rem"
-                               Height="@($"{shrinkStackHeight}rem")"
-                               Style="background-color: lightskyblue; overflow:hidden;">
-                         <BitStack HorizontalFill
-                                   Class="stack-item"
-                                   VerticalAlign="BitStackAlignment.Center"
-                                   HorizontalAlign="BitStackAlignment.Center">
-                             I will shrink
-                         </BitStack>
-                         <BitStack HorizontalFill DisableShrink
-                                   Class="stack-item"
-                                   VerticalAlign="BitStackAlignment.Center"
-                                   HorizontalAlign="BitStackAlignment.Center">
+                    <BitSlider Max="12"
+                               @bind-Value="@shrinkStackHeight"
+                               Label="Change the stack height to see how child items shrink:" />
+                    <br /><br />
+                    <BitStack Gap="0.5rem" Style="@($"height: {shrinkStackHeight}rem; background-color: lightskyblue; overflow:hidden;")">
+                        <BitStack Class="stack-item"
+                                  VerticalAlign="BitStackAlignment.Center"
+                                  HorizontalAlign="BitStackAlignment.Center">
+                            I will shrink
+                        </BitStack>
+                        <BitStack DisableShrink
+                                  Class="stack-item"
+                                  VerticalAlign="BitStackAlignment.Center"
+                                  HorizontalAlign="BitStackAlignment.Center">
                              I will not shrink
                          </BitStack>
-                         <BitStack HorizontalFill
-                                   Class="stack-item"
+                         <BitStack Class="stack-item"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              I will shrink
@@ -229,32 +181,26 @@
              </ExamplePreview>
          </ComponentExampleBox>
 
-         <ComponentExampleBox Title="Grow" RazorCode="@example10RazorCode" Id="example10">
+         <ComponentExampleBox Title="Grow" RazorCode="@example7RazorCode" Id="example7">
              <ExamplePreview>
                  <BitLabel>The "Grows" parameter sets flex-grow to 1, while "Grow" accepts customizable values for more flexibility.</BitLabel>
                  <br />
                  <div style="color: white;">
-                     <BitStack Gap="0.5rem"
-                               Height="18rem"
-                               Padding="0.5rem"
-                               Style="background-color: lightskyblue;">
-                         <BitStack HorizontalFill
-                                   Grow="3"
-                                   Style="background-color: dodgerblue;"
+                     <BitStack Gap="0.5rem" Style="background-color: lightskyblue; padding: 0.5rem; height: 18rem;">
+                         <BitStack Grow="3"
+                                   Style="background-color: dodgerblue; width: 100%"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Grow is 3
                          </BitStack>
-                         <BitStack HorizontalFill
-                                   Grow="2"
-                                   Style="background-color: dodgerblue;"
+                         <BitStack Grow="2"
+                                   Style="background-color: dodgerblue; width: 100%"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Grow is 2
                          </BitStack>
-                         <BitStack HorizontalFill
-                                   Grow="1"
-                                   Style="background-color: dodgerblue;"
+                         <BitStack Grow="1"
+                                   Style="background-color: dodgerblue; width: 100%"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Grow is 1
@@ -263,23 +209,19 @@
                      <br /> <br />
                      <BitStack Horizontal
                                Gap="0.5rem"
-                               Height="18rem"
-                               Padding="0.5rem"
-                               Style="background-color: lightskyblue;">
-                         <BitStack VerticalFill
-                                   Style="background-color: dodgerblue;"
+                               Style="background-color: lightskyblue; padding: 0.5rem; height: 18rem;">
+                         <BitStack Style="background-color: dodgerblue; height: 100%;"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Item 3
                          </BitStack>
-                         <BitStack Grows VerticalFill
-                                   Style="background-color: dodgerblue;"
+                         <BitStack Grows
+                                   Style="background-color: dodgerblue; height: 100%;"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Item 2 (Grows)
                          </BitStack>
-                         <BitStack VerticalFill
-                                   Style="background-color: dodgerblue;"
+                         <BitStack Style="background-color: dodgerblue; height: 100%;"
                                    VerticalAlign="BitStackAlignment.Center"
                                    HorizontalAlign="BitStackAlignment.Center">
                              Item 1

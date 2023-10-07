@@ -9,8 +9,10 @@
     }
 
     .stack-item {
-        width: 3.5rem;
         height: 3.5rem;
+        padding: 0 1rem;
+        min-width: 3.5rem;
+        white-space: nowrap;
         background-color: dodgerblue;
     }
 }

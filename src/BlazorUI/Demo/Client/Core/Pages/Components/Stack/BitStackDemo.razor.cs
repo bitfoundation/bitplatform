@@ -47,13 +47,6 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "Height",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the height of the Stack."
-        },
-        new()
-        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
@@ -70,41 +63,6 @@ public partial class BitStackDemo
         },
         new()
         {
-            Name = "MaxHeight",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the maximum height that the Stack can take."
-        },
-        new()
-        {
-            Name = "MaxWidth",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the maximum width that the Stack can take."
-        },
-        new()
-        {
-            Name = "MinHeight",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the minimum height that the Stack can take."
-        },
-        new()
-        {
-            Name = "MinWidth",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the minimum width that the Stack can take."
-        },
-        new()
-        {
-            Name = "Padding",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the inner padding of the Stack."
-        },
-        new()
-        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
@@ -118,20 +76,6 @@ public partial class BitStackDemo
             Description = "Defines whether to render Stack children vertically.",
             Href = "#bitStackAlignment-enum",
             LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "VerticalFill",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Defines whether the Stack should take up 100% of the height of its parent. This property is required to be set to true when using the grow flag on children in vertical oriented Stacks. Stacks are rendered as block elements and grow horizontally to the container already."
-        },
-        new()
-        {
-            Name = "Width",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Defines the width of the Stack."
         },
         new()
         {
@@ -202,6 +146,8 @@ public partial class BitStackDemo
     private BitStackAlignment verticalAlign;
     private BitStackAlignment horizontalAlign;
 
+    private double? gap = 1;
+
     private double? stackHeight = 18;
 
     private double? shrinkStackHeight = 12;
@@ -234,21 +180,6 @@ public partial class BitStackDemo
 </BitStack>";
 
     private readonly string example2RazorCode = @"
-<style>
-    .stack-item {
-        width: 3.5rem;
-        height: 3.5rem;
-        background-color: dodgerblue;
-    }
-</style>
-
-<BitStack Style=""background-color: lightskyblue;"">
-    <BitStack Class=""stack-item"">Item 1</BitStack>
-    <BitStack Class=""stack-item"">Item 2</BitStack>
-    <BitStack Class=""stack-item"">Item 3</BitStack>
-</BitStack>";
-
-    private readonly string example3RazorCode = @"
 
 <style>
     .item {
@@ -261,22 +192,20 @@ public partial class BitStackDemo
     }
 </style>
 
-<BitStack Gap=""1rem"" Style=""background-color: lightskyblue; height: 18rem;"">
+<BitSlider Max=""10""
+           @bind-Value=""@gap""
+           Label=""Change the gap between child items:"" />
+
+<BitStack Gap=""@($""{gap}rem"")"" Style=""background-color: lightskyblue; min-height: 18rem;"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
 </BitStack>";
+    private readonly string example2CsharpCode = @"
+private double? gap = 1;
+";
 
-    private readonly string example4RazorCode = @"
-<BitStack Height=""18rem"" Gap=""0.5rem"" Style=""background-color: lightskyblue;"">
-    <BitStack Width=""5rem"" Style=""background-color: dodgerblue;"">Item 1</BitStack>
-    <BitStack MinWidth=""50%"" Style=""background-color: dodgerblue;"">Item 2</BitStack>
-    <BitStack MinHeight=""48px"" Style=""background-color: dodgerblue;"">Item 3</BitStack>
-    <BitStack Width=""100%"" MaxWidth=""8rem"" Style=""background-color: dodgerblue;"">Item 5</BitStack>
-    <BitStack Height=""100%"" MaxHeight=""80px"" Style=""background-color: dodgerblue;"">Item 4</BitStack>
-</BitStack>";
-
-    private readonly string example5RazorCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .item {
         display: flex;
@@ -288,8 +217,37 @@ public partial class BitStackDemo
     }
 </style>
 
-<BitStack Style=""background-color: lightskyblue;""
-          Height=""18rem""
+<BitStack Horizontal Gap=""1rem"" Style=""background-color: lightskyblue; height: 10.5rem"">
+    <BitStack Horizontal Style=""background-color: #a19f9d; height: 100%;"">
+        <div class=""item"">Item 1</div>
+        <div class=""item"">Item 2</div>
+        <div class=""item"">Item 3</div>
+    </BitStack>
+    <BitStack Horizontal Reversed Style=""background-color: #605e5c; height: 100%;"">
+        <div class=""item"">Item 1</div>
+        <div class=""item"">Item 2</div>
+        <div class=""item"">Item 3</div>
+    </BitStack>
+    <BitStack Reversed Style=""background-color: #323130; min-width: 10.5rem;"">
+        <div class=""item"">Item 1</div>
+        <div class=""item"">Item 2</div>
+        <div class=""item"">Item 3</div>
+    </BitStack>
+</BitStack>";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .item {
+        display: flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        background-color: dodgerblue;
+    }
+</style>
+
+<BitStack Style=""background-color: lightskyblue; height: 18rem;""
           Reversed=""isReversed""
           Horizontal=""isHorizontal""
           VerticalAlign=""verticalAlign""
@@ -333,32 +291,14 @@ public partial class BitStackDemo
     <BitChoiceGroupOption Text=""Baseline"" Value=""BitStackAlignment.Baseline"" />
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitStackAlignment.Stretch"" />
 </BitChoiceGroup>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool isReversed;
 private bool isHorizontal;
 private BitStackAlignment verticalAlign;
 private BitStackAlignment horizontalAlign;
 ";
 
-    private readonly string example6RazorCode = @"
-<style>
-    .item {
-        display: flex;
-        width: 3.5rem;
-        height: 3.5rem;
-        align-items: center;
-        justify-content: center;
-        background-color: dodgerblue;
-    }
-</style>
-
-<BitStack Padding=""1rem"" Height=""18rem"" Style=""background-color: lightskyblue;"">
-    <div class=""item"">Item 1</div>
-    <div class=""item"">Item 2</div>
-    <div class=""item"">Item 3</div>
-</BitStack>";
-
-    private readonly string example7RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .item {
         display: flex;
@@ -374,50 +314,24 @@ private BitStackAlignment horizontalAlign;
            @bind-Value=""@stackHeight""
            Label=""Change the stack height to see how child items wrap onto multiple rows:"" />
 
-<BitStack Wrap
-          Padding=""1rem""
-          MinWidth=""max-content""
-          Height=""@($""{stackHeight}rem"")""
-          Style=""background-color: lightskyblue;"">
+<BitStack Wrap Style=""@($""height: {stackHeight}rem; background-color: lightskyblue; min-width: max-content;"")"">
     @for (int i = 0; i < 20; i++)
     {
         var index = i;
         <div class=""item"">Item @index</div>
     }
 </BitStack>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private double? stackHeight = 18;
 ";
 
-    private readonly string example8RazorCode = @"
-<BitStack Gap=""1rem"" Height=""18rem"" Style=""background-color: lightskyblue;"">
-    <BitStack HorizontalFill
-              Padding=""0.5rem""
-              Style=""background-color: dodgerblue;""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
-        Horizontal fill
-    </BitStack>
-    <BitStack Padding=""0.5rem""
-              Style=""background-color: dodgerblue;""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
-        Normal
-    </BitStack>
-    <BitStack VerticalFill
-              Padding=""0.5rem""
-              Style=""background-color: dodgerblue;""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
-        Vertical fill
-    </BitStack>
-</BitStack>";
-
-    private readonly string example9RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .stack-item {
-        width: 3.5rem;
         height: 3.5rem;
+        padding: 0 1rem;
+        min-width: 3.5rem;
+        white-space: nowrap;
         background-color: dodgerblue;
     }
 </style>
@@ -425,55 +339,45 @@ private double? stackHeight = 18;
 <BitSlider Max=""12""
            @bind-Value=""@shrinkStackHeight""
            Label=""Change the stack height to see how child items shrink:"" />
-<br /><br />
-<BitStack Gap=""0.5rem""
-          Height=""@($""{shrinkStackHeight}rem"")""
-          Style=""background-color: lightskyblue; overflow:hidden;"">
-    <BitStack HorizontalFill
-              Class=""stack-item""
+
+<BitStack Gap=""0.5rem"" Style=""@($""height: {shrinkStackHeight}rem; background-color: lightskyblue; overflow:hidden;"")"">
+    <BitStack Class=""stack-item""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         I will shrink
     </BitStack>
-    <BitStack HorizontalFill DisableShrink
+    <BitStack DisableShrink
               Class=""stack-item""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         I will not shrink
     </BitStack>
-    <BitStack HorizontalFill
-              Class=""stack-item""
+    <BitStack Class=""stack-item""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         I will shrink
     </BitStack>
 </BitStack>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private double? shrinkStackHeight = 12;
 ";
 
-    private readonly string example10RazorCode = @"
-<BitStack Gap=""0.5rem""
-          Height=""18rem""
-          Padding=""0.5rem""
-          Style=""background-color: lightskyblue;"">
-    <BitStack HorizontalFill
-              Grow=""3""
-              Style=""background-color: dodgerblue;""
+    private readonly string example7RazorCode = @"
+<BitStack Gap=""0.5rem"" Style=""background-color: lightskyblue; padding: 0.5rem; height: 18rem;"">
+    <BitStack Grow=""3""
+              Style=""background-color: dodgerblue; width: 100%""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Grow is 3
     </BitStack>
-    <BitStack HorizontalFill
-              Grow=""2""
-              Style=""background-color: dodgerblue;""
+    <BitStack Grow=""2""
+              Style=""background-color: dodgerblue; width: 100%""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Grow is 2
     </BitStack>
-    <BitStack HorizontalFill
-              Grow=""1""
-              Style=""background-color: dodgerblue;""
+    <BitStack Grow=""1""
+              Style=""background-color: dodgerblue; width: 100%""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Grow is 1
@@ -482,23 +386,19 @@ private double? shrinkStackHeight = 12;
 
 <BitStack Horizontal
           Gap=""0.5rem""
-          Height=""18rem""
-          Padding=""0.5rem""
-          Style=""background-color: lightskyblue;"">
-    <BitStack VerticalFill
-              Style=""background-color: dodgerblue;""
+          Style=""background-color: lightskyblue; padding: 0.5rem; height: 18rem;"">
+    <BitStack Style=""background-color: dodgerblue; height: 100%;""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Item 3
     </BitStack>
-    <BitStack Grows VerticalFill
-              Style=""background-color: dodgerblue;""
+    <BitStack Grows
+              Style=""background-color: dodgerblue; height: 100%;""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Item 2 (Grows)
     </BitStack>
-    <BitStack VerticalFill
-              Style=""background-color: dodgerblue;""
+    <BitStack Style=""background-color: dodgerblue; height: 100%;""
               VerticalAlign=""BitStackAlignment.Center""
               HorizontalAlign=""BitStackAlignment.Center"">
         Item 1
