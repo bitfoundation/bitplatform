@@ -384,6 +384,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Stack/BitStackDemo.razor.css",
+        "inputFile": "Pages/Components/Stack/BitStackDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Sticky/BitStickyDemo.razor.css",
         "inputFile": "Pages/Components/Sticky/BitStickyDemo.razor.scss",
         "minify": { "enabled": false },

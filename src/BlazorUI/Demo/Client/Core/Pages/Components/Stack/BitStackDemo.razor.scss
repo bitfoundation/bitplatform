@@ -1,0 +1,16 @@
+﻿::deep {
+    .item {
+        display: flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        background-color: dodgerblue;
+    }
+
+    .stack-item {
+        width: 3.5rem;
+        height: 3.5rem;
+        background-color: dodgerblue;
+    }
+}
