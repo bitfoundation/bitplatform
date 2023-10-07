@@ -161,7 +161,7 @@ public static class BitIconName
     public static string BeerMug = nameof(BeerMug);
     public static string BIDashboard = nameof(BIDashboard);
     public static string BidiLtr = nameof(BidiLtr);
-    public static string BidiRectional = nameof(BidiRectional);
+    public static string Bidirectional = nameof(Bidirectional);
     public static string BidiRtl = nameof(BidiRtl);
     public static string Bill = nameof(Bill);
     public static string BingLogo = nameof(BingLogo);
