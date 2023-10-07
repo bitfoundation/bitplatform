@@ -146,6 +146,10 @@ public static class BitIconName
     public static string Balloons = nameof(Balloons);
     public static string Bank = nameof(Bank);
     public static string BankSolid = nameof(BankSolid);
+    public static string BarChart3 = nameof(BarChart3);
+    public static string BarChart3One = nameof(BarChart3One);
+    public static string BarChart3Two = nameof(BarChart3Two);
+    public static string BarChart3Zero = nameof(BarChart3Zero);
     public static string BarChart4 = nameof(BarChart4);
     public static string BarChartHorizontal = nameof(BarChartHorizontal);
     public static string BarChartVertical = nameof(BarChartVertical);
@@ -157,6 +161,7 @@ public static class BitIconName
     public static string BeerMug = nameof(BeerMug);
     public static string BIDashboard = nameof(BIDashboard);
     public static string BidiLtr = nameof(BidiLtr);
+    public static string Bidirectional = nameof(Bidirectional);
     public static string BidiRtl = nameof(BidiRtl);
     public static string Bill = nameof(Bill);
     public static string BingLogo = nameof(BingLogo);
@@ -183,7 +188,7 @@ public static class BitIconName
     public static string BoldKorean = nameof(BoldKorean);
     public static string BoldN = nameof(BoldN);
     public static string BoldP = nameof(BoldP);
-    public static string BoldRussian = nameof(BoldRussian);
+    public static string BoldRussion = nameof(BoldRussion);
     public static string BoldSerbian = nameof(BoldSerbian);
     public static string BoldT = nameof(BoldT);
     public static string BookAnswers = nameof(BookAnswers);
@@ -215,6 +220,7 @@ public static class BitIconName
     public static string BranchShelveset = nameof(BranchShelveset);
     public static string Breadcrumb = nameof(Breadcrumb);
     public static string Breakfast = nameof(Breakfast);
+    public static string BreakpointsRemove = nameof(BreakpointsRemove);
     public static string Brightness = nameof(Brightness);
     public static string Broom = nameof(Broom);
     public static string BrowserScreenShot = nameof(BrowserScreenShot);
@@ -321,6 +327,7 @@ public static class BitIconName
     public static string CaretTopRightSolid8 = nameof(CaretTopRightSolid8);
     public static string CaretUp8 = nameof(CaretUp8);
     public static string CaretUpSolid8 = nameof(CaretUpSolid8);
+    public static string CaseSetting = nameof(CaseSetting);
     public static string Cat = nameof(Cat);
     public static string CategoryClassification = nameof(CategoryClassification);
     public static string CC = nameof(CC);
@@ -436,6 +443,7 @@ public static class BitIconName
     public static string ClearSelectionMirrored = nameof(ClearSelectionMirrored);
     public static string Clicked = nameof(Clicked);
     public static string ClinicalImpression = nameof(ClinicalImpression);
+    public static string Clipboard = nameof(Clipboard);
     public static string ClipboardList = nameof(ClipboardList);
     public static string ClipboardListAdd = nameof(ClipboardListAdd);
     public static string ClipboardListMirrored = nameof(ClipboardListMirrored);
@@ -478,6 +486,7 @@ public static class BitIconName
     public static string ColumnFunction = nameof(ColumnFunction);
     public static string ColumnLeftTwoThirds = nameof(ColumnLeftTwoThirds);
     public static string ColumnLeftTwoThirdsEdit = nameof(ColumnLeftTwoThirdsEdit);
+    public static string ColumnList = nameof(ColumnList);
     public static string ColumnOptions = nameof(ColumnOptions);
     public static string ColumnQuestion = nameof(ColumnQuestion);
     public static string ColumnQuestionMirrored = nameof(ColumnQuestionMirrored);
@@ -501,6 +510,8 @@ public static class BitIconName
     public static string CommunicationDetails = nameof(CommunicationDetails);
     public static string CommunicationDetailsMirrored = nameof(CommunicationDetailsMirrored);
     public static string Communications = nameof(Communications);
+    public static string CompactColumnList = nameof(CompactColumnList);
+    public static string CompactViewList = nameof(CompactViewList);
     public static string CompanyDirectory = nameof(CompanyDirectory);
     public static string CompanyDirectoryMirrored = nameof(CompanyDirectoryMirrored);
     public static string Compare = nameof(Compare);
@@ -533,6 +544,7 @@ public static class BitIconName
     public static string Contrast = nameof(Contrast);
     public static string Copy = nameof(Copy);
     public static string CopyEdit = nameof(CopyEdit);
+    public static string CopyPath = nameof(CopyPath);
     public static string CortanaLogoBeckonInner = nameof(CortanaLogoBeckonInner);
     public static string CortanaLogoBeckonOuter = nameof(CortanaLogoBeckonOuter);
     public static string CortanaLogoInner = nameof(CortanaLogoInner);
@@ -581,6 +593,7 @@ public static class BitIconName
     public static string D365TalentInsight = nameof(D365TalentInsight);
     public static string D365TalentLearn = nameof(D365TalentLearn);
     public static string DashboardAdd = nameof(DashboardAdd);
+    public static string DataAnalysis = nameof(DataAnalysis);
     public static string Database = nameof(Database);
     public static string DatabaseActivity = nameof(DatabaseActivity);
     public static string DatabaseBlock = nameof(DatabaseBlock);
@@ -591,16 +604,20 @@ public static class BitIconName
     public static string DatabaseView = nameof(DatabaseView);
     public static string DataConnectionLibrary = nameof(DataConnectionLibrary);
     public static string DataEnrichment = nameof(DataEnrichment);
+    public static string DataFilter = nameof(DataFilter);
     public static string DataFlow = nameof(DataFlow);
     public static string Dataflows = nameof(Dataflows);
     public static string DataflowsLink = nameof(DataflowsLink);
     public static string DataManagementSettings = nameof(DataManagementSettings);
+    public static string DatamartExternal = nameof(DatamartExternal);
     public static string Dataverse = nameof(Dataverse);
     public static string DateTime = nameof(DateTime);
     public static string DateTime12 = nameof(DateTime12);
     public static string DateTime2 = nameof(DateTime2);
     public static string DateTimeMirrored = nameof(DateTimeMirrored);
     public static string DeactivateOrders = nameof(DeactivateOrders);
+    public static string Debug = nameof(Debug);
+    public static string DebugAll = nameof(DebugAll);
     public static string Decimals = nameof(Decimals);
     public static string DecisionSolid = nameof(DecisionSolid);
     public static string DeclineCall = nameof(DeclineCall);
@@ -644,9 +661,12 @@ public static class BitIconName
     public static string Devices3 = nameof(Devices3);
     public static string Devices4 = nameof(Devices4);
     public static string Diagnostic = nameof(Diagnostic);
+    public static string DiagnosticDataBar = nameof(DiagnosticDataBar);
     public static string DiagnosticDataBarTooltip = nameof(DiagnosticDataBarTooltip);
     public static string DiagnosticDataViewerApp = nameof(DiagnosticDataViewerApp);
     public static string Dialpad = nameof(Dialpad);
+    public static string DialShape1 = nameof(DialShape1);
+    public static string DialShape3 = nameof(DialShape3);
     public static string Diamond = nameof(Diamond);
     public static string DiamondSolid = nameof(DiamondSolid);
     public static string DiamondUser = nameof(DiamondUser);
@@ -660,6 +680,7 @@ public static class BitIconName
     public static string DisconnectVirtualMachine = nameof(DisconnectVirtualMachine);
     public static string Dislike = nameof(Dislike);
     public static string DislikeSolid = nameof(DislikeSolid);
+    public static string Distance = nameof(Distance);
     public static string DistributeDown = nameof(DistributeDown);
     public static string DockLeft = nameof(DockLeft);
     public static string DockLeftMirrored = nameof(DockLeftMirrored);
@@ -695,6 +716,7 @@ public static class BitIconName
     public static string DoubleColumnEdit = nameof(DoubleColumnEdit);
     public static string DoubleDownArrow = nameof(DoubleDownArrow);
     public static string Down = nameof(Down);
+    public static string DownKey = nameof(DownKey);
     public static string Download = nameof(Download);
     public static string DownloadDocument = nameof(DownloadDocument);
     public static string DragObject = nameof(DragObject);
@@ -1121,6 +1143,7 @@ public static class BitIconName
     public static string LearningTools = nameof(LearningTools);
     public static string Leave = nameof(Leave);
     public static string LeaveUser = nameof(LeaveUser);
+    public static string LeftKey = nameof(LeftKey);
     public static string Library = nameof(Library);
     public static string LibraryAddTo = nameof(LibraryAddTo);
     public static string Lifesaver = nameof(Lifesaver);
@@ -1443,6 +1466,7 @@ public static class BitIconName
     public static string PeopleExternalShare = nameof(PeopleExternalShare);
     public static string PeoplePause = nameof(PeoplePause);
     public static string PeopleRepeat = nameof(PeopleRepeat);
+    public static string PeopleSettings = nameof(PeopleSettings);
     public static string Permissions = nameof(Permissions);
     public static string PermissionsSolid = nameof(PermissionsSolid);
     public static string Personalize = nameof(Personalize);
@@ -1471,9 +1495,13 @@ public static class BitIconName
     public static string PieSingleSolid = nameof(PieSingleSolid);
     public static string Pill = nameof(Pill);
     public static string Pin = nameof(Pin);
+    public static string PinNavMenu = nameof(PinNavMenu);
     public static string Pinned = nameof(Pinned);
     public static string PinnedFill = nameof(PinnedFill);
     public static string PinnedSolid = nameof(PinnedSolid);
+    public static string PinOff = nameof(PinOff);
+    public static string PinOffSolid = nameof(PinOffSolid);
+    public static string PinSolid = nameof(PinSolid);
     public static string PinSolid12 = nameof(PinSolid12);
     public static string PinSolidOff12 = nameof(PinSolidOff12);
     public static string PinToTab = nameof(PinToTab);
@@ -1642,6 +1670,7 @@ public static class BitIconName
     public static string RemoveContent = nameof(RemoveContent);
     public static string RemoveEvent = nameof(RemoveEvent);
     public static string RemoveFilter = nameof(RemoveFilter);
+    public static string RemoveFrom = nameof(RemoveFrom);
     public static string RemoveFromShoppingList = nameof(RemoveFromShoppingList);
     public static string RemoveFromTrash = nameof(RemoveFromTrash);
     public static string RemoveLink = nameof(RemoveLink);
@@ -1701,6 +1730,7 @@ public static class BitIconName
     public static string Ribbon2 = nameof(Ribbon2);
     public static string RibbonSolid = nameof(RibbonSolid);
     public static string RightDoubleQuote = nameof(RightDoubleQuote);
+    public static string RightKey = nameof(RightKey);
     public static string RightTriangle = nameof(RightTriangle);
     public static string Ringer = nameof(Ringer);
     public static string RingerActive = nameof(RingerActive);
@@ -1715,6 +1745,7 @@ public static class BitIconName
     public static string Rotate90CounterClockwise = nameof(Rotate90CounterClockwise);
     public static string RowsChild = nameof(RowsChild);
     public static string RowsGroup = nameof(RowsGroup);
+    public static string RssFeed = nameof(RssFeed);
     public static string Rugby = nameof(Rugby);
     public static string Running = nameof(Running);
     public static string Sad = nameof(Sad);
@@ -1723,6 +1754,7 @@ public static class BitIconName
     public static string Save = nameof(Save);
     public static string SaveAll = nameof(SaveAll);
     public static string SaveAndClose = nameof(SaveAndClose);
+    public static string SaveAndPublish = nameof(SaveAndPublish);
     public static string SaveAs = nameof(SaveAs);
     public static string SavedOffline = nameof(SavedOffline);
     public static string SaveTemplate = nameof(SaveTemplate);
@@ -1790,6 +1822,7 @@ public static class BitIconName
     public static string ShieldSolid = nameof(ShieldSolid);
     public static string Shirt = nameof(Shirt);
     public static string Shop = nameof(Shop);
+    public static string ShopBrand = nameof(ShopBrand);
     public static string ShoppingCart = nameof(ShoppingCart);
     public static string ShoppingCartSolid = nameof(ShoppingCartSolid);
     public static string ShopServer = nameof(ShopServer);
@@ -1866,10 +1899,12 @@ public static class BitIconName
     public static string Squalls = nameof(Squalls);
     public static string SquareShape = nameof(SquareShape);
     public static string SquareShapeSolid = nameof(SquareShapeSolid);
+    public static string SslCertificate = nameof(SslCertificate);
     public static string Stack = nameof(Stack);
     public static string StackColumnChart = nameof(StackColumnChart);
     public static string StackedBarChart = nameof(StackedBarChart);
     public static string StackedBarChartFull = nameof(StackedBarChartFull);
+    public static string StackedBarChartFullSettings = nameof(StackedBarChartFullSettings);
     public static string StackedColumnChart2 = nameof(StackedColumnChart2);
     public static string StackedColumnChart2Fill = nameof(StackedColumnChart2Fill);
     public static string StackedLineChart = nameof(StackedLineChart);
@@ -1899,7 +1934,11 @@ public static class BitIconName
     public static string StatusTriangleInner = nameof(StatusTriangleInner);
     public static string StatusTriangleOuter = nameof(StatusTriangleOuter);
     public static string Step = nameof(Step);
+    public static string StepBackward = nameof(StepBackward);
     public static string StepInsert = nameof(StepInsert);
+    public static string StepInto = nameof(StepInto);
+    public static string StepOut = nameof(StepOut);
+    public static string StepOver = nameof(StepOver);
     public static string StepShared = nameof(StepShared);
     public static string StepSharedAdd = nameof(StepSharedAdd);
     public static string StepSharedInsert = nameof(StepSharedInsert);
@@ -1982,6 +2021,7 @@ public static class BitIconName
     public static string TagUnknown12 = nameof(TagUnknown12);
     public static string TagUnknown12Mirror = nameof(TagUnknown12Mirror);
     public static string TagUnknownMirror = nameof(TagUnknownMirror);
+    public static string Task = nameof(Task);
     public static string TaskAdd = nameof(TaskAdd);
     public static string Taskboard = nameof(Taskboard);
     public static string TaskGroup = nameof(TaskGroup);
@@ -2042,6 +2082,7 @@ public static class BitIconName
     public static string Tiles = nameof(Tiles);
     public static string Tiles2 = nameof(Tiles2);
     public static string TimeEntry = nameof(TimeEntry);
+    public static string TimeEntryTemplate = nameof(TimeEntryTemplate);
     public static string Timeline = nameof(Timeline);
     public static string TimelineDelivery = nameof(TimelineDelivery);
     public static string TimelineMatrixView = nameof(TimelineMatrixView);
@@ -2102,6 +2143,7 @@ public static class BitIconName
     public static string Trophy2 = nameof(Trophy2);
     public static string Trophy2Solid = nameof(Trophy2Solid);
     public static string TurnRight = nameof(TurnRight);
+    public static string TurnUserLeft = nameof(TurnUserLeft);
     public static string TVMonitor = nameof(TVMonitor);
     public static string TVMonitorSelected = nameof(TVMonitorSelected);
     public static string TypeScriptLanguage = nameof(TypeScriptLanguage);
@@ -2142,6 +2184,7 @@ public static class BitIconName
     public static string Up = nameof(Up);
     public static string UpdateRestore = nameof(UpdateRestore);
     public static string UpgradeAnalysis = nameof(UpgradeAnalysis);
+    public static string UpKey = nameof(UpKey);
     public static string Upload = nameof(Upload);
     public static string UpperCase = nameof(UpperCase);
     public static string URLBlock = nameof(URLBlock);
@@ -2200,6 +2243,7 @@ public static class BitIconName
     public static string VisualsStore = nameof(VisualsStore);
     public static string VisualStudioForWindows = nameof(VisualStudioForWindows);
     public static string VisualStudioForWindowsAlt = nameof(VisualStudioForWindowsAlt);
+    public static string VivaTopicApp = nameof(VivaTopicApp);
     public static string VoicemailForward = nameof(VoicemailForward);
     public static string VoicemailIRM = nameof(VoicemailIRM);
     public static string VoicemailReply = nameof(VoicemailReply);
@@ -2272,4 +2316,5 @@ public static class BitIconName
     public static string ZoomIn = nameof(ZoomIn);
     public static string ZoomOut = nameof(ZoomOut);
     public static string ZoomToFit = nameof(ZoomToFit);
+    public static string ZoomToFitAlt = nameof(ZoomToFitAlt);
 }
