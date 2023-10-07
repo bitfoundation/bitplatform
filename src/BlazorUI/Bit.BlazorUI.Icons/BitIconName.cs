@@ -1745,7 +1745,7 @@ public static class BitIconName
     public static string Rotate90CounterClockwise = nameof(Rotate90CounterClockwise);
     public static string RowsChild = nameof(RowsChild);
     public static string RowsGroup = nameof(RowsGroup);
-    public static string RSSFeed = nameof(RSSFeed);
+    public static string RssFeed = nameof(RssFeed);
     public static string Rugby = nameof(Rugby);
     public static string Running = nameof(Running);
     public static string Sad = nameof(Sad);
@@ -1899,7 +1899,7 @@ public static class BitIconName
     public static string Squalls = nameof(Squalls);
     public static string SquareShape = nameof(SquareShape);
     public static string SquareShapeSolid = nameof(SquareShapeSolid);
-    public static string SSLCertificate = nameof(SSLCertificate);
+    public static string SslCertificate = nameof(SslCertificate);
     public static string Stack = nameof(Stack);
     public static string StackColumnChart = nameof(StackColumnChart);
     public static string StackedBarChart = nameof(StackedBarChart);
