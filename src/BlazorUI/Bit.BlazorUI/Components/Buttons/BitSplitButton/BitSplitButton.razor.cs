@@ -184,8 +184,11 @@ public partial class BitSplitButton<TItem> where TItem : class
 
 
     protected override string RootElementClass => "bit-spl";
+
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsEnabled is false
                                       ? string.Empty
                                       : ButtonStyle == BitButtonStyle.Primary
@@ -194,6 +197,11 @@ public partial class BitSplitButton<TItem> where TItem : class
 
         ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
         ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : $"{RootElementClass}-cds");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()

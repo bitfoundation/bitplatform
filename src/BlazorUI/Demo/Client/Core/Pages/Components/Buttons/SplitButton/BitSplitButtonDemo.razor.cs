@@ -294,6 +294,13 @@ public partial class BitSplitButtonDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitSplitButton.",
+               },
+               new()
+               {
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",
