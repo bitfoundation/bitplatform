@@ -163,7 +163,7 @@ public partial class BitStack : BitComponentBase
             if (wrap == value) return;
 
             wrap = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
