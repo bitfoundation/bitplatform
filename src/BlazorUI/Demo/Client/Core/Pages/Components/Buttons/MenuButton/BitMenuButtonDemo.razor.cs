@@ -273,6 +273,13 @@ public partial class BitMenuButtonDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitMenuButton.",
+               },
+               new()
+               {
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",

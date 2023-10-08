@@ -3,6 +3,11 @@
 public class BitMenuButtonClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitMenuButton.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the callout container of the BitMenuButton.
     /// </summary>
     public string? Callout { get; set; }
