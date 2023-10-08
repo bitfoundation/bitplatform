@@ -156,8 +156,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
 
     protected override string RootElementClass => "bit-mnb";
+
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsEnabled is false
                                        ? string.Empty
                                        : ButtonStyle == BitButtonStyle.Primary
@@ -165,6 +168,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                                            : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
