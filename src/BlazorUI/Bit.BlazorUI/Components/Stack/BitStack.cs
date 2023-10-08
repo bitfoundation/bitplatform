@@ -4,6 +4,19 @@ namespace Bit.BlazorUI;
 
 public partial class BitStack : BitComponentBase
 {
+    private static readonly Dictionary<BitStackAlignment, string> _AlignmentMap = new()
+    {
+        { BitStackAlignment.Start, "flex-start" },
+        { BitStackAlignment.End, "flex-end" },
+        { BitStackAlignment.Center, "center" },
+        { BitStackAlignment.SpaceBetween, "space-between" },
+        { BitStackAlignment.SpaceAround, "space-around" },
+        { BitStackAlignment.SpaceEvenly, "space-evenly" },
+        { BitStackAlignment.Baseline, "baseline" },
+        { BitStackAlignment.Stretch, "stretch" },
+    };
+
+
     private string? gap;
     private string? grow;
     private bool wrap;
@@ -14,10 +27,7 @@ public partial class BitStack : BitComponentBase
     private BitStackAlignment verticalAlign = BitStackAlignment.Start;
     private BitStackAlignment horizontalAlign = BitStackAlignment.Start;
 
-    /// <summary>
-    /// The content of the Typography.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+
 
     /// <summary>
     /// Defines how to render the Stack.
@@ -25,24 +35,15 @@ public partial class BitStack : BitComponentBase
     [Parameter] public string As { get; set; } = "div";
 
     /// <summary>
-    /// Defines whether Stack children should not shrink to fit the available space.
+    /// The content of the Typography.
     /// </summary>
-    [Parameter] public bool DisableShrink
-    {
-        get => disableShrink;
-        set
-        {
-            if (disableShrink == value) return;
-
-            disableShrink = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Defines the spacing between Stack children.The property is specified as a value for 'row gap', followed optionally by a value for 'column gap'. If 'column gap' is omitted, it's set to the same value as 'row gap'.
+    /// Defines the spacing between Stack children.
     /// </summary>
-    [Parameter] public string? Gap
+    [Parameter]
+    public string? Gap
     {
         get => gap;
         set
@@ -57,7 +58,8 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Defines how much to grow the Stack in proportion to its siblings.
     /// </summary>
-    [Parameter] public string? Grow
+    [Parameter]
+    public string? Grow
     {
         get => grow;
         set
@@ -72,7 +74,8 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Defines how much to grow the Stack in proportion to its siblings.
     /// </summary>
-    [Parameter] public bool Grows
+    [Parameter]
+    public bool Grows
     {
         get => grows;
         set
@@ -87,7 +90,8 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
-    [Parameter] public bool Horizontal
+    [Parameter]
+    public bool Horizontal
     {
         get => horizontal;
         set
@@ -95,14 +99,15 @@ public partial class BitStack : BitComponentBase
             if (horizontal == value) return;
 
             horizontal = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
-    [Parameter] public BitStackAlignment HorizontalAlign
+    [Parameter]
+    public BitStackAlignment HorizontalAlign
     {
         get => horizontalAlign;
         set
@@ -110,14 +115,15 @@ public partial class BitStack : BitComponentBase
             if (horizontalAlign == value) return;
 
             horizontalAlign = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
     /// Defines whether to render Stack children in the opposite direction (bottom-to-top if it's a vertical Stack and right-to-left if it's a horizontal Stack).
     /// </summary>
-    [Parameter] public bool Reversed
+    [Parameter]
+    public bool Reversed
     {
         get => reversed;
         set
@@ -125,14 +131,15 @@ public partial class BitStack : BitComponentBase
             if (reversed == value) return;
 
             reversed = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
     /// Defines whether to render Stack children vertically.
     /// </summary>
-    [Parameter] public BitStackAlignment VerticalAlign
+    [Parameter]
+    public BitStackAlignment VerticalAlign
     {
         get => verticalAlign;
         set
@@ -140,14 +147,15 @@ public partial class BitStack : BitComponentBase
             if (verticalAlign == value) return;
 
             verticalAlign = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
     /// <summary>
     /// Defines whether Stack children should wrap onto multiple rows or columns when they are about to overflow the size of the Stack.
     /// </summary>
-    [Parameter] public bool Wrap
+    [Parameter]
+    public bool Wrap
     {
         get => wrap;
         set
@@ -155,7 +163,7 @@ public partial class BitStack : BitComponentBase
             if (wrap == value) return;
 
             wrap = value;
-            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
     }
 
@@ -163,48 +171,23 @@ public partial class BitStack : BitComponentBase
 
     protected override string RootElementClass => "bit-stc";
 
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => (DisableShrink ? $"{RootElementClass}-dsh" : string.Empty));
-
-        ClassBuilder.Register(() => $"{RootElementClass}-{(Horizontal ? "hrz" : "vrt")}");
-
-        ClassBuilder.Register(() => (Reversed ? $"{RootElementClass}-rvs" : string.Empty));
-                                    
-        ClassBuilder.Register(() => (Wrap ? $"{RootElementClass}-wrp" : string.Empty));
-
-        ClassBuilder.Register(() => HorizontalAlign switch
-        {
-            BitStackAlignment.Start => $"{RootElementClass}-hst",
-            BitStackAlignment.Center => $"{RootElementClass}-hct",
-            BitStackAlignment.End => $"{RootElementClass}-hen",
-            BitStackAlignment.SpaceBetween => $"{RootElementClass}-hsb",
-            BitStackAlignment.SpaceAround => $"{RootElementClass}-hsa",
-            BitStackAlignment.SpaceEvenly => $"{RootElementClass}-hse",
-            BitStackAlignment.Baseline => $"{RootElementClass}-hbl",
-            BitStackAlignment.Stretch => $"{RootElementClass}-hsr",
-            _ => string.Empty
-        });
-
-        ClassBuilder.Register(() => VerticalAlign switch
-        {
-            BitStackAlignment.Start => $"{RootElementClass}-vst",
-            BitStackAlignment.Center => $"{RootElementClass}-vct",
-            BitStackAlignment.End => $"{RootElementClass}-ven",
-            BitStackAlignment.SpaceBetween => $"{RootElementClass}-vsb",
-            BitStackAlignment.SpaceAround => $"{RootElementClass}-vsa",
-            BitStackAlignment.SpaceEvenly => $"{RootElementClass}-vse",
-            BitStackAlignment.Baseline => $"{RootElementClass}-vbl",
-            BitStackAlignment.Stretch => $"{RootElementClass}-vsr",
-            _ => string.Empty
-        });
-    }
-
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Gap.HasValue() ? $"gap: {Gap}" : string.Empty);
+        StyleBuilder.Register(register =>
+        {
+            register($"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : "")}");
 
-        StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow: {(Grow.HasValue() ? Grow : "1")}" : string.Empty);
+            register($"align-items:{_AlignmentMap[Horizontal ? VerticalAlign : HorizontalAlign]}");
+            register($"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign : VerticalAlign]}");
+
+            return string.Empty;
+        });
+
+        StyleBuilder.Register(() => Gap.HasValue() ? $"gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
+
+        StyleBuilder.Register(() => Wrap ? "flex-wrap:wrap" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
