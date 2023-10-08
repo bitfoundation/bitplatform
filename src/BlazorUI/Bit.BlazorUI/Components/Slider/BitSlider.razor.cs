@@ -402,12 +402,6 @@ public partial class BitSlider
     {
         if (ValueFormat.HasNoValue()) return $"{value}";
 
-        if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
-        {
-            int digitCount = $"{(Max - 1)}".Length;
-            return (value.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
-        }
-
         return value.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
     }
 
