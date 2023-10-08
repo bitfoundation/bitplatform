@@ -355,12 +355,12 @@ Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitButton Class=""bit-btn-slider"" OnClick=""ResetBitSliderRangedValues"">Reset value</BitButton>
 
 <BitSlider Label=""Formatted value""
-           Max=""1""
-           Step=""0.01""
-           ValueFormat=""0 %""
+           Max=""10""
+           Step=""0.1""
+           ValueFormat=""0.0 px""
            IsRanged=""true""
-           DefaultLowerValue=""0.69""
-           DefaultUpperValue=""0.85"" />
+           DefaultLowerValue=""4.2""
+           DefaultUpperValue=""8.5"" />
 
 <BitSlider Label=""Origin from zero""
            Min=""-5""
@@ -399,11 +399,11 @@ private void ResetBitSliderRangedValues()
            IsEnabled=""false"" />
 
 <BitSlider Label=""Formatted value""
-           Max=""1""
+           Max=""10""
            Step=""0.01""
-           ValueFormat=""0 %""
-           DefaultLowerValue=""0.69""
-           DefaultUpperValue=""0.85""
+           ValueFormat=""0.00 rem""
+           DefaultLowerValue=""4.20""
+           DefaultUpperValue=""6.9""
            IsRanged=""true""
            IsVertical=""true"" />
 
@@ -490,11 +490,9 @@ private void ResetBitSliderRangedValues()
                               Container = ""custom-container"" } )"" />
 
 <BitSlider IsRanged=""true"" 
-           Max=""1""
-           Step=""0.01""
-           ValueFormat=""0 %""
-           DefaultLowerValue=""0.69""
-           DefaultUpperValue=""0.85""
+           Max=""100""
+           DefaultLowerValue=""63""
+           DefaultUpperValue=""84""
            Classes=""@(new() { LowerValueInput = ""custom-input"",
                               UpperValueInput = ""custom-input"",
                               SliderBox = ""custom-slider-box"",
