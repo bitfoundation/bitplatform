@@ -89,52 +89,52 @@ public partial class BitToggleDemo
             {
                 new()
                 {
-                    Name = "Button",
+                    Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the button of the toggle."
-                },
-                new()
-                {
-                    Name = "Checked",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the checked state of the toggle."
-                },
-                new()
-                {
-                    Name = "Container",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the container of the toggle."
-                },
-                new()
-                {
-                    Name = "Thumb",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the thumb of the toggle."
+                    Description = "Custom CSS classes/styles for the root element of the BitToggle."
                 },
                 new()
                 {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the label of the toggle."
+                    Description = "Custom CSS classes/styles for the label of the BitToggle."
                 },
                 new()
                 {
-                    Name = "Root",
+                    Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the toggle's root element."
+                    Description = "Custom CSS classes/styles for the container of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Checked",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the checked state of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Thumb",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the thumb of the BitToggle."
                 },
                 new()
                 {
                     Name = "Text",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text of the toggle."
+                    Description = "Custom CSS classes/styles for the text of the BitToggle."
                 }
             }
         }
