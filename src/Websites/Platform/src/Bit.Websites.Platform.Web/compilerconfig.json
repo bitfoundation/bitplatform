@@ -12,12 +12,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/ContributePage.razor.css",
-        "inputFile": "Pages/Templates/ContributePage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Templates/DatabasePage.razor.css",
         "inputFile": "Pages/Templates/DatabasePage.razor.scss",
         "minify": { "enabled": false },
