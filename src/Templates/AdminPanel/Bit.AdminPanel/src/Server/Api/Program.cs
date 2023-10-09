@@ -7,6 +7,10 @@ if (OperatingSystem.IsWindows())
 {
     builder.WebHost.UseUrls("https://localhost:5031", "http://localhost:5030", "https://*:5031", "http://*:5030");
 }
+else
+{
+    builder.WebHost.UseUrls("https://localhost:5031", "http://localhost:5030");
+}
 #endif
 
 AdminPanel.Server.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);

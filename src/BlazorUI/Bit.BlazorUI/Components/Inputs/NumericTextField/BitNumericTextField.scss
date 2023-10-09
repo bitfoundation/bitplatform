@@ -68,13 +68,11 @@
     flex-flow: row nowrap;
     margin-right: spacing(1.25);
     justify-content: flex-start;
+}
 
-    .bit-icon {
-        font-weight: normal;
-        display: inline-block;
-        font-size: spacing(2.5);
-        padding: 0 spacing(0.625);
-    }
+.bit-ntf-lic {
+    font-size: spacing(2.5);
+    padding: 0 spacing(0.625);
 }
 
 .bit-ntf-lbl {
@@ -167,14 +165,14 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
+}
 
-    .bit-icon {
-        margin: 0;
-        flex-shrink: 0;
-        height: spacing(2);
-        font-size: spacing(1);
-        line-height: spacing(2);
-    }
+.bit-ntf-bic {
+    margin: 0;
+    flex-shrink: 0;
+    height: spacing(2);
+    font-size: spacing(1);
+    line-height: spacing(2);
 }
 
 .bit-ntf-fcs {

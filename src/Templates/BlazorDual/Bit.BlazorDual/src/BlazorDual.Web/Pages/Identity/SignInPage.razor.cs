@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using BlazorDual.Shared.Dtos.Identity;
+﻿using BlazorDual.Shared.Dtos.Identity;
 
 namespace BlazorDual.Web.Pages.Identity;
 

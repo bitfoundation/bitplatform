@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 

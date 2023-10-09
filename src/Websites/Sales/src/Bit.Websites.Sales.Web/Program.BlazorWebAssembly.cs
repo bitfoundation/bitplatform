@@ -1,5 +1,4 @@
-﻿using Bit.Websites.Sales.Web;
-#if BlazorWebAssembly
+﻿#if BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
 

@@ -130,6 +130,8 @@ public partial class BitSearchBox
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
 
         ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-nan" : string.Empty);
@@ -137,6 +139,11 @@ public partial class BitSearchBox
         ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
         ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override Task OnInitializedAsync()

@@ -96,9 +96,16 @@ public partial class BitRating
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
 
         ClassBuilder.Register(() => Size == BitRatingSize.Large ? $"{RootElementClass}-lg" : $"{RootElementClass}-sm");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnParametersSet()

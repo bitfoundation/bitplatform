@@ -21,6 +21,7 @@
     </PropertyGroup>
     
     <ItemGroup>
+        <Using Include="System.Globalization" />
         <Using Include="System.Net.Http" />
         <Using Include="System.Resources" />
         <Using Include="System.Security.Claims" />

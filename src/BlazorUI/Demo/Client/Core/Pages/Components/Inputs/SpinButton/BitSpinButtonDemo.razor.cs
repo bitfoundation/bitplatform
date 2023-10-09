@@ -41,9 +41,39 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitSpinButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitSpinButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "ChangeHandler",
             Type = "EventCallback<BitSpinButtonAction>",
-            Description = "",
+            Description = "?",
+        },
+        new()
+        {
+            Name = "DecrementAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Accessible label text for the decrement button (for screen reader users).",
+        },
+        new()
+        {
+            Name = "DecrementIconName",
+            Type = "string",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Custom icon name for the decrement button.",
+        },
+        new()
+        {
+            Name = "DecrementTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title to show when the mouse is placed on the decrement button.",
         },
         new()
         {
@@ -54,17 +84,10 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "DecrementButtonAriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label text for the decrement button (for screen reader users).",
-        },
-        new()
-        {
-            Name = "DecrementButtonIconName",
+            Name = "IconAriaLabel",
             Type = "string",
-            DefaultValue = "ChevronDownSmall",
-            Description = "Custom icon name for the decrement button.",
+            DefaultValue = "string.Empty",
+            Description = "The aria label of the icon for the benefit of screen readers.",
         },
         new()
         {
@@ -75,24 +98,31 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "IconAriaLabel",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "The aria label of the icon for the benefit of screen readers.",
-        },
-        new()
-        {
-            Name = "IncrementButtonAriaLabel",
+            Name = "IncrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "Accessible label text for the increment button (for screen reader users).",
         },
         new()
         {
-            Name = "IncrementButtonIconName",
+            Name = "IncrementIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom icon name for the increment button.",
+        },
+        new()
+        {
+            Name = "IncrementTitle",
             Type = "string",
             DefaultValue = "ChevronUpSmall",
-            Description = "Custom icon name for the increment button.",
+            Description = "The title to show when the mouse is placed on the increment button.",
+        },
+        new()
+        {
+            Name = "IsInputReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the input is readonly.",
         },
         new()
         {
@@ -103,26 +133,19 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "LabelPosition",
+            Type = "BitSpinButtonLabelPosition",
+            DefaultValue = "BitSpinButtonLabelPosition.Top",
+            Description = "The position of the label in regards to the spin button.",
+            LinkType = LinkType.Link,
+            Href = "#labelPosition-enum",
+        },
+        new()
+        {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id..",
-        },
-        new()
-        {
-            Name = "LabelPosition",
-            Type = "BitSpinButtonLabelPosition",
-            LinkType = LinkType.Link,
-            Href = "#labelPosition-enum",
-            DefaultValue = "BitSpinButtonLabelPosition.Top",
-            Description = "The position of the label in regards to the spin button.",
-        },
-        new()
-        {
-            Name = "Min",
-            Type = "double?",
-            DefaultValue = "null",
-            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
+            Description = "Custom Label content for spin button.",
         },
         new()
         {
@@ -133,9 +156,19 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "OnFocus",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when focus moves into the input.",
+            Name = "Min",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "Min value of the spin button. If not provided, the spin button has minimum value of double type.",
+        },
+        new()
+        {
+            Name = "Mode",
+            Type = "BitSpinButtonMode",
+            DefaultValue = "BitSpinButtonMode.Compact",
+            Description = "Determines how the spinning buttons should be rendered.",
+            LinkType = LinkType.Link,
+            Href = "#spinMode-enum",
         },
         new()
         {
@@ -157,6 +190,12 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when focus moves into the input.",
+        },
+        new()
+        {
             Name = "OnIncrement",
             Type = "EventCallback<BitSpinButtonChangeEventArgs>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
@@ -170,10 +209,26 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
+            Name = "ShowInput",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "If false, the input is hidden.",
+        },
+        new()
+        {
             Name = "Step",
             Type = "double",
             DefaultValue = "1",
             Description = "Difference between two adjacent values of the spin button.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitSpinButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitSpinButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -189,7 +244,119 @@ public partial class BitSpinButtonDemo
             DefaultValue = "null",
             Description = "A more descriptive title for the control, visible on its tooltip.",
         },
+        new()
+        {
+            Name = "ValidationMessage",
+            Type = "string",
+            DefaultValue = "\"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.\"",
+            Description = "The message format used for invalid values entered in the input.",
+        },
     };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitSpinButtonClassStyles",
+            Description = "",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the spin button.",
+                },
+                new()
+                {
+                    Name = "LabelContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's label container.",
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's icon.",
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's label.",
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's container.",
+                },
+                new()
+                {
+                    Name = "DecrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement button container.",
+                },
+                new()
+                {
+                    Name = "DecrementIconWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement icon wrapper.",
+                },
+                new()
+                {
+                    Name = "DecrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's decrement icon.",
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's input.",
+                },
+                new()
+                {
+                    Name = "CompactButtonsWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's buttons wrapper in Compact mode.",
+                },
+                new()
+                {
+                    Name = "IncrementButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                },
+                new()
+                {
+                    Name = "IncrementIconWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                },
+                new()
+                {
+                    Name = "IncrementIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spin button's increment icon.",
+                }
+            }
+        }
+    };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -210,24 +377,143 @@ public partial class BitSpinButtonDemo
                     Name= "Left",
                     Description="The label shows on the left side of the spin button.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Right",
+                    Description="The label shows on the right side of the spin button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the spin button.",
+                    Value="3",
                 }
             }
-        }
+        },
+        new()
+        {
+            Id = "spinMode-enum",
+            Name = "BitSpinButtonMode",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "Compact",
+                    Description="Spinning buttons render as a compact stack at the end of the input.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Inline",
+                    Description="Spinning buttons render inlined at the end of the input.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Spread",
+                    Description="Spinning buttons render at the start and end of the input.",
+                    Value="1",
+                }
+            }
+        },
     };
 
 
 
+    private double OneWayValue = 3;
+    private double TwoWayValue = 5;
+
+    private double IncrementEventValue;
+    private int OnIncrementCounter;
+    private int OnDecrementCounter;
+
+    private double OnChangeEventBindedValue;
+    private double OnChangeEventReturnedValue;
+    private int OnChangeClickedCounter;
+
+    private void HandleOnChangeEvent(double value)
+    {
+        OnChangeEventReturnedValue = value;
+
+        OnChangeClickedCounter++;
+    }
+
+    private double showInputValue;
+
+    private string SuccessMessage = string.Empty;
+    private BitSpinButtonValidationModel ValidationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+
+
     private readonly string example1RazorCode = @"
-<BitSpinButton Label=""Basic"" />
+<BitSpinButton Label=""Basic""
+               IncrementTitle=""Increment""
+               DecrementTitle=""Decrement"" />
 
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitSpinButton Label=""Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
+<BitSpinButton Label=""Compact"" Mode=""BitSpinButtonMode.Compact"" />
 
-<BitSpinButton Label=""Left Label"" IconName=""@BitIconName.Lightbulb"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />";
+<BitSpinButton Label=""Inline"" Mode=""BitSpinButtonMode.Inline"" />
+
+<BitSpinButton Label=""Spread"" Mode=""BitSpinButtonMode.Spread"" />";
 
     private readonly string example3RazorCode = @"
+<style>
+    .custom-class {
+        padding: 1rem;
+        background: darkblue;
+        border-radius: 0.5rem;
+    }
+
+    .custom-input {
+        color: darkred;
+        font-size: 18px;
+    }
+
+    .custom-wrapper {
+        background-color: darkcyan;
+    }
+</style>
+
+<BitSpinButton Label=""Styled"" Style=""background:darkred;padding:1rem"" />
+
+<BitSpinButton Label=""Classed"" Class=""custom-class"" />
+
+
+
+<BitSpinButton Label=""Styles"" Styles=""@(new() { LabelContainer = ""background:darkred;padding:1.5rem"",
+                                                Label = ""font-size:22px;color:chartreuse"",
+                                                DecrementButton = ""background:blue"",
+                                                IncrementButton = ""background:green"",})"" />
+
+<BitSpinButton Label=""Classes"" Classes=""@(new() { Input = ""custom-input"",
+                                                  CompactButtonsWrapper = ""custom-wrapper"" })"" />";
+
+    private readonly string example4RazorCode = @"
+<BitSpinButton Label=""Top Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
+<BitSpinButton Label=""Left Label"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
+<BitSpinButton Label=""Right Label"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
+<BitSpinButton Label=""Bottom Label"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />";
+
+    private readonly string example5RazorCode = @"
 <BitSpinButton>
     <LabelTemplate>
         <div style=""display:flex; align-items: center; gap: 10px"">
@@ -237,12 +523,22 @@ public partial class BitSpinButtonDemo
     </LabelTemplate>
 </BitSpinButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitSpinButton Label=""Like and Dislike""
-               IncrementButtonIconName=""@BitIconName.LikeSolid""
-               DecrementButtonIconName=""@BitIconName.DislikeSolid"" />";
+               IncrementIconName=""@BitIconName.LikeSolid""
+               DecrementIconName=""@BitIconName.DislikeSolid"" />
 
-    private readonly string example5RazorCode = @"
+<BitSpinButton Label=""Back & Forward""
+               Mode=""BitSpinButtonMode.Inline""
+               DecrementIconName=""@BitIconName.Back""
+               IncrementIconName=""@BitIconName.Forward"" />
+
+<BitSpinButton Label=""Plus and Minus""
+               Mode=""BitSpinButtonMode.Spread""
+               IncrementIconName=""@BitIconName.CalculatorAddition""
+               DecrementIconName=""@BitIconName.CalculatorSubtract"" />";
+
+    private readonly string example7RazorCode = @"
 <BitSpinButton Label=""Min: -10, Max: 10""
                Min=""-10""
                Max=""10"" />
@@ -257,7 +553,7 @@ public partial class BitSpinButtonDemo
                Max=""1""
                Step=""0.1"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitSpinButton Label=""Height""
                IconName=""@BitIconName.AutoHeight""
                DefaultValue=""150""
@@ -269,17 +565,17 @@ public partial class BitSpinButtonDemo
                Step=""0.5""
                Suffix="" kg"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
 <BitRating @bind-Value=""OneWayValue"" />
 
 <BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
 <BitRating @bind-Value=""TwoWayValue"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private double OneWayValue = 3;
 private double TwoWayValue = 5;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSpinButton @bind-Value=""IncrementEventValue""
                Label=""OnIncrement / OnDecrement""
                Step=""0.1""
@@ -294,7 +590,7 @@ private double TwoWayValue = 5;";
                OnChange=""HandleOnChangeEvent""/>
 <BitLabel>OnChange Clicked Counter: @OnChangeClickedCounter</BitLabel>
 <BitLabel>OnChange Returned Value: @OnChangeEventReturnedValue</BitLabel>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private double IncrementEventValue;
 private int OnIncrementCounter;
 private int OnDecrementCounter;
@@ -309,32 +605,34 @@ private void HandleOnChangeEvent(double value)
     OnChangeClickedCounter++;
 }";
 
-    private readonly string example9RazorCode = @"
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+    private readonly string example11RazorCode = @"
+<BitSpinButton ShowInput=""false""
+                @bind-Value=""showInputValue""
+                Mode=""BitSpinButtonMode.Inline""
+                Label=""@showInputValue.ToString()"" />";
+    private readonly string example11CsharpCode = @"
+private double showInputValue;";
 
-        <DataAnnotationsValidator />
+    private readonly string example12RazorCode = @"
+<BitSpinButton IsInputReadOnly=""true"" />";
 
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
+    private readonly string example13RazorCode = @"
+<style>
+    .validation-message {
+        color: red;
+    }
+</style>
 
-        <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
-        <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
+<EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
 
-        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-    private readonly string example9CsharpCode = @"
+    <DataAnnotationsValidator />
+
+    <BitSpinButton Label=""Age"" @bind-Value=""@ValidationModel.AgeInYears""></BitSpinButton>
+    <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example13CsharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -342,19 +640,9 @@ public class BitSpinButtonValidationModel
     public double AgeInYears { get; set; }
 }
 
-private string SuccessMessage = string.Empty;
 private BitSpinButtonValidationModel ValidationModel = new();
 
-private async Task HandleValidSubmit()
-{
-    SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
-}
+private async Task HandleValidSubmit() { }
 
-private void HandleInvalidSubmit()
-{
-    SuccessMessage = string.Empty;
-}";
+private void HandleInvalidSubmit() { }";
 }

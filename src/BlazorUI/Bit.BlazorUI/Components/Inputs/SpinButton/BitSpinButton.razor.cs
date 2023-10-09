@@ -14,97 +14,103 @@ public partial class BitSpinButton
     private double _min;
     private double _max;
     private int _precision;
-    private string? _intermediateValue;
     private Timer? _pointerDownTimer;
+    private string? _intermediateValue;
     private string _inputId = default!;
 
     private ElementReference _inputRef;
-    private ElementReference _buttonIncrement;
-    private ElementReference _buttonDecrement;
+    private ElementReference _incrementBtnRef;
+    private ElementReference _decrementBtnRef;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// Detailed description of the input for the benefit of screen readers
+    /// Detailed description of the input for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// The position in the parent set (if in a set)
+    /// The position in the parent set (if in a set).
     /// </summary>
-    [Parameter]
-    public int? AriaPositionInSet { get; set; }
+    [Parameter] public int? AriaPositionInSet { get; set; }
 
     /// <summary>
-    /// The total size of the parent set (if in a set)
+    /// The total size of the parent set (if in a set).
     /// </summary>
-    [Parameter]
-    public int? AriaSetSize { get; set; }
+    [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
     /// Sets the control's aria-valuenow. Providing this only makes sense when using as a controlled component.
     /// </summary>
-    [Parameter]
-    public double? AriaValueNow { get; set; }
+    [Parameter] public double? AriaValueNow { get; set; }
 
     /// <summary>
     /// Sets the control's aria-valuetext.
     /// </summary>
-    [Parameter]
-    public string? AriaValueText { get; set; }
+    [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// 
+    /// Custom CSS classes for different parts of the BitSpinButton.
     /// </summary>
-    [Parameter] public EventCallback<BitSpinButtonAction> ChangeHandler { get; set; }
+    [Parameter] public BitSpinButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Initial value of the spin button 
+    /// Accessible label text for the decrement button (for screen reader users).
+    /// </summary>
+    [Parameter] public string? DecrementAriaLabel { get; set; }
+
+    /// <summary>
+    /// Custom icon name for the decrement button.
+    /// </summary>
+    [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
+
+    /// <summary>
+    /// The title to show when the mouse is placed on the decrement button.
+    /// </summary>
+    [Parameter] public string? DecrementTitle { get; set; }
+
+    /// <summary>
+    /// Initial value of the spin button.
     /// </summary>
     [Parameter] public double? DefaultValue { get; set; }
 
     /// <summary>
-    /// Accessible label text for the decrement button (for screen reader users)
-    /// </summary>
-    [Parameter] public string? DecrementButtonAriaLabel { get; set; }
-
-    /// <summary>
-    /// Custom icon name for the decrement button
-    /// </summary>
-    [Parameter] public string DecrementButtonIconName { get; set; } = "ChevronDownSmall";
-
-    /// <summary>
-    /// Icon name for an icon to display alongside the spin button's label
-    /// </summary>
-    [Parameter] public string? IconName { get; set; }
-
-    /// <summary>
-    /// The aria label of the icon for the benefit of screen readers
+    /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
 
     /// <summary>
-    /// Accessible label text for the increment button (for screen reader users)
+    /// Icon name for an icon to display alongside the spin button's label.
     /// </summary>
-    [Parameter] public string? IncrementButtonAriaLabel { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Custom icon name for the increment button
+    /// Accessible label text for the increment button (for screen reader users).
     /// </summary>
-    [Parameter] public string IncrementButtonIconName { get; set; } = "ChevronUpSmall";
+    [Parameter] public string? IncrementAriaLabel { get; set; }
 
     /// <summary>
-    /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers
+    /// Custom icon name for the increment button.
+    /// </summary>
+    [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
+
+    /// <summary>
+    /// The title to show when the mouse is placed on the increment button.
+    /// </summary>
+    [Parameter] public string? IncrementTitle { get; set; }
+
+    /// <summary>
+    /// If true, the input is readonly.
+    /// </summary>
+    [Parameter] public bool IsInputReadOnly { get; set; }
+
+    /// <summary>
+    /// Descriptive label for the spin button, Label displayed above the spin button and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
 
     /// <summary>
-    /// Shows the custom Label for spin button. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
-    /// The position of the label in regards to the spin button
+    /// The position of the label in regards to the spin button.
     /// </summary>
     [Parameter]
     public BitSpinButtonLabelPosition LabelPosition
@@ -120,57 +126,77 @@ public partial class BitSpinButton
     }
 
     /// <summary>
-    /// Min value of the spin button. If not provided, the spin button has minimum value of double type
+    /// Custom Label content for spin button.
     /// </summary>
-    [Parameter] public double? Min { get; set; }
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Max value of the spin button. If not provided, the spin button has max value of double type
+    /// Max value of the spin button. If not provided, the spin button has max value of double type.
     /// </summary>
     [Parameter] public double? Max { get; set; }
 
     /// <summary>
-    /// Callback for when the spin button value change
+    /// Min value of the spin button. If not provided, the spin button has minimum value of double type.
     /// </summary>
-    [Parameter] public EventCallback<double> OnChange { get; set; }
+    [Parameter] public double? Min { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Determines how the spinning buttons should be rendered.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    [Parameter] public BitSpinButtonMode Mode { get; set; } = BitSpinButtonMode.Compact;
 
     /// <summary>
-    /// Callback for when the control loses focus
+    /// Callback for when the control loses focus.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
-    /// Callback for when the decrement button or down arrow key is pressed
+    /// Callback for when the spin button value change.
+    /// </summary>
+    [Parameter] public EventCallback<double> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<BitSpinButtonChangeValue> OnDecrement { get; set; }
 
     /// <summary>
-    /// Callback for when the increment button or up arrow key is pressed
+    /// Callback for when focus moves into the input.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for when the increment button or up arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<BitSpinButtonChangeValue> OnIncrement { get; set; }
 
     /// <summary>
-    /// How many decimal places the value should be rounded to
+    /// How many decimal places the value should be rounded to.
     /// </summary>
     [Parameter] public int? Precision { get; set; }
 
     /// <summary>
-    /// Difference between two adjacent values of the spin button
+    /// If false, the input is hidden.
+    /// </summary>
+    [Parameter] public bool ShowInput { get; set; } = true;
+
+    /// <summary>
+    /// Difference between two adjacent values of the spin button.
     /// </summary>
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
-    /// A text is shown after the spin button value
+    /// Custom CSS styles for different parts of the BitSpinButton.
+    /// </summary>
+    [Parameter] public BitSpinButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// A text is shown after the spin button value.
     /// </summary>
     [Parameter] public string Suffix { get; set; } = string.Empty;
 
     /// <summary>
-    /// A more descriptive title for the control, visible on its tooltip
+    /// A more descriptive title for the control, visible on its tooltip.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
@@ -179,11 +205,26 @@ public partial class BitSpinButton
     /// </summary>
     [Parameter] public string ValidationMessage { get; set; } = "The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
 
+
+
     protected override string RootElementClass => "bit-spb";
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitSpinButtonLabelPosition.Left ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitSpinButtonLabelPosition.Bottom => $"{RootElementClass}-lbt",
+            BitSpinButtonLabelPosition.Left => $"{RootElementClass}-llf",
+            BitSpinButtonLabelPosition.Right => $"{RootElementClass}-lrt",
+            _ => $"{RootElementClass}-ltp"
+        });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override Task OnInitializedAsync()
@@ -222,34 +263,35 @@ public partial class BitSpinButton
             SetDisplayValue();
         }
 
-        if (ChangeHandler.HasDelegate is false)
+        await base.OnParametersSetAsync();
+    }
+
+
+    private async Task ApplyValueChange(BitSpinButtonAction action)
+    {
+        double result = 0;
+        bool isValid = false;
+
+        switch (action)
         {
-            ChangeHandler = EventCallback.Factory.Create(this, async (BitSpinButtonAction action) =>
-            {
-                double result = 0;
-                bool isValid = false;
+            case BitSpinButtonAction.Increment:
+                result = CurrentValue + Step;
+                isValid = result <= _max && result >= _min;
+                break;
 
-                switch (action)
-                {
-                    case BitSpinButtonAction.Increment:
-                        result = CurrentValue + Step;
-                        isValid = result <= _max && result >= _min;
-                        break;
-
-                    case BitSpinButtonAction.Decrement:
-                        result = CurrentValue - Step;
-                        isValid = result <= _max && result >= _min;
-                        break;
-                }
-
-                if (isValid is false) return;
-
-                SetValue(result);
-                await OnChange.InvokeAsync(CurrentValue);
-            });
+            case BitSpinButtonAction.Decrement:
+                result = CurrentValue - Step;
+                isValid = result <= _max && result >= _min;
+                break;
         }
 
-        await base.OnParametersSetAsync();
+        if (isValid is false) return;
+
+        SetValue(result);
+
+        await OnChange.InvokeAsync(CurrentValue);
+
+        StateHasChanged();
     }
 
     private async Task HandleOnPointerDown(BitSpinButtonAction action, MouseEventArgs e)
@@ -257,11 +299,11 @@ public partial class BitSpinButton
         //Change focus from input to spin button
         if (action == BitSpinButtonAction.Increment)
         {
-            await _buttonIncrement.FocusAsync();
+            await _incrementBtnRef.FocusAsync();
         }
         else
         {
-            await _buttonDecrement.FocusAsync();
+            await _decrementBtnRef.FocusAsync();
         }
 
         await HandlePointerDownAction(action, e);
@@ -281,6 +323,7 @@ public partial class BitSpinButton
     private void HandleOnChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (IsInputReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         _intermediateValue = GetCleanValue(e.Value?.ToString());
@@ -291,7 +334,7 @@ public partial class BitSpinButton
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        await ChangeHandler.InvokeAsync(action);
+        await ApplyValueChange(action);
 
         if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
         {
@@ -317,6 +360,7 @@ public partial class BitSpinButton
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (IsInputReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         switch (e.Key)
@@ -324,7 +368,7 @@ public partial class BitSpinButton
             case "ArrowUp":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Increment);
+                    await ApplyValueChange(BitSpinButtonAction.Increment);
 
                     if (OnIncrement.HasDelegate is true)
                     {
@@ -343,7 +387,7 @@ public partial class BitSpinButton
             case "ArrowDown":
                 {
                     await CheckIntermediateValueAndSetValue();
-                    await ChangeHandler.InvokeAsync(BitSpinButtonAction.Decrement);
+                    await ApplyValueChange(BitSpinButtonAction.Decrement);
 
                     if (OnDecrement.HasDelegate is true)
                     {

@@ -137,11 +137,18 @@ public partial class BitToggleButton
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                           ? $"{RootElementClass}-pri"
                                           : $"{RootElementClass}-std");
 
         ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-chk" : string.Empty);
+    }
+    
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override async Task OnInitializedAsync()

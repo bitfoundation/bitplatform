@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
@@ -8,8 +8,8 @@
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
-        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
-        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -30,16 +30,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.6.1" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.6.1" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.6.1" />
-        <PackageReference Include="Bit.Bup" Version="5.6.1" />
-        <PackageReference Include="Bit.Bswup" Version="5.6.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.6.1">
+        <PackageReference Include="Bit.BlazorUI" Version="6.0.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="6.0.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="6.0.0" />
+        <PackageReference Include="Bit.Bup" Version="6.0.0" />
+        <PackageReference Include="Bit.Bswup" Version="6.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="6.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.6.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="6.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -55,7 +55,7 @@
         <Using Include="Bit.Websites.Sales.Web.Components" />
         <Using Include="Bit.Websites.Sales.Web.Shared" />
         <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
-        <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
+        <Using Include="Bit.Websites.Sales.Web.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>

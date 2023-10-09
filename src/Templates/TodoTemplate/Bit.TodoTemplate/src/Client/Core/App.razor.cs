@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace TodoTemplate.Client.Core;
@@ -8,7 +6,7 @@ namespace TodoTemplate.Client.Core;
 public partial class App
 {
 #if BlazorWebAssembly && !BlazorHybrid
-    private List<Assembly> _lazyLoadedAssemblies = new();
+    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
 #endif
 
@@ -107,7 +105,7 @@ public partial class App
 #if BlazorWebAssembly && !BlazorHybrid
         if (args.Path.Contains("some-lazy-loaded-page") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
         {
-            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.wasm" });
             _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif

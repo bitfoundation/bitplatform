@@ -1,6 +1,4 @@
-﻿using Microsoft.JSInterop;
-
-namespace TodoTemplate.Client.Core.Shared;
+﻿namespace TodoTemplate.Client.Core.Shared;
 
 public partial class MessageBox : IDisposable
 {

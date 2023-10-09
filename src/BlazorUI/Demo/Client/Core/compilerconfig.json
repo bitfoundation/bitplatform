@@ -354,6 +354,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.css",
+        "inputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.css",
+        "inputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss",
         "minify": { "enabled": false },
@@ -368,6 +380,18 @@
     {
         "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
         "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Stack/BitStackDemo.razor.css",
+        "inputFile": "Pages/Components/Stack/BitStackDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Sticky/BitStickyDemo.razor.css",
+        "inputFile": "Pages/Components/Sticky/BitStickyDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

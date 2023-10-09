@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-
-namespace Bit.BlazorUI.Demo.Client.App.Platforms.Windows;
+﻿namespace Bit.BlazorUI.Demo.Client.App.Platforms.Windows;
 
 public partial class App
 {

@@ -69,7 +69,7 @@ public partial class BitTypography : BitComponentBase
         var seq = 0;
         builder.OpenElement(seq++, Component ?? VariantMapping[Variant]);
         builder.AddMultipleAttributes(seq++, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
-        builder.AddAttribute(seq++, "id", UniqueId);
+        builder.AddAttribute(seq++, "id", _Id);
         builder.AddAttribute(seq++, "style", StyleBuilder.Value);
         builder.AddAttribute(seq++, "class", ClassBuilder.Value);
         builder.AddElementReferenceCapture(seq++, v => RootElement = v);

@@ -103,6 +103,13 @@ public partial class BitOtpInputDemo
             {
                 new()
                 {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the otp input.",
+                },
+                new()
+                {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",

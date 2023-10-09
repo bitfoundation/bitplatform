@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitNummericTextFieldClassStyles
+public class BitNumericTextFieldClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's buttons (inecrement and decrement) container.
+    /// Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container.
     /// </summary>
     public string? ButtonsContainer { get; set; }
 

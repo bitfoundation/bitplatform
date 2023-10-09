@@ -1,5 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+﻿using Swashbuckle.AspNetCore.SwaggerGen;
 using Bit.Websites.Platform.Api;
 
 namespace Microsoft.Extensions.DependencyInjection;

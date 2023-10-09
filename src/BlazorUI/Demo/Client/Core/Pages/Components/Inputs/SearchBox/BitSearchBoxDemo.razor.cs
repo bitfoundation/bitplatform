@@ -108,6 +108,13 @@ public partial class BitSearchBoxDemo
             {
                 new()
                 {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the search box.",
+                },
+                new()
+                {
                     Name = "ClearButton",
                     Type = "string?",
                     DefaultValue = "null",

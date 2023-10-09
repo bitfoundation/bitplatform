@@ -60,6 +60,12 @@ public partial class _BitDropdownOptionDemo
     private string controlledValue = "f-app";
     private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
 
+    private BitDropdownOption<string>? changedItem;
+    private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
+
+    private BitDropdownOption<string>? selectedItem1;
+    private BitDropdownOption<string>? selectedItem2;
+
     private string? clearValue = "f-app";
     private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
 

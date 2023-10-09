@@ -2,6 +2,9 @@
 
 public partial class BitLinkDemo
 {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+
     private readonly List<ComponentParameter> componentParameters = new()
     {
         new()
@@ -42,15 +45,26 @@ public partial class BitLinkDemo
 
 
 
+    private void HandleOnClick()
+    {
+        Navigation.NavigateTo("https://github.com/bitfoundation/bitplatform");
+    }
+
+
     private readonly string example1RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled Link</BitLink>
 ";
 
     private readonly string example2RazorCode = @"
+Visible: [ <BitLink Visibility=""BitVisibility.Visible"">Visible Link</BitLink> ]
+Hidden: [ <BitLink Visibility=""BitVisibility.Hidden"">Hidden Link</BitLink> ]
+Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</BitLink> ]";
+
+    private readonly string example3RazorCode = @"
 <style>
     .custom-class {
-        padding: 0 0.5rem;
+        padding: 0.5rem;
         border: 1px solid red;
         max-width: max-content;
     }
@@ -59,34 +73,27 @@ public partial class BitLinkDemo
 <BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_parent"">Parent target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_self"">Self target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
 
-    private readonly string example5RazorCode = @"
-<BitLink OnClick=""LinkOnClick"">Link with OnClick</BitLink>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6RazorCode = @"
+<BitLink OnClick=""HandleOnClick"">Click to navigate to the bitplatform GitHub repo!</BitLink>";
+    private readonly string example6CsharpCode = @"
 [Inject] private NavigationManager Navigation { get; set; } = default!;
 
-private void LinkOnClick()
+private void HandleOnClick()
 {
-    // Here you can do something else...
-
     Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
 }";
 
-    private readonly string example6RazorCode = @"
-Visible: [ <BitLink Visibility=""BitVisibility.Visible"">Visible Link</BitLink> ]
-Hidden: [ <BitLink Visibility=""BitVisibility.Hidden"">Hidden Link</BitLink> ]
-Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</BitLink> ]";
-
     private readonly string example7RazorCode = @"
-<BitLink Style=""scroll-margin: 70px"" id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
+<BitLink Style=""scroll-margin: 70px"" Id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -128,6 +135,6 @@ Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</Bit
     a mattis est. In augue dolor, faucibus vel metus at, convallis rhoncus dui.
 </p>
 
-<BitLink Style=""scroll-margin: 70px"" id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>
+<BitLink Style=""scroll-margin: 70px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>
 ";
 }

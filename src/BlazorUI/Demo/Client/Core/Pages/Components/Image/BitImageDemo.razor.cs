@@ -139,6 +139,13 @@ public partial class BitImageDemo
             {
                 new()
                 {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the image.",
+                },
+                new()
+                {
                     Name= "Image",
                     Type = "string?",
                     DefaultValue = "null",

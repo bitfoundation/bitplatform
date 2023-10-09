@@ -10,7 +10,7 @@
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
@@ -44,7 +44,8 @@
                         }
                         else
                         {
-                            <button aria-current="@(GetIsSelected(item) ? "page" : null)"
+                            <button type="button"
+                                    aria-current="@(GetIsSelected(item) ? "page" : null)"
                                     style="@GetStyles(item)"
                                     class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
                                 @GetItemText(item)
@@ -82,7 +83,8 @@
                     }
                     else
                     {
-                        <button aria-current="@(GetIsSelected(item) ? "page" : null)"
+                        <button type="button"
+                                aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 style="@GetStyles(item)"
                                 class="bit-brc-oitm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
                             @GetItemText(item)

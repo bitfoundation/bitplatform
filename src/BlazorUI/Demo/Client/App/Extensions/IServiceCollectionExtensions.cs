@@ -21,6 +21,7 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<MainPage>();
         services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
+        services.AddScoped<IExceptionHandler, AppExceptionHandler>();
 
         return services;
     }

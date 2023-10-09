@@ -271,7 +271,7 @@ public partial class BitTimePicker
 
     private async Task CloseCallout()
     {
-        await _js.InvokeVoidAsync("BitTimePicker.toggleTimePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen, IsResponsive);
+        await _js.InvokeVoidAsync("BitTimePicker.toggleTimePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen, IsResponsive);
         IsOpen = false;
         StateHasChanged();
     }
@@ -290,7 +290,7 @@ public partial class BitTimePicker
     {
         if (IsEnabled is false) return;
 
-        await _js.InvokeVoidAsync("BitTimePicker.toggleTimePickerCallout", _dotnetObj, UniqueId, _calloutId, _overlayId, IsOpen, IsResponsive);
+        await _js.InvokeVoidAsync("BitTimePicker.toggleTimePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen, IsResponsive);
 
         IsOpen = !IsOpen;
 

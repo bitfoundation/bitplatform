@@ -689,6 +689,10 @@
     color: $color-foreground-primary;
     margin: spacing(0.375) spacing(0.5) 0 0;
 
+    &.bit-dtrp-gtd-btn-bs {
+        bottom: spacing(-1.5);
+    }
+
     @media (hover: hover) {
         &:hover {
             cursor: pointer;
@@ -771,5 +775,9 @@
         .bit-dtrp-dc-sel-en {
             border-radius: spacing(1) 0 0 spacing(1);
         }
+    }
+
+    .bit-dtrp-twp {
+        flex-direction: row-reverse;
     }
 }

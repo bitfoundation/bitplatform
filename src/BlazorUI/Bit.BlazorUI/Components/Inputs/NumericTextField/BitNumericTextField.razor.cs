@@ -73,9 +73,9 @@ public partial class BitNumericTextField<TValue>
     [Parameter] public EventCallback<BitNumericTextFieldAction> ChangeHandler { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitNummericTextField.
+    /// Custom CSS classes for different parts of the BitNumericTextField.
     /// </summary>
-    [Parameter] public BitNummericTextFieldClassStyles? Classes { get; set; }
+    [Parameter] public BitNumericTextFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Initial value of the numeric text field.
@@ -224,9 +224,9 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitNummericTextField.
+    /// Custom CSS styles for different parts of the BitNumericTextField.
     /// </summary>
-    [Parameter] public BitNummericTextFieldClassStyles? Styles { get; set; }
+    [Parameter] public BitNumericTextFieldClassStyles? Styles { get; set; }
 
     /// <summary>
     /// A text is shown after the numeric text field value.

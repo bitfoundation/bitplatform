@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using System.Text;
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -96,12 +95,17 @@ public partial class BitImage
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => ShouldFadeIn ? $"{RootElementClass}-fde" : string.Empty);
+
         ClassBuilder.Register(() => MaximizeFrame ? $"{RootElementClass}-max" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => Styles?.Root);
+
         StyleBuilder.Register(() => Width > 0 ? $"width:{Width}px" : string.Empty);
         StyleBuilder.Register(() => Height > 0 ? $"height:{Height}px" : string.Empty);
     }

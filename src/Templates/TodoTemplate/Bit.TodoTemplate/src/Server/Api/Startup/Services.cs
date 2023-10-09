@@ -1,13 +1,14 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
+using System.Net;
 using System.Net.Mail;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using TodoTemplate.Server.Api.Services.Implementations;
+using TodoTemplate.Server.Api.Services;
 #if BlazorWebAssembly
-using TodoTemplate.Client.Web.Services.Implementations;
-using TodoTemplate.Client.Core.Services.Implementations;
+using TodoTemplate.Client.Web.Services;
+using TodoTemplate.Client.Core.Services;
 using Microsoft.AspNetCore.Components;
 #endif
 
@@ -139,7 +140,10 @@ public static class Services
         {
             if (appSettings.EmailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password);
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port)
+                {
+                    Credentials = new NetworkCredential(appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password)
+                });
             }
             else
             {

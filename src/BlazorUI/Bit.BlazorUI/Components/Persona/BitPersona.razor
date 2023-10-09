@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
@@ -64,7 +64,7 @@
                     }
                     else
                     {
-                        <button @onclick="HandleActionClick" class="bit-prs-abt" title="Edit image">
+                        <button @onclick="HandleActionClick" type="button" class="bit-prs-abt" title="Edit image">
                             <span class="icon-container">
                                 <i class="bit-icon bit-icon--@ActionIconName" />
                             </span>
