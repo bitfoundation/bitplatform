@@ -138,9 +138,16 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
 
         ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override async Task OnInitializedAsync()
