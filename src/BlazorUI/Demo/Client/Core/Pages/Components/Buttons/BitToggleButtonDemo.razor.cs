@@ -154,24 +154,31 @@ public partial class BitToggleButtonDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitToggleButton.",
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon element.",
+                   Description = "Custom CSS classes/styles for the icon element of the BitToggleButton.",
                },
                new()
                {
                    Name = "Container",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon and label container.",
+                   Description = "Custom CSS classes/styles for the icon and label container of the BitToggleButton.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the text element.",
+                   Description = "Custom CSS classes/styles for the text element of the BitToggleButton.",
                }
             }
         }
