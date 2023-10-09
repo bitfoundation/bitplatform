@@ -9,11 +9,12 @@
     }
     <div class="site-content @(_isTemplateDocRoute ? "docs-content" : "")">
         <AppErrorBoundary>
-                @Body
+            @Body
         </AppErrorBoundary>
+
+        <Footer />
     </div>
 </div>
 
-<Footer />
 
 <MessageBox />

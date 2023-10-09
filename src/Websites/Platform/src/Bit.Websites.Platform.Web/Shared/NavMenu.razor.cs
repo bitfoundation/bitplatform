@@ -47,7 +47,7 @@ public partial class NavMenu : IDisposable
         {
             _isNavOpen = !_isNavOpen;
 
-            await JSRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
+            await JSRuntime.ToggleBodyOverflow(_isNavOpen);
         }
         catch (Exception ex)
         {
