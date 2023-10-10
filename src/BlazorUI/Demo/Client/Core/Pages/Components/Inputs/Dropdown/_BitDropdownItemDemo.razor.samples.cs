@@ -275,7 +275,19 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""GetDataItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             CaretDownIconName=""@BitIconName.ScrollUpDown"" />";
+             CaretDownIconName=""@BitIconName.ScrollUpDown"" />
+
+<BitDropdown Label=""Callout templates""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"">
+    <CalloutHeaderTemplate>
+        <BitLabel Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</BitLabel>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <BitActionButton IconName=""@BitIconName.Add"">New Item</BitActionButton>
+    </CalloutFooterTemplate>
+</BitDropdown>";
     private readonly string example4CsharpCode = @"
 public class DropdownItemData
 {
