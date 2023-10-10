@@ -38,6 +38,10 @@
     position: relative;
     min-height: rem2(70px);
     box-sizing: border-box;
+
+    .code {
+        -webkit-text-size-adjust: none;
+    }
 }
 
 .example-container {
