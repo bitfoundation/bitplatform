@@ -23,6 +23,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private string _dropdownId = string.Empty;
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
+    private string _headerId = string.Empty;
+    private string _footerId = string.Empty;
 
     private string _labelId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
@@ -46,6 +48,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// Enables auto-focusing of the SearchBox input when the callout is open.
     /// </summary>
     [Parameter] public bool AutoFocusSearchBox { get; set; }
+
+    /// <summary>
+    /// Custom template to render as a header in the callout.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
+
+    /// <summary>
+    /// Custom template to render as a footer in the callout.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
 
     /// <summary>
     /// The icon name of the chevron down element of the dropdown. The default value is ChevronDown.
@@ -591,6 +603,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
+        _headerId = $"{_dropdownId}-header";
+        _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
@@ -916,7 +930,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 DropDirection,
                                 IsRtl,
                                 _scrollContainerId,
-                                ShowSearchBox ? 32 : 0);
+                                ShowSearchBox ? 32 : 0,
+                                CalloutHeaderTemplate is not null ? _headerId : "",
+                                CalloutFooterTemplate is not null ? _footerId : "");
     }
 
 

@@ -13,6 +13,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render as a header in the callout.",
+        },
+        new()
+        {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "false",
+            Description = "Custom template to render as a footer in the callout.",
+        },
+        new()
+        {
             Name = "CaretDownIconName",
             Type = "string",
             DefaultValue = "ChevronDown",
