@@ -231,6 +231,11 @@ public partial class BitSpinButton
     {
         _inputId = $"BitSpinButton-{UniqueId}-input";
 
+        if (ValueHasBeenSet is false && DefaultValue.HasValue)
+        {
+            CurrentValue = DefaultValue.Value;
+        }
+
         return base.OnInitializedAsync();
     }
 
@@ -254,14 +259,7 @@ public partial class BitSpinButton
             _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
         }
 
-        if (ValueHasBeenSet is false)
-        {
-            SetValue(DefaultValue ?? 0);
-        }
-        else
-        {
-            SetDisplayValue();
-        }
+        SetDisplayValue();
 
         await base.OnParametersSetAsync();
     }

@@ -423,23 +423,12 @@ public partial class BitSpinButtonDemo
 
 
 
-    private double OneWayValue = 3;
-    private double TwoWayValue = 5;
+    private double oneWayValue = 3;
+    private double twoWayValue = 5;
 
-    private double IncrementEventValue;
-    private int OnIncrementCounter;
-    private int OnDecrementCounter;
-
-    private double OnChangeEventBindedValue;
-    private double OnChangeEventReturnedValue;
-    private int OnChangeClickedCounter;
-
-    private void HandleOnChangeEvent(double value)
-    {
-        OnChangeEventReturnedValue = value;
-
-        OnChangeClickedCounter++;
-    }
+    private int onIncrementCounter;
+    private int onDecrementCounter;
+    private double onChangeValue;
 
     private double showInputValue;
 
@@ -462,11 +451,11 @@ public partial class BitSpinButtonDemo
 
 
     private readonly string example1RazorCode = @"
-<BitSpinButton Label=""Basic""
-               IncrementTitle=""Increment""
-               DecrementTitle=""Decrement"" />
+<BitSpinButton Label=""Basic"" />
 
-<BitSpinButton Label=""Disabled"" IsEnabled=""false"" />";
+<BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
+
+<BitSpinButton Label=""Button title"" IncrementTitle=""Increase"" DecrementTitle=""Decrease"" />";
 
     private readonly string example2RazorCode = @"
 <BitSpinButton Label=""Compact"" Mode=""BitSpinButtonMode.Compact"" />
@@ -502,7 +491,7 @@ public partial class BitSpinButtonDemo
 <BitSpinButton Label=""Styles"" Styles=""@(new() { LabelContainer = ""background:darkred;padding:1.5rem"",
                                                 Label = ""font-size:22px;color:chartreuse"",
                                                 DecrementButton = ""background:blue"",
-                                                IncrementButton = ""background:green"",})"" />
+                                                IncrementButton = ""background:green"" })"" />
 
 <BitSpinButton Label=""Classes"" Classes=""@(new() { Input = ""custom-input"",
                                                   CompactButtonsWrapper = ""custom-wrapper"" })"" />";
@@ -566,44 +555,33 @@ public partial class BitSpinButtonDemo
                Suffix="" kg"" />";
 
     private readonly string example9RazorCode = @"
-<BitSpinButton Label=""One-way"" Value=""OneWayValue"" />
-<BitRating @bind-Value=""OneWayValue"" />
+<BitSpinButton Label=""One-way"" Value=""oneWayValue"" />
+<BitRating @bind-Value=""oneWayValue"" />
 
-<BitSpinButton Label=""Two-way"" Step=""0.5"" @bind-Value=""TwoWayValue"" />
-<BitRating @bind-Value=""TwoWayValue"" />";
+<BitSpinButton Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<BitRating @bind-Value=""twoWayValue"" />";
     private readonly string example9CsharpCode = @"
-private double OneWayValue = 3;
-private double TwoWayValue = 5;";
+private double oneWayValue = 3;
+private double twoWayValue = 5;";
 
     private readonly string example10RazorCode = @"
-<BitSpinButton @bind-Value=""IncrementEventValue""
-               Label=""OnIncrement / OnDecrement""
+<BitSpinButton Label=""OnIncrement / OnDecrement""
                Step=""0.1""
-               OnIncrement=""() => OnIncrementCounter++""
-               OnDecrement=""() => OnDecrementCounter++"" />
-<BitLabel>OnIncrement Counter: @OnIncrementCounter</BitLabel>
-<BitLabel>OnDecrement Counter: @OnDecrementCounter</BitLabel>
+               DefaultValue=""2""
+               OnIncrement=""() => onIncrementCounter++""
+               OnDecrement=""() => onDecrementCounter++"" />
+<BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
+<BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
 
-<BitSpinButton @bind-Value=""OnChangeEventBindedValue""
-               Label=""OnChange""
-               Step=""0.1"" 
-               OnChange=""HandleOnChangeEvent""/>
-<BitLabel>OnChange Clicked Counter: @OnChangeClickedCounter</BitLabel>
-<BitLabel>OnChange Returned Value: @OnChangeEventReturnedValue</BitLabel>";
+<BitSpinButton Label=""OnChange""
+               Step=""0.1""
+               DefaultValue=""2""
+               OnChange=""v => onChangeValue = v"" />
+<BitLabel>OnChange Value: @onChangeValue</BitLabel>";
     private readonly string example10CsharpCode = @"
-private double IncrementEventValue;
-private int OnIncrementCounter;
-private int OnDecrementCounter;
-
-private double OnChangeEventBindedValue;
-private double OnChangeEventReturnedValue;
-private int OnChangeClickedCounter;
-private void HandleOnChangeEvent(double value)
-{
-    OnChangeEventReturnedValue = value;
-
-    OnChangeClickedCounter++;
-}";
+private int onIncrementCounter;
+private int onDecrementCounter;
+private double onChangeValue;";
 
     private readonly string example11RazorCode = @"
 <BitSpinButton ShowInput=""false""
