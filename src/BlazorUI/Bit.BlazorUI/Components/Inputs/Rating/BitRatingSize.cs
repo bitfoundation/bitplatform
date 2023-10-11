@@ -8,6 +8,11 @@ public enum BitRatingSize
     Small,
 
     /// <summary>
+    /// Display rating icon using medium size
+    /// </summary>
+    Medium,
+
+    /// <summary>
     /// Display rating icon using large size
     /// </summary>
     Large
