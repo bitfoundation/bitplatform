@@ -175,73 +175,80 @@ public partial class BitSliderDemo
             {
                 new()
                 {
-                    Name = "Container",
+                    Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's container."
+                    Description = "Custom CSS classes/styles for the BitSlider's root element."
                 },
                 new()
                 {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's label."
+                    Description = "Custom CSS classes/styles for the BitSlider's label."
                 },
                 new()
                 {
-                    Name = "UpperValueInput",
+                    Name = "UpperValueLabel",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's upper value label."
                 },
                 new()
                 {
-                    Name = "LowerValueInput",
+                    Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's container."
+                },
+                new()
+                {
+                    Name = "LowerValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's lower value label."
                 },
                 new()
                 {
                     Name = "SliderBox",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's box."
+                    Description = "Custom CSS classes/styles for the BitSlider's box."
                 },
                 new()
                 {
                     Name = "LowerValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value input."
-                },
-                new()
-                {
-                    Name = "Root",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's root element."
+                    Description = "Custom CSS classes/styles for the BitSlider's lower value input."
                 },
                 new()
                 {
                     Name = "UpperValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's upper value input."
                 },
                 new()
                 {
                     Name = "ValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's value input."
                 },
                 new()
                 {
                     Name = "OriginFromZero",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's origin from zero."
+                    Description = "Custom CSS classes/styles for the BitSlider's origin from zero."
+                },
+                new()
+                {
+                    Name = "ValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's value label."
                 }
             }
         },
@@ -269,7 +276,7 @@ public partial class BitSliderDemo
         }
     };
 
-
+    
 
     private double oneWayBinding = 1;
     private double twoWayBinding = 1;
