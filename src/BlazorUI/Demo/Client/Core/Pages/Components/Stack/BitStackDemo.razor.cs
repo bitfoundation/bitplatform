@@ -134,13 +134,13 @@ public partial class BitStackDemo
 
 
 
-    private double? gap = 1;
+    private double gap = 1;
 
     private bool isReversed;
     private bool isHorizontal;
     private BitStackAlignment verticalAlign;
     private BitStackAlignment horizontalAlign;
-    private double? stackHeight = 15;
+    private double stackHeight = 15;
 
 
 
@@ -186,7 +186,7 @@ public partial class BitStackDemo
     <div class=""item"">Item 3</div>
 </BitStack>";
     private readonly string example2CsharpCode = @"
-private double? gap = 1;
+private double gap = 1;
 ";
 
     private readonly string example3RazorCode = @"
@@ -292,7 +292,7 @@ private BitStackAlignment horizontalAlign;
     }
 </BitStack>";
     private readonly string example5CsharpCode = @"
-private double? stackHeight = 15;
+private double stackHeight = 15;
 ";
 
     private readonly string example6RazorCode = @"

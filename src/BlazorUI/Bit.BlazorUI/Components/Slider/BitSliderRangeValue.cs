@@ -1,6 +1,14 @@
 ﻿namespace Bit.BlazorUI;
+
 public class BitSliderRangeValue
 {
-    public double? Lower { get; set; }
-    public double? Upper { get; set; }
+    /// <summary>
+    /// The lower value of the ranged Slider.
+    /// </summary>
+    public double Lower { get; set; }
+
+    /// <summary>
+    /// The upper value of the ranged Slider.
+    /// </summary>
+    public double Upper { get; set; }
 }
