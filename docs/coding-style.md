@@ -1,2 +1,2 @@
-Coding Style of bitplatform
+Coding Style of bit platform
 ===============

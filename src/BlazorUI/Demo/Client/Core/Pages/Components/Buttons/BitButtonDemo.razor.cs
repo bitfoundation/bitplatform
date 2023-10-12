@@ -175,11 +175,11 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
 
     private readonly string example5RazorCode = @"
 <BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
-    Open Bit Platform In New Tab
+    Open bit platform In New Tab
 </BitButton>
 
 <BitButton Title=""Standard"" Href=""https://bitplatform.dev"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To Bit Platform
+    Go To bit platform
 </BitButton>";
 
     private readonly string example6RazorCode = @"

@@ -1,1 +1,1 @@
-# Up and running on bitplatform
+# Up and running on bit platform
