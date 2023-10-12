@@ -154,7 +154,8 @@ public partial class BitCalendar
     /// <summary>
     /// Whether the month picker is shown beside the day picker or hidden.
     /// </summary>
-    [Parameter] public bool IsMonthPickerVisible
+    [Parameter]
+    public bool IsMonthPickerVisible
     {
         get => isMonthPickerVisible;
         set
@@ -167,7 +168,7 @@ public partial class BitCalendar
             {
                 _showMonthPicker = false;
             }
-        } 
+        }
     }
     /// <summary>
     /// MaxDate for the Calendar
@@ -658,10 +659,7 @@ public partial class BitCalendar
         return Culture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, Culture.DateTimeFormat.FirstDayOfWeek);
     }
 
-    private void ToggleMonthPickerAsOverlay()
-    {
-        _showMonthPicker = !_showMonthPicker;
-    }
+    private void ToggleMonthPickerAsOverlay() => _showMonthPicker = !_showMonthPicker;
 
     private int GetValueForComparison(int firstDay)
     {
@@ -674,19 +672,19 @@ public partial class BitCalendar
     {
         if (direction == ChangeDirection.Next && MaxDate.HasValue)
         {
-            var MaxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
+            var maxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
+            var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (MaxDateYear == _displayYear && MaxDateMonth == _currentMonth) return false;
+            if (maxDateYear == _displayYear && maxDateMonth == _currentMonth) return false;
         }
 
 
         if (direction == ChangeDirection.Previous && MinDate.HasValue)
         {
-            var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
+            var minDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
+            var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (MinDateYear == _displayYear && MinDateMonth == _currentMonth) return false;
+            if (minDateYear == _displayYear && minDateMonth == _currentMonth) return false;
         }
 
         return true;
@@ -707,24 +705,24 @@ public partial class BitCalendar
 
         if (MaxDate.HasValue)
         {
-            var MaxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
-            var MaxDateDay = Culture.Calendar.GetDayOfMonth(MaxDate.Value.DateTime);
+            var maxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
+            var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
+            var maxDateDay = Culture.Calendar.GetDayOfMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > MaxDateYear ||
-                (_displayYear == MaxDateYear && month > MaxDateMonth) ||
-                (_displayYear == MaxDateYear && month == MaxDateMonth && day > MaxDateDay)) return true;
+            if (_displayYear > maxDateYear ||
+                (_displayYear == maxDateYear && month > maxDateMonth) ||
+                (_displayYear == maxDateYear && month == maxDateMonth && day > maxDateDay)) return true;
         }
 
         if (MinDate.HasValue)
         {
-            var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
-            var MinDateDay = Culture.Calendar.GetDayOfMonth(MinDate.Value.DateTime);
+            var minDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
+            var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
+            var minDateDay = Culture.Calendar.GetDayOfMonth(MinDate.Value.DateTime);
 
-            if (_displayYear < MinDateYear ||
-                (_displayYear == MinDateYear && month < MinDateMonth) ||
-                (_displayYear == MinDateYear && month == MinDateMonth && day < MinDateDay)) return true;
+            if (_displayYear < minDateYear ||
+                (_displayYear == minDateYear && month < minDateMonth) ||
+                (_displayYear == minDateYear && month == minDateMonth && day < minDateDay)) return true;
         }
 
         return false;
@@ -734,18 +732,18 @@ public partial class BitCalendar
     {
         if (MaxDate.HasValue)
         {
-            var MaxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
+            var maxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
+            var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > MaxDateYear || (_displayYear == MaxDateYear && month > MaxDateMonth)) return true;
+            if (_displayYear > maxDateYear || (_displayYear == maxDateYear && month > maxDateMonth)) return true;
         }
 
         if (MinDate.HasValue)
         {
-            var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
+            var minDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
+            var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (_displayYear < MinDateYear || (_displayYear == MinDateYear && month < MinDateMonth)) return true;
+            if (_displayYear < minDateYear || (_displayYear == minDateYear && month < minDateMonth)) return true;
         }
 
         return false;
