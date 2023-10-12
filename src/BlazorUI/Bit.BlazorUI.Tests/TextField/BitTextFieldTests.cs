@@ -54,14 +54,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var bitTextField = component.Find(".bit-txt-inp");
 
-        if (isMultiline)
-        {
-            Assert.AreEqual(bitTextField.TextContent, value);
-        }
-        else
-        {
-            Assert.AreEqual(bitTextField.GetAttribute("value"), value);
-        }
+        Assert.AreEqual(bitTextField.GetAttribute("value"), value);
     }
 
     [DataTestMethod, DataRow("this is label")]
@@ -308,14 +301,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
 
-        if (isMultiline)
-        {
-            Assert.AreEqual(bitTextField.TextContent, actualValue);
-        }
-        else
-        {
-            Assert.AreEqual(bitTextField.GetAttribute("value"), actualValue);
-        }
+        Assert.AreEqual(bitTextField.GetAttribute("value"), actualValue);
     }
 
     [DataTestMethod, DataRow("test description")]
