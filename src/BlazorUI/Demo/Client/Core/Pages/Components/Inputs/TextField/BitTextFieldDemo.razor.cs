@@ -426,112 +426,126 @@ public partial class BitTextFieldDemo
 
 
 
+    private string? oneWayValue;
+    private string? twoWayValue;
+    private string? onChangeValue;
+
+    private string? trimmedValue;
+    private string? notTrimmedValue;
+
+    private ValidationTextFieldModel validationTextFieldModel = new();
+    public bool formIsValidSubmit;
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        validationTextFieldModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
+
+
+
     private readonly string example1RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Basic"" />
+<BitTextField Label=""Basic"" />
+<BitTextField Label=""Placeholder"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Disabled"" IsEnabled=""false"" />
+<BitTextField Label=""Readonly"" IsReadonly=""true"" />
+<BitTextField Label=""Description"" Description=""This is Description"" />
+<BitTextField Label=""IsRequired"" IsRequired=""true"" />
+<BitTextField Label=""MaxLength: 5"" MaxLength=""5"" />
+<BitTextField Label=""Auto focused"" AutoFocus=""true"" />";
 
-<BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsEnabled=""false"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Description"" Description=""This is Description"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""IsRequired"" IsRequired=""true"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""MaxLength: 5"" MaxLength=""5"" />";
     private readonly string example2RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" AutoFocus=""true"" Label=""Auto focused"" />";
+<BitTextField Label=""Basic"" IsUnderlined=""true"" />
+<BitTextField Label=""Placeholder"" IsUnderlined=""true"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
+<BitTextField Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />";
 
     private readonly string example3RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Basic"" IsUnderlined=""true"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />";
+<BitTextField Label=""Basic"" Placeholder=""Enter a text..."" HasBorder=""false"" />
+<BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" HasBorder=""false"" IsEnabled=""false"" />
+<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" IsRequired=""true"" />";
 
     private readonly string example4RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Basic No Border"" HasBorder=""false"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Required No Border"" HasBorder=""false"" IsRequired=""true"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Disabled No Border"" HasBorder=""false"" IsEnabled=""false"" />";
+<BitTextField Label=""Resizable"" IsMultiline=""true"" />
+<BitTextField Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
+<BitTextField Label=""Rows = 10"" IsMultiline=""true"" Rows=""10"" />";
 
     private readonly string example5RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Resizable (By default)"" IsMultiline=""true"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Row count (10)"" IsMultiline=""true"" Rows=""10"" />";
+<BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />
+<BitTextField Label=""Calendar"" IconName=""@BitIconName.Calendar"" />";
 
     private readonly string example6RazorCode = @"
-<BitTextField Placeholder=""Enter an email..."" Label=""Email Icon"" IconName=""@BitIconName.EditMail"" />
-
-<BitTextField Placeholder=""Enter a date..."" Label=""Calendar Icon"" IconName=""@BitIconName.Calendar"" />";
-
-    private readonly string example7RazorCode = @"
-<BitTextField Label=""With Prefix"" Prefix=""https://"" />
-
-<BitTextField Label=""With Suffix"" Suffix="".com"" />
-
-<BitTextField Label=""With Prefix and Suffix"" Prefix=""https://"" Suffix="".com"" />
-
+<BitTextField Label=""Prefix"" Prefix=""https://"" />
+<BitTextField Label=""Suffix"" Suffix="".com"" />
+<BitTextField Label=""Prefix and Suffix"" Prefix=""https://"" Suffix="".com"" />
 <BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />";
 
-    private readonly string example8RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."">
+    private readonly string example7RazorCode = @"
+<BitTextField>
     <LabelTemplate>
-        <BitLabel Style=""color: coral;"">This is custom Label</BitLabel>
+        <BitLabel Style=""color:coral"">Custom Label</BitLabel>
     </LabelTemplate>
 </BitTextField>
 
-<BitTextField Placeholder=""Enter a text..."" Label=""This is custom Description"">
+<BitTextField Label=""Custom Description"">
     <DescriptionTemplate>
-        <BitLabel Style=""color: coral;"">Description</BitLabel>
+        <BitLabel Style=""color:coral"">Description</BitLabel>
     </DescriptionTemplate>
 </BitTextField>
 
-<BitTextField Placeholder=""Enter a text..."" Label=""This is custom Prefix"">
+<BitTextField Label=""Custom Prefix"">
     <PrefixTemplate>
-        <BitLabel Style=""color: coral; margin: 0 5px;"">Prefix</BitLabel>
+        <BitLabel Style=""color:coral;margin:0 5px"">Prefix</BitLabel>
     </PrefixTemplate>
 </BitTextField>
 
-<BitTextField Placeholder=""Enter a text..."" Label=""This is custom Suffix"">
+<BitTextField Label=""Custom Suffix"">
     <SuffixTemplate>
-        <BitLabel Style=""color: coral; margin: 0 5px;"">Suffix</BitLabel>
+        <BitLabel Style=""color:coral;margin:0 5px"">Suffix</BitLabel>
     </SuffixTemplate>
 </BitTextField>";
 
-    private readonly string example9RazorCode = @"
-<BitTextField Placeholder=""Enter a password..."" Label=""Password"" Type=""BitTextFieldType.Password"" />
+    private readonly string example8RazorCode = @"
+<BitTextField Label=""Password"" Type=""BitTextFieldType.Password"" />
+<BitTextField Label=""Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
 
-<BitTextField Placeholder=""Enter a password..."" Label=""Can Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
+    private readonly string example9RazorCode = @"
+<BitTextField Label=""One-way"" Value=""@oneWayValue"" />
+<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+
+<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" IsMultiline=""true"" />
+<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
+
+<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
+<BitLabel>Value: @onChangeValue</BitLabel>";
+    private readonly string example9CsharpCode = @"
+private string oneWayValue;
+private string twoWayValue;
+private string onChangeValue;";
 
     private readonly string example10RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""One-way"" Value=""@OneWayValue"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""OneWayValue"" />
+<BitTextField Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""trimmedValue"" />
+<pre>[@trimmedValue]</pre>
 
-<BitTextField Placeholder=""Enter a text..."" Label=""Two-way"" @bind-Value=""TwoWayValue"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""TwoWayValue"" />
-
-<BitTextField Placeholder=""Enter a text..."" Label=""OnChange"" OnChange=""(v) => OnChangeValue = v"" />
-<BitLabel>Value: @OnChangeValue</BitLabel>
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Readonly"" @bind-Value=""ReadOnlyValue"" IsReadonly=""true"" />";
+<BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
+<pre>[@notTrimmedValue]</pre>";
     private readonly string example10CsharpCode = @"
-private string OneWayValue;
-private string TwoWayValue;
-private string OnChangeValue;
-private string ReadOnlyValue = ""this is readonly value"";";
+private string trimmedValue;
+private string notTrimmedValue;";
 
     private readonly string example11RazorCode = @"
-<BitTextField Placeholder=""Enter a text..."" Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""TrimmedValue"" />
-<pre class=""trimmed-box"">[@TrimmedValue]</pre>
-
-<BitTextField Placeholder=""Enter a text..."" Label=""Not Trimmed"" @bind-Value=""NotTrimmedValue"" />
-<pre class=""trimmed-box"">[@NotTrimmedValue]</pre>";
-    private readonly string example11CsharpCode = @"
-private string TrimmedValue;
-private string NotTrimmedValue;";
-
-    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         border: 1px solid red;
@@ -563,125 +577,74 @@ private string NotTrimmedValue;";
     }
 </style>
 
-<BitTextField Placeholder=""Enter a text..."" Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
-<BitTextField Placeholder=""Enter a text..."" Class=""custom-class"" />
+<BitTextField Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
 
-<BitTextField Placeholder=""Enter a text...""
+<BitTextField Class=""custom-class"" />
+
+
+
+<BitTextField Label=""Custom label style""
               IconName=""@BitIconName.Microphone""
-              Label=""Custom label style""
               Styles=""@(new() { Root = ""background-color: pink;"",
                                 Icon = ""color: darkorange;"",
                                 Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod;"" } )"" />
-<BitTextField Placeholder=""Enter a text...""
+                                Input = ""padding: 0.5rem; background-color: goldenrod;"" })"" />
+
+<BitTextField Label=""Custom label class""
               DefaultValue=""Custom input class""
-              Label=""Custom label class""
               Classes=""@(new() { FieldGroup = ""custom-field"",
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
-                                 Label = ""custom-label"" } )"" />";
+                                 Label = ""custom-label"" })"" />";
 
-    private readonly string example13RazorCode = @"
-Visible: [ <BitTextField Visibility=""BitVisibility.Visible"" Placeholder=""Visible TextField"" /> ]
-Hidden: [ <BitTextField Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden TextField"" />  ]
-Collapsed: [ <BitTextField Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed TextField"" />  ]";
-
-    private readonly string example14RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
-    .validation-summary {
-        overflow: hidden;
-        margin-bottom: 0.6rem;
-        background-color: #FDE7E9;
-        border-left: 0.3rem solid #d13438;
-    }
-
     .validation-message {
-        color: #A4262C;
-        font-size: 0.75rem;
-        margin-top: 0.3rem;
-        line-height: normal;
-    }
-
-    .validation-errors {
-        margin: 0.3rem;
+        color: red;
     }
 </style>
 
-@if (formIsValidSubmit is false)
-{
-    <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
-        <div class=""form-item"">
-            <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationTextFieldModel.Text"" />
-            <ValidationMessage For=""() => validationTextFieldModel.Text"" />
-        </div>
-        <div class=""form-item"">
-            <BitTextField Label=""Numeric validation"" @bind-Value=""validationTextFieldModel.NumericText"" />
-            <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
-        </div>
-        <div class=""form-item"">
-            <BitTextField Label=""Character validation"" @bind-Value=""validationTextFieldModel.CharacterText"" />
-            <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
-        </div>
-        <div class=""form-item"">
-            <BitTextField Label=""Email format validation"" @bind-Value=""validationTextFieldModel.EmailText"" />
-            <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
-        </div>
-        <div class=""form-item"">
-            <BitTextField Label=""Length character validation (Min: 3, Max: 5)"" MaxLength=""5"" @bind-Value=""validationTextFieldModel.RangeText"" />
-            <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
-        </div>
+<EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
+    <DataAnnotationsValidator />
 
-        <BitButton ButtonType=""BitButtonType.Submit"" Style=""margin-top: 10px;"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        The form is valid to submit successfully.
-    </BitMessageBar>
-}";
-    private readonly string example14CsharpCode = @"
+    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationTextFieldModel.Text"" />
+    <ValidationMessage For=""() => validationTextFieldModel.Text"" />
+
+    <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.NumericText"" />
+
+    <BitTextField Label=""Only chars"" @bind-Value=""validationTextFieldModel.CharacterText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.CharacterText"" />
+
+    <BitTextField Label=""Email"" @bind-Value=""validationTextFieldModel.EmailText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.EmailText"" />
+
+    <BitTextField Label=""3 < Length < 5"" @bind-Value=""validationTextFieldModel.RangeText"" />
+    <ValidationMessage For=""() => validationTextFieldModel.RangeText"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example12CsharpCode = @"
 public class ValidationTextFieldModel
 {
-    [Required]
+    [Required(ErrorMessage = ""This field is required."")]
     public string Text { get; set; }
 
-    [RegularExpression(""0*[1-9][0-9]*"", ErrorMessage = ""Only numeric values are allow in field."")]
+    [RegularExpression(""0*[1-9][0-9]*"", ErrorMessage = ""Only numeric values are allowed."")]
     public string NumericText { get; set; }
 
-    [RegularExpression(""^[a-zA-Z0-9.]*$"", ErrorMessage = ""Sorry, only letters(a-z), numbers(0-9), and periods(.) are allowed."")]
+    [RegularExpression(""^[a-zA-Z0-9.]*$"", ErrorMessage = ""Only letters(a-z), numbers(0-9), and period(.) are allowed."")]
     public string CharacterText { get; set; }
 
     [EmailAddress(ErrorMessage = ""Invalid e-mail address."")]
     public string EmailText { get; set; }
 
-    [StringLength(maximumLength: 5, MinimumLength = 3, ErrorMessage = ""The text length much be between 3 and 5 characters in length."")]
+    [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length must be between 3 and 5 chars."")]
     public string RangeText { get; set; }
 }
 
 private ValidationTextFieldModel validationTextFieldModel = new();
-public bool formIsValidSubmit;
-private async Task HandleValidSubmit()
-{
-    formIsValidSubmit = true;
 
-    await Task.Delay(2000);
-
-    validationTextFieldModel = new();
-
-    formIsValidSubmit = false;
-
-    StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    formIsValidSubmit = false;
-}";
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
 }
