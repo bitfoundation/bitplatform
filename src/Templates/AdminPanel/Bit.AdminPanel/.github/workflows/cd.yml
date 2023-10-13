@@ -40,7 +40,7 @@ jobs:
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/AdminPanel.Client.Web.csproj
 
     - name: Install wasm
-      run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.2.23502.2
+      run:  dotnet workload install wasm-tools wasm-experimental
       
     - name: Generate CSS/JS files
       run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -144,7 +144,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.2.23502.2
+      run: dotnet workload install maui
   
     - name: Generate CSS/JS files
       run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -191,7 +191,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
     - name: Install maui
-      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.2.23502.2
+      run: dotnet workload install maui-android
   
     - name: Generate CSS/JS files
       run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -234,7 +234,7 @@ jobs:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
      - name: Install maui
-       run: dotnet workload install maui --sdk-version=8.0.100-rc.2.23502.2
+       run: dotnet workload install maui
    
      - name: Generate CSS/JS files
        run: dotnet build src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -274,7 +274,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.2.23502.2
+      run: dotnet workload install maui
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1

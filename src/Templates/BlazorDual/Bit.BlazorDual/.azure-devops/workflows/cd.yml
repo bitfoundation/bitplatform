@@ -42,7 +42,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-          'dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.2.23502.2'
+          'dotnet workload install wasm-tools wasm-experimental'
 
   - task: FileTransform@1
     displayName: Update appsettings.json
