@@ -91,6 +91,16 @@
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
                                     <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                 </button>
+                                @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
+                                {
+                                    <button @onclick="HandleGoToToday"
+                                            type="button"
+                                            class="bit-dtp-nav-btn"
+                                            title="@GoToToday"
+                                            disabled="@IsGoTodayDisabled()">
+                                        <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                    </button>
+                                }
                                 <button @onclick="() => HandleOnMonthChange(ChangeDirection.Next)"
                                         type="button"
                                         class="bit-dtp-nav-btn"
@@ -179,16 +189,6 @@
                             </tbody>
                         </table>
 
-                        @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
-                        {
-                            <button @onclick="HandleGoToToday"
-                                    type="button"
-                                    class="bit-dtp-gtd-btn"
-                                    disabled="@IsGoTodayDisabled()">
-                                @GoToToday
-                            </button>
-                        }
-
                         @if (ShowTimePicker)
                         {
                             <div class="bit-dtp-tgrp">
@@ -267,6 +267,16 @@
                                             aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleGoToToday"
+                                                type="button"
+                                                class="bit-dtp-nav-btn"
+                                                title="@GoToToday"
+                                                disabled="@IsGoTodayDisabled()">
+                                            <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                        </button>
+                                    }
                                     <button @onclick="() => HandleYearChange(ChangeDirection.Next)"
                                             type="button"
                                             class="bit-dtp-nav-btn"
@@ -330,6 +340,16 @@
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleGoToToday"
+                                                type="button"
+                                                class="bit-dtp-nav-btn"
+                                                title="@GoToToday"
+                                                disabled="@IsGoTodayDisabled()">
+                                            <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                        </button>
+                                    }
                                     <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)"
                                             type="button"
                                             class="bit-dtp-nav-btn"
@@ -369,16 +389,6 @@
                                     </div>
                                 }
                             </div>
-                        }
-
-                        @if (ShowGoToToday)
-                        {
-                            <button @onclick="HandleGoToToday"
-                                    type="button"
-                                    class="bit-dtp-gtd-btn @(ShowTimePicker ? "bit-dtp-gtd-btn-bs" : "")"
-                                    disabled="@IsGoTodayDisabled()">
-                                @GoToToday
-                            </button>
                         }
                     </div>
                 }

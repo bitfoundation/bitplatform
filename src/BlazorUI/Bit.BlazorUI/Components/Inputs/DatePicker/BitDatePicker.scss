@@ -639,39 +639,6 @@
     }
 }
 
-.bit-dtp-gtd-btn {
-    border: none;
-    overflow: visible;
-    position: relative;
-    outline: transparent;
-    align-self: flex-end;
-    height: spacing(3.75);
-    padding: 0 spacing(0.5);
-    font-size: spacing(1.5);
-    box-sizing: content-box;
-    line-height: spacing(3.75);
-    background-color: transparent;
-    color: $color-foreground-primary;
-    margin: spacing(0.375) spacing(0.5) 0 0;
-
-    &.bit-dtp-gtd-btn-bs {
-        bottom: spacing(-1.5);
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            cursor: pointer;
-            background-color: transparent;
-            color: $color-action-hover-primary;
-        }
-    }
-
-    &:disabled {
-        pointer-events: none;
-        color: $color-foreground-disabled;
-    }
-}
-
 .bit-dtp-ovl {
     top: 0;
     left: 0;

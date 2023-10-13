@@ -214,7 +214,7 @@
     <ComponentExampleBox Title="With time" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" AriaLabel="Select a date" />
+                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" AriaLabel="Select a date" Culture="CultureInfoHelper.GetFaIrCultureByFarsiNames()" />
             </div>
             <BitLabel>Selected DateTime: @selectedDateTime.ToString()</BitLabel>
         </ExamplePreview>
