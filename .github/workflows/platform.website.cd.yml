@@ -32,7 +32,7 @@ jobs:
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Websites/Platform/src/Bit.Websites.Platform.Web/Bit.Websites.Platform.Web.csproj
 
     - name: Install wasm
-      run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23463.5
+      run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.2.23502.2
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
