@@ -441,6 +441,13 @@ public partial class BitChoiceGroupDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitChoiceGroup.",
+               },
+               new()
+               {
                    Name = "LabelContainer",
                    Type = "string?",
                    DefaultValue = "null",

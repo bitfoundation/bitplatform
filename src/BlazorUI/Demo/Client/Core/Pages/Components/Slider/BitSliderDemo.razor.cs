@@ -16,9 +16,9 @@ public partial class BitSliderDemo
             Name = "Classes",
             Type = "BitSliderClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitSlider.",
             LinkType = LinkType.Link,
             Href = "#slider-class-styles",
-            Description = "Custom CSS classes for different parts of the BitSlider.",
         },
         new()
         {
@@ -79,8 +79,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "LowerValue",
-            Type = "double?",
-            DefaultValue = "null",
+            Type = "double",
+            DefaultValue = "0",
             Description = "The lower value of the ranged Slider.",
         },
         new()
@@ -109,6 +109,8 @@ public partial class BitSliderDemo
             Type = "BitSliderRangeValue?",
             DefaultValue = "null",
             Description = "The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue.",
+            LinkType = LinkType.Link,
+            Href = "#slider-range-value",
         },
         new()
         {
@@ -136,22 +138,22 @@ public partial class BitSliderDemo
             Name = "Styles",
             Type = "BitSliderClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitSlider.",
             LinkType = LinkType.Link,
             Href = "#slider-class-styles",
-            Description = "Custom CSS styles for different parts of the BitSlider.",
         },
         new()
         {
             Name = "UpperValue",
-            Type = "double?",
-            DefaultValue = "null",
+            Type = "double",
+            DefaultValue = "0",
             Description = "The upper value of the ranged Slider.",
         },
         new()
         {
             Name = "Value",
-            Type = "double?",
-            DefaultValue = "null",
+            Type = "double",
+            DefaultValue = "0",
             Description = "The value of the Slider.",
         },
         new()
@@ -173,127 +175,125 @@ public partial class BitSliderDemo
             {
                 new()
                 {
-                    Name = "Container",
+                    Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's container."
+                    Description = "Custom CSS classes/styles for the BitSlider's root element."
                 },
                 new()
                 {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's label."
+                    Description = "Custom CSS classes/styles for the BitSlider's label."
                 },
                 new()
                 {
-                    Name = "UpperValueInput",
+                    Name = "UpperValueLabel",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's upper value label."
                 },
                 new()
                 {
-                    Name = "LowerValueInput",
+                    Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's container."
+                },
+                new()
+                {
+                    Name = "LowerValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's lower value label."
                 },
                 new()
                 {
                     Name = "SliderBox",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's box."
+                    Description = "Custom CSS classes/styles for the BitSlider's box."
                 },
                 new()
                 {
                     Name = "LowerValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's lower value input."
-                },
-                new()
-                {
-                    Name = "Root",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's root element."
+                    Description = "Custom CSS classes/styles for the BitSlider's lower value input."
                 },
                 new()
                 {
                     Name = "UpperValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's upper value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's upper value input."
                 },
                 new()
                 {
                     Name = "ValueInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's value input."
+                    Description = "Custom CSS classes/styles for the BitSlider's value input."
                 },
                 new()
                 {
                     Name = "OriginFromZero",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the sider's origin from zero."
+                    Description = "Custom CSS classes/styles for the BitSlider's origin from zero."
+                },
+                new()
+                {
+                    Name = "ValueLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's value label."
+                }
+            }
+        },
+        new()
+        {
+            Id="slider-range-value",
+            Title="BitSliderRangeValue",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Lower",
+                    Type = "double",
+                    DefaultValue = "0",
+                    Description = "The lower value of the ranged Slider."
+                },
+                new()
+                {
+                    Name = "Upper",
+                    Type = "double",
+                    DefaultValue = "0",
+                    Description = "The upper value of the ranged Slider."
                 }
             }
         }
     };
 
+    
 
-
-    private double? sliderHorizontalValue = 2;
-    private double? sliderRangedLowerValue = 3;
-    private double? sliderRangedUpperValue = 7;
-
-    private void ResetBitSliderRangedValues()
-    {
-        sliderRangedLowerValue = 3;
-        sliderRangedUpperValue = 7;
-    }
+    private double oneWayBinding = 1;
+    private double twoWayBinding = 1;
+    private object? onChangeValue;
 
 
 
     private readonly string example1RazorCode = @"
 <BitSlider Label=""Basic slider"" />
 
-<BitSlider Label=""Disabled slider""
-           Min=""50""
-           Max=""500""
-           Step=""50""
-           DefaultValue=""300""
-           IsEnabled=""false"" />
+<BitSlider Label=""Disabled slider"" DefaultValue=""5"" IsEnabled=""false"" />
 
-<BitSlider Label=""Snapping slider""
-           Min=""0""
-           Max=""50""
-           Step=""10""
-           DefaultValue=""20"" />
+<BitSlider Label=""Snapping slider"" Min=""0"" Max=""50"" Step=""10"" />
 
-<BitSlider @bind-Value=""sliderHorizontalValue""
-           Label=""Controlled slider""
-           Max=""10"" />
-<BitButton Class=""bit-btn-slider"" OnClick=""() => sliderHorizontalValue = 2"">Reset value</BitButton>
+<BitSlider Label=""Formatted value"" Max=""1"" Step=""0.01"" DefaultValue=""0.69"" ValueFormat=""0 %"" />
 
-<BitSlider Label=""Formatted value""
-           Max=""1""
-           Step=""0.01""
-           DefaultValue=""0.69""
-           ValueFormat=""0 %"" />
-
-<BitSlider Label=""Origin from zero""
-           Min=""-5""
-           Max=""5""
-           Step=""1""
-           DefaultValue=""2""
-           IsOriginFromZero=""true"" />";
-    private readonly string example1CsharpCode = @"
-private double? sliderHorizontalValue = 2;";
+<BitSlider Label=""Origin from zero"" Min=""-5"" Max=""5"" DefaultValue=""0"" IsOriginFromZero=""true"" />";
 
     private readonly string example2RazorCode = @"
 Visible: [ <BitSlider Visibility=""BitVisibility.Visible"" /> ]
@@ -301,120 +301,51 @@ Hidden: [ <BitSlider Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
 
     private readonly string example3RazorCode = @"
-<BitSlider Label=""Basic""
-           Min=""1""
-           Max=""5""
-           Step=""1""
-           DefaultValue=""2""
-           IsVertical=""true"" />
+<BitSlider Label=""Basic"" IsVertical=""true"" />
 
-<BitSlider Label=""Disabled""
-           Min=""50""
-           Max=""500""
-           Step=""50""
-           DefaultValue=""300""
-           IsVertical=""true""
-           IsEnabled=""false"" />
+<BitSlider Label=""Disabled"" IsVertical=""true"" IsEnabled=""false"" />
 
-<BitSlider Label=""Formatted value""
-           Max=""20""
-           ValueFormat=""0 cm""
-           DefaultValue=""10""
-           IsVertical=""true"" />
+<BitSlider Label=""Formatted value"" IsVertical=""true"" DefaultValue=""2"" ValueFormat=""0 cm"" />
 
-<BitSlider Label=""Origin from zero""
-           Min=""-5""
-           Max=""15""
-           Step=""1""
-           DefaultValue=""5""
-           IsVertical=""true""
-           IsOriginFromZero=""true"" />";
+<BitSlider Label=""Origin from zero"" IsVertical=""true"" Min=""-5"" Max=""5"" DefaultValue=""0"" IsOriginFromZero=""true"" />";
 
     private readonly string example4RazorCode = @"
-<BitSlider Label=""Basic""
-           Min=""0""
-           Max=""10""
-           DefaultLowerValue=""2""
-           DefaultUpperValue=""8""
-           IsRanged=""true"" />
+<BitSlider Label=""Basic"" IsRanged=""true"" />
 
-<BitSlider Label=""Disabled""
-           Min=""50""
-           Max=""500""
-           Step=""50""
-           DefaultLowerValue=""200""
-           DefaultUpperValue=""300""
-           IsRanged=""true""
-           IsEnabled=""false"" />
+<BitSlider Label=""Disabled"" IsRanged=""true"" DefaultLowerValue=""2"" DefaultUpperValue=""5"" IsEnabled=""false"" />
 
-<BitSlider Label=""Controlled example""
-           Max=""10""
-           @bind-LowerValue=""sliderRangedLowerValue""
-           @bind-UpperValue=""sliderRangedUpperValue""
-           IsRanged=""true"" />
-<BitButton Class=""bit-btn-slider"" OnClick=""ResetBitSliderRangedValues"">Reset value</BitButton>
-
-<BitSlider Label=""Formatted value""
-           Max=""10""
+<BitSlider Label=""Formatted value"" IsRanged=""true""
            Step=""0.1""
            ValueFormat=""0.0 px""
-           IsRanged=""true""
            DefaultLowerValue=""4.2""
            DefaultUpperValue=""8.5"" />
 
-<BitSlider Label=""Origin from zero""
+<BitSlider Label=""Origin from zero"" IsRanged=""true""
            Min=""-5""
            Max=""5""
-           Step=""1""
            DefaultUpperValue=""2""
-           IsRanged=""true""
            IsOriginFromZero=""true"" />";
-    private readonly string example4CsharpCode = @"
-private double? sliderRangedLowerValue = 3;
-private double? sliderRangedUpperValue = 7;
-private void ResetBitSliderRangedValues()
-{
-    sliderRangedLowerValue = 3;
-    sliderRangedUpperValue = 7;
-}";
 
     private readonly string example5RazorCode = @"
-<BitSlider Label=""Basic""
-           Min=""1""
-           Max=""5""
-           Step=""1""
-           DefaultUpperValue=""2""
+<BitSlider Label=""Basic"" IsVertical=""true"" IsRanged=""true""
            DefaultLowerValue=""1""
-           IsRanged=""true""
-           IsVertical=""true"" />
+           DefaultUpperValue=""2"" />
 
-<BitSlider Label=""Disabled""
-           Min=""50""
-           Max=""500""
-           Step=""50""
-           DefaultUpperValue=""100""
-           DefaultLowerValue=""300""
-           IsRanged=""true""
-           IsVertical=""true""
+<BitSlider Label=""Disabled"" IsVertical=""true"" IsRanged=""true""
+           DefaultUpperValue=""1""
+           DefaultLowerValue=""3""
            IsEnabled=""false"" />
 
-<BitSlider Label=""Formatted value""
-           Max=""10""
+<BitSlider Label=""Formatted value"" IsVertical=""true"" IsRanged=""true""
            Step=""0.01""
            ValueFormat=""0.00 rem""
            DefaultLowerValue=""4.20""
-           DefaultUpperValue=""6.9""
-           IsRanged=""true""
-           IsVertical=""true"" />
+           DefaultUpperValue=""6.9"" />
 
-<BitSlider Label=""Origin from zero""
+<BitSlider Label=""Origin from zero"" IsVertical=""true"" IsRanged=""true""
            Min=""-5""
-           Max=""15""
-           Step=""1""
-           DefaultUpperValue=""7""
-           DefaultLowerValue=""3""
-           IsRanged=""true""
-           IsVertical=""true""
+           Max=""5""
+           DefaultUpperValue=""3""
            IsOriginFromZero=""true"" />";
 
     private readonly string example6RazorCode = @"
@@ -499,9 +430,16 @@ private void ResetBitSliderRangedValues()
                               Container = ""custom-container"" } )"" />";
 
     private readonly string example7RazorCode = @"
-<BitSlider Max=""10""
-           DefaultUpperValue=""3""
-           DefaultLowerValue=""5""
-           IsRanged=""true""
-           SliderBoxHtmlAttributes=""@(new() { { ""custom-attribute"", ""demo"" } })"" />";
+<BitSlider Label=""One-way"" Value=""oneWayBinding"" />
+<BitRating Max=""10"" @bind-Value=""oneWayBinding"" />
+
+<BitSlider Label=""Two-way"" @bind-Value=""twoWayBinding"" />
+<BitRating Max=""10"" @bind-Value=""twoWayBinding"" />
+
+<BitSlider Label=""OnChange"" DefaultValue=""2"" OnChange=""v => onChangeValue = v.Value"" />
+<BitLabel>OnChange value: @onChangeValue</BitLabel>";
+    private readonly string example7CsharpCode = @"
+private double oneWayBinding = 1;
+private double twoWayBinding = 1;
+private object? onChangeValue;";
 }

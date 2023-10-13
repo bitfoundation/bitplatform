@@ -13,10 +13,11 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Basic"
-                               IncrementTitle="Increment"
-                               DecrementTitle="Decrement" />
+                <BitSpinButton Label="Basic" />
+
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
+
+                <BitSpinButton Label="Button title" IncrementTitle="Increase" DecrementTitle="Decrease" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -47,7 +48,7 @@
                 <BitSpinButton Label="Styles" Styles="@(new() { LabelContainer = "background:darkred;padding:1.5rem",
                                                                 Label = "font-size:22px;color:chartreuse",
                                                                 DecrementButton = "background:blue",
-                                                                IncrementButton = "background:green",})" />
+                                                                IncrementButton = "background:green" })" />
 
                 <BitSpinButton Label="Classes" Classes="@(new() { Input = "custom-input",
                                                                   CompactButtonsWrapper = "custom-wrapper" })" />
@@ -132,12 +133,12 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitSpinButton Label="One-way" Value="OneWayValue" />
-                    <BitRating @bind-Value="OneWayValue" />
+                    <BitSpinButton Label="One-way" Value="oneWayValue" />
+                    <BitRating @bind-Value="oneWayValue" />
                 </div>
                 <div>
-                    <BitSpinButton Label="Two-way" Step="0.5" @bind-Value="TwoWayValue" />
-                    <BitRating @bind-Value="TwoWayValue" />
+                    <BitSpinButton Label="Two-way" @bind-Value="twoWayValue" />
+                    <BitRating @bind-Value="twoWayValue" />
                 </div>
             </div>
         </ExamplePreview>
@@ -147,22 +148,21 @@
         <ExamplePreview>
             <div class="example-box">
                 <div class="column">
-                    <BitSpinButton @bind-Value="IncrementEventValue"
-                                   Label="OnIncrement / OnDecrement"
+                    <BitSpinButton Label="OnIncrement / OnDecrement"
                                    Step="0.1"
-                                   OnIncrement="() => OnIncrementCounter++"
-                                   OnDecrement="() => OnDecrementCounter++" />
-                    <BitLabel>OnIncrement Counter: @OnIncrementCounter</BitLabel>
-                    <BitLabel>OnDecrement Counter: @OnDecrementCounter</BitLabel>
+                                   DefaultValue="2"
+                                   OnIncrement="() => onIncrementCounter++"
+                                   OnDecrement="() => onDecrementCounter++" />
+                    <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
+                    <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
                 </div>
                 <br />
                 <div class="column">
-                    <BitSpinButton @bind-Value="OnChangeEventBindedValue"
-                                   Label="OnChange"
+                    <BitSpinButton Label="OnChange"
                                    Step="0.1"
-                                   OnChange="HandleOnChangeEvent" />
-                    <BitLabel>OnChange Clicked Counter: @OnChangeClickedCounter</BitLabel>
-                    <BitLabel>OnChange Returned Value: @OnChangeEventReturnedValue</BitLabel>
+                                   DefaultValue="2"
+                                   OnChange="v => onChangeValue = v" />
+                    <BitLabel>OnChange Value: @onChangeValue</BitLabel>
                 </div>
             </div>
         </ExamplePreview>
@@ -179,7 +179,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Readonly" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="ReadOnly" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton IsInputReadOnly="true" />

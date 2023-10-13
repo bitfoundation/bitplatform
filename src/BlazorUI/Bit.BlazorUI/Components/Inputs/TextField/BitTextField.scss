@@ -10,16 +10,6 @@
     font-size: spacing(1.75);
     font-family: $typography-font-family;
 
-    .bit-icon {
-        height: 100%;
-        display: flex;
-        width: spacing(4);
-        align-items: center;
-        font-size: spacing(2);
-        justify-content: center;
-        color: $color-foreground-primary;
-    }
-
     &.bit-dis {
         .bit-txt-lbl {
             color: $color-foreground-disabled;
@@ -111,10 +101,6 @@
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;
-
-    input, button {
-        min-height: spacing(3.75);
-    }
 }
 
 .bit-txt-inp {
@@ -131,6 +117,7 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
+    min-height: spacing(3.75);
     background: none transparent;
     color: $color-foreground-primary;
     font-family: $typography-font-family;
@@ -149,6 +136,7 @@
     position: relative;
     outline: transparent;
     padding: 0 spacing(0.5);
+    min-height: spacing(3.75);
     color: $color-primary-main;
     background-color: transparent;
 
@@ -157,17 +145,29 @@
             background-color: $color-action-hover-background-primary;
         }
     }
+}
 
-    span {
-        display: flex;
-        align-items: center;
-        font-size: spacing(2);
-        justify-content: center;
-    }
+.bit-txt-rin {
+    display: flex;
+    align-items: center;
+    font-size: spacing(2);
+    justify-content: center;
+}
 
-    .bit-icon {
-        color: $color-primary-main;
-    }
+.bit-txt-ric {
+    color: $color-primary-main;
+}
+
+.bit-txt-ico {
+    color: $color-foreground-primary;
+}
+
+.bit-txt-ric,
+.bit-txt-ico {
+    height: 100%;
+    width: spacing(4);
+    text-align: center;
+    font-size: spacing(2);
 }
 
 .bit-txt-des {

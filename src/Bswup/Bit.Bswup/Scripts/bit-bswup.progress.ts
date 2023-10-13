@@ -1,4 +1,4 @@
-﻿window['bit-bswup.progress version'] = '6.0.0';
+﻿window['bit-bswup.progress version'] = '6.1.0';
 
 ; (function () {
     (window as any).startBswupProgress = (autoReload: boolean,

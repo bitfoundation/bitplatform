@@ -44,6 +44,14 @@
 
 .bit-rtg-sm {
     .bit-rtg-btn {
+        height: spacing(1);
+        font-size: spacing(1);
+        line-height: spacing(1);
+    }
+}
+
+.bit-rtg-md {
+    .bit-rtg-btn {
         height: spacing(2);
         font-size: spacing(2);
         line-height: spacing(2);
@@ -52,9 +60,9 @@
 
 .bit-rtg-lg {
     .bit-rtg-btn {
-        height: spacing(2.5);
-        font-size: spacing(2.5);
-        line-height: spacing(2.5);
+        height: spacing(3);
+        font-size: spacing(3);
+        line-height: spacing(3);
     }
 }
 

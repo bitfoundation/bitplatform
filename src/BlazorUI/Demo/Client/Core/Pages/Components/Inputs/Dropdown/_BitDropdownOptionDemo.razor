@@ -285,6 +285,23 @@
                     <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
                 }
             </BitDropdown>
+
+            <BitDropdown Label="Callout templates"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                <CalloutHeaderTemplate>
+                    <BitLabel Style="padding:0.5rem;border-bottom:1px solid #555">Best in the world</BitLabel>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <BitActionButton IconName="@BitIconName.Add">New Item</BitActionButton>
+                </CalloutFooterTemplate>
+                <Options>
+                    @foreach (var item in dataItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+                    }
+                </Options>
+            </BitDropdown>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

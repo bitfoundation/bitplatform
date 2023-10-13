@@ -113,6 +113,7 @@ main {
     align-items: flex-start;
     justify-content: flex-start;
     padding: 24px 80px 24px 24px;
+    -webkit-text-size-adjust: none;
     border: rem2(1px) solid $bit-color-border-primary;
     font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
 
