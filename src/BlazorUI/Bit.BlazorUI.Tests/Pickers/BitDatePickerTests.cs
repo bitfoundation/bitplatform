@@ -52,7 +52,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find("button:has(> i.bit-icon--GotoToday)");
+        var goToTodayButton = component.Find(".bit-dtp-gtb");
 
         Assert.AreEqual(goToTodayButton.GetAttribute("title"), goToToday);
     }
@@ -261,7 +261,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll("button:has(> i.bit-icon--GotoToday)");
+        var goToTodayBtnElms = component.FindAll(".bit-dtp-gtb");
 
         if (showGoToToday)
         {
