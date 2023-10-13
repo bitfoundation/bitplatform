@@ -13,7 +13,7 @@
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Sales.Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Sales.Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Sales.Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Bit.Websites.Sales.Web\Bit.Websites.Sales.Web.csproj" />
 
         <EmbeddedResource Include="Resources\*.cshtml" />

@@ -22,7 +22,7 @@ building each one of them requires some specific steps that are explained below.
 
 Building each of the bit platform projects needs the following basic requirements other than the specific requirements that are explained later:
 
-- [.NET 8 RC1 SDK (8.0.100-rc.1.23463.5)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [.NET 8 RC1 SDK (8.0.100-rc.2.23502.2)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [Node.js](https://nodejs.org)
 
 <br/>
@@ -72,13 +72,13 @@ The `App` project unlike the Web needs the `MAUI` workloads to build. This requi
 
 **Linux**:
 ```bash
-dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
+dotnet workload install maui-android
 ```
 **Note**: because of MAUI shortcomings, for now only the android version can be built on Linux.
 
 **Windows & macOS**:
 ```bash
-dotnet workload install maui --sdk-version=8.0.100-rc.1.23455.8
+dotnet workload install maui
 ```
 
 To build the App project run the following command in the `Bit.BlazorUI.Demo.Client.App` project folder (`Demo/Client/App`):
@@ -104,13 +104,13 @@ The `App` project unlike the Web needs the `MAUI` workloads too. This requiremen
 
 **Linux**:
 ```bash
-dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23455.8
+dotnet workload install maui-android
 ```
 **Note**: because of MAUI shortcomings, for now only the android version can be built on Linux.
 
 **Windows & macOS**:
 ```bash
-dotnet workload install maui --sdk-version=8.0.100-rc.1.23455.8
+dotnet workload install maui
 ```
 
 To build the App project run the following command in the `AdminPanel.Client.App` project folder (`src/Client/Web`):
