@@ -185,7 +185,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "OnDecrement",
-            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
+            Type = "EventCallback<double>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
         },
         new()
@@ -197,7 +197,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "OnIncrement",
-            Type = "EventCallback<BitSpinButtonChangeEventArgs>",
+            Type = "EventCallback<double>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
         },
         new()
@@ -452,16 +452,14 @@ public partial class BitSpinButtonDemo
 
     private readonly string example1RazorCode = @"
 <BitSpinButton Label=""Basic"" />
-
 <BitSpinButton Label=""Disabled"" IsEnabled=""false"" />
-
+<BitSpinButton Label=""Min & Max"" Min=""-10"" Max=""10"" />
+<BitSpinButton Label=""ReadOnly"" IsInputReadOnly=""true"" />
 <BitSpinButton Label=""Button title"" IncrementTitle=""Increase"" DecrementTitle=""Decrease"" />";
 
     private readonly string example2RazorCode = @"
 <BitSpinButton Label=""Compact"" Mode=""BitSpinButtonMode.Compact"" />
-
 <BitSpinButton Label=""Inline"" Mode=""BitSpinButtonMode.Inline"" />
-
 <BitSpinButton Label=""Spread"" Mode=""BitSpinButtonMode.Spread"" />";
 
     private readonly string example3RazorCode = @"
@@ -497,104 +495,75 @@ public partial class BitSpinButtonDemo
                                                   CompactButtonsWrapper = ""custom-wrapper"" })"" />";
 
     private readonly string example4RazorCode = @"
-<BitSpinButton Label=""Top Label & Icon"" IconName=""@BitIconName.Lightbulb"" />
+<BitSpinButton Label=""Top (default)"" />
 <BitSpinButton Label=""Left Label"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
 <BitSpinButton Label=""Right Label"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
-<BitSpinButton Label=""Bottom Label"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />";
+<BitSpinButton Label=""Bottom Label"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />
 
-    private readonly string example5RazorCode = @"
 <BitSpinButton>
     <LabelTemplate>
-        <div style=""display:flex; align-items: center; gap: 10px"">
+        <div style=""display:flex;align-items:center;gap:10px"">
             <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
             <BitIcon IconName=""@BitIconName.Filter"" />
         </div>
     </LabelTemplate>
 </BitSpinButton>";
 
-    private readonly string example6RazorCode = @"
-<BitSpinButton Label=""Like and Dislike""
+    private readonly string example5RazorCode = @"
+<BitSpinButton Label=""Icon"" IconName=""@BitIconName.Lightbulb"" />
+
+
+<BitSpinButton Label=""Compact mode""
                IncrementIconName=""@BitIconName.LikeSolid""
                DecrementIconName=""@BitIconName.DislikeSolid"" />
 
-<BitSpinButton Label=""Back & Forward""
+<BitSpinButton Label=""Inline mode""
                Mode=""BitSpinButtonMode.Inline""
-               DecrementIconName=""@BitIconName.Back""
-               IncrementIconName=""@BitIconName.Forward"" />
+               IncrementIconName=""@BitIconName.Forward""
+               DecrementIconName=""@BitIconName.Back"" />
 
-<BitSpinButton Label=""Plus and Minus""
+<BitSpinButton Label=""Spread mode""
                Mode=""BitSpinButtonMode.Spread""
                IncrementIconName=""@BitIconName.CalculatorAddition""
                DecrementIconName=""@BitIconName.CalculatorSubtract"" />";
 
+    private readonly string example6RazorCode = @"
+<BitSpinButton Label=""Height"" DefaultValue=""150"" Suffix="" cm"" />
+<BitSpinButton Label=""Weight"" DefaultValue=""50"" Suffix="" kg"" />";
+
     private readonly string example7RazorCode = @"
-<BitSpinButton Label=""Min: -10, Max: 10""
-               Min=""-10""
-               Max=""10"" />
-
-<BitSpinButton Label=""Min: -20, Max: 20, Step: 2""
-               Min=""-20""
-               Max=""20""
-               Step=""2"" />
-
-<BitSpinButton Label=""Min: -1, Max: 1, Step: 0.1""
-               Min=""-1""
-               Max=""1""
-               Step=""0.1"" />";
-
-    private readonly string example8RazorCode = @"
-<BitSpinButton Label=""Height""
-               IconName=""@BitIconName.AutoHeight""
-               DefaultValue=""150""
-               Suffix="" cm"" />
-
-<BitSpinButton Label=""Weight""
-               IconName=""@BitIconName.Weights""
-               DefaultValue=""50""
-               Step=""0.5""
-               Suffix="" kg"" />";
-
-    private readonly string example9RazorCode = @"
 <BitSpinButton Label=""One-way"" Value=""oneWayValue"" />
 <BitRating @bind-Value=""oneWayValue"" />
 
 <BitSpinButton Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitRating @bind-Value=""twoWayValue"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private double oneWayValue = 3;
 private double twoWayValue = 5;";
 
-    private readonly string example10RazorCode = @"
-<BitSpinButton Label=""OnIncrement / OnDecrement""
-               Step=""0.1""
-               DefaultValue=""2""
+    private readonly string example8RazorCode = @"
+<BitSpinButton Label=""OnIncrement & OnDecrement""
                OnIncrement=""() => onIncrementCounter++""
                OnDecrement=""() => onDecrementCounter++"" />
 <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
 <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
 
-<BitSpinButton Label=""OnChange""
-               Step=""0.1""
-               DefaultValue=""2""
-               OnChange=""v => onChangeValue = v"" />
+<BitSpinButton Label=""OnChange"" OnChange=""v => onChangeValue = v"" />
 <BitLabel>OnChange Value: @onChangeValue</BitLabel>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
 private double onChangeValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitSpinButton ShowInput=""false""
-                @bind-Value=""showInputValue""
-                Mode=""BitSpinButtonMode.Inline""
-                Label=""@showInputValue.ToString()"" />";
-    private readonly string example11CsharpCode = @"
+               @bind-Value=""showInputValue""
+               Mode=""BitSpinButtonMode.Inline""
+               Label=""@showInputValue.ToString()"" />";
+    private readonly string example9CsharpCode = @"
 private double showInputValue;";
 
-    private readonly string example12RazorCode = @"
-<BitSpinButton IsInputReadOnly=""true"" />";
-
-    private readonly string example13RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -610,7 +579,7 @@ private double showInputValue;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class BitSpinButtonValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
