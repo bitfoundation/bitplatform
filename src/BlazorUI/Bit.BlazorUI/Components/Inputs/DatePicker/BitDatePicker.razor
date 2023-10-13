@@ -82,7 +82,7 @@
                                     <span id="@_monthTitleId">@_monthTitle</span>
                                 </div>
                             }
-                            <div class="bit-dtp-nav-btn-ctn">
+                            <div class="bit-dtp-nbc">
                                 <button @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)"
                                         type="button"
                                         class="bit-dtp-nbt"
@@ -258,7 +258,7 @@
                                         aria-label="@($"{_displayYear}, change year")">
                                     @_displayYear
                                 </button>
-                                <div class="bit-dtp-nav-btn-ctn">
+                                <div class="bit-dtp-nbc">
                                     <button @onclick="() => HandleYearChange(ChangeDirection.Previous)"
                                             type="button"
                                             class="bit-dtp-nbt"
@@ -331,7 +331,7 @@
                                         aria-label="@($"{_yearRangeFrom} - {_yearRangeTo}, change month")">
                                     @_yearRangeFrom - @_yearRangeTo
                                 </button>
-                                <div class="bit-dtp-nav-btn-ctn">
+                                <div class="bit-dtp-nbc">
                                     <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Previous)"
                                             type="button"
                                             class="bit-dtp-nbt"
