@@ -42,7 +42,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-          'dotnet workload install wasm-tools wasm-experimental'
+          'cd src && dotnet workload install wasm-tools wasm-experimental'
 
   - task: FileTransform@1
     displayName: Update appsettings.json
@@ -171,7 +171,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
+      script: cd src && dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -214,7 +214,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui-android
+      script: cd src && dotnet workload install maui-android
 
   - task: DownloadSecureFile@1
     displayName: Download TodoTemplate keystore file
@@ -294,7 +294,7 @@ jobs:
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
-      script: dotnet workload install maui
+      script: cd src && dotnet workload install maui
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'

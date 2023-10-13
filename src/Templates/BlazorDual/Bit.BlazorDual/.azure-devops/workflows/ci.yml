@@ -54,7 +54,7 @@ jobs:
     displayName: 'Install wasm'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload install wasm-tools wasm-experimental'
+      script: 'cd src && dotnet workload install wasm-tools wasm-experimental'
 
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'
