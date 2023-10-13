@@ -114,11 +114,14 @@ public partial class BitModal : IDisposable
 
     protected override string RootElementClass => "bit-mdl";
 
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
+    }
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
-
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
