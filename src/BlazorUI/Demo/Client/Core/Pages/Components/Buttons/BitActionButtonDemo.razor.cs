@@ -223,11 +223,11 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
 
     private readonly string example5RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Open Bit Platform In New Tab
+    Open bit platform In New Tab
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Go To Bit Platform
+    Go To bit platform
 </BitActionButton>";
 
     private readonly string example6RazorCode = @"

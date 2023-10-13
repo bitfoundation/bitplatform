@@ -33,7 +33,7 @@ Building each bit platform project requires specific steps that are explained pe
 
 <br/>
 
-### bit Platform Website
+### bit platform Website
 This website only requires the basic requirements and can be simply built by runnning the following command in the `Bit.Websites.Platform.Web` project folder:
 
 ```bash
