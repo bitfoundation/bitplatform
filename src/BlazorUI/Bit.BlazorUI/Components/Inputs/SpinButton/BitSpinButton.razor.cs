@@ -158,7 +158,7 @@ public partial class BitSpinButton
     /// <summary>
     /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
-    [Parameter] public EventCallback<BitSpinButtonChangeValue> OnDecrement { get; set; }
+    [Parameter] public EventCallback<double> OnDecrement { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input.
@@ -168,7 +168,7 @@ public partial class BitSpinButton
     /// <summary>
     /// Callback for when the increment button or up arrow key is pressed.
     /// </summary>
-    [Parameter] public EventCallback<BitSpinButtonChangeValue> OnIncrement { get; set; }
+    [Parameter] public EventCallback<double> OnIncrement { get; set; }
 
     /// <summary>
     /// How many decimal places the value should be rounded to.
@@ -336,22 +336,12 @@ public partial class BitSpinButton
 
         if (action is BitSpinButtonAction.Increment && OnIncrement.HasDelegate is true)
         {
-            var args = new BitSpinButtonChangeValue
-            {
-                Value = CurrentValue,
-                MouseEventArgs = e
-            };
-            await OnIncrement.InvokeAsync(args);
+            await OnIncrement.InvokeAsync(CurrentValue);
         }
 
         if (action is BitSpinButtonAction.Decrement && OnDecrement.HasDelegate is true)
         {
-            var args = new BitSpinButtonChangeValue
-            {
-                Value = CurrentValue,
-                MouseEventArgs = e
-            };
-            await OnDecrement.InvokeAsync(args);
+            await OnDecrement.InvokeAsync(CurrentValue);
         }
     }
 
@@ -370,13 +360,7 @@ public partial class BitSpinButton
 
                     if (OnIncrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonChangeValue
-                        {
-                            Value = CurrentValue,
-                            KeyboardEventArgs = e
-                        };
-
-                        await OnIncrement.InvokeAsync(args);
+                        await OnIncrement.InvokeAsync(CurrentValue);
                     }
 
                     break;
@@ -389,13 +373,7 @@ public partial class BitSpinButton
 
                     if (OnDecrement.HasDelegate is true)
                     {
-                        var args = new BitSpinButtonChangeValue
-                        {
-                            Value = CurrentValue,
-                            KeyboardEventArgs = e
-                        };
-
-                        await OnDecrement.InvokeAsync(args);
+                        await OnDecrement.InvokeAsync(CurrentValue);
                     }
 
                     break;
