@@ -67,7 +67,7 @@
                aria-valuetext="@GetAriaValueText"
                aria-describedby="@AriaDescription"
                aria-disabled="@(IsEnabled is false)" />
-        @if (ShowArrows)
+        @if (ShowButtons)
         {
             <span style="@Styles?.ButtonsContainer" class="bit-ntf-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"

@@ -49,7 +49,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
     {
         var component = RenderComponent<BitNumericTextField<int>>(parameters =>
         {
-            parameters.Add(p => p.ShowArrows, arrows);
+            parameters.Add(p => p.ShowButtons, arrows);
         });
 
         var arrowButtonHolder = component.FindAll(".bit-ntf-act");
@@ -78,7 +78,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         if (iconName.HasValue())
@@ -139,7 +139,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.IncrementIconName, iconName);
             parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var button = component.Find("button");
@@ -168,7 +168,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.DecrementIconName, iconName);
             parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var button = component.Find("button:last-child");
@@ -310,7 +310,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         int onIncrementEventCounter = 0;
         var component = RenderComponent<BitNumericTextField<int>>(parameters =>
         {
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
             parameters.Add(p => p.OnIncrement, () => onIncrementEventCounter++);
         });
 
@@ -333,7 +333,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         int onDecrementEventCounter = 20;
         var component = RenderComponent<BitNumericTextField<int>>(parameters =>
         {
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
             parameters.Add(p => p.OnDecrement, () => onDecrementEventCounter--);
         });
 
@@ -484,7 +484,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Step, step);
             parameters.Add(p => p.Max, max);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var input = component.Find("input");
@@ -541,7 +541,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Step, step);
             parameters.Add(p => p.Min, min);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var input = component.Find("input");
@@ -711,7 +711,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Step, step);
             parameters.Add(p => p.Value, BitNumericTextFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var incrementButton = component.Find("button.bit-ntf-aup");
@@ -749,7 +749,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Step, step);
             parameters.Add(p => p.Max, max);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var input = component.Find("input");
@@ -775,7 +775,7 @@ public class BitNumericTextFieldIntTests : BunitTestContext
             parameters.Add(p => p.Step, step);
             parameters.Add(p => p.Min, min);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.ShowArrows, true);
+            parameters.Add(p => p.ShowButtons, true);
         });
 
         var input = component.Find("input");
