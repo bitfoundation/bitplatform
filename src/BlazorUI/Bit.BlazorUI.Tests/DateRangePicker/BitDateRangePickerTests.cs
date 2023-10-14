@@ -52,9 +52,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find(".bit-dtrp-gtd-btn");
+        var goToTodayButton = component.Find(".bit-dtrp-gtb");
 
-        Assert.AreEqual(goToToday, goToTodayButton.TextContent);
+        Assert.AreEqual(goToToday, goToTodayButton.GetAttribute("title"));
     }
 
     [DataTestMethod,
@@ -181,7 +181,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll(".bit-dtrp-gtd-btn");
+        var goToTodayBtnElms = component.FindAll(".bit-dtrp-gtb");
 
         if (showGoToToday)
         {
