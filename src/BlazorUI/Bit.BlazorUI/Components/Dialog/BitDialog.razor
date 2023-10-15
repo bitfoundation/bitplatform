@@ -17,7 +17,7 @@
             <div class="bit-dlg-doc @GetPositionClass()" role="document">
                 @if (IsModeless is false)
                 {
-                    <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="CloseDialog" />
+                    <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="HandleOnOverlayClick" />
                 }
                 <div id="@_containerId" style="@Styles?.Container" class="bit-dlg-ctn @Classes?.Container">
                     @if (Title.HasValue() || ShowCloseButton)
@@ -30,7 +30,7 @@
 
                             @if (ShowCloseButton)
                             {
-                                <button @onclick="CloseDialog"
+                                <button @onclick="HandleOnCloseClick"
                                         class="bit-dlg-cls"
                                         type="button"
                                         aria-label="Close"
