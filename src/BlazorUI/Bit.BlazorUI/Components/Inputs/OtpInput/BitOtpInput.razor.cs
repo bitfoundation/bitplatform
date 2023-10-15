@@ -40,7 +40,7 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public int Length { get; set; } = 5;
 
     /// <summary>
-    /// Callback for when the OtpInput value change.
+    /// Callback for when the OtpInput value changes.
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 

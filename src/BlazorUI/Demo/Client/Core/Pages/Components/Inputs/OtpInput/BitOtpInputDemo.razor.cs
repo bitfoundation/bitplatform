@@ -49,7 +49,7 @@ public partial class BitOtpInputDemo
         {
             Name = "OnChange",
             Type = "EventCallback<string?>",
-            Description = "Callback for when the OtpInput value change.",
+            Description = "Callback for when the OtpInput value changes.",
         },
         new()
         {
