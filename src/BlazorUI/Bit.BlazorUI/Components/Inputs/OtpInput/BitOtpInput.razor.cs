@@ -15,7 +15,7 @@ public partial class BitOtpInput : IDisposable
 
 
     /// <summary>
-    /// If true, the first input is focused.
+    /// If true, the first input is auto focused.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -25,49 +25,49 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The OtpInput direction in four available directions.
+    /// The render direction of the inputs.
     /// </summary>
     [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
 
     /// <summary>
-    /// Type of input shown as text, number, and password.
+    /// Type of the inputs.
     /// </summary>
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
 
     /// <summary>
-    /// Length of input in Otp.
+    /// Length of the inputs.
     /// </summary>
     [Parameter] public int Length { get; set; } = 5;
-
-    /// <summary>
-    /// Callback for when OtpInput value changed.
-    /// </summary>
-    [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
-
-    /// <summary>
-    /// Callback for when a keyboard key is pressed.
-    /// </summary>
-    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
-
-    /// <summary>
-    /// Callback for when OtpInput is focused in.
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
-
-    /// <summary>
-    /// Callback for when OtpInput is focused out.
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
-
-    /// <summary>
-    /// Callback for when in the OtpInput paste a content.
-    /// </summary>
-    [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
 
     /// <summary>
     /// Callback for when the OtpInput value change.
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
+
+    /// <summary>
+    /// onfocusin event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// onfocusout event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
+    /// oninput event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
+
+    /// <summary>
+    /// onkeydown event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+
+    /// <summary>
+    /// onpaste event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.

@@ -9,71 +9,41 @@ public partial class BitOtpInputDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the first input is focused.",
+            Description = "If true, the first input is auto focused.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitOtpInputClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitOtpInput.",
             LinkType = LinkType.Link,
             Href = "#otpinput-class-styles",
-            Description = "Custom CSS classes for different parts of the BitOtpInput.",
         },
         new()
         {
             Name = "Direction",
             Type = "BitOtpInputDirection",
+            DefaultValue = "BitOtpInputDirection.LeftToRight",
+            Description = "The render direction of the inputs.",
             LinkType = LinkType.Link,
             Href = "#direction-enum",
-            DefaultValue = "BitOtpInputDirection.LeftToRight",
-            Description = "The OtpInput direction in four available directions.",
         },
         new()
         {
             Name = "InputType",
             Type = "BitOtpInputType",
+            DefaultValue = "BitOtpInputType.Text",
+            Description = "Type of the inputs.",
             LinkType = LinkType.Link,
             Href = "#inputType-enum",
-            DefaultValue = "BitOtpInputType.Text",
-            Description = "Type of input shown as text, number, and password.",
         },
         new()
         {
             Name = "Length",
             Type = "int",
-            DefaultValue = "0",
-            Description = "Length of input in Otp.",
-        },
-        new()
-        {
-            Name = "OnInput",
-            Type = "EventCallback<ChangeEventArgs>",
-            Description = "Callback for when OtpInput value changed.",
-        },
-        new()
-        {
-            Name = "OnKeyDown",
-            Type = "EventCallback<KeyboardEventArgs>",
-            Description = "Callback for when a keyboard key is pressed.",
-        },
-        new()
-        {
-            Name = "OnFocusIn",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when OtpInput is focused in.",
-        },
-        new()
-        {
-            Name = "OnFocusOut",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when OtpInput is focused out.",
-        },
-        new()
-        {
-            Name = "OnPaste",
-            Type = "EventCallback<ClipboardEventArgs>",
-            Description = "Callback for when in the OtpInput paste a content.",
+            DefaultValue = "5",
+            Description = "Length of the inputs.",
         },
         new()
         {
@@ -83,12 +53,42 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "onfocusin event callback for each input.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "onfocusout event callback for each input.",
+        },
+        new()
+        {
+            Name = "OnInput",
+            Type = "EventCallback<ChangeEventArgs>",
+            Description = "oninput event callback for each input.",
+        },
+        new()
+        {
+            Name = "OnKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "onkeydown event callback for each input.",
+        },
+        new()
+        {
+            Name = "OnPaste",
+            Type = "EventCallback<ClipboardEventArgs>",
+            Description = "onpaste event callback for each input.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitOtpInputClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitOtpInput.",
             LinkType = LinkType.Link,
             Href = "#otpinput-class-styles",
-            Description = "Custom CSS styles for different parts of the BitOtpInput.",
         }
     };
 
