@@ -16,11 +16,11 @@
         int index = i;
 
         <input @ref="_inputRefs[index]"
-               @onpaste="HandleOnPaste"
-               @onfocusin="HandleOnFocusIn"
-               @onfocusout="HandleOnFocusOut"
-               @oninput="(e) => HandleOnInput(e, index)"
-               @onkeydown="(e) => HandleOnKeyDown(e, index)"
+               @onpaste="e => HandleOnPaste(e, index)"
+               @oninput="e => HandleOnInput(e, index)"
+               @onfocusin="e => HandleOnFocusIn(e, index)"
+               @onkeydown="e => HandleOnKeyDown(e, index)"
+               @onfocusout="e => HandleOnFocusOut(e, index)"
                type="@inputType"
                style="@Styles?.Input"
                class="bit-otp-inp @Classes?.Input"

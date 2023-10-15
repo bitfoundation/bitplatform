@@ -47,27 +47,27 @@ public partial class BitOtpInput : IDisposable
     /// <summary>
     /// onfocusin event callback for each input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+    [Parameter] public EventCallback<(FocusEventArgs Event, int Index)> OnFocusIn { get; set; }
 
     /// <summary>
     /// onfocusout event callback for each input.
     /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+    [Parameter] public EventCallback<(FocusEventArgs Event, int Index)> OnFocusOut { get; set; }
 
     /// <summary>
     /// oninput event callback for each input.
     /// </summary>
-    [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
+    [Parameter] public EventCallback<(ChangeEventArgs Event, int Index)> OnInput { get; set; }
 
     /// <summary>
     /// onkeydown event callback for each input.
     /// </summary>
-    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+    [Parameter] public EventCallback<(KeyboardEventArgs Event, int Index)> OnKeyDown { get; set; }
 
     /// <summary>
     /// onpaste event callback for each input.
     /// </summary>
-    [Parameter] public EventCallback<ClipboardEventArgs> OnPaste { get; set; }
+    [Parameter] public EventCallback<(ClipboardEventArgs Event, int Index)> OnPaste { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
@@ -187,6 +187,20 @@ public partial class BitOtpInput : IDisposable
         _ => string.Empty
     };
 
+    private async Task HandleOnFocusIn(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusIn.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnFocusOut(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusOut.InvokeAsync((e, index));
+    }
+
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
         var oldValue = _inputValues[index];
@@ -228,7 +242,7 @@ public partial class BitOtpInput : IDisposable
 
         CurrentValue = string.Join(string.Empty, _inputValues);
 
-        await OnInput.InvokeAsync(e);
+        await OnInput.InvokeAsync((e, index));
         await OnChange.InvokeAsync(CurrentValue);
     }
 
@@ -239,7 +253,14 @@ public partial class BitOtpInput : IDisposable
 
         await NavigateInput(e.Code, e.Key, index);
 
-        await OnKeyDown.InvokeAsync(e);
+        await OnKeyDown.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnPaste(ClipboardEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnPaste.InvokeAsync((e, index));
     }
 
     private async Task NavigateInput(string code, string key, int index)
@@ -296,27 +317,6 @@ public partial class BitOtpInput : IDisposable
                 await _inputRefs[previousIndex].FocusAsync();
             }
         }
-    }
-
-    private async Task HandleOnFocusIn(FocusEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await OnFocusIn.InvokeAsync(e);
-    }
-
-    private async Task HandleOnFocusOut(FocusEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await OnFocusOut.InvokeAsync(e);
-    }
-
-    private async Task HandleOnPaste(ClipboardEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await OnPaste.InvokeAsync(e);
     }
 
     private void SetInputsValue(string value)

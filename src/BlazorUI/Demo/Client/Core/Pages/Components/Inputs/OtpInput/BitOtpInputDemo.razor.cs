@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.OtpInput;
+﻿using Microsoft.AspNetCore.Components.Web;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.OtpInput;
 
 public partial class BitOtpInputDemo
 {
@@ -185,7 +187,13 @@ public partial class BitOtpInputDemo
 
     private string? oneWayValue;
     private string? twoWayValue;
+
     private string? onChangeValue;
+    private (FocusEventArgs Event, int Index)? onFocusInArgs;
+    private (FocusEventArgs Event, int Index)? onFocusOutArgs;
+    private (ChangeEventArgs Event, int Index)? onInputArgs;
+    private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
+    private (ClipboardEventArgs Event, int Index)? onPasteArgs;
 
     private ValidationOtpInputModel validationOtpInputModel = new();
     public bool formIsValidSubmit;
@@ -250,16 +258,43 @@ public partial class BitOtpInputDemo
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
 <BitOtpInput @bind-Value=""twoWayValue"" />
-<BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
-
-<BitOtpInput OnChange=""v => onChangeValue = v"" />
-<div>OnChange value: @onChangeValue</div>";
+<BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
     private readonly string example5CsharpCode = @"
 private string? oneWayValue;
-private string? twoWayValue;
-private string? onChangeValue;";
+private string? twoWayValue;";
 
     private readonly string example6RazorCode = @"
+<BitOtpInput OnChange=""v => onChangeValue = v"" />
+<div>OnChange value: @onChangeValue</div>
+
+<BitOtpInput OnFocusIn=""args => onFocusInArgs = args"" />
+<div>Focus type: @onFocusInArgs?.Event.Type</div>
+<div>Input index: @onFocusInArgs?.Index</div>
+
+<BitOtpInput OnFocusOut=""args => onFocusOutArgs = args"" />
+<div>Focus type: @onFocusOutArgs?.Event.Type</div>
+<div>Input index: @onFocusOutArgs?.Index</div>
+
+<BitOtpInput OnInput=""args => onInputArgs = args"" />
+<div>Value: @onInputArgs?.Event.Value</div>
+<div>Input index: @onInputArgs?.Index</div>
+
+<BitOtpInput OnKeyDown=""args => onKeyDownArgs = args"" />
+<div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
+<div>Input index: @onKeyDownArgs?.Index</div>
+
+<BitOtpInput OnPaste=""args => onPasteArgs = args"" />
+<div>Focus type: @onPasteArgs?.Event.Type</div>
+<div>Input index: @onPasteArgs?.Index</div>";
+    private readonly string example6CsharpCode = @"
+private string? onChangeValue;
+private (FocusEventArgs Event, int Index)? onFocusInArgs;
+private (FocusEventArgs Event, int Index)? onFocusOutArgs;
+private (ChangeEventArgs Event, int Index)? onInputArgs;
+private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
+private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
+
+    private readonly string example7RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -274,7 +309,7 @@ private string? onChangeValue;";
 
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""The OTP value is required."")]
