@@ -9,7 +9,6 @@
     box-sizing: border-box;
     font-family: "Segoe UI";
     -webkit-text-size-adjust: none;
-    -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -31,6 +30,7 @@ html, body, #app-container {
     padding: 0;
     width: 100%;
     height: 100%;
+    -webkit-font-smoothing: antialiased;
 }
 
 #app-container {
