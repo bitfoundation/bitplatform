@@ -273,7 +273,7 @@ public partial class BitDialog : IDisposable
 
     private void HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsBlocking is not false) return;
+        if (IsBlocking) return;
 
         DismissDialog(e);
     }
