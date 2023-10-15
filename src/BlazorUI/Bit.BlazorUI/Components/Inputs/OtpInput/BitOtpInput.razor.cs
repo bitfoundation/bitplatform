@@ -2,14 +2,17 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitOtpInput
+public partial class BitOtpInput : IDisposable
 {
+    private string?[] _inputValues = default!;
     private ElementReference[] _inputRefs = default!;
-    private string?[] _inputValue = default!;
-    private string _inputType = default!;
-    private string _inputMode = default!;
+    private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// If true, the first input is focused.
@@ -34,7 +37,7 @@ public partial class BitOtpInput
     /// <summary>
     /// Length of input in Otp.
     /// </summary>
-    [Parameter] public int Length { get; set; }
+    [Parameter] public int Length { get; set; } = 5;
 
     /// <summary>
     /// Callback for when OtpInput value changed.
@@ -72,41 +75,45 @@ public partial class BitOtpInput
     [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
 
 
+
+    [JSInvokable]
+    public async Task SetPastedData(string pastedValue)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (pastedValue.HasNoValue()) return;
+        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+
+        SetInputsValue(pastedValue);
+
+        CurrentValue = string.Join(string.Empty, _inputValues);
+
+        await OnChange.InvokeAsync(CurrentValue);
+    }
+
+
+
     protected override string RootElementClass => "bit-otp";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _inputRefs = new ElementReference[Length];
 
-        _inputValue = new string[Length];
+        _inputValues = new string[Length];
 
-        _inputType = InputType switch
-        {
-            BitOtpInputType.Text => "text",
-            BitOtpInputType.Number => "number",
-            BitOtpInputType.Password => "password",
-            _ => string.Empty
-        };
+        _dotnetObj = DotNetObjectReference.Create(this);
 
-        _inputMode = InputType switch
-        {
-            BitOtpInputType.Text => "text",
-            BitOtpInputType.Number => "numeric",
-            BitOtpInputType.Password => "text",
-            _ => string.Empty
-        };
-
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
-        if (CurrentValue is not null && CurrentValue != string.Join(string.Empty, _inputValue))
+        if (CurrentValue is not null && CurrentValue != string.Join(string.Empty, _inputValues))
         {
             SetInputsValue(CurrentValue);
         }
 
-        await base.OnParametersSetAsync();
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -122,8 +129,7 @@ public partial class BitOtpInput
 
         foreach (var inputRef in _inputRefs)
         {
-            var obj = DotNetObjectReference.Create(this);
-            await _js.SetupOtpInput(obj, inputRef);
+            await _js.SetupOtpInput(_dotnetObj, inputRef);
         }
     }
 
@@ -145,27 +151,61 @@ public partial class BitOtpInput
     {
         StyleBuilder.Register(() => Styles?.Root);
     }
+    
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
 
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+
+
+    private string GetInputType() => InputType switch
+    {
+        BitOtpInputType.Text => "text",
+        BitOtpInputType.Number => "number",
+        BitOtpInputType.Password => "password",
+        _ => string.Empty
+    };
+
+    private string GetInputMode() => InputType switch
+    {
+        BitOtpInputType.Text => "text",
+        BitOtpInputType.Number => "numeric",
+        BitOtpInputType.Password => "text",
+        _ => string.Empty
+    };
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
-        var oldValue = _inputValue[index];
+        var oldValue = _inputValues[index];
         var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
 
-        _inputValue[index] = string.Empty;
+        _inputValues[index] = string.Empty;
         await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
         if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
         {
-            _inputValue[index] = oldValue;
+            _inputValues[index] = oldValue;
         }
         else if (newValue.HasValue())
         {
-            var diff = BitOtpInput.DiffValues(oldValue ?? string.Empty, newValue);
+            var diff = DiffValues(oldValue ?? string.Empty, newValue);
 
             if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
             {
-                _inputValue[index] = oldValue;
+                _inputValues[index] = oldValue;
             }
             else
             {
@@ -175,7 +215,7 @@ public partial class BitOtpInput
                 }
                 else
                 {
-                    _inputValue[index] = diff;
+                    _inputValues[index] = diff;
                     int nextIndex = index + 1;
                     if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
                 }
@@ -183,10 +223,10 @@ public partial class BitOtpInput
         }
         else
         {
-            _inputValue[index] = null;
+            _inputValues[index] = null;
         }
 
-        CurrentValue = string.Join(string.Empty, _inputValue);
+        CurrentValue = string.Join(string.Empty, _inputValues);
 
         await OnInput.InvokeAsync(e);
         await OnChange.InvokeAsync(CurrentValue);
@@ -279,30 +319,13 @@ public partial class BitOtpInput
         await OnPaste.InvokeAsync(e);
     }
 
-
-
-    [JSInvokable]
-    public async Task SetPastedData(string pastedValue)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        if (pastedValue.HasNoValue()) return;
-        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
-
-        SetInputsValue(pastedValue);
-
-        CurrentValue = string.Join(string.Empty, _inputValue);
-
-        await OnChange.InvokeAsync(CurrentValue);
-    }
-
     private void SetInputsValue(string value)
     {
         var chars = value.Replace(" ", string.Empty, StringComparison.Ordinal).ToCharArray();
 
         for (int i = 0; i < Length; i++)
         {
-            _inputValue[i] = chars.Length > i ? chars[i].ToString() : null;
+            _inputValues[i] = chars.Length > i ? chars[i].ToString() : null;
         }
     }
 
@@ -314,17 +337,10 @@ public partial class BitOtpInput
         if (newLength == 1) return newValue;
         if (newLength < oldLength) return newValue;
 
-        if (newValue.Substring(0, oldLength) == oldValue) return newValue.Substring(oldLength, newLength - oldLength);
+        if (newValue[..oldLength] == oldValue) return newValue[oldLength..newLength];
 
-        if (newValue.Substring(newLength - oldLength, oldLength) == oldValue) return newValue.Substring(0, newLength - oldLength);
+        if (newValue.Substring(newLength - oldLength, oldLength) == oldValue) return newValue[..(newLength - oldLength)];
 
         return newValue;
-    }
-
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        result = value;
-        validationErrorMessage = null;
-        return true;
     }
 }

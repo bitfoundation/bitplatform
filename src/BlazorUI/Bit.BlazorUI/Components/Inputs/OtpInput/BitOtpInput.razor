@@ -7,6 +7,10 @@
      class="@ClassBuilder.Value"
      aria-label="@AriaLabel">
 
+    @{
+        var inputType = GetInputType();
+        var inputMode = GetInputMode();
+    }
     @for (var i = 0; i < Length; i++)
     {
         int index = i;
@@ -17,11 +21,11 @@
                @onfocusout="HandleOnFocusOut"
                @oninput="(e) => HandleOnInput(e, index)"
                @onkeydown="(e) => HandleOnKeyDown(e, index)"
-               type="@_inputType"
+               type="@inputType"
                style="@Styles?.Input"
                class="bit-otp-inp @Classes?.Input"
-               inputmode="@_inputMode"
-               value="@_inputValue[index]"
+               inputmode="@inputMode"
+               value="@_inputValues[index]"
                disabled="@(IsEnabled is false)"
                spellcheck="false"
                autocorrect="off"
