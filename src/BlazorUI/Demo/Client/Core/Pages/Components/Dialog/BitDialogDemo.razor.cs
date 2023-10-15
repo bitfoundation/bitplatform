@@ -45,8 +45,8 @@ public partial class BitDialogDemo
             Type = "BitDialogClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitDialog component.",
+            LinkType = LinkType.Link,
             Href = "#class-styles",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -123,30 +123,37 @@ public partial class BitDialogDemo
             Name = "OnCancel",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "A callback function for when the Dialog is dismissed on cancel."
+            Description = "A callback function for when the Cancel button is clicked."
+        },
+        new()
+        {
+            Name = "OnClose",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "null",
+            Description = "A callback function for when the Close button is clicked."
         },
         new()
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "A callback function for when the Dialog is dismissed on light dismiss."
+            Description = "A callback function for when the the dialog is dismissed (closed)."
         },
         new()
         {
             Name = "OnOk",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "A callback function for when the Dialog is dismissed on Ok."
+            Description = "A callback function for when the Ok button is clicked."
         },
         new()
         {
             Name = "Position",
             Type = "BitDialogPosition",
-            LinkType = LinkType.Link,
-            Href = "#component-position-enum",
             DefaultValue = "BitDialogPosition.Center",
             Description = "Position of the Dialog on the screen.",
+            LinkType = LinkType.Link,
+            Href = "#component-position-enum",
         },
         new()
         {
@@ -182,8 +189,8 @@ public partial class BitDialogDemo
             Type = "BitDialogClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitDialog component.",
-            Href = "#class-styles",
             LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {

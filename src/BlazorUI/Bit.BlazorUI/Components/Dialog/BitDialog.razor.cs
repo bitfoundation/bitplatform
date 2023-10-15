@@ -114,17 +114,22 @@ public partial class BitDialog : IDisposable
     [Parameter] public string? OkText { get; set; } = "Ok";
 
     /// <summary>
-    /// A callback function for when the Dialog is dismissed light dismiss, before the animation completes.
+    /// A callback function for when the Cancel button is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnCancel { get; set; }
 
     /// <summary>
-    /// A callback function for when the Dialog is dismissed light dismiss, before the animation completes.
+    /// A callback function for when the Close button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClose { get; set; }
+
+    /// <summary>
+    /// A callback function for when the the dialog is dismissed (closed).
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// A callback function for when the Dialog is dismissed light dismiss, before the animation completes.
+    /// A callback function for when the Ok button is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnOk { get; set; }
 
@@ -256,15 +261,28 @@ public partial class BitDialog : IDisposable
         StateHasChanged();
     }
 
-    private void CloseDialog(MouseEventArgs e)
+    private void DismissDialog(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsBlocking is not false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
 
         _ = OnDismiss.InvokeAsync(e);
+    }
+
+    private void HandleOnOverlayClick(MouseEventArgs e)
+    {
+        if (IsBlocking) return;
+
+        DismissDialog(e);
+    }
+
+    private void HandleOnCloseClick(MouseEventArgs e)
+    {
+        _ = OnClose.InvokeAsync(e);
+
+        DismissDialog(e);
     }
 
     private void HandleOnCancelClick(MouseEventArgs e)
@@ -273,9 +291,10 @@ public partial class BitDialog : IDisposable
 
         _tcs?.SetResult(Result);
         _tcs = null;
-        IsOpen = false;
 
         _ = OnCancel.InvokeAsync(e);
+
+        DismissDialog(e);
     }
 
     private void HandleOnOkClick(MouseEventArgs e)
@@ -284,9 +303,10 @@ public partial class BitDialog : IDisposable
 
         _tcs?.SetResult(Result);
         _tcs = null;
-        IsOpen = false;
 
         _ = OnOk.InvokeAsync(e);
+
+        DismissDialog(e);
     }
 
     private string GetPositionClass() => Position switch
