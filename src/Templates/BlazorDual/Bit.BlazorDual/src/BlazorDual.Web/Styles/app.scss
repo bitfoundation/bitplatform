@@ -1,5 +1,7 @@
 * {
     box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
@@ -17,5 +19,4 @@ html, body, #app-container {
     padding: 0;
     width: 100%;
     height: 100%;
-    -webkit-font-smoothing: antialiased;
 }
