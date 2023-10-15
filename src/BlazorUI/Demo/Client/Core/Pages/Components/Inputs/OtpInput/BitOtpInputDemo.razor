@@ -13,140 +13,91 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <div>
-                    <BitLabel>Basic</BitLabel>
-                    <BitOtpInput Length="4" @bind-Value="basicOtpInput" />
-                    <BitLabel>Output: [@basicOtpInput]</BitLabel>
-                </div>
+                <div class="lbl">Basic</div>
+                <BitOtpInput />
                 <br />
-                <div>
-                    <BitLabel>Disabled</BitLabel>
-                    <BitOtpInput Length="4" IsEnabled="false" />
-                </div>
+                <div class="lbl">Length</div>
+                <BitOtpInput Length="4" />
+                <br />
+                <div class="lbl">Disabled</div>
+                <BitOtpInput IsEnabled="false" />
+                <br />
+                <div class="lbl">AutoFocus</div>
+                <BitOtpInput AutoFocus="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="AutoFocus" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <ExamplePreview>
-            <div>
-                <BitOtpInput Length="4" AutoFocus="true" @bind-Value="autoFocusOtpInput" />
-                <BitLabel>Output: [@autoFocusOtpInput]</BitLabel>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="InputType" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
-                <div>
-                    <BitLabel>Component's Style & Class:</BitLabel>
-                    <BitOtpInput Length="4" Style="box-shadow: aqua 0 0 0.5rem; max-width: max-content;" />
-                    <br />
-                    <BitOtpInput Length="4" Class="custom-class" />
-                </div>
+                <div class="lbl">Text</div>
+                <BitOtpInput InputType="BitOtpInputType.Text" />
                 <br />
-                <div>
-                    <BitLabel>Styles & Classes:</BitLabel>
-                    <BitOtpInput Length="4" Styles="@(new() { Input = "padding: 0.5rem; background-color: goldenrod"})" />
-                    <br />
-                    <BitOtpInput Length="4" Classes="@(new() { Input = "custom-input"})" />
-                </div>
+                <div class="lbl">Number</div>
+                <BitOtpInput InputType="BitOtpInputType.Number" />
+                <br />
+                <div class="lbl">Password</div>
+                <BitOtpInput InputType="BitOtpInputType.Password" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Direction" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
-                <div class="visibility-items">Visible: [ <BitOtpInput Length="4" Visibility="BitVisibility.Visible" /> ]</div>
-                <div class="visibility-items">Hidden: [ <BitOtpInput Length="4" Visibility="BitVisibility.Hidden" /> ]</div>
-                <div class="visibility-items">Collapsed: [ <BitOtpInput Length="4" Visibility="BitVisibility.Collapsed" /> ]</div>
+                <div class="lbl">Left to right</div>
+                <BitOtpInput Direction="BitOtpInputDirection.LeftToRight" />
+                <br />
+                <div class="lbl">Right to left</div>
+                <BitOtpInput Direction="BitOtpInputDirection.RightToLeft" />
+                <br />
+                <div class="lbl">Top to bottom</div>
+                <BitOtpInput Direction="BitOtpInputDirection.TopToBottom" />
+                <br />
+                <div class="lbl">Bottom to top</div>
+                <BitOtpInput Direction="BitOtpInputDirection.BottomToTop" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="InputType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
-                <div>
-                    <BitLabel>Text</BitLabel>
-                    <BitOtpInput Length="4" InputType="BitOtpInputType.Text" @bind-Value="textOtpInput" />
-                    <BitLabel>Output: [@textOtpInput]</BitLabel>
-                </div>
+                <div class="lbl">Component's Style & Class:</div>
+                <BitOtpInput Style="box-shadow:aqua 0 0 0.5rem;max-width:max-content;" />
                 <br />
-                <div>
-                    <BitLabel>Number</BitLabel>
-                    <BitOtpInput Length="4" InputType="BitOtpInputType.Number" @bind-Value="numberOtpInput" />
-                    <BitLabel>Output: [@numberOtpInput]</BitLabel>
-                </div>
+                <BitOtpInput Class="custom-class" />
                 <br />
-                <div>
-                    <BitLabel>Password</BitLabel>
-                    <BitOtpInput Length="4" InputType="BitOtpInputType.Password" @bind-Value="passwordOtpInput" />
-                    <BitLabel>Output: [@passwordOtpInput]</BitLabel>
-                </div>
+                <br />
+                <br />
+                <div class="lbl"><b>Styles</b> & <b>Classes</b>:</div>
+                <BitOtpInput Styles="@(new() { Input = "padding:0.5rem;background-color:goldenrod"})" />
+                <br />
+                <BitOtpInput Classes="@(new() { Input = "custom-input"})" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Direction" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
-                <div>
-                    <BitLabel>Left to right</BitLabel>
-                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.LeftToRight" @bind-Value="leftToRightOtpInput" />
-                    <BitLabel>Output: [@leftToRightOtpInput]</BitLabel>
-                </div>
+                <div class="lbl">One-way</div>
+                <BitOtpInput Value="@oneWayValue" />
+                <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayValue" />
                 <br />
-                <div>
-                    <BitLabel>Right to left</BitLabel>
-                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.RightToLeft" @bind-Value="rightToLeftOtpInput" />
-                    <BitLabel>Output: [@rightToLeftOtpInput]</BitLabel>
-                </div>
-            </div>
-            <br />
-            <div class="example-box row">
-                <div>
-                    <BitLabel>Top to bottom</BitLabel>
-                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.TopToBottom" @bind-Value="topToBottomOtpInput" />
-                    <BitLabel>Output: [@topToBottomOtpInput]</BitLabel>
-                </div>
+                <div class="lbl">Two-way</div>
+                <BitOtpInput @bind-Value="twoWayValue" />
+                <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayValue" />
                 <br />
-                <div>
-                    <BitLabel>Bottom to top</BitLabel>
-                    <BitOtpInput Length="4" Direction="BitOtpInputDirection.BottomToTop" @bind-Value="BottomToTopOtpInput" />
-                    <BitLabel>Output: [@BottomToTopOtpInput]</BitLabel>
-                </div>
+                <div class="lbl">OnChange</div>
+                <BitOtpInput OnChange="v => onChangeValue = v" />
+                <div>OnChange value: @onChangeValue</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <ExamplePreview>
-            <div class="example-box">
-                <div>
-                    <BitLabel>One-way</BitLabel>
-                    <BitOtpInput Length="4" Value="@oneWayBindOtpInput" />
-                    <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayBindOtpInput" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>Two-way</BitLabel>
-                    <BitOtpInput Length="4" @bind-Value="twoWayBindOtpInput" />
-                    <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayBindOtpInput" />
-                </div>
-                <br />
-                <div>
-                    <BitLabel>OnChange</BitLabel>
-                    <BitOtpInput Length="4" OnChange="(value) => onChangeBindOtpInput = value" />
-                    <BitLabel>Output: [@onChangeBindOtpInput]</BitLabel>
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 @if (formIsValidSubmit is false)
@@ -154,60 +105,21 @@
                     <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                         <DataAnnotationsValidator />
 
-                        <div class="validation-summary">
-                            <ValidationSummary />
-                        </div>
+                        <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
+                        <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
 
-                        <div>
-                            <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
-                            <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
-                        </div>
+                        <br />
 
-                        <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
+                        <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
                     </EditForm>
                 }
                 else
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        The form is valid to submit successfully.
+                        The form submitted successfully.
                     </BitMessageBar>
                 }
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private string? basicOtpInput;
-    private string? autoFocusOtpInput;
-    private string? textOtpInput;
-    private string? numberOtpInput;
-    private string? passwordOtpInput;
-    private string? leftToRightOtpInput;
-    private string? rightToLeftOtpInput;
-    private string? topToBottomOtpInput;
-    private string? BottomToTopOtpInput;
-    private string? oneWayBindOtpInput;
-    private string? twoWayBindOtpInput;
-    private string? onChangeBindOtpInput;
-
-    private ValidationOtpInputModel validationOtpInputModel = new();
-    public bool formIsValidSubmit;
-    private async Task HandleValidSubmit()
-    {
-        formIsValidSubmit = true;
-
-        await Task.Delay(3000);
-
-        formIsValidSubmit = false;
-
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        formIsValidSubmit = false;
-    }
-}

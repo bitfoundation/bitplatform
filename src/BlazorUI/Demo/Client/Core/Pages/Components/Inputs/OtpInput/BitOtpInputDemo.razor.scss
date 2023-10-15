@@ -4,39 +4,15 @@
 
 .example-box {
     display: flex;
-    gap: rem2(10px);
+    max-width: rem2(300px);
     flex-flow: column nowrap;
 
-    &.row {
-        gap: rem2(40px);
-        flex-flow: row wrap;
-        margin-top: rem2(20px);
+    .lbl {
+        margin-bottom: 0.25rem;
     }
-}
-
-.visibility-items {
-    align-items: center;
-    white-space: nowrap;
-    display: inline-flex;
-}
-
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
 }
 
 ::deep {
-    .validation-message {
-        color: $Red20;
-        font-size: rem2(12px);
-    }
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-
     .custom-class {
         padding: 1rem;
         max-width: max-content;
@@ -47,5 +23,9 @@
         border-radius: 50%;
         border: 1px solid red;
         box-shadow: tomato 0 0 1rem;
+    }
+
+    .validation-message {
+        color: red;
     }
 }
