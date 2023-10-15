@@ -43,7 +43,7 @@ public partial class BitOtpInputDemo
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
-            Description = "Length of the inputs.",
+            Description = "Length of the OTP or number of the inputs.",
         },
         new()
         {

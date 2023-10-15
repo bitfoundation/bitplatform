@@ -35,7 +35,7 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
 
     /// <summary>
-    /// Length of the inputs.
+    /// Length of the OTP or number of the inputs.
     /// </summary>
     [Parameter] public int Length { get; set; } = 5;
 
