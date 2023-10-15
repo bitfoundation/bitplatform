@@ -19,7 +19,7 @@ public partial class BitToggle
     [Parameter] public BitToggleClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Default text of the toggle when it is neither ON or OFF.
+    /// Default text used when the On or Off texts are null.
     /// </summary>
     [Parameter] public string? DefaultText { get; set; }
 
@@ -75,8 +75,6 @@ public partial class BitToggle
         ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Checked}" : string.Empty);
 
         ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
-
-        ClassBuilder.Register(() => OnText.HasNoValue() || OffText.HasNoValue() ? $"{RootElementClass}-noo" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -86,24 +84,24 @@ public partial class BitToggle
         StyleBuilder.Register(() => CurrentValue ? Styles?.Checked : string.Empty);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _labelId = $"BitToggle-{UniqueId}-label";
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
 
-        SetTexts();
+        SetStateText();
 
         OnValueChanged += HandleOnValueChanged;
 
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
 
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        SetTexts();
+        SetStateText();
 
         ClassBuilder.Reset();
     }
@@ -118,7 +116,7 @@ public partial class BitToggle
         await OnChange.InvokeAsync(CurrentValue);
     }
 
-    private void SetTexts()
+    private void SetStateText()
     {
         _stateText = (CurrentValue ? OnText : OffText) ?? DefaultText;
 
