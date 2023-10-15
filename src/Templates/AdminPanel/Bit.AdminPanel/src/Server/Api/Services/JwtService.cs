@@ -33,9 +33,9 @@ public partial class JwtService : IJwtService
             {
                 Issuer = _appSettings.JwtSettings.Issuer,
                 Audience = _appSettings.JwtSettings.Audience,
-                IssuedAt = DateTime.Now,
-                NotBefore = DateTime.Now.AddMinutes(_appSettings.JwtSettings.NotBeforeMinutes),
-                Expires = DateTime.Now.AddMinutes(_appSettings.JwtSettings.ExpirationMinutes),
+                IssuedAt = DateTime.UtcNow,
+                NotBefore = DateTime.UtcNow.AddMinutes(_appSettings.JwtSettings.NotBeforeMinutes),
+                Expires = DateTime.UtcNow.AddMinutes(_appSettings.JwtSettings.ExpirationMinutes),
                 SigningCredentials = signingCredentials,
                 Subject = new ClaimsIdentity(claims)
             });

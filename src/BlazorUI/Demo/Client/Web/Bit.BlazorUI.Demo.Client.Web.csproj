@@ -34,14 +34,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bup" Version="6.1.0" />
-        <PackageReference Include="Bit.Bswup" Version="6.1.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="6.1.0">
+        <PackageReference Include="Bit.Bup" Version="7.0.0" />
+        <PackageReference Include="Bit.Bswup" Version="7.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="7.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.2.23480.2" PrivateAssets="all" />
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />

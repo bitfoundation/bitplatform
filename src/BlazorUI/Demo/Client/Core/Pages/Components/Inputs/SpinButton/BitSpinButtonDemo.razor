@@ -14,9 +14,13 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Basic" />
-
+                <br />
                 <BitSpinButton Label="Disabled" IsEnabled="false" />
-
+                <br />
+                <BitSpinButton Label="Min & Max" Min="-10" Max="10" />
+                <br />
+                <BitSpinButton Label="ReadOnly" IsInputReadOnly="true" />
+                <br />
                 <BitSpinButton Label="Button title" IncrementTitle="Increase" DecrementTitle="Decrease" />
             </div>
         </ExamplePreview>
@@ -26,7 +30,9 @@
         <ExamplePreview>
             <div class="example-box">
                 <BitSpinButton Label="Compact" Mode="BitSpinButtonMode.Compact" />
+                <br />
                 <BitSpinButton Label="Inline" Mode="BitSpinButtonMode.Inline" />
+                <br />
                 <BitSpinButton Label="Spread" Mode="BitSpinButtonMode.Spread" />
             </div>
         </ExamplePreview>
@@ -38,41 +44,42 @@
             <br />
             <div class="example-box">
                 <BitSpinButton Label="Styled" Style="background:darkred;padding:1rem" />
-
+                <br />
                 <BitSpinButton Label="Classed" Class="custom-class" />
             </div>
-            <br /><br /><br /><br />
-            <div>Styles & Classes:</div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="example-box">
                 <BitSpinButton Label="Styles" Styles="@(new() { LabelContainer = "background:darkred;padding:1.5rem",
                                                                 Label = "font-size:22px;color:chartreuse",
                                                                 DecrementButton = "background:blue",
                                                                 IncrementButton = "background:green" })" />
-
+                <br />
                 <BitSpinButton Label="Classes" Classes="@(new() { Input = "custom-input",
                                                                   CompactButtonsWrapper = "custom-wrapper" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelPosition" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Label" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Top Label & Icon" IconName="@BitIconName.Lightbulb" />
+                <div>LabelPosition:</div>
+                <br />
+                <BitSpinButton Label="Top (default)" />
+                <br />
                 <BitSpinButton Label="Left Label" LabelPosition="BitSpinButtonLabelPosition.Left" />
+                <br />
                 <BitSpinButton Label="Right Label" LabelPosition="BitSpinButtonLabelPosition.Right" />
+                <br />
                 <BitSpinButton Label="Bottom Label" LabelPosition="BitSpinButtonLabelPosition.Bottom" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example5RazorCode" Id="example5">
-        <ExamplePreview>
-            <div class="example-box">
+                <br /><br /><br />
+                <div>LabelTemplate:</div>
+                <br />
                 <BitSpinButton>
                     <LabelTemplate>
-                        <div style="display:flex; align-items: center; gap: 10px">
+                        <div style="display:flex;align-items:center;gap:10px">
                             <BitLabel Style="color: green;">This is custom Label</BitLabel>
                             <BitIcon IconName="@BitIconName.Filter" />
                         </div>
@@ -82,54 +89,43 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Icons" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Like and Dislike"
+                <div> Component's Icon:</div>
+                <br />
+                <BitSpinButton Label="Icon" IconName="@BitIconName.Lightbulb" />
+                <br /><br /><br />
+                <div> Increment & Decrement Icons:</div>
+                <br />
+                <BitSpinButton Label="Compact mode"
                                IncrementIconName="@BitIconName.LikeSolid"
                                DecrementIconName="@BitIconName.DislikeSolid" />
-
-                <BitSpinButton Label="Back & Forward"
+                <br />
+                <BitSpinButton Label="Inline mode"
                                Mode="BitSpinButtonMode.Inline"
-                               DecrementIconName="@BitIconName.Back"
-                               IncrementIconName="@BitIconName.Forward" />
-
-                <BitSpinButton Label="Plus and Minus"
+                               IncrementIconName="@BitIconName.Forward"
+                               DecrementIconName="@BitIconName.Back" />
+                <br />
+                <BitSpinButton Label="Spread mode"
                                Mode="BitSpinButtonMode.Spread"
-                               DecrementIconName="@BitIconName.CalculatorSubtract"
-                               IncrementIconName="@BitIconName.CalculatorAddition" />
+                               IncrementIconName="@BitIconName.CalculatorAddition"
+                               DecrementIconName="@BitIconName.CalculatorSubtract" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Min, Max, Step" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Suffix" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
-                <BitSpinButton Label="Min: -10, Max: 10" Min="-10" Max="10" />
-                <BitSpinButton Label="Min: -20, Max: 20, Step: 2" Min="-20" Max="20" Step="2" />
-                <BitSpinButton Label="Min: -1, Max: 1, Step: 0.1" Min="-1" Max="1" Step="0.1" />
+                <BitSpinButton Label="Height" DefaultValue="150" Suffix=" cm" />
+                <br />
+                <BitSpinButton Label="Weight" DefaultValue="50" Suffix=" kg" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Suffix" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div class="example-box">
-                <BitSpinButton Label="Height"
-                               Suffix=" cm"
-                               DefaultValue="150"
-                               IconName="@BitIconName.AutoHeight" />
-
-                <BitSpinButton Label="Weight"
-                               Step="0.5"
-                               Suffix=" kg"
-                               DefaultValue="50"
-                               IconName="@BitIconName.Weights" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
                 <div>
@@ -144,33 +140,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-box">
-                <div class="column">
-                    <BitSpinButton Label="OnIncrement / OnDecrement"
-                                   Step="0.1"
-                                   DefaultValue="2"
-                                   OnIncrement="() => onIncrementCounter++"
-                                   OnDecrement="() => onDecrementCounter++" />
-                    <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
-                    <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
-                </div>
+                <BitSpinButton Label="OnIncrement & OnDecrement"
+                               OnIncrement="() => onIncrementCounter++"
+                               OnDecrement="() => onDecrementCounter++" />
+                <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
+                <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
                 <br />
-                <div class="column">
-                    <BitSpinButton Label="OnChange"
-                                   Step="0.1"
-                                   DefaultValue="2"
-                                   OnChange="v => onChangeValue = v" />
-                    <BitLabel>OnChange Value: @onChangeValue</BitLabel>
-                </div>
+                <BitSpinButton Label="OnChange" OnChange="v => onChangeValue = v" />
+                <BitLabel>OnChange Value: @onChangeValue</BitLabel>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ShowInput" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="ShowInput" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div class="example-box">
+                <div>Hidden input:</div>
+                <br />
                 <BitSpinButton ShowInput="false"
                                @bind-Value="showInputValue"
                                Mode="BitSpinButtonMode.Inline"
@@ -179,15 +168,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ReadOnly" RazorCode="@example12RazorCode" Id="example12">
-        <ExamplePreview>
-            <div class="example-box">
-                <BitSpinButton IsInputReadOnly="true" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -199,16 +180,12 @@
                         <BitSpinButton Label="Age" @bind-Value="@ValidationModel.AgeInYears"></BitSpinButton>
                         <ValidationMessage For="@(() => ValidationModel.AgeInYears)" />
                         <br />
-                        <BitButton ButtonType="BitButtonType.Submit">
-                            Submit
-                        </BitButton>
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                     </EditForm>
                 }
                 else
                 {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@SuccessMessage</BitMessageBar>
                 }
             </div>
         </ExamplePreview>

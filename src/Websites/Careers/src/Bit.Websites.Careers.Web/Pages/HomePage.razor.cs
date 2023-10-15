@@ -57,7 +57,7 @@ namespace Bit.Websites.Careers.Web.Pages
                 new IntroBoxDto
                 {
                     Id = 1,
-                    Subject = "درباره Bit Platform ",
+                    Subject = "درباره bit platform ",
                     ImgUrl = "/images/main-page/sample-img.png",
                     AuthorName = "سارا نیازی",
                     AuthorAvatarUrl = "/images/main-page/sample-author-avatar.svg",
@@ -68,7 +68,7 @@ namespace Bit.Websites.Careers.Web.Pages
                 new IntroBoxDto
                 {
                     Id = 1,
-                    Subject = "درباره Bit Platform ",
+                    Subject = "درباره bit platform ",
                     ImgUrl = "/images/main-page/sample-img.png",
                     AuthorName = "سارا نیازی",
                     AuthorAvatarUrl = "/images/main-page/sample-author-avatar.svg",
@@ -79,7 +79,7 @@ namespace Bit.Websites.Careers.Web.Pages
                 new IntroBoxDto
                 {
                     Id = 1,
-                    Subject = "درباره Bit Platform ",
+                    Subject = "درباره bit platform ",
                     ImgUrl = "/images/main-page/sample-img.png",
                     AuthorName = "سارا نیازی",
                     AuthorAvatarUrl = "/images/main-page/sample-author-avatar.svg",

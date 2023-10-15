@@ -764,7 +764,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1235,7 +1235,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1299,7 +1299,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1866,7 +1866,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1911,9 +1911,9 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 
     private readonly string example1NavOptionRazorCode = @"
 <BitNav TItem=""BitNavOption"">
-    <BitNavOption Text=""Bit Platform""
-                    ExpandAriaLabel=""Bit Platform Expanded""
-                    CollapseAriaLabel=""Bit Platform Collapsed"">
+    <BitNavOption Text=""bit platform""
+                    ExpandAriaLabel=""bit platform Expanded""
+                    CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
@@ -2160,9 +2160,9 @@ private BitNavOption ToggledOption;";
                                ToggleButton = new() { Style=""color:cyan"" },
                                Item = new() { Style=""color:red"" },
                                ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })"">
-    <BitNavOption Text=""Bit Platform""
-                  ExpandAriaLabel=""Bit Platform Expanded""
-                  CollapseAriaLabel=""Bit Platform Collapsed"">
+    <BitNavOption Text=""bit platform""
+                  ExpandAriaLabel=""bit platform Expanded""
+                  CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">

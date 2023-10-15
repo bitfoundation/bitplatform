@@ -185,8 +185,8 @@ Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with AriaHidden"" />";
 
     private readonly string example5RazorCode = @"
-<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open Bit Platform In New Tab"" />
-<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To Bit Platform"" />";
+<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open bit platform In New Tab"" />
+<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To bit platform"" />";
 
     private readonly string example6RazorCode = @"
 @if (formIsValidSubmit is false)

@@ -39,7 +39,7 @@ jobs:
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
 
     - name: Install wasm
-      run:  dotnet workload install wasm-tools wasm-experimental --sdk-version=8.0.100-rc.1.23463.5
+      run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
     - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
@@ -103,7 +103,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
+      run: cd src && dotnet workload install maui
   
     - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
@@ -150,7 +150,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui-android --sdk-version=8.0.100-rc.1.23463.5
+      run: cd src && dotnet workload install maui-android
   
     - name: Generate CSS/JS files
       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
@@ -190,7 +190,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Install maui
-      run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
+      run: cd src && dotnet workload install maui
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1
@@ -251,7 +251,7 @@ jobs:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
    
      - name: Install maui
-       run: dotnet workload install maui --sdk-version=8.0.100-rc.1.23463.5
+       run: cd src && dotnet workload install maui
    
      - name: Generate CSS/JS files
        run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst

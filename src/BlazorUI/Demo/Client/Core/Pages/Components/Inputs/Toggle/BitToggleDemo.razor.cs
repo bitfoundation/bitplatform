@@ -7,7 +7,7 @@ public partial class BitToggleDemo
         new()
         {
             Name = "Classes",
-            Type = "BittoggleClassStyles?",
+            Type = "BitToggleClassStyles?",
             DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#toggle-class-styles",
@@ -18,7 +18,7 @@ public partial class BitToggleDemo
             Name = "DefaultText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Default text of the toggle when it is neither ON or OFF.",
+            Description = "Default text used when the On or Off texts are null.",
         },
         new()
         {
@@ -71,7 +71,7 @@ public partial class BitToggleDemo
         new()
         {
             Name = "Styles",
-            Type = "BittoggleClassStyles?",
+            Type = "BitToggleClassStyles?",
             DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#toggle-class-styles",
@@ -142,50 +142,62 @@ public partial class BitToggleDemo
 
 
 
-    private readonly string example1RazorCode = @"
-<BitToggle Label=""Basic"" @bind-Value=""BasicValue"" />
+    private bool oneWayValue;
+    private bool twoWayValue;
 
-<BitToggle Label=""Disabled"" @bind-Value=""DisabledValue"" IsEnabled=""false"" />";
-    private readonly string example1CsharpCode = @"
-private bool BasicValue;
-private bool DisabledValue;";
+    public BitToggleValidationModel validationModel { get; set; } = new();
+    private string SuccessMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+
+
+    private readonly string example1RazorCode = @"
+<BitToggle Label=""Basic"" />
+<BitToggle Label=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitToggle Label=""OnText And OffText"" @bind-Value=""OnTextValue"" OnText=""On"" OffText=""Off"" />
-
-<BitToggle Label=""Inline Label"" @bind-Value=""InLineLabelValue"" IsInlineLabel=""true"" />
-
-<BitToggle @bind-Value=""DefaultTextValue"" DefaultText=""Default Text"" />";
-    private readonly string example2CsharpCode = @"
-private bool OnTextValue;
-private bool InLineLabelValue;
-private bool DefaultTextValue;";
+<BitToggle Label=""DefaultText"" DefaultText=""This is a good toggle!"" />
+<BitToggle Label=""OnText & OffText"" OnText=""Toggle is On"" OffText=""Toggle is Off"" />";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""LabelTemplateValue"">
+<BitToggle Label=""This is an inline label"" IsInlineLabel=""true"" />
+
+<BitToggle>
     <LabelTemplate>
-        <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
-        <BitIcon IconName=""@BitIconName.Filter"" />
+        <div style=""display:flex;align-items:center;gap:10px"">
+            <BitLabel Style=""color:green"">This is custom Label</BitLabel>
+            <BitIcon IconName=""@BitIconName.Filter"" />
+        </div>
     </LabelTemplate>
 </BitToggle>";
-    private readonly string example3CsharpCode = @"
-private bool LabelTemplateValue;";
 
     private readonly string example4RazorCode = @"
-<BitToggle Value=""OneWayValue"" Label=""One-way"" OnText=""On"" OffText=""Off"" />
-<BitToggleButton @bind-IsChecked=""OneWayValue"" OnText=""On"" OffText=""Off"" />
+<BitToggle Label=""One-way"" Value=""oneWayValue"" />
+<BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
 
-<BitToggle @bind-Value=""TwoWayValue"" Label=""Two-way"" OnText=""On"" OffText=""Off"" />
-<BitToggleButton @bind-IsChecked=""TwoWayValue"" OnText=""On"" OffText=""Off"" />";
+<BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />";
     private readonly string example4CsharpCode = @"
-private bool OneWayValue;
-private bool TwoWayValue;";
+private bool oneWayValue;
+private bool twoWayValue;";
 
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
+        padding: 0.5rem;
         width: max-content;
-        margin-left: 0.5rem;
         border: 1px solid red;
         box-shadow: aqua 0 0 1rem;
     }
@@ -210,102 +222,45 @@ private bool TwoWayValue;";
     }
 </style>
 
-<BitToggle @bind-Value=""@StyleValue""
-           DefaultText=""Custom style""
-           Style=""background-color: forestgreen; border-radius: 1rem; padding: 0.5rem;"" />
-<BitToggle @bind-Value=""@ClassValue""
-           DefaultText=""Custom class""
-           Class=""custom-class"" />
+<BitToggle Label=""Styled"" Style=""width:fit-content;background:forestgreen;border-radius:1rem;padding:1rem"" />
+<BitToggle Label=""Classed"" Class=""custom-class"" />
 
-<BitToggle @bind-Value=""@StylesValue""
-           Label=""Custom label style""
-           Styles=""@(new() { Root = ""background-color: pink; padding: 0.5rem;"",
-                             Thumb = ""background-color: darkorange;"",
-                             Button = ""border-radius: 0.5rem 0 0.5rem 0;"",
-                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
-<BitToggle @bind-Value=""@ClassesValue""
-           DefaultText=""Custom text class""
+
+<BitToggle Label=""Styles""
+           Styles=""@(new() { Root = ""width:fit-content;background:pink;padding:1rem"",
+                             Thumb = ""background:darkorange"",
+                             Button = ""border-radius:0.5rem 0 0.5rem 0"",
+                             Label = ""color:blue;font-weight:900;font-size:1.25rem"" } )"" />
+<BitToggle Label=""Classes""
+           DefaultText=""GooGooLi""
            Classes=""@(new() { Text = ""custom-text"",
                               Button = ""custom-button"",
-                              Check = ""custom-check"" } )"" />
-";
-    private readonly string example5CsharpCode = @"
-private bool StyleValue;
-private bool ClassValue;
-private bool StylesValue;
-private bool ClassesValue;";
+                              Checked = ""custom-check"" } )"" />";
 
     private readonly string example6RazorCode = @"
-Visible: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" DefaultText=""Visible Toggle"" /> ]
-Hidden: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" DefaultText=""Hidden Toggle"" />  ]
-Collapsed: [ <BitToggle @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" DefaultText=""Collapsed Toggle"" />  ]";
-    private readonly string example6CsharpCode = @"
-private bool VisibilityValue;";
-
-    private readonly string example7RazorCode = @"
 <style>
-    .validation-summary {
-        border-left: rem(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
-        overflow: hidden;
-        margin-bottom: rem(10px);
-    }
-
     .validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
-
-    .validation-errors {
-        margin: rem(5px);
+        color: red;
     }
 </style>
 
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""ValidationForm"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
 
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
+    <BitToggle Label=""Terms and conditions"" DefaultText=""I agree."" @bind-Value=""validationModel.TermsAgreement"" />
+    <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
 
-        <div>
-            <BitToggle @bind-Value=""ValidationForm.TermsAgreement"" DefaultText=""I agree with the terms and conditions."" />
-            <ValidationMessage For=""@(() => ValidationForm.TermsAgreement)"" />
-        </div>
-
-        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-    private readonly string example7CsharpCode = @"
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example6CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
     public bool TermsAgreement { get; set; } = true;
 }
 
-public BitToggleValidationModel ValidationForm { get; set; } = new();
-private string SuccessMessage = string.Empty;
+public BitToggleValidationModel validationModel { get; set; } = new();
 
-private async Task HandleValidSubmit()
-{
-    SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    SuccessMessage = string.Empty;
-}";
+private async Task HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
 }
