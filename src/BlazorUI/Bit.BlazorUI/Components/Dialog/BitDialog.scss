@@ -52,10 +52,8 @@
 }
 
 .bit-dlg-hdr {
-    top: 0;
     z-index: 1;
     display: flex;
-    position: sticky;
     align-items: center;
     overflow-wrap: anywhere;
     background-color: $color-background-primary;
