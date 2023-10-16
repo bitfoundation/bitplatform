@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Calendar;
 
-public class FormValidationCalendarModel
+public class BitCalendarValidationModel
 {
     [Required]
     public DateTimeOffset? Date { get; set; }

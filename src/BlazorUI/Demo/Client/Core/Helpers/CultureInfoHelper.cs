@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
 using System.Globalization;
 
-namespace Bit.BlazorUI;
+namespace Bit.BlazorUI.Demo.Client.Core.Helpers;
 
 public static class CultureInfoHelper
 {
     private static readonly FieldInfo _cultureDataField = typeof(TextInfo).GetField("_cultureData", BindingFlags.NonPublic | BindingFlags.Instance)!;
+    private static readonly FieldInfo _iReadingLayoutField =
+        Type.GetType("System.Globalization.CultureData, System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")!
+        .GetField("_iReadingLayout", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-    private static readonly FieldInfo _iReadingLayoutField = Type.GetType("System.Globalization.CultureData, System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")!.GetField("_iReadingLayout", BindingFlags.NonPublic | BindingFlags.Instance)!;
-
-    public static CultureInfo GetFaIrCultureByFarsiNames()
+    public static CultureInfo GetFaIrCultureWithFarsiNames()
     {
         var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
 
@@ -57,7 +58,7 @@ public static class CultureInfoHelper
         return cultureInfo;
     }
 
-    public static CultureInfo GetFaIrCultureByFingilishNames()
+    public static CultureInfo GetFaIrCultureWithFingilishNames()
     {
         var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
 
