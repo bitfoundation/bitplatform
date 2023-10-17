@@ -2,6 +2,7 @@
 
 public class ChoiceModel
 {
+    public string? Key { get; set; }
     public string? Name { get; set; }
     public string? ItemValue { get; set; }
     public string? ImageAddress { get; set; }
