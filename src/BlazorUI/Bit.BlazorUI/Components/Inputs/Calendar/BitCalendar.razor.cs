@@ -43,7 +43,7 @@ public partial class BitCalendar
     }
 
 
-    
+
     private int _currentDay;
     private int _currentYear;
     private int _displayYear;
@@ -693,14 +693,10 @@ public partial class BitCalendar
 
     private string GetDateCellCssClass(int day, int week)
     {
-        StringBuilder className = new StringBuilder();
+        return (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
+            ? " bit-cal-dcs"
+            : string.Empty;
 
-        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
-        {
-            className.Append(" bit-cal-dcs");
-        }
-
-        return className.ToString();
     }
 
     private string GetDateButtonCssClass(int day, int week)
