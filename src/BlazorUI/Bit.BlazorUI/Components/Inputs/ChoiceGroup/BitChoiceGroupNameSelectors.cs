@@ -43,6 +43,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, BitSize?> ImageSize { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.ImageSize));
 
     /// <summary>
+    /// The Prefix field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Prefix { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Prefix));
+
+    /// <summary>
     /// The SelectedImageSrc field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> SelectedImageSrc { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.SelectedImageSrc));

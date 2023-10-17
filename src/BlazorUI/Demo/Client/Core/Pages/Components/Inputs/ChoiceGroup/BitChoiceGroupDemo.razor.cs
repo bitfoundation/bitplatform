@@ -49,6 +49,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "ItemPrefixTemplate",
+            Type = "RenderFragment<TItem>?",
+            Description = "Used to add a prefix to each item."
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -200,6 +206,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a prefix for the BitChoiceGroup item.",
+               },
+               new()
+               {
                    Name = "SelectedImageSrc",
                    Type = "string?",
                    DefaultValue = "null",
@@ -296,6 +309,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitSize?",
                    DefaultValue = "null",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a prefix for the BitChoiceGroup option.",
                },
                new()
                {
