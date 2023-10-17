@@ -189,7 +189,8 @@ public partial class _BitChoiceGroupOptionDemo
     private readonly string example6RazorCode = @"
 <style>
     .custom-label {
-        color: #A4262C;
+        color: red;
+        font-size: 18px;
         font-weight: bold;
     }
 </style>
