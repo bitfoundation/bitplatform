@@ -374,7 +374,8 @@ private readonly List<ChoiceModel> itemStyleClassCustoms = new()
     private readonly string example6RazorCode = @"
 <style>
     .custom-label {
-        color: #A4262C;
+        color: red;
+        font-size: 18px;
         font-weight: bold;
     }
 </style>
@@ -479,7 +480,7 @@ private readonly List<ChoiceModel> basicCustoms = new()
                 Items=""itemTemplateCustoms""
                 NameSelectors=""@(new() { Value = { Selector = i => i.ItemValue } })"">
     <ItemLabelTemplate Context=""custom"">
-        <div style=""margin-left:30px;height:20px"" class=""custom-container @(itemLabelTemplateValue == custom.ItemValue ? ""selected"" : string.Empty)"">
+        <div class=""custom-container @(itemLabelTemplateValue == custom.ItemValue ? ""selected"" : string.Empty)"">
             <BitIcon IconName=""@custom.IconName"" />
             <span>@custom.Name</span>
         </div>

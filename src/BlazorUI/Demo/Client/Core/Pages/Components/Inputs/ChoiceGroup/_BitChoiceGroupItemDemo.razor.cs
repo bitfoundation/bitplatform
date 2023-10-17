@@ -273,7 +273,8 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
     private readonly string example6RazorCode = @"
 <style>
     .custom-label {
-        color: #A4262C;
+        color: red;
+        font-size: 18px;
         font-weight: bold;
     }
 </style>
@@ -355,7 +356,7 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 
 <BitChoiceGroup Label=""ItemLabelTemplate"" Items=""itemTemplateItems"" @bind-Value=""itemLabelTemplateValue"">
     <ItemLabelTemplate Context=""item"">
-        <div style=""margin-left:30px;height:20px"" class=""custom-container @(itemLabelTemplateValue == item.Value ? ""selected"" : string.Empty)"">
+        <div class=""custom-container @(itemLabelTemplateValue == item.Value ? ""selected"" : string.Empty)"">
             <BitIcon IconName=""@item.IconName"" />
             <span>@item.Text</span>
         </div>

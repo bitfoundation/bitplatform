@@ -189,7 +189,8 @@ public partial class _BitChoiceGroupOptionDemo
     private readonly string example6RazorCode = @"
 <style>
     .custom-label {
-        color: #A4262C;
+        color: red;
+        font-size: 18px;
         font-weight: bold;
     }
 </style>
@@ -281,7 +282,7 @@ private string twoWayValue = ""A"";";
 <BitChoiceGroup Label=""ItemLabelTemplate"" @bind-Value=""itemLabelTemplateValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <ItemLabelTemplate Context=""option"">
-        <div style=""margin-left:30px;height:20px"" class=""custom-container @(itemLabelTemplateValue == option.Value ? ""selected"" : string.Empty)"">
+        <div class=""custom-container @(itemLabelTemplateValue == option.Value ? ""selected"" : string.Empty)"">
             <BitIcon IconName=""@option.IconName"" />
             <span>@option.Text</span>
         </div>

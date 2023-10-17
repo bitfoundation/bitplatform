@@ -189,7 +189,7 @@
                             Items="itemTemplateCustoms"
                             NameSelectors="@(new() { Value = { Selector = i => i.ItemValue } })">
                 <ItemLabelTemplate Context="custom">
-                    <div style="margin-left:30px;height:20px" class="custom-container @(itemLabelTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
+                    <div class="custom-container @(itemLabelTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
                         <BitIcon IconName="@custom.IconName" />
                         <span>@custom.Name</span>
                     </div>
