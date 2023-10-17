@@ -42,7 +42,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
 
     /// <summary>
-    /// Used to customize the label for the Item Label content.
+    /// Used to add a prefix to each item.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemPrefixTemplate { get; set; }
 
