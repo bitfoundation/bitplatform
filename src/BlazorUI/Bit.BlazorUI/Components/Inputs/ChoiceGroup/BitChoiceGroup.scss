@@ -88,6 +88,9 @@
         }
 
         .bit-chg-ilw {
+            padding-left: 0;
+            padding-right: spacing(3.25);
+
             &::before {
                 right: 0;
             }
@@ -98,11 +101,6 @@
                         right: spacing(0.625);
                     }
                 }
-            }
-
-            .bit-chg-itx {
-                padding-left: 0;
-                padding-right: spacing(3.25);
             }
         }
 
@@ -169,6 +167,7 @@
     vertical-align: top;
     display: inline-block;
     min-height: spacing(2.5);
+    padding-left: spacing(3.25);
 
     &:before {
         top: 0;
@@ -279,7 +278,6 @@
 
 .bit-chg-itx {
     display: inline-block;
-    padding-left: spacing(3.25);
 }
 
 .bit-chg-itw {
