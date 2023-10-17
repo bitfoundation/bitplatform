@@ -59,13 +59,6 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Custom C", ItemValue = "C", Class = "custom-item" },
         new() { Name = "Custom D", ItemValue = "D", Style = "color:green" }
     };
-    private readonly List<ChoiceModel> itemPrefixCustoms = new()
-    {
-        new() { Key = "1", Name = "Custom A", ItemValue = "A" },
-        new() { Key = "2", Name = "Custom B", ItemValue = "B" },
-        new() { Key = "3", Name = "Custom C", ItemValue = "C" },
-        new() { Key = "4", Name = "Custom D", ItemValue = "D" }
-    };
     private readonly List<ChoiceModel> itemTemplateCustoms = new()
     {
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
@@ -473,12 +466,12 @@ private readonly List<ChoiceModel> basicCustoms = new()
     }
 </style>
 
-<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""itemPrefixCustoms"" DefaultValue=""@string.Empty""
-                NameSelectors=""@(new() { Id = { Selector = i => i.Key }, 
-                                         Text = { Selector = i => i.Name}, 
-                                         Value = { Selector = i => i.ItemValue } })"">
+<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""basicCustoms"" DefaultValue=""@string.Empty""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name},
+                                         Value = { Selector = i => i.ItemValue },
+                                         Index = nameof(ChoiceModel.Idx) })"">
     <ItemPrefixTemplate Context=""item"">
-        @(item.Key).&nbsp;
+        @(item.Idx + 1).&nbsp;
     </ItemPrefixTemplate>
 </BitChoiceGroup>
 
@@ -516,19 +509,19 @@ private string itemTemplateValue2 = ""Day"";
 
 public class ChoiceModel
 {
-    public string? Key { get; set; }    
     public string? Name { get; set; }
     public string? ItemValue { get; set; }
     public string? IconName { get; set; }
     public RenderFragment<ChoiceModel>? Fragment { get; set; }
+    public int Idx { get; set; }
 }
 
-private readonly List<ChoiceModel> itemPrefixCustoms = new()
+private readonly List<ChoiceModel> basicCustoms = new()
 {
-    new() { Key = ""1"", Name = ""Custom A"", ItemValue = ""A"" },
-    new() { Key = ""2"", Name = ""Custom B"", ItemValue = ""B"" },
-    new() { Key = ""3"", Name = ""Custom C"", ItemValue = ""C"" },
-    new() { Key = ""4"", Name = ""Custom D"", ItemValue = ""D"" }
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
 };
 
 private readonly List<ChoiceModel> itemTemplateCustoms = new()

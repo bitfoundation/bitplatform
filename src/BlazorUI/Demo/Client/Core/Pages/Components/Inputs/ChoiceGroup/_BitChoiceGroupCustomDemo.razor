@@ -176,12 +176,12 @@
 <ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div class="example-content">
-            <BitChoiceGroup Label="ItemPrefixTemplate" Items="itemPrefixCustoms" DefaultValue="@string.Empty"
-                            NameSelectors="@(new() { Id = { Selector = i => i.Key },
-                                                     Text = { Selector = i => i.Name},
-                                                     Value = { Selector = i => i.ItemValue } })">
+            <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicCustoms" DefaultValue="@string.Empty"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name},
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     Index = nameof(ChoiceModel.Idx) })">
                 <ItemPrefixTemplate Context="item">
-                    @(item.Key).&nbsp;
+                    @(item.Idx + 1).&nbsp;
                 </ItemPrefixTemplate>
             </BitChoiceGroup>
 
