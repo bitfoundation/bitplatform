@@ -186,6 +186,94 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
+
+    private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
+
+    private bool GetIsCheckedItem(TItem item)
+    {
+        if (CurrentValue is null) return false;
+
+        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
+    }
+
+    private bool ItemValueEqualityComparer(TItem item, TValue? value)
+    {
+        var itemValue = GetValue(item);
+
+        if (itemValue is null) return false;
+
+        return EqualityComparer<TValue>.Default.Equals(itemValue, value);
+    }
+
+    private async Task HandleClick(TItem item)
+    {
+        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+
+        await OnClick.InvokeAsync(item);
+    }
+
+    private async Task HandleChange(TItem item)
+    {
+        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+
+        var oldValue = CurrentValue;
+        CurrentValue = GetValue(item);
+
+        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
+    }
+
+    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+
+    private string? GetLayoutFlowClass() => LayoutFlow switch
+    {
+        BitLayoutFlow.Horizontal => "horizontal",
+        BitLayoutFlow.Vertical => "vertical",
+        _ => null
+    };
+
+    private string GetItemContainerCssClasses(TItem item)
+    {
+        StringBuilder cssClass = new(RootElementClass);
+        cssClass.Append("-icn");
+
+        if (ItemTemplate is not null) return cssClass.ToString();
+
+        if (GetIsCheckedItem(item))
+        {
+            cssClass.Append(' ')
+                    .Append(RootElementClass)
+                    .Append("-ich");
+        }
+
+        if (ItemLabelTemplate is not null) return cssClass.ToString();
+
+        if (IsEnabled is false || GetIsEnabled(item) is false)
+        {
+            cssClass.Append(' ')
+                    .Append(RootElementClass)
+                    .Append("-ids");
+        }
+
+        if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
+        {
+            cssClass.Append(' ')
+                    .Append(RootElementClass)
+                    .Append("-ihi");
+        }
+
+        return cssClass.ToString();
+    }
+
+    private string GetItemLabelWrapperCssClasses(TItem item)
+    {
+        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
+        return hasImageOrIcon && ItemLabelTemplate is null
+                ? "bit-chg-ilwi"
+                : "bit-chg-ilw";
+    }
+
+
+
     private string? GetAriaLabel(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -494,88 +582,21 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
     }
 
-    private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
 
-    private bool GetIsCheckedItem(TItem item)
+    private void SetIndex(TItem item, int value)
     {
-        if (CurrentValue is null) return false;
-
-        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
-    }
-
-    private bool ItemValueEqualityComparer(TItem item, TValue? value)
-    {
-        var itemValue = GetValue(item);
-
-        if (itemValue is null) return false;
-
-        return EqualityComparer<TValue>.Default.Equals(itemValue, value);
-    }
-
-    private async Task HandleClick(TItem item)
-    {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
-
-        await OnClick.InvokeAsync(item);
-    }
-
-    private async Task HandleChange(TItem item)
-    {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
-
-        var oldValue = CurrentValue;
-        CurrentValue = GetValue(item);
-
-        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
-    }
-
-    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
-
-    private string? GetLayoutFlowClass() => LayoutFlow switch
-    {
-        BitLayoutFlow.Horizontal => "horizontal",
-        BitLayoutFlow.Vertical => "vertical",
-        _ => null
-    };
-
-    private string GetItemContainerCssClasses(TItem item)
-    {
-        StringBuilder cssClass = new(RootElementClass);
-        cssClass.Append("-icn");
-
-        if (ItemTemplate is not null) return cssClass.ToString();
-
-        if (GetIsCheckedItem(item))
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ich");
+            choiceGroupItem.Index = value;
         }
 
-        if (ItemLabelTemplate is not null) return cssClass.ToString();
-
-        if (IsEnabled is false || GetIsEnabled(item) is false)
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ids");
+            choiceGroupOption.Index = value;
         }
 
-        if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
-        {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ihi");
-        }
+        if (NameSelectors is null) return;
 
-        return cssClass.ToString();
-    }
-
-    private string GetItemLabelWrapperCssClasses(TItem item)
-    {
-        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
-        return hasImageOrIcon && ItemLabelTemplate is null
-                ? "bit-chg-ilwi"
-                : "bit-chg-ilw";
+        item.SetValueToProperty(NameSelectors.Index, value);
     }
 }

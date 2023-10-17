@@ -30,8 +30,12 @@
     </label>
 
     <div style="@Styles?.Container" class="bit-chg-cnt @GetLayoutFlowClass() @Classes?.Container">
-        @foreach (var item in _items)
+        @for (var i = 0; i < _items.Count; i++)
         {
+            var index = i;
+            var item = _items[i];
+            SetIndex(item, index);
+
             var inputId = GetInputId(item);
             var template = GetTemplate(item);
             var prefix = GetPrefix(item);

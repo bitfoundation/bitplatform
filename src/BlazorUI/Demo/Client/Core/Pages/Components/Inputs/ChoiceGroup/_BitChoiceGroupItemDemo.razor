@@ -115,9 +115,9 @@
 <ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div class="example-content">
-            <BitChoiceGroup Label="ItemPrefixTemplate" Items="itemPrefixItems" DefaultValue="@string.Empty">
+            <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicItems" DefaultValue="@string.Empty">
                 <ItemPrefixTemplate Context="item">
-                    @(item.Id).&nbsp;
+                    @(item.Index + 1).&nbsp;
                 </ItemPrefixTemplate>
             </BitChoiceGroup>
 

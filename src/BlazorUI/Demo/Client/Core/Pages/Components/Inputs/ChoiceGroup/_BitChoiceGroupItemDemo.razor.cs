@@ -61,13 +61,6 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Item C", Value = "C", Class = "custom-item" },
         new() { Text = "Item D", Value = "D", Style = "color:green" }
     };
-    private readonly List<BitChoiceGroupItem<string>> itemPrefixItems = new()
-    {
-        new() { Id = "1", Text = "Item A", Value = "A" },
-        new() { Id = "2", Text = "Item B", Value = "B" },
-        new() { Id = "3", Text = "Item C", Value = "C" },
-        new() { Id = "4", Text = "Item D", Value = "D" }
-    };
     private readonly List<BitChoiceGroupItem<string>> itemTemplateItems = new()
     {
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
@@ -354,9 +347,9 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
     }
 </style>
 
-<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""itemPrefixItems"" DefaultValue=""@string.Empty"">
+<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""basicItems"" DefaultValue=""@string.Empty"">
     <ItemPrefixTemplate Context=""item"">
-        @(item.Id).&nbsp;
+        @(item.Index + 1).&nbsp;
     </ItemPrefixTemplate>
 </BitChoiceGroup>
 
@@ -385,12 +378,12 @@ private string itemTemplateValue = ""Day"";
 private string itemTemplateValue2 = ""Day"";
 private string itemLabelTemplateValue = ""Day"";
 
-private readonly List<BitChoiceGroupItem<string>> itemPrefixItems = new()
+private readonly List<BitChoiceGroupItem<string>> basicItems = new()
 {
-    new() { Id = ""1"", Text = ""Item A"", Value = ""A"" },
-    new() { Id = ""2"", Text = ""Item B"", Value = ""B"" },
-    new() { Id = ""3"", Text = ""Item C"", Value = ""C"" },
-    new() { Id = ""4"", Text = ""Item D"", Value = ""D"" }
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
 };
 
 private readonly List<BitChoiceGroupItem> itemTemplateItems<string> = new()

@@ -78,6 +78,13 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
 
 
 
+    /// <summary>
+    /// Index of the BitChoiceGroup option. This property's value is set by the component at render.
+    /// </summary>
+    public int Index { get; internal set; }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         Parent.RegisterOption(this);

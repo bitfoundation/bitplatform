@@ -219,13 +219,13 @@
         <div class="example-content">
             <BitChoiceGroup Label="ItemPrefixTemplate" TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemPrefixTemplate Context="option">
-                    @(option.Id).&nbsp;
+                    @(option.Index + 1).&nbsp;
                 </ItemPrefixTemplate>
                 <Options>
-                    <BitChoiceGroupOption Id="1" Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Id="2" Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Id="3" Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Id="4" Text="Option D" Value="@("D")" />
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
                 </Options>
             </BitChoiceGroup>
 

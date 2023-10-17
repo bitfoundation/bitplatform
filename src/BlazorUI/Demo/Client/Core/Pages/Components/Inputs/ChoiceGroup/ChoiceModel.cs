@@ -2,7 +2,6 @@
 
 public class ChoiceModel
 {
-    public string? Key { get; set; }
     public string? Name { get; set; }
     public string? ItemValue { get; set; }
     public string? ImageAddress { get; set; }
@@ -14,4 +13,5 @@ public class ChoiceModel
     public string? Class { get; set; }
     public string? Style { get; set; }
     public RenderFragment<ChoiceModel>? Fragment { get; set; }
+    public int Idx { get; set; }
 }
