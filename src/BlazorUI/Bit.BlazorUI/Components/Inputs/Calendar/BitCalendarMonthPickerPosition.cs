@@ -3,7 +3,7 @@
 public enum BitCalendarMonthPickerPosition
 {
     /// <summary>
-    /// Show the month picker at the beside.
+    /// Show the month picker besides the calendar.
     /// </summary>
     Besides,
     /// <summary>
