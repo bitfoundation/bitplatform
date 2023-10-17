@@ -42,6 +42,11 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemLabelTemplate { get; set; }
 
     /// <summary>
+    /// Used to customize the label for the Item Label content.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemPrefixTemplate { get; set; }
+
+    /// <summary>
     /// Used to customize the label for the Item content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -357,6 +362,28 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<BitSize?>(NameSelectors.ImageSize.Name) ?? new BitSize(0, 0);
     }
 
+    private string? GetPrefix(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Prefix;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Prefix;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Prefix.Selector is not null)
+        {
+            return NameSelectors.Prefix.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Prefix.Name);
+    }
+
     private string? GetSelectedImageSrc(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -547,7 +574,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     private string GetItemLabelWrapperCssClasses(TItem item)
     {
         var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
-        return (hasImageOrIcon) && ItemLabelTemplate is null
+        return hasImageOrIcon && ItemLabelTemplate is null
                 ? "bit-chg-ilwi"
                 : "bit-chg-ilw";
     }
