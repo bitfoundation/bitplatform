@@ -46,11 +46,11 @@
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.System" Version="7.1.0-pre-01" />
+        <PackageReference Include="AspNetCore.HealthChecks.System" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="7.0.2" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.1.0" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.1.0-pre-01" />
-        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.1.0-pre-01" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
