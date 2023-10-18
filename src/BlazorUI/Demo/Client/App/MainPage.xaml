@@ -7,7 +7,8 @@
     BackgroundColor="{AppThemeBinding Light={OnPlatform Android=#0D2960,
                                                         Default=#ffffff},
                                       Dark={OnPlatform Android=#0D2960,
-                                                       Default=#000000}}">
+                                                       Default=#000000}}"
+    Loaded="ContentPage_Loaded">
 
     <b:BlazorWebView
         x:Name="blazorWebView"
