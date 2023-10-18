@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitCirculateTimePickerEditMode
+public enum BitCircularTimePickerEditMode
 {
     Normal,
     OnlyMinutes,

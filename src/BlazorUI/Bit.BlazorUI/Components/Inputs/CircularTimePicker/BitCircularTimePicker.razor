@@ -59,13 +59,13 @@
             <div role="group" aria-label="">
                 <div class="bit-ctp-tbr">
                     <div class="bit-ctp-hm">
-                        @if (EditMode == BitCirculateTimePickerEditMode.Normal)
+                        @if (EditMode == BitCircularTimePickerEditMode.Normal)
                         {
-                            <button type="button" class="bit-ctp-txt @(_currentView == BitCirculateTimePickerDialMode.Hours ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Hours ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnHourClick">
                                 @GetHourString()
                             </button>
                             <span class="bit-ctp-txt">:</span>
-                            <button type="button" class="bit-ctp-txt @(_currentView == BitCirculateTimePickerDialMode.Minutes ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnMinuteClick">
+                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Minutes ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnMinuteClick">
                                 @GetMinuteString()
                             </button>
                         }
@@ -90,7 +90,7 @@
                     <div class="bit-ctp-ptr@(_isPointerDown ? string.Empty : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
                         <div class="bit-ctp-thm@(deg % 30 == 0 ? string.Empty : " bit-ctp-thm-min")"></div>
                     </div>
-                    @if (_currentView == BitCirculateTimePickerDialMode.Hours)
+                    @if (_currentView == BitCircularTimePickerDialMode.Hours)
                     {
                         <div class="bit-ctp-dil">
                             @if (AmPm)
@@ -129,7 +129,7 @@
                             }
                         </div>
                     }
-                    else if (_currentView == BitCirculateTimePickerDialMode.Minutes)
+                    else if (_currentView == BitCircularTimePickerDialMode.Minutes)
                     {
                         <div class="bit-ctp-dil">
                             @*Minutes from 05 to 60 (00) - step 5*@

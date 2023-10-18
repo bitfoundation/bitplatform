@@ -282,8 +282,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Inputs/CirculateTimePicker/BitCirculateTimePickerDemo.razor.css",
-        "inputFile": "Pages/Components/Inputs/CirculateTimePicker/BitCirculateTimePickerDemo.razor.scss",
+        "outputFile": "Pages/Components/Inputs/CircularTimePicker/BitCircularTimePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/CircularTimePicker/BitCircularTimePickerDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

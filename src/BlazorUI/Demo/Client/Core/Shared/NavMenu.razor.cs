@@ -54,7 +54,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = new string[] { "/components/date-picker" } },
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = new string[] { "/components/date-range-picker" } },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = new string[] { "/components/file-upload" } },
-                new() { Text = "CirculateTimePicker", Url = "/components/circulatetimepicker", AdditionalUrls = new string[] { "/components/circulate-time-picker" } },
+                new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = new string[] { "/components/circular-time-picker" } },
             }
         },
         new()
