@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-internal enum BitTimePickerDialMode
+internal enum BitCircularTimePickerDialMode
 {
     Hours,
     Minutes
