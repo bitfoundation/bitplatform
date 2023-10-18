@@ -12,8 +12,6 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #elif IOS
         var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
         return window.StatusBarManager.StatusBarFrame.Height;
-#elif WINDOWS
-        return 30;
 #elif MACCATALYST
         return 25;
 #else
@@ -28,18 +26,20 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
         var window = Platform.CurrentActivity?.Window;
         if (isDark)
         {
-            window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+            window!.DecorView!.SystemUiFlags &= ~(Android.Views.SystemUiFlags)Android.Views.SystemUiFlags.LightStatusBar;
         }
         else
         {
-            window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
+            window!.DecorView!.SystemUiFlags = (Android.Views.SystemUiFlags)(Android.Views.SystemUiFlags.LightStatusBar);
         }
+
+        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#0D1117") : Android.Graphics.Color.White);
 #elif IOS
-        var style = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-        await MainThread.InvokeOnMainThreadAsync(() =>
+        var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
+        await Device.InvokeOnMainThreadAsync(() =>
         {
-            UIKit.UIApplication.SharedApplication.SetStatusBarStyle(style, false);
-            Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
+            UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
+            Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
         });
 #endif
     }

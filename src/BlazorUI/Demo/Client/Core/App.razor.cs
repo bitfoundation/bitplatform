@@ -77,7 +77,7 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        if ((OperatingSystem.IsIOS() || OperatingSystem.IsAndroid()) && OperatingSystem.IsMacCatalyst() is false)
         {
             //This is handled in css using safe-area env() variables
             statusBarHeight = 0;
