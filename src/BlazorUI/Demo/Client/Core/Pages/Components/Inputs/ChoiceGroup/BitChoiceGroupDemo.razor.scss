@@ -1,34 +1,12 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
-@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 ::deep {
     .example-content {
         gap: 2rem;
         display: flex;
 
-        @include sm {
-            flex-direction: column;
-        }
-
         &.column {
             flex-direction: column;
-        }
-
-        .output {
-            gap: rem2(5px);
-            display: flex;
-            font-weight: 600;
-            align-items: center;
-            font-size: rem2(16px);
-            margin-top: rem2(20px);
-        }
-
-        .visibility-items {
-            align-items: center;
-            white-space: nowrap;
-            display: inline-flex;
         }
     }
 
@@ -45,19 +23,14 @@
 
     .custom-label {
         color: red;
-        font-size: 18px;
         font-weight: bold;
+        font-size: rem2(18px);
     }
 
     .custom-text {
         color: blue;
-        font-size: 16px;
         font-weight: bold;
-    }
-
-    .custom-label {
-        color: $Red20;
-        font-weight: bold;
+        font-size: rem2(16px);
     }
 
     .custom-container {
@@ -95,7 +68,6 @@
     }
 
     .validation-message {
-        color: $Red20;
-        font-size: rem2(12px);
+        color: red;
     }
 }

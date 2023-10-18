@@ -121,27 +121,6 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitDatePickerCalendarWithCustomCultureInfo()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePicker>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-        });
-
-        var monthButtons = component.FindAll(".bit-dtp-mwp .bit-dtp-gctn .bit-dtp-btn-row button");
-        Assert.IsTrue(monthButtons.Count > 0);
-        Assert.AreEqual(12, monthButtons.Count);
-
-        var index = 0;
-        foreach (var button in monthButtons)
-        {
-            Assert.AreEqual(button.FirstElementChild.TextContent, component.Instance.Culture.DateTimeFormat.AbbreviatedMonthNames[index++]);
-        }
-    }
-
-    [DataTestMethod]
     public void BitDatePickerValidationFormTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

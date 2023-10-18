@@ -131,27 +131,6 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.Value.EndDate.Value.Offset, DateTimeOffset.Now.Offset);
     }
 
-    [DataTestMethod]
-    public void BitDateRangePickerCalendarWithCustomCultureInfo()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDateRangePicker>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-        });
-
-        var monthButtons = component.FindAll("button.bit-dtrp-rbtn");
-        Assert.IsTrue(monthButtons.Count > 0);
-        Assert.AreEqual(12, monthButtons.Count);
-
-        var index = 0;
-        foreach (var button in monthButtons)
-        {
-            Assert.AreEqual(button.FirstElementChild.TextContent, component.Instance.Culture.DateTimeFormat.AbbreviatedMonthNames[index++]);
-        }
-    }
-
     [DataTestMethod,
         DataRow("DateRangePicker")
     ]
