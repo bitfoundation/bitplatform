@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CirculateTimePicker;
 
-public partial class BitTimePickerDemo
+public partial class BitCirculateTimePickerDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -28,10 +28,10 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "EditMode",
-            Type = "BitTimePickerEditMode",
+            Type = "BitCirculateTimePickerEditMode",
             LinkType = LinkType.Link,
             Href = "#edit-mode-enum",
-            DefaultValue = "BitTimePickerEditMode.Normal",
+            DefaultValue = "BitCirculateTimePickerEditMode.Normal",
             Description = "Choose the edition mode. By default, you can edit hours and minutes."
         },
         new()
@@ -246,7 +246,7 @@ public partial class BitTimePickerDemo
         new()
         {
             Id = "edit-mode-enum",
-            Name = "BitTimePickerEditMode",
+            Name = "BitCirculateTimePickerEditMode",
             Description = "",
             Items = new()
             {
@@ -275,13 +275,13 @@ public partial class BitTimePickerDemo
 
 
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
-    private FormValidationTimePickerModel formValidationTimePickerModel = new();
+    private FormValidationCirculateTimePickerModel formValidationCirculateTimePickerModel = new();
     private string successMessage = string.Empty;
-    private BitTimePicker timePicker;
+    private BitCirculateTimePicker circulateTimePicker;
 
     private async Task OpenCallout()
     {
-        await timePicker.OpenCallout();
+        await circulateTimePicker.OpenCallout();
     }
     private async Task HandleValidSubmit()
     {
@@ -298,44 +298,44 @@ public partial class BitTimePickerDemo
 
 
     private readonly string example1RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
     private readonly string example2RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time...""
                AmPm=""true"" />";
 
     private readonly string example3RazorCode = @"
-<BitTimePicker IsEnabled=false
+<BitCirculateTimePicker IsEnabled=false
                Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
     private readonly string example4RazorCode = @"
-<BitTimePicker IsEnabled=false
+<BitCirculateTimePicker IsEnabled=false
                Style=""max-width: 300px""
                Label=""Start time""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
     private readonly string example5RazorCode = @"
-<EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""formValidationCirculateTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <div class=""validation-summary"">
         <ValidationSummary />
     </div>
     <div>
-        <BitTimePicker @bind-Value=""formValidationTimePickerModel.Time""
+        <BitCirculateTimePicker @bind-Value=""formValidationCirculateTimePickerModel.Time""
                         AllowTextInput=""true""
                         Style=""max-width: 300px""
                         AriaLabel=""Select a time""
                         Placeholder=""Select a time...""
                         Label=""Time required"" />
-        <ValidationMessage For=""@(() => formValidationTimePickerModel.Time)"" />
+        <ValidationMessage For=""@(() => formValidationCirculateTimePickerModel.Time)"" />
     </div>
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">
@@ -349,13 +349,13 @@ public partial class BitTimePickerDemo
     </BitMessageBar>
 }";
     private readonly string example5CsharpCode = @"
-public class FormValidationDatePickerModel
+public class FormValidationCirculateTimePickerModel
 {
     [Required]
     public DateTimeOffset? Date { get; set; }
 }
 
-private FormValidationTimePickerModel formValidationTimePickerModel = new();
+private FormValidationCirculateTimePickerModel formValidationCirculateTimePickerModel = new();
 private string successMessage = string.Empty;
 
 private async Task HandleValidSubmit()
@@ -372,36 +372,36 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example6RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AllowTextInput=true
                Label=""Start time""
                AriaLabel=""Select a time"" />";
 
     private readonly string example7RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
                TimeFormat=""hh:MM:ss"" />";
 
     private readonly string example8RazorCode = @"
-<BitTimePicker @ref=""timePicker""
+<BitCirculateTimePicker @ref=""timePicker""
                Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."">
     <LabelTemplate>
         Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
     </LabelTemplate>
-</BitTimePicker>";
+</BitCirculateTimePicker>";
     private readonly string example8CsharpCode = @"
-private BitTimePicker timePicker;
+private BitCirculateTimePicker circulateTimePicker;
 
 private async Task OpenCallout()
 {
-    await timePicker.OpenCallout();
+    await circulateTimePicker.OpenCallout();
 }";
 
     private readonly string example9RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                @bind-Value=""@selectedTime""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
@@ -410,31 +410,31 @@ private async Task OpenCallout()
 private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 
     private readonly string example10RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                IconLocation=""BitIconLocation.Left""
                Placeholder=""Select a time..."">
     <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
     </IconTemplate>
-</BitTimePicker>";
+</BitCirculateTimePicker>";
 
     private readonly string example11RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                IconName=""@BitIconName.Airplane""
                Placeholder=""Select a time..."" />";
 
     private readonly string example12RazorCode = @"
-<EditForm Model=""formValidationTimePickerModel"">
+<EditForm Model=""formValidationCirculateTimePickerModel"">
     <DataAnnotationsValidator />
     <div>
-        <BitTimePicker @bind-Value=""formValidationTimePickerModel.Time""
+        <BitCirculateTimePicker @bind-Value=""formValidationCirculateTimePickerModel.Time""
                         Style=""max-width: 350px""
                         AllowTextInput=""true""
-                        Label=""BitTimePicker with Custom Invalid Error Message""
+                        Label=""BitCirculateTimePicker with Custom Invalid Error Message""
                         InvalidErrorMessage=""Invalid Time!!!"" />
-        <ValidationMessage For=""@(() => formValidationTimePickerModel.Time)"" />
+        <ValidationMessage For=""@(() => formValidationCirculateTimePickerModel.Time)"" />
     </div>
     <br />
     <div class=""validation-summary"">
@@ -451,7 +451,7 @@ public class FormValidationDatePickerModel
 private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
     private readonly string example13RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitCirculateTimePicker Style=""max-width: 300px""
                IsResponsive=""true""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";

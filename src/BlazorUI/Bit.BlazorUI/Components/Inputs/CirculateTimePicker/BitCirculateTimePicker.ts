@@ -1,4 +1,4 @@
-﻿class BitTimePicker {
+﻿class BitCirculateTimePicker {
     static toggleTimePickerCallout(dotnetObj: DotNetObject,
         timePickerId: string,
         calloutId: string,
