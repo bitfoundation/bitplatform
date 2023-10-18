@@ -3,24 +3,9 @@
 public class BitTextFieldClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the text field's description.
+    /// Custom CSS classes/styles for the BitTextField's root element.
     /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's description container.
-    /// </summary>
-    public string? DescriptionContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's label.
-    /// </summary>
-    public string? Label { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's field group.
-    /// </summary>
-    public string? FieldGroup { get; set; }
+    public string? Root { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles of the root element in focus state.
@@ -28,62 +13,72 @@ public class BitTextFieldClassStyles
     public string? Focused { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's icon.
-    /// </summary>
-    public string? Icon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's input.
-    /// </summary>
-    public string? Input { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's input icon.
-    /// </summary>
-    public string? InputIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the wrapper of label and input in text field.
+    /// Custom CSS classes/styles for the wrapper of label and input in BitTextField.
     /// </summary>
     public string? InputWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's prefix.
+    /// Custom CSS classes/styles for the BitTextField's label.
     /// </summary>
-    public string? Prefix { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's prefix container.
+    /// Custom CSS classes/styles for the BitTextField's field group.
+    /// </summary>
+    public string? FieldGroup { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's prefix container.
     /// </summary>
     public string? PrefixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's reveal password.
+    /// Custom CSS classes/styles for the BitTextField's prefix.
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's input.
+    /// </summary>
+    public string? Input { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's reveal password.
     /// </summary>
     public string? RevealPassword { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's reveal password icon.
-    /// </summary>
-    public string? RevealPasswordIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the text field's reveal password icon container.
+    /// Custom CSS classes/styles for the BitTextField's reveal password icon container.
     /// </summary>
     public string? RevealPasswordIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's root element.
+    /// Custom CSS classes/styles for the BitTextField's reveal password icon.
     /// </summary>
-    public string? Root { get; set; }
+    public string? RevealPasswordIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's suffix.
+    /// Custom CSS classes/styles for the BitTextField's icon.
+    /// </summary>
+    public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's suffix container.
+    /// </summary>
+    public string? SuffixContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's suffix.
     /// </summary>
     public string? Suffix { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the text field's suffix container.
+    /// Custom CSS classes/styles for the BitTextField's description container.
     /// </summary>
-    public string? SuffixContainer { get; set; }
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's description.
+    /// </summary>
+    public string? Description { get; set; }
 }
