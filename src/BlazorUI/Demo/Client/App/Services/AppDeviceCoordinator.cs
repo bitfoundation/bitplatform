@@ -12,6 +12,8 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #elif IOS
         var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
         return window.StatusBarManager.StatusBarFrame.Height;
+#elif WINDOWS
+        return 30;
 #elif MACCATALYST
         return 25;
 #else
@@ -41,6 +43,12 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
             UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
             Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
         });
+#elif MACCATALYST
+        var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;
+        if (window != null)
+        {
+            window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+        }
 #endif
     }
 }

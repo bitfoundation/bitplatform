@@ -167,7 +167,7 @@ main {
     background-color: $bit-color-background-primary;
 }
 
-.bit-macos {
+.bit-windows, .bit-macos {
     .status-bar {
         display: flex;
         background-color: transparent;

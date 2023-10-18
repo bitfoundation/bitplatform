@@ -13,7 +13,6 @@ public partial class MainPage
         InitializeComponent();
 
         SetupBlazorWebView();
-        SetupStatusBar();
     }
 
     private async void ContentPage_Loaded(object sender, EventArgs e)
@@ -28,6 +27,7 @@ public partial class MainPage
             settings.IsZoomControlEnabled = false;
             settings.AreBrowserAcceleratorKeysEnabled = false;
 #endif
+            await _deviceCoordinator.SetDeviceTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
         }
         catch (Exception exp)
         {
@@ -80,28 +80,6 @@ public partial class MainPage
             settings.BlockNetworkLoads =
                 settings.BlockNetworkImage = false;
 #endif
-        });
-    }
-
-    private void SetupStatusBar()
-    {
-        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), async (handler, view) =>
-        {
-            try
-            {
-                await _deviceCoordinator.SetDeviceTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
-#if MACCATALYST
-                var window = handler.PlatformView.WindowScene;
-                if (window != null)
-                {
-                    window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
-                }
-#endif
-            }
-            catch (Exception exp)
-            {
-                _exceptionHandler.Handle(exp);
-            }
         });
     }
 }

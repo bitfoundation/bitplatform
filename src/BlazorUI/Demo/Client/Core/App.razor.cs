@@ -79,7 +79,8 @@ public partial class App
 
         if ((OperatingSystem.IsIOS() || OperatingSystem.IsAndroid()) && OperatingSystem.IsMacCatalyst() is false)
         {
-            //This is handled in css using safe-area env() variables
+            //For iOS this is handled in css using safe-area env() variables
+            //For Android there's an issue with keyboard in fullscreen mode
             statusBarHeight = 0;
         }
         

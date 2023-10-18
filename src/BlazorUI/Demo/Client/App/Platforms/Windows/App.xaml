@@ -7,18 +7,28 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="WindowCaptionForeground">0D1117</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackground">White</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">0D1117</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">White</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="WindowCaptionForeground">White</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackground">#0D1117</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">White</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">#0D1117</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+            <DataTemplate x:Key="MauiAppTitleBarContainerTemplate">
+                <Grid HorizontalAlignment="Stretch">
+                    <ContentControl
+                        x:Name="AppTitleBarContentControl"
+                        Grid.Column="4"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        IsTabStop="False" />
+                </Grid>
+            </DataTemplate>
         </ResourceDictionary>
     </maui:MauiWinUIApplication.Resources>
 </maui:MauiWinUIApplication>
