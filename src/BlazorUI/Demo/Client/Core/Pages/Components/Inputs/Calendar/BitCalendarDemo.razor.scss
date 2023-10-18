@@ -4,52 +4,29 @@
 
 .example-content {
     display: flex;
-    padding: 1rem 0;
     overflow-x: auto;
+    max-width: fit-content;
     flex-flow: column wrap;
-    align-items: flex-start;
 }
 
-.validation-summary {
-    color: $Red20;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-    background-color: $ErrorBlockRed;
-    border-left: rem2(5px) solid $Red10;
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-}
-
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem2(12px);
+.day-cell {
+    width: 28px;
+    height: 28px;
+    position: relative;
 }
 
 .weekend-cell {
     color: red;
 }
 
-.custom-day-cell {
-    position: relative;
-    width: 44px !important;
-    height: 44px !important;
-}
-
-.discount-badge {
+.badge {
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
     position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    width: fit-content !important;
-    height: 16px !important;
-    border-radius: 2px;
-    padding: 0 4px;
+    border-radius: 50%;
     background-color: red;
-    color: white;
-    font-size: 8px;
 }
 
 .year-suffix {
@@ -59,4 +36,10 @@
     height: 12px;
     color: gray;
     font-size: 8px;
+}
+
+::deep {
+    .validation-message {
+        color: red;
+    }
 }

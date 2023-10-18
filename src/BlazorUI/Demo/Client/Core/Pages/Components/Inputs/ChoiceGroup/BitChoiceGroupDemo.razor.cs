@@ -49,6 +49,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "ItemPrefixTemplate",
+            Type = "RenderFragment<TItem>?",
+            Description = "Used to add a prefix to each item."
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -200,6 +206,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a prefix for the BitChoiceGroup item.",
+               },
+               new()
+               {
                    Name = "SelectedImageSrc",
                    Type = "string?",
                    DefaultValue = "null",
@@ -232,6 +245,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The value returned when BitChoiceGroup item is checked.",
+               },
+               new()
+               {
+                   Name = "Index",
+                   Type = "int",
+                   DefaultValue = "null",
+                   Description = "Index of the BitChoiceGroup item. This property's value is set by the component at render.",
                }
             }
         },
@@ -299,6 +319,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a prefix for the BitChoiceGroup option.",
+               },
+               new()
+               {
                    Name = "SelectedImageSrc",
                    Type = "string?",
                    DefaultValue = "null",
@@ -331,6 +358,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The value returned when BitChoiceGroup option is checked.",
+               },
+               new()
+               {
+                   Name = "Index",
+                   Type = "int",
+                   DefaultValue = "null",
+                   Description = "Index of the BitChoiceGroup option. This property's value is set by the component at render.",
                }
             }
         },
@@ -430,6 +464,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitNameSelectorPair<TItem, TValue?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Value))",
                    Description = "The value returned when BitChoiceGroup option is checked.",
+               },
+               new()
+               {
+                   Name = "Index",
+                   Type = "string",
+                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.Index))",
+                   Description = "The Index field name of the custom input class. This property's value is set by the component at render.",
                }
             }
         },

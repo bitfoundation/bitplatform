@@ -30,11 +30,16 @@
     </label>
 
     <div style="@Styles?.Container" class="bit-chg-cnt @GetLayoutFlowClass() @Classes?.Container">
-        @foreach (var item in _items)
+        @for (var i = 0; i < _items.Count; i++)
         {
+            var index = i;
+            var item = _items[i];
+            SetIndex(item, index);
+
             var inputId = GetInputId(item);
-            var isChecked = GetIsCheckedItem(item);
             var template = GetTemplate(item);
+            var prefix = GetPrefix(item);
+            var isChecked = GetIsCheckedItem(item);
 
             <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
                 <label for="@inputId" style="@Styles?.ItemLabel" class="@Classes?.ItemLabel">
@@ -48,6 +53,15 @@
                     }
                     else
                     {
+                        @if (prefix is not null)
+                        {
+                            <span>@prefix</span>
+                        }
+                        else if (ItemPrefixTemplate is not null)
+                        {
+                            @ItemPrefixTemplate(item)
+                        }
+
                         <div style="@Styles?.ItemLabelWrapper" class="@GetItemLabelWrapperCssClasses(item) @Classes?.ItemLabelWrapper">
                             @if (ItemLabelTemplate is not null)
                             {

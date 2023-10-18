@@ -167,53 +167,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
-    <ExamplePreview>
-        <div class="example-content column">
-            <div class="visibility-items">
-                Visible: [ &nbsp;
-                <BitChoiceGroup Visibility="BitVisibility.Visible"
-                                LayoutFlow="BitLayoutFlow.Horizontal"
-                                TItem="BitChoiceGroupOption<string>"
-                                DefaultValue="@("B")"
-                                TValue="string">
-                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                </BitChoiceGroup> ]
-            </div>
-            <div class="visibility-items">
-                Hidden: [ &nbsp;
-                <BitChoiceGroup Visibility="BitVisibility.Hidden"
-                                LayoutFlow="BitLayoutFlow.Horizontal"
-                                TItem="BitChoiceGroupOption<string>"
-                                DefaultValue="@("B")"
-                                TValue="string">
-                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                </BitChoiceGroup> ]
-            </div>
-            <div class="visibility-items">
-                Collapsed: [
-                <BitChoiceGroup Visibility="BitVisibility.Collapsed"
-                                LayoutFlow="BitLayoutFlow.Horizontal"
-                                TItem="BitChoiceGroupOption<string>"
-                                DefaultValue="@("B")"
-                                TValue="string">
-                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                </BitChoiceGroup> ]
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="LabelTemplate" RazorCode="@example7RazorCode" Id="example7">
+<ComponentExampleBox Title="LabelTemplate" RazorCode="@example6RazorCode" Id="example6">
     <ExamplePreview>
         <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
             <LabelTemplate>
@@ -231,13 +185,54 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Item Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div class="example-content">
+            <div>
+                <BitChoiceGroup Label="One-way" Value="@oneWayValue"
+                                TItem="BitChoiceGroupOption<string>" TValue="string">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup>
+                <br />
+                <BitTextField @bind-Value="oneWayValue" />
+            </div>
+            <div>
+                <BitChoiceGroup Label="Two-way" @bind-Value="twoWayValue"
+                                TItem="BitChoiceGroupOption<string>" TValue="string">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup>
+                <br />
+                <BitTextField @bind-Value="twoWayValue" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="ItemPrefixTemplate" TItem="BitChoiceGroupOption<string>" TValue="string">
+                <ItemPrefixTemplate Context="option">
+                    @(option.Index + 1).&nbsp;
+                </ItemPrefixTemplate>
+                <Options>
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </Options>
+            </BitChoiceGroup>
+
             <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemLabelTemplate Context="option">
-                    <div style="margin-left:30px;height:20px" class="custom-container @(itemLabelTemplateValue == option.Value ? "selected" : string.Empty)">
+                    <div class="custom-container @(itemLabelTemplateValue == option.Value ? "selected" : string.Empty)">
                         <BitIcon IconName="@option.IconName" />
                         <span>@option.Text</span>
                     </div>
@@ -248,7 +243,9 @@
                     <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                 </Options>
             </BitChoiceGroup>
-
+        </div>
+        <br /><br /><br />
+        <div class="example-content">
             <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <ItemTemplate Context="option">
@@ -263,9 +260,7 @@
                     <BitChoiceGroupOption Text="Month" Value="@("Month")" IconName="@BitIconName.Calendar" />
                 </Options>
             </BitChoiceGroup>
-        </div>
-        <br /><br /><br />
-        <div class="example-content">
+
             <BitChoiceGroup Label="Item's Template" @bind-Value="itemTemplateValue2"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <BitChoiceGroupOption Text="Day" Value="@("Day")">
@@ -297,51 +292,17 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
     <ExamplePreview>
-        <div class="example-content">
-            <div>
-                <BitChoiceGroup Label="One-way" Value="@oneWayValue"
-                                TItem="BitChoiceGroupOption<string>" TValue="string">
-                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                </BitChoiceGroup>
-
-                <div class="output">
-                    <BitTextField @bind-Value="oneWayValue" />
-                </div>
-            </div>
-
-            <div>
-                <BitChoiceGroup Label="Two-way" @bind-Value="twoWayValue"
-                                TItem="BitChoiceGroupOption<string>" TValue="string">
-                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                </BitChoiceGroup>
-
-                <div class="output">
-                    <BitTextField @bind-Value="twoWayValue" />
-                </div>
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
-    <ExamplePreview>
-        <div class="example-content column">
-            <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
+        <div style="direction:rtl" class="example-content">
+            <BitChoiceGroup Label="ساده" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" IsRtl="true">
                 <BitChoiceGroupOption Text="گزینه آ" Value="@("A")" />
                 <BitChoiceGroupOption Text="گزینه ب" Value="@("B")" />
                 <BitChoiceGroupOption Text="گزینه پ" Value="@("C")" />
                 <BitChoiceGroupOption Text="گزینه ت" Value="@("D")" />
             </BitChoiceGroup>
 
-            <BitChoiceGroup Label="Disabled" TItem="BitChoiceGroupOption<string>" TValue="string" IsEnabled="false" DefaultValue="@("A")" IsRtl="true">
+            <BitChoiceGroup Label="غیرفعال" TItem="BitChoiceGroupOption<string>" TValue="string" IsEnabled="false" DefaultValue="@("A")" IsRtl="true">
                 <BitChoiceGroupOption Text="گزینه آ" Value="@("A")" />
                 <BitChoiceGroupOption Text="گزینه ب" Value="@("B")" />
                 <BitChoiceGroupOption Text="گزینه پ" Value="@("C")" />
@@ -351,29 +312,29 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         @if (string.IsNullOrEmpty(successMessage))
         {
             <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                 <DataAnnotationsValidator />
-                <div>
-                    <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" @bind-Value="validationModel.Value">
-                        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                        <BitChoiceGroupOption Text="Option C" Value="@("C")" />
-                        <BitChoiceGroupOption Text="Option D" Value="@("D")" />
-                    </BitChoiceGroup>
-                    <ValidationMessage For="@(() => validationModel.Value)" />
-                </div>
-                <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
+
+                <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" @bind-Value="validationModel.Value">
+                    <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                    <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                    <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+                </BitChoiceGroup>
+                <ValidationMessage For="@(() => validationModel.Value)" />
+
+                <br />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
             </EditForm>
         }
         else
         {
-            <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                @successMessage
-            </BitMessageBar>
+            <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
         }
         <br />
         <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
