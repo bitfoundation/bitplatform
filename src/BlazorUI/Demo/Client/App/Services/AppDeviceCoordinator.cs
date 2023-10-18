@@ -21,18 +21,15 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
-    public async Task SetDeviceTheme(bool isDark)
+    public async Task ApplyTheme(bool isDark)
     {
         Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if ANDROID
         var window = Platform.CurrentActivity?.Window;
+        window!.DecorView!.SystemUiFlags = Android.Views.SystemUiFlags.LightStatusBar;
         if (isDark)
         {
-            window!.DecorView!.SystemUiFlags &= ~(Android.Views.SystemUiFlags)Android.Views.SystemUiFlags.LightStatusBar;
-        }
-        else
-        {
-            window!.DecorView!.SystemUiFlags = (Android.Views.SystemUiFlags)(Android.Views.SystemUiFlags.LightStatusBar);
+            window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
         window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#0D1117") : Android.Graphics.Color.White);
