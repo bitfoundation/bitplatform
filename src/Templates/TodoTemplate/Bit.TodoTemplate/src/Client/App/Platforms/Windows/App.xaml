@@ -2,33 +2,4 @@
     x:Class="TodoTemplate.Client.App.Platforms.Windows.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:maui="using:Microsoft.Maui">
-    <maui:MauiWinUIApplication.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="WindowCaptionForeground">Gray</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">Gray</SolidColorBrush>
-                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-            <DataTemplate x:Key="MauiAppTitleBarContainerTemplate">
-                <Grid HorizontalAlignment="Stretch">
-                    <ContentControl
-                        x:Name="AppTitleBarContentControl"
-                        Grid.Column="4"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        IsTabStop="False" />
-                </Grid>
-            </DataTemplate>
-        </ResourceDictionary>
-    </maui:MauiWinUIApplication.Resources>
-</maui:MauiWinUIApplication>
+    xmlns:maui="using:Microsoft.Maui" />

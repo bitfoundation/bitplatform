@@ -78,7 +78,7 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
 
-        if ((OperatingSystem.IsIOS() || OperatingSystem.IsAndroid()) && OperatingSystem.IsMacCatalyst() is false)
+        if (OperatingSystem.IsMacCatalyst() is false)
         {
             //For iOS this is handled in css using safe-area env() variables
             //For Android there's an issue with keyboard in fullscreen mode
