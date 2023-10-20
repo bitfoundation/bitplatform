@@ -36,7 +36,9 @@
             const timePickerWrapperBottom = window.innerHeight - (timePickerHeight + timePickerY);
             const timePickerWrapperRight = window.innerWidth - (timePickerWidth + timePickerX);
 
-            if (isResponsive && window.innerWidth <= 600) {
+            timePickerCallout.style.width = "unset";
+
+            if (isResponsive && window.innerWidth <= 400) {
                 timePickerCallout.style.left = "2.5%";
                 if (timePickerWrapperBottom >= timePickerCalloutHeight) {
                     timePickerCallout.style.top = timePickerY + timePickerHeight + 1 + "px";
@@ -52,9 +54,6 @@
 
                 if (window.innerWidth <= 400 && window.innerWidth > 300) {
                     timePickerCallout.style.width = "95%";
-                }
-                else {
-                    timePickerCallout.style.width = "unset";
                 }
 
                 return;
