@@ -16,10 +16,7 @@ public class Middlewares
             app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
-            if (env.IsDevelopment())
-            {
-                app.UseWebAssemblyDebugging();
-            }
+            app.UseWebAssemblyDebugging();
 #endif
         }
 
