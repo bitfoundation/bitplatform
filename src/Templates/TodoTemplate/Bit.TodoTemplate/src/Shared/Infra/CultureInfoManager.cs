@@ -56,7 +56,6 @@ public class CultureInfoManager
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
-        cultureInfo.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Saturday;
 
         return cultureInfo;
     }
