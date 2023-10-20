@@ -32,7 +32,7 @@ public partial class BitImageDemo
         new()
         {
             Name = "Height",
-            Type = "double?",
+            Type = "string",
             DefaultValue = "null",
             Description = "The image height value in px."
         },
@@ -122,7 +122,7 @@ public partial class BitImageDemo
         new()
         {
             Name = "Width",
-            Type = "double?",
+            Type = "string",
             DefaultValue = "null",
             Description = "The image width value in px."
         }

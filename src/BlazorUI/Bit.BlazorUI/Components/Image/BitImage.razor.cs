@@ -26,7 +26,7 @@ public partial class BitImage
     /// <summary>
     /// The image height value in px.
     /// </summary>
-    [Parameter] public double? Height { get; set; }
+    [Parameter] public string Height { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the image's parameters
@@ -87,7 +87,7 @@ public partial class BitImage
     /// <summary>
     /// The image width value in px.
     /// </summary>
-    [Parameter] public double? Width { get; set; }
+    [Parameter] public string Width { get; set; }
 
 
 
@@ -104,10 +104,11 @@ public partial class BitImage
 
     protected override void RegisterCssStyles()
     {
+        
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Width > 0 ? $"width:{Width}px" : string.Empty);
-        StyleBuilder.Register(() => Height > 0 ? $"height:{Height}px" : string.Empty);
+        RegisterDimensionStyle(Width, "width");
+        RegisterDimensionStyle(Height, "height");
     }
 
     private string GetImageClasses()
@@ -172,5 +173,14 @@ public partial class BitImage
         _loadingState = BitImageLoadingState.NotLoaded;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
+    }
+    protected void RegisterDimensionStyle(string value, string propertyName)
+    {
+
+    if (int.TryParse(value, out int numericValue) && numericValue > 0)
+    {
+        StyleBuilder.Register(() => $"{propertyName}:{numericValue}px");
+    }
+    
     }
 }
