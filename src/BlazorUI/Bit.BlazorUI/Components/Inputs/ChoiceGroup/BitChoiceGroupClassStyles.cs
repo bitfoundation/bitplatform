@@ -73,6 +73,11 @@ public class BitChoiceGroupClassStyles
     public string? ItemIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the prefix of each item of the BitChoiceGroup.
+    /// </summary>
+    public string? ItemPrefix { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the text wrapper of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemTextWrapper { get; set; }

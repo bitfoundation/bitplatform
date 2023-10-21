@@ -198,7 +198,7 @@
                                   ButtonStyle="BitButtonStyle.Primary"
                                   OnClick="ClassStylesPrimaryOnClick"
                                   LoadingLabel="Loading..."
-                                  ClassStyles="@(new() { LoadingLabel = new() { Style = "color:red" } })">
+                                  Styles="@(new() { LoadingLabel = "color:red" })">
                     Primary (@ClassStylesPrimaryCounter)
                 </BitLoadingButton>
 
@@ -206,7 +206,7 @@
                                   ButtonStyle="BitButtonStyle.Standard"
                                   OnClick="ClassStylesStandardOnClick"
                                   LoadingLabel="Saving..."
-                                  ClassStyles="@(new() { LoadingLabel = new() { Style = "color:blue" } })">
+                                  Classes="@(new() { LoadingLabel = "custom-label" })">
                     Standard (@ClassStylesStandardCounter)
                 </BitLoadingButton>
 

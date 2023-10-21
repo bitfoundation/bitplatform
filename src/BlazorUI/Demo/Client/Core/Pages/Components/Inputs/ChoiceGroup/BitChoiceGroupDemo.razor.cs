@@ -580,6 +580,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "ItemPrefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the prefix of each item of the BitChoiceGroup.",
+               },
+               new()
+               {
                    Name = "ItemTextWrapper",
                    Type = "string?",
                    DefaultValue = "null",
