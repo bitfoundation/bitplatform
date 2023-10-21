@@ -100,19 +100,19 @@ public partial class BitIconButtonDemo
                {
                    Name = "Root",
                    Type = "string?",
-                   Description = "Custom CSS classes/styles for the root element of the BitActionButton."
+                   Description = "Custom CSS classes/styles for the root element of the BitIconButton."
                },
                new()
                {
                    Name = "Container",
                    Type = "string?",
-                   Description = "Custom CSS classes/styles for the main container of the BitActionButton."
+                   Description = "Custom CSS classes/styles for the main container of the BitIconButton."
                },
                new()
                {
                    Name = "Icon",
                    Type = "string?",
-                   Description = "Custom CSS classes/styles for the Icon of the BitActionButton."
+                   Description = "Custom CSS classes/styles for the Icon of the BitIconButton."
                }
             }
         }
