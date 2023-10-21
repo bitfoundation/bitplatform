@@ -36,12 +36,12 @@ public partial class BitIconButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitIconButtonClassStyles",
             DefaultValue = "",
             Href = "#class-styles",
             LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the component."
+            Description = "Custom CSS classes for different parts of the component."
         },
         new()
         {
@@ -62,6 +62,15 @@ public partial class BitIconButtonDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the icon button clicked.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitIconButtonClassStyles",
+            DefaultValue = "",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS styles for different parts of the component."
         },
         new()
         {
@@ -89,31 +98,21 @@ public partial class BitIconButtonDemo
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Root",
                    Type = "string?",
-                   Description = "Custom CSS class."
+                   Description = "Custom CSS classes/styles for the root element of the BitActionButton."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "Container",
                    Type = "string?",
-                   Description = "Custom CSS style."
+                   Description = "Custom CSS classes/styles for the main container of the BitActionButton."
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   Description = "Custom CSS classes/styles for the Icon of the BitActionButton."
                }
             }
         }
