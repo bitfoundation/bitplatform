@@ -26,6 +26,7 @@
             BitCallouts.replaceCurrent({ calloutId, overlayId, dotnetObj });
             timePickerCallout.style.display = "block";
             timePickerOverlay.style.display = "block";
+            timePickerCallout.style.width = "unset";
             const timePickerCalloutHeight = timePickerCallout.offsetHeight;
             const timePickerCalloutWidth = timePickerCallout.offsetWidth;
             const timePickerHeight = timePicker.offsetHeight;
@@ -35,31 +36,6 @@
             const timePickerTop = timePicker.getBoundingClientRect().y;
             const timePickerWrapperBottom = window.innerHeight - (timePickerHeight + timePickerY);
             const timePickerWrapperRight = window.innerWidth - (timePickerWidth + timePickerX);
-
-            if (isResponsive && window.innerWidth <= 600) {
-                timePickerCallout.style.left = "2.5%";
-                if (timePickerWrapperBottom >= timePickerCalloutHeight) {
-                    timePickerCallout.style.top = timePickerY + timePickerHeight + 1 + "px";
-                    timePickerCallout.style.right = "unset";
-                    timePickerCallout.style.bottom = "unset";
-                } else if (timePickerTop >= timePickerCalloutHeight) {
-                    timePickerCallout.style.bottom = timePickerWrapperBottom + timePickerHeight + 1 + "px";;
-                    timePickerCallout.style.right = "unset";
-                    timePickerCallout.style.top = "unset";
-                } else {
-                    timePickerCallout.style.top = "2.5%";
-                }
-
-                if (window.innerWidth <= 400 && window.innerWidth > 300) {
-                    timePickerCallout.style.width = "95%";
-                }
-                else {
-                    timePickerCallout.style.width = "unset";
-                }
-
-                return;
-            }
-
 
             if (timePickerWrapperBottom >= timePickerCalloutHeight) {
                 timePickerCallout.style.top = timePickerY + timePickerHeight + 1 + "px";
@@ -81,6 +57,12 @@
                 timePickerCallout.style.bottom = "2px";
                 timePickerCallout.style.right = "unset";
                 timePickerCallout.style.top = "unset"
+            }
+
+            if (isResponsive && window.innerWidth <= 600) {
+                timePickerCallout.style.maxWidth = "400px";
+                timePickerCallout.style.width = "95%";
+                timePickerCallout.style.left = "2.5%";
             }
         }
     }
