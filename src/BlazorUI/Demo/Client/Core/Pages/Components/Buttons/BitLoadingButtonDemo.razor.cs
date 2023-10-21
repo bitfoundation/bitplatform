@@ -51,12 +51,12 @@ public partial class BitLoadingButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitLoadingButtonClassStyles?",
             LinkType = LinkType.Link,
             Href = "#class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes/styles for different parts of the BitLoadingButton.",
+            Description = "Custom CSS classes for different parts of the BitLoadingButton.",
         },
         new()
         {
@@ -96,6 +96,15 @@ public partial class BitLoadingButtonDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitLoadingButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitLoadingButton.",
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
@@ -113,48 +122,28 @@ public partial class BitLoadingButtonDemo
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Name = "Root",
+                   Type = "string?",
+                   Description = "Custom CSS classes/styles for the root element of the BitLoadingButton."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
                    Description = "Custom CSS classes/styles for the internal container of the BitLoadingButton."
                },
                new()
                {
-                   Name = "Primary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the primary section of the BitLoadingButton."
-               },
-               new()
-               {
-                   Name = "Secondary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the secondary section of the BitLoadingButton."
-               },
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Spinner",
                    Type = "string?",
-                   Description = "Custom CSS classes."
+                   Description = "Custom CSS classes/styles for the spinner section of the BitLoadingButton."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "LoadingLabel",
                    Type = "string?",
-                   Description = "Custom CSS styles."
-               }
+                   Description = "Custom CSS classes/styles for the label section of the BitLoadingButton."
+               },
             }
         }
     };
