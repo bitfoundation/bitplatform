@@ -3,17 +3,22 @@
 public class BitCompoundButtonClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitCompoundButton.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the internal container of the BitCompoundButton.
     /// </summary>
-    public BitClassStylePair? Container { get; set; }
+    public string? Container { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the primary section of the BitCompoundButton.
+    /// Custom CSS classes/styles for the primary text of the BitCompoundButton.
     /// </summary>
-    public BitClassStylePair? Primary { get; set; }
+    public string? PrimaryText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the secondary section of the BitCompoundButton.
+    /// Custom CSS classes/styles for the secondary text of the BitCompoundButton.
     /// </summary>
-    public BitClassStylePair? Secondary { get; set; }
+    public string? SecondaryText { get; set; }
 }

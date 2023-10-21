@@ -120,21 +120,17 @@
         <ExamplePreview>
             <div class="buttons-container">
                 <BitCompoundButton SecondaryText="This is secondary text"
-                                   ClassStyles="@(new() {
-                                                            Container = new() { Style = "line-height:2" },
-                                                            Primary = new() { Class = "custom-primary" },
-                                                            Secondary = new() { Class = "custom-secondary"}
-                                                        })">
+                                   Styles="@(new() { Container = "line-height: 2;",
+                                                     PrimaryText = "color: darkmagenta;",
+                                                     SecondaryText = "color: darkslateblue;" })">
                     Primary
                 </BitCompoundButton>
 
                 <BitCompoundButton SecondaryText="This is secondary text"
                                    ButtonStyle="BitButtonStyle.Standard"
-                                   ClassStyles="@(new() {
-                                                            Container = new() { Style = "line-height:2" },
-                                                            Primary = new() { Class = "custom-primary" },
-                                                            Secondary = new() { Class = "custom-secondary"}
-                                                         })">
+                                   Classes="@(new() { Container = "custom-container",
+                                                      PrimaryText = "custom-primary",
+                                                      SecondaryText = "custom-secondary" })">
                     Standard
                 </BitCompoundButton>
             </div>

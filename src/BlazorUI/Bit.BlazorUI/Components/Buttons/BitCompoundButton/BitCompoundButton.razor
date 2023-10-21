@@ -14,17 +14,15 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
-
-            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
-
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.PrimaryText" class="bit-cmb-prt @Classes?.PrimaryText">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
+                <span style="@Styles?.SecondaryText" class="bit-cmb-sct @Classes?.SecondaryText">@SecondaryText</span>
             }
         </span>
     </a>
@@ -41,15 +39,15 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
-            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.PrimaryText" class="bit-cmb-prt @Classes?.PrimaryText">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
+                <span style="@Styles?.SecondaryText" class="bit-cmb-sct @Classes?.SecondaryText">@SecondaryText</span>
             }
         </span>
     </button>
