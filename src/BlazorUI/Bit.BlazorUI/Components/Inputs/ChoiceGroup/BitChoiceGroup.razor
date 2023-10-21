@@ -55,7 +55,7 @@
                     {
                         @if (prefix is not null)
                         {
-                            <span>@prefix</span>
+                            <span style="@Styles?.ItemPrefix" class="@Classes?.ItemPrefix">@prefix</span>
                         }
                         else if (ItemPrefixTemplate is not null)
                         {
