@@ -31,7 +31,7 @@ public partial class NavMenu : IDisposable
             Text = "Inputs",
             ChildItems = new()
             {
-                new() { Text = "CheckBox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
+                new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" }, Description = "Radio, RadioButton" },
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect" },
                 new() { Text = "Rating", Url = "/components/rating" },
