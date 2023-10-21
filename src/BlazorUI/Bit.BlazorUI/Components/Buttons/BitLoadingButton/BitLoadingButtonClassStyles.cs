@@ -3,17 +3,22 @@
 public class BitLoadingButtonClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitLoadingButton.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the internal container of the BitLoadingButton.
     /// </summary>
-    public BitClassStylePair? LoadingContainer { get; set; }
+    public string? LoadingContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Spinner of the BitLoadingButton.
+    /// Custom CSS classes/styles for the spinner of the BitLoadingButton.
     /// </summary>
-    public BitClassStylePair? Spinner { get; set; }
+    public string? Spinner { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Label of the BitLoadingButton.
+    /// Custom CSS classes/styles for the label of the BitLoadingButton.
     /// </summary>
-    public BitClassStylePair? LoadingLabel { get; set; }
+    public string? LoadingLabel { get; set; }
 }
