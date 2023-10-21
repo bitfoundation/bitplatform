@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
+﻿using System.ComponentModel;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
 public partial class BitLoadingButtonDemo
 {
@@ -124,24 +126,28 @@ public partial class BitLoadingButtonDemo
                {
                    Name = "Root",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitLoadingButton."
                },
                new()
                {
                    Name = "LoadingContainer",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the internal container of the BitLoadingButton."
                },
                new()
                {
                    Name = "Spinner",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the spinner section of the BitLoadingButton."
                },
                new()
                {
                    Name = "LoadingLabel",
                    Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label section of the BitLoadingButton."
                },
             }
@@ -821,11 +827,18 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example8RazorCode = @"
+<style>
+    .custom-label {
+        color: blue;
+    }
+</style>
+
+
 <BitLoadingButton IsLoading=""ClassStylesPrimaryIsLoading""
                   ButtonStyle=""BitButtonStyle.Primary""
                   OnClick=""ClassStylesPrimaryOnClick""
                   LoadingLabel=""Loading...""
-                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:red"" } })"">
+                  Styles=""@(new() { LoadingLabel = ""color:red"" })"">
     Primary (@ClassStylesPrimaryCounter)
 </BitLoadingButton>
 
@@ -833,7 +846,7 @@ private void HandleInvalidSubmit()
                   ButtonStyle=""BitButtonStyle.Standard""
                   OnClick=""ClassStylesStandardOnClick""
                   LoadingLabel=""Saving...""
-                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:blue"" } })"">
+                  Classes=""@(new() { LoadingLabel = ""custom-label"" })"">
     Standard (@ClassStylesStandardCounter)
 </BitLoadingButton>
 
