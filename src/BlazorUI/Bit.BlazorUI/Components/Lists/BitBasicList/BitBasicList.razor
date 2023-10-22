@@ -14,27 +14,19 @@
         {
             <_BitBasicListVirtualize Items="Items"
                                      ItemSize="@ItemSize"
-                                     OverscanCount="@OverscanCount">
-                <ItemContent>
-                    @RowTemplate(context)
-                </ItemContent>
-                <EmptyContent>
-                    @EmptyContent
-                </EmptyContent>
+                                     OverscanCount="@OverscanCount"
+                                     EmptyContent="EmptyContent">
+                @RowTemplate(context)
             </_BitBasicListVirtualize>
         }
         else
         {
             <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
                                      OverscanCount="@OverscanCount"
+                                     Placeholder="VirtualizePlaceholder"
                                      ItemsProvider="ProvideVirtualizedItems"
-                                     Placeholder="VirtualizePlaceholder">
-                <ItemContent>
-                    @RowTemplate(context)
-                </ItemContent>
-                <EmptyContent>
-                    @EmptyContent
-                </EmptyContent>
+                                     EmptyContent="EmptyContent">
+                @RowTemplate(context)
             </_BitBasicListVirtualize>
         }
     }

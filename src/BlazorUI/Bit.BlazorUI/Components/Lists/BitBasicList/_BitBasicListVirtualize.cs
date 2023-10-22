@@ -6,6 +6,8 @@ public class _BitBasicListVirtualize<TItem> : ComponentBase
 
 
 
+    [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
+
     [Parameter] public RenderFragment? EmptyContent { get; set; }
 
     [Parameter] public ICollection<TItem>? Items { get; set; }
@@ -39,7 +41,8 @@ public class _BitBasicListVirtualize<TItem> : ComponentBase
         builder.AddAttribute(seq++, "ItemsProvider", ItemsProvider);
         builder.AddAttribute(seq++, "OverscanCount", OverscanCount);
 
-        builder.AddAttribute(seq++, "ItemContent", (RenderFragment<TItem>)(item => b => b.AddContent(seq++, ItemContent?.Invoke(item))));
+        builder.AddAttribute(seq++, "ItemContent",
+            (RenderFragment<TItem>)(item => b => b.AddContent(seq++, (ItemContent ?? ChildContent)?.Invoke(item))));
 
 #if NET8_0_OR_GREATER
         builder.AddAttribute(seq++, "EmptyContent", (RenderFragment)(b => b.AddContent(seq++, EmptyContent)));
