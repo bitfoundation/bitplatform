@@ -56,9 +56,9 @@ public partial class BitCompoundButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitCompoundButton.
+    /// Custom CSS classes for different parts of the BitCompoundButton.
     /// </summary>
-    [Parameter] public BitCompoundButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitCompoundButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
@@ -86,6 +86,11 @@ public partial class BitCompoundButton
     [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitCompoundButton.
+    /// </summary>
+    [Parameter] public BitCompoundButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Specifies target attribute of the link when the BitComponentButton renders as an anchor.
     /// </summary>
     [Parameter] public string? Target { get; set; }
@@ -100,9 +105,16 @@ public partial class BitCompoundButton
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
                                     ? $"{RootElementClass}-pri"
                                     : $"{RootElementClass}-std");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnParametersSet()
@@ -116,6 +128,7 @@ public partial class BitCompoundButton
 
         base.OnParametersSet();
     }
+
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
