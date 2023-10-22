@@ -61,16 +61,57 @@
 
     .plan-card {
         display: flex;
-        padding: rem2(20px);
+        width: rem2(432px);
+        min-height: rem2(564px);
         border-radius: rem2(4px);
         flex-flow: column nowrap;
         box-shadow: $bit-box-shadow-callout;
     }
 
-    .plan-card-desc {
-        flex-grow: 1;
-        padding: 1rem 0;
+    .plan-card-header {
+        display: flex;
+        height: rem2(80px);
+        align-items: center;
+        padding-left: rem2(20px);
+        justify-content: flex-start;
+        background-color: $bit-color-background-secondary;
     }
+
+    .plan-card-body {
+        flex-grow: 1;
+        display: flex;
+        padding: rem2(20px);
+        flex-direction: column;
+    }
+
+    .plan-card-title {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: rem2(12px) 0 rem2(16px) 0;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    .plan-card-desc {
+        gap: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-top: rem2(24px);
+    }
+
+    .plan-card-item {
+        gap: 1rem;
+        display: flex;
+        text-align: left;
+        align-items: baseline;
+    }
+}
+
+.modal-message-container {
+    text-align: center;
+    padding: rem2(48px) rem2(32px);
 }
 
 ::deep {
@@ -109,9 +150,8 @@
         right: rem2(16px);
         position: absolute;
     }
-}
 
-.modal-message-container {
-    text-align: center;
-    padding: rem2(48px) rem2(32px);
+    .plan-card-button {
+        height: rem2(40px);
+    }
 }
