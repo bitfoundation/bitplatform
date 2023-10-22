@@ -152,6 +152,9 @@
     }
 
     .plan-card-button {
+        display: flex;
         height: rem2(40px);
+        align-items: center;
+        justify-content: center;
     }
 }
