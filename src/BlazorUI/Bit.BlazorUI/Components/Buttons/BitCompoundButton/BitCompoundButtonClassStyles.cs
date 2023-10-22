@@ -13,12 +13,12 @@ public class BitCompoundButtonClassStyles
     public string? Container { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the primary text of the BitCompoundButton.
+    /// Custom CSS classes/styles for the primary section of the BitCompoundButton.
     /// </summary>
-    public string? PrimaryText { get; set; }
+    public string? Primary { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the secondary text of the BitCompoundButton.
+    /// Custom CSS classes/styles for the secondary section of the BitCompoundButton.
     /// </summary>
-    public string? SecondaryText { get; set; }
+    public string? Secondary { get; set; }
 }

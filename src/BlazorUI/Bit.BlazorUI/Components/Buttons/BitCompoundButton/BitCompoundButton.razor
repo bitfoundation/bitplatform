@@ -15,14 +15,14 @@
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
         <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
-            <span style="@Styles?.PrimaryText" class="bit-cmb-prt @Classes?.PrimaryText">@(PrimaryTemplate ?? ChildContent)</span>
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@Styles?.SecondaryText" class="bit-cmb-sct @Classes?.SecondaryText">@SecondaryText</span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </a>
@@ -40,14 +40,14 @@ else
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
         <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
-            <span style="@Styles?.PrimaryText" class="bit-cmb-prt @Classes?.PrimaryText">@(PrimaryTemplate ?? ChildContent)</span>
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@Styles?.SecondaryText" class="bit-cmb-sct @Classes?.SecondaryText">@SecondaryText</span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </button>

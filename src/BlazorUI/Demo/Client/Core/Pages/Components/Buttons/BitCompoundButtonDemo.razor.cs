@@ -142,17 +142,17 @@ public partial class BitCompoundButtonDemo
                },
                new()
                {
-                   Name = "PrimaryText",
+                   Name = "Primary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the primary text of the BitCompoundButton."
+                   Description = "Custom CSS classes/styles for the primary section of the BitCompoundButton."
                },
                new()
                {
-                   Name = "SecondaryText",
+                   Name = "Secondary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the secondary text of the BitCompoundButton."
+                   Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
                },
             }
         }
