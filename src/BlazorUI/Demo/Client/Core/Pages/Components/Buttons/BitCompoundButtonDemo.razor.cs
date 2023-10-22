@@ -341,16 +341,16 @@ private void HandleInvalidSubmit()
 
 <BitCompoundButton SecondaryText=""This is secondary text""
                    Styles=""@(new() { Container = ""line-height: 2;"",
-                                     PrimaryText = ""color: darkmagenta;"",
-                                     SecondaryText = ""color: darkslateblue;"" })"">
+                                     Primary = ""color: darkmagenta;"",
+                                     Secondary = ""color: darkslateblue;"" })"">
     Primary
 </BitCompoundButton>
 
 <BitCompoundButton SecondaryText=""This is secondary text""
                    ButtonStyle=""BitButtonStyle.Standard""
                    Classes=""@(new() { Container = ""custom-container"",
-                                      PrimaryText = ""custom-primary"",
-                                      SecondaryText = ""custom-secondary"" })"">
+                                      Primary = ""custom-primary"",
+                                      Secondary = ""custom-secondary"" })"">
     Standard
 </BitCompoundButton>";
 }
