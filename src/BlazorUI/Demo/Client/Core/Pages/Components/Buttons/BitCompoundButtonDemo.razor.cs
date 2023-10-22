@@ -52,12 +52,12 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitCompoundButtonClassStyles?",
             LinkType = LinkType.Link,
             Href = "#class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes/styles for different parts of the BitCompoundButton.",
+            Description = "Custom CSS classes for different parts of the BitCompoundButton.",
         },
         new()
         {
@@ -95,6 +95,15 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitCompoundButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitCompoundButton.",
+        },
+        new()
+        {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
@@ -119,48 +128,32 @@ public partial class BitCompoundButtonDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitCompoundButton."
+               },
+               new()
+               {
                    Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the internal container of the BitCompoundButton."
                },
                new()
                {
                    Name = "Primary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the primary section of the BitCompoundButton."
                },
                new()
                {
                    Name = "Secondary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
                },
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
-                   Type = "string?",
-                   Description = "Custom CSS classes."
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Custom CSS styles."
-               }
             }
         }
     };
@@ -327,22 +320,37 @@ private void HandleInvalidSubmit()
 </BitCompoundButton>";
 
     private readonly string example8RazorCode = @"
- <BitCompoundButton SecondaryText=""This is secondary text""
-                    ClassStyles=""@(new() {
-                                              Container = new() { Style = ""line-height:2"" },
-                                              Primary = new() { Class = ""custom-primary"" },
-                                              Secondary = new() { Class = ""custom-secondary""}
-                                          })"">
-     Primary
- </BitCompoundButton>
+<style>
+    .custom-container {
+        line-height: 2;
+    }
 
- <BitCompoundButton SecondaryText=""This is secondary text""
-                    ButtonStyle=""BitButtonStyle.Standard""
-                    ClassStyles=""@(new() {
-                                              Container = new() { Style = ""line-height:2"" },
-                                              Primary = new() { Class = ""custom-primary"" },
-                                              Secondary = new() { Class = ""custom-secondary""}
-                                          })"">
-     Standard
- </BitCompoundButton>";
+    .custom-primary {
+        line-height: 2;
+        font-weight: 900;
+        color: goldenrod;
+    }
+
+    .custom-secondary {
+        line-height: 2;
+        font-weight: 600;
+        color: orangered;
+    }
+</style>
+
+
+<BitCompoundButton SecondaryText=""This is secondary text""
+                   Styles=""@(new() { Container = ""line-height: 2;"",
+                                     Primary = ""color: darkmagenta;"",
+                                     Secondary = ""color: darkslateblue;"" })"">
+    Primary
+</BitCompoundButton>
+
+<BitCompoundButton SecondaryText=""This is secondary text""
+                   ButtonStyle=""BitButtonStyle.Standard""
+                   Classes=""@(new() { Container = ""custom-container"",
+                                      Primary = ""custom-primary"",
+                                      Secondary = ""custom-secondary"" })"">
+    Standard
+</BitCompoundButton>";
 }
