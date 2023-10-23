@@ -492,7 +492,7 @@ private async Task OpenCallout()
                Placeholder=""Select a date..."" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
     private readonly string example9CsharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
+private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example10RazorCode = @"
 <BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt""
