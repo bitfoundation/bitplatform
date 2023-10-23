@@ -6,7 +6,7 @@ public static class IServiceCollectionExtensions
 {
     public static void AddSharedServices(this IServiceCollection services)
     {
-        // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows, and Mac)
+        // Services being registered here can get injected everywhere (API, Web, Android, iOS, Windows, Mac, and Linux)
 
         services.AddLocalization();
 
