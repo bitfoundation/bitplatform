@@ -27,24 +27,52 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "GoToTodayTitle",
+            Name = "GoToNextMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
-            Description = "The title of the GoToToday button (tooltip).",
+            DefaultValue = "Go to next month",
+            Description = "The title of the Go to next month button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToNextYearTitle",
+            Type = "string",
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToNextYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Go to next year range {0}",
+            Description = "The title of the Go to next year range button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToPreviousYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Go to previous year range {0}",
+            Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
             DefaultValue = "Go to previous month",
-            Description = "The title of the Go to previous month button (tooltip).",
+            Description = "The title of the Go to previous month button (tooltip)."
         },
         new()
         {
-            Name = "GoToNextMonthTitle",
+            Name = "GoToPrevYearTitle",
             Type = "string",
-            DefaultValue = "Go to next month",
-            Description = "The title of the Go to next month button (tooltip).",
+            DefaultValue = "Go to previous year {0}",
+            Description = "The title of the Go to previous year button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToTodayTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the GoToToday button (tooltip)."
         },
         new()
         {
@@ -97,6 +125,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "MonthPickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, change month",
+            Description = "The aria-label of the month picker's toggle."
+        },
+        new()
+        {
             Name = "MonthPickerPosition",
             Type = "BitCalendarMonthPickerPosition",
             DefaultValue = "BitCalendarMonthPickerPosition.Besides",
@@ -119,6 +154,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the time picker should be shown or not.",
+        },
+        new()
+        {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
@@ -133,12 +175,41 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "ShowTimePicker",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the time picker should be shown or not.",
+            Name = "YearPickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, change year",
+            Description = "The aria-label of the year picker's toggle."
+        },
+        new()
+        {
+            Name = "YearRangePickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, change month",
+            Description = "The aria-label of the year range picker's toggle."
+        },
+        new()
+        {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip)."
+        },
+        new()
+        {
+            Name = "WeekNumberAriaLabel",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The aria-label of the week number."
+        },
+        new()
+        {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip)."
         }
     };
+
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
