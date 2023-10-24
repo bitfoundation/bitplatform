@@ -196,20 +196,20 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
-        /// </summary>
-        public static string CompareAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("CompareAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not find a property named {0}..
         /// </summary>
         public static string CompareAttribute_UnknownProperty {
             get {
                 return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; and &apos;{1}&apos; do not match..
+        /// </summary>
+        public static string CompareAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("CompareAttribute_ValidationError", resourceCulture);
             }
         }
         
