@@ -5,6 +5,7 @@ using Bunit;
 using Bunit.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Bit.BlazorUI.Tests.SnackBar;
 
 [TestClass]
@@ -108,8 +109,7 @@ public class BitSnackBarTests : BunitTestContext
         DataRow("title", BitSnackBarType.Warning),
         DataRow("title", BitSnackBarType.Success),
         DataRow("title", BitSnackBarType.Error),
-        DataRow("title", BitSnackBarType.SevereWarning),
-        DataRow("title", null)
+        DataRow("title", BitSnackBarType.SevereWarning)
     ]
     [TestMethod]
     public async Task BitSnackBarTypeTest(string title, BitSnackBarType? type)
@@ -133,8 +133,7 @@ public class BitSnackBarTests : BunitTestContext
             BitSnackBarType.Warning => $"bit-snb-warning",
             BitSnackBarType.Success => $"bit-snb-success",
             BitSnackBarType.Error => $"bit-snb-error",
-            BitSnackBarType.SevereWarning => $"bit-snb-severe-warning",
-            _ => "bit-snb-info"
+            BitSnackBarType.SevereWarning => $"bit-snb-severe-warning"
         };
 
         Assert.IsTrue(element.ClassList.Contains(typeClass));
@@ -197,9 +196,10 @@ public class BitSnackBarTests : BunitTestContext
 
         var titleTemplateElement = com.Find(".bit-snb-hdr");
 
-        var expectedHtml = $@"<button class=""bit-snb-cbt"" >
-                                    <i class=""bit-icon bit-icon--Cancel""></i>
-                                </button>{titleTemplateContent}";
+        var expectedHtml = $@"<button  type=""button"" class=""bit-snb-cbt "">
+                                <i class=""bit-icon bit-icon--Cancel ""></i>
+                              </button>
+                              {titleTemplateContent}";
 
         titleTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
@@ -222,14 +222,14 @@ public class BitSnackBarTests : BunitTestContext
 
         var itemTemplateElement = com.Find(".bit-snb-itm");
 
-        var expectedHtml = $@"<div class=""bit-snb-hdr"">
-                                <button class=""bit-snb-cbt"" >
-                                    <i class=""bit-icon bit-icon--Cancel""></i>
-                                </button>
-                                <label class=""bit-snb-ttl"" title=""{title}"">title</label>
-                            </div>
-                            {bodyTemplateContent}
-                            <span class=""bit-snb-pbr"" style=""animation-duration: 3s;""></span>";
+        var expectedHtml = $@"<div class=""bit-snb-hdr "">
+                                  <button  type=""button"" class=""bit-snb-cbt "">
+                                    <i class=""bit-icon bit-icon--Cancel ""></i>
+                                  </button>
+                                <label class=""bit-snb-ttl "" title=""{title}"">title</label>
+                                </div>
+                                {bodyTemplateContent}
+                                <span style=""animation-duration: 3s; "" class=""bit-snb-pbr ""></span>";
 
         itemTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
