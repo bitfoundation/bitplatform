@@ -94,9 +94,24 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the GoToToday button (tooltip).
+    /// The title of the Go to next month button (tooltip).
     /// </summary>
-    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+
+    /// <summary>
+    /// The title of the Go to next year button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
+
+    /// <summary>
+    /// The title of the Go to next year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Go to next year range {0} - {1}";
+
+    /// <summary>
+    /// The title of the Go to previous year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Go to previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -104,9 +119,14 @@ public partial class BitCalendar
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
 
     /// <summary>
-    /// The title of the Go to next month button (tooltip).
+    /// The title of the Go to previous year button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+    [Parameter] public string GoToPrevYearTitle { get; set; } = "Go to previous year {0}";
+
+    /// <summary>
+    /// The title of the GoToToday button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
     /// Whether the month picker should highlight the current month.
@@ -157,6 +177,11 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
+    /// The aria-label of the month picker's toggle.
+    /// </summary>
+    [Parameter] public string MonthPickerToggleAriaLabel { get; set; } = "{0}, change month";
+
+    /// <summary>
     /// Used to set the month picker position. 
     /// </summary>
     [Parameter] public BitCalendarMonthPickerPosition MonthPickerPosition { get; set; } = BitCalendarMonthPickerPosition.Besides;
@@ -172,6 +197,11 @@ public partial class BitCalendar
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
+    /// Whether the time picker should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowTimePicker { get; set; }
+
+    /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
@@ -182,9 +212,24 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
     /// <summary>
-    /// Whether the time picker should be shown or not.
+    /// The aria-label of the year picker's toggle.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter] public string YearPickerToggleAriaLabel { get; set; } = "{0}, change year";
+
+    /// <summary>
+    /// The aria-label of the year range picker's toggle.
+    /// </summary>
+    [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
+
+    /// <summary>
+    /// The aria-label of the week number.
+    /// </summary>
+    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
+
+    /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
 
 
 
