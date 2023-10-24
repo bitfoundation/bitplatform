@@ -23,6 +23,6 @@ public static class HttpRequestExtensions
 
         if (string.IsNullOrEmpty(userAgent)) return string.Empty;
 
-        return userAgent.ToLower();
+        return userAgent.ToLowerInvariant();
     }
 }
