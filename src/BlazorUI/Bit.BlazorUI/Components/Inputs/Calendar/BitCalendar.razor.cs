@@ -106,12 +106,12 @@ public partial class BitCalendar
     /// <summary>
     /// The title of the Go to next year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Go to next year range {0}";
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Go to next year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Go to previous year range {0}";
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Go to previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -219,7 +219,7 @@ public partial class BitCalendar
     /// <summary>
     /// The aria-label of the year range picker's toggle.
     /// </summary>
-    [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0}, change month";
+    [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
 
     /// <summary>
     /// The aria-label of the week number.

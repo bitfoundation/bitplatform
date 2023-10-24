@@ -257,7 +257,7 @@
                                     aria-atomic="true"
                                     aria-live="polite"
                                     class="bit-cal-ptb"
-                                    aria-label="@(string.Format(YearRangePickerToggleAriaLabel, $"{_yearPickerStartYear} - {_yearPickerEndYear}"))">
+                                    aria-label="@(string.Format(YearRangePickerToggleAriaLabel, _yearPickerStartYear, _yearPickerEndYear))">
                                 @_yearPickerStartYear - @_yearPickerEndYear
                             </button>
                             <div class="bit-cal-nbc">
@@ -266,7 +266,7 @@
                                         class="bit-cal-nbt"
                                         disabled="@prevDisabled"
                                         aria-disabled="@prevDisabled"
-                                        title="@(string.Format(GoToPreviousYearRangeTitle, $"{(_yearPickerStartYear - 12)} - {(_yearPickerStartYear - 1)}"))">
+                                        title="@(string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1))">
                                     <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                 </button>
                                 @if (ShowGoToToday)
@@ -284,7 +284,7 @@
                                         class="bit-cal-nbt"
                                         disabled="@nextDisabled"
                                         aria-disabled="@nextDisabled"
-                                        title="@(string.Format(GoToNextYearRangeTitle, $"{(_yearPickerStartYear + 12)} - {(_yearPickerEndYear + 12)}"))">
+                                        title="@(string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12))">
                                     <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                                 </button>
                             </div>

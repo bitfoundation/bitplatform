@@ -43,14 +43,14 @@ public partial class BitCalendarDemo
         {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to next year range {0}",
+            DefaultValue = "Go to next year range {0} - {1}",
             Description = "The title of the Go to next year range button (tooltip)."
         },
         new()
         {
             Name = "GoToPreviousYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to previous year range {0}",
+            DefaultValue = "Go to previous year range {0} - {1}",
             Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
@@ -184,7 +184,7 @@ public partial class BitCalendarDemo
         {
             Name = "YearRangePickerToggleAriaLabel",
             Type = "string",
-            DefaultValue = "{0}, change month",
+            DefaultValue = "{0} - {1}, change month",
             Description = "The aria-label of the year range picker's toggle."
         },
         new()
