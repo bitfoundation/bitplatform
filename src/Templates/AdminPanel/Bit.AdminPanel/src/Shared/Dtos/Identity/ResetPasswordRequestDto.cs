@@ -5,7 +5,7 @@ namespace AdminPanel.Shared.Dtos.Identity;
 public class ResetPasswordRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
@@ -19,7 +19,7 @@ public class ResetPasswordRequestDto
 
     [NotMapped]
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_MustMatch))]
+    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
 }

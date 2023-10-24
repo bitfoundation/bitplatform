@@ -430,7 +430,7 @@ Veuillez confirmer votre adresse e-mail en cliquant sur le lien.</value>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>La propriété {0}. {1} n’a pas pu être trouvé.</value>
   </data>
-  <data name="CompareAttribute_MustMatch" xml:space="preserve">
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
@@ -472,7 +472,7 @@ Veuillez confirmer votre adresse e-mail en cliquant sur le lien.</value>
   <data name="DisplayAttribute_PropertyNotSet" xml:space="preserve">
     <value>La propriété {0} n’a pas été définie.  Utilisez la méthode {1} pour obtenir la valeur.</value>
   </data>
-  <data name="EmailAddressAttribute_Invalid" xml:space="preserve">
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} n’est pas une adresse e-mail valide.</value>
   </data>
   <data name="EnumDataTypeAttribute_TypeCannotBeNull" xml:space="preserve">

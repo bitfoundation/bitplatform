@@ -803,7 +803,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Back" xml:space="preserve">
     <value>Dos</value>
   </data>
-  <data name="CompareAttribute_MustMatch" xml:space="preserve">
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="AllowedValuesAttribute_Invalid" xml:space="preserve">
@@ -815,7 +815,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="DeniedValuesAttribute_Invalid" xml:space="preserve">
     <value>Le champ {0} est égal à l’une des valeurs spécifiées dans DeniedValuesAttribute.</value>
   </data>
-  <data name="EmailAddressAttribute_Invalid" xml:space="preserve">
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} n’est pas une adresse e-mail valide.</value>
   </data>
   <data name="LengthAttribute_InvalidMinLength" xml:space="preserve">
