@@ -118,7 +118,7 @@ public class BitSnackBarTests : BunitTestContext
 
         if (type.HasValue)
         {
-            await com.Instance.Show(title, type: type);
+            await com.Instance.Show(title, type: type.Value);
         }
         else
         {
