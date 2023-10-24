@@ -1,19 +1,15 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<Import Project="../../Bit.Build.props" />
 
 	<PropertyGroup>
-        <TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
 		<PackageTags>$(PackageTags) Model Dto Entity</PackageTags>
 		<RootNamespace>Bit.Model</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="AutoMapper" Version="10.1.1" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'uap10.0.17763' AND '$(TargetFramework)' != 'netstandard2.0' " Include="AutoMapper" Version="12.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
+        <PackageReference Include="AutoMapper" Version="12.0.1" />
 	  <ProjectReference Include="..\Bit.Universal.Model\Bit.Universal.Model.csproj" />
 	</ItemGroup>
 

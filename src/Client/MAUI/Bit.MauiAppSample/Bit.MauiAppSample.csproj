@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041</TargetFrameworks>
+        <TargetFrameworks>net8.0-windows10.0.19041</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <RootNamespace>Bit.MauiAppSample</RootNamespace>
         <UseMaui>true</UseMaui>
@@ -20,9 +20,6 @@
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-ios'">12.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-android'">21.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
@@ -42,23 +39,17 @@
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
-
-    <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-        <AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
-        <RuntimeIdentifiers Condition="'$(Configuration)' == 'Release'">android-arm64</RuntimeIdentifiers>
-    </PropertyGroup>
-
+    
     <ItemGroup>
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
     <ItemGroup>
-        <LinkDescription Include="Linker.xml" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-rc.2.23480.2" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9373" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.0-rc.2.9373" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.2.9373" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.0-rc.2.9373" />
     </ItemGroup>
 
     <ItemGroup>

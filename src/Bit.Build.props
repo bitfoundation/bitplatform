@@ -26,7 +26,7 @@
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
 
-        <ReleaseVersion>13.6.0</ReleaseVersion>
+        <ReleaseVersion>14.0.0</ReleaseVersion>
 
         <PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
         <PackageVersion>$(ReleaseVersion)</PackageVersion>
@@ -43,33 +43,14 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
 		<DebugType>portable</DebugType>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'net7.0-android' ">$(DefineConstants);Android</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'net7.0-ios' ">$(DefineConstants);iOS</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net7.0' ">$(DefineConstants);DotNet</DefineConstants>
-        <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'net7.0-windows10.0.19041' ">$(DefineConstants);UWP</DefineConstants>
-        <DefineConstants Condition=" '$(TargetFramework)' == 'net7.0-maccatalyst' ">$(DefineConstants);Mac</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard;DotNetStandard2_0</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>
-        <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);Xamarin</DefineConstants>
-        <DefineConstants Condition=" '$(TargetFramework)' == 'net7.0-android' OR '$(TargetFramework)' == 'net7.0-ios' OR '$(TargetFramework)' == 'net7.0-windows10.0.19041' ">$(DefineConstants);Maui</DefineConstants>
-        <UseMauiEssentials Condition=" '$(TargetFramework)' == 'net7.0-android' OR '$(TargetFramework)' == 'net7.0-ios' OR '$(TargetFramework)' == 'net7.0-windows10.0.19041' ">true</UseMauiEssentials>
-		<GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'net7.0-windows10.0.19041' ">true</GenerateLibraryLayout>
-		<DesignTimeBuild>True</DesignTimeBuild>
-		<AndroidResgenFile>False</AndroidResgenFile>
-		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'net8.0' ">$(DefineConstants);DotNet</DefineConstants>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-
-		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid12.0' ">v10.0</TargetFrameworkVersion>
-		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-ios'">12.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-maccatalyst'">12.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net7.0-android'">21.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
-		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
 
 		<AnalysisLevel>latest</AnalysisLevel>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <UseRidGraph>true</UseRidGraph>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -85,22 +66,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.44" PrivateAssets="All" />
 	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid12.0'">
-		<Reference Include="System.ComponentModel.DataAnnotations" />
-		<Reference Include="System.Data" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-		<Reference Include="System.ComponentModel.DataAnnotations" />
-		<Reference Include="System.Data" />
-		<PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
-			<IncludeAssets>none</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
-	<Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 
 </Project>

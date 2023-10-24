@@ -397,7 +397,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "net7.0" }
+                { "TargetFramework", "net8.0" }
             });
 
             await Process.Start(new ProcessStartInfo

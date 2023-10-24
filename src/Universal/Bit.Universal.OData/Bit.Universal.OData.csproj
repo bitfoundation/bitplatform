@@ -1,21 +1,16 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <PackageTags>$(PackageTags) OData</PackageTags>
         <RootNamespace>Bit.OData</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.OData.Core" Version="7.17.0" />
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+        <PackageReference Include="Microsoft.OData.Core" Version="7.18.0" />
         <PackageReference Include="Simple.OData.V4.Client" Version="6.0.1" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid12.0' OR '$(TargetFramework)' == 'Xamarin.iOS10'">
-        <Reference Include="System.Xml.Linq" />
     </ItemGroup>
 
     <ItemGroup>

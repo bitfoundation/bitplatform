@@ -1,35 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../Bit.Build.props" />
+    <Import Project="../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <PackageTags>$(PackageTags) Microsoft Katana OWIN aspnetcore</PackageTags>
-    <RootNamespace>Bit.Owin</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageTags>$(PackageTags) Microsoft Katana OWIN aspnetcore</PackageTags>
+        <RootNamespace>Bit.Owin</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Universal\Bit.Universal.Model\Bit.Universal.Model.csproj" />
-    <ProjectReference Include="..\Bit.Server.Core\Bit.Server.Core.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Universal\Bit.Universal.Model\Bit.Universal.Model.csproj" />
+        <ProjectReference Include="..\Bit.Server.Core\Bit.Server.Core.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Autofac.Owin" Version="7.1.0" />
-    <PackageReference Include="Lambda2Js" Version="3.1.4" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
-    <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.2.2" />
-    <PackageReference Include="NWebsec.Core" Version="3.0.1" />
-    <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="7.0.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="7.0.1" />
-    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="7.0.10" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Autofac.Owin" Version="7.1.0" />
+        <PackageReference Include="Lambda2Js" Version="3.1.4" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
+        <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.2.2" />
+        <PackageReference Include="NWebsec.Core" Version="3.0.1" />
+        <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
+        <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0-rc.2.23479.6" />
+        <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0-rc.2.23479.6" />
+        <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Owin" Version="8.0.0-rc.2.23480.2" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Assemblies\*.dll" />
-  </ItemGroup>
-	
+    <ItemGroup>
+        <EmbeddedResource Include="Assemblies\*.dll" />
+    </ItemGroup>
+
 </Project>

@@ -1,21 +1,19 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0;monoandroid12.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-windows10.0.19041;</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
         <RootNamespace>Bit.Data.EntityFrameworkCore</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net7.0' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.32" />
-        <PackageReference Condition=" '$(TargetFramework)' == 'net7.0' " Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
-        <PackageReference Condition=" '$(TargetFramework)' != 'net7.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.32" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="System.Text.Json" Version="7.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rc.2.23480.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-rc.2.23480.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.2.23479.6" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.2.23479.6" />
+        <PackageReference Include="System.Text.Json" Version="8.0.0-rc.2.23479.6" />
         <ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
     </ItemGroup>
 
