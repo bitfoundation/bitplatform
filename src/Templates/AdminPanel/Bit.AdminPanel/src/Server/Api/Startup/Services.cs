@@ -1,14 +1,14 @@
 ﻿//-:cnd:noEmit
 using System.IO.Compression;
+using System.Net;
 using System.Net.Mail;
-using AdminPanel.Server.Api.Services.Implementations;
+using AdminPanel.Server.Api.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.DependencyInjection;
 #if BlazorWebAssembly
-using AdminPanel.Client.Web.Services.Implementations;
-using AdminPanel.Client.Core.Services.Implementations;
+using AdminPanel.Client.Web.Services;
+using AdminPanel.Client.Core.Services;
 using Microsoft.AspNetCore.Components;
 #endif
 
@@ -25,6 +25,7 @@ public static class Services
         services.AddSharedServices();
 
         services.AddScoped<IUserInformationProvider, UserInformationProvider>();
+        services.AddExceptionHandler<ApiExceptionHandler>();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
@@ -140,7 +141,10 @@ public static class Services
         {
             if (appSettings.EmailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port, appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password);
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port)
+                {
+                    Credentials = new NetworkCredential(appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password)
+                });
             }
             else
             {

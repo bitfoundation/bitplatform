@@ -25,7 +25,7 @@ public partial class BitLoadingDemo
     public string OnClickValue { get; set; } = string.Empty;
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitBarsLoading Color=""royalblue"" Size=""64"" />
 <BitCircleLoading Color=""royalblue"" Size=""64"" />
 <BitDotsRingLoading Color=""royalblue"" Size=""64"" />

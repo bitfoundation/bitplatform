@@ -154,24 +154,31 @@ public partial class BitToggleButtonDemo
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitToggleButton.",
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon element.",
+                   Description = "Custom CSS classes/styles for the icon element of the BitToggleButton.",
                },
                new()
                {
                    Name = "Container",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon and label container.",
+                   Description = "Custom CSS classes/styles for the icon and label container of the BitToggleButton.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the text element.",
+                   Description = "Custom CSS classes/styles for the text element of the BitToggleButton.",
                }
             }
         }
@@ -207,7 +214,7 @@ public partial class BitToggleButtonDemo
     private bool example32Value;
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitToggleButton OffText=""Primary Unmute"" OnText=""Primary Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 
@@ -218,7 +225,7 @@ public partial class BitToggleButtonDemo
 <BitToggleButton IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
     private readonly string example1CsharpCode = @"";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -258,12 +265,12 @@ public partial class BitToggleButtonDemo
                  Classes=""@(new() { Container=""custom-container"", Icon=""custom-icon"", Text=""custom-text"" })"" />";
     private readonly string example2CsharpCode = @"";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
 Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
 Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitToggleButton DefaultIsChecked=""true""
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />

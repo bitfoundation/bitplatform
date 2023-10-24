@@ -25,26 +25,31 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
-    public async Task SetDeviceTheme(bool isDark)
+    public async Task ApplyTheme(bool isDark)
     {
-        Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
+        Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if ANDROID
         var window = Platform.CurrentActivity?.Window;
+        window!.DecorView!.SystemUiFlags = Android.Views.SystemUiFlags.LightStatusBar;
         if (isDark)
         {
-            window!.DecorView!.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
+            window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
-        else
-        {
-            window!.DecorView!.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
-        }
+
+        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#0D1117") : Android.Graphics.Color.White);
 #elif IOS
-        var style = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-        await MainThread.InvokeOnMainThreadAsync(() =>
+        var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
+        await Device.InvokeOnMainThreadAsync(() =>
         {
-            UIKit.UIApplication.SharedApplication.SetStatusBarStyle(style, false);
-            Platform.GetCurrentUIViewController()?.SetNeedsStatusBarAppearanceUpdate();
+            UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
+            Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
         });
+#elif MACCATALYST
+        var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;
+        if (window != null)
+        {
+            window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+        }
 #endif
     }
 }

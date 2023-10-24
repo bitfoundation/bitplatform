@@ -4,7 +4,7 @@
 @if (Href.HasValue() && IsEnabled)
 {
     <a @ref="RootElement" @attributes="HtmlAttributes"
-       id="@UniqueId"
+       id="@_Id"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        href="@Href"
@@ -14,17 +14,15 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
-
-            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
-
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </a>
@@ -32,7 +30,7 @@
 else
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-            id="@UniqueId"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             title="@Title"
@@ -41,15 +39,15 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-cmb-tcn @ClassStyles?.Container?.Class">
-            <span style="@ClassStyles?.Primary?.Style" class="bit-cmb-prt @ClassStyles?.Primary?.Class">@(PrimaryTemplate ?? ChildContent)</span>
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
             }
             else
             {
-                <span style="@ClassStyles?.Secondary?.Style" class="bit-cmb-sct @ClassStyles?.Secondary?.Class">@SecondaryText</span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </button>

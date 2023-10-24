@@ -1,7 +1,4 @@
-﻿using Bit.Websites.Careers.Web;
-#if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿#if BlazorServer
 #endif
 
 namespace Bit.Websites.Careers.Web;

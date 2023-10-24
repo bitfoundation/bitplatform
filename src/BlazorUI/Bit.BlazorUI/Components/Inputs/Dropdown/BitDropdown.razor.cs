@@ -23,6 +23,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private string _dropdownId = string.Empty;
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
+    private string _headerId = string.Empty;
+    private string _footerId = string.Empty;
 
     private string _labelId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
@@ -46,6 +48,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// Enables auto-focusing of the SearchBox input when the callout is open.
     /// </summary>
     [Parameter] public bool AutoFocusSearchBox { get; set; }
+
+    /// <summary>
+    /// Custom template to render as a header in the callout.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
+
+    /// <summary>
+    /// Custom template to render as a footer in the callout.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
 
     /// <summary>
     /// The icon name of the chevron down element of the dropdown. The default value is ChevronDown.
@@ -244,6 +256,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// The placeholder text of the SearchBox input.
     /// </summary>
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
 
     /// <summary>
     /// The selected item in single select mode. (two-way bound)
@@ -481,10 +498,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             Values = SelectedItems.Select(GetValue).ToArray();
 
-            if (isSelected)
-            {
-                await OnSelectItem.InvokeAsync(item);
-            }
+            await OnSelectItem.InvokeAsync(item);
             await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
@@ -589,6 +603,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
+        _headerId = $"{_dropdownId}-header";
+        _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
@@ -833,8 +849,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         return _searchText.HasNoValue()
                 ? _items
-                : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
-                                      && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
+                : SearchFunction is not null
+                    ? [.. SearchFunction.Invoke(_items, _searchText!)]
+                    : _items.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
+                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
     }
 
     private string GetSearchBoxClasses()
@@ -912,7 +930,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 DropDirection,
                                 IsRtl,
                                 _scrollContainerId,
-                                ShowSearchBox ? 32 : 0);
+                                ShowSearchBox ? 32 : 0,
+                                CalloutHeaderTemplate is not null ? _headerId : "",
+                                CalloutFooterTemplate is not null ? _footerId : "");
     }
 
 
@@ -1043,14 +1063,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             return dropdownOption.IsEnabled;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return true;
 
         if (NameSelectors.IsEnabled.Selector is not null)
         {
             return NameSelectors.IsEnabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name);
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     internal bool GetIsHidden(TItem item)

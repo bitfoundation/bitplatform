@@ -16,10 +16,10 @@
                    LabelPosition="@LabelPosition"
                    IconName="@IconName"
                    IconAriaLabel="@IconAriaLabel"
-                   DecrementButtonIconName="@DecrementButtonIconName"
-                   IncrementButtonIconName="@IncrementButtonIconName"
-                   DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
-                   IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                   DecrementIconName="@DecrementButtonIconName"
+                   IncrementIconName="@IncrementButtonIconName"
+                   DecrementAriaLabel="@DecrementButtonAriaLabel"
+                   IncrementAriaLabel="@IncrementButtonAriaLabel"
                    Label="@Label"
                    InputHtmlAttributes="@InputHtmlAttributes"
                    Title="@Title"
@@ -88,12 +88,12 @@
         OnFocusEventCounter++;
     }
 
-    private void HandleDecrement(BitSpinButtonChangeValue args)
+    private void HandleDecrement(double args)
     {
         OnDecrementEventCounter--;
     }
 
-    private void HandleIncrement(BitSpinButtonChangeValue args)
+    private void HandleIncrement(double args)
     {
         OnIncrementEventCounter++;
     }

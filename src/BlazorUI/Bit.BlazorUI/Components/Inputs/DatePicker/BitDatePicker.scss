@@ -396,13 +396,13 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
-.bit-dtp-nav-btn-ctn {
+.bit-dtp-nbc {
     display: flex;
     align-items: center;
     align-self: flex-end;
 }
 
-.bit-dtp-nav-btn {
+.bit-dtp-nbt, .bit-dtp-gtb {
     padding: 0;
     border: none;
     display: block;
@@ -639,39 +639,6 @@
     }
 }
 
-.bit-dtp-gtd-btn {
-    border: none;
-    overflow: visible;
-    position: relative;
-    outline: transparent;
-    align-self: flex-end;
-    height: spacing(3.75);
-    padding: 0 spacing(0.5);
-    font-size: spacing(1.5);
-    box-sizing: content-box;
-    line-height: spacing(3.75);
-    background-color: transparent;
-    color: $color-foreground-primary;
-    margin: spacing(0.375) spacing(0.5) 0 0;
-
-    &.bit-dtp-gtd-btn-bs {
-        bottom: spacing(-1.5);
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            cursor: pointer;
-            background-color: transparent;
-            color: $color-action-hover-primary;
-        }
-    }
-
-    &:disabled {
-        pointer-events: none;
-        color: $color-foreground-disabled;
-    }
-}
-
 .bit-dtp-ovl {
     top: 0;
     left: 0;
@@ -730,5 +697,9 @@
     .bit-dtp-pkr-tit {
         text-align: right;
         padding: 0 spacing(1.25) 0 spacing(0.5);
+    }
+
+    .bit-dtp-time-wrp {
+        flex-direction: row-reverse;
     }
 }

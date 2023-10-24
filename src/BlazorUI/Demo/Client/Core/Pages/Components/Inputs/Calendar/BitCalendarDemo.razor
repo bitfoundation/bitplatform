@@ -8,164 +8,105 @@
                ComponentDescription="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar AriaLabel="Select a date" />
+                <div>Basic Calendar:</div>
+                <BitCalendar />
+                <br /><br />
+                <div>Disabled:</div>
+                <BitCalendar IsEnabled="false" />
+                <br /><br />
+                <div>Week numbers:</div>
+                <BitCalendar ShowWeekNumbers="true" />
+                <br /><br />
+                <div>Highlight months:</div>
+                <BitCalendar HighlightCurrentMonth="true" HighlightSelectedMonth="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled" HtmlCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar IsEnabled=false AriaLabel="Select a date" />
+                <div>Min: Now.AddDays(-5)</div>
+                <div>Max: Now.AddDays(+5)</div>
+                <BitCalendar MinDate="DateTimeOffset.Now.AddDays(-5)" MaxDate="DateTimeOffset.Now.AddDays(5)" />
+                <br /><br />
+                <div>Min: Now.AddMonths(-2)</div>
+                <div>Max: Now.AddMonths(+1)</div>
+                <BitCalendar MinDate="DateTimeOffset.Now.AddMonths(-2)" MaxDate="DateTimeOffset.Now.AddMonths(1)" />
+                <br /><br />
+                <div>Min: Now.AddYears(-5)</div>
+                <div>Max: Now.AddYears(+1)</div>
+                <BitCalendar MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Week numbers" HtmlCode="@example3HtmlCode" Id="example3">
+    <ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar ShowWeekNumbers=true AriaLabel="Select a date" />
+                <BitCalendar @bind-Value="@selectedDate" />
+                <div>Selected date: @selectedDate.ToString()</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Culture" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
-                <EditForm Model="formValidationCalendarModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
-
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                    <div class="example-content">
-                        <BitCalendar @bind-Value="formValidationCalendarModel.Date" AriaLabel="Select a date" />
-                        <ValidationMessage For="@(() => formValidationCalendarModel.Date)" />
-                    </div>
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    <BitButton ButtonType="BitButtonType.Reset"
-                               ButtonStyle="BitButtonStyle.Standard"
-                               OnClick="() => { formValidationCalendarModel = new(); SuccessMessage=string.Empty; }">
-                        Reset
-                    </BitButton>
-                </EditForm>
-
-                @if (string.IsNullOrEmpty(SuccessMessage) is false)
-                {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
-                        @SuccessMessage
-                    </BitMessageBar>
-                }
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Date format" HtmlCode="@example5HtmlCode" Id="example5">
-        <ExamplePreview>
-            <div class="example-desc">
-                Applications can customize how dates are formatted and parsed. Formatted dates can be ambiguous, so the control will avoid parsing the formatted strings of dates selected using the UI when text input is allowed.
-                In this example, we are formatting and parsing dates as dd=MM(yy).
-            </div>
-            <div class="example-content">
-                <BitCalendar @bind-Value="@formattedDateTime" AriaLabel="Select a date." DateFormat="dd=MM(yy)" />
-            </div>
-            <BitLabel>Selected DateTime: @formattedDateTime.ToString()</BitLabel>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Min & Max" HtmlCode="@example6HtmlCode" Id="example6">
-        <ExamplePreview>
-            <div class="example-desc">
-                When date boundaries are set (via MinDate and MaxDate params) the BitCalendar will not allow out-of-bounds dates to be picked or entered.
+                By default, BitCalendar picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
+                <br />
+                You also can use our
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Core/Helpers/CultureInfoHelper.cs" Target="_blank">
+                    CultureInfoHelper
+                </BitLink> class or check its code to see how to create a custom culture.
             </div>
             <br />
-            <div class="example-desc">
-                In the first example, the allowed dates are between 5 days after now and 5 days before now.
-            </div>
             <div class="example-content">
-                <BitCalendar AriaLabel="Select a date"
-                             MaxDate="DateTimeOffset.Now.AddDays(5)"
-                             MinDate="DateTimeOffset.Now.AddDays(-5)" />
-            </div>
-            <br />
-            <div class="example-desc">
-                In the second example, the allowed dates are between 1 month after now and 2 months before now.
-            </div>
-            <div class="example-content">
-                <BitCalendar AriaLabel="Select a date"
-                             MaxDate="DateTimeOffset.Now.AddMonths(1)"
-                             MinDate="DateTimeOffset.Now.AddMonths(-2)" />
-            </div>
-            <br />
-            <div class="example-desc">
-                In the third example, the allowed dates are between 1 year after now and 5 years before now.
-            </div>
-            <div class="example-content">
-                <BitCalendar AriaLabel="Select a date"
-                             MaxDate="DateTimeOffset.Now.AddYears(1)"
-                             MinDate="DateTimeOffset.Now.AddYears(-5)" />
+                <div>fa-IR culture with Farsi names:</div>
+                <br />
+                <BitCalendar GoToTodayTitle="برو به امروز" Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
+                <br /><br />
+                <div>fa-IR culture with Fingilish names:</div>
+                <br />
+                <BitCalendar GoToTodayTitle="Boro be emrouz" Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Two-way binding" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar @bind-Value="@selectedDate" AriaLabel="Select a date" />
-            </div>
-            <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Jalali calendar" HtmlCode="@example8HtmlCode" Id="example8">
-        <ExamplePreview>
-            <div class="example-desc">In this sample, you can see the usage of CultureInfoHelper class to specify a particular format for the BitCalendar. You can also provide your own class for any custom culture of your interest. For more information, you can visit <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Bit.BlazorUI/Utils/CultureInfoHelper.cs">here</BitLink>.</div>
-            <div class="example-desc">Please note to reduce the download size of this page, the sample is not implemented here. In order to use this example, it's required to set <b>InvariantGlobalization</b> to <b>false</b> in the project setting, which causes an extra download size for the website.</div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Templates" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div class="example-desc">
-                In this sample, you can see how to implement a custom template for different parts of BitCalendar.
-            </div>
-            <div class="example-content">
-                <BitCalendar AriaLabel="Select a date">
+                <div>DayCellTemplate:</div>
+                <br />
+                <BitCalendar>
                     <DayCellTemplate>
-                        <span class="@(context.DayOfWeek == DayOfWeek.Sunday ? "weekend-cell" : null)">
-                            @context.Day
-                        </span>
-                    </DayCellTemplate>
-                </BitCalendar>
-            </div>
-            <br />
-            <br />
-            <div class="example-content">
-                <BitCalendar AriaLabel="Select a date">
-                    <DayCellTemplate>
-                        <span class="custom-day-cell">
+                        <span class="day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? " weekend-cell" : null)">
                             @context.Day
 
                             @if (context.Day % 5 is 0)
                             {
-                                <span class="discount-badge">off</span>
+                                <span class="badge"></span>
                             }
                         </span>
                     </DayCellTemplate>
+                </BitCalendar>
+                <br /><br /><br />
+                <div>MonthCellTemplate:</div>
+                <br />
+                <BitCalendar>
                     <MonthCellTemplate>
-                        <span>
-                            @this.Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
-
-                            @if (context.Month == 1)
-                            {
-                                <span class="discount-badge">Xmas</span>
-                            }
-                        </span>
+                        <div style="width:28px;padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
+                            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+                        </div>
                     </MonthCellTemplate>
+                </BitCalendar>
+                <br /><br /><br />
+                <div>YearCellTemplate:</div>
+                <br />
+                <BitCalendar>
                     <YearCellTemplate>
                         <span style="position: relative">
                             @context
@@ -177,65 +118,56 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Month Position and Visibility" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="MonthPicker" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
-            <div class="example-desc">
-                In this sample, you can change month picker position.
+            <div class="example-content">
+                <div>IsMonthPickerVisible:</div>
                 <br />
-                When you change its position to <strong>Overlay</strong> you can see month picker by tapping on BitCalendar's header.
+                <BitCalendar IsMonthPickerVisible="@isMonthPickerVisible" />
+                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker invisible" @bind-IsChecked="@isMonthPickerVisible" />
+                <br /><br /><br />
+                <div>MonthPickerPosition:</div>
+                <br />
+                <BitCalendar MonthPickerPosition="@monthPickerPosition" />
+                <BitToggleButton OnText="Position Overlay" OffText="Position Besides"
+                                 OnChange="v => monthPickerPosition = v ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides" />
             </div>
-            <div class="example-content">
-                <BitCalendar MonthPickerPosition="@monthPickerPosition" AriaLabel="Select a date" />
-            </div>
-            <BitToggleButton Text="Toggle month picker position" OnChange="ToggleMonthPickerPosition" />
-            <br />
-            <br />
-            <div class="example-desc">
-                In this sample, you can fully hide or visible month picker.
-            </div>
-            <div class="example-content">
-                <BitCalendar @bind-IsMonthPickerVisible="@isMonthPickerVisible" AriaLabel="Select a date" />
-            </div>
-            <BitToggleButton Text="Toggle month picker visibility" @bind-IsChecked="@isMonthPickerVisible" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="With time" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="TimePicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-content">
-                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" AriaLabel="Select a date" />
+                <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" />
+                <br />
+                <div>Selected DateTime: @selectedDateTime.ToString()</div>
             </div>
-            <BitLabel>Selected DateTime: @selectedDateTime.ToString()</BitLabel>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div>
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitCalendar @bind-Value="validationModel.Date" />
+                    <ValidationMessage For="@(() => validationModel.Date)" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    <BitButton ButtonType="BitButtonType.Reset" ButtonStyle="BitButtonStyle.Standard"
+                               OnClick="() => { validationModel = new(); SuccessMessage=string.Empty; }">
+                        Reset
+                    </BitButton>
+                </EditForm>
+
+                <br />
+
+                @if (string.IsNullOrEmpty(SuccessMessage) is false)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@SuccessMessage</BitMessageBar>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
-    private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
-    private DateTimeOffset? formattedDateTime = DateTimeOffset.Now;
-    private FormValidationCalendarModel formValidationCalendarModel = new();
-    private string SuccessMessage = string.Empty;
-    private CultureInfo Culture = CultureInfo.CurrentUICulture;
-
-    private bool isMonthPickerVisible = true;
-    private BitCalendarMonthPickerPosition monthPickerPosition;
-
-    private void ToggleMonthPickerPosition(bool newState)
-    {
-        monthPickerPosition = newState ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides;
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        SuccessMessage = "Form Submitted Successfully!";
-        await Task.Delay(3000);
-        SuccessMessage = string.Empty;
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        SuccessMessage = string.Empty;
-    }
-}

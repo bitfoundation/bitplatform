@@ -42,32 +42,6 @@ public class BitToggleTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("", ""),
-        DataRow("", null),
-        DataRow(null, ""),
-        DataRow(null, null),
-        DataRow("On", "Off"),
-        DataRow("On", ""),
-        DataRow("On", null),
-        DataRow("", "Off"),
-        DataRow(null, "Off")
-    ]
-    public void BitToggleWithoutOnOffTextShouldHaveClassName(string onText, string offText)
-    {
-        var com = RenderComponent<BitToggle>(parameters =>
-        {
-            parameters.Add(p => p.OnText, onText);
-            parameters.Add(p => p.OffText, offText);
-        });
-        var bitToggle = com.Find(".bit-tgl");
-
-        if (onText.HasNoValue() || offText.HasNoValue())
-        {
-            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-noo"));
-        }
-    }
-
-    [DataTestMethod,
       DataRow(true),
       DataRow(false)
     ]

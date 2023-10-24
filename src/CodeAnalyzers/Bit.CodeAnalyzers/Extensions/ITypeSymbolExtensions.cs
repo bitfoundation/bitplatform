@@ -46,7 +46,7 @@ public static class ITypeSymbolExtensions
 
         type = type.GetUnderlyingTypeSymbol();
 
-        string typeName = type.Name;
+        var typeName = type.Name;
 
         if (typeName == typeof(void).Name || typeName == nameof(Task))
             return true;
@@ -89,9 +89,9 @@ public static class ITypeSymbolExtensions
         if (type == null)
             throw new ArgumentNullException(nameof(type));
 
-        string typeName = type.Name;
+        var typeName = type.Name;
 
-        return type.IsValueType == false || typeName == nameof(Nullable);
+        return type.IsValueType is false || typeName == nameof(Nullable);
     }
 
     public static string GetEdmElementTypeName(this ITypeSymbol type)
@@ -99,7 +99,7 @@ public static class ITypeSymbolExtensions
         if (type == null)
             throw new ArgumentNullException(nameof(type));
 
-        ITypeSymbol elementType = type.GetElementType();
+        var elementType = type.GetElementType();
 
         return elementType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA);
     }
@@ -111,7 +111,7 @@ public static class ITypeSymbolExtensions
 
         type = type.GetUnderlyingTypeSymbol();
 
-        string typeName = type.Name;
+        var typeName = type.Name;
 
         // Edm.Binary
 
@@ -178,7 +178,7 @@ public static class ITypeSymbolExtensions
         if (type == null)
             throw new ArgumentNullException(nameof(type));
 
-        ITypeSymbol elementType = type.GetElementType();
+        var elementType = type.GetElementType();
 
         return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA);
     }
@@ -190,7 +190,7 @@ public static class ITypeSymbolExtensions
 
         type = type.GetUnderlyingTypeSymbol();
 
-        string typeName = type.Name;
+        var typeName = type.Name;
 
         if (typeName == nameof(String)) // string
             return "string";
@@ -307,12 +307,12 @@ public static class ITypeSymbolExtensions
 
     private static bool IsDto(ImmutableArray<INamedTypeSymbol> typeInterfaces)
     {
-        foreach (INamedTypeSymbol tInterface in typeInterfaces)
+        foreach (var tInterface in typeInterfaces)
         {
             if (tInterface.Name == "IDto")
                 return true;
 
-            bool isDto = IsDto(tInterface.AllInterfaces);
+            var isDto = IsDto(tInterface.AllInterfaces);
 
             if (isDto == true)
                 return true;
@@ -326,7 +326,7 @@ public static class ITypeSymbolExtensions
         if (type == null)
             throw new ArgumentNullException(nameof(type));
 
-        ITypeSymbol elementType = type.GetUnderlyingTypeSymbol();
+        var elementType = type.GetUnderlyingTypeSymbol();
 
         if (!elementType.IsCollectionType())
             throw new InvalidOperationException("type is not a collection type");

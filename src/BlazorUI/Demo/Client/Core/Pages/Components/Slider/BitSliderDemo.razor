@@ -8,177 +8,92 @@
                ComponentDescription="A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content. Use a slider when you want people to set defined values (such as volume or brightness), or when people would benefit from instant feedback on the effect of setting changes."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses">
-    <ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitSlider Label="Basic slider" />
             <br />
+            <BitSlider Label="Disabled slider" DefaultValue="5" IsEnabled="false" />
             <br />
-            <BitSlider Label="Disabled slider"
-                       Min="50"
-                       Max="500"
-                       Step="50"
-                       DefaultValue="300"
-                       IsEnabled="false" />
+            <BitSlider Label="Snapping slider" Min="0" Max="50" Step="10" />
             <br />
+            <BitSlider Label="Formatted value" Max="1" Step="0.01" DefaultValue="0.69" ValueFormat="0 %" />
             <br />
-            <BitSlider Label="Snapping slider"
-                       Min="0"
-                       Max="50"
-                       Step="10"
-                       DefaultValue="20" />
-            <br />
-            <br />
-            <BitSlider @bind-Value="sliderHorizontalValue"
-                       Label="Controlled slider"
-                       Max="10" />
-            <BitButton Class="bit-btn-slider" OnClick="() => sliderHorizontalValue = 2">Reset value</BitButton>
-            <br />
-            <br />
-            <br />
-            <BitSlider Label="Formatted value"
-                       Max="100"
-                       DefaultValue="31"
-                       ValueFormat="P00" />
-            <br />
-            <br />
-            <BitSlider Label="Formatted value"
-                       Max="1000"
-                       DefaultValue="319"
-                       ValueFormat="P01" />
-            <br />
-            <br />
-            <BitSlider Label="Origin from zero"
-                       Min="-5"
-                       Max="5"
-                       Step="1"
-                       DefaultValue="2"
-                       IsOriginFromZero="true" />
+            <BitSlider Label="Origin from zero" Min="-5" Max="5" DefaultValue="0" IsOriginFromZero="true" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical slider" HtmlCode="@example2HtmlCode" Id="example2">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div class="flex-container">
-                <BitSlider Label="Basic"
-                           Min="1"
-                           Max="5"
-                           Step="1"
-                           DefaultValue="2"
-                           IsVertical="true" />
-
-                <BitSlider Label="Disabled"
-                           Min="50"
-                           Max="500"
-                           Step="50"
-                           DefaultValue="300"
-                           IsVertical="true"
-                           IsEnabled="false" />
-
-                <BitSlider Label="Formatted value"
-                           Max="100" ValueFormat="P00"
-                           IsVertical="true" />
-
-                <BitSlider Label="Origin from zero"
-                           Min="-5"
-                           Max="15"
-                           Step="1"
-                           DefaultValue="5"
-                           IsVertical="true"
-                           IsOriginFromZero="true" />
+            <div class="flex-container column">
+                <div style="display:flex">Visible: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Visible" /> ]</div>
+                <div style="display:flex">Hidden: [ <BitSlider Visibility="BitVisibility.Hidden" /> ]</div>
+                <div style="display:flex">Collapsed: [ <BitSlider Visibility="BitVisibility.Collapsed" /> ]</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Range slider" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Vertical" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <BitSlider Label="Basic"
-                       Min="0"
-                       Max="10"
-                       DefaultLowerValue="2"
-                       DefaultUpperValue="8"
-                       IsRanged="true" />
+            <div class="flex-container">
+                <BitSlider Label="Basic" IsVertical="true" />
+
+                <BitSlider Label="Disabled" IsVertical="true" IsEnabled="false" />
+
+                <BitSlider Label="Formatted value" IsVertical="true" DefaultValue="2" ValueFormat="0 cm" />
+
+                <BitSlider Label="Origin from zero" IsVertical="true" Min="-5" Max="5" DefaultValue="0" IsOriginFromZero="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Range" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <BitSlider Label="Basic" IsRanged="true" />
             <br />
+            <BitSlider Label="Disabled" IsRanged="true" DefaultLowerValue="2" DefaultUpperValue="5" IsEnabled="false" />
             <br />
-            <BitSlider Label="Disabled"
-                       Min="50"
-                       Max="500"
-                       Step="50"
-                       DefaultLowerValue="200"
-                       DefaultUpperValue="300"
-                       IsRanged="true"
-                       IsEnabled="false" />
+            <BitSlider Label="Formatted value" IsRanged="true"
+                       Step="0.1"
+                       ValueFormat="0.0 px"
+                       DefaultLowerValue="4.2"
+                       DefaultUpperValue="8.5" />
             <br />
-            <br />
-            <BitSlider @bind-LowerValue="sliderRangedLowerValue" @bind-UpperValue="sliderRangedUpperValue"
-                       Label="Controlled example"
-                       Max="10"
-                       IsRanged="true" />
-            <BitButton Class="bit-btn-slider" OnClick="ResetBitSliderRangedValues">Reset value</BitButton>
-            <br />
-            <br />
-            <br />
-            <BitSlider Label="Formatted value"
-                       Max="100"
-                       ValueFormat="P00"
-                       IsRanged="true"
-                       DefaultLowerValue="20"
-                       DefaultUpperValue="70" />
-            <br />
-            <br />
-            <BitSlider Label="Origin from zero"
+            <BitSlider Label="Origin from zero" IsRanged="true"
                        Min="-5"
                        Max="5"
-                       Step="1"
                        DefaultUpperValue="2"
-                       IsRanged="true"
                        IsOriginFromZero="true" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Vertical Range Slider" HtmlCode="@example4HtmlCode" Id="example4">
+    <ComponentExampleBox Title="Vertical & Range" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="flex-container">
-                <BitSlider Label="Basic"
-                           Min="1"
-                           Max="5"
-                           Step="1"
-                           DefaultUpperValue="2"
+                <BitSlider Label="Basic" IsVertical="true" IsRanged="true"
                            DefaultLowerValue="1"
-                           IsRanged="true"
-                           IsVertical="true" />
+                           DefaultUpperValue="6" />
 
-                <BitSlider Label="Disabled"
-                           Min="50"
-                           Max="500"
-                           Step="50"
-                           DefaultUpperValue="100"
-                           DefaultLowerValue="300"
-                           IsRanged="true"
-                           IsVertical="true"
+                <BitSlider Label="Disabled" IsVertical="true" IsRanged="true"
+                           DefaultLowerValue="2"
+                           DefaultUpperValue="7"
                            IsEnabled="false" />
 
-                <BitSlider Label="Formatted value"
-                           Max="100"
-                           ValueFormat="P00"
-                           DefaultLowerValue="30"
-                           DefaultUpperValue="60"
-                           IsRanged="true"
-                           IsVertical="true" />
+                <BitSlider Label="Formatted value" IsVertical="true" IsRanged="true"
+                           Step="0.01"
+                           ValueFormat="0.00 rem"
+                           DefaultLowerValue="4.20"
+                           DefaultUpperValue="6.9" />
 
-                <BitSlider Label="Origin from zero"
+                <BitSlider Label="Origin from zero" IsVertical="true" IsRanged="true"
                            Min="-5"
-                           Max="15"
-                           Step="1"
-                           DefaultUpperValue="7"
-                           DefaultLowerValue="3"
-                           IsRanged="true"
-                           IsVertical="true"
+                           Max="5"
+                           DefaultUpperValue="3"
                            IsOriginFromZero="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" HtmlCode="@example5HtmlCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="flex-container column">
                 <div class="custom-wrapper">
@@ -194,16 +109,15 @@
                                                  ValueLabel = "color: red;",
                                                  ValueInput = "padding: 0.5rem; background-color: goldenrod;",
                                                  Label = "color: blue; font-weight: 900; font-size: 1.25rem;" } )" />
-                    
+
                     <BitSlider DefaultValue="5"
                                Classes="@(new() { ValueInput = "custom-input",
                                                   Container = "custom-container" } )" />
-                    
-                    <BitSlider IsRanged="true" 
+
+                    <BitSlider IsRanged="true"
                                Max="100"
-                               ValueFormat="P00"
-                               DefaultLowerValue="30"
-                               DefaultUpperValue="60"
+                               DefaultLowerValue="63"
+                               DefaultUpperValue="84"
                                Classes="@(new() { LowerValueInput = "custom-input",
                                                   UpperValueInput = "custom-input",
                                                   SliderBox = "custom-slider-box",
@@ -213,35 +127,16 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" HtmlCode="@example6HtmlCode" Id="example6">
+    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
-            <div class="flex-container column">
-                <div class="visibility-items">Visible: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Visible" Label="Visible Slider" /> ]</div>
-                <div class="visibility-items">Hidden: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Hidden" Label="Hidden Slider" /> ]</div>
-                <div class="visibility-items">Collapsed: [ <BitSlider Style="margin-left: 1.5rem" Visibility="BitVisibility.Collapsed" Label="Collapsed Slider" /> ]</div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="SliderBoxHtmlAttributes" HtmlCode="@example7HtmlCode" Id="example7">
-        <ExamplePreview>
-            <BitSlider Max="10"
-                       DefaultUpperValue="3"
-                       DefaultLowerValue="5"
-                       IsRanged="true"
-                       SliderBoxHtmlAttributes="@(new() { { "custom-attribute", "demo" } })" />
+            <BitSlider Label="One-way" Value="oneWayBinding" />
+            <BitRating Max="10" @bind-Value="oneWayBinding" />
+            <br /><br />
+            <BitSlider Label="Two-way" @bind-Value="twoWayBinding" />
+            <BitRating Max="10" @bind-Value="twoWayBinding" />
+            <br /><br />
+            <BitSlider Label="OnChange" DefaultValue="2" OnChange="v => onChangeValue = v.Value" />
+            <BitLabel>OnChange value: @onChangeValue</BitLabel>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private double? sliderHorizontalValue = 2;
-    private double? sliderRangedLowerValue = 3;
-    private double? sliderRangedUpperValue = 7;
-
-    private void ResetBitSliderRangedValues()
-    {
-        sliderRangedLowerValue = 3;
-        sliderRangedUpperValue = 7;
-    }
-}

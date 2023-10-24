@@ -54,7 +54,9 @@ class BitCallouts {
         dropDirection: BitDropDirection,
         isRtl: boolean,
         scrollContainerId: string,
-        scrollOffset: number
+        scrollOffset: number,
+        headerId: string,
+        footerId: string
     ) {
         const component = document.getElementById(componentId);
         if (component == null) return;
@@ -62,7 +64,17 @@ class BitCallouts {
         const callout = document.getElementById(calloutId);
         if (callout == null) return;
 
-        const scrollContainer = (scrollContainerId ? document.getElementById(scrollContainerId) : document.createElement('dummy'))!;
+        const scrollContainer = (scrollContainerId
+            ? document.getElementById(scrollContainerId)
+            : { style: {} as any, getBoundingClientRect: () => ({ y: 0 }) })!;
+
+        const header = (headerId
+            ? document.getElementById(headerId)
+            : { getBoundingClientRect: () => ({ height: 0 }) })!;
+
+        const footer = (footerId
+            ? document.getElementById(footerId)
+            : { getBoundingClientRect: () => ({ height: 0 }) })!;
 
         if (!isCalloutOpen) {
             callout.style.display = 'none';
@@ -81,6 +93,9 @@ class BitCallouts {
 
             const distanceToScreenBottom = window.innerHeight - (componentHeight + componentY);
             const distanceToScreenRight = window.innerWidth - (componentWidth + componentX);
+
+            const { height: headerHeight } = header.getBoundingClientRect();
+            const { height: footerHeight } = footer.getBoundingClientRect();
 
             let width = componentWidth;
 
@@ -105,8 +120,7 @@ class BitCallouts {
                 callout.style[isRtl ? 'left' : 'right'] = '0';
                 callout.style.maxHeight = window.innerHeight + 'px';
                 setTimeout(() => {
-                    scrollContainer.style.maxHeight = (window.innerHeight - scrollContainer.getBoundingClientRect().y - 10) + 'px';
-                    scrollContainer.style.height = scrollContainer.style.maxHeight;
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
                 });
 
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
@@ -114,28 +128,28 @@ class BitCallouts {
 
                 if (calloutHeight <= distanceToScreenBottom || distanceToScreenBottom >= componentY) {
                     callout.style.top = componentY + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
                     callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (componentY - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             } else {
                 if (distanceToScreenBottom >= calloutHeight) {
                     callout.style.left = componentX + 'px';
                     callout.style.top = componentY + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if (componentY >= calloutHeight) {
                     callout.style.left = componentX + 'px';
                     callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (componentY - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if (distanceToScreenRight >= calloutWidth) {
                     callout.style.bottom = '2px';
                     callout.style.left = componentX + componentWidth + 1 + 'px';
-                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
                     callout.style.bottom = '2px';
                     callout.style.left = componentX - calloutWidth - 1 + 'px';
-                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - 10) + 'px';
+                    scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             }
         }

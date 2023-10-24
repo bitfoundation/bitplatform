@@ -29,10 +29,10 @@ public partial class BitActionButtonDemo
         {
             Name = "ButtonType",
             Type = "BitButtonType",
-            LinkType = LinkType.Link,
-            Href = "#button-type-enum",
             DefaultValue = "null",
             Description = "The type of the button.",
+            Href = "#button-type-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -43,12 +43,12 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitActionButtonClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes/styles for different parts of the BitActionButton.",
+            Description = "Custom CSS classes for different parts of the BitActionButton.",
+            Href = "#actionbutton-class-styles",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -72,6 +72,15 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitActionButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitActionButton.",
+            Href = "#actionbutton-class-styles",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
@@ -90,57 +99,42 @@ public partial class BitActionButtonDemo
     {
         new()
         {
-            Id = "class-styles",
+            Id = "actionbutton-class-styles",
             Title = "BitActionButtonClassStyles",
             Parameters = new()
             {
-               new()
-               {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the internal container of the BitActionButton."
-               },
-               new()
-               {
-                   Name = "Primary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the primary section of the BitActionButton."
-               },
-               new()
-               {
-                   Name = "Secondary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the secondary section of the BitActionButton."
-               },
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
-                   Type = "string?",
-                   Description = "Custom CSS classes."
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Custom CSS styles."
-               }
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitActionButton."
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main container of the BitActionButton."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Icon of the BitActionButton."
+                },
+                new()
+                {
+                    Name = "Content",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the content of the BitActionButton."
+                }
             }
         }
     };
+
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
@@ -175,38 +169,50 @@ public partial class BitActionButtonDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
 
 <BitActionButton AllowDisabledFocus=""false"" IsEnabled=""false"" IconName=""@BitIconName.UserRemove"">Remove user (Disabled)</BitActionButton>";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
-    .custom-action-button {
-        color: #111;
-        font-size: 1rem;
+    .custom-class {
         border-radius: 1rem;
-        border-color: #D7D7D7;
-        background-color: #CCC;
+        border: 2px solid #777;
+    }
+
+    .custom-container {
+        gap: 5px;
+        color: gold;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        background-color: purple;
     }
 </style>
 
-<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""font-size:16px; border:2px solid #32385B; border-radius: 1rem;"">
+<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""border:2px solid #777"">
     Styled Action Button
 </BitActionButton>
-
-<BitActionButton IconName=""@BitIconName.ThisPC"" Class=""custom-action-button"">
+<BitActionButton IconName=""@BitIconName.ThisPC"" Class=""custom-class"">
     Classed Action Button
+</BitActionButton>
+
+<BitActionButton IconName=""@BitIconName.AddFriend"" Classes=""@(new() { Container = ""custom-container"" })"">
+    Action Button Classes
+</BitActionButton>
+<BitActionButton IconName=""@BitIconName.AddFriend"" Styles=""@(new() { Icon = ""color:green"", Content = ""color:tomato"" })"">
+    Action Button Styles
 </BitActionButton>";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitActionButton IconName=""@BitIconName.AddEvent"" Visibility=""BitVisibility.Visible"">Visible Action Button</BitActionButton> ]
 
 Hidden: [ <BitActionButton Visibility=""BitVisibility.Hidden"">Hidden Action Button</BitActionButton> ]
 
 Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed Action Button</BitActionButton> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."">
     Action Button with AriaDescription
 </BitActionButton>
@@ -215,16 +221,16 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     Action Button with AriaHidden
 </BitActionButton>";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Open Bit Platform In New Tab
+    Open bit platform In New Tab
 </BitActionButton>
 
-<BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To Bit Platform
+<BitActionButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"">
+    Go To bit platform
 </BitActionButton>";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-btn-ctn {
         gap: 0.5rem;
@@ -239,7 +245,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
     </div>
 </BitActionButton>";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -295,23 +301,5 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
-
-    private readonly string example8HtmlCode = @"
-<style>
-    .custom-class {
-        gap: 5px;
-        padding: 8px;
-        display: flex;
-        flex-flow: column;
-        background-color: aqua;
-    }
-</style>
-
-<BitActionButton IconName=""@BitIconName.AddFriend""
-                 ClassStyles=""@(new() { Container = new() { Class = ""custom-class"" },
-                                        Icon = new() { Style = ""color:green"" },
-                                        Content = new() { Style = ""color:blue"" } })"">
-    Create account
-</BitActionButton>";
 
 }

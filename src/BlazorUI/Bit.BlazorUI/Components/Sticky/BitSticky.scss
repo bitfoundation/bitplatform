@@ -1,0 +1,32 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-stk {
+    z-index: 1;
+    position: sticky;
+}
+
+.bit-stk-top {
+    top: 0;
+}
+
+.bit-stk-btm {
+    bottom: 0;
+}
+
+.bit-stk-tab {
+    top: 0;
+    bottom: 0;
+}
+
+.bit-stk-lft {
+    left: 0;
+}
+
+.bit-stk-rgt {
+    right: 0;
+}
+
+.bit-stk-lar {
+    left: 0;
+    right: 0;
+}

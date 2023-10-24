@@ -2,7 +2,7 @@
     public static setCookie(name: string, value: string, seconds: number) {
         const date = new Date();
         date.setSeconds(date.getSeconds() + seconds);
-        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;samesite=strict;`;
     }
 
     public static getCookie(name: string): string | null {

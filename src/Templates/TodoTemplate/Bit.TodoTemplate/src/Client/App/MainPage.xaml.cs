@@ -4,10 +4,12 @@ namespace TodoTemplate.Client.App;
 public partial class MainPage
 {
     private readonly IExceptionHandler _exceptionHandler;
+    private readonly IBitDeviceCoordinator _deviceCoordinator;
 
-    public MainPage(IExceptionHandler exceptionHandler)
+    public MainPage(IExceptionHandler exceptionHandler, IBitDeviceCoordinator deviceCoordinator)
     {
         _exceptionHandler = exceptionHandler;
+        _deviceCoordinator = deviceCoordinator;
 
         InitializeComponent();
 
@@ -27,6 +29,8 @@ public partial class MainPage
 #elif IOS || MACCATALYST
             handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
             
+            handler.PlatformView.ScrollView.Bounces = false;
+            
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG
@@ -38,6 +42,8 @@ public partial class MainPage
 #endif
 #elif ANDROID
             handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            
+            handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
@@ -80,45 +86,11 @@ public partial class MainPage
 
     private void SetupStatusBar()
     {
-
         Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), async (handler, view) =>
         {
             try
             {
-#if ANDROID
-                var window = handler.PlatformView.Window;
-                if (window != null && Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Lollipop)
-                {
-                    window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
-                    window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
-                    window.SetStatusBarColor(Android.Graphics.Color.Transparent);
-
-                    window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)(Android.Views.SystemUiFlags.LayoutFullscreen | Android.Views.SystemUiFlags.LayoutStable | Android.Views.SystemUiFlags.LightStatusBar);
-                    if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-                    {
-                        window.DecorView.SystemUiVisibility &= ~(Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
-                    }
-                }
-#elif MACCATALYST
-                var window = handler.PlatformView.WindowScene;
-                if (window != null)
-                {
-                    window.Titlebar!.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
-                }
-#elif IOS
-                var statusBarStyle = AppInfo.Current.RequestedTheme == AppTheme.Dark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
-                await Device.InvokeOnMainThreadAsync(() =>
-                {
-                    UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
-                    Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
-                });
-#elif WINDOWS
-                var window = handler.PlatformView;
-                if (window != null)
-                {
-                    window.ExtendsContentIntoTitleBar = true;
-                }
-#endif
+                await _deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
             }
             catch (Exception exp)
             {

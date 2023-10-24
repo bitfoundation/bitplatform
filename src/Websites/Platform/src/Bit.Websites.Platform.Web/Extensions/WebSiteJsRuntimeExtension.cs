@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-
-namespace Microsoft.JSInterop;
+﻿namespace Microsoft.JSInterop;
 
 public static class WebSiteJsRuntimeExtension
 {
-    public static async Task SetToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
+    public static async Task ToggleBodyOverflow(this IJSRuntime jsRuntime, bool isNavOpen)
     {
         await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
     }

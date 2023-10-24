@@ -1,13 +1,11 @@
-﻿using System.Globalization;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI.Demo.Client.Core;
 
 public partial class App
 {
 #if BlazorWebAssembly && !BlazorHybrid
-    private List<Assembly> _lazyLoadedAssemblies = new();
+    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
 #endif
 
@@ -79,9 +77,11 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        if (OperatingSystem.IsMacCatalyst() is false)
         {
-            //This is handled in css using safe-area env() variables
+            //For iOS this is handled in css using safe-area env() variables
+            //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626
+            //For Windows there's an issue with TitleBar. more info: https://github.com/bitfoundation/bitplatform/issues/5695
             statusBarHeight = 0;
         }
         
@@ -91,22 +91,10 @@ public partial class App
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
-        // Android, windows and iOS have to set culture programmatically.
-        // Browser is gets handled in Web project's Program.cs
-#if BlazorHybrid && MultilingualEnabled
-        if (_cultureHasNotBeenSet)
-        {
-            _cultureHasNotBeenSet = false;
-            var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
-            CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
-        }
-#endif
-
 #if BlazorWebAssembly && !BlazorHybrid
         if (args.Path.Contains("chart") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
-            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.dll", "System.Private.Xml.dll", "System.Data.Common.dll" });
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm" });
             _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif

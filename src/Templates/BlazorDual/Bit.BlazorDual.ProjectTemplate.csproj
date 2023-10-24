@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
     
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <ContentTargetFolders>content</ContentTargetFolders>
         <EnableDefaultItems>false</EnableDefaultItems>
@@ -13,7 +13,7 @@
         <PackageId>Bit.BlazorDual</PackageId>
         <PackageType>Template</PackageType>
         <Title>bit BlazorDual</Title>
-        <PackageDescription>A template for creating a dual-mode Todo Web app based on the bitplatform</PackageDescription>
+        <PackageDescription>A template for creating a dual-mode Todo Web app based on the bit platform</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © bit platform 2022</PackageCopyright>
         <PackageIcon>bit-icon-512.png</PackageIcon>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
@@ -8,8 +8,8 @@
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
-        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
-        <EmccInitialHeapSize Condition="'$(EmccInitialHeapSize)' == ''">16777216</EmccInitialHeapSize>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -30,22 +30,22 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="5.6.0-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="5.6.0-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="5.6.0-pre-02" />
-        <PackageReference Include="Bit.Bup" Version="5.6.0-pre-02" />
-        <PackageReference Include="Bit.Bswup" Version="5.6.0-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="5.6.0-pre-02">
+        <PackageReference Include="Bit.BlazorUI" Version="7.1.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="7.1.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="7.1.0-pre-02" />
+        <PackageReference Include="Bit.Bup" Version="7.1.0-pre-02" />
+        <PackageReference Include="Bit.Bswup" Version="7.1.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="7.1.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="5.6.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="7.1.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
-        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.1.23421.29" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2" />
+        <PackageReference Condition="'$(BlazorMode)' == 'BlazorWebAssembly'" Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.2.23480.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.2.23480.2" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -55,7 +55,7 @@
         <Using Include="Bit.Websites.Sales.Web.Components" />
         <Using Include="Bit.Websites.Sales.Web.Shared" />
         <Using Include="Bit.Websites.Sales.Web.Services.Contracts" />
-        <Using Include="Bit.Websites.Sales.Web.Services.Implementations" />
+        <Using Include="Bit.Websites.Sales.Web.Services" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
@@ -77,7 +77,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.65.1 typescript@5.1.6 esbuild@0.19.0 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.69.3 typescript@5.2.2 esbuild@0.19.4 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />

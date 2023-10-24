@@ -41,12 +41,6 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
-            Name = "ChangeHandler",
-            Type = "EventCallback<BitNumericTextFieldAction>",
-            Description = "",
-        },
-        new()
-        {
             Name = "Classes",
             Type = "BitNumericTextFieldClassStyles?",
             DefaultValue = "null",
@@ -173,18 +167,14 @@ public partial class BitNumericTextFieldDemo
         new()
         {
             Name = "OnDecrement",
-            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
+            Type = "EventCallback<TValue>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
-            LinkType = LinkType.Link,
-            Href = "#numerictextfield-change-value"
         },
         new()
         {
             Name = "OnIncrement",
-            Type = "EventCallback<BitNumericTextFieldChangeValue<TValue>>",
+            Type = "EventCallback<TValue>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
-            LinkType = LinkType.Link,
-            Href = "#numerictextfield-change-value"
         },
         new()
         {
@@ -225,10 +215,10 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
-            Name = "ShowArrows",
+            Name = "ShowButtons",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the up/down spinner arrows (buttons).",
+            Description = "Whether to show the increment and decrement buttons.",
         },
         new()
         {
@@ -250,29 +240,6 @@ public partial class BitNumericTextFieldDemo
     {
         new()
         {
-            Id = "numerictextfield-change-value",
-            Title = "BitNumericTextFieldChangeValue",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Value",
-                   Type = "T?",
-               },
-               new()
-               {
-                   Name = "MouseEventArgs",
-                   Type = "MouseEventArgs?",
-               },
-               new()
-               {
-                   Name = "KeyboardEventArgs",
-                   Type = "KeyboardEventArgs?",
-               }
-            }
-        },
-        new()
-        {
             Id = "numerictextfield-class-styles",
             Title = "BitNumericTextFieldClassStyles",
             Parameters = new()
@@ -282,7 +249,7 @@ public partial class BitNumericTextFieldDemo
                     Name = "ButtonsContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's buttons (inecrement and decrement) container."
+                    Description = "Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container."
                 },
                 new()
                 {
@@ -406,186 +373,64 @@ public partial class BitNumericTextFieldDemo
 
 
 
-    private readonly string example1HtmlCode = @"
-<BitNumericTextField @bind-Value=""BasicValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Basic"" />
+    private double oneWayValue;
+    private double twoWayValue;
 
-<BitNumericTextField @bind-Value=""DisabledValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Disabled""
-                     IsEnabled=""false"" />";
-    private readonly string example1CsharpCode = @"
-private int BasicValue;
-private int DisabledValue;";
+    private int onIncrementCounter;
+    private int onDecrementCounter;
+    private int onChangeCounter;
 
-    private readonly string example2HtmlCode = @"
-<BitNumericTextField @bind-Value=""LabelTopValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Label Top""
-                     LabelPosition=""BitNumericTextFieldLabelPosition.Top""/>
+    private string SuccessMessage = string.Empty;
+    private BitNumericTextFieldValidationModel validationModel = new();
 
-<BitNumericTextField @bind-Value=""LabelLeftValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Label Left""
-                     LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />";
-    private readonly string example2CsharpCode = @"
-private int LabelTopValue;
-private int LabelLeftValue;";
+    private async Task HandleValidSubmit()
+    {
+        SuccessMessage = "Form Submitted Successfully!";
+        await Task.Delay(3000);
+        SuccessMessage = string.Empty;
+        StateHasChanged();
+    }
 
-    private readonly string example3HtmlCode = @"
-<BitNumericTextField @bind-Value=""LabelTemplateValue"" Placeholder=""Enter a number..."" Step=""@(1)"">
+    private void HandleInvalidSubmit()
+    {
+        SuccessMessage = string.Empty;
+    }
+
+
+
+    private readonly string example1RazorCode = @"
+<BitNumericTextField Label=""Basic"" TValue=""int"" />
+<BitNumericTextField Label=""Disabled"" Step=""1"" IsEnabled=""false"" />
+<BitNumericTextField Label=""Placeholder"" DefaultValue=""1"" Placeholder=""Enter a number..."" />
+<BitNumericTextField Label=""Step & Buttons"" Step=""1"" ShowButtons=""true"" />
+<BitNumericTextField Label=""Min & Max"" Step=""1"" Min=""-10"" Max=""10"" />";
+
+    private readonly string example2RazorCode = @"
+<BitNumericTextField Label=""Label Top"" Step=""1"" LabelPosition=""BitNumericTextFieldLabelPosition.Top"" />
+<BitNumericTextField Label=""Label Left"" Step=""1"" LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />
+
+<BitNumericTextField TValue=""int"">
     <LabelTemplate>
-        <BitLabel Style=""color: green;"">This is custom Label</BitLabel>
-        <BitIcon IconName=""@BitIconName.Filter"" />
+        <div style=""display:flex;align-items:center;gap:10px"">
+            <BitLabel Style=""color:green"">This is custom Label</BitLabel>
+            <BitIcon IconName=""@BitIconName.Filter"" Style=""font-size:18px;""/>
+        </div>
     </LabelTemplate>
 </BitNumericTextField>";
-    private readonly string example3CsharpCode = @"
-private int LabelTemplateValue;";
 
-    private readonly string example4HtmlCode = @"
-<BitNumericTextField @bind-Value=""SpinArrowValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Increment & Decrement""
-                     ShowArrows=""true"" />
+    private readonly string example3RazorCode = @"
+<BitNumericTextField Label=""Label & Icon""  Step=""1"" IconName=""@BitIconName.Lightbulb"" />
 
-<BitNumericTextField @bind-Value=""SpinArrowWithIconValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Increment & Decrement Icon""
-                     ShowArrows=""true""
+<BitNumericTextField Label=""Increment & Decrement Icon""  Step=""1""
+                     ShowButtons=""true""
                      IncrementIconName=""@BitIconName.LikeSolid""
-                     DecrementIconName=""@BitIconName.DislikeSolid"" />
+                     DecrementIconName=""@BitIconName.DislikeSolid"" />";
 
-<BitNumericTextField @bind-Value=""LabelAndIconValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Label & Icon""
-                     IconName=""@BitIconName.Lightbulb"" />";
-    private readonly string example4CsharpCode = @"
-private int SpinArrowValue;
-private int LabelAndIconValue;
-private int SpinArrowWithIconValue;";
+    private readonly string example4RazorCode = @"
+<BitNumericTextField Label=""Height"" DefaultValue=""150"" Suffix="" cm"" />
+<BitNumericTextField Label=""Weight"" DefaultValue=""50"" Suffix="" kg"" />";
 
-    private readonly string example5HtmlCode = @"
-<BitNumericTextField @bind-Value=""MinMaxValue1""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Min: -10, Max: 10, Step: 1""
-                     Min=""-10""
-                     Max=""10"" />
-
-<BitNumericTextField @bind-Value=""MinMaxValue2""
-                     Placeholder=""Enter a number...""
-                     Step=""@(2)""
-                     Label=""Min: -20, Max: 20, Step: 2""
-                     Min=""-20""
-                     Max=""20"" />
-
-<BitNumericTextField @bind-Value=""MinMaxValue3""
-                     Placeholder=""Enter a number...""
-                     Step=""@(0.1M)""
-                     Label=""Min: -1, Max: 1, Step: 0.1""
-                     Min=""-1""
-                     Max=""1"" />";
-    private readonly string example5CsharpCode = @"
-private int MinMaxValue1;
-private int MinMaxValue2;
-private decimal MinMaxValue3;";
-
-    private readonly string example6HtmlCode = @"
-<BitNumericTextField @bind-Value=""SuffixValue1""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""Height""
-                     IconName=""@BitIconName.AutoHeight""
-                     DefaultValue=""150""
-                     Suffix="" cm"" />
-
-<BitNumericTextField @bind-Value=""SuffixValue2""
-                     Placeholder=""Enter a number...""
-                     Step=""@(0.5M)""
-                     Label=""Weight""
-                     IconName=""@BitIconName.Weights""
-                     DefaultValue=""50""
-                     Suffix="" kg"" />";
-    private readonly string example6CsharpCode = @"
-private int SuffixValue1;
-private decimal SuffixValue2;";
-
-    private readonly string example7HtmlCode = @"
-<BitNumericTextField Value=""OneWayValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(1)""
-                     Label=""One-way"" />
-<BitRating @bind-Value=""OneWayValue"" />
-    
-<BitNumericTextField @bind-Value=""TwoWayValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(0.5)""
-                     Label=""Two-way"" />
-<BitRating @bind-Value=""TwoWayValue"" />";
-    private readonly string example7CsharpCode = @"
-private double OneWayValue;
-private double TwoWayValue;
-";
-
-    private readonly string example8HtmlCode = @"
-<BitNumericTextField @bind-Value=""ArrowsEventBindedValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(0.1)""
-                     Label=""OnIncrement / OnDecrement""
-                     ShowArrows=""true""
-                     OnIncrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnIncrementEvent(v)""
-                     OnDecrement=""(BitNumericTextFieldChangeValue<double> v) => HandleOnDecrementEvent(v)"" />
-<BitLabel>OnIncrement Counter: @OnIncrementCounter</BitLabel>
-<BitLabel>OnDecrement Counter: @OnDecrementCounter</BitLabel>
-<BitLabel>Returned Value: @ArrowsEventReturnedValue</BitLabel>
-
-<BitNumericTextField @bind-Value=""OnChangeEventBindedValue""
-                     Placeholder=""Enter a number...""
-                     Step=""@(0.1)""
-                     Label=""OnChange""
-                     OnChange=""(double v) => HandleOnChangeEvent(v)"" />
-<BitLabel>OnChange Counter: @OnChangeCounter</BitLabel>
-<BitLabel>Returned Value: @OnChangeEventReturnedValue</BitLabel>";
-    private readonly string example8CsharpCode = @"
-private double ArrowsEventBindedValue;
-private double ArrowsEventReturnedValue;
-private int OnIncrementCounter;
-private int OnDecrementCounter;
-
-private double OnChangeEventBindedValue;
-private double OnChangeEventReturnedValue;
-private int OnChangeCounter;
-
-private void HandleOnIncrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
-{
-    ArrowsEventReturnedValue = onChangeValue.Value;
-
-    OnIncrementCounter++;
-}
-
-private void HandleOnDecrementEvent(BitNumericTextFieldChangeValue<double> onChangeValue)
-{
-    ArrowsEventReturnedValue = onChangeValue.Value;
-
-    OnDecrementCounter++;
-}
-
-private void HandleOnChangeEvent(double value)
-{
-    OnChangeEventReturnedValue = value;
-
-    OnChangeCounter++;
-}";
-
-    private readonly string example9HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         margin-left: 0.5rem;
@@ -618,87 +463,65 @@ private void HandleOnChangeEvent(double value)
     }
 </style>
 
-<BitNumericTextField @bind-Value=""@StyleValue""
-                     Placeholder=""Enter a number...""
-                     Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem"" />
-<BitNumericTextField @bind-Value=""@ClassValue""
-                     Placeholder=""Enter a number...""
-                     Class=""custom-class"" />
+<BitNumericTextField Label=""Styled"" DefaultValue=""10"" Style=""background:lightskyblue;border-radius:1rem;padding:0.5rem"" />
 
-<BitNumericTextField @bind-Value=""@StylesValue""
-                     Placeholder=""Enter a number...""
-                     Label=""Custom label style""
-                     IconName=""@BitIconName.Microphone""
+<BitNumericTextField Label=""Classed"" DefaultValue=""20"" Class=""custom-class"" />
+
+
+
+<BitNumericTextField Label=""Styles"" DefaultValue=""1"" IconName=""@BitIconName.Microphone""
                      Styles=""@(new() { Root = ""background-color: pink;"",
                                        Icon = ""color: red;"",
                                        Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                       Input = ""padding: 0.5rem; background-color: goldenrod""} )"" />
-<BitNumericTextField @bind-Value=""@ClassesValue""
-                     Placeholder=""Enter a number...""
-                     Label=""Custom label class""
+                                       Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
+
+<BitNumericTextField Label=""Classes"" DefaultValue=""2""
                      Classes=""@(new() { Input = ""custom-input"",
                                         Focused = ""custom-focus"",
                                         Label = ""custom-label"",
-                                        InputWrapper = ""custom-input-wrapper"" } )"" />";
-    private readonly string example9CsharpCode = @"
-private int StyleValue;
-private int ClassValue;
-private int StylesValue;
-private int ClassesValue;";
+                                        InputWrapper = ""custom-input-wrapper"" })"" />";
 
-    private readonly string example10HtmlCode = @"
-Visible: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Visible"" Placeholder=""Visible NumericTextField"" /> ]
-Hidden: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden NumericTextField"" />  ]
-Collapsed: [ <BitNumericTextField @bind-Value=""@VisibilityValue"" Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed NumericTextField"" />  ]";
-    private readonly string example10CsharpCode = @"
-private int VisibilityValue;";
+    private readonly string example6RazorCode = @"
+<BitNumericTextField Label=""One-way"" Value=""oneWayValue"" />
+<BitRating @bind-Value=""oneWayValue"" />
 
-    private readonly string example11HtmlCode = @"
+<BitNumericTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<BitRating @bind-Value=""twoWayValue"" />";
+    private readonly string example6CsharpCode = @"
+private double oneWayValue;
+private double twoWayValue;
+";
+
+    private readonly string example7RazorCode = @"
+<BitNumericTextField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
+                     OnIncrement=""(double v) => onIncrementCounter++""
+                     OnDecrement=""(double v) => onDecrementCounter++"" />
+<BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
+<BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
+
+<BitNumericTextField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
+<BitLabel>OnChange Counter: @onChangeCounter</BitLabel>";
+    private readonly string example7CsharpCode = @"
+private int onIncrementCounter;
+private int onDecrementCounter;
+private int onChangeCounter;";
+
+    private readonly string example8RazorCode = @"
 <style>
-    .validation-summary {
-        border-left: rem(5px) solid $Red10;
-        background-color: $ErrorBlockRed;
-        overflow: hidden;
-        margin-bottom: rem(10px);
-    }
-
     .validation-message {
-        color: $Red20;
-        font-size: rem(12px);
-    }
-
-    .validation-errors {
-        margin: rem(5px);
+        color: red;
     }
 </style>
 
-@if (string.IsNullOrEmpty(SuccessMessage))
-{
-    <EditForm Model=""@ValidationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
+<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
 
-        <div class=""validation-summary"">
-            <ValidationSummary />
-        </div>
+    <BitNumericTextField Label=""Age"" @bind-Value=""@validationModel.AgeInYears"" />
+    <ValidationMessage For=""@(() => validationModel.AgeInYears)"" />
 
-        <BitNumericTextField @bind-Value=""@ValidationModel.AgeInYears""
-                             Placeholder=""Enter a number...""
-                             Step=""@(1)""
-                             Label=""Age"" />
-        <ValidationMessage For=""@(() => ValidationModel.AgeInYears)"" />
-
-        <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitButton>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @SuccessMessage
-    </BitMessageBar>
-}";
-    private readonly string example11CsharpCode = @"
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example8CsharpCode = @"
 public class BitNumericTextFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -706,19 +529,8 @@ public class BitNumericTextFieldValidationModel
     public double AgeInYears { get; set; }
 }
 
-private BitNumericTextFieldValidationModel ValidationModel = new();
-private string SuccessMessage = string.Empty;
+private BitNumericTextFieldValidationModel validationModel = new();
 
-private async Task HandleValidSubmit()
-{
-    SuccessMessage = ""Form Submitted Successfully!"";
-    await Task.Delay(3000);
-    SuccessMessage = string.Empty;
-    StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    SuccessMessage = string.Empty;
-}";
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
 }

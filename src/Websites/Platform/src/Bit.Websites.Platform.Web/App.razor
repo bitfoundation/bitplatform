@@ -1,6 +1,5 @@
 ﻿<LayoutView Layout="@typeof(MainLayout)">
-    <Router AppAssembly="@GetType().Assembly"
-            OnNavigateAsync="@OnNavigateAsync">
+    <Router AppAssembly="@GetType().Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
         </Found>

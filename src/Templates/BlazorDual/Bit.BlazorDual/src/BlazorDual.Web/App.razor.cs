@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace BlazorDual.Web;
@@ -7,7 +6,7 @@ namespace BlazorDual.Web;
 public partial class App
 {
 #if BlazorWebAssembly
-    private List<Assembly> _lazyLoadedAssemblies = new();
+    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
 #endif
 
@@ -18,7 +17,7 @@ public partial class App
 #if BlazorWebAssembly
         if (args.Path.Contains("some-lazy-loaded-page") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "SomeAssembly") is false)
         {
-            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.dll" });
+            var assemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "SomeAssembly.wasm" });
             _lazyLoadedAssemblies.AddRange(assemblies);
         }
 #endif

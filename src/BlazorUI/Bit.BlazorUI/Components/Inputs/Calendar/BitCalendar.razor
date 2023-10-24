@@ -2,117 +2,125 @@
 @inherits BitInputBase<DateTimeOffset?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
     <div class="bit-cal-ctn" disabled=@(IsEnabled is false)>
         <div class="bit-cal-grp" role="group" aria-label="">
-            <div class="bit-cal-sd" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
+            <div class="bit-cal-sdt" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
             @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides || _showMonthPicker is false)
             {
                 <div class="bit-cal-dwp">
-                    <div class="bit-cal-pkr-hdr">
+                    <div class="bit-cal-pkh">
                         @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay && IsMonthPickerVisible)
                         {
-                            <button @onclick="@ToggleMonthPickerAsOverlay"
-                            tabindex="0"
-                            type="button"
-                            aria-live="polite"
-                            aria-atomic="true"
-                            class="bit-cal-pkr-tit"
-                            aria-label="@($"{_monthTitle}, change month")">
+                            <button @onclick="@ToggleMonthPickerOverlay"
+                                    tabindex="0"
+                                    type="button"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    class="bit-cal-ptb"
+                                    aria-label="@(string.Format(MonthPickerToggleAriaLabel, _monthTitle))">
                                 <span id="@_monthTitleId">@_monthTitle</span>
                             </button>
                         }
                         else
                         {
-                            <div class="bit-cal-pkr-tit"
-                            aria-live="polite"
-                            aria-atomic="true"
-                            tabindex="-1">
+                            <div class="bit-cal-pkt"
+                                 aria-live="polite"
+                                 aria-atomic="true"
+                                 tabindex="-1">
                                 <span id="@_monthTitleId">@_monthTitle</span>
                             </div>
                         }
-                        <div class="bit-cal-nav-btn-ctn">
-                            <button @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)"
-                            type="button"
-                            class="bit-cal-nav-btn"
-                            title="@GoToPrevMonthTitle"
-                            disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
-                            aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
+                        <div class="bit-cal-nbc">
+                            <button @onclick="() => HandleMonthChange(false)"
+                                    type="button"
+                                    class="bit-cal-nbt"
+                                    title="@GoToPrevMonthTitle"
+                                    disabled="@(CanChangeMonth(false) is false)"
+                                    aria-disabled="@(CanChangeMonth(false) is false)">
                                 <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                             </button>
-                            <button @onclick="() => HandleOnMonthChange(ChangeDirection.Next)"
-                            type="button"
-                            class="bit-cal-nav-btn"
-                            title="@GoToNextMonthTitle"
-                            disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
-                            aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)">
+                            @if ((MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay || IsMonthPickerVisible is false) && ShowGoToToday)
+                            {
+                                <button @onclick="HandleGoToToday"
+                                        type="button"
+                                        class="bit-cal-gtb"
+                                        title="@GoToTodayTitle"
+                                        disabled="@IsGoToTodayButtonDisabled()">
+                                    <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                </button>
+                            }
+                            <button @onclick="() => HandleMonthChange(true)"
+                                    type="button"
+                                    class="bit-cal-nbt"
+                                    title="@GoToNextMonthTitle"
+                                    disabled="@(CanChangeMonth(true) is false)"
+                                    aria-disabled="@(CanChangeMonth(true) is false)">
                                 <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                             </button>
                         </div>
                     </div>
                     <table role="grid"
-                    aria-readonly="true"
-                    aria-multiselectable="false"
-                    aria-labelledby="@_monthTitleId"
-                    aria-activedescendant="@_activeDescendantId">
+                           class="bit-cal-dgd"
+                           aria-readonly="true"
+                           aria-multiselectable="false"
+                           aria-labelledby="@_monthTitleId"
+                           aria-activedescendant="@_activeDescendantId">
                         <tbody>
-                            <tr>
+                            <tr class="bit-cal-dgh">
                                 @if (ShowWeekNumbers)
                                 {
-                                    <th class="bit-cal-wd-lbl"></th>
+                                    <th class="bit-cal-wlb"></th>
                                 }
 
                                 @for (var index = 0; index < 7; index++)
                                 {
-                                    <th class="bit-cal-wd-lbl" scope="col" title="@Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))">
-                                        @Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index))[0]
-                                    </th>
+                                    var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                                    <th class="bit-cal-wlb" scope="col" title="@dayOfWeekName">@dayOfWeekName[0]</th>
                                 }
                             </tr>
                             @for (var week = 0; week < 6; week++)
                             {
-                                //to ignore the last empty week out of month || to ignore the first whole week out of month
-                                if (_currentMonthCalendar[week, 0] == 0 || (week == 0 && _currentMonthCalendar[week, 6] > 20))
-                                {
-                                    continue;
-                                }
+                                //to ignore the last empty week of the month || to ignore the first whole week of the month
+                                if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
 
-                                <tr>
+                                <tr class="bit-cal-dgr">
                                     @if (ShowWeekNumbers)
                                     {
-                                        <th class="bit-cal-wnumc"
-                                        title="@($"Week number {GetWeekNumber(week)}")"
-                                        aria-label="@($"Week number {GetWeekNumber(week)}")"
-                                        scope="row">
-                                            <span>@GetWeekNumber(week)</span>
+                                        var weekNumber = GetWeekNumber(week);
+                                        <th class="bit-cal-wnm"
+                                            title="@(string.Format(WeekNumberTitle, weekNumber)))"
+                                            aria-label="@(string.Format(WeekNumberTitle, weekNumber))"
+                                            scope="row">
+                                            <span>@weekNumber</span>
                                         </th>
                                     }
 
                                     @for (var day = 0; day < 7; day++)
                                     {
-                                        var localWeek = week;
-                                        var localDay = day;
-                                        <td class="bit-cal-dc @GetDateElClass(localDay, localWeek)" role="presentation">
-                                            <button @onclick="() => SelectDate(localDay, localWeek)"
-                                            type="button"
-                                            role="gridcell"
-                                            class="bit-cal-dbtn"
-                                            aria-readonly="true"
-                                            aria-label="@GetDateAriaLabel(localWeek, localDay)"
-                                            disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
-                                            aria-disabled="@IsWeekDayOutOfMinAndMaxDate(localDay, localWeek)"
-                                            tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
-                                            aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                        var w = week;
+                                        var d = day;
+                                        var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
+                                        <td class="bit-cal-dcl@(GetDateCellCssClass(d, w))" role="presentation">
+                                            <button @onclick="() => SelectDate(d, w)"
+                                                    type="button"
+                                                    role="gridcell"
+                                                    class="bit-cal-dbt@(GetDateButtonCssClass(d, w))"
+                                                    aria-readonly="true"
+                                                    disabled="@disabled"
+                                                    aria-disabled="@disabled"
+                                                    tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                                    aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
                                                 @if (DayCellTemplate is not null)
                                                 {
-                                                    @DayCellTemplate(GetDayCellDate(localDay, localWeek))
+                                                    @DayCellTemplate(GetDateTimeOfDayCell(d, w))
                                                 }
                                                 else
                                                 {
-                                                    <span aria-hidden="true">@_currentMonthCalendar[localWeek, localDay]</span>
+                                                    <span aria-hidden="true" class="bit-cal-dtx">@_daysOfCurrentMonth[w, d]</span>
                                                 }
                                             </button>
                                         </td>
@@ -122,190 +130,198 @@
                         </tbody>
                     </table>
 
-                    @if ((MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay || IsMonthPickerVisible is false) && ShowGoToToday)
-                    {
-                        <button @onclick="HandleGoToToday"
-                        type="button"
-                        class="bit-cal-gtd-btn"
-                        disabled="@IsGoTodayDisabled()">
-                            @GoToToday
-                        </button>
-                    }
-
                     @if (ShowTimePicker)
                     {
-                        <div class="bit-cal-time-grp">
-                            <div class="bit-cal-time-wrp">
-                            <input @ref="_inputTimeHourRef"
-                            @bind="@_timeHour"
-                            @bind:event="oninput"
-                            @onfocus="HandleOnTimeHourFocus"
-                                    min="0"
-                                    max="23"
-                                    type="number"
-                                    inputmode="numeric"
-                                    class="bit-cal-tinp"
-                                    autocomplete="@BitAutoCompleteValue.NewPassword" />
-                            <span class="bit-cal-tdiv">:</span>
-                            <input @ref="_inputTimeMinuteRef"
-                            @bind="@_timeMinute"
-                            @bind:event="oninput"
-                            @onfocus="HandleOnTimeMinuteFocus"
-                                    min="0"
-                                    max="59"
-                                    type="number"
-                                    inputmode="numeric"
-                                    class="bit-cal-tinp"
-                                    autocomplete="@BitAutoCompleteValue.NewPassword" />
+                        <div class="bit-cal-tgp">
+                            <div class="bit-cal-twp">
+                                <input @ref="_inputTimeHourRef"
+                                       @bind="@_timeHour"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeHourFocus"
+                                       min="0"
+                                       max="23"
+                                       type="number"
+                                       inputmode="numeric"
+                                       class="bit-cal-tin"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <span class="bit-cal-tdv">:</span>
+                                <input @ref="_inputTimeMinuteRef"
+                                       @bind="@_timeMinute"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeMinuteFocus"
+                                       min="0"
+                                       max="59"
+                                       type="number"
+                                       inputmode="numeric"
+                                       class="bit-cal-tin"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                            </div>
                         </div>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
             }
 
             @if (IsMonthPickerVisible && (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides || _showMonthPicker))
             {
                 @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides)
                 {
-                    <div class="bit-cal-div"></div>
+                    <div class="bit-cal-dvd"></div>
                 }
 
                 <div class="bit-cal-mwp">
-                        @if (_showYearView is false)
-                        {
-                            <div class="bit-cal-pkr-hdr">
-                                <button @onclick="ToggleBetweenMonthAndYearPicker"
-                                        tabindex="0"
-                                        type="button"
-                                        aria-atomic="true"
-                                        aria-live="polite"
-                                        class="bit-cal-pkr-tit"
-                                        aria-label="@($"{_displayYear}, change year")">
-                                    @_displayYear
-                                </button>
-                                <div class="bit-cal-nav-btn-ctn">
-                                    <button @onclick="() => HandleYearChange(ChangeDirection.Previous)"
-                                            type="button"
-                                            class="bit-cal-nav-btn"
-                                            title="Go to previous year @(_displayYear - 1)"
-                                            disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
-                                            aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)">
-                                        <i class="bit-icon bit-icon--Up" aria-hidden="true" />
-                                    </button>
-                                    <button @onclick="() => HandleYearChange(ChangeDirection.Next)"
-                                            type="button"
-                                            class="bit-cal-nav-btn"
-                                            title="Go to next year @(_displayYear + 1)"
-                                            aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)"
-                                            disabled="@(CanYearChange(ChangeDirection.Next) is false)">
-                                        <i class="bit-icon bit-icon--Down" aria-hidden="true" />
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="bit-cal-gctn" role="grid" aria-label="@_displayYear">
-                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
-                                {
-                                    <div class="bit-cal-btn-row" role="row">
-                                        @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
-                                        {
-                                            var monthIndex = (rowIndex * 4) + cellIndex;
-                                            var monthName = Culture.DateTimeFormat.GetMonthName(monthIndex);
-                                            <button @onclick="() => SelectMonth(monthIndex)"
-                                                    type="button"
-                                                    role="gridcell"
-                                                    title="@monthName"
-                                                    aria-readonly="true"
-                                                    aria-label="@monthName"
-                                                    class="bit-cal-rbtn @GetMonthCellClassName(monthIndex)"
-                                                    disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
-                                                    tabindex="@(IsMonthSelected(monthIndex) ? 0 : -1)"
-                                                    aria-disabled="@IsMonthOutOfMinAndMaxDate(monthIndex)"
-                                                    aria-selected="@(IsMonthSelected(monthIndex) ? "true" : "false")">
-                                                @if (MonthCellTemplate is not null)
-                                                {
-                                                    @MonthCellTemplate(GetMonthCellDate(monthIndex))
-                                                }
-                                                else
-                                                {
-                                                    <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(monthIndex)</span>
-                                                }
-                                            </button>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="bit-cal-pkr-hdr">
-                                <button @onclick="ToggleBetweenMonthAndYearPicker"
-                                        type="button"
-                                        aria-atomic="true"
-                                        aria-live="polite"
-                                        class="bit-cal-pkr-tit"
-                                        aria-label="@($"{_yearRangeFrom} - {_yearRangeTo}, change month")">
-                                    @_yearRangeFrom - @_yearRangeTo
-                                </button>
-                                <div class="bit-cal-nav-btn-ctn">
-                                    <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Previous)"
-                                            type="button"
-                                            class="bit-cal-nav-btn"
-                                            disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
-                                            aria-disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
-                                            title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)">
-                                        <i class="bit-icon bit-icon--Up" aria-hidden="true" />
-                                    </button>
-                                    <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)"
-                                            type="button"
-                                            class="bit-cal-nav-btn"
-                                            disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
-                                            aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
-                                            title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)">
-                                        <i class="bit-icon bit-icon--Down" aria-hidden="true" />
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="bit-cal-gctn" role="grid" aria-label="@_yearRangeFrom - @_yearRangeTo">
-                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
-                                {
-                                    <div class="bit-cal-btn-row" role="row">
-                                        @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
-                                        {
-                                            var year = _yearRangeFrom + (rowIndex * 4) + cellIndex;
-                                            <button @onclick="() => SelectYear(year)"
-                                                    type="button"
-                                                    role="gridcell"
-                                                    class="bit-cal-rbtn"
-                                                    aria-readonly="true"
-                                                    disabled="@IsYearOutOfMinAndMaxDate(year)"
-                                                    tabindex="@(IsYearSelected(year) ? 0 : -1)"
-                                                    aria-disabled="@IsYearOutOfMinAndMaxDate(year)"
-                                                    aria-selected="@(IsYearSelected(year) ? "true" : "false")">
-                                                @if (YearCellTemplate is not null)
-                                                {
-                                                    @YearCellTemplate(year)
-                                                }
-                                                else
-                                                {
-                                                    <span aria-hidden="true">@year</span>
-                                                }
-                                            </button>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-
-                        @if (ShowGoToToday)
-                        {
-                            <button @onclick="HandleGoToToday"
+                    @if (_showYearPicker is false)
+                    {
+                        var prevDisabled = CanChangeYear(false) is false;
+                        var nextDisabled = CanChangeYear(true) is false;
+                        <div class="bit-cal-pkh">
+                            <button @onclick="ToggleBetweenMonthAndYearPicker"
+                                    tabindex="0"
                                     type="button"
-                                    class="bit-cal-gtd-btn"
-                                    disabled="@IsGoTodayDisabled()">
-                                @GoToToday
+                                    aria-atomic="true"
+                                    aria-live="polite"
+                                    class="bit-cal-ptb"
+                                    aria-label="@(string.Format(YearPickerToggleAriaLabel, _displayYear))">
+                                @_displayYear
                             </button>
-                        }
-                    </div>
+                            <div class="bit-cal-nbc">
+                                <button @onclick="() => HandleYearChange(false)"
+                                        type="button"
+                                        class="bit-cal-nbt"
+                                        title="@(string.Format(GoToPrevYearTitle, _displayYear - 1))"
+                                        disabled="@prevDisabled"
+                                        aria-disabled="@prevDisabled">
+                                    <i class="bit-icon bit-icon--Up" aria-hidden="true" />
+                                </button>
+                                @if (ShowGoToToday)
+                                {
+                                    <button @onclick="HandleGoToToday"
+                                            type="button"
+                                            class="bit-cal-gtb"
+                                            title="@GoToTodayTitle"
+                                            disabled="@IsGoToTodayButtonDisabled()">
+                                        <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                    </button>
+                                }
+                                <button @onclick="() => HandleYearChange(true)"
+                                        type="button"
+                                        class="bit-cal-nbt"
+                                        title="@(string.Format(GoToNextYearTitle, _displayYear + 1))"
+                                        aria-disabled="@nextDisabled"
+                                        disabled="@nextDisabled">
+                                    <i class="bit-icon bit-icon--Down" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bit-cal-pkc" role="grid" aria-label="@_displayYear">
+                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                            {
+                                <div class="bit-cal-pkr" role="row">
+                                    @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
+                                    {
+                                        var month = (rowIndex * 4) + cellIndex;
+                                        var monthName = Culture.DateTimeFormat.GetMonthName(month);
+                                        var disabled = IsMonthOutOfMinAndMaxDate(month);
+                                        var selected = month == _currentMonth;
+                                        <button @onclick="() => SelectMonth(month)"
+                                                type="button"
+                                                role="gridcell"
+                                                title="@monthName"
+                                                aria-readonly="true"
+                                                aria-label="@monthName"
+                                                class="bit-cal-pkb@(GetMonthCellCssClass(month))"
+                                                disabled="@disabled"
+                                                tabindex="@(selected ? 0 : -1)"
+                                                aria-disabled="@disabled"
+                                                aria-selected="@(selected ? "true" : "false")">
+                                            @if (MonthCellTemplate is not null)
+                                            {
+                                                @MonthCellTemplate(GetDateTimeOfMonthCell(month))
+                                            }
+                                            else
+                                            {
+                                                <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(month)</span>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        var prevDisabled = CanChangeYearRange(false) is false;
+                        var nextDisabled = CanChangeYearRange(true) is false;
+                        <div class="bit-cal-pkh">
+                            <button @onclick="ToggleBetweenMonthAndYearPicker"
+                                    type="button"
+                                    aria-atomic="true"
+                                    aria-live="polite"
+                                    class="bit-cal-ptb"
+                                    aria-label="@(string.Format(YearRangePickerToggleAriaLabel, _yearPickerStartYear, _yearPickerEndYear))">
+                                @_yearPickerStartYear - @_yearPickerEndYear
+                            </button>
+                            <div class="bit-cal-nbc">
+                                <button @onclick="() => HandleYearRangeChange(false)"
+                                        type="button"
+                                        class="bit-cal-nbt"
+                                        disabled="@prevDisabled"
+                                        aria-disabled="@prevDisabled"
+                                        title="@(string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1))">
+                                    <i class="bit-icon bit-icon--Up" aria-hidden="true" />
+                                </button>
+                                @if (ShowGoToToday)
+                                {
+                                    <button @onclick="HandleGoToToday"
+                                            type="button"
+                                            class="bit-cal-gtb"
+                                            title="@GoToTodayTitle"
+                                            disabled="@IsGoToTodayButtonDisabled()">
+                                        <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                    </button>
+                                }
+                                <button @onclick="() => HandleYearRangeChange(true)"
+                                        type="button"
+                                        class="bit-cal-nbt"
+                                        disabled="@nextDisabled"
+                                        aria-disabled="@nextDisabled"
+                                        title="@(string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12))">
+                                    <i class="bit-icon bit-icon--Down" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bit-cal-pkc" role="grid" aria-label="@_yearPickerStartYear - @_yearPickerEndYear">
+                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                            {
+                                <div class="bit-cal-pkr" role="row">
+                                    @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
+                                    {
+                                        var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
+                                        var disabled = IsYearOutOfMinAndMaxDate(year);
+                                        var selected = year == _currentYear;
+                                        <button @onclick="() => SelectYear(year)"
+                                                type="button"
+                                                role="gridcell"
+                                                class="bit-cal-pkb"
+                                                aria-readonly="true"
+                                                disabled="@disabled"
+                                                tabindex="@(selected ? 0 : -1)"
+                                                aria-disabled="@disabled"
+                                                aria-selected="@(selected ? "true" : "false")">
+                                            @if (YearCellTemplate is not null)
+                                            {
+                                                @YearCellTemplate(year)
+                                            }
+                                            else
+                                            {
+                                                <span aria-hidden="true">@year</span>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
             }
         </div>
     </div>

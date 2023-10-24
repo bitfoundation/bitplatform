@@ -1,15 +1,15 @@
 ﻿@inherits AppComponentBase
 
-<header class="main-header @((CurrentUrl.Contains("templates") is false) ? "main-header--full-page" : null)">
+<header class="main-header @((_currentUrl.Contains("templates") is false) ? "main-header--full-page" : null)">
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (CurrentUrl.Contains("templates"))
+            @if (_currentUrl.Contains("templates"))
             {
                 <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
-            <a class="header-link @(CurrentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
-            <div class="header-link header-ps-btn @(CurrentUrl.Contains("templates") ? "header-link--active" : null)">
+            <a class="header-link @(_currentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
+            <div class="header-link header-ps-btn @(_currentUrl.Contains("templates") ? "header-link--active" : null)">
                 Products & Services
                 <div class="header-menu-popup">
                     <div class="col">
@@ -23,7 +23,7 @@
                             </div>
                         </a>
 
-                        <a class="menu-item @(CurrentUrl.Contains("templates") ? "active" : "")" href="@Urls.Templates">
+                        <a class="menu-item @(_currentUrl.Contains("templates") ? "active" : "")" href="@Urls.Templates">
                             @* <span class="menu-item-icon todo-item"></span> *@
                             <div class="menu-item-content">
                                 <div class="item-title">Project templates</div>
@@ -52,19 +52,19 @@
                     </div>
                 </div>
             </div>
-            <a class="header-link @(CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
-            <a class="header-link @(CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+            <a class="header-link @(_currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(_currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(_currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
 
             @* <a class="header-link @(CurrentUrl == Urls.Blogs ? "header-link--active" : null)" href="@Urls.Blogs">Blogs</a>
             <a class="header-link @(CurrentUrl == Urls.Videos ? "header-link--active" : null)" href="@Urls.Videos">Videos</a>*@
 
         </div>
         <div class="right-section">
-            <div class="github-container">
+            <a class="github-container" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo">
                 <img src="https://img.shields.io/github/stars/bitfoundation/bitplatform.svg" alt="GitHub stars" title="GitHub stars" width="68" height="20" />
-                <a class="github-btn" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo"></a>
-            </div>
+                <span class="github-btn"></span>
+            </a>
 
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
                 <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
@@ -77,18 +77,18 @@
 
     <div class="header-second-row">
         <BitActionButton Class="header-action-button"
-                         IconName="@(IsHeaderMenuOpen ? BitIconName.ChevronUp : BitIconName.ChevronDown)"
+                         IconName="@(_isHeaderMenuOpen ? BitIconName.ChevronUp : BitIconName.ChevronDown)"
                          OnClick="@WrapHandled(ToggleHeaderMenu)">
             @GetActiveRouteName()
         </BitActionButton>
     </div>
 </header>
 
-@if (IsHeaderMenuOpen)
+@if (_isHeaderMenuOpen)
 {
     <nav class="header-nav">
         <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
-        <a class="header-nav-link @(CurrentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@WrapHandled(ToggleHeaderMenu)>Home</a>
+        <a class="header-nav-link @(_currentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@WrapHandled(ToggleHeaderMenu)>Home</a>
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products & Services
             <div class="header-menu-popup">
@@ -132,9 +132,9 @@
                 </div>
             </div>
         </div>
-        <a class="header-nav-link @(CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
-        <a class="header-nav-link @(CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+        <a class="header-nav-link @(_currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(_currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(_currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
 
         @*<a class="header-nav-link @(CurrentUrl == Urls.Blogs ? "header-nav-link--active" : null)" href="@Urls.Blogs" @onclick=@WrapHandled(ToggleHeaderMenu)>Blogs</a>
     <a class="header-nav-link @(CurrentUrl == Urls.Videos ? "header-nav-link--active" : null)" href="@Urls.Videos" @onclick=@WrapHandled(ToggleHeaderMenu)>Videos</a>*@

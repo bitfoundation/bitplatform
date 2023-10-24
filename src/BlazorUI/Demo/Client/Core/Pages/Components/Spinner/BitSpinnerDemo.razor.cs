@@ -139,13 +139,13 @@ public partial class BitSpinnerDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitSpinner Size=""BitSpinnerSize.XSmall"" />
 <BitSpinner Size=""BitSpinnerSize.Small"" />
 <BitSpinner Size=""BitSpinnerSize.Medium"" />
 <BitSpinner Size=""BitSpinnerSize.Large"" />";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Left"" Label=""Wait, wait..."" />

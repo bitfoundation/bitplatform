@@ -6,6 +6,17 @@ public partial class Footer
     [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
+    private BitDropdownItem<string>[] _cultures = default!;
+
+    protected override Task OnInitAsync()
+    {
+        _cultures = CultureInfoManager.SupportedCultures
+                                      .Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name })
+                                      .ToArray();
+        return base.OnInitAsync();
+    }
+
+
 #if MultilingualEnabled
     protected async override Task OnAfterFirstRenderAsync()
     {
@@ -34,14 +45,11 @@ public partial class Footer
         await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
 #endif
 
-        NavigationManager.ForceReload();
+        NavigationManager.Refresh(forceReload: true);
     }
-
-    private static List<BitDropdownItem<string>> GetCultures() =>
-        CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name }).ToList();
 
     private async Task ToggleTheme()
     {
-        await _bitDeviceCoordinator.SetDeviceTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
+        await _bitDeviceCoordinator.ApplyTheme(await _bitThemeManager.ToggleDarkLightAsync() == "dark");
     }
 }

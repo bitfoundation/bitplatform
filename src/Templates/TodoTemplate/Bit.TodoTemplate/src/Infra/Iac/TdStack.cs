@@ -128,9 +128,9 @@ public class TdStack : Stack
                 AlwaysOn = true,
                 Http20Enabled = true,
                 WebSocketsEnabled = true,
-                NetFrameworkVersion = "v7.0",
+                NetFrameworkVersion = "v8.0",
                 FtpsState = FtpsState.Disabled,
-                LinuxFxVersion = "DOTNETCORE|7.0",
+                LinuxFxVersion = "DOTNETCORE|8.0",
                 AppCommandLine = "dotnet TodoTemplate.Server.Api.dll",
                 AppSettings = new()
                 {

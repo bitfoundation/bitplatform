@@ -36,12 +36,12 @@ public partial class BitIconButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitIconButtonClassStyles",
             DefaultValue = "",
             Href = "#class-styles",
             LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the component."
+            Description = "Custom CSS classes for different parts of the component."
         },
         new()
         {
@@ -62,6 +62,15 @@ public partial class BitIconButtonDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the icon button clicked.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitIconButtonClassStyles",
+            DefaultValue = "",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
+            Description = "Custom CSS styles for different parts of the component."
         },
         new()
         {
@@ -89,31 +98,21 @@ public partial class BitIconButtonDemo
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Root",
                    Type = "string?",
-                   Description = "Custom CSS class."
+                   Description = "Custom CSS classes/styles for the root element of the BitIconButton."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "Container",
                    Type = "string?",
-                   Description = "Custom CSS style."
+                   Description = "Custom CSS classes/styles for the main container of the BitIconButton."
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   Description = "Custom CSS classes/styles for the Icon of the BitIconButton."
                }
             }
         }
@@ -152,11 +151,11 @@ public partial class BitIconButtonDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitIconButton IconName=""@BitIconName.Emoji"" />
 <BitIconButton IconName=""@BitIconName.EmojiDisappointed"" IsEnabled=""false"" />";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-icon-button {
         width: 3rem;
@@ -175,20 +174,20 @@ public partial class BitIconButtonDemo
 <BitIconButton IconName=""@BitIconName.Home"" Style=""border-radius: 5px;padding: 23px;border: #D7D7D7 solid 2px;"" />
 <BitIconButton IconName=""@BitIconName.FileImage"" Class=""custom-icon-button"" />";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 Visible: [ <BitIconButton IconName=""@BitIconName.List"" Visibility=""BitVisibility.Visible"" /> ]
 Hidden: [ <BitIconButton Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitIconButton IconName=""@BitIconName.Library"" AriaDescription=""Detailed description used for screen reader."" Title=""Button with AriaDescription"" />
 <BitIconButton IconName=""@BitIconName.Library"" AriaHidden=""true"" Title=""Button with AriaHidden"" />";
 
-    private readonly string example5HtmlCode = @"
-<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open Bit Platform In New Tab"" />
-<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To Bit Platform"" />";
+    private readonly string example5RazorCode = @"
+<BitIconButton IconName=""@BitIconName.Website"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Open bit platform In New Tab"" />
+<BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To bit platform"" />";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>

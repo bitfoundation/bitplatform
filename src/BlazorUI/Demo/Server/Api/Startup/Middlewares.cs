@@ -23,19 +23,6 @@ public class Middlewares
         }
 
 #if BlazorWebAssembly
-        app.Use(async (context, next) =>
-        {
-            context.Response.OnStarting(async () =>
-            {
-                // DLLs' compression is lost via CDNs like Cloud flare. We use 'no-transform' in the cache header,
-                // ensuring the CDN returns the original, compressed response to the client.
-                if (context.Response?.Headers?.ContentType.ToString() is System.Net.Mime.MediaTypeNames.Application.Octet)
-                    context.Response.Headers.Append(HeaderNames.CacheControl, "no-transform");
-            });
-
-            await next.Invoke(context);
-        });
-
         app.UseBlazorFrameworkFiles();
 #endif
 
@@ -64,16 +51,6 @@ public class Middlewares
         app.UseCors(options => options.WithOrigins("https://localhost:4001", "https://0.0.0.0", "app://0.0.0.0").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
         app.UseResponseCaching();
-
-#if MultilingualEnabled
-        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
-        app.UseRequestLocalization(new RequestLocalizationOptions
-        {
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures,
-            ApplyCurrentCultureToResponseHeaders = true
-        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
-#endif
 
         app.UseHttpResponseExceptionHandler();
 

@@ -35,9 +35,9 @@ public partial class BitIconButton
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitIconButton component.
+    /// Custom CSS classes for different parts of the BitIconButton component.
     /// </summary>
-    [Parameter] public BitIconButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitIconButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
@@ -55,6 +55,11 @@ public partial class BitIconButton
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitIconButton component.
+    /// </summary>
+    [Parameter] public BitIconButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The tooltip to show when the mouse is placed on the icon button
     /// </summary>
     [Parameter] public string? Title { get; set; }
@@ -64,7 +69,18 @@ public partial class BitIconButton
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
+
     protected override string RootElementClass => "bit-icb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnParametersSet()
     {
@@ -77,6 +93,7 @@ public partial class BitIconButton
 
         base.OnParametersSet();
     }
+
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {

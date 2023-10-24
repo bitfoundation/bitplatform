@@ -1,6 +1,4 @@
-﻿using Bit.Websites.Platform.Web.Services;
-
-namespace Bit.Websites.Platform.Web.Shared;
+﻿namespace Bit.Websites.Platform.Web.Shared;
 
 public partial class NavMenu : IDisposable
 {
@@ -24,7 +22,6 @@ public partial class NavMenu : IDisposable
         new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = new string[] { "/admin-panel/multilingualism", "/todo-template/multilingualism" } },
         new BitNavItem { Text = "DevOps", Url = "/templates/devops", AdditionalUrls = new string[] { "/admin-panel/devops", "/todo-template/devops" } },
         new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration", AdditionalUrls = new string[] { "/admin-panel/platform-integration", "/todo-template/platform-integration" } },
-        new BitNavItem { Text = "Contribute", Url = "/templates/contribute", AdditionalUrls = new string[] { "/admin-panel/contribute", "/todo-template/contribute" } },
     };
 
 
@@ -49,7 +46,7 @@ public partial class NavMenu : IDisposable
         {
             _isNavOpen = !_isNavOpen;
 
-            await JSRuntime.InvokeVoidAsync("toggleBodyOverflow", _isNavOpen);
+            await JSRuntime.ToggleBodyOverflow(_isNavOpen);
         }
         catch (Exception ex)
         {

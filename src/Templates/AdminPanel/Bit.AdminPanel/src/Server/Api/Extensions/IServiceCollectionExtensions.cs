@@ -7,7 +7,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AdminPanel.Server.Api;
 using AdminPanel.Server.Api.Models.Identity;
-using AdminPanel.Server.Api.Services.Implementations;
+using AdminPanel.Server.Api.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

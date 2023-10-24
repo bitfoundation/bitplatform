@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value">
     @if (Label.HasValue())
@@ -18,7 +18,7 @@
                    style="@Styles?.UpperValueLabel"
                    class="bit-sld-vlb @Classes?.UpperValueLabel"
                    for="@_sliderBoxId">
-                @GetValueDisplay(upperValue.GetValueOrDefault())
+                @GetDisplayValue(upperValue)
             </label>
         }
 
@@ -28,7 +28,7 @@
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(lowerValue)</label>
             }
 
             <div @attributes="@SliderBoxHtmlAttributes"
@@ -52,7 +52,7 @@
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(_firstInputValue.GetValueOrDefault())"
+                       aria-valuetext="@GetAriaValueText(_firstInputValue)"
                        aria-valuenow="@_firstInputValue" />
                 <input @bind-value="@_secondInputValue" @oninput="@(args => HandleOnRangeInput(args, false))"
                        id="@_maxInputId"
@@ -70,23 +70,23 @@
                        aria-label="@Label"
                        aria-valuemin="@Min"
                        aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(_secondInputValue.GetValueOrDefault())"
+                       aria-valuetext="@GetAriaValueText(_secondInputValue)"
                        aria-valuenow="@_secondInputValue" />
 
                 @if (IsOriginFromZero)
                 {
-                    <span style="left: calc(50% - 1px); @Styles?.OriginFromZero" class="bit-sld-ztk @Classes?.OriginFromZero"></span>
+                    <span style="left:calc(50% - @(IsVertical ? "27" : "1")px);@Styles?.OriginFromZero" class="bit-sld-ztk @Classes?.OriginFromZero"></span>
                 }
             </div>
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetValueDisplay(upperValue.GetValueOrDefault())</label>
+                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetDisplayValue(upperValue)</label>
             }
         </div>
 
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetValueDisplay(lowerValue.GetValueOrDefault())</label>
+            <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(lowerValue)</label>
         }
     }
     else
@@ -103,17 +103,17 @@
 
             @if (IsOriginFromZero)
             {
-                <span class="bit-sld-ztk @Classes?.OriginFromZero" style="@(IsVertical ? "top: calc(50% - -2px);" : "left: calc(50% - 29px);") @Styles?.OriginFromZero"></span>
+                <span class="bit-sld-ztk @Classes?.OriginFromZero" style="@(IsVertical ? "top" : "left"):calc(50% @(IsVertical ? "+" : "-") 27px);@Styles?.OriginFromZero"></span>
             }
 
             @if (ShowValue && IsVertical is false)
             {
-                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
             }
         </div>
         @if (ShowValue && IsVertical)
         {
-            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetValueDisplay(Value.GetValueOrDefault())</label>
+            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
         }
     }
 </div>

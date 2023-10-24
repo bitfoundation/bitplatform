@@ -30,7 +30,7 @@
     .col-sort-desc .sort-indicator:before {
         //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
         display: inline-block;
-        font-family: 'Fabric MDL2';
+        font-family: 'Fabric MDL2 bit BlazorUI' !important;
         font-style: normal;
         font-weight: normal;
         content: "\E96E";

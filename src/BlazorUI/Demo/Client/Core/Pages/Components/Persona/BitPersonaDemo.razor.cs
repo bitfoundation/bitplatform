@@ -411,7 +411,7 @@ public partial class BitPersonaDemo
 
 
 
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitCheckbox @bind-Value=""IsDetailsHidden"" 
              OnClick=""() => IsDetailsHidden = !IsDetailsHidden"">Include BitPersona details</BitCheckbox>
 
@@ -484,7 +484,7 @@ public partial class BitPersonaDemo
     private readonly string example1CsharpCode = @"
 public bool IsDetailsHidden { get; set; } = true;";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -499,7 +499,7 @@ public bool IsDetailsHidden { get; set; } = true;";
     private readonly string example2CsharpCode = @"
 private int ActionClickCount = 0;";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -513,7 +513,7 @@ private int ActionClickCount = 0;";
     private readonly string example3CsharpCode = @"
 private int ImageClickCount = 0;";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <BitPersona Text=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""

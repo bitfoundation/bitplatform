@@ -67,9 +67,9 @@ public partial class BitRating
     [Parameter] public string SelectedIconName { get; set; } = "FavoriteStarFill";
 
     /// <summary>
-    /// Size of rating.
+    /// Size of rating elements.
     /// </summary>
-    [Parameter] public BitRatingSize Size { get; set; }
+    [Parameter] public BitRatingSize Size { get; set; } = BitRatingSize.Medium;
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
@@ -84,7 +84,7 @@ public partial class BitRating
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentValue == default && DefaultValue.HasValue)
+        if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
             CurrentValue = DefaultValue.Value;
         }
@@ -96,9 +96,22 @@ public partial class BitRating
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => Size == BitRatingSize.Large ? $"{RootElementClass}-lg" : $"{RootElementClass}-sm");
+        ClassBuilder.Register(() => Size switch
+        {
+            BitRatingSize.Small => $"{RootElementClass}-sm",
+            BitRatingSize.Medium => $"{RootElementClass}-md",
+            BitRatingSize.Large => $"{RootElementClass}-lg",
+            _ => string.Empty
+        });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnParametersSet()
@@ -133,7 +146,7 @@ public partial class BitRating
             index < (AllowZeroStars ? 0 : 1) ||
             IsReadOnly is true ||
             IsEnabled is false ||
-            (ValueChanged.HasDelegate is false && OnChange.HasDelegate is false)) return;
+            (ValueHasBeenSet && ValueChanged.HasDelegate is false)) return;
 
         CurrentValue = index;
 

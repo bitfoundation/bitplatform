@@ -16,27 +16,11 @@ public class Middlewares
             app.UseDeveloperExceptionPage();
 
 #if BlazorWebAssembly
-            if (env.IsDevelopment())
-            {
-                app.UseWebAssemblyDebugging();
-            }
+            app.UseWebAssemblyDebugging();
 #endif
         }
 
 #if BlazorWebAssembly
-        app.Use(async (context, next) =>
-        {
-            context.Response.OnStarting(async () =>
-            {
-                // DLLs' compression is lost via CDNs like Cloud flare. We use 'no-transform' in the cache header,
-                // ensuring the CDN returns the original, compressed response to the client.
-                if (context.Response?.Headers?.ContentType.ToString() is System.Net.Mime.MediaTypeNames.Application.Octet)
-                    context.Response.Headers.Append(HeaderNames.CacheControl, "no-transform");
-            });
-
-            await next.Invoke(context);
-        });
-
         app.UseBlazorFrameworkFiles();
 #endif
 
@@ -62,7 +46,7 @@ public class Middlewares
         app.UseRouting();
 
         app.UseCors(options => options.WithOrigins("https://localhost:4041" /*BlazorServer*/, "http://localhost:8001" /*BlazorElectron*/, "https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
-            .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            .AllowAnyHeader().AllowAnyMethod());
 
         app.UseResponseCaching();
         app.UseAuthentication();
@@ -78,7 +62,7 @@ public class Middlewares
         }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 
-        app.UseHttpResponseExceptionHandler();
+        app.UseExceptionHandler("/");
 
         app.UseSwagger();
 

@@ -2,23 +2,13 @@
 @import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_colors.scss';
 
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
+.example-box {
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
 }
 
 ::deep {
-    div.validation-message {
-        color: $Red20;
-        font-size: rem2(12px);
-    }
-
     .custom-class {
         padding: 0.5rem;
         border: 1px solid red;
@@ -32,15 +22,8 @@
     .custom-unselected {
         color: darkorange;
     }
-}
 
-.example-box {
-    display: flex;
-    gap: rem2(15px);
-    width: fit-content;
-    flex-direction: column;
-
-    @include sm {
-        flex-direction: column;
+    .validation-message {
+        color: red;
     }
 }

@@ -3,6 +3,11 @@
 public class BitSplitButtonClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitSplitButton.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the callout container of the BitSplitButton.
     /// </summary>
     public string? Callout { get; set; }

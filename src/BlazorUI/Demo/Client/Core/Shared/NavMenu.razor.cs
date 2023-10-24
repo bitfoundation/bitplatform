@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class NavMenu : IDisposable
 {
@@ -30,14 +28,12 @@ public partial class NavMenu : IDisposable
         },
         new()
         {
-            Text = "Basic Inputs",
+            Text = "Inputs",
             ChildItems = new()
             {
-                new() { Text = "CheckBox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
+                new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" }, Description = "Radio, RadioButton" },
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect" },
-                new() { Text = "Label",  Url = "/components/label" },
-                new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = new string[] { "/components/search-box" } },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
@@ -58,7 +54,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = new string[] { "/components/date-picker" } },
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = new string[] { "/components/date-range-picker" } },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = new string[] { "/components/file-upload" } },
-                new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = new string[] { "/components/time-picker" } },
+                new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = new string[] { "/components/circular-time-picker" } },
             }
         },
         new()
@@ -69,7 +65,6 @@ public partial class NavMenu : IDisposable
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = new string[] { "/components/basic-list" } },
                 new() { Text = "Carousel", Url = "/components/carousel" },
                 new() { Text = "Swiper", Url = "/components/swiper" },
-                new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" }
             }
         },
         new()
@@ -88,6 +83,7 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "MessageBar", Url = "/components/messagebar", AdditionalUrls = new string[] { "/components/message-bar" } },
+                new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },
             }
         },
@@ -107,9 +103,10 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
+                new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },
-                new() { Text = "Typography", Url = "/components/typography" },
+                new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
             },
         },
         new()
@@ -119,7 +116,13 @@ public partial class NavMenu : IDisposable
             {
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
+                new() { Text = "Label",  Url = "/components/label" },
+                new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
+                new() { Text = "Separator", Url = "/components/separator" },
+                new() { Text = "Stack", Url = "/components/stack" },
+                new() { Text = "Sticky", Url = "/components/sticky" },
+                new() { Text = "Typography", Url = "/components/typography" },
             },
         },
         new()

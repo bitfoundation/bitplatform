@@ -43,7 +43,7 @@ public class ResourceValidationException : RestException
     }
 
     public ResourceValidationException(ErrorResourcePayload payload)
-        : this(message: nameof(ResourceNotFoundException), payload)
+        : this(message: nameof(AppStrings.ResourceValidationException), payload)
     {
 
     }

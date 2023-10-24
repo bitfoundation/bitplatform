@@ -1,4 +1,4 @@
-﻿<ComponentExampleBox Title="Basic" HtmlCode="@example1HtmlCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Single select"
@@ -27,7 +27,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" HtmlCode="@example2HtmlCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
         <div>Component's Style & Class:</div>
         <br />
@@ -71,8 +71,10 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Controlled" HtmlCode="@example3HtmlCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
+        <div>Two-way binding:</div>
+        <br />
         <div class="example-content">
             <div>
                 <BitDropdown @bind-Value="controlledValue"
@@ -81,7 +83,6 @@
                              Placeholder="Select an item" />
                 <BitLabel>Selected Value: @controlledValue</BitLabel>
             </div>
-            <br />
             <div>
                 <BitDropdown @bind-Values="controlledValues"
                              Label="Multi select"
@@ -91,10 +92,55 @@
                 <BitLabel>Selected Values: @string.Join(",", controlledValues)</BitLabel>
             </div>
         </div>
+        <br /><br /><br /><br />
+        <div>OnChange:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             Items="GetBasicItems()"
+                             Placeholder="Select an item"
+                             TItem="BitDropdownItem<string>" TValue="string"
+                             OnChange="(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()" />
+                <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             IsMultiSelect="true"
+                             Items="GetBasicItems()"
+                             Placeholder="Select items"
+                             TItem="BitDropdownItem<string>" TValue="string"
+                             OnChange="(BitDropdownItem<string>[] items) => changedItems = items" />
+                <BitLabel>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</BitLabel>
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>OnSelectItem:</div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitDropdown Label="Single select"
+                             Items="GetBasicItems()"
+                             DefaultValue="@string.Empty"
+                             Placeholder="Select an item"
+                             OnSelectItem="(BitDropdownItem<string> item) => selectedItem1 = item" />
+                <BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+            </div>
+            <div>
+                <BitDropdown Label="Multi select"
+                             Items="GetBasicItems()"
+                             DefaultValue="@string.Empty"
+                             Placeholder="Select items"
+                             IsMultiSelect="true"
+                             OnSelectItem="(BitDropdownItem<string> item) => selectedItem2 = item" />
+                <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
+            </div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Customization" HtmlCode="@example4HtmlCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Text & Item templates"
@@ -144,11 +190,23 @@
                          DefaultValue="@string.Empty"
                          Placeholder="Select an item"
                          CaretDownIconName="@BitIconName.ScrollUpDown" />
+
+            <BitDropdown Label="Callout templates"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item">
+                <CalloutHeaderTemplate>
+                    <BitLabel Style="padding:0.5rem;border-bottom:1px solid #555">Best in the world</BitLabel>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <BitActionButton IconName="@BitIconName.Add">New Item</BitActionButton>
+                </CalloutFooterTemplate>
+            </BitDropdown>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Responsive" HtmlCode="@example5HtmlCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Responsive" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <div class="example-desc">When the <strong>IsResponsive</strong> parameter is true, on small screens the drop down items will render in a side panel.</div>
         <div class="example-content">
@@ -161,8 +219,10 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="SearchBox" HtmlCode="@example6HtmlCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="SearchBox" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
+        <div>Default search function:</div>
+        <br />
         <div class="example-content">
             <BitDropdown Label="Single select & auto focus"
                          Items="GetBasicItems()"
@@ -180,10 +240,32 @@
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search items" />
         </div>
+        <br /><br /><br /><br />
+        <div>Custom search function:</div>
+        <br />
+        <div class="example-content">
+            <BitDropdown Label="Single select & auto focus"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item"
+                         ShowSearchBox="true"
+                         AutoFocusSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
+                         SearchBoxPlaceholder="Search item" />
+
+            <BitDropdown Label="Multi select"
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select items"
+                         IsMultiSelect="true"
+                         ShowSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
+                         SearchBoxPlaceholder="Search items" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Virtualization" HtmlCode="@example7HtmlCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Virtualization" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div style="font-size:1.125rem;font-weight:bold">Items:</div>
         <br />
@@ -221,7 +303,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" HtmlCode="@example8HtmlCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div style="display:flex;justify-content:end">
             <div class="example-content">
@@ -242,7 +324,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Drop direction" HtmlCode="@example9HtmlCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Drop direction" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Auto"
@@ -260,7 +342,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Clear button" HtmlCode="@example10HtmlCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="Clear button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -285,7 +367,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" HtmlCode="@example11HtmlCode" CsharpCode="@example11CsharpCode" Id="example11">
+<ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div class="example-content">
             @if (string.IsNullOrEmpty(successMessage))

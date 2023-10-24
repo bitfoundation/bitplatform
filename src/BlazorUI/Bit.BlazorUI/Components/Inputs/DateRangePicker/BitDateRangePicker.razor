@@ -2,7 +2,7 @@
 @inherits BitInputBase<BitDateRangePickerValue?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@UniqueId"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
@@ -82,18 +82,28 @@
                                     <span id="@_monthTitleId">@_monthTitle</span>
                                 </div>
                             }
-                            <div class="bit-dtrp-nav-btn-ctn">
+                            <div class="bit-dtrp-nbc">
                                 <button @onclick="() => HandleOnMonthChange(ChangeDirection.Previous)"
                                         type="button"
-                                        class="bit-dtrp-nav-btn"
+                                        class="bit-dtrp-nbt"
                                         title="@GoToPrevMonthTitle"
                                         disabled="@(CanMonthChange(ChangeDirection.Previous) is false)"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Previous) is false)">
                                     <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                 </button>
+                                @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
+                                {
+                                    <button @onclick="HandleOnGoToToday"
+                                            type="button"
+                                            class="bit-dtrp-gtb"
+                                            title="@GoToToday"
+                                            disabled="@IsGoTodayDisabled()">
+                                        <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                    </button>
+                                }
                                 <button @onclick="() => HandleOnMonthChange(ChangeDirection.Next)"
                                         type="button"
-                                        class="bit-dtrp-nav-btn"
+                                        class="bit-dtrp-nbt"
                                         title="@GoToNextMonthTitle"
                                         disabled="@(CanMonthChange(ChangeDirection.Next) is false)"
                                         aria-disabled="@(CanMonthChange(ChangeDirection.Next) is false)">
@@ -103,7 +113,7 @@
                                 {
                                     <button @onclick="CloseCallout"
                                             type="button"
-                                            class="bit-dtrp-nav-btn bit-dtrp-cbtn"
+                                            class="bit-dtrp-nbt bit-dtrp-cbtn"
                                             title="Close date-range picker">
                                         <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
                                     </button>
@@ -178,16 +188,6 @@
                                 }
                             </tbody>
                         </table>
-
-                        @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
-                        {
-                            <button @onclick="HandleOnGoToToday"
-                                    type="button"
-                                    class="bit-dtrp-gtd-btn"
-                                    disabled="@IsGoTodayDisabled()">
-                                @GoToToday
-                            </button>
-                        }
 
                         @if (ShowTimePicker)
                         {
@@ -300,18 +300,28 @@
                                         aria-label="@($"{_displayYear}, change year")">
                                     @_displayYear
                                 </button>
-                                <div class="bit-dtrp-nav-btn-ctn">
+                                <div class="bit-dtrp-nbc">
                                     <button @onclick="() => HandleOnYearChange(ChangeDirection.Previous)"
                                             type="button"
-                                            class="bit-dtrp-nav-btn"
+                                            class="bit-dtrp-nbt"
                                             title="Go to previous year @(_displayYear - 1)"
                                             disabled="@(CanYearChange(ChangeDirection.Previous) is false)"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Previous) is false)">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleOnGoToToday"
+                                                type="button"
+                                                class="bit-dtrp-gtb"
+                                                title="@GoToToday"
+                                                disabled="@IsGoTodayDisabled()">
+                                            <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                        </button>
+                                    }
                                     <button @onclick="() => HandleOnYearChange(ChangeDirection.Next)"
                                             type="button"
-                                            class="bit-dtrp-nav-btn"
+                                            class="bit-dtrp-nbt"
                                             title="Go to next year @(_displayYear + 1)"
                                             disabled="@(CanYearChange(ChangeDirection.Next) is false)"
                                             aria-disabled="@(CanYearChange(ChangeDirection.Next) is false)">
@@ -363,18 +373,28 @@
                                         aria-label="@($"{_yearRangeFrom} - {_yearRangeTo}, change month")">
                                     @_yearRangeFrom - @_yearRangeTo
                                 </button>
-                                <div class="bit-dtrp-nav-btn-ctn">
+                                <div class="bit-dtrp-nbc">
                                     <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Previous)"
                                             type="button"
-                                            class="bit-dtrp-nav-btn"
+                                            class="bit-dtrp-nbt"
                                             disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Previous) is false)"
                                             title="previous year range @(_yearRangeFrom - 12) - @(_yearRangeFrom - 1)">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleOnGoToToday"
+                                                type="button"
+                                                class="bit-dtrp-gtb"
+                                                title="@GoToToday"
+                                                disabled="@IsGoTodayDisabled()">
+                                            <i class="bit-icon bit-icon--GotoToday" aria-hidden="true" />
+                                        </button>
+                                    }
                                     <button @onclick="() => HandleOnYearRangeChange(ChangeDirection.Next)"
                                             type="button"
-                                            class="bit-dtrp-nav-btn"
+                                            class="bit-dtrp-nbt"
                                             disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             aria-disabled="@(CanYearRangeChange(ChangeDirection.Next) is false)"
                                             title="next year range @(_yearRangeFrom + 12) - @(_yearRangeTo + 12)">
@@ -411,16 +431,6 @@
                                     </div>
                                 }
                             </div>
-                        }
-
-                        @if (ShowGoToToday)
-                        {
-                            <button @onclick="HandleOnGoToToday"
-                                    type="button"
-                                    class="bit-dtrp-gtd-btn"
-                                    disabled="@IsGoTodayDisabled()">
-                                @GoToToday
-                            </button>
                         }
                     </div>
                 }

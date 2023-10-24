@@ -1,5 +1,4 @@
-﻿using System.Timers;
-using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
+﻿using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
 namespace Bit.Websites.Platform.Web.Pages;
 

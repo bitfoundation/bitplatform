@@ -52,9 +52,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find(".bit-dtrp-gtd-btn");
+        var goToTodayButton = component.Find(".bit-dtrp-gtb");
 
-        Assert.AreEqual(goToToday, goToTodayButton.TextContent);
+        Assert.AreEqual(goToToday, goToTodayButton.GetAttribute("title"));
     }
 
     [DataTestMethod,
@@ -131,27 +131,6 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.Value.EndDate.Value.Offset, DateTimeOffset.Now.Offset);
     }
 
-    [DataTestMethod]
-    public void BitDateRangePickerCalendarWithCustomCultureInfo()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDateRangePicker>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-        });
-
-        var monthButtons = component.FindAll(".bit-dtrp-mwp .bit-dtrp-gctn .bit-dtrp-btn-row button");
-        Assert.IsTrue(monthButtons.Count > 0);
-        Assert.AreEqual(12, monthButtons.Count);
-
-        var index = 0;
-        foreach (var button in monthButtons)
-        {
-            Assert.AreEqual(button.FirstElementChild.TextContent, component.Instance.Culture.DateTimeFormat.AbbreviatedMonthNames[index++]);
-        }
-    }
-
     [DataTestMethod,
         DataRow("DateRangePicker")
     ]
@@ -181,7 +160,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll(".bit-dtrp-gtd-btn");
+        var goToTodayBtnElms = component.FindAll(".bit-dtrp-gtb");
 
         if (showGoToToday)
         {

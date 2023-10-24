@@ -1,6 +1,4 @@
-﻿using Bit.Websites.Platform.Web;
-using Bit.Websites.Platform.Web.Shared;
-#if BlazorWebAssembly
+﻿#if BlazorWebAssembly
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
 

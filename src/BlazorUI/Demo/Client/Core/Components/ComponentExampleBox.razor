@@ -12,25 +12,35 @@
                              Text="@(showCode ? "Hide code" : "Show code")"
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
-            <BitIconButton Class="header-btn copy-link"
-                           IconName="@BitIconName.Link"
-                           Title="Copy link"
-                           OnClick="@CopyLinkToClipboard">
-            </BitIconButton>
+            <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
+                             Styles="@(new() { Content = (isLinkCopied ? "" : "margin: unset") })"
+                             Title="@copyLinkMessage"
+                             IconName="@linkIcon"
+                             OnClick="@CopyLinkToClipboard">
+                @if (isLinkCopied)
+                {
+                    <span>@copyLinkMessage</span>
+                }
+            </BitActionButton>
         </div>
     </div>
 
     <div class="box-content">
         @if (showCode)
         {
-            <BitIconButton Class="copy-btn"
-                           OnClick=CopyCodeToClipboard
-                           IconName="@BitIconName.Copy"
-                           Title="Copy source">
-            </BitIconButton>
+            <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : "")}")"
+                             Styles="@(new() { Content = (isCodeCopied ? "" : "margin: unset") })"
+                             Title="@copyCodeMessage"
+                             IconName="@codeIcon"
+                             OnClick="@CopyCodeToClipboard">
+                @if (isCodeCopied)
+                {
+                    <span>@copyCodeMessage</span>
+                }
+            </BitActionButton>
 
             <pre class="code">
-                <code class="language-cshtml">@HtmlCode.Trim()</code>
+                <code class="language-cshtml">@RazorCode.Trim()</code>
 
                 @if (CsharpCode.HasValue())
                 {

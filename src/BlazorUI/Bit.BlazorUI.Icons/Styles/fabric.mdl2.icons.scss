@@ -1,6 +1,6 @@
 ﻿@font-face {
     font-family: 'Fabric MDL2';
-    src: url('../fonts/FabMDL2.4.46.woff2') format("woff2");
+    src: url('../fonts/FabMDL2.4.66.woff2') format("woff2");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -13,23 +13,6 @@
     font-weight: normal;
 }
 
-.bit-icon--xs {
-    font-size: 10px;
-}
-
-.bit-icon--s {
-    font-size: 12px;
-}
-
-.bit-icon--m {
-    font-size: 16px;
-}
-
-.bit-icon--l {
-    font-size: 20px;
-}
-
-// Mixins
 .bit-icon--12PointStar:before { content: "\F505"; }
 .bit-icon--6PointStar:before { content: "\F504"; }
 .bit-icon--AADLogo:before { content: "\ED68"; }
@@ -172,6 +155,10 @@
 .bit-icon--Balloons:before { content: "\ED7E"; }
 .bit-icon--Bank:before { content: "\E825"; }
 .bit-icon--BankSolid:before { content: "\F34F"; }
+.bit-icon--BarChart3:before { content: "\EAE6"; }
+.bit-icon--BarChart3One:before { content: "\E68C"; }
+.bit-icon--BarChart3Two:before { content: "\E68D"; }
+.bit-icon--BarChart3Zero:before { content: "\E68B"; }
 .bit-icon--BarChart4:before { content: "\EAE7"; }
 .bit-icon--BarChartHorizontal:before { content: "\E9EB"; }
 .bit-icon--BarChartVertical:before { content: "\E9EC"; }
@@ -183,6 +170,7 @@
 .bit-icon--BeerMug:before { content: "\F49E"; }
 .bit-icon--BIDashboard:before { content: "\F543"; }
 .bit-icon--BidiLtr:before { content: "\E9AA"; }
+.bit-icon--Bidirectional:before { content: "\E688"; }
 .bit-icon--BidiRtl:before { content: "\E9AB"; }
 .bit-icon--Bill:before { content: "\E5FA"; }
 .bit-icon--BingLogo:before { content: "\EB6B"; }
@@ -209,7 +197,7 @@
 .bit-icon--BoldKorean:before { content: "\E5BD"; }
 .bit-icon--BoldN:before { content: "\E5B7"; }
 .bit-icon--BoldP:before { content: "\E5C7"; }
-.bit-icon--BoldRussian:before { content: "\E5B9"; }
+.bit-icon--BoldRussion:before { content: "\E5B9"; }
 .bit-icon--BoldSerbian:before { content: "\E5CA"; }
 .bit-icon--BoldT:before { content: "\E5C8"; }
 .bit-icon--BookAnswers:before { content: "\F8A4"; }
@@ -241,6 +229,7 @@
 .bit-icon--BranchShelveset:before { content: "\F298"; }
 .bit-icon--Breadcrumb:before { content: "\EF8C"; }
 .bit-icon--Breakfast:before { content: "\F49C"; }
+.bit-icon--BreakpointsRemove:before { content: "\E692"; }
 .bit-icon--Brightness:before { content: "\E706"; }
 .bit-icon--Broom:before { content: "\EA99"; }
 .bit-icon--BrowserScreenShot:before { content: "\EBED"; }
@@ -347,6 +336,7 @@
 .bit-icon--CaretTopRightSolid8:before { content: "\EF55"; }
 .bit-icon--CaretUp8:before { content: "\EDD7"; }
 .bit-icon--CaretUpSolid8:before { content: "\EDDB"; }
+.bit-icon--CaseSetting:before { content: "\F675"; }
 .bit-icon--Cat:before { content: "\ED7F"; }
 .bit-icon--CategoryClassification:before { content: "\E48C"; }
 .bit-icon--CC:before { content: "\E7F0"; }
@@ -462,6 +452,7 @@
 .bit-icon--ClearSelectionMirrored:before { content: "\EA48"; }
 .bit-icon--Clicked:before { content: "\F268"; }
 .bit-icon--ClinicalImpression:before { content: "\E54B"; }
+.bit-icon--Clipboard:before { content: "\ED22"; }
 .bit-icon--ClipboardList:before { content: "\F0E3"; }
 .bit-icon--ClipboardListAdd:before { content: "\E4EF"; }
 .bit-icon--ClipboardListMirrored:before { content: "\F0E4"; }
@@ -504,6 +495,7 @@
 .bit-icon--ColumnFunction:before { content: "\E4C2"; }
 .bit-icon--ColumnLeftTwoThirds:before { content: "\F1D6"; }
 .bit-icon--ColumnLeftTwoThirdsEdit:before { content: "\F324"; }
+.bit-icon--ColumnList:before { content: "\F1EC"; }
 .bit-icon--ColumnOptions:before { content: "\F317"; }
 .bit-icon--ColumnQuestion:before { content: "\E4C0"; }
 .bit-icon--ColumnQuestionMirrored:before { content: "\E4C1"; }
@@ -527,6 +519,8 @@
 .bit-icon--CommunicationDetails:before { content: "\E4CF"; }
 .bit-icon--CommunicationDetailsMirrored:before { content: "\E4D0"; }
 .bit-icon--Communications:before { content: "\E95A"; }
+.bit-icon--CompactColumnList:before { content: "\F1EE"; }
+.bit-icon--CompactViewList:before { content: "\F1EA"; }
 .bit-icon--CompanyDirectory:before { content: "\EF0D"; }
 .bit-icon--CompanyDirectoryMirrored:before { content: "\EF2B"; }
 .bit-icon--Compare:before { content: "\F057"; }
@@ -559,6 +553,7 @@
 .bit-icon--Contrast:before { content: "\E7A1"; }
 .bit-icon--Copy:before { content: "\E8C8"; }
 .bit-icon--CopyEdit:before { content: "\E464"; }
+.bit-icon--CopyPath:before { content: "\E62F"; }
 .bit-icon--CortanaLogoBeckonInner:before { content: "\F4C6"; }
 .bit-icon--CortanaLogoBeckonOuter:before { content: "\F4C7"; }
 .bit-icon--CortanaLogoInner:before { content: "\E832"; }
@@ -607,6 +602,7 @@
 .bit-icon--D365TalentInsight:before { content: "\F6BC"; }
 .bit-icon--D365TalentLearn:before { content: "\F6BB"; }
 .bit-icon--DashboardAdd:before { content: "\F52D"; }
+.bit-icon--DataAnalysis:before { content: "\F731"; }
 .bit-icon--Database:before { content: "\EFC7"; }
 .bit-icon--DatabaseActivity:before { content: "\E670"; }
 .bit-icon--DatabaseBlock:before { content: "\E617"; }
@@ -617,16 +613,20 @@
 .bit-icon--DatabaseView:before { content: "\E437"; }
 .bit-icon--DataConnectionLibrary:before { content: "\EEB7"; }
 .bit-icon--DataEnrichment:before { content: "\E4F5"; }
+.bit-icon--DataFilter:before { content: "\E68A"; }
 .bit-icon--DataFlow:before { content: "\E577"; }
 .bit-icon--Dataflows:before { content: "\F7DD"; }
 .bit-icon--DataflowsLink:before { content: "\E366"; }
 .bit-icon--DataManagementSettings:before { content: "\EFC8"; }
+.bit-icon--DatamartExternal:before { content: "\E69B"; }
 .bit-icon--Dataverse:before { content: "\E659"; }
 .bit-icon--DateTime:before { content: "\EC92"; }
 .bit-icon--DateTime12:before { content: "\F38F"; }
 .bit-icon--DateTime2:before { content: "\EA17"; }
 .bit-icon--DateTimeMirrored:before { content: "\EE93"; }
 .bit-icon--DeactivateOrders:before { content: "\EFE1"; }
+.bit-icon--Debug:before { content: "\F395"; }
+.bit-icon--DebugAll:before { content: "\F398"; }
 .bit-icon--Decimals:before { content: "\F218"; }
 .bit-icon--DecisionSolid:before { content: "\F350"; }
 .bit-icon--DeclineCall:before { content: "\F405"; }
@@ -670,9 +670,12 @@
 .bit-icon--Devices3:before { content: "\EA6C"; }
 .bit-icon--Devices4:before { content: "\EB66"; }
 .bit-icon--Diagnostic:before { content: "\E9D9"; }
+.bit-icon--DiagnosticDataBar:before { content: "\F633"; }
 .bit-icon--DiagnosticDataBarTooltip:before { content: "\F7DF"; }
 .bit-icon--DiagnosticDataViewerApp:before { content: "\F568"; }
 .bit-icon--Dialpad:before { content: "\E75F"; }
+.bit-icon--DialShape1:before { content: "\F156"; }
+.bit-icon--DialShape3:before { content: "\F158"; }
 .bit-icon--Diamond:before { content: "\ED02"; }
 .bit-icon--DiamondSolid:before { content: "\F34C"; }
 .bit-icon--DiamondUser:before { content: "\E4F9"; }
@@ -686,6 +689,7 @@
 .bit-icon--DisconnectVirtualMachine:before { content: "\F873"; }
 .bit-icon--Dislike:before { content: "\E8E0"; }
 .bit-icon--DislikeSolid:before { content: "\F3C0"; }
+.bit-icon--Distance:before { content: "\ECAE"; }
 .bit-icon--DistributeDown:before { content: "\F76A"; }
 .bit-icon--DockLeft:before { content: "\E90C"; }
 .bit-icon--DockLeftMirrored:before { content: "\EA4C"; }
@@ -721,6 +725,7 @@
 .bit-icon--DoubleColumnEdit:before { content: "\F322"; }
 .bit-icon--DoubleDownArrow:before { content: "\F769"; }
 .bit-icon--Down:before { content: "\E74B"; }
+.bit-icon--DownKey:before { content: "\F3E1"; }
 .bit-icon--Download:before { content: "\E896"; }
 .bit-icon--DownloadDocument:before { content: "\F549"; }
 .bit-icon--DragObject:before { content: "\F553"; }
@@ -1147,6 +1152,7 @@
 .bit-icon--LearningTools:before { content: "\F7DB"; }
 .bit-icon--Leave:before { content: "\F627"; }
 .bit-icon--LeaveUser:before { content: "\E3A8"; }
+.bit-icon--LeftKey:before { content: "\F264"; }
 .bit-icon--Library:before { content: "\E8F1"; }
 .bit-icon--LibraryAddTo:before { content: "\E60D"; }
 .bit-icon--Lifesaver:before { content: "\EF62"; }
@@ -1469,6 +1475,7 @@
 .bit-icon--PeopleExternalShare:before { content: "\E5EF"; }
 .bit-icon--PeoplePause:before { content: "\ED94"; }
 .bit-icon--PeopleRepeat:before { content: "\ED92"; }
+.bit-icon--PeopleSettings:before { content: "\F72C"; }
 .bit-icon--Permissions:before { content: "\E8D7"; }
 .bit-icon--PermissionsSolid:before { content: "\F349"; }
 .bit-icon--Personalize:before { content: "\E771"; }
@@ -1497,9 +1504,13 @@
 .bit-icon--PieSingleSolid:before { content: "\F530"; }
 .bit-icon--Pill:before { content: "\EACB"; }
 .bit-icon--Pin:before { content: "\E718"; }
+.bit-icon--PinNavMenu:before { content: "\E682"; }
 .bit-icon--Pinned:before { content: "\E840"; }
 .bit-icon--PinnedFill:before { content: "\E842"; }
 .bit-icon--PinnedSolid:before { content: "\F676"; }
+.bit-icon--PinOff:before { content: "\E683"; }
+.bit-icon--PinOffSolid:before { content: "\E694"; }
+.bit-icon--PinSolid:before { content: "\F1DB"; }
 .bit-icon--PinSolid12:before { content: "\E352"; }
 .bit-icon--PinSolidOff12:before { content: "\E353"; }
 .bit-icon--PinToTab:before { content: "\E5E5"; }
@@ -1668,6 +1679,7 @@
 .bit-icon--RemoveContent:before { content: "\ECC7"; }
 .bit-icon--RemoveEvent:before { content: "\ED8A"; }
 .bit-icon--RemoveFilter:before { content: "\EB08"; }
+.bit-icon--RemoveFrom:before { content: "\ECC9"; }
 .bit-icon--RemoveFromShoppingList:before { content: "\F7D5"; }
 .bit-icon--RemoveFromTrash:before { content: "\F82B"; }
 .bit-icon--RemoveLink:before { content: "\ED90"; }
@@ -1727,6 +1739,7 @@
 .bit-icon--Ribbon2:before { content: "\F19B"; }
 .bit-icon--RibbonSolid:before { content: "\F345"; }
 .bit-icon--RightDoubleQuote:before { content: "\E9B1"; }
+.bit-icon--RightKey:before { content: "\F265"; }
 .bit-icon--RightTriangle:before { content: "\F500"; }
 .bit-icon--Ringer:before { content: "\EA8F"; }
 .bit-icon--RingerActive:before { content: "\E498"; }
@@ -1741,6 +1754,7 @@
 .bit-icon--Rotate90CounterClockwise:before { content: "\F80E"; }
 .bit-icon--RowsChild:before { content: "\F29C"; }
 .bit-icon--RowsGroup:before { content: "\F29B"; }
+.bit-icon--RssFeed:before { content: "\F80C"; }
 .bit-icon--Rugby:before { content: "\EB2D"; }
 .bit-icon--Running:before { content: "\EADA"; }
 .bit-icon--Sad:before { content: "\E757"; }
@@ -1749,6 +1763,7 @@
 .bit-icon--Save:before { content: "\E74E"; }
 .bit-icon--SaveAll:before { content: "\F203"; }
 .bit-icon--SaveAndClose:before { content: "\F038"; }
+.bit-icon--SaveAndPublish:before { content: "\F671"; }
 .bit-icon--SaveAs:before { content: "\E792"; }
 .bit-icon--SavedOffline:before { content: "\E546"; }
 .bit-icon--SaveTemplate:before { content: "\F6EC"; }
@@ -1816,6 +1831,7 @@
 .bit-icon--ShieldSolid:before { content: "\F340"; }
 .bit-icon--Shirt:before { content: "\ED00"; }
 .bit-icon--Shop:before { content: "\E719"; }
+.bit-icon--ShopBrand:before { content: "\F478"; }
 .bit-icon--ShoppingCart:before { content: "\E7BF"; }
 .bit-icon--ShoppingCartSolid:before { content: "\F342"; }
 .bit-icon--ShopServer:before { content: "\F2B6"; }
@@ -1892,10 +1908,12 @@
 .bit-icon--Squalls:before { content: "\E9CC"; }
 .bit-icon--SquareShape:before { content: "\F1A6"; }
 .bit-icon--SquareShapeSolid:before { content: "\F63D"; }
+.bit-icon--SslCertificate:before { content: "\F4CB"; }
 .bit-icon--Stack:before { content: "\F26F"; }
 .bit-icon--StackColumnChart:before { content: "\E9FC"; }
 .bit-icon--StackedBarChart:before { content: "\F24D"; }
 .bit-icon--StackedBarChartFull:before { content: "\F668"; }
+.bit-icon--StackedBarChartFullSettings:before { content: "\F1E6"; }
 .bit-icon--StackedColumnChart2:before { content: "\F666"; }
 .bit-icon--StackedColumnChart2Fill:before { content: "\F831"; }
 .bit-icon--StackedLineChart:before { content: "\F24E"; }
@@ -1925,7 +1943,11 @@
 .bit-icon--StatusTriangleInner:before { content: "\F13A"; }
 .bit-icon--StatusTriangleOuter:before { content: "\F139"; }
 .bit-icon--Step:before { content: "\F241"; }
+.bit-icon--StepBackward:before { content: "\E68E"; }
 .bit-icon--StepInsert:before { content: "\F242"; }
+.bit-icon--StepInto:before { content: "\E690"; }
+.bit-icon--StepOut:before { content: "\E691"; }
+.bit-icon--StepOver:before { content: "\E68F"; }
 .bit-icon--StepShared:before { content: "\F243"; }
 .bit-icon--StepSharedAdd:before { content: "\F244"; }
 .bit-icon--StepSharedInsert:before { content: "\F245"; }
@@ -2008,6 +2030,7 @@
 .bit-icon--TagUnknown12:before { content: "\F6E1"; }
 .bit-icon--TagUnknown12Mirror:before { content: "\F6E2"; }
 .bit-icon--TagUnknownMirror:before { content: "\F6E0"; }
+.bit-icon--Task:before { content: "\F7EC"; }
 .bit-icon--TaskAdd:before { content: "\E4FD"; }
 .bit-icon--Taskboard:before { content: "\F1C2"; }
 .bit-icon--TaskGroup:before { content: "\F2AE"; }
@@ -2068,6 +2091,7 @@
 .bit-icon--Tiles:before { content: "\ECA5"; }
 .bit-icon--Tiles2:before { content: "\EF7C"; }
 .bit-icon--TimeEntry:before { content: "\EF95"; }
+.bit-icon--TimeEntryTemplate:before { content: "\F635"; }
 .bit-icon--Timeline:before { content: "\ED9C"; }
 .bit-icon--TimelineDelivery:before { content: "\F2AB"; }
 .bit-icon--TimelineMatrixView:before { content: "\F361"; }
@@ -2128,6 +2152,7 @@
 .bit-icon--Trophy2:before { content: "\F1AE"; }
 .bit-icon--Trophy2Solid:before { content: "\F337"; }
 .bit-icon--TurnRight:before { content: "\E7DB"; }
+.bit-icon--TurnUserLeft:before { content: "\F269"; }
 .bit-icon--TVMonitor:before { content: "\E7F4"; }
 .bit-icon--TVMonitorSelected:before { content: "\EC77"; }
 .bit-icon--TypeScriptLanguage:before { content: "\F2F7"; }
@@ -2168,6 +2193,7 @@
 .bit-icon--Up:before { content: "\E74A"; }
 .bit-icon--UpdateRestore:before { content: "\E777"; }
 .bit-icon--UpgradeAnalysis:before { content: "\EA0B"; }
+.bit-icon--UpKey:before { content: "\F3E0"; }
 .bit-icon--Upload:before { content: "\E898"; }
 .bit-icon--UpperCase:before { content: "\E5ED"; }
 .bit-icon--URLBlock:before { content: "\E3FE"; }
@@ -2226,6 +2252,7 @@
 .bit-icon--VisualsStore:before { content: "\F521"; }
 .bit-icon--VisualStudioForWindows:before { content: "\F5D0"; }
 .bit-icon--VisualStudioForWindowsAlt:before { content: "\EC22"; }
+.bit-icon--VivaTopicApp:before { content: "\E687"; }
 .bit-icon--VoicemailForward:before { content: "\ED87"; }
 .bit-icon--VoicemailIRM:before { content: "\F421"; }
 .bit-icon--VoicemailReply:before { content: "\ED88"; }
@@ -2298,3 +2325,4 @@
 .bit-icon--ZoomIn:before { content: "\E8A3"; }
 .bit-icon--ZoomOut:before { content: "\E71F"; }
 .bit-icon--ZoomToFit:before { content: "\F649"; }
+.bit-icon--ZoomToFitAlt:before { content: "\E693"; }

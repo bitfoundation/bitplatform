@@ -51,10 +51,10 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
-    displayName: 'Restore workloads'
+    displayName: 'Install wasm'
     inputs:
       targetType: 'inline'
-      script: 'dotnet workload restore src/BlazorDual.Web/BlazorDual.Web.csproj -p:BlazorMode=BlazorWebAssembly'
+      script: 'cd src && dotnet workload install wasm-tools wasm-experimental'
 
   - task: Bash@3
     displayName: 'Switch to blazor web assembly'

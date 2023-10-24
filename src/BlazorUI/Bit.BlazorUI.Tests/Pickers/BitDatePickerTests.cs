@@ -52,9 +52,9 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var goToTodayButton = component.Find(".bit-dtp-gtd-btn");
+        var goToTodayButton = component.Find(".bit-dtp-gtb");
 
-        Assert.AreEqual(goToTodayButton.TextContent, goToToday);
+        Assert.AreEqual(goToTodayButton.GetAttribute("title"), goToToday);
     }
 
     [DataTestMethod,
@@ -118,27 +118,6 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsNotNull(component.Instance.Value);
         Assert.AreEqual(component.Instance.Value.Value.Date, DateTimeOffset.Now.Date);
         Assert.AreEqual(component.Instance.Value.Value.Offset, DateTimeOffset.Now.Offset);
-    }
-
-    [DataTestMethod]
-    public void BitDatePickerCalendarWithCustomCultureInfo()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDatePicker>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Culture, CultureInfoHelper.GetFaIrCultureByFingilishNames());
-        });
-
-        var monthButtons = component.FindAll(".bit-dtp-mwp .bit-dtp-gctn .bit-dtp-btn-row button");
-        Assert.IsTrue(monthButtons.Count > 0);
-        Assert.AreEqual(12, monthButtons.Count);
-
-        var index = 0;
-        foreach (var button in monthButtons)
-        {
-            Assert.AreEqual(button.FirstElementChild.TextContent, component.Instance.Culture.DateTimeFormat.AbbreviatedMonthNames[index++]);
-        }
     }
 
     [DataTestMethod]
@@ -261,7 +240,7 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
         });
 
-        var goToTodayBtnElms = component.FindAll(".bit-dtp-gtd-btn");
+        var goToTodayBtnElms = component.FindAll(".bit-dtp-gtb");
 
         if (showGoToToday)
         {

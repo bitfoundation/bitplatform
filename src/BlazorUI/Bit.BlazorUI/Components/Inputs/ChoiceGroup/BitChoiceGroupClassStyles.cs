@@ -3,6 +3,11 @@
 public class BitChoiceGroupClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitChoiceGroup.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the label container of the BitChoiceGroup.
     /// </summary>
     public string? LabelContainer { get; set; }
@@ -66,6 +71,11 @@ public class BitChoiceGroupClassStyles
     /// Custom CSS classes/styles for the icon of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the prefix of each item of the BitChoiceGroup.
+    /// </summary>
+    public string? ItemPrefix { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text wrapper of each item of the BitChoiceGroup.

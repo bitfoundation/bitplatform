@@ -1,0 +1,29 @@
+{
+    "name": "bit platform",
+    "hostRequirements": {
+        "cpus": 4
+    },
+    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/9144f37e-b370-41ee-a86f-2d2a69251652/bc1d544112ec134184a5aec7f7a1eaf9/dotnet-sdk-8.0.100-rc.2.23502.2-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && dotnet dev-certs https --trust && dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj && dotnet build src/Templates/AdminPanel/Bit.AdminPanel/src/Client/Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore && dotnet build src/Websites/Platform/src/Bit.Websites.Platform.Web/Bit.Websites.Platform.Web.csproj -t:BeforeBuildTasks --no-restore && dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Web/Bit.Websites.Sales.Web.csproj -t:BeforeBuildTasks --no-restore && dotnet build src/Templates/TodoTemplate/Bit.TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore",
+    "waitFor": "onCreateCommand",
+    "customizations": {
+        "codespaces": {
+            "openFiles": [
+                "CONTRIBUTING.md"
+            ]
+        },
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "kevin-chatham.aspnetcorerazor-html-css-class-completion",
+                "ms-dotnettools.csharp",
+                "glenn2223.live-sass"
+            ]
+        }
+    },
+    "forwardPorts": [
+        4000, 4001, 5000, 5001, 4030, 4031, 4040, 4041, 5030, 5031, 5040, 5041
+    ],
+    "remoteEnv": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+    }
+}

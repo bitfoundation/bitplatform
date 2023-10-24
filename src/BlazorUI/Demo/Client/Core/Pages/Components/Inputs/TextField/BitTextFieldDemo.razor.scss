@@ -4,84 +4,43 @@
 
 .example-box {
     display: flex;
-    gap: rem2(15px);
-    width: rem2(300px);
+    max-width: rem2(300px);
     flex-direction: column;
+}
 
-    @include sm {
-        width: rem2(200px);
+::deep {
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
     }
 
-    .custom-wrapper {
-        gap: 2rem;
-        display: flex;
-        flex-wrap: wrap;
-        margin-bottom: 2rem;
+    .custom-input {
+        color: darkgreen;
+        font-weight: 900;
+        font-size: 1rem;
+        padding: 1rem;
+        height: 3rem;
     }
 
-    .visibility-items {
-        align-items: center;
-        white-space: nowrap;
-        display: inline-flex;
+    .custom-field {
+        margin-top: 0.5rem;
+        border-radius: 1rem;
+        background-color: tomato;
     }
 
-    .validation-summary {
-        overflow: hidden;
-        margin-bottom: rem2(10px);
-        border-left: 0.3rem solid $Red10;
-        background-color: $ErrorBlockRed;
-    }
-
-    .trimmed-box {
-        margin-top: rem2(10px);
-        border: 1px solid $Gray3;
-    }
-
-    .form-item {
-        margin-bottom: 1rem;
-    }
-
-    ::deep {
-        .validation-message {
-            color: $Red20;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            line-height: normal;
-        }
-
-        .validation-errors {
-            margin: 0.3rem;
-        }
-
-        .custom-class {
-            border: 1px solid red;
-            box-shadow: aqua 0 0 1rem;
-        }
-
-        .custom-input {
-            color: darkgreen;
-            font-weight: 900;
-            font-size: 1rem;
-            padding: 1rem;
-            height: 3rem;
-        }
-
-        .custom-field {
-            margin-top: 0.5rem;
+    .custom-focus {
+        .custom-field::after {
             border-radius: 1rem;
-            background-color: tomato;
+            border-width: 0.25rem;
+            border-color: rebeccapurple;
         }
 
-        .custom-focus {
-            .custom-field::after {
-                border-radius: 1rem;
-                border-width: 0.25rem;
-                border-color: rebeccapurple;
-            }
-
-            .custom-label {
-                color: chartreuse;
-            }
+        .custom-label {
+            color: chartreuse;
         }
+    }
+
+    .validation-message {
+        color: red;
     }
 }

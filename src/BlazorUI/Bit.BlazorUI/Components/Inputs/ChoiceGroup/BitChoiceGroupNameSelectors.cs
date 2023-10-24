@@ -43,6 +43,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, BitSize?> ImageSize { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.ImageSize));
 
     /// <summary>
+    /// The Prefix field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Prefix { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Prefix));
+
+    /// <summary>
     /// The SelectedImageSrc field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> SelectedImageSrc { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.SelectedImageSrc));
@@ -66,4 +71,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// The Value field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, TValue?> Value { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Value));
+
+
+
+    /// <summary>
+    /// The Index field name of the custom input class. This property's value is set by the component at render.
+    /// </summary>
+    public string Index { get; set; } = nameof(BitChoiceGroupItem<TValue>.Index);
 }

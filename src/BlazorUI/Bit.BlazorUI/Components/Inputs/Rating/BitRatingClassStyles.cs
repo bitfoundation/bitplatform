@@ -3,6 +3,11 @@
 public class BitRatingClassStyles
 {
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the rating.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the rating's button.
     /// </summary>
     public string? Button { get; set; }

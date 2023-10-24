@@ -2,7 +2,7 @@
 
 public partial class _BitDropdownItemDemo
 {
-    private readonly string example1HtmlCode = @"
+    private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
@@ -40,7 +40,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example2HtmlCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -129,7 +129,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
 };";
 
-    private readonly string example3HtmlCode = @"
+    private readonly string example3RazorCode = @"
 <BitDropdown @bind-Value=""controlledValue""
              Label=""Single select""
              Items=""GetBasicItems()""
@@ -141,10 +141,51 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetBasicItems()""
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>";
+<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             Items=""GetBasicItems()""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownItem<string>"" TValue=""string""
+             OnChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
+<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+            
+<BitDropdown Label=""Multi select""
+             IsMultiSelect=""true""
+             Items=""GetBasicItems()""
+             Placeholder=""Select items""
+             TItem=""BitDropdownItem<string>"" TValue=""string""
+             OnChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
+<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+
+
+
+<BitDropdown Label=""Single select""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             OnSelectItem=""(BitDropdownItem<string> item) => selectedItem1 = item"" />
+<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+
+<BitDropdown Label=""Multi select""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select items""
+             IsMultiSelect=""true""
+             OnSelectItem=""(BitDropdownItem<string> item) => selectedItem2 = item"" />
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
+<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+
+private BitDropdownItem<string>? changedItem;
+private BitDropdownItem<string>[] changedItems = Array.Empty<BitDropdownItem<string>>();
+
+private BitDropdownItem<string>? selectedItem1;
+private BitDropdownItem<string>? selectedItem2;
 
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -160,7 +201,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example4HtmlCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .custom-drp {
         gap: 10px;
@@ -234,7 +275,19 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""GetDataItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             CaretDownIconName=""@BitIconName.ScrollUpDown"" />";
+             CaretDownIconName=""@BitIconName.ScrollUpDown"" />
+
+<BitDropdown Label=""Callout templates""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"">
+    <CalloutHeaderTemplate>
+        <BitLabel Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</BitLabel>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <BitActionButton IconName=""@BitIconName.Add"">New Item</BitActionButton>
+    </CalloutFooterTemplate>
+</BitDropdown>";
     private readonly string example4CsharpCode = @"
 public class DropdownItemData
 {
@@ -254,7 +307,7 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
 };";
 
-    private readonly string example5HtmlCode = @"
+    private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
@@ -275,7 +328,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example6HtmlCode = @"
+    private readonly string example6RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
@@ -290,6 +343,26 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select items""
              IsMultiSelect=""true""
              ShowSearchBox=""true""
+             SearchBoxPlaceholder=""Search items"" />
+
+
+
+<BitDropdown Label=""Single select & auto focus""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             ShowSearchBox=""true""
+             AutoFocusSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
+             SearchBoxPlaceholder=""Search item"" />
+
+<BitDropdown Label=""Multi select""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select items""
+             IsMultiSelect=""true""
+             ShowSearchBox=""true""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search items"" />";
     private readonly string example6CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
@@ -306,7 +379,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example7HtmlCode = @"
+    private readonly string example7RazorCode = @"
 <BitDropdown Label=""Single select""
              Items=""virtualizeItems1""
              DefaultValue=""@string.Empty""
@@ -389,7 +462,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
     }
 }";
 
-    private readonly string example8HtmlCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
@@ -417,7 +490,7 @@ private List<BitDropdownItem<string>> GetRtlItems() => new()
     new() { Text = ""کاهو"", Value = ""v-let"" }
 };";
 
-    private readonly string example9HtmlCode = @"
+    private readonly string example9RazorCode = @"
 <BitDropdown Label=""Auto""
              Items=""dropDirectionItems""
              DefaultValue=""@string.Empty""
@@ -439,7 +512,7 @@ protected override void OnInitialized()
                                        .ToArray();
 }";
 
-    private readonly string example10HtmlCode = @"
+    private readonly string example10RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
              Label=""Single select dropdown""
              Items=""GetBasicItems()""
@@ -473,7 +546,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example11HtmlCode = @"
+    private readonly string example11RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
 <style>

@@ -1,8 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
-
-namespace Bit.Websites.Platform.Web.Pages;
+﻿namespace Bit.Websites.Platform.Web.Pages;
 
 public partial class HomePage
 {

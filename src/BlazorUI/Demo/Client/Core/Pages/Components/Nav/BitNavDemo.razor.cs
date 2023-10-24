@@ -757,14 +757,14 @@ public partial class BitNavDemo
 
 
 
-    private readonly string example1NavItemHtmlCode = @"
+    private readonly string example1NavItemRazorCode = @"
 <BitNav Items=""BitPlatformNavMenu"" />";
     private readonly string example1NavItemCsharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -805,7 +805,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
     new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 };";
 
-    private readonly string example2NavItemHtmlCode = @"
+    private readonly string example2NavItemRazorCode = @"
 <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />";
     private readonly string example2NavItemCsharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu = new()
@@ -866,7 +866,7 @@ private static readonly List<BitNavItem> CarNavMenu = new()
     },
 };";
 
-    private readonly string example3NavItemHtmlCode = @"
+    private readonly string example3NavItemRazorCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav Items=""FoodNavMenu""
         DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
@@ -1010,7 +1010,7 @@ private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c =
 private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
 private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 
-    private readonly string example4NavItemHtmlCode = @"
+    private readonly string example4NavItemRazorCode = @"
 <style>
     .nav-custom-header {
         font-size: 17px;
@@ -1159,7 +1159,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
     new() { Text = ""Cookie"" },
 };";
 
-    private readonly string example5NavItemHtmlCode = @"
+    private readonly string example5NavItemRazorCode = @"
 <BitNav Items=""FoodNavMenu""
         DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
         Mode=""BitNavMode.Manual""
@@ -1224,7 +1224,7 @@ private BitNavItem ClickedItem;
 private BitNavItem SelectedItem;
 private BitNavItem ToggledItem;";
 
-    private readonly string example6NavItemHtmlCode = @"
+    private readonly string example6NavItemRazorCode = @"
 <BitNav Items=""BitPlatformNavMenu""
         ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
                                ToggleButton = new() { Style=""color:cyan"" },
@@ -1235,7 +1235,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1278,7 +1278,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 
 
 
-    private readonly string example1CustomItemHtmlCode = @"
+    private readonly string example1CustomItemRazorCode = @"
 <BitNav Items=""CustomBitPlatformNavMenu""
         TextField=""@nameof(BitPlatformMenu.Text)""
         UrlField=""@nameof(BitPlatformMenu.Url)""
@@ -1299,7 +1299,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1340,7 +1340,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
 };";
 
-    private readonly string example2CustomItemHtmlCode = @"
+    private readonly string example2CustomItemRazorCode = @"
 <BitNav Items=""CustomCarNavMenu""
         TextField=""@nameof(CarMenu.Name)""
         UrlField=""@nameof(CarMenu.PageUrl)""
@@ -1422,7 +1422,7 @@ private static readonly List<CarMenu> CustomCarNavMenu = new()
     },
 };";
 
-    private readonly string example3CustomItemHtmlCode = @"
+    private readonly string example3CustomItemRazorCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav Items=""CustomFoodNavMenu""
         TextFieldSelector=""item => item.Name""
@@ -1582,7 +1582,7 @@ private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Fl
 private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
 private string CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;";
 
-    private readonly string example4CustomItemHtmlCode = @"
+    private readonly string example4CustomItemRazorCode = @"
 <style>
     .nav-custom-header {
         font-size: 17px;
@@ -1764,7 +1764,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     new() { Name = ""Cookie"" },
 };";
 
-    private readonly string example5CustomItemHtmlCode = @"
+    private readonly string example5CustomItemRazorCode = @"
 <BitNav Items=""CustomFoodNavMenu""
         TextFieldSelector=""item => item.Name""
         IconNameFieldSelector=""item => item.Icon""
@@ -1841,7 +1841,7 @@ private FoodMenu CustomClickedItem;
 private FoodMenu CustomSelectedItem;
 private FoodMenu CustomToggledItem;";
 
-    private readonly string example6CustomItemHtmlCode = @"
+    private readonly string example6CustomItemRazorCode = @"
 <BitNav Items=""CustomBitPlatformNavMenu""
         TextField=""@nameof(BitPlatformMenu.Text)""
         UrlField=""@nameof(BitPlatformMenu.Url)""
@@ -1866,7 +1866,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 {
     new()
     {
-        Text = ""Bit Platform"",
+        Text = ""bit platform"",
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
@@ -1909,11 +1909,11 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
 
 
 
-    private readonly string example1NavOptionHtmlCode = @"
+    private readonly string example1NavOptionRazorCode = @"
 <BitNav TItem=""BitNavOption"">
-    <BitNavOption Text=""Bit Platform""
-                    ExpandAriaLabel=""Bit Platform Expanded""
-                    CollapseAriaLabel=""Bit Platform Collapsed"">
+    <BitNavOption Text=""bit platform""
+                    ExpandAriaLabel=""bit platform Expanded""
+                    CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
@@ -1940,7 +1940,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
-    private readonly string example2NavOptionHtmlCode = @"
+    private readonly string example2NavOptionRazorCode = @"
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <BitNavOption Text=""Mercedes-Benz""
                     ExpandAriaLabel=""Mercedes-Benz Expanded""
@@ -1973,7 +1973,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     </BitNavOption>
 </BitNav>";
 
-    private readonly string example3NavOptionHtmlCode = @"
+    private readonly string example3NavOptionRazorCode = @"
 <BitLabel>Basic</BitLabel>
 <BitNav TItem=""BitNavOption""
         Mode=""BitNavMode.Manual"">
@@ -2038,7 +2038,7 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
     private readonly string example3NavOptionCsharpCode = @"
 private string SelectedOptionKey;";
 
-    private readonly string example4NavOptionHtmlCode = @"
+    private readonly string example4NavOptionRazorCode = @"
 <BitLabel>Header Template (in Grouped mode)</BitLabel>
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
@@ -2115,7 +2115,7 @@ private string SelectedOptionKey;";
     </ChildContent>
 </BitNav>";
 
-    private readonly string example5NavOptionHtmlCode = @"
+    private readonly string example5NavOptionRazorCode = @"
 <BitNav Mode=""BitNavMode.Manual""
         OnItemClick=""(BitNavOption option) => ClickedOption = option""
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
@@ -2154,15 +2154,15 @@ private BitNavOption ClickedOption;
 private BitNavOption SelectedOption;
 private BitNavOption ToggledOption;";
 
-    private readonly string example6NavOptionHtmlCode = @"
+    private readonly string example6NavOptionRazorCode = @"
 <BitNav TItem=""BitNavOption""
         ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
                                ToggleButton = new() { Style=""color:cyan"" },
                                Item = new() { Style=""color:red"" },
                                ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })"">
-    <BitNavOption Text=""Bit Platform""
-                  ExpandAriaLabel=""Bit Platform Expanded""
-                  CollapseAriaLabel=""Bit Platform Collapsed"">
+    <BitNavOption Text=""bit platform""
+                  ExpandAriaLabel=""bit platform Expanded""
+                  CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">

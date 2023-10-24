@@ -1,7 +1,6 @@
 ﻿<LayoutView Layout="@typeof(MainLayout)">
     <PageTitle>bit platform software development as a service</PageTitle>
-    <Router AppAssembly="@GetType().Assembly"
-            OnNavigateAsync="@OnNavigateAsync">
+    <Router AppAssembly="@GetType().Assembly">
         <Found Context="routeData">
             <PageTitle>bit foundation</PageTitle>
             <RouteView RouteData="@routeData" />

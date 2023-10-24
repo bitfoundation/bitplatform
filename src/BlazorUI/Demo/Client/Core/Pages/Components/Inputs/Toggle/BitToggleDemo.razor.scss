@@ -1,48 +1,13 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 .example-box {
-    display: flex;
-    gap: rem2(16px);
-    width: fit-content;
-    flex-flow: column nowrap;
-}
-
-.visibility-items {
-    align-items: center;
-    white-space: nowrap;
-    display: inline-flex;
-}
-
-.custom-wrapper {
-    gap: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-    flex-direction: column;
-}
-
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
+    max-width: rem2(300px);
 }
 
 ::deep {
-    .validation-message {
-        color: $Red20;
-        font-size: rem2(12px);
-    }
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-
     .custom-class {
+        padding: 0.5rem;
         width: max-content;
-        margin-left: 0.5rem;
         border: 1px solid red;
         box-shadow: aqua 0 0 1rem;
     }
@@ -66,5 +31,9 @@
             border-radius: 1rem;
             background-color: red;
         }
+    }
+
+    .validation-message {
+        color: red;
     }
 }

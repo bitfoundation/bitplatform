@@ -50,27 +50,27 @@ public partial class BitTypographyDemo
             Name = "BitTypographyVariant",
             Items = new List<ComponentEnumItem>()
             {
-                new() { Name = "Body1" },
-                new() { Name = "Body2" },
-                new() { Name = "Button" },
-                new() { Name = "Caption" },
-                new() { Name = "H1" },
-                new() { Name = "H2" },
-                new() { Name = "H3" },
-                new() { Name = "H4" },
-                new() { Name = "H5" },
-                new() { Name = "H6" },
-                new() { Name = "Inherit" },
-                new() { Name = "Overline" },
-                new() { Name = "Subtitle1" },
-                new() { Name = "Subtitle2" },
+                new() { Name = "Body1", Value = "0" },
+                new() { Name = "Body2", Value = "1" },
+                new() { Name = "Button", Value = "2" },
+                new() { Name = "Caption", Value = "3" },
+                new() { Name = "H1", Value = "4" },
+                new() { Name = "H2", Value = "5" },
+                new() { Name = "H3", Value = "6" },
+                new() { Name = "H4", Value = "7" },
+                new() { Name = "H5", Value = "8" },
+                new() { Name = "H6", Value = "9" },
+                new() { Name = "Inherit", Value = "10" },
+                new() { Name = "Overline", Value = "11" },
+                new() { Name = "Subtitle1", Value = "12" },
+                new() { Name = "Subtitle2", Value = "13" },
             }
         }
     };
 
 
 
-    private string example1HtmlCode = @"
+    private string example1RazorCode = @"
 <BitTypography>This is default (Subtitle1)</BitTypography>
 <br />
 <BitTypography Variant=""BitTypographyVariant.H1"">H1. Heading</BitTypography>
