@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Bunit.Extensions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.SnackBar;
 
@@ -179,44 +180,58 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title")
+        DataRow("title", "<span>title</span>")
     ]
     [TestMethod]
-    public async Task BitSnackBarTitleTemplateTest(string title)
+    public async Task BitSnackBarTitleTemplateTest(string title, string titleTemplateContent)
     {
-        var wrappedCom = RenderComponent<BitSnackBarWithTitleTemplate>();
-
-        var com = wrappedCom.FindComponent<BitSnackBar>();
+        RenderFragment<string> titleTemplate = (string text) => (builder) =>
+        {
+            builder.AddMarkupContent(0, titleTemplateContent);
+        };
+        var com = RenderComponent<BitSnackBar>(parameters => parameters
+            .Add(p => p.TitleTemplate, titleTemplate)
+        );
 
         await com.Instance.Show(title);
 
-        var titleTemplateElements = com.FindAll(".bit-snb-hdr > *").ToList();
-        //remove button
-        titleTemplateElements.RemoveAt(0);
+        var titleTemplateElement = com.Find(".bit-snb-hdr");
 
-        Assert.AreEqual($"<span>{title}</span><span></span>", string.Join(string.Empty, titleTemplateElements.Select(x => x.OuterHtml).ToArray()));
+        var expectedHtml = $@"<button class=""bit-snb-cbt"" >
+                                    <i class=""bit-icon bit-icon--Cancel""></i>
+                                </button>{titleTemplateContent}";
+
+        titleTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
 
     [DataTestMethod,
-        DataRow("title", "body")
+        DataRow("title", "body", "<p>body</p>")
     ]
     [TestMethod]
-    public async Task BitSnackBarBodyTemplateTest(string title, string body)
+    public async Task BitSnackBarBodyTemplateTest(string title, string body, string bodyTemplateContent)
     {
-        var wrappedCom = RenderComponent<BitSnackBarWithBodyTemplate>();
-
-        var com = wrappedCom.FindComponent<BitSnackBar>();
+        RenderFragment<string> bodyTemplate = (string text) => (builder) =>
+        {
+            builder.AddMarkupContent(0, bodyTemplateContent);
+        };
+        var com = RenderComponent<BitSnackBar>(parameters => parameters
+            .Add(p => p.BodyTemplate, bodyTemplate)
+        );
 
         await com.Instance.Show(title, body);
 
-        var itemTemplateElements = com.FindAll(".bit-snb-itm > *").ToList();
-        //remove title
-        itemTemplateElements.RemoveAt(0);
-        //remove progressbar
-        itemTemplateElements.RemoveAt(itemTemplateElements.Count - 1);
+        var itemTemplateElement = com.Find(".bit-snb-itm");
 
-        Assert.AreEqual($"<p>{body}</p><span></span>", string.Join(string.Empty, itemTemplateElements.Select(x => x.OuterHtml).ToArray()));
+        var expectedHtml = $@"<div class=""bit-snb-hdr"">
+                                <button class=""bit-snb-cbt"" >
+                                    <i class=""bit-icon bit-icon--Cancel""></i>
+                                </button>
+                                <label class=""bit-snb-ttl"" title=""{title}"">title</label>
+                            </div>
+                            {bodyTemplateContent}
+                            <span class=""bit-snb-pbr"" style=""animation-duration: 3s;""></span>";
+
+        itemTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
-
 
 }
