@@ -461,10 +461,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Les mots de passe doivent utiliser au moins {0} caractères différents.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
-  <data name="EmailNotConfirmed" xml:space="preserve">
-    <value>L'e-mail '{0}' n'est pas confirmé.</value>
-    <comment>Error when a email is not confirmed by the confirmation link</comment>
-  </data>
   <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation. Réessayez dans {0}</value>
   </data>
@@ -501,12 +497,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="ForgetPasswordTitle" xml:space="preserve">
     <value>Mot de passe oublié</value>
   </data>
-  <data name="NotReceivedConfirmationEmailMessage1" xml:space="preserve">
-    <value>Vous n'avez pas reçu le mail de confirmation?</value>
-  </data>
-  <data name="ArgumentIsNullOrWhitespace" xml:space="preserve">
-    <value>L'argument '{0}' ne peut pas être nul, vide ou contenir uniquement des espaces.</value>
-  </data>
   <data name="AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties" xml:space="preserve">
     <value>Le type de métadonnées associé au type « {0} » contient les propriétés ou champs inconnus suivants : {1}. Veuillez vous assurer que les noms de ces membres correspondent aux noms des propriétés du type principal.</value>
   </data>
@@ -515,9 +505,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>La propriété {0}.{1} est introuvable.</value>
-  </data>
-  <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
     <value>Impossible de trouver une propriété nommée {0}.</value>
@@ -554,9 +541,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="DisplayAttribute_PropertyNotSet" xml:space="preserve">
     <value>La propriété {0} n'a pas été définie. Utilisez la méthode {1} pour obtenir la valeur.</value>
-  </data>
-  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
   </data>
   <data name="EnumDataTypeAttribute_TypeCannotBeNull" xml:space="preserve">
     <value>Le type fourni pour EnumDataTypeAttribute ne peut pas être nul.</value>
@@ -797,9 +781,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
-  </data>
-  <data name="WaitForResetPasswordEmailResendDelay." xml:space="preserve">
-    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe pour « {0} ». Réessayez plus tard.</value>
   </data>
   <data name="YouAreSignInAs" xml:space="preserve">
     <value>Vous êtes connecté en tant que</value>
