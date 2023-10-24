@@ -351,8 +351,8 @@ public partial class BitCircularTimePicker
 
     private async Task HandleOnPointerUp(MouseEventArgs e)
     {
-        if ((_isPointerDown && _currentView == BitCircularTimePickerDialMode.Minutes && _minute != _initialMinute) ||
-            (_currentView == BitCircularTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitCircularTimePickerEditMode.OnlyHours))
+        if ((_isPointerDown && _currentView == BitCircularTimePickerDialMode.Minutes && _minute.HasValue && _minute.Value != _initialMinute) ||
+            (_currentView == BitCircularTimePickerDialMode.Hours && _hour.HasValue && _hour.Value != _initialHour && EditMode == BitCircularTimePickerEditMode.OnlyHours))
         {
             _isPointerDown = false;
             if (AutoClose)
@@ -363,7 +363,7 @@ public partial class BitCircularTimePicker
 
         _isPointerDown = false;
 
-        if (_currentView == BitCircularTimePickerDialMode.Hours && _hour != _initialHour && EditMode == BitCircularTimePickerEditMode.Normal)
+        if (_currentView == BitCircularTimePickerDialMode.Hours && _hour.HasValue && _hour.Value != _initialHour && EditMode == BitCircularTimePickerEditMode.Normal)
         {
             await Task.Run(() => _currentView = BitCircularTimePickerDialMode.Minutes);
         }

@@ -73,7 +73,7 @@ public partial class CategoryController : AppControllerBase
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        if (DbContext.Products.Any(p => p.CategoryId == id))
+        if (await DbContext.Products.AnyAsync(p => p.CategoryId == id))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }

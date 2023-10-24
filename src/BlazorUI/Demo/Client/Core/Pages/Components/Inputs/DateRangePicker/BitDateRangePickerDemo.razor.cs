@@ -446,8 +446,8 @@ private async Task OpenCallout()
     private readonly string example7CsharpCode = @"
 private BitDateRangePickerValue selectedDateRange = new()
 {
-    StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
+    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
 };";
 
     private readonly string example8RazorCode = @"
@@ -601,7 +601,7 @@ private CultureInfo Culture = CultureInfo.CurrentUICulture;";
     private readonly string example14CsharpCode = @"
 private BitDateRangePickerValue selectedDateTimeRange = new()
 {
-    StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
+    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
 };";
 }

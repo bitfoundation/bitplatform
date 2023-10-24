@@ -6,6 +6,13 @@ public partial class BitBasicListDemo
     {
         new()
         {
+            Name = "EmptyContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content that gets rendered when there is no item to show.",
+        },
+        new()
+        {
             Name = "EnableVirtualization",
             Type = "bool",
             DefaultValue = "false",
