@@ -4,7 +4,7 @@
 public class ResetPasswordRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
@@ -18,7 +18,7 @@ public class ResetPasswordRequestDto
 
     [NotMapped]
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_ValidationError))]
+    [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_MustMatch))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
 }

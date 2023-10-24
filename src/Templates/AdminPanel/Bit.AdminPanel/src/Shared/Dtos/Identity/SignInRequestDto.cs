@@ -6,7 +6,7 @@ public class SignInRequestDto
 {
     /// <example>me@gmail.com</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? UserName { get; set; }
 

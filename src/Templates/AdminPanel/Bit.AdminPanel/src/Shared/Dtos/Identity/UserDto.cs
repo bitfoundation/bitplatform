@@ -8,12 +8,12 @@ public class UserDto
 
     // By default, username gets filled from email during signup in Api/Models/Mapper.cs class.
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? UserName { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 

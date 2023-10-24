@@ -7,7 +7,7 @@ public class SignUpRequestDto
     /// The user's email
     /// </summary>
     /// <example>me@gmail.com</example>
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_Invalid))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
@@ -19,7 +19,7 @@ public class SignUpRequestDto
 
     /// <example>true</example>
     [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptPrivacyPolicy))]
-    [Display(Name = nameof(AppStrings.IsAcceptPrivacy))]
+    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
+    [Display(Name = nameof(AppStrings.IsTermsAccepted))]
     public bool IsAcceptPrivacy { get; set; }
 }

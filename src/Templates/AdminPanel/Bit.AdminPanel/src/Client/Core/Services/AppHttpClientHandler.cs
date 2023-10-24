@@ -39,7 +39,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
                 Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
 
-                List<object> args = new()
+                List<object?> args = new()
                 {
                     typeof(KnownException).IsAssignableFrom(exceptionType)
                         ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
