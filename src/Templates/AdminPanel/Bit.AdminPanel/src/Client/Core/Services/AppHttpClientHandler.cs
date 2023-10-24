@@ -35,11 +35,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
         {
             if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                RestErrorInfo restError = await response.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken) ?? new();
+                RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken))!;
 
                 Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
 
-                List<object> args = new()
+                List<object?> args = new()
                 {
                     typeof(KnownException).IsAssignableFrom(exceptionType)
                         ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
