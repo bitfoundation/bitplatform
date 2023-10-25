@@ -131,7 +131,6 @@
     display: none;
     position: fixed;
     font-weight: 400;
-    top: spacing(4.25);
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
@@ -148,21 +147,35 @@
             flex-grow: 1;
         }
 
-        th, td {
-            margin: auto;
-            width: calc(100%/7);
-            font-size: spacing(2);
+        .bit-dtp-pkh {
+            min-height: spacing(5.5);
         }
 
+        .bit-dtp-nbt,
+        .bit-dtp-gtb,
+        .bit-dtp-wlb,
         .bit-dtp-dbt,
         .bit-dtp-pkb {
             width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
             font-size: spacing(2);
+            justify-content: center;
 
             span {
                 width: 100%;
                 height: spacing(6);
             }
+        }
+
+        .bit-dtp-nbt,
+        .bit-dtp-gtb {
+            width: spacing(5.5);
+        }
+
+        .bit-dtp-wlb {
+            font-weight: bold;
         }
 
         &.bit-dtp-dc-tdy {
@@ -174,6 +187,7 @@
 }
 
 .bit-dtp-cac {
+    height: 100%;
     outline: none;
     position: relative;
     overflow: hidden auto;
@@ -184,6 +198,7 @@
 .bit-dtp-grp {
     margin: 0;
     padding: 0;
+    height: 100%;
     display: flex;
     outline: none;
     box-shadow: none;
@@ -230,18 +245,18 @@
     width: 100%;
     display: flex;
     flex-flow: row nowrap;
+    justify-content: space-evenly;
 }
 
 .bit-dtp-wlb {
     margin: 0;
     padding: 0;
+    width: 100%;
     border: none;
-    cursor: pointer;
+    aspect-ratio: 1;
     font-weight: 400;
     position: relative;
     text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
@@ -252,6 +267,8 @@
 }
 
 .bit-dtp-dcl {
+    width: 100%;
+    aspect-ratio: 1;
     margin: 0;
     padding: 0;
     border: none;
@@ -395,7 +412,6 @@
 .bit-dtp-nbc {
     display: flex;
     align-items: center;
-    align-self: flex-end;
 }
 
 .bit-dtp-nbt,

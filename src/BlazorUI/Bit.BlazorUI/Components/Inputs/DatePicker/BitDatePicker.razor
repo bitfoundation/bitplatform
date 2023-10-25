@@ -19,7 +19,7 @@
         </label>
     }
 
-    <div class="bit-dtp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+    <div class="bit-dtp-wrp" id="@_datePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-dtp-icn">
             <input @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
@@ -51,9 +51,11 @@
         </div>
     </div>
 
-    <div class="bit-dtp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block" : "none")"
+         class="bit-dtp-ovl"></div>
 
-    <div class="bit-dtp-cal@(IsResponsive ? " bit-dtp-rsp" : string.Empty)" id="@_calloutId">
+    <div style="@string.Empty" class="bit-dtp-cal@(IsResponsive ? " bit-dtp-rsp" : string.Empty)" id="@_calloutId">
         <div class="bit-dtp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
             <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
             <div class="bit-dtp-grp" role="group" aria-label="">
@@ -121,72 +123,63 @@
                                 }
                             </div>
                         </div>
-                        <table role="grid"
-                               class="bit-dtp-dgd"
-                               aria-readonly="true"
-                               aria-multiselectable="false"
-                               aria-labelledby="@_monthTitleId"
-                               aria-activedescendant="@_activeDescendantId">
-                            <tbody>
-                                <tr class="bit-dtp-dgh">
-                                    @if (ShowWeekNumbers)
-                                    {
-                                        <th class="bit-dtp-wlb"></th>
-                                    }
+                        <div class="bit-dtp-dgh">
+                            @if (ShowWeekNumbers)
+                            {
+                                <div class="bit-dtp-wlb"></div>
+                            }
 
-                                    @for (var index = 0; index < 7; index++)
-                                    {
-                                        var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
-                                        <th class="bit-dtp-wlb" scope="col" title="@dayOfWeekName">@dayOfWeekName[0]</th>
-                                    }
-                                </tr>
-                                @for (var week = 0; week < 6; week++)
+                            @for (var index = 0; index < 7; index++)
+                            {
+                                var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                                <div class="bit-dtp-wlb" scope="col" title="@dayOfWeekName">@dayOfWeekName[0]</div>
+                            }
+                        </div>
+                        @for (var week = 0; week < 6; week++)
+                        {
+                            //to ignore the last empty week out of month || to ignore the first whole week out of month
+                            if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
+
+                            <div class="bit-dtp-dgr">
+                                @if (ShowWeekNumbers)
                                 {
-                                    //to ignore the last empty week out of month || to ignore the first whole week out of month
-                                    if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
-
-                                    <tr class="bit-dtp-dgr">
-                                        @if (ShowWeekNumbers)
-                                        {
-                                            var weekNumber = GetWeekNumber(week);
-                                            <th class="bit-dtp-wnm"
-                                                title="@($"Week number {weekNumber}")"
-                                                aria-label="@($"Week number {weekNumber}")"
-                                                scope="row">
-                                                <span>@weekNumber</span>
-                                            </th>
-                                        }
-
-                                        @for (var day = 0; day < 7; day++)
-                                        {
-                                            var w = week;
-                                            var d = day;
-                                            var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
-                                            <td class="bit-dtp-dcl@(GetDateCellCssClass(d, w))" role="presentation">
-                                                <button @onclick="() => SelectDate(d, w)"
-                                                        type="button"
-                                                        role="gridcell"
-                                                        class="bit-dtp-dbt@(GetDateButtonCssClass(d, w))"
-                                                        aria-readonly="true"
-                                                        disabled="@disabled"
-                                                        aria-disabled="@disabled"
-                                                        tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
-                                                        aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
-                                                    @if (DayCellTemplate is not null)
-                                                    {
-                                                        @DayCellTemplate(GetDateTimeOfDayCell(d, w))
-                                                    }
-                                                    else
-                                                    {
-                                                        <span aria-hidden="true" class="bit-dtp-dtx">@_daysOfCurrentMonth[w, d]</span>
-                                                    }
-                                                </button>
-                                            </td>
-                                        }
-                                    </tr>
+                                    var weekNumber = GetWeekNumber(week);
+                                    <div class="bit-dtp-wnm"
+                                         title="@($"Week number {weekNumber}")"
+                                         aria-label="@($"Week number {weekNumber}")"
+                                         scope="row">
+                                        <span>@weekNumber</span>
+                                    </div>
                                 }
-                            </tbody>
-                        </table>
+
+                                @for (var day = 0; day < 7; day++)
+                                {
+                                    var w = week;
+                                    var d = day;
+                                    var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
+                                    <div class="bit-dtp-dcl@(GetDateCellCssClass(d, w))" role="presentation">
+                                        <button @onclick="() => SelectDate(d, w)"
+                                                type="button"
+                                                role="gridcell"
+                                                class="bit-dtp-dbt@(GetDateButtonCssClass(d, w))"
+                                                aria-readonly="true"
+                                                disabled="@disabled"
+                                                aria-disabled="@disabled"
+                                                tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                                aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                            @if (DayCellTemplate is not null)
+                                            {
+                                                @DayCellTemplate(GetDateTimeOfDayCell(d, w))
+                                            }
+                                            else
+                                            {
+                                                <span aria-hidden="true" class="bit-dtp-dtx">@_daysOfCurrentMonth[w, d]</span>
+                                            }
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
 
                         @if (ShowTimePicker)
                         {
