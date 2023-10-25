@@ -68,6 +68,11 @@ public partial class BitCalendar
 
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// CultureInfo for the Calendar.
     /// </summary>
     [Parameter]
@@ -192,6 +197,11 @@ public partial class BitCalendar
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
+    /// The text of selected date aria-atomic of the calendar.
+    /// </summary>
+    [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
+
+    /// <summary>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
@@ -205,6 +215,11 @@ public partial class BitCalendar
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the year cell is rendered.
@@ -232,12 +247,18 @@ public partial class BitCalendar
     [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
 
 
-
     protected override string RootElementClass { get; } = "bit-cal";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
