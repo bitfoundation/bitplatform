@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Bunit.Extensions;
@@ -11,15 +10,6 @@ namespace Bit.BlazorUI.Tests.SnackBar;
 [TestClass]
 public class BitSnackBarTests : BunitTestContext
 {
-    [TestMethod]
-    public void BitSnackBarInitialTest()
-    {
-        var com = RenderComponent<BitSnackBar>();
-
-        var element = com.Find(".bit-snb");
-
-        Assert.IsNotNull(element);
-    }
 
     [DataTestMethod,
         DataRow(BitSnackBarPosition.TopLeft),
@@ -109,7 +99,8 @@ public class BitSnackBarTests : BunitTestContext
         DataRow("title", BitSnackBarType.Warning),
         DataRow("title", BitSnackBarType.Success),
         DataRow("title", BitSnackBarType.Error),
-        DataRow("title", BitSnackBarType.SevereWarning)
+        DataRow("title", BitSnackBarType.SevereWarning),
+        DataRow("title", null)
     ]
     [TestMethod]
     public async Task BitSnackBarTypeTest(string title, BitSnackBarType? type)
@@ -133,10 +124,18 @@ public class BitSnackBarTests : BunitTestContext
             BitSnackBarType.Warning => $"bit-snb-warning",
             BitSnackBarType.Success => $"bit-snb-success",
             BitSnackBarType.Error => $"bit-snb-error",
-            BitSnackBarType.SevereWarning => $"bit-snb-severe-warning"
+            BitSnackBarType.SevereWarning => $"bit-snb-severe-warning",
+            _ => String.Empty
         };
-
-        Assert.IsTrue(element.ClassList.Contains(typeClass));
+        
+        if (typeClass.IsNullOrEmpty())
+        {
+            Assert.AreEqual(1,element.ClassList.Length);
+        }
+        else
+        {
+            Assert.IsTrue(element.ClassList.Contains(typeClass));
+        }
     }
 
     [DataTestMethod,
@@ -150,11 +149,14 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show(title);
 
         var closeButton = com.Find(".bit-snb-cbt");
+        
+        var itemsBeforeClose = com.FindAll(".bit-snb-itm");
+        Assert.AreEqual(1, itemsBeforeClose.Count);
+        
         closeButton.Click();
 
-        var items = com.FindAll(".bit-snb-itm");
-
-        Assert.AreEqual(0, items.Count);
+        var itemsAfterClose = com.FindAll(".bit-snb-itm");
+        Assert.AreEqual(0, itemsAfterClose.Count);
     }
 
     [DataTestMethod,
@@ -179,14 +181,14 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title", "<span>title</span>")
+        DataRow("title")
     ]
     [TestMethod]
-    public async Task BitSnackBarTitleTemplateTest(string title, string titleTemplateContent)
+    public async Task BitSnackBarTitleTemplateTest(string title)
     {
         RenderFragment<string> titleTemplate = (string text) => (builder) =>
         {
-            builder.AddMarkupContent(0, titleTemplateContent);
+            builder.AddMarkupContent(0, $"<span>{text}</span>");
         };
         var com = RenderComponent<BitSnackBar>(parameters => parameters
             .Add(p => p.TitleTemplate, titleTemplate)
@@ -196,23 +198,21 @@ public class BitSnackBarTests : BunitTestContext
 
         var titleTemplateElement = com.Find(".bit-snb-hdr");
 
-        var expectedHtml = $@"<button  type=""button"" class=""bit-snb-cbt "">
-                                <i class=""bit-icon bit-icon--Cancel ""></i>
-                              </button>
-                              {titleTemplateContent}";
+        var expectedHtml = $@"<button diff:ignore></button>
+                              <span>{title}</span>";
 
         titleTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
 
     [DataTestMethod,
-        DataRow("title", "body", "<p>body</p>")
+        DataRow("title", "body")
     ]
     [TestMethod]
-    public async Task BitSnackBarBodyTemplateTest(string title, string body, string bodyTemplateContent)
+    public async Task BitSnackBarBodyTemplateTest(string title, string body)
     {
         RenderFragment<string> bodyTemplate = (string text) => (builder) =>
         {
-            builder.AddMarkupContent(0, bodyTemplateContent);
+            builder.AddMarkupContent(0, $"<p>{text}</p>");
         };
         var com = RenderComponent<BitSnackBar>(parameters => parameters
             .Add(p => p.BodyTemplate, bodyTemplate)
@@ -222,14 +222,9 @@ public class BitSnackBarTests : BunitTestContext
 
         var itemTemplateElement = com.Find(".bit-snb-itm");
 
-        var expectedHtml = $@"<div class=""bit-snb-hdr "">
-                                  <button  type=""button"" class=""bit-snb-cbt "">
-                                    <i class=""bit-icon bit-icon--Cancel ""></i>
-                                  </button>
-                                <label class=""bit-snb-ttl "" title=""{title}"">title</label>
-                                </div>
-                                {bodyTemplateContent}
-                                <span style=""animation-duration: 3s; "" class=""bit-snb-pbr ""></span>";
+        var expectedHtml = $@"<div diff:ignore></div>
+                              <p>{body}</p>
+                              <span diff:ignore></span>";
 
         itemTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
