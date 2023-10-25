@@ -9,6 +9,24 @@ namespace Bit.BlazorUI.Tests.Typography;
 [TestClass]
 public class BitTypographyTests : BunitTestContext
 {
+    private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
+    {
+        { BitTypographyVariant.Body1, "p" },
+        { BitTypographyVariant.Body2, "p" },
+        { BitTypographyVariant.Button, "span" },
+        { BitTypographyVariant.Caption, "span" },
+        { BitTypographyVariant.H1, "h1" },
+        { BitTypographyVariant.H2, "h2" },
+        { BitTypographyVariant.H3, "h3" },
+        { BitTypographyVariant.H4, "h4" },
+        { BitTypographyVariant.H5, "h5" },
+        { BitTypographyVariant.H6, "h6" },
+        { BitTypographyVariant.Inherit, "p" },
+        { BitTypographyVariant.Overline, "span" },
+        { BitTypographyVariant.Subtitle1, "h6" },
+        { BitTypographyVariant.Subtitle2, "h6" }
+    };
+
     [DataTestMethod,
      DataRow(BitTypographyVariant.Body1),
      DataRow(BitTypographyVariant.Body2),
@@ -37,16 +55,17 @@ public class BitTypographyTests : BunitTestContext
             }
         });
 
-        var finalVariant = variant ?? BitTypographyVariant.Subtitle1; // Isn't it better to read this from instance?
+        var expectedVariant = variant ?? BitTypographyVariant.Subtitle1;
+        var expectedElement = VariantMapping[expectedVariant];
 
-        var expectedHtml = $"<{VariantMapping[finalVariant]} diff:ignore></{VariantMapping[finalVariant]}>";
+        var expectedHtml = $"<{expectedElement} diff:ignore></{expectedElement}>";
 
         com.MarkupMatches(expectedHtml);
 
-        var element = com.Find(VariantMapping[finalVariant]);
+        var element = com.Find(expectedElement);
 
         Assert.IsTrue(
-            element.ClassList.Contains($"bit-tpg-{finalVariant.ToString().ToLower(CultureInfo.InvariantCulture)}"));
+            element.ClassList.Contains($"bit-tpg-{expectedVariant.ToString().ToLower(CultureInfo.InvariantCulture)}"));
     }
 
     [
@@ -61,7 +80,10 @@ public class BitTypographyTests : BunitTestContext
             parameters.Add(p => p.NoWrap, hasNoWrap);
         });
 
-        var element = com.Find(VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+        var defaultVariant = BitTypographyVariant.Subtitle1;
+        var defaultElement = VariantMapping[defaultVariant];
+
+        var element = com.Find(defaultElement);
 
         Assert.AreEqual(hasNoWrap, element.ClassList.Contains("bit-tpg-nowrap"));
     }
@@ -78,44 +100,31 @@ public class BitTypographyTests : BunitTestContext
             parameters.Add(p => p.Gutter, hasGutter);
         });
 
-        var element = com.Find(VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+        var defaultVariant = BitTypographyVariant.Subtitle1;
+        var defaultElement = VariantMapping[defaultVariant];
+
+        var element = com.Find(defaultElement);
 
         Assert.AreEqual(hasGutter, element.ClassList.Contains("bit-tpg-gutter"));
     }
-
 
     [
         DataRow("div"),
         DataRow(null)
     ]
     [TestMethod]
-    public void BitTypographyComponentTest(string component) //it shouldn't be string?
+    public void BitTypographyComponentTest(string component)
     {
         var com = RenderComponent<BitTypography>(parameters =>
         {
             parameters.Add(p => p.Component, component);
         });
 
-        var element = com.Find(component ?? VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+        var defaultVariant = BitTypographyVariant.Subtitle1;
+        var defaultElement = VariantMapping[defaultVariant];
+
+        var element = com.Find(component ?? defaultElement);
 
         Assert.IsTrue(element.ClassList.Contains("bit-tpg"));
     }
-
-    private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
-    {
-        { BitTypographyVariant.Body1, "p" },
-        { BitTypographyVariant.Body2, "p" },
-        { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
-        { BitTypographyVariant.H1, "h1" },
-        { BitTypographyVariant.H2, "h2" },
-        { BitTypographyVariant.H3, "h3" },
-        { BitTypographyVariant.H4, "h4" },
-        { BitTypographyVariant.H5, "h5" },
-        { BitTypographyVariant.H6, "h6" },
-        { BitTypographyVariant.Inherit, "p" },
-        { BitTypographyVariant.Overline, "span" },
-        { BitTypographyVariant.Subtitle1, "h6" },
-        { BitTypographyVariant.Subtitle2, "h6" }
-    };
 }
