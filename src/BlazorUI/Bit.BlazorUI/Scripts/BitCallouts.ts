@@ -45,7 +45,6 @@ class BitCallouts {
             const overlay = current.overlayId && document.getElementById(current.overlayId);
             overlay && (overlay.style.display = 'none');
 
-            console.log('CloseCallout');
             current.dotnetObj?.invokeMethodAsync('CloseCallout');
 
             BitCallouts.current = callout;
