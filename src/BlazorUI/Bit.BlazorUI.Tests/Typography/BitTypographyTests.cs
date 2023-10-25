@@ -83,7 +83,23 @@ public class BitTypographyTests : BunitTestContext
         Assert.AreEqual(hasGutter, element.ClassList.Contains("bit-tpg-gutter"));
     }
 
-    //todo test Component parameter 
+
+    [
+        DataRow("div"),
+        DataRow(null)
+    ]
+    [TestMethod]
+    public void BitTypographyComponentTest(string component) //it shouldn't be string?
+    {
+        var com = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Component, component);
+        });
+
+        var element = com.Find(component ?? VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+
+        Assert.IsTrue(element.ClassList.Contains("bit-tpg"));
+    }
 
     private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
