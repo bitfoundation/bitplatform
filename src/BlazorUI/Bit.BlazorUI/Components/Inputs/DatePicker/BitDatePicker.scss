@@ -350,9 +350,10 @@
 
 .bit-dtp-wnm {
     margin: 0;
+    width: 100%;
     display: flex;
+    aspect-ratio: 1;
     font-weight: 400;
-    width: spacing(3.5);
     align-items: center;
     height: spacing(3.5);
     box-sizing: border-box;
