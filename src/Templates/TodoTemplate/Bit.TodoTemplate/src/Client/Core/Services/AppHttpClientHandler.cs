@@ -62,7 +62,8 @@ public partial class AppHttpClientHandler : HttpClientHandler
         catch (Exception exp) when (InnerExceptions(exp).OfType<SocketException>().Any(socketExp => new[] { SocketError.HostNotFound, SocketError.HostDown, SocketError.HostUnreachable }.Contains(socketExp.SocketErrorCode))
             || exp is HttpRequestException httpReqExp && new[] { HttpStatusCode.BadGateway, HttpStatusCode.GatewayTimeout }.Contains(httpReqExp.StatusCode ?? default)
             || exp.Message.Contains("The SSL connection could not be established", StringComparison.InvariantCultureIgnoreCase)
-            || exp.Message.Contains("Connection failure", StringComparison.InvariantCultureIgnoreCase))
+            || exp.Message.Contains("Connection failure", StringComparison.InvariantCultureIgnoreCase)
+            || exp.Message.Contains("Failed to fetch", StringComparison.InvariantCultureIgnoreCase))
         {
             throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
         }
