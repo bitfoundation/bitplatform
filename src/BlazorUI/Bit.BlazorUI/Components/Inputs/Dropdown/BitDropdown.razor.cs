@@ -926,7 +926,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 _dropdownId,
                                 _calloutId,
                                 IsOpen,
-                                IsResponsive,
+                                IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                 DropDirection,
                                 IsRtl,
                                 _scrollContainerId,
