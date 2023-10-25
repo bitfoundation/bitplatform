@@ -37,7 +37,7 @@ public class BitTypographyTests : BunitTestContext
             }
         });
 
-        var finalVariant = variant ?? BitTypographyVariant.Subtitle1;// Isn't it better to read this from instance?
+        var finalVariant = variant ?? BitTypographyVariant.Subtitle1; // Isn't it better to read this from instance?
 
         var expectedHtml = $"<{VariantMapping[finalVariant]} diff:ignore></{VariantMapping[finalVariant]}>";
 
@@ -48,6 +48,42 @@ public class BitTypographyTests : BunitTestContext
         Assert.IsTrue(
             element.ClassList.Contains($"bit-tpg-{finalVariant.ToString().ToLower(CultureInfo.InvariantCulture)}"));
     }
+
+    [
+        DataRow(true),
+        DataRow(false)
+    ]
+    [TestMethod]
+    public void BitTypographyNoWrapTest(bool hasNoWrap)
+    {
+        var com = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, hasNoWrap);
+        });
+
+        var element = com.Find(VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+
+        Assert.AreEqual(hasNoWrap, element.ClassList.Contains("bit-tpg-nowrap"));
+    }
+
+    [
+        DataRow(true),
+        DataRow(false)
+    ]
+    [TestMethod]
+    public void BitTypographyGutterTest(bool hasGutter)
+    {
+        var com = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Gutter, hasGutter);
+        });
+
+        var element = com.Find(VariantMapping[com.Instance.Variant]); //Is there any better way to do this?
+
+        Assert.AreEqual(hasGutter, element.ClassList.Contains("bit-tpg-gutter"));
+    }
+
+    //todo test Component parameter 
 
     private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
