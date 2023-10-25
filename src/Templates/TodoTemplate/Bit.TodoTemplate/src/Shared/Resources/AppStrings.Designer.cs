@@ -1718,6 +1718,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to server..
+        /// </summary>
+        public static string UnableToConnectToServer {
+            get {
+                return ResourceManager.GetString("UnableToConnectToServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {

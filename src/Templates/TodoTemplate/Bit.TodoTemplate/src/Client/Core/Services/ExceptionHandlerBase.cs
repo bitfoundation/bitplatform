@@ -18,7 +18,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
             return;
         }
 
-#if DEBUG
+#if DEBUG || true
         string exceptionMessage = (exception as KnownException)?.Message ?? exception.ToString();
         _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
         _ = Console.Out.WriteLineAsync(exceptionMessage);

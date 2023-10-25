@@ -806,4 +806,7 @@ Please confirm your email by clicking on the link.</value>
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
+    <data name="UnableToConnectToServer" xml:space="preserve">
+    <value>Unable to connect to server.</value>
+  </data>
 </root>
