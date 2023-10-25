@@ -10,15 +10,14 @@ namespace Bit.BlazorUI.Tests.SnackBar;
 [TestClass]
 public class BitSnackBarTests : BunitTestContext
 {
-
     [DataTestMethod,
-        DataRow(BitSnackBarPosition.TopLeft),
-        DataRow(BitSnackBarPosition.TopCenter),
-        DataRow(BitSnackBarPosition.TopRight),
-        DataRow(BitSnackBarPosition.BottomLeft),
-        DataRow(BitSnackBarPosition.BottomCenter),
-        DataRow(BitSnackBarPosition.BottomRight),
-        DataRow(null)
+     DataRow(BitSnackBarPosition.TopLeft),
+     DataRow(BitSnackBarPosition.TopCenter),
+     DataRow(BitSnackBarPosition.TopRight),
+     DataRow(BitSnackBarPosition.BottomLeft),
+     DataRow(BitSnackBarPosition.BottomCenter),
+     DataRow(BitSnackBarPosition.BottomRight),
+     DataRow(null)
     ]
     [TestMethod]
     public void BitSnackBarPositionTest(BitSnackBarPosition? position)
@@ -47,8 +46,8 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title", "body"),
-        DataRow("title", "")
+     DataRow("title", "body"),
+     DataRow("title", "")
     ]
     [TestMethod]
     public async Task BitSnackBarShowTest(string title, string body)
@@ -71,8 +70,8 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true),
-        DataRow(false)
+     DataRow(true),
+     DataRow(false)
     ]
     [TestMethod]
     public async Task BitSnackBarAutoDismissTest(bool autoDismiss)
@@ -95,12 +94,12 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title", BitSnackBarType.Info),
-        DataRow("title", BitSnackBarType.Warning),
-        DataRow("title", BitSnackBarType.Success),
-        DataRow("title", BitSnackBarType.Error),
-        DataRow("title", BitSnackBarType.SevereWarning),
-        DataRow("title", null)
+     DataRow("title", BitSnackBarType.Info),
+     DataRow("title", BitSnackBarType.Warning),
+     DataRow("title", BitSnackBarType.Success),
+     DataRow("title", BitSnackBarType.Error),
+     DataRow("title", BitSnackBarType.SevereWarning),
+     DataRow("title", null)
     ]
     [TestMethod]
     public async Task BitSnackBarTypeTest(string title, BitSnackBarType? type)
@@ -127,10 +126,10 @@ public class BitSnackBarTests : BunitTestContext
             BitSnackBarType.SevereWarning => $"bit-snb-severe-warning",
             _ => String.Empty
         };
-        
+
         if (typeClass.IsNullOrEmpty())
         {
-            Assert.AreEqual(1,element.ClassList.Length);
+            Assert.AreEqual(1, element.ClassList.Length);
         }
         else
         {
@@ -139,7 +138,7 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title")
+     DataRow("title")
     ]
     [TestMethod]
     public async Task BitSnackBarCloseButtonTest(string title)
@@ -149,10 +148,10 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show(title);
 
         var closeButton = com.Find(".bit-snb-cbt");
-        
+
         var itemsBeforeClose = com.FindAll(".bit-snb-itm");
         Assert.AreEqual(1, itemsBeforeClose.Count);
-        
+
         closeButton.Click();
 
         var itemsAfterClose = com.FindAll(".bit-snb-itm");
@@ -160,8 +159,8 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title", "Go"),
-        DataRow("title", "Cancel")
+     DataRow("title", "Go"),
+     DataRow("title", "Cancel")
     ]
     [TestMethod]
     public async Task BitSnackBarDismissIconNameTest(string title, string iconName)
@@ -181,7 +180,7 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title")
+     DataRow("title")
     ]
     [TestMethod]
     public async Task BitSnackBarTitleTemplateTest(string title)
@@ -205,7 +204,7 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("title", "body")
+     DataRow("title", "body")
     ]
     [TestMethod]
     public async Task BitSnackBarBodyTemplateTest(string title, string body)
@@ -228,5 +227,4 @@ public class BitSnackBarTests : BunitTestContext
 
         itemTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
-
 }
