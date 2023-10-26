@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -10,7 +10,7 @@ public partial class BitSlider
     private bool RangeValueHasBeenSet;
 
     private bool isRanged;
-    private bool isReadOnly;
+    private bool IsReadOnly;
     private bool isVertical;
     private double lowerValue;
     private double upperValue;
@@ -82,14 +82,14 @@ public partial class BitSlider
     /// Whether to render the Slider as readonly
     /// </summary>
     [Parameter]
-    public bool IsReadonly
+    public bool IsReadOnly
     {
-        get => isReadOnly;
+        get => IsReadOnly;
         set
         {
-            if (isReadOnly == value) return;
+            if (IsReadOnly == value) return;
 
-            isReadOnly = value;
+            IsReadOnly = value;
             ClassBuilder.Reset();
         }
     }
@@ -245,7 +245,7 @@ public partial class BitSlider
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
     }
