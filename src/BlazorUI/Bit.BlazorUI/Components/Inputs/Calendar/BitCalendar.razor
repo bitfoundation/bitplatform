@@ -8,15 +8,14 @@
 
     <div style="@Styles?.Container" class="bit-cal-ctn @Classes?.Container" disabled=@(IsEnabled is false)>
         <div class="bit-cal-grp" role="group" aria-label="">
-            <div style="@Styles?.CurrentValueText"
-                 class="bit-cal-sdt @Classes?.CurrentValueText"
+            <div class="bit-cal-sdt"
                  aria-live="polite"
                  aria-atomic="true">
                 @(string.Format(SelectedDateAriaAtomic, CurrentValueAsString))
             </div>
             @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides || _showMonthPicker is false)
             {
-                <div style="@Styles?.DayPicker" class="bit-cal-dwp @Classes?.DayPicker">
+                <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
                     <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
                         @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay && IsMonthPickerVisible)
                         {
@@ -25,56 +24,56 @@
                                     type="button"
                                     aria-live="polite"
                                     aria-atomic="true"
-                                    class="bit-cal-ptb"
+                                    style="@Styles?.DayPickerMonthWrapper"
+                                    class="bit-cal-ptb @Classes?.DayPickerMonthWrapper"
                                     aria-label="@(string.Format(MonthPickerToggleAriaLabel, _monthTitle))">
-                                <span id="@_monthTitleId">@_monthTitle</span>
+                                <span style="@Styles?.DayPickerMonthTitle" class="@Classes?.DayPickerMonthTitle" id="@_monthTitleId">@_monthTitle</span>
                             </button>
                         }
                         else
                         {
-                            <div style="@Styles?.DayPickerTitle"
-                                 class="bit-cal-pkt @Classes?.DayPickerTitle"
+                            <div style="@Styles?.DayPickerMonthWrapper"
+                                 class="bit-cal-pkt @Classes?.DayPickerMonthWrapper"
                                  aria-live="polite"
                                  aria-atomic="true"
                                  tabindex="-1">
-                                <span id="@_monthTitleId">@_monthTitle</span>
+                                <span style="@Styles?.DayPickerMonthTitle" class="@Classes?.DayPickerMonthTitle" id="@_monthTitleId">@_monthTitle</span>
                             </div>
                         }
-                        <div style="@Styles?.DayPickerNavigationButtonsContainer" class="bit-cal-nbc @Classes?.DayPickerNavigationButtonsContainer">
+                        <div style="@Styles?.DayPickerNavContainer" class="bit-cal-nbc @Classes?.DayPickerNavContainer">
                             <button @onclick="() => HandleMonthChange(false)"
                                     type="button"
-                                    style="@Styles?.GotoPreviousMonthButton"
-                                    class="bit-cal-nbt @Classes?.GotoPreviousMonthButton"
+                                    style="@Styles?.PrevMonthNavButton"
+                                    class="bit-cal-nbt @Classes?.PrevMonthNavButton"
                                     title="@GoToPrevMonthTitle"
                                     disabled="@(CanChangeMonth(false) is false)"
                                     aria-disabled="@(CanChangeMonth(false) is false)">
-                                <i style="@Styles?.GotoPreviousMonthIcon" class="bit-icon bit-icon--Up @Classes?.GotoPreviousMonthIcon" aria-hidden="true" />
+                                <i style="@Styles?.PrevMonthNavIcon" class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" aria-hidden="true" />
                             </button>
                             @if ((MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay || IsMonthPickerVisible is false) && ShowGoToToday)
                             {
                                 <button @onclick="HandleGoToToday"
                                         type="button"
-                                        style="@Styles?.DayPickerGotoTodayButton"
-                                        class="bit-cal-gtb @Classes?.DayPickerGotoTodayButton"
+                                        style="@Styles?.GotoTodayButton"
+                                        class="bit-cal-gtb @Classes?.GotoTodayButton"
                                         title="@GoToTodayTitle"
                                         disabled="@IsGoToTodayButtonDisabled()">
-                                    <i style="@Styles?.DayPickerGotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.DayPickerGotoTodayIcon" aria-hidden="true" />
+                                    <i style="@Styles?.GotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.GotoTodayIcon" aria-hidden="true" />
                                 </button>
                             }
                             <button @onclick="() => HandleMonthChange(true)"
                                     type="button"
-                                    style="@Styles?.GotoNextMonthButton"
-                                    class="bit-cal-nbt @Classes?.GotoNextMonthButton"
+                                    style="@Styles?.NextMonthNavButton"
+                                    class="bit-cal-nbt @Classes?.NextMonthNavButton"
                                     title="@GoToNextMonthTitle"
                                     disabled="@(CanChangeMonth(true) is false)"
                                     aria-disabled="@(CanChangeMonth(true) is false)">
-                                <i style="@Styles?.GotoNextMonthIcon" class="bit-icon bit-icon--Down @Classes?.GotoNextMonthIcon" aria-hidden="true" />
+                                <i style="@Styles?.NextMonthNavIcon" class="bit-icon bit-icon--Down @Classes?.NextMonthNavIcon" aria-hidden="true" />
                             </button>
                         </div>
                     </div>
                     <table role="grid"
-                           style="@Styles?.DaysContainer"
-                           class="bit-cal-dgd @Classes?.DaysContainer"
+                           class="bit-cal-dgd"
                            aria-readonly="true"
                            aria-multiselectable="false"
                            aria-labelledby="@_monthTitleId"
@@ -193,40 +192,40 @@
                                     type="button"
                                     aria-atomic="true"
                                     aria-live="polite"
-                                    style="@Styles?.YearPickerToggle"
-                                    class="bit-cal-ptb @Classes?.YearPickerToggle"
+                                    style="@Styles?.YearPickerToggleButton"
+                                    class="bit-cal-ptb @Classes?.YearPickerToggleButton"
                                     aria-label="@(string.Format(YearPickerToggleAriaLabel, _displayYear))">
                                 @_displayYear
                             </button>
-                            <div style="@Styles?.YearPickerNavigationButtonsContainer" class="bit-cal-nbc @Classes?.YearPickerNavigationButtonsContainer">
+                            <div style="@Styles?.MonthPickerNavContainer" class="bit-cal-nbc @Classes?.MonthPickerNavContainer">
                                 <button @onclick="() => HandleYearChange(false)"
                                         type="button"
-                                        style="@Styles?.GotoPreviousYearButton"
-                                        class="bit-cal-nbt @Classes?.GotoPreviousYearButton"
+                                        style="@Styles?.PrevYearNavButton"
+                                        class="bit-cal-nbt @Classes?.PrevYearNavButton"
                                         title="@(string.Format(GoToPrevYearTitle, _displayYear - 1))"
                                         disabled="@prevDisabled"
                                         aria-disabled="@prevDisabled">
-                                    <i style="@Styles?.GotoPreviousYearIcon" class="bit-icon bit-icon--Up @Classes?.GotoPreviousYearIcon" aria-hidden="true" />
+                                    <i style="@Styles?.PrevYearNavIcon" class="bit-icon bit-icon--Up @Classes?.PrevYearNavIcon" aria-hidden="true" />
                                 </button>
                                 @if (ShowGoToToday)
                                 {
                                     <button @onclick="HandleGoToToday"
                                             type="button"
-                                            style="@Styles?.YearPickerGotoTodayButton"
-                                            class="bit-cal-gtb @Classes?.YearPickerGotoTodayButton"
+                                            style="@Styles?.GotoTodayButton"
+                                            class="bit-cal-gtb @Classes?.GotoTodayButton"
                                             title="@GoToTodayTitle"
                                             disabled="@IsGoToTodayButtonDisabled()">
-                                        <i style="@Styles?.YearPickerGotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.YearPickerGotoTodayIcon" aria-hidden="true" />
+                                        <i style="@Styles?.GotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.GotoTodayIcon" aria-hidden="true" />
                                     </button>
                                 }
                                 <button @onclick="() => HandleYearChange(true)"
                                         type="button"
-                                        style="@Styles?.GotoNextYearButton"
-                                        class="bit-cal-nbt @Classes?.GotoNextYearButton"
+                                        style="@Styles?.NextYearNavButton"
+                                        class="bit-cal-nbt @Classes?.NextYearNavButton"
                                         title="@(string.Format(GoToNextYearTitle, _displayYear + 1))"
                                         aria-disabled="@nextDisabled"
                                         disabled="@nextDisabled">
-                                    <i style="@Styles?.GotoNextYearIcon" class="bit-icon bit-icon--Down @Classes?.GotoNextYearIcon" aria-hidden="true" />
+                                    <i style="@Styles?.NextYearNavIcon" class="bit-icon bit-icon--Down @Classes?.NextYearNavIcon" aria-hidden="true" />
                                 </button>
                             </div>
                         </div>
@@ -280,35 +279,35 @@
                                     aria-label="@(string.Format(YearRangePickerToggleAriaLabel, _yearPickerStartYear, _yearPickerEndYear))">
                                 @_yearPickerStartYear - @_yearPickerEndYear
                             </button>
-                            <div style="@Styles?.YearRangePickerNavigationButtonsContainer" class="bit-cal-nbc @Classes?.YearRangePickerNavigationButtonsContainer">
+                            <div style="@Styles?.YearRangePickerNavContainer" class="bit-cal-nbc @Classes?.YearRangePickerNavContainer">
                                 <button @onclick="() => HandleYearRangeChange(false)"
                                         type="button"
-                                        style="@Styles?.GotoPreviousYearRangeButton"
-                                        class="bit-cal-nbt @Classes?.GotoPreviousYearRangeButton"
+                                        style="@Styles?.PrevYearRangeNavButton"
+                                        class="bit-cal-nbt @Classes?.PrevYearRangeNavButton"
                                         disabled="@prevDisabled"
                                         aria-disabled="@prevDisabled"
                                         title="@(string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1))">
-                                    <i style="@Styles?.GotoPreviousYearRangeIcon" class="bit-icon bit-icon--Up @Classes?.GotoPreviousYearRangeIcon" aria-hidden="true" />
+                                    <i style="@Styles?.PrevYearRangeNavIcon" class="bit-icon bit-icon--Up @Classes?.PrevYearRangeNavIcon" aria-hidden="true" />
                                 </button>
                                 @if (ShowGoToToday)
                                 {
                                     <button @onclick="HandleGoToToday"
                                             type="button"
-                                            style="@Styles?.YearRangePickerGotoTodayButton"
-                                            class="bit-cal-gtb @Classes?.YearRangePickerGotoTodayButton"
+                                            style="@Styles?.GotoTodayButton"
+                                            class="bit-cal-gtb @Classes?.GotoTodayButton"
                                             title="@GoToTodayTitle"
                                             disabled="@IsGoToTodayButtonDisabled()">
-                                        <i style="@Styles?.YearRangePickerGotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.YearRangePickerGotoTodayIcon" aria-hidden="true" />
+                                        <i style="@Styles?.GotoTodayIcon" class="bit-icon bit-icon--GotoToday @Classes?.GotoTodayIcon" aria-hidden="true" />
                                     </button>
                                 }
                                 <button @onclick="() => HandleYearRangeChange(true)"
                                         type="button"
-                                        style="@Styles?.GotoNextYearRangeButton"
-                                        class="bit-cal-nbt @Classes?.GotoNextYearRangeButton"
+                                        style="@Styles?.NextYearRangeNavButton"
+                                        class="bit-cal-nbt @Classes?.NextYearRangeNavButton"
                                         disabled="@nextDisabled"
                                         aria-disabled="@nextDisabled"
                                         title="@(string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12))">
-                                    <i style="@Styles?.GotoNextYearRangeIcon" class="bit-icon bit-icon--Down @Classes?.GotoNextYearRangeIcon" aria-hidden="true" />
+                                    <i style="@Styles?.NextYearRangeNavIcon" class="bit-icon bit-icon--Down @Classes?.NextYearRangeNavIcon" aria-hidden="true" />
                                 </button>
                             </div>
                         </div>
