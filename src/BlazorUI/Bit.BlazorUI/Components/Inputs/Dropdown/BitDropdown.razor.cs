@@ -932,7 +932,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 _scrollContainerId,
                                 ShowSearchBox ? 32 : 0,
                                 CalloutHeaderTemplate is not null ? _headerId : "",
-                                CalloutFooterTemplate is not null ? _footerId : "");
+                                CalloutFooterTemplate is not null ? _footerId : "",
+                                true);
     }
 
 
