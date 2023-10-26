@@ -15,9 +15,9 @@ public static class IServiceCollectionExtensions
 
     public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
-        var healthCheckSettings = appsettings.HealthCheckSettings;
+        var healthCheckSettings = appSettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
