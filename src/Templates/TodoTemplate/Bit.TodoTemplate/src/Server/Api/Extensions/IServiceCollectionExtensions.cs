@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
 {
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        var appSettings =configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
         services.AddIdentity<User, Role>(options =>
@@ -37,7 +37,7 @@ public static class IServiceCollectionExtensions
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
-        var appSettings =configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.JwtSettings;
 
         services.AddScoped<IJwtService, JwtService>();
@@ -135,7 +135,7 @@ public static class IServiceCollectionExtensions
 
     public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
-        var appSettings =configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;
 

@@ -17,7 +17,7 @@ public static class Services
     {
         // Services being registered here can get injected into controllers and services in Api project.
 
-        var appSettings =configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         services.AddSharedServices();
 

@@ -63,7 +63,7 @@ public class Middlewares
 
         app.MapControllers();
 
-        var appSettings =configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
         var healthCheckSettings = appSettings.HealthCheckSettings;
 
