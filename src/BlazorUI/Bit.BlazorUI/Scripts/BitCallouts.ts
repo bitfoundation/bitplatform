@@ -62,7 +62,8 @@ class BitCallouts {
         scrollContainerId: string,
         scrollOffset: number,
         headerId: string,
-        footerId: string
+        footerId: string,
+        setCalloutWidth: boolean
     ) {
         const component = document.getElementById(componentId);
         if (component == null) return false;
@@ -117,11 +118,13 @@ class BitCallouts {
         const { height: headerHeight } = header.getBoundingClientRect();
         const { height: footerHeight } = footer.getBoundingClientRect();
 
-        let width = componentWidth;
-        if (responsiveMode == BitResponsiveMode.Panel
-            && componentWidth < BitCallouts.MIN_MOBILE_WIDTH
-            && window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH) {
-            width = window.innerWidth > BitCallouts.MIN_MOBILE_WIDTH ? BitCallouts.MIN_MOBILE_WIDTH : window.innerWidth;
+        if (setCalloutWidth) {
+            let width = componentWidth;
+            if (responsiveMode == BitResponsiveMode.Panel
+                && componentWidth < BitCallouts.MIN_MOBILE_WIDTH
+                && window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH) {
+                width = window.innerWidth > BitCallouts.MIN_MOBILE_WIDTH ? BitCallouts.MIN_MOBILE_WIDTH : window.innerWidth;
+            }
             callout.style.width = width + 'px';
         }
 
