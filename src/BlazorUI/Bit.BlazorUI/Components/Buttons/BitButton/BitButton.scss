@@ -56,3 +56,21 @@
         background-color: $color-action-active-secondary;
     }
 }
+
+.bit-btn-txt {
+    color: $color-secondary-text;
+    border-color: transparent;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-secondary;
+            border-color: $color-action-hover-secondary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-active-secondary;
+        border-color: $color-action-hover-secondary;
+    }
+}
