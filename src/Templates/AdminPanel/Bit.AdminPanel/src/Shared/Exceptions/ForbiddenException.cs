@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace AdminPanel.Shared.Exceptions;
 
-[Serializable]
 public class ForbiddenException : RestException
 {
     public ForbiddenException()
@@ -28,11 +26,6 @@ public class ForbiddenException : RestException
 
     public ForbiddenException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ForbiddenException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

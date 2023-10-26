@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.Websites.Careers.Shared.Exceptions;
 
-[Serializable]
 public class ConflictException : RestException
 {
     public ConflictException(string message)
@@ -13,11 +11,6 @@ public class ConflictException : RestException
 
     public ConflictException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ConflictException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

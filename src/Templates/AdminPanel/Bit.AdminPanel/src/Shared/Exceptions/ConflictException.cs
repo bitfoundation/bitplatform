@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace AdminPanel.Shared.Exceptions;
 
-[Serializable]
 public class ConflictException : RestException
 {
     public ConflictException()
@@ -28,11 +26,6 @@ public class ConflictException : RestException
 
     public ConflictException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ConflictException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

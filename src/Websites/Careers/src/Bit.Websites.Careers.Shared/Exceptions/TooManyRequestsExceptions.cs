@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.Websites.Careers.Shared.Exceptions;
 
-[Serializable]
 public class TooManyRequestsExceptions : RestException
 {
 
@@ -24,11 +22,6 @@ public class TooManyRequestsExceptions : RestException
 
     public TooManyRequestsExceptions(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected TooManyRequestsExceptions(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 
