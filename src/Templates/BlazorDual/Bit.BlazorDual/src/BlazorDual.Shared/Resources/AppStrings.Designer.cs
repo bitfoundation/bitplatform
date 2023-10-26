@@ -1754,6 +1754,15 @@ namespace BlazorDual.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Incapable de se connecter au serveur..
+        /// </summary>
+        public static string UnableToConnectToServer {
+            get {
+                return ResourceManager.GetString("UnableToConnectToServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {

@@ -955,4 +955,7 @@ Please confirm your email by clicking on the link.</value>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
   </data>
+    <data name="UnableToConnectToServer" xml:space="preserve">
+    <value>Incapable de se connecter au serveur.</value>
+  </data>
 </root>
