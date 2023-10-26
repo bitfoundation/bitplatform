@@ -64,6 +64,11 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
             return response;
         }
+        catch (Exception exp) when (exp is HttpRequestException httpReqExp && (httpReqExp.HttpRequestError is HttpRequestError.SecureConnectionError || httpReqExp.HttpRequestError is HttpRequestError.NameResolutionError)
+        || exp.InnerException?.GetType().Name is "UnknownHostException")
+        {
+            throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
+        }
         catch (Exception exp)
         {
             StringBuilder report = new();
