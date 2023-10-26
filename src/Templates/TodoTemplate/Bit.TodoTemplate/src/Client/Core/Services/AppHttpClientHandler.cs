@@ -1,8 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Sockets;
-using System.Text;
 
 namespace TodoTemplate.Client.Core.Services;
 
@@ -26,13 +24,13 @@ public partial class AppHttpClientHandler : HttpClientHandler
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #endif
 
-        bool afterReceiveResponse = false;
+        bool serverCommunicationSuccess = false;
 
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
 
-            afterReceiveResponse = true;
+            serverCommunicationSuccess = true;
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
@@ -64,35 +62,9 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
             return response;
         }
-        catch (Exception exp) when (exp is HttpRequestException httpReqExp && (httpReqExp.HttpRequestError is HttpRequestError.SecureConnectionError || httpReqExp.HttpRequestError is HttpRequestError.NameResolutionError)
-        || exp.InnerException?.GetType().Name is "UnknownHostException")
+        catch (HttpRequestException exp) when (serverCommunicationSuccess is false)
         {
             throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
-        }
-        catch (Exception exp)
-        {
-            StringBuilder report = new();
-
-            if (exp is HttpRequestException httpReqExp)
-                report.AppendLine($"Error: {httpReqExp.HttpRequestError},Code: {(httpReqExp.StatusCode?.ToString() ?? "NULL")}");
-            if (exp.InnerException is SocketException socketExp)
-                report.AppendLine($"Code: {socketExp.SocketErrorCode}");
-            if (exp.InnerException?.InnerException is SocketException socketExp2)
-                report.AppendLine($"Code: {socketExp2.SocketErrorCode}");
-
-            report.AppendLine($"afterReceiveResponse: {afterReceiveResponse}");
-            report.AppendLine(exp.ToString());
-
-            throw new RestException(report.ToString(), exp);
-        }
-    }
-
-    IEnumerable<Exception> InnerExceptions(Exception exp)
-    {
-        while (exp.InnerException is not null)
-        {
-            yield return exp.InnerException;
-            exp = exp.InnerException;
         }
     }
 }
