@@ -926,13 +926,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 _dropdownId,
                                 _calloutId,
                                 IsOpen,
-                                IsResponsive,
+                                IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                 DropDirection,
                                 IsRtl,
                                 _scrollContainerId,
                                 ShowSearchBox ? 32 : 0,
                                 CalloutHeaderTemplate is not null ? _headerId : "",
-                                CalloutFooterTemplate is not null ? _footerId : "");
+                                CalloutFooterTemplate is not null ? _footerId : "",
+                                true);
     }
 
 

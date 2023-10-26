@@ -65,7 +65,7 @@ public class Middlewares
         }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 
-        app.UseHttpResponseExceptionHandler();
+        app.UseExceptionHandler("/");
 
         app.UseSwagger();
 

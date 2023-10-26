@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace AdminPanel.Shared.Exceptions;
 
-[Serializable]
 public class RestException : KnownException
 {
     public RestException()
@@ -28,11 +26,6 @@ public class RestException : KnownException
 
     public RestException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected RestException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

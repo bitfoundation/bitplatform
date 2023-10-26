@@ -1,8 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿namespace Bit.Websites.Careers.Shared.Exceptions;
 
-namespace Bit.Websites.Careers.Shared.Exceptions;
-
-[Serializable]
 public class DomainLogicException : KnownException
 {
     public DomainLogicException(string message)
@@ -12,11 +9,6 @@ public class DomainLogicException : KnownException
 
     public DomainLogicException(string message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected DomainLogicException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 }

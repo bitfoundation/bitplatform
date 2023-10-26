@@ -174,13 +174,13 @@
             <div class="example-content">
                 <BitDatePicker DateFormat="yyyy/MM/dd hh:mm tt"
                                Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()"
-                               GoToToday="برو به امروز"
+                               GoToTodayTitle="برو به امروز"
                                Style="max-width: 350px">
                 </BitDatePicker>
 
                 <BitDatePicker DateFormat="yyyy/MM/dd hh:mm tt"
                                Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()"
-                               GoToToday="Boro be emrouz"
+                               GoToTodayTitle="Boro be emrouz"
                                Style="max-width: 350px">
                 </BitDatePicker>
             </div>
@@ -309,7 +309,7 @@
 </ComponentDemo>
 
 @code {
-    private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);
+    private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
     private FormValidationDatePickerModel formValidationDatePickerModel = new();
     private string SuccessMessage = string.Empty;

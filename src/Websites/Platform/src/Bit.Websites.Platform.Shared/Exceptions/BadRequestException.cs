@@ -1,9 +1,6 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
-
 namespace Bit.Websites.Platform.Shared.Exceptions;
 
-[Serializable]
 public class BadRequestException : RestException
 {
     public BadRequestException()
@@ -28,11 +25,6 @@ public class BadRequestException : RestException
 
     public BadRequestException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected BadRequestException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

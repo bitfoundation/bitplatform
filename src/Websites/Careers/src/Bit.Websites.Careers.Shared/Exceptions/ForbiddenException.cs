@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.Websites.Careers.Shared.Exceptions;
 
-[Serializable]
 public class ForbiddenException : RestException
 {
     public ForbiddenException(string message)
@@ -13,11 +11,6 @@ public class ForbiddenException : RestException
 
     public ForbiddenException(string message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ForbiddenException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

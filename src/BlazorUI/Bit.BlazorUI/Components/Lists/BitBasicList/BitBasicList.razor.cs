@@ -2,7 +2,14 @@
 
 public partial class BitBasicList<TItem>
 {
-    private Virtualize<TItem>? _virtualizeElement;
+    private _BitBasicListVirtualize<TItem>? _bitBasicListVirtualizeRef;
+
+
+
+    /// <summary>
+    /// The custom content that gets rendered when there is no item to show.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
 
     /// <summary>
     /// Enables virtualization in rendering the list.
@@ -44,16 +51,20 @@ public partial class BitBasicList<TItem>
     /// </summary>
     [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
 
-    protected override string RootElementClass => "bit-bsl";
+
 
     public async Task RefreshDataAsync()
     {
         if (ItemsProvider is null) return;
-        if (_virtualizeElement is null) return;
+        if (_bitBasicListVirtualizeRef is null) return;
 
-        await _virtualizeElement.RefreshDataAsync();
+        await _bitBasicListVirtualizeRef.RefreshDataAsync();
         StateHasChanged();
     }
+    
+
+    
+    protected override string RootElementClass => "bit-bsl";
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedItems(ItemsProviderRequest request)

@@ -9,14 +9,21 @@ public partial class BitDatePickerDemo
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the DatePicker allows input a date string directly or not.",
+            Description = "Whether or not the DatePicker allows a string date input.",
+        },
+        new()
+        {
+            Name = "CalloutAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label of the DatePicker's callout for screen readers."
         },
         new()
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+            Description = "Capture and render additional html attributes for the DatePicker's callout."
         },
         new()
         {
@@ -30,21 +37,21 @@ public partial class BitDatePickerDemo
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The format of the date in the DatePicker like ""yyyy/MM/dd"".",
+            Description = "The format of the date in the DatePicker.",
         },
         new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the day cell is rendered."
+            Description = "Custom template to render the day cells of the DatePicker."
         },
         new()
         {
-            Name = "GoToToday",
+            Name = "GoToTodayTitle",
             Type = "string",
             DefaultValue = "Go to today",
-            Description = "GoToToday text for the DatePicker.",
+            Description = "The title of the GoToToday button (tooltip).",
         },
         new()
         {
@@ -86,23 +93,23 @@ public partial class BitDatePickerDemo
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom DatePicker icon template."
+            Description = "Custom template for the DatePicker's icon."
         },
         new()
         {
             Name = "IconLocation",
             Type = "BitIconLocation",
+            DefaultValue = "BitIconLocation.Right",
+            Description = "Determines the location of the DatePicker's icon.",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "DatePicker icon location."
         },
         new()
         {
             Name = "IconName",
             Type = "string",
             DefaultValue = "CalendarMirrored",
-            Description = "Optional DatePicker icon."
+            Description = "The name of the DatePicker's icon."
         },
         new()
         {
@@ -116,7 +123,7 @@ public partial class BitDatePickerDemo
             Name = "IsMonthPickerVisible",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown beside the day picker or hidden.",
+            Description = "Whether the month picker is shown or hidden.",
         },
         new()
         {
@@ -144,87 +151,86 @@ public partial class BitDatePickerDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Label for the DatePicker.",
+            Description = "The text of the DatePicker's label.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize the label for the DatePicker."
+            Description = "Custom template for the DatePicker's label."
         },
         new()
         {
             Name = "MaxDate",
             Type = "DateTimeOffset",
             DefaultValue = "null",
-            Description = "The maximum allowable date.",
+            Description = "The maximum date allowed for the DatePicker.",
         },
         new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The minimum allowable date.",
+            Description = "The minimum date allowed for the DatePicker.",
         },
         new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the month cell is rendered."
+            Description = "Custom template to render the month cells of the DatePicker."
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "Callback for when clicking on DatePicker input.",
+            Description = "The callback for clicking on the DatePicker's input.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback",
+            Description = "The callback for focusing the DatePicker's input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            Description = "Callback for when focus moves into the DatePicker input.",
+            Description = "The callback for when the focus moves into the DatePicker's input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            Description = "Callback for when clicking on DatePicker input.",
+            Description = "The callback for when the focus moves out of the DatePicker's input.",
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
-            Description = "Callback for when the on selected date changed.",
-        },
-        new()
-        {
-            Name = "PickerAriaLabel",
-            Type = "string",
-            DefaultValue = "Calendar",
-            Description = "Aria label for date picker popup for screen reader users."
+            Description = "The callback for selecting a date in the DatePicker.",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "Placeholder text for the DatePicker.",
+            Description = "The placeholder text of the DatePicker's input.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the CalendarDay close button should be shown or not."
+            Description = "Whether the DatePicker's close button should be shown or not."
         },
         new()
         {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the \"Go to today\" link should be shown or not."
+            Description = "Whether the GoToToday button should be shown or not."
         },
         new()
         {
@@ -235,53 +241,40 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not render the time-picker.",
+        },
+        new()
+        {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show week number in the year.",
+            Description = "Whether the week number (weeks 1 to 53) should be shown before each week row.",
         },
         new()
         {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
-            Description = "The tabIndex of the TextField.",
+            Description = "The tabIndex of the DatePicker's input.",
         },
         new()
         {
-            Name = "Value",
-            Type = "DateTimeOffset?",
-            DefaultValue = "null",
-            Description = "The value of DatePicker.",
-        },
-        new()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<DateTimeOffset?>",
-            Description = "Callback for when the on date value changed.",
+            Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "The time format of the time-picker, 24H or 12H.",
+            LinkType = LinkType.Link,
+            Href = "#time-format-enum",
         },
         new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the year cell is rendered."
-        },
-        new()
-        {
-            Name = "ShowTimePicker",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Show time picker for select times.",
-        },
-        new()
-        {
-            Name = "TimeFormat",
-            Type = "BitTimeFormat",
-            LinkType = LinkType.Link,
-            Href = "#time-format-enum",
-            DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "Time format of the time pickers, 24H or 12H"
+            Description = "Custom template to render the year cells of the DatePicker."
         }
     };
 
@@ -492,7 +485,7 @@ private async Task OpenCallout()
                Placeholder=""Select a date..."" />
 <BitLabel>Selected date: @selectedDate.ToString()</BitLabel>";
     private readonly string example9CsharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset);";
+private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example10RazorCode = @"
 <BitDatePicker DateFormat=""yyyy/MM/dd hh:mm tt""
