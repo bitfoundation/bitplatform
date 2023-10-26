@@ -1,10 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace AdminPanel.Shared.Exceptions;
 
-
-[Serializable]
 public class TooManyRequestsExceptions : RestException
 {
     public TooManyRequestsExceptions()
@@ -29,11 +26,6 @@ public class TooManyRequestsExceptions : RestException
 
     public TooManyRequestsExceptions(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected TooManyRequestsExceptions(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

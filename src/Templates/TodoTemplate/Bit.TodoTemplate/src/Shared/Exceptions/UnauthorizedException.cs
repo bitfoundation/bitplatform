@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace TodoTemplate.Shared.Exceptions;
 
-[Serializable]
 public class UnauthorizedException : RestException
 {
     public UnauthorizedException()
@@ -28,11 +26,6 @@ public class UnauthorizedException : RestException
 
     public UnauthorizedException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected UnauthorizedException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 
