@@ -109,10 +109,9 @@ public partial class BitDatePicker
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
     private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
+    private string _datePickerId = string.Empty;
+    private string _calloutId = string.Empty;
     private string? _labelId;
-    private string? _calloutId;
-    private string? _overlayId;
-    private string? _wrapperId;
     private string? _textFieldId;
     private string? _monthTitleId;
     private string? _activeDescendantId;
@@ -383,13 +382,12 @@ public partial class BitDatePicker
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _labelId = $"BitDatePicker-{UniqueId}-label";
-        _calloutId = $"BitDatePicker-{UniqueId}-callout";
-        _overlayId = $"BitDatePicker-{UniqueId}-overlay";
-        _wrapperId = $"BitDatePicker-{UniqueId}-wrapper";
-        _textFieldId = $"BitDatePicker-{UniqueId}-text-field";
-        _monthTitleId = $"BitDatePicker-{UniqueId}-month-title";
-        _activeDescendantId = $"BitDatePicker-{UniqueId}-active-descendant";
+        _datePickerId = $"DatePicker-{UniqueId}";
+        _labelId = $"{_datePickerId}-label";
+        _calloutId = $"{_datePickerId}-callout";
+        _textFieldId = $"{_datePickerId}-text-field";
+        _monthTitleId = $"{_datePickerId}-month-title";
+        _activeDescendantId = $"{_datePickerId}-active-descendant";
 
         base.OnInitialized();
     }
@@ -451,13 +449,12 @@ public partial class BitDatePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
-
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
+        IsOpen = true;
+        var result = await ToggleCallout();
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDatePicker.checkMonthPickerWidth", _Id, _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = result;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -465,9 +462,7 @@ public partial class BitDatePicker
             _isMonthPickerOverlayOnTop = false;
         }
 
-        IsOpen = !IsOpen;
-
-        if (IsOpen && CurrentValue.HasValue)
+        if (CurrentValue.HasValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
@@ -547,8 +542,8 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
+        await ToggleCallout();
 
         _displayYear = _currentYear;
         _currentMonth = selectedMonth;
@@ -1078,8 +1073,9 @@ public partial class BitDatePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        await _js.InvokeVoidAsync("BitDatePicker.toggleDatePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
         IsOpen = false;
+        await ToggleCallout();
+
         StateHasChanged();
     }
 
@@ -1090,6 +1086,28 @@ public partial class BitDatePicker
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task<bool> ToggleCallout()
+    {
+        if (IsEnabled is false) return false;
+
+        _isMonthPickerOverlayOnTop = false;
+        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+
+        return await _js.ToggleCallout(_dotnetObj,
+                                       _datePickerId,
+                                       _calloutId,
+                                       IsOpen,
+                                       IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                       BitDropDirection.TopAndBottom,
+                                       false,
+                                       "",
+                                       0,
+                                       "",
+                                       "",
+                                       false);
     }
 
     protected override void Dispose(bool disposing)

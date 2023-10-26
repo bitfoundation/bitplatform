@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.BlazorUI.Demo.Shared.Exceptions;
 
-[Serializable]
 public class ResourceValidationException : RestException
 {
     public ResourceValidationException(params LocalizedString[] errorMessages)
@@ -52,11 +50,6 @@ public class ResourceValidationException : RestException
         : base(message)
     {
         Payload = payload;
-    }
-
-    protected ResourceValidationException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
     }
 
     public ErrorResourcePayload Payload { get; set; } = new ErrorResourcePayload();

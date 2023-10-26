@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace AdminPanel.Shared.Exceptions;
 
-[Serializable]
 public class ResourceNotFoundException : RestException
 {
     public ResourceNotFoundException()
@@ -28,11 +26,6 @@ public class ResourceNotFoundException : RestException
 
     public ResourceNotFoundException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ResourceNotFoundException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

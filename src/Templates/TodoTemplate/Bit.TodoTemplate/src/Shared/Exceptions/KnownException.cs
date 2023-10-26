@@ -1,9 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿namespace TodoTemplate.Shared.Exceptions;
 
-namespace TodoTemplate.Shared.Exceptions;
-
-[Serializable]
-public abstract class KnownException : ApplicationException
+public abstract class KnownException : Exception
 {
     public KnownException(string message)
         : base(message)
@@ -27,11 +24,6 @@ public abstract class KnownException : ApplicationException
         : base(message.Value, innerException)
     {
         Key = message.Name;
-    }
-
-    protected KnownException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
     }
 
     public string? Key { get; set; }
