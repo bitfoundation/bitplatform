@@ -1,45 +1,31 @@
 ﻿@import '../../../../Styles/abstracts/_colors.scss';
 @import '../../../../Styles/abstracts/_functions.scss';
 
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
+.example-content {
+    display: flex;
+    overflow-x: auto;
+    width: rem2(300px);
+    flex-flow: column wrap;
 }
 
-::deep div.validation-message {
-    color: $Red20;
-    font-size: rem2(12px);
+.day-cell {
+    width: 28px;
+    height: 28px;
+    position: relative;
 }
 
 .weekend-cell {
     color: red;
 }
 
-.custom-day-cell {
-    position: relative;
-    width: 44px !important;
-    height: 44px !important;
-}
-
-.discount-badge {
+.badge {
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
     position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    width: fit-content !important;
-    height: 16px !important;
-    border-radius: 2px;
-    padding: 0 4px;
+    border-radius: 50%;
     background-color: red;
-    color: white;
-    font-size: 8px;
 }
 
 .year-suffix {
@@ -49,4 +35,10 @@
     height: 12px;
     color: gray;
     font-size: 8px;
+}
+
+::deep {
+    .validation-message {
+        color: red;
+    }
 }

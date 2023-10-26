@@ -7,7 +7,7 @@ public static class CultureInfoHelper
 {
     private static readonly FieldInfo _cultureDataField = typeof(TextInfo).GetField("_cultureData", BindingFlags.NonPublic | BindingFlags.Instance)!;
     private static readonly FieldInfo _iReadingLayoutField =
-        Type.GetType("System.Globalization.CultureData, System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")!
+        Type.GetType("System.Globalization.CultureData, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")!
         .GetField("_iReadingLayout", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
     public static CultureInfo GetFaIrCultureWithFarsiNames()
