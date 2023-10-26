@@ -43,7 +43,7 @@ public partial class NavMenu : IDisposable
             },
             new BitNavItem
             {
-                Text = Localizer[nameof(AppStrings.Privacy)],
+                Text = Localizer[nameof(AppStrings.PrivacyPolicyTitle)],
                 IconName = BitIconName.EntityExtraction,
                 Url = "/privacy",
             }

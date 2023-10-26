@@ -461,10 +461,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
     <value>Les mots de passe doivent utiliser au moins {0} caractères différents.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
-  <data name="EmailNotConfirmed" xml:space="preserve">
-    <value>L'e-mail '{0}' n'est pas confirmé.</value>
-    <comment>Error when a email is not confirmed by the confirmation link</comment>
-  </data>
   <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation. Réessayez dans {0}</value>
   </data>
@@ -501,12 +497,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="ForgetPasswordTitle" xml:space="preserve">
     <value>Mot de passe oublié</value>
   </data>
-  <data name="NotReceivedConfirmationEmailMessage1" xml:space="preserve">
-    <value>Vous n'avez pas reçu le mail de confirmation?</value>
-  </data>
-  <data name="ArgumentIsNullOrWhitespace" xml:space="preserve">
-    <value>L'argument '{0}' ne peut pas être nul, vide ou contenir uniquement des espaces.</value>
-  </data>
   <data name="AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties" xml:space="preserve">
     <value>Le type de métadonnées associé au type « {0} » contient les propriétés ou champs inconnus suivants : {1}. Veuillez vous assurer que les noms de ces membres correspondent aux noms des propriétés du type principal.</value>
   </data>
@@ -515,9 +505,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Common_PropertyNotFound" xml:space="preserve">
     <value>La propriété {0}.{1} est introuvable.</value>
-  </data>
-  <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="CompareAttribute_UnknownProperty" xml:space="preserve">
     <value>Impossible de trouver une propriété nommée {0}.</value>
@@ -554,9 +541,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="DisplayAttribute_PropertyNotSet" xml:space="preserve">
     <value>La propriété {0} n'a pas été définie. Utilisez la méthode {1} pour obtenir la valeur.</value>
-  </data>
-  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
   </data>
   <data name="EnumDataTypeAttribute_TypeCannotBeNull" xml:space="preserve">
     <value>Le type fourni pour EnumDataTypeAttribute ne peut pas être nul.</value>
@@ -798,9 +782,6 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>
-  <data name="WaitForResetPasswordEmailResendDelay." xml:space="preserve">
-    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe pour « {0} ». Réessayez plus tard.</value>
-  </data>
   <data name="YouAreSignInAs" xml:space="preserve">
     <value>Vous êtes connecté en tant que</value>
   </data>
@@ -821,5 +802,125 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>Dos</value>
+  </data>
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' et '{1}' ne correspondent pas.</value>
+  </data>
+  <data name="AllowedValuesAttribute_Invalid" xml:space="preserve">
+    <value>Le champ {0} n’est égal à aucune des valeurs spécifiées dans AllowedValuesAttribute.</value>
+  </data>
+  <data name="Base64StringAttribute_Invalid" xml:space="preserve">
+    <value>Le champ {0} n’est pas un codage Base64 valide.</value>
+  </data>
+  <data name="DeniedValuesAttribute_Invalid" xml:space="preserve">
+    <value>Le champ {0} est égal à l’une des valeurs spécifiées dans DeniedValuesAttribute.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} n’est pas une adresse e-mail valide.</value>
+  </data>
+  <data name="LengthAttribute_InvalidMinLength" xml:space="preserve">
+    <value>LengthAttribute doit avoir une valeur MinimumLength égale ou supérieure à zéro.</value>
+  </data>
+  <data name="LengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <value>LengthAttribute doit avoir une valeur MaximumLength supérieure ou égale à MinimumLength.</value>
+  </data>
+  <data name="LengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être un type de chaîne ou de collection dont la longueur minimale est de « {1} » et la longueur maximale de « {2} ».</value>
+  </data>
+  <data name="RangeAttribute_CannotUseExclusiveBoundsWhenTheyAreEqual" xml:space="preserve">
+    <value>Impossible d’utiliser des limites exclusives lorsque la valeur maximale est égale à la valeur minimale.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError_MinExclusive" xml:space="preserve">
+    <value>Le champ {0} doit être compris entre {1} exclusif et {2}.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError_MaxExclusive" xml:space="preserve">
+    <value>Le champ {0} doit être compris entre {1} et {2} exclusif.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError_MinExclusive_MaxExclusive" xml:space="preserve">
+    <value>Le champ {0} doit être compris entre {1} exclusif et {2} exclusif.</value>
+  </data>
+  <data name="DefaultError" xml:space="preserve">
+    <value>Une défaillance inconnue s’est produite.</value>
+  </data>
+  <data name="InvalidManagerType" xml:space="preserve">
+    <value>Le type {0} doit dériver de {1}&lt;{2}&gt;.</value>
+  </data>
+  <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
+    <value>Le PasswordHasherCompatibilityMode fourni n’est pas valide.</value>
+  </data>
+  <data name="InvalidPasswordHasherIterationCount" xml:space="preserve">
+    <value>Le nombre d’itérations doit être un entier positif.</value>
+  </data>
+  <data name="MustCallAddIdentity" xml:space="preserve">
+    <value>AddIdentity doit être appelé sur la collection de services.</value>
+  </data>
+  <data name="NoTokenProvider" xml:space="preserve">
+    <value>Aucun IUserTwoFactorTokenProvider&lt;{0}&gt; nommé '{1}' n’est enregistré.</value>
+  </data>
+  <data name="NullSecurityStamp" xml:space="preserve">
+    <value>Le tampon de sécurité de l’utilisateur ne peut pas être nul.</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Les mots de passe doivent comporter au moins {0} caractères.</value>
+  </data>
+  <data name="StoreNotIQueryableRoleStore" xml:space="preserve">
+    <value>Store n’implémente pas IQueryableRoleStore&lt;TRole&gt;.&lt;/TRole&gt;</value>
+  </data>
+  <data name="StoreNotIQueryableUserStore" xml:space="preserve">
+    <value>Store n’implémente pas IQueryableUserStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIRoleClaimStore" xml:space="preserve">
+    <value>Store n’implémente pas IRoleClaimStore&lt;TRole&gt;.&lt;/TRole&gt;</value>
+  </data>
+  <data name="StoreNotIUserAuthenticationTokenStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserAuthenticationTokenStore&lt;User&gt;.&lt;/User&gt;</value>
+  </data>
+  <data name="StoreNotIUserClaimStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserClaimStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserConfirmationStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserConfirmationStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserEmailStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserEmailStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserLockoutStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserLockoutStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserLoginStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserLoginStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserPasswordStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserPasswordStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserPhoneNumberStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserPhoneNumberStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserRoleStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserRoleStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserSecurityStampStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserSecurityStampStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="StoreNotIUserAuthenticatorKeyStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserAuthenticatorKeyStore&lt;User&gt;.&lt;/User&gt;</value>
+  </data>
+  <data name="StoreNotIUserTwoFactorStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserTwoFactorStore&lt;TUser&gt;.&lt;/TUser&gt;</value>
+  </data>
+  <data name="UserLockoutNotEnabled" xml:space="preserve">
+    <value>Le verrouillage n’est pas activé pour cet utilisateur.</value>
+  </data>
+  <data name="StoreNotIUserTwoFactorRecoveryCodeStore" xml:space="preserve">
+    <value>Store n’implémente pas IUserTwoFactorRecoveryCodeStore&lt;User&gt;.&lt;/User&gt;</value>
+  </data>
+  <data name="NoRoleType" xml:space="preserve">
+    <value>Aucun RoleType n’a été spécifié, essayez AddRoles&lt;TRole&gt;().&lt;/TRole&gt;</value>
+  </data>
+  <data name="StoreNotIProtectedUserStore" xml:space="preserve">
+    <value>Store n’implémente pas IProtectedUserStore,&lt;TUser&gt; ce qui est requis lorsque ProtectPersonalData = true.&lt;/TUser&gt;</value>
+  </data>
+  <data name="NoPersonalDataProtector" xml:space="preserve">
+    <value>Aucun service IPersonalDataProtector n’a été enregistré, cela est requis lorsque ProtectPersonalData = true.</value>
   </data>
 </root>

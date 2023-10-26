@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.Pickers;
+namespace Bit.BlazorUI.Tests.DatePicker;
 
 public class BitDatePickerTestModel
 {
