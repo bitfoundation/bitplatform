@@ -13,7 +13,7 @@ public enum BitButtonStyle
     Standard,
 
     /// <summary>
-    /// The button with white text without background
+    /// The button with white text on a transparent background
     /// </summary>
     Text
 }
