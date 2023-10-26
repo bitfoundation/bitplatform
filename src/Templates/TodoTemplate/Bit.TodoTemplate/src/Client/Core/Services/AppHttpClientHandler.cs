@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Text;
 
 namespace TodoTemplate.Client.Core.Services;
 
@@ -25,9 +26,13 @@ public partial class AppHttpClientHandler : HttpClientHandler
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #endif
 
+        bool afterReceiveResponse = false;
+
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
+
+            afterReceiveResponse = true;
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
@@ -59,16 +64,21 @@ public partial class AppHttpClientHandler : HttpClientHandler
 
             return response;
         }
-        catch (Exception exp) when (InnerExceptions(exp).OfType<SocketException>().Any(socketExp => new[] { SocketError.HostNotFound, SocketError.HostDown, SocketError.HostUnreachable, SocketError.ConnectionRefused, SocketError.NetworkDown, SocketError.NetworkUnreachable }.Contains(socketExp.SocketErrorCode))
-            || exp is HttpRequestException httpReqExp && new[] { HttpStatusCode.BadGateway, HttpStatusCode.GatewayTimeout }.Contains(httpReqExp.StatusCode ?? default)
-            || exp.Message.Contains("The SSL connection could not be established", StringComparison.InvariantCultureIgnoreCase)
-            || exp.Message.Contains("Connection failure", StringComparison.InvariantCultureIgnoreCase /*Android App*/)
-            || exp.Message.Contains("Failed to fetch", StringComparison.InvariantCultureIgnoreCase /*Chrome*/)
-            || exp.Message.Contains("NetworkError when attempting to fetch resource", StringComparison.InvariantCultureIgnoreCase /*Firefox*/)
-            || exp.Message.Contains("Load failed", StringComparison.InvariantCultureIgnoreCase /*Safari*/)
-            || exp.Message.Contains("Could not connect to the server", StringComparison.InvariantCultureIgnoreCase) /*iOS App*/)
+        catch (Exception exp)
         {
-            throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
+            StringBuilder report = new();
+
+            if (exp is HttpRequestException httpReqExp)
+                report.AppendLine($"Error: {httpReqExp.HttpRequestError},Code: {(httpReqExp.StatusCode?.ToString() ?? "NULL")}");
+            if (exp.InnerException is SocketException socketExp)
+                report.AppendLine($"Code: {socketExp.SocketErrorCode}");
+            if (exp.InnerException?.InnerException is SocketException socketExp2)
+                report.AppendLine($"Code: {socketExp2.SocketErrorCode}");
+
+            report.AppendLine($"afterReceiveResponse: {afterReceiveResponse}");
+            report.AppendLine(exp.ToString());
+
+            throw new RestException(report.ToString(), exp);
         }
     }
 

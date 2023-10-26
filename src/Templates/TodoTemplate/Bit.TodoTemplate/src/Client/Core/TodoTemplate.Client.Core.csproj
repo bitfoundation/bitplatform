@@ -51,6 +51,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.2.9373" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Graphics" />
         <Using Include="Microsoft.Maui.Accessibility" />
