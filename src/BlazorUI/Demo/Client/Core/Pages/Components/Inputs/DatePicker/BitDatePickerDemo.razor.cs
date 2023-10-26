@@ -462,7 +462,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitCalendar @bind-Value=""validationModel.Date"" />
+    <BitDatePicker @bind-Value=""validationModel.Date"" />
     <ValidationMessage For=""@(() => validationModel.Date)"" />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
@@ -472,7 +472,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     </BitButton>
 </EditForm>";
     private readonly string example9CsharpCode = @"
-public class BitCalendarValidationModel
+public class BitDatePickerValidationModel
 {
     [Required]
     public DateTimeOffset? Date { get; set; }

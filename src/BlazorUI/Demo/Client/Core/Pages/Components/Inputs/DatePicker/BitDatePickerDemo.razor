@@ -166,7 +166,7 @@
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
 
-                    <BitCalendar @bind-Value="validationModel.Date" />
+                    <BitDatePicker @bind-Value="validationModel.Date" />
                     <ValidationMessage For="@(() => validationModel.Date)" />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
