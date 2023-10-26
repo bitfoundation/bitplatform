@@ -10,5 +10,10 @@ public enum BitButtonStyle
     /// <summary>
     /// The button with black text on a white background
     /// </summary>
-    Standard
+    Standard,
+
+    /// <summary>
+    /// The button with white text without background
+    /// </summary>
+    Text
 }
