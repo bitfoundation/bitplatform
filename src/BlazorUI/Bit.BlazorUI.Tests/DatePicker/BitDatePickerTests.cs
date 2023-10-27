@@ -114,7 +114,7 @@ public class BitDatePickerTests : BunitTestContext
 
         Assert.IsNull(component.Instance.Value);
 
-        var today = component.Find(".bit-dtp-dct");
+        var today = component.Find(".bit-dtp-dtd");
         today.Click();
 
         Assert.IsNotNull(component.Instance.Value);
@@ -143,7 +143,7 @@ public class BitDatePickerTests : BunitTestContext
         datePicker.Click();
 
         //select today
-        var today = component.Find(".bit-dtp-dct");
+        var today = component.Find(".bit-dtp-dtd");
         today.Click();
 
         form.Submit();
@@ -177,7 +177,7 @@ public class BitDatePickerTests : BunitTestContext
         datePicker.Click();
 
         //select today
-        var today = component.Find(".bit-dtp-dct");
+        var today = component.Find(".bit-dtp-dtd");
         today.Click();
 
         form.Submit();
@@ -209,7 +209,7 @@ public class BitDatePickerTests : BunitTestContext
         datePicker.Click();
 
         //select today
-        var today = component.Find(".bit-dtp-dct");
+        var today = component.Find(".bit-dtp-dtd");
         today.Click();
 
         Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
