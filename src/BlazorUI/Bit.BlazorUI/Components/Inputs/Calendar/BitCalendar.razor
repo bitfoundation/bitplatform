@@ -7,7 +7,7 @@
      class="@ClassBuilder.Value">
 
     <div style="@Styles?.Container" class="bit-cal-ctn @Classes?.Container" disabled=@(IsEnabled is false)>
-        <div class="bit-cal-grp" role="group" aria-label="">
+        <div style="@Styles?.Group" class="bit-cal-grp @Classes?.Group" role="group" aria-label="">
             <div class="bit-cal-sdt" aria-live="polite" aria-atomic="true">
                 @(string.Format(SelectedDateAriaAtomic, CurrentValueAsString))
             </div>

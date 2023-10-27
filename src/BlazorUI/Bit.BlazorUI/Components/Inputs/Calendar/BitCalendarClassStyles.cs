@@ -13,6 +13,11 @@ public class BitCalendarClassStyles
     public string? Container { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the group element of the BitCalendar.
+    /// </summary>
+    public string? Group { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the day-picker's wrapper of the BitCalendar.
     /// </summary>
     public string? DayPickerWrapper { get; set; }
