@@ -263,7 +263,6 @@ public partial class BitCalendar
 
     protected override void OnInitialized()
     {
-        _monthTitleId = $"BitCalendar-{UniqueId}-month-title";
         _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
 
         base.OnInitialized();
