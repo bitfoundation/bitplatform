@@ -132,6 +132,17 @@
     }
 }
 
+.bit-cal-dbs {
+    background-color: $color-background-secondary;
+
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border: $shape-border-width $shape-border-style $color-border-primary;
+    }
+}
+
 .bit-cal-dbo {
     font-weight: 400;
     color: $color-foreground-secondary;
@@ -147,17 +158,6 @@
         &:hover {
             background-color: $color-action-hover-primary;
         }
-    }
-}
-
-.bit-cal-dbs {
-    background-color: $color-background-secondary;
-
-    &::after {
-        inset: 0;
-        content: "";
-        position: absolute;
-        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 }
 

@@ -755,17 +755,33 @@ public partial class BitCalendar
         }
     }
 
-    private string GetDateButtonCssClass(int day, int week)
+    private bool IsToday(int week, int day)
     {
-        StringBuilder className = new StringBuilder();
         var todayYear = Culture.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
         var currentDay = _daysOfCurrentMonth[week, day];
 
+        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetDateButtonCssClass(int day, int week)
+    {
+        StringBuilder className = new StringBuilder();
+
         if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
             className.Append(" bit-cal-dbs");
+
+            if (Classes?.SelectedDayButton is not null)
+            {
+                className.Append(" ").Append(Classes?.SelectedDayButton);
+            }
         }
 
         if (IsInCurrentMonth(week, day) is false)
@@ -773,12 +789,34 @@ public partial class BitCalendar
             className.Append(" bit-cal-dbo");
         }
 
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        if (IsToday(week, day))
         {
             className.Append(" bit-cal-dtd");
+
+            if (Classes?.TodayDayButton is not null)
+            {
+                className.Append(" ").Append(Classes?.TodayDayButton);
+            }
         }
 
         return className.ToString();
+    }
+
+    private string? GetDateButtonCssStyle(int day, int week)
+    {
+        StringBuilder style = new StringBuilder();
+
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek && Styles?.SelectedDayButton is not null)
+        {
+            style.Append(" ").Append(Styles?.SelectedDayButton);
+        }
+
+        if (IsToday(week, day) && Styles?.TodayDayButton is not null)
+        {
+            style.Append(" ").Append(Styles?.TodayDayButton);
+        }
+
+        return style.ToString();
     }
 
     private string GetMonthCellCssClass(int monthIndex)

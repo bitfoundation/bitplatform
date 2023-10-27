@@ -88,6 +88,16 @@ public class BitCalendarClassStyles
     public string? DayButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for today day button of the BitCalendar.
+    /// </summary>
+    public string? TodayDayButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for selected day button of the BitCalendar.
+    /// </summary>
+    public string? SelectedDayButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the time-picker's main container of the BitCalendar.
     /// </summary>
     public string? TimePickerContainer { get; set; }
