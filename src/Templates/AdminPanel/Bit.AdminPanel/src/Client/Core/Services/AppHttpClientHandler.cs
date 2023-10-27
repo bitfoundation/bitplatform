@@ -24,51 +24,39 @@ public partial class AppHttpClientHandler : HttpClientHandler
         request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
 #endif
 
-        bool serverCommunicationSuccess = false;
+        var response = await base.SendAsync(request, cancellationToken);
 
-        try
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
         {
-            var response = await base.SendAsync(request, cancellationToken);
+            throw new UnauthorizedException();
+        }
 
-            serverCommunicationSuccess = true;
-
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
+        if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
+        {
+            if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
             {
-                throw new UnauthorizedException();
-            }
+                RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken))!;
 
-            if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
-            {
-                if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
+                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
+
+                List<object?> args = new()
                 {
-                    RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken))!;
+                    typeof(KnownException).IsAssignableFrom(exceptionType)
+                        ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
+                        : restError.Message ?? string.Empty
+                };
 
-                    Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType ?? string.Empty) ?? typeof(UnknownException);
-
-                    List<object?> args = new()
-                    {
-                        typeof(KnownException).IsAssignableFrom(exceptionType)
-                            ? new LocalizedString(restError.Key ?? string.Empty, restError.Message ?? string.Empty)
-                            : restError.Message ?? string.Empty
-                    };
-
-                    if (exceptionType == typeof(ResourceValidationException))
-                    {
-                        args.Add(restError.Payload);
-                    }
-
-                    throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray()) ?? new Exception());
+                if (exceptionType == typeof(ResourceValidationException))
+                {
+                    args.Add(restError.Payload);
                 }
+
+                throw (Exception)(Activator.CreateInstance(exceptionType, args.ToArray()) ?? new Exception());
             }
-
-            response.EnsureSuccessStatusCode();
-
-            return response;
         }
-        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
-            || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
-        {
-            throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
-        }
+
+        response.EnsureSuccessStatusCode();
+
+        return response;
     }
 }
