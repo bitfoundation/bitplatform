@@ -52,7 +52,6 @@ public partial class BitCalendar
     private int _yearPickerStartYear;
     private bool _showYearPicker;
     private bool _showMonthPicker;
-    private string? _monthTitleId;
     private int? _selectedDateWeek;
     private int? _selectedDateDayOfWeek;
     private string? _activeDescendantId;
