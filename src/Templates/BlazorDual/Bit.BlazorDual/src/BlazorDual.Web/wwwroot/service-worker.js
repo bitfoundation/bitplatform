@@ -1,4 +1,4 @@
-// bit version: 7.1.0-pre-02
+// bit version: 7.1.0-pre-03
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 // Make sure to apply all changes you make here to the service-worker.published.js file too (if required).
