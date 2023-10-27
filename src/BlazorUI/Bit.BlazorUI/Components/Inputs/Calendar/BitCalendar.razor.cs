@@ -52,7 +52,6 @@ public partial class BitCalendar
     private int _yearPickerStartYear;
     private bool _showYearPicker;
     private bool _showMonthPicker;
-    private string? _monthTitleId;
     private int? _selectedDateWeek;
     private int? _selectedDateDayOfWeek;
     private string? _activeDescendantId;
@@ -66,6 +65,11 @@ public partial class BitCalendar
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// CultureInfo for the Calendar.
@@ -192,6 +196,11 @@ public partial class BitCalendar
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
+    /// The text of selected date aria-atomic of the calendar.
+    /// </summary>
+    [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
+
+    /// <summary>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
@@ -205,6 +214,11 @@ public partial class BitCalendar
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the year cell is rendered.
@@ -232,17 +246,22 @@ public partial class BitCalendar
     [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
 
 
-
     protected override string RootElementClass { get; } = "bit-cal";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
     {
-        _monthTitleId = $"BitCalendar-{UniqueId}-month-title";
         _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
 
         base.OnInitialized();
@@ -736,17 +755,8 @@ public partial class BitCalendar
         }
     }
 
-    private string GetDateCellCssClass(int day, int week)
+    private bool IsToday(int week, int day)
     {
-        return (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
-            ? " bit-cal-dcs"
-            : string.Empty;
-
-    }
-
-    private string GetDateButtonCssClass(int day, int week)
-    {
-        StringBuilder className = new StringBuilder();
         var todayYear = Culture.Calendar.GetYear(DateTime.Now);
         var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
         var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
@@ -754,15 +764,59 @@ public partial class BitCalendar
 
         if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className.Append(" bit-cal-dct");
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetDateButtonCssClass(int day, int week)
+    {
+        StringBuilder className = new StringBuilder();
+
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
+        {
+            className.Append(" bit-cal-dbs");
+
+            if (Classes?.SelectedDayButton is not null)
+            {
+                className.Append(" ").Append(Classes?.SelectedDayButton);
+            }
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-cal-dom");
+            className.Append(" bit-cal-dbo");
+        }
+
+        if (IsToday(week, day))
+        {
+            className.Append(" bit-cal-dtd");
+
+            if (Classes?.TodayDayButton is not null)
+            {
+                className.Append(" ").Append(Classes?.TodayDayButton);
+            }
         }
 
         return className.ToString();
+    }
+
+    private string? GetDateButtonCssStyle(int day, int week)
+    {
+        StringBuilder style = new StringBuilder();
+
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek && Styles?.SelectedDayButton is not null)
+        {
+            style.Append(" ").Append(Styles?.SelectedDayButton);
+        }
+
+        if (IsToday(week, day) && Styles?.TodayDayButton is not null)
+        {
+            style.Append(" ").Append(Styles?.TodayDayButton);
+        }
+
+        return style.ToString();
     }
 
     private string GetMonthCellCssClass(int monthIndex)

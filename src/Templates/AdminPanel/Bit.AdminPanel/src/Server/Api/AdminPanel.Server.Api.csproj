@@ -22,11 +22,11 @@
 
         <EmbeddedResource Include="Resources\*.cshtml" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="7.1.0-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="7.1.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="7.1.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="7.1.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
