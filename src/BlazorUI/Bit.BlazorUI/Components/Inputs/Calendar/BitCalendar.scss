@@ -11,7 +11,7 @@
     font-family: $typography-font-family;
 
     &.bit-dis {
-        .bit-cal-ctn {
+        .bit-cal-cnt {
             user-select: none;
             pointer-events: none;
             -webkit-user-select: none;
@@ -34,7 +34,8 @@
     }
 }
 
-.bit-cal-ctn {
+.bit-cal-cnt {
+    display: flex;
     font-weight: 400;
     top: spacing(4.25);
     outline: transparent;
@@ -42,15 +43,6 @@
     font-size: spacing(1.75);
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
-}
-
-.bit-cal-grp {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    outline: none;
-    box-shadow: none;
-    box-sizing: border-box;
 }
 
 .bit-cal-sdt {
@@ -408,7 +400,7 @@
 }
 
 .bit-cal-rtl {
-    .bit-cal-grp {
+    .bit-cal-cnt {
         direction: rtl;
     }
 
@@ -417,7 +409,8 @@
         border-left: $shape-border-width $shape-border-style $color-border-secondary;
     }
 
-    .bit-cal-pkt {
+    .bit-cal-pkt,
+    .bit-cal-ptb {
         text-align: right;
         padding: 0 spacing(1.25) 0 spacing(0.5);
     }
