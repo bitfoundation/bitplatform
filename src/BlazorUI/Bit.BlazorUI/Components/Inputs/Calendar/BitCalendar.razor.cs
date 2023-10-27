@@ -755,14 +755,6 @@ public partial class BitCalendar
         }
     }
 
-    private string GetDateCellCssClass(int day, int week)
-    {
-        return (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
-            ? " bit-cal-dcs"
-            : string.Empty;
-
-    }
-
     private string GetDateButtonCssClass(int day, int week)
     {
         StringBuilder className = new StringBuilder();
@@ -771,14 +763,19 @@ public partial class BitCalendar
         var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
         var currentDay = _daysOfCurrentMonth[week, day];
 
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className.Append(" bit-cal-dct");
+            className.Append(" bit-cal-dbs");
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-cal-dom");
+            className.Append(" bit-cal-dbo");
+        }
+
+        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        {
+            className.Append(" bit-cal-dtd");
         }
 
         return className.ToString();

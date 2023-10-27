@@ -26,10 +26,8 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-cal-dct {
-            .bit-cal-dbt {
-                background-color: $color-background-disabled;
-            }
+        .bit-cal-dbt.bit-cal-dtd {
+                background-color: $color-background-disabled;            
         }
     }
 }
@@ -134,12 +132,12 @@
     }
 }
 
-.bit-cal-dom {
+.bit-cal-dbo {
     font-weight: 400;
     color: $color-foreground-secondary;
 }
 
-.bit-cal-dct {
+.bit-cal-dtd {
     font-weight: 600;
     border-radius: 50%;
     color: $color-primary-text;
@@ -152,7 +150,7 @@
     }
 }
 
-.bit-cal-dcs {
+.bit-cal-dbs {
     background-color: $color-background-secondary;
 
     &::after {
