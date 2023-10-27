@@ -50,13 +50,27 @@
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-content">
-                <BitCalendar Style="padding:1rem;background:red" />
+                <BitCalendar Style="margin: 1rem; background: purple;" />
+
+                <BitCalendar Class="custom-class" />
             </div>
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="example-content">
-                <BitCalendar Styles="@(new() { DayPickerMonth="color:red", YearPickerToggleButton="color:blue" })" />
+                <BitCalendar Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
+                                               Divider = "border-color: green;",
+                                               DayPickerMonth = "color: red;",
+                                               YearPickerToggleButton = "color: blue;" })" />
+                <BitCalendar Classes="@(new() { Root = "custom-root",
+                                                DayPickerWrapper = "custom-day-picker",
+                                                DayButton = "custom-day",
+                                                PrevMonthNavButton = "custom-prev-month",
+                                                NextMonthNavButton = "custom-next-month",
+                                                DayPickerMonth = "custom-day-month",
+                                                DayPickerHeader = "custom-day-header",
+                                                WeekNumbersHeader = "custom-week-header",
+                                                YearMonthPickerWrapper = "custom-year-picker"})" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

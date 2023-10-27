@@ -608,8 +608,74 @@ public partial class BitCalendarDemo
 <BitCalendar MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />";
 
     private readonly string example3RazorCode = @"
-<BitCalendar @bind-Value=""@selectedDate"" />
-<div>Selected date: @selectedDate.ToString()</div>";
+<style>
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-day-picker {
+        border: 1px solid #e9981e;
+        background-color: #211e1b;
+        border-end-start-radius: 0.5rem;
+        border-start-start-radius: 0.5rem;
+    }
+
+    .custom-day-month, .custom-next-month, .custom-prev-month {
+        color: white;
+    }
+
+    .custom-day {
+        color: #e9981e;
+        margin: 0.15rem;
+        border-radius: 50%;
+        border: 1px solid #e9981e;
+    }
+
+    .custom-week-header {
+        color: white;
+        margin: 0.15rem;
+    }
+
+    .custom-day-header {
+        height: 2rem;
+        color: white;
+        margin: 0.15rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9981e;
+    }
+
+    .custom-year-picker {
+        border: 1px solid #211e1b;
+        background-color: #e9981e;
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: 0.5rem;
+    }
+</style>
+
+
+<BitCalendar Style=""margin: 1rem; background: purple;"" />
+<BitCalendar Class=""custom-class"" />
+
+<BitCalendar Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
+                               Divider = ""border-color: green;"",
+                               DayPickerMonth = ""color: red;"",
+                               YearPickerToggleButton = ""color: blue;"" })"" />
+<BitCalendar Classes=""@(new() { Root = ""custom-root"",
+                                DayPickerWrapper = ""custom-day-picker"",
+                                DayButton = ""custom-day"",
+                                PrevMonthNavButton = ""custom-prev-month"",
+                                NextMonthNavButton = ""custom-next-month"",
+                                DayPickerMonth = ""custom-day-month"",
+                                DayPickerHeader = ""custom-day-header"",
+                                WeekNumbersHeader = ""custom-week-header"",
+                                YearMonthPickerWrapper = ""custom-year-picker""})"" />";
 
     private readonly string example4RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
