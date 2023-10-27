@@ -61,10 +61,14 @@
                 <BitCalendar Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
                                                Divider = "border-color: green;",
                                                DayPickerMonth = "color: red;",
+                                               TodayDayButton = "background-color: red;",
+                                               SelectedDayButton = "background-color: purple;",
                                                YearPickerToggleButton = "color: blue;" })" />
+
                 <BitCalendar Classes="@(new() { Root = "custom-root",
                                                 DayPickerWrapper = "custom-day-picker",
                                                 DayButton = "custom-day",
+                                                TodayDayButton = "custom-today-day",
                                                 PrevMonthNavButton = "custom-prev-month",
                                                 NextMonthNavButton = "custom-next-month",
                                                 DayPickerMonth = "custom-day-month",

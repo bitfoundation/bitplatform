@@ -389,6 +389,20 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "TodayDayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for today day button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "SelectedDayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for selected day button of the BitCalendar."
+                },
+                new()
+                {
                     Name = "TimePickerContainer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -627,7 +641,9 @@ public partial class BitCalendarDemo
         border-start-start-radius: 0.5rem;
     }
 
-    .custom-day-month, .custom-next-month, .custom-prev-month {
+    .custom-day-month,
+    .custom-next-month,
+    .custom-prev-month {
         color: white;
     }
 
@@ -636,6 +652,11 @@ public partial class BitCalendarDemo
         margin: 0.15rem;
         border-radius: 50%;
         border: 1px solid #e9981e;
+    }
+
+    .custom-today-day {
+        color: #211e1b;
+        background-color: #e9981e;
     }
 
     .custom-week-header {
@@ -666,10 +687,13 @@ public partial class BitCalendarDemo
 <BitCalendar Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
                                Divider = ""border-color: green;"",
                                DayPickerMonth = ""color: red;"",
+                               TodayDayButton = ""background-color: red;"",
+                               SelectedDayButton = ""background-color: purple;"",
                                YearPickerToggleButton = ""color: blue;"" })"" />
 <BitCalendar Classes=""@(new() { Root = ""custom-root"",
                                 DayPickerWrapper = ""custom-day-picker"",
                                 DayButton = ""custom-day"",
+                                TodayDayButton = ""custom-today-day"",
                                 PrevMonthNavButton = ""custom-prev-month"",
                                 NextMonthNavButton = ""custom-next-month"",
                                 DayPickerMonth = ""custom-day-month"",

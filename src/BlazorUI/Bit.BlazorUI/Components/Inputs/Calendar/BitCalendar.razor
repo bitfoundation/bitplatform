@@ -119,9 +119,9 @@
                                     role="gridcell"
                                     disabled="@disabled"
                                     aria-readonly="true"
-                                    style="@Styles?.DayButton"
-                                    class="bit-cal-dbt@(GetDateButtonCssClass(d, w)) @Classes?.DayButton"
                                     aria-disabled="@disabled"
+                                    style="@(GetDateButtonCssStyle(d, w)) @Styles?.DayButton"
+                                    class="bit-cal-dbt@(GetDateButtonCssClass(d, w)) @Classes?.DayButton"
                                     tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
                                     aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
                                 @if (DayCellTemplate is not null)

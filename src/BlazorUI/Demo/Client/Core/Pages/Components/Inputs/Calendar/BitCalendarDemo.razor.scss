@@ -61,7 +61,9 @@
         border-start-start-radius: 0.5rem;
     }
 
-    .custom-day-month, .custom-next-month, .custom-prev-month {
+    .custom-day-month,
+    .custom-next-month,
+    .custom-prev-month {
         color: white;
     }
 
@@ -70,6 +72,11 @@
         margin: 0.15rem;
         border-radius: 50%;
         border: 1px solid #e9981e;
+    }
+
+    .custom-today-day {
+        color: #211e1b;
+        background-color: #e9981e;
     }
 
     .custom-week-header {
