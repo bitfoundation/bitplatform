@@ -751,7 +751,4 @@ Veuillez confirmer votre adresse e-mail en cliquant sur le lien.</value>
     <data name="StoreNotIProtectedUserStore" xml:space="preserve">
     <value>Store n’implémente pas IProtectedUserStore,&lt;TUser&gt; ce qui est requis lorsque ProtectPersonalData = true.&lt;/TUser&gt;</value>
   </data>
-    <data name="UnableToConnectToServer" xml:space="preserve">
-    <value>Incapable de se connecter au serveur.</value>
-  </data>
 </root>

@@ -763,7 +763,4 @@ Veuillez confirmer votre adresse e-mail en cliquant sur le lien.</value>
     <data name="PrivacyPolicyTitle" xml:space="preserve">
     <value>Politique de confidentialité</value>
   </data>
-    <data name="UnableToConnectToServer" xml:space="preserve">
-    <value>Incapable de se connecter au serveur.</value>
-  </data>
 </root>
