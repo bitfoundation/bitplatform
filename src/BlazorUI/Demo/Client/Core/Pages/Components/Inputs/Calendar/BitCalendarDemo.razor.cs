@@ -287,35 +287,28 @@ public partial class BitCalendarDemo
                     Name = "DayPickerWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker wrapper of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the day-picker's wrapper of the BitCalendar."
                 },
                 new()
                 {
                     Name = "DayPickerHeader",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker header of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the day-picker's header of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "DayPickerMonthWrapper",
+                    Name = "DayPickerMonth",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker month title wrapper of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the day-picker's month of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "DayPickerMonthTitle",
+                    Name = "DayPickerNavWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker month title of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "DayPickerNavContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker navigation buttons container of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the wrapper of the day-picker's nav buttons of the BitCalendar."
                 },
                 new()
                 {
@@ -333,14 +326,14 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "GotoTodayButton",
+                    Name = "GoToTodayButton",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Go to today button of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "GotoTodayIcon",
+                    Name = "GoToTodayIcon",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Go to today icon of the BitCalendar."
@@ -361,24 +354,24 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "DayPickerDayHeader",
+                    Name = "DaysHeaderRow",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker day header of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the header row of the days of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "DayOfWeekName",
+                    Name = "WeekNumbersHeader",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day of week name of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the header of the week numbers of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "DayPickerDayRow",
+                    Name = "DaysRow",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day picker day row of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each row of the days of the BitCalendar."
                 },
                 new()
                 {
@@ -389,87 +382,80 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "DayCell",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day cell of the BitCalendar."
-                },
-                new()
-                {
                     Name = "DayButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day button of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "DayText",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the day text of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each day button of the BitCalendar."
                 },
                 new()
                 {
                     Name = "TimePickerContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time picker container of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's main container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's wrapper of the BitCalendar."
                 },
                 new()
                 {
                     Name = "TimePickerHourInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time picker hour input of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's hour input of the BitCalendar."
                 },
                 new()
                 {
                     Name = "TimePickerDivider",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time picker divider of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's divider of the BitCalendar."
                 },
                 new()
                 {
                     Name = "TimePickerMinuteInput",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time picker minute input of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's minute input of the BitCalendar."
                 },
                 new()
                 {
                     Name = "Divider",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the divider of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the main divider of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "MonthPicker",
+                    Name = "YearMonthPickerWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month picker of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the year-month-picker's wrapper of the BitCalendar."
                 },
                 new()
                 {
                     Name = "MonthPickerHeader",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month picker header of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the month-picker's header of the BitCalendar."
                 },
                 new()
                 {
                     Name = "YearPickerToggleButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year picker toggle button of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the year-picker's toggle button of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "MonthPickerNavContainer",
+                    Name = "MonthPickerNavWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month picker navigation buttons container of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the wrapper of the month-picker's nav buttons of the BitCalendar."
                 },
                 new()
                 {
@@ -501,108 +487,80 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "MonthsContainer",
+                    Name = "MonthsRow",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month container of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "MonthRow",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month row of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each row of the months of the BitCalendar."
                 },
                 new()
                 {
                     Name = "MonthButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month button of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each month button of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "MonthText",
+                    Name = "YearPickerHeader",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the month text of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the year-picker's header of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "YearRangePickerHeader",
+                    Name = "MonthPickerToggleButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year picker header of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the month-picker's toggle button of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "YearRangePickerToggle",
+                    Name = "YearPickerNavWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year range picker toggle of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "YearRangePickerNavContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year range picker navigation buttons container of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the wrapper of the year-picker nav buttons of the BitCalendar."
                 },
                 new()
                 {
                     Name = "PrevYearRangeNavButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Go to previous year range button of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the Go to previous year-range button of the BitCalendar."
                 },
                 new()
                 {
                     Name = "PrevYearRangeNavIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Go to previous year range icon of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the Go to previous year-range icon of the BitCalendar."
                 },
                 new()
                 {
                     Name = "NextYearRangeNavButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Go to next year range button of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the Go to next year-range button of the BitCalendar."
                 },
                 new()
                 {
                     Name = "NextYearRangeNavIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Go to next year range icon of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the Go to next year-range icon of the BitCalendar."
                 },
                 new()
                 {
-                    Name = "YearsContainer",
+                    Name = "YearsRow",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year container of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "YearRow",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year row of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each row of the years of the BitCalendar."
                 },
                 new()
                 {
                     Name = "YearButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year button of the BitCalendar."
-                },
-                new()
-                {
-                    Name = "YearText",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the year text of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each year button of the BitCalendar."
                 }
             }
         }
@@ -613,7 +571,7 @@ public partial class BitCalendarDemo
 
     private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);
 
-    private CultureInfo Culture = CultureInfo.CurrentUICulture;
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
 
     private bool isMonthPickerVisible = true;
     private BitCalendarMonthPickerPosition monthPickerPosition;
@@ -652,14 +610,18 @@ public partial class BitCalendarDemo
     private readonly string example3RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
 <div>Selected date: @selectedDate.ToString()</div>";
-    private readonly string example3CsharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example4RazorCode = @"
+<BitCalendar @bind-Value=""@selectedDate"" />
+<div>Selected date: @selectedDate.ToString()</div>";
+    private readonly string example4CsharpCode = @"
+private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);";
+
+    private readonly string example5RazorCode = @"
 <BitCalendar GoToToday=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
 <BitCalendar GoToToday=""Boro be emrouz"" Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .day-cell {
         width: 28px;
@@ -721,24 +683,24 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, 
     </YearCellTemplate>
 </BitCalendar>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCalendar IsMonthPickerVisible=""@isMonthPickerVisible"" />
 <BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker invisible"" @bind-IsChecked=""@isMonthPickerVisible"" />
 
 <BitCalendar MonthPickerPosition=""@monthPickerPosition"" />
 <BitToggleButton OnText=""Position Overlay"" OffText=""Position Besides""
                  OnChange=""v => monthPickerPosition = v ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isMonthPickerVisible = true;
 private BitCalendarMonthPickerPosition monthPickerPosition;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDateTime"" ShowTimePicker=""true"" />
 <div>Selected DateTime: @selectedDateTime.ToString()</div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -757,7 +719,7 @@ private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class BitCalendarValidationModel
 {
     [Required]

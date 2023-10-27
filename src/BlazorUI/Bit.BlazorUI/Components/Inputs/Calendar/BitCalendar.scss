@@ -22,8 +22,7 @@
         .bit-cal-wlb,
         .bit-cal-dbt,
         .bit-cal-pkb,
-        .bit-cal-ptb,
-        .bit-cal-dcl {
+        .bit-cal-ptb {
             color: $color-foreground-disabled;
         }
 
@@ -95,7 +94,6 @@
     margin: 0;
     padding: 0;
     border: none;
-    cursor: pointer;
     font-weight: 400;
     position: relative;
     text-align: center;
@@ -110,26 +108,6 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
-.bit-cal-dcl {
-    margin: 0;
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    font-weight: 400;
-    position: relative;
-    text-align: center;
-    font-size: spacing(1.5);
-    line-height: spacing(3.5);
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $color-action-hover-background-primary;
-        }
-    }
-}
-
 .bit-cal-dbt {
     padding: 0;
     border: none;
@@ -138,27 +116,30 @@
     cursor: pointer;
     overflow: visible;
     position: relative;
+    width: spacing(3.5);
+    align-items: center;
+    height: spacing(3.5);
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
     font-size: spacing(1.5);
     line-height: spacing(3);
+    justify-content: center;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
 
     &:disabled {
         pointer-events: none;
         color: $color-foreground-disabled;
         background-color: transparent;
     }
-}
-
-.bit-cal-dtx {
-    align-items: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    display: inline-flex;
-    justify-content: center;
 }
 
 .bit-cal-dom {
@@ -312,11 +293,6 @@
     padding: spacing(1.5);
     box-sizing: content-box;
     flex-flow: column nowrap;
-}
-
-.bit-cal-pkc {
-    margin-top: spacing(0.5);
-    margin-bottom: spacing(1.5);
 }
 
 .bit-cal-pkr {
