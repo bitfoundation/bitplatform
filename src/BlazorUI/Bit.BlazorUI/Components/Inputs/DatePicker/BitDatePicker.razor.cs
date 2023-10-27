@@ -113,7 +113,6 @@ public partial class BitDatePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _textFieldId;
-    private string? _monthTitleId;
     private string? _activeDescendantId;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -386,7 +385,6 @@ public partial class BitDatePicker
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
         _textFieldId = $"{_datePickerId}-text-field";
-        _monthTitleId = $"{_datePickerId}-month-title";
         _activeDescendantId = $"{_datePickerId}-active-descendant";
 
         base.OnInitialized();
@@ -980,14 +978,19 @@ public partial class BitDatePicker
         var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
         var currentDay = _daysOfCurrentMonth[week, day];
 
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className.Append(" bit-dtp-dct");
+            className.Append(" bit-dtp-dbs");
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-dtp-dom");
+            className.Append(" bit-dtp-dbo");
+        }
+
+        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        {
+            className.Append(" bit-dtp-dtd");
         }
 
         return className.ToString();

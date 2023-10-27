@@ -57,7 +57,6 @@
 
     <div class="bit-dtp-cal@(IsResponsive ? " bit-dtp-rsp" : string.Empty)" id="@_calloutId">
         <div class="bit-dtp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
-            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
             <div class="bit-dtp-grp" role="group" aria-label="">
                 <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
@@ -73,7 +72,7 @@
                                         aria-atomic="true"
                                         class="bit-dtp-ptb"
                                         aria-label="@($"{_monthTitle}, change month")">
-                                    <span id="@_monthTitleId">@_monthTitle</span>
+                                    @_monthTitle
                                 </button>
                             }
                             else
@@ -82,7 +81,7 @@
                                      aria-live="polite"
                                      aria-atomic="true"
                                      tabindex="-1">
-                                    <span id="@_monthTitleId">@_monthTitle</span>
+                                    @_monthTitle
                                 </div>
                             }
                             <div class="bit-dtp-nbc">
@@ -148,7 +147,7 @@
                                          title="@($"Week number {weekNumber}")"
                                          aria-label="@($"Week number {weekNumber}")"
                                          scope="row">
-                                        <span>@weekNumber</span>
+                                        @weekNumber
                                     </div>
                                 }
 
@@ -157,26 +156,24 @@
                                     var w = week;
                                     var d = day;
                                     var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
-                                    <div class="bit-dtp-dcl@(GetDateCellCssClass(d, w))" role="presentation">
-                                        <button @onclick="() => SelectDate(d, w)"
-                                                type="button"
-                                                role="gridcell"
-                                                class="bit-dtp-dbt@(GetDateButtonCssClass(d, w))"
-                                                aria-readonly="true"
-                                                disabled="@disabled"
-                                                aria-disabled="@disabled"
-                                                tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
-                                                aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
-                                            @if (DayCellTemplate is not null)
-                                            {
-                                                @DayCellTemplate(GetDateTimeOfDayCell(d, w))
-                                            }
-                                            else
-                                            {
-                                                <span aria-hidden="true" class="bit-dtp-dtx">@_daysOfCurrentMonth[w, d]</span>
-                                            }
-                                        </button>
-                                    </div>
+                                    <button @onclick="() => SelectDate(d, w)"
+                                            type="button"
+                                            role="gridcell"
+                                            class="bit-dtp-dbt@(GetDateButtonCssClass(d, w))"
+                                            aria-readonly="true"
+                                            disabled="@disabled"
+                                            aria-disabled="@disabled"
+                                            tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                            aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                        @if (DayCellTemplate is not null)
+                                        {
+                                            @DayCellTemplate(GetDateTimeOfDayCell(d, w))
+                                        }
+                                        else
+                                        {
+                                            @_daysOfCurrentMonth[w, d]
+                                        }
+                                    </button>
                                 }
                             </div>
                         }
@@ -308,7 +305,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span aria-hidden="true">@Culture.DateTimeFormat.GetAbbreviatedMonthName(month)</span>
+                                                    @Culture.DateTimeFormat.GetAbbreviatedMonthName(month)
                                                 }
                                             </button>
                                         }
@@ -382,7 +379,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span aria-hidden="true">@year</span>
+                                                    @year
                                                 }
                                             </button>
                                         }
@@ -393,7 +390,6 @@
                     </div>
                 }
             </div>
-            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
         </div>
     </div>
 </div>

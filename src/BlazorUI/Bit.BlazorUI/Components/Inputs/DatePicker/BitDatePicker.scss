@@ -151,6 +151,17 @@
             min-height: spacing(5.5);
         }
 
+        .bit-dtp-pkc {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .bit-dtp-pkr {
+            height: 100%;
+        }
+
         .bit-dtp-nbt,
         .bit-dtp-gtb,
         .bit-dtp-wlb,
@@ -176,12 +187,6 @@
 
         .bit-dtp-wlb {
             font-weight: bold;
-        }
-
-        &.bit-dtp-dc-tdy {
-            .bit-dtp-dbt {
-                border-radius: unset;
-            }
         }
     }
 }
@@ -266,18 +271,26 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
-.bit-dtp-dcl {
+.bit-dtp-dbt {
     width: 100%;
     aspect-ratio: 1;
-    margin: 0;
     padding: 0;
     border: none;
+    display: flex;
+    color: inherit;
     cursor: pointer;
-    font-weight: 400;
+    overflow: visible;
     position: relative;
-    text-align: center;
+    width: spacing(3.5);
+    align-items: center;
+    height: spacing(3.5);
+    outline: transparent;
+    font-weight: inherit;
+    box-sizing: border-box;
     font-size: spacing(1.5);
-    line-height: spacing(3.5);
+    line-height: spacing(3);
+    justify-content: center;
+    background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
@@ -286,23 +299,6 @@
             background-color: $color-action-hover-background-primary;
         }
     }
-}
-
-.bit-dtp-dbt {
-    padding: 0;
-    border: none;
-    display: flex;
-    color: inherit;
-    cursor: pointer;
-    overflow: visible;
-    position: relative;
-    outline: transparent;
-    font-weight: inherit;
-    box-sizing: border-box;
-    font-size: spacing(1.5);
-    line-height: spacing(3);
-    background-color: transparent;
-    border-radius: $shape-border-radius;
 
     &:disabled {
         pointer-events: none;
@@ -311,20 +307,23 @@
     }
 }
 
-.bit-dtp-dtx {
-    align-items: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    display: inline-flex;
-    justify-content: center;
+.bit-dtp-dbs {
+    background-color: $color-background-secondary;
+
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border: $shape-border-width $shape-border-style $color-border-primary;
+    }
 }
 
-.bit-dtp-dom {
+.bit-dtp-dbo {
     font-weight: 400;
     color: $color-foreground-secondary;
 }
 
-.bit-dtp-dct {
+.bit-dtp-dtd {
     font-weight: 600;
     border-radius: 50%;
     color: $color-primary-text;
@@ -334,17 +333,6 @@
         &:hover {
             background-color: $color-action-hover-primary;
         }
-    }
-}
-
-.bit-dtp-dcs {
-    background-color: $color-background-secondary;
-
-    &::after {
-        inset: 0;
-        content: "";
-        position: absolute;
-        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 }
 
