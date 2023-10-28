@@ -165,9 +165,24 @@ public partial class BitDatePicker
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the GoToToday button (tooltip).
+    /// The title of the Go to next month button.
     /// </summary>
-    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+
+    /// <summary>
+    /// The title of the Go to next year button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
+
+    /// <summary>
+    /// The title of the Go to next year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
+
+    /// <summary>
+    /// The title of the Go to previous year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button.
@@ -175,9 +190,14 @@ public partial class BitDatePicker
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
 
     /// <summary>
-    /// The title of the Go to next month button.
+    /// The title of the Go to previous year button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+    [Parameter] public string GoToPrevYearTitle { get; set; } = "Go to previous year {0}";
+
+    /// <summary>
+    /// The title of the GoToToday button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
     /// Determines if the DatePicker has a border.
@@ -284,6 +304,11 @@ public partial class BitDatePicker
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
+    /// The aria-label of the month picker's toggle.
+    /// </summary>
+    [Parameter] public string MonthPickerToggleAriaLabel { get; set; } = "{0}, change month";
+
+    /// <summary>
     /// The callback for clicking on the DatePicker's input.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
@@ -307,6 +332,11 @@ public partial class BitDatePicker
     /// The callback for selecting a date in the DatePicker.
     /// </summary>
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+
+    /// <summary>
+    /// The text of selected date aria-atomic of the DatePicker.
+    /// </summary>
+    [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
 
     /// <summary>
     /// The placeholder text of the DatePicker's input.
@@ -349,9 +379,29 @@ public partial class BitDatePicker
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// The aria-label of the week number.
+    /// </summary>
+    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
+
+    /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
+
+    /// <summary>
     /// Custom template to render the year cells of the DatePicker.
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
+
+    /// <summary>
+    /// The aria-label of the year picker's toggle.
+    /// </summary>
+    [Parameter] public string YearPickerToggleAriaLabel { get; set; } = "{0}, change year";
+
+    /// <summary>
+    /// The aria-label of the year range picker's toggle.
+    /// </summary>
+    [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
 
 
 
