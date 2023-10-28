@@ -590,18 +590,19 @@ public partial class BitCalendar
         return month;
     }
 
-    private bool IsGoToTodayButtonDisabled()
+    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth)
     {
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-
         if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay)
         {
-            return (_yearPickerStartYear == todayYear - 1 && _yearPickerEndYear == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
+            return _yearPickerStartYear == todayYear - 1
+                && _yearPickerEndYear == todayYear + 10
+                && todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
         else
         {
-            return (todayMonth == _currentMonth && todayYear == _currentYear);
+            return todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
     }
 
@@ -755,81 +756,56 @@ public partial class BitCalendar
         }
     }
 
-    private bool IsToday(int week, int day)
+    private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
     {
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
-        var currentDay = _daysOfCurrentMonth[week, day];
-
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private string GetDateButtonCssClass(int day, int week)
-    {
-        StringBuilder className = new StringBuilder();
+        StringBuilder klass = new StringBuilder();
+        StringBuilder style = new StringBuilder();
 
         if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className.Append(" bit-cal-dbs");
+            klass.Append(" bit-cal-dbs");
 
             if (Classes?.SelectedDayButton is not null)
             {
-                className.Append(" ").Append(Classes?.SelectedDayButton);
+                klass.Append(' ').Append(Classes?.SelectedDayButton);
+            }
+
+            if (Styles?.SelectedDayButton is not null)
+            {
+                style.Append(Styles?.SelectedDayButton);
             }
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-cal-dbo");
+            klass.Append(" bit-cal-dbo");
         }
 
-        if (IsToday(week, day))
+        var currentDay = _daysOfCurrentMonth[week, day];
+        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className.Append(" bit-cal-dtd");
+            klass.Append(" bit-cal-dtd");
 
             if (Classes?.TodayDayButton is not null)
             {
-                className.Append(" ").Append(Classes?.TodayDayButton);
+                klass.Append(' ').Append(Classes?.TodayDayButton);
+            }
+
+            if (Styles?.TodayDayButton is not null)
+            {
+                style.Append(' ').Append(Styles?.TodayDayButton);
             }
         }
 
-        return className.ToString();
+        return (style.ToString(), klass.ToString());
     }
 
-    private string? GetDateButtonCssStyle(int day, int week)
-    {
-        StringBuilder style = new StringBuilder();
-
-        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek && Styles?.SelectedDayButton is not null)
-        {
-            style.Append(" ").Append(Styles?.SelectedDayButton);
-        }
-
-        if (IsToday(week, day) && Styles?.TodayDayButton is not null)
-        {
-            style.Append(" ").Append(Styles?.TodayDayButton);
-        }
-
-        return style.ToString();
-    }
-
-    private string GetMonthCellCssClass(int monthIndex)
+    private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
     {
         var className = new StringBuilder();
-        if (HighlightCurrentMonth)
+        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _displayYear)
         {
-            var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-            var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-            if (todayMonth == monthIndex && todayYear == _displayYear)
-            {
-                className.Append(" bit-cal-pcm");
-            }
+            className.Append(" bit-cal-pcm");
         }
 
         if (HighlightSelectedMonth && _currentMonth == monthIndex)
