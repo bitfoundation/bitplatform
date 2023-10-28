@@ -181,7 +181,7 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
-    /// The aria-label of the month picker's toggle.
+    /// The title of the month picker's toggle.
     /// </summary>
     [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
@@ -231,12 +231,12 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
     /// <summary>
-    /// The aria-label of the year picker's toggle.
+    /// The title of the year picker's toggle.
     /// </summary>
     [Parameter] public string YearPickerToggleTitle { get; set; } = "{0}, change year";
 
     /// <summary>
-    /// The aria-label of the year range picker's toggle.
+    /// The title of the year range picker's toggle.
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
