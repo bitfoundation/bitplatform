@@ -183,7 +183,7 @@ public partial class BitCalendar
     /// <summary>
     /// The aria-label of the month picker's toggle.
     /// </summary>
-    [Parameter] public string MonthPickerToggleAriaLabel { get; set; } = "{0}, change month";
+    [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
     /// <summary>
     /// Used to set the month picker position. 
@@ -221,11 +221,6 @@ public partial class BitCalendar
     [Parameter] public BitCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The aria-label of the week number.
-    /// </summary>
-    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
-
-    /// <summary>
     /// The title of the week number (tooltip).
     /// </summary>
     [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
@@ -238,12 +233,12 @@ public partial class BitCalendar
     /// <summary>
     /// The aria-label of the year picker's toggle.
     /// </summary>
-    [Parameter] public string YearPickerToggleAriaLabel { get; set; } = "{0}, change year";
+    [Parameter] public string YearPickerToggleTitle { get; set; } = "{0}, change year";
 
     /// <summary>
     /// The aria-label of the year range picker's toggle.
     /// </summary>
-    [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
+    [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
 
     protected override string RootElementClass { get; } = "bit-cal";
