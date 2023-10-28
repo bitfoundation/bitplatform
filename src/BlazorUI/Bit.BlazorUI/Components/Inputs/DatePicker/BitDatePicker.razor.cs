@@ -177,12 +177,12 @@ public partial class BitDatePicker
     /// <summary>
     /// The title of the Go to next year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Go to next year range {0} - {1}";
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Go to previous year range {0} - {1}";
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button.

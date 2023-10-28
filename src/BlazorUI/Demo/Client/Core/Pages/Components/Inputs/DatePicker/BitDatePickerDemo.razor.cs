@@ -64,14 +64,14 @@ public partial class BitDatePickerDemo
         {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to next year range {0} - {1}",
+            DefaultValue = "Next year range {0} - {1}",
             Description = "The title of the Go to next year range button (tooltip)."
         },
         new()
         {
             Name = "GoToPreviousYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to previous year range {0} - {1}",
+            DefaultValue = "Previous year range {0} - {1}",
             Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
