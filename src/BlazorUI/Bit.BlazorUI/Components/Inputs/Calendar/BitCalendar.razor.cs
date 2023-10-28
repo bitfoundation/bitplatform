@@ -110,12 +110,12 @@ public partial class BitCalendar
     /// <summary>
     /// The title of the Go to next year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Go to next year range {0} - {1}";
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous year range button (tooltip).
     /// </summary>
-    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Go to previous year range {0} - {1}";
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -221,6 +221,16 @@ public partial class BitCalendar
     [Parameter] public BitCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The aria-label of the week number.
+    /// </summary>
+    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
+
+    /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
+
+    /// <summary>
     /// Used to customize how content inside the year cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
@@ -234,16 +244,6 @@ public partial class BitCalendar
     /// The aria-label of the year range picker's toggle.
     /// </summary>
     [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
-
-    /// <summary>
-    /// The aria-label of the week number.
-    /// </summary>
-    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
-
-    /// <summary>
-    /// The title of the week number (tooltip).
-    /// </summary>
-    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
 
 
     protected override string RootElementClass { get; } = "bit-cal";
