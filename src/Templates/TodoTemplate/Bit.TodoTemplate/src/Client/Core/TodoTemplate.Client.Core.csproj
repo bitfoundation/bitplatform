@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -51,6 +51,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.2.9373" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Graphics" />
         <Using Include="Microsoft.Maui.Accessibility" />
