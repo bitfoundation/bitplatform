@@ -14,7 +14,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private bool isRtl;
     private bool isOpen;
     private bool isRequired;
-    private bool isResponsive;
     private List<TItem> selectedItems = new();
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
@@ -144,17 +143,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// Enables the responsive mode of the component for small screens.
     /// </summary>
     [Parameter]
-    public bool IsResponsive
-    {
-        get => isResponsive;
-        set
-        {
-            if (isResponsive == value) return;
-
-            isResponsive = value;
-            ClassBuilder.Reset();
-        }
-    }
+    public bool IsResponsive { get; set; }
 
     /// <summary>
     /// Enables the RTL direction for the component.
@@ -586,8 +575,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsResponsive ? $"{RootElementClass}-rsp" : string.Empty);
-
         ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
 
         ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
@@ -933,7 +920,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 ShowSearchBox ? 32 : 0,
                                 CalloutHeaderTemplate is not null ? _headerId : "",
                                 CalloutFooterTemplate is not null ? _footerId : "",
-                                true);
+                                true,
+                                RootElementClass);
     }
 
 

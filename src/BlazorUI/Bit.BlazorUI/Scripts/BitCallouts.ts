@@ -18,11 +18,9 @@ enum BitResponsiveMode {
 }
 
 class BitCallouts {
-    public static readonly MIN_MOBILE_WIDTH = 320;
-    public static readonly MAX_MOBILE_WIDTH = 640;
     private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
-    public static current: BitCallout = BitCallouts.DEFAULT_CALLOUT;
+    public static current = BitCallouts.DEFAULT_CALLOUT;
 
     public static reset() {
         BitCallouts.current = BitCallouts.DEFAULT_CALLOUT;
@@ -63,7 +61,8 @@ class BitCallouts {
         scrollOffset: number,
         headerId: string,
         footerId: string,
-        setCalloutWidth: boolean
+        setCalloutWidth: boolean,
+        rootCssClass: string
     ) {
         const component = document.getElementById(componentId);
         if (component == null) return false;
@@ -121,14 +120,16 @@ class BitCallouts {
         if (setCalloutWidth) {
             let width = componentWidth;
             if (responsiveMode == BitResponsiveMode.Panel
-                && componentWidth < BitCallouts.MIN_MOBILE_WIDTH
-                && window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH) {
-                width = window.innerWidth > BitCallouts.MIN_MOBILE_WIDTH ? BitCallouts.MIN_MOBILE_WIDTH : window.innerWidth;
+                && componentWidth < Bit.MIN_MOBILE_WIDTH
+                && window.innerWidth < Bit.MAX_MOBILE_WIDTH) {
+                width = window.innerWidth > Bit.MIN_MOBILE_WIDTH ? Bit.MIN_MOBILE_WIDTH : window.innerWidth;
             }
             callout.style.width = width + 'px';
         }
 
-        if (window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && responsiveMode) {
+        const responseCssClass = `${rootCssClass}-rsp`;
+
+        if (window.innerWidth < Bit.MAX_MOBILE_WIDTH && responsiveMode) {
             callout.style.top = '0';
             callout.style[isRtl ? 'left' : 'right'] = '0';
             callout.style.maxHeight = window.innerHeight + 'px';
@@ -142,8 +143,11 @@ class BitCallouts {
                 scrollContainer.style.maxHeight = (window.innerHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
             });
 
+            callout.classList.add(responseCssClass);
             return true;
         }
+
+        callout.classList.remove(responseCssClass);
 
         if (dropDirection == BitDropDirection.TopAndBottom) {
             callout.style.left = componentX + 'px';

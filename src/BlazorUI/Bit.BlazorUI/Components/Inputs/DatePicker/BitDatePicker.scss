@@ -141,53 +141,51 @@
 }
 
 .bit-dtp-rsp {
-    @media only screen and (max-width: 600px) {
-        .bit-dtp-dwp,
-        .bit-dtp-mwp {
-            flex-grow: 1;
-        }
+    .bit-dtp-dwp,
+    .bit-dtp-mwp {
+        flex-grow: 1;
+    }
 
-        .bit-dtp-pkh {
-            min-height: spacing(5.5);
-        }
+    .bit-dtp-pkh {
+        min-height: spacing(5.5);
+    }
 
-        .bit-dtp-pkc {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-        }
+    .bit-dtp-pkc {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
 
-        .bit-dtp-pkr {
-            height: 100%;
-        }
+    .bit-dtp-pkr {
+        height: 100%;
+    }
 
-        .bit-dtp-nbt,
-        .bit-dtp-gtb,
-        .bit-dtp-wlb,
-        .bit-dtp-dbt,
-        .bit-dtp-pkb {
+    .bit-dtp-nbt,
+    .bit-dtp-gtb,
+    .bit-dtp-wlb,
+    .bit-dtp-dbt,
+    .bit-dtp-pkb {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        font-size: spacing(2);
+        justify-content: center;
+
+        span {
             width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            font-size: spacing(2);
-            justify-content: center;
-
-            span {
-                width: 100%;
-                height: spacing(6);
-            }
+            height: spacing(6);
         }
+    }
 
-        .bit-dtp-nbt,
-        .bit-dtp-gtb {
-            width: spacing(5.5);
-        }
+    .bit-dtp-nbt,
+    .bit-dtp-gtb {
+        width: spacing(5.5);
+    }
 
-        .bit-dtp-wlb {
-            font-weight: bold;
-        }
+    .bit-dtp-wlb {
+        font-weight: bold;
     }
 }
 

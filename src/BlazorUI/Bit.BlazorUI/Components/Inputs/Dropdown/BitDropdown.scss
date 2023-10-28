@@ -121,61 +121,6 @@
     }
 }
 
-.bit-drp-rsp {
-    @media only screen and (max-width: #{639px}) {
-        .bit-drp-cal {
-            height: 100%;
-            max-height: unset;
-            width: spacing(34);
-            box-shadow: $box-shadow-callout;
-            padding: spacing(3) spacing(2.5);
-            animation-name: opacity, bit-drp-trans-x;
-        }
-
-        .bit-drp-rlc {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .bit-drp-ovl {
-            position: fixed;
-            cursor: pointer;
-            pointer-events: auto;
-            background: $color-background-overlay;
-        }
-    }
-}
-
-.bit-drp-rtl {
-    direction: rtl;
-
-    .bit-drp-sb {
-        padding: spacing(0.125) spacing(1) spacing(0.125) 0;
-    }
-
-    .bit-drp-tcn {
-        padding: 0 spacing(1) 0 spacing(3.5);
-    }
-
-    .bit-drp-icn {
-        right: unset;
-        left: spacing(1);
-    }
-
-    .bit-drp-cls {
-        margin-left: unset;
-        margin-right: auto;
-    }
-
-    &.bit-drp-rsp {
-        @media only screen and (max-width: #{639px}) {
-            .bit-drp-cal {
-                animation-name: fade-show, bit-drp-trans-x-reverse;
-            }
-        }
-    }
-}
-
 .bit-drp-tcn {
     margin: 0;
     outline: none;
@@ -725,4 +670,44 @@
 .bit-drp-rlc {
     width: 100%;
     display: none;
+}
+
+.bit-drp-rsp {
+    height: 100%;
+    max-height: unset;
+    width: spacing(34);
+    box-shadow: $box-shadow-callout;
+    padding: spacing(3) spacing(2.5);
+    animation-name: bit-fade-show, bit-drp-trans-x;
+
+    .bit-drp-rlc {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+.bit-drp-rtl {
+    direction: rtl;
+
+    .bit-drp-sb {
+        padding: spacing(0.125) spacing(1) spacing(0.125) 0;
+    }
+
+    .bit-drp-tcn {
+        padding: 0 spacing(1) 0 spacing(3.5);
+    }
+
+    .bit-drp-icn {
+        right: unset;
+        left: spacing(1);
+    }
+
+    .bit-drp-cls {
+        margin-left: unset;
+        margin-right: auto;
+    }
+
+    .bit-drp-rsp {
+        animation-name: bit-fade-show, bit-drp-trans-x-reverse;
+    }
 }
