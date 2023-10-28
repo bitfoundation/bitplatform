@@ -48,24 +48,52 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "GoToTodayTitle",
+            Name = "GoToNextMonthTitle",
             Type = "string",
-            DefaultValue = "Go to today",
-            Description = "The title of the GoToToday button (tooltip).",
+            DefaultValue = "Go to next month",
+            Description = "The title of the Go to next month button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToNextYearTitle",
+            Type = "string",
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToNextYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Next year range {0} - {1}",
+            Description = "The title of the Go to next year range button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToPreviousYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Previous year range {0} - {1}",
+            Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
             DefaultValue = "Go to previous month",
-            Description = "The title of the Go to previous month button.",
+            Description = "The title of the Go to previous month button (tooltip)."
         },
         new()
         {
-            Name = "GoToNextMonthTitle",
+            Name = "GoToPrevYearTitle",
             Type = "string",
-            DefaultValue = "Go to next month",
-            Description = "The title of the Go to next month button.",
+            DefaultValue = "Go to previous year {0}",
+            Description = "The title of the Go to previous year button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToTodayTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the GoToToday button (tooltip)."
         },
         new()
         {
@@ -183,6 +211,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "MonthPickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, change month",
+            Description = "The aria-label of the month picker's toggle."
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback",
             Description = "The callback for clicking on the DatePicker's input.",
@@ -217,6 +252,13 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "string.Empty",
             Description = "The placeholder text of the DatePicker's input.",
+        },
+        new()
+        {
+            Name = "SelectedDateAriaAtomic",
+            Type = "string",
+            DefaultValue = "Selected date {0}",
+            Description = "The text of selected date aria-atomic of the calendar."
         },
         new()
         {
@@ -271,10 +313,45 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip)."
+        },
+        new()
+        {
+            Name = "WeekNumberAriaLabel",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The aria-label of the week number."
+        },
+        new()
+        {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip)."
+        },
+        new()
+        {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
             Description = "Custom template to render the year cells of the DatePicker."
+        },
+        new()
+        {
+            Name = "YearPickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0}, change year",
+            Description = "The aria-label of the year picker's toggle."
+        },
+        new()
+        {
+            Name = "YearRangePickerToggleAriaLabel",
+            Type = "string",
+            DefaultValue = "{0} - {1}, change month",
+            Description = "The aria-label of the year range picker's toggle."
         }
     };
 

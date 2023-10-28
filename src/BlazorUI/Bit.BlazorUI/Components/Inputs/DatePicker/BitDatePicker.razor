@@ -58,7 +58,9 @@
     <div class="bit-dtp-cal" id="@_calloutId">
         <div class="bit-dtp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
             <div class="bit-dtp-grp" role="group" aria-label="">
-                <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
+                <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">
+                    @(string.Format(SelectedDateAriaAtomic, CurrentValueAsString))
+                </div>
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
                 {
                     <div class="bit-dtp-dwp">
@@ -71,7 +73,7 @@
                                         aria-live="polite"
                                         aria-atomic="true"
                                         class="bit-dtp-ptb"
-                                        aria-label="@($"{_monthTitle}, change month")">
+                                        aria-label="@(string.Format(MonthPickerToggleAriaLabel, _monthTitle))">
                                     @_monthTitle
                                 </button>
                             }
@@ -144,8 +146,8 @@
                                 {
                                     var weekNumber = GetWeekNumber(week);
                                     <div class="bit-dtp-wnm"
-                                         title="@($"Week number {weekNumber}")"
-                                         aria-label="@($"Week number {weekNumber}")"
+                                         title="@(string.Format(WeekNumberTitle, weekNumber)))"
+                                         aria-label="@(string.Format(WeekNumberAriaLabel, weekNumber))"
                                          scope="row">
                                         @weekNumber
                                     </div>
@@ -246,14 +248,14 @@
                                         aria-atomic="true"
                                         aria-live="polite"
                                         class="bit-dtp-ptb"
-                                        aria-label="@($"{_displayYear}, change year")">
+                                        aria-label="@(string.Format(YearPickerToggleAriaLabel, _displayYear))">
                                     @_displayYear
                                 </button>
                                 <div class="bit-dtp-nbc">
                                     <button @onclick="() => HandleYearChange(false)"
                                             type="button"
                                             class="bit-dtp-nbt"
-                                            title="Go to previous year @(_displayYear - 1)"
+                                            title="@(string.Format(GoToPrevYearTitle, _displayYear - 1))"
                                             disabled="@prevDisabled"
                                             aria-disabled="@prevDisabled">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
@@ -271,7 +273,7 @@
                                     <button @onclick="() => HandleYearChange(true)"
                                             type="button"
                                             class="bit-dtp-nbt"
-                                            title="Go to next year @(_displayYear + 1)"
+                                            title="@(string.Format(GoToNextYearTitle, _displayYear + 1))"
                                             aria-disabled="@nextDisabled"
                                             disabled="@nextDisabled">
                                         <i class="bit-icon bit-icon--Down" aria-hidden="true" />
@@ -323,7 +325,7 @@
                                         aria-atomic="true"
                                         aria-live="polite"
                                         class="bit-dtp-ptb"
-                                        aria-label="@($"{_yearPickerStartYear} - {_yearPickerEndYear}, change month")">
+                                        aria-label="@(string.Format(YearRangePickerToggleAriaLabel, _yearPickerStartYear, _yearPickerEndYear))">
                                     @_yearPickerStartYear - @_yearPickerEndYear
                                 </button>
                                 <div class="bit-dtp-nbc">
@@ -332,7 +334,7 @@
                                             class="bit-dtp-nbt"
                                             disabled="@prevDisabled"
                                             aria-disabled="@prevDisabled"
-                                            title="previous year range @(_yearPickerStartYear - 12) - @(_yearPickerStartYear - 1)">
+                                            title="@(string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1))">
                                         <i class="bit-icon bit-icon--Up" aria-hidden="true" />
                                     </button>
                                     @if (ShowGoToToday)
@@ -350,7 +352,7 @@
                                             class="bit-dtp-nbt"
                                             disabled="@nextDisabled"
                                             aria-disabled="@nextDisabled"
-                                            title="next year range @(_yearPickerStartYear + 12) - @(_yearPickerEndYear + 12)">
+                                            title="@(string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12))">
                                         <i class="bit-icon bit-icon--Down" aria-hidden="true" />
                                     </button>
                                 </div>
