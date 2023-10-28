@@ -923,4 +923,7 @@ Veuillez confirmer votre email en cliquant sur le lien.</value>
   <data name="NoPersonalDataProtector" xml:space="preserve">
     <value>Aucun service IPersonalDataProtector n’a été enregistré, cela est requis lorsque ProtectPersonalData = true.</value>
   </data>
+    <data name="UnableToConnectToServer" xml:space="preserve">
+    <value>Incapable de se connecter au serveur.</value>
+  </data>
 </root>
