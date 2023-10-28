@@ -23,6 +23,7 @@
                 <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
                     @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay && IsMonthPickerVisible)
                     {
+                        var title = string.Format(MonthPickerToggleTitle, _monthTitle);
                         <button @onclick="@ToggleMonthPickerOverlay"
                                 tabindex="0"
                                 type="button"
@@ -30,7 +31,8 @@
                                 aria-atomic="true"
                                 style="@Styles?.DayPickerMonth"
                                 class="bit-cal-ptb @Classes?.DayPickerMonth"
-                                aria-label="@(string.Format(MonthPickerToggleAriaLabel, _monthTitle))">
+                                title="@title"
+                                aria-label="@title">
                             @_monthTitle
                         </button>
                     }
@@ -108,11 +110,12 @@
                         @if (ShowWeekNumbers)
                         {
                             var weekNumber = GetWeekNumber(week);
-                            <div style="@Styles?.WeekNumber"
-                                 class="bit-cal-wnm @Classes?.WeekNumber"
-                                 title="@(string.Format(WeekNumberTitle, weekNumber)))"
-                                 aria-label="@(string.Format(WeekNumberAriaLabel, weekNumber))"
-                                 scope="row">
+                            var title = string.Format(WeekNumberTitle, weekNumber);
+                            <div scope="row"
+                                 title="@title"
+                                 aria-label="@title"
+                                 style="@Styles?.WeekNumber"
+                                 class="bit-cal-wnm @Classes?.WeekNumber">
                                 @weekNumber
                             </div>
                         }
@@ -190,25 +193,30 @@
                 {
                     var prevDisabled = CanChangeYear(false) is false;
                     var nextDisabled = CanChangeYear(true) is false;
+                    var toggleTitle = string.Format(YearPickerToggleTitle, _displayYear);
+                    var prevTitle = string.Format(GoToPrevYearTitle, _displayYear - 1);
+                    var nextTitle = string.Format(GoToNextYearTitle, _displayYear + 1);
                     <div style="@Styles?.MonthPickerHeader" class="bit-cal-pkh @Classes?.MonthPickerHeader">
                         <button @onclick="ToggleBetweenMonthAndYearPicker"
                                 tabindex="0"
                                 type="button"
                                 aria-atomic="true"
                                 aria-live="polite"
+                                title="@toggleTitle"
+                                aria-label="@toggleTitle"
                                 style="@Styles?.YearPickerToggleButton"
-                                class="bit-cal-ptb @Classes?.YearPickerToggleButton"
-                                aria-label="@(string.Format(YearPickerToggleAriaLabel, _displayYear))">
+                                class="bit-cal-ptb @Classes?.YearPickerToggleButton">
                             @_displayYear
                         </button>
                         <div style="@Styles?.MonthPickerNavWrapper" class="bit-cal-nbc @Classes?.MonthPickerNavWrapper">
                             <button @onclick="() => HandleYearChange(false)"
                                     type="button"
-                                    style="@Styles?.PrevYearNavButton"
-                                    class="bit-cal-nbt @Classes?.PrevYearNavButton"
-                                    title="@(string.Format(GoToPrevYearTitle, _displayYear - 1))"
+                                    title="@prevTitle"
+                                    aria-label="@prevTitle"
                                     disabled="@prevDisabled"
-                                    aria-disabled="@prevDisabled">
+                                    aria-disabled="@prevDisabled"
+                                    style="@Styles?.PrevYearNavButton"
+                                    class="bit-cal-nbt @Classes?.PrevYearNavButton">
                                 <i aria-hidden="true"
                                    style="@Styles?.PrevYearNavIcon"
                                    class="bit-icon bit-icon--Up @Classes?.PrevYearNavIcon" />
@@ -217,9 +225,10 @@
                             {
                                 <button @onclick="HandleGoToToday"
                                         type="button"
+                                        title="@GoToTodayTitle"
+                                        aria-label="@GoToTodayTitle"
                                         style="@Styles?.GoToTodayButton"
                                         class="bit-cal-gtb @Classes?.GoToTodayButton"
-                                        title="@GoToTodayTitle"
                                         disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
@@ -228,11 +237,12 @@
                             }
                             <button @onclick="() => HandleYearChange(true)"
                                     type="button"
-                                    style="@Styles?.NextYearNavButton"
-                                    class="bit-cal-nbt @Classes?.NextYearNavButton"
-                                    title="@(string.Format(GoToNextYearTitle, _displayYear + 1))"
+                                    title="@nextTitle"
+                                    aria-label="@nextTitle"
+                                    disabled="@nextDisabled"
                                     aria-disabled="@nextDisabled"
-                                    disabled="@nextDisabled">
+                                    style="@Styles?.NextYearNavButton"
+                                    class="bit-cal-nbt @Classes?.NextYearNavButton">
                                 <i aria-hidden="true"
                                    style="@Styles?.NextYearNavIcon"
                                    class="bit-icon bit-icon--Down @Classes?.NextYearNavIcon" />
@@ -277,24 +287,29 @@
                 {
                     var prevDisabled = CanChangeYearRange(false) is false;
                     var nextDisabled = CanChangeYearRange(true) is false;
+                    var toggleTitle = string.Format(YearRangePickerToggleTitle, _yearPickerStartYear, _yearPickerEndYear);
+                    var prevTitle = string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1);
+                    var nextTitle = string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12);
                     <div style="@Styles?.YearPickerHeader" class="bit-cal-pkh @Classes?.YearPickerHeader">
                         <button @onclick="ToggleBetweenMonthAndYearPicker"
                                 type="button"
-                                aria-atomic="true"
                                 aria-live="polite"
+                                aria-atomic="true"
+                                title="@toggleTitle"
+                                aria-label="@toggleTitle"
                                 style="@Styles?.MonthPickerToggleButton"
-                                class="bit-cal-ptb @Classes?.MonthPickerToggleButton"
-                                aria-label="@(string.Format(YearRangePickerToggleAriaLabel, _yearPickerStartYear, _yearPickerEndYear))">
+                                class="bit-cal-ptb @Classes?.MonthPickerToggleButton">
                             @_yearPickerStartYear - @_yearPickerEndYear
                         </button>
                         <div style="@Styles?.YearPickerNavWrapper" class="bit-cal-nbc @Classes?.YearPickerNavWrapper">
                             <button @onclick="() => HandleYearRangeChange(false)"
                                     type="button"
-                                    style="@Styles?.PrevYearRangeNavButton"
-                                    class="bit-cal-nbt @Classes?.PrevYearRangeNavButton"
+                                    title="@prevTitle"
+                                    aria-label="@prevTitle"
                                     disabled="@prevDisabled"
                                     aria-disabled="@prevDisabled"
-                                    title="@(string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1))">
+                                    style="@Styles?.PrevYearRangeNavButton"
+                                    class="bit-cal-nbt @Classes?.PrevYearRangeNavButton">
                                 <i aria-hidden="true"
                                    style="@Styles?.PrevYearRangeNavIcon"
                                    class="bit-icon bit-icon--Up @Classes?.PrevYearRangeNavIcon" />
@@ -303,9 +318,10 @@
                             {
                                 <button @onclick="HandleGoToToday"
                                         type="button"
+                                        title="@GoToTodayTitle"
+                                        aria-label="@GoToTodayTitle"
                                         style="@Styles?.GoToTodayButton"
                                         class="bit-cal-gtb @Classes?.GoToTodayButton"
-                                        title="@GoToTodayTitle"
                                         disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
@@ -314,11 +330,12 @@
                             }
                             <button @onclick="() => HandleYearRangeChange(true)"
                                     type="button"
-                                    style="@Styles?.NextYearRangeNavButton"
-                                    class="bit-cal-nbt @Classes?.NextYearRangeNavButton"
+                                    title="@nextTitle"
+                                    aria-label="@nextTitle"
                                     disabled="@nextDisabled"
                                     aria-disabled="@nextDisabled"
-                                    title="@(string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12))">
+                                    style="@Styles?.NextYearRangeNavButton"
+                                    class="bit-cal-nbt @Classes?.NextYearRangeNavButton">
                                 <i aria-hidden="true"
                                    style="@Styles?.NextYearRangeNavIcon"
                                    class="bit-icon bit-icon--Down @Classes?.NextYearRangeNavIcon" />
@@ -340,9 +357,9 @@
                                         disabled="@disabled"
                                         aria-disabled="@disabled"
                                         tabindex="@(selected ? 0 : -1)"
-                                        aria-selected="@(selected ? "true" : "false")"
                                         style="@Styles?.YearButton"
-                                        class="bit-cal-pkb @Classes?.YearButton">
+                                        class="bit-cal-pkb @Classes?.YearButton"
+                                        aria-selected="@(selected ? "true" : "false")">
                                     @if (YearCellTemplate is not null)
                                     {
                                         @YearCellTemplate(year)
