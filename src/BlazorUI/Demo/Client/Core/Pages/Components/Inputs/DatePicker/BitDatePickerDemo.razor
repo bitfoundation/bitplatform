@@ -8,7 +8,8 @@
 <ComponentDemo ComponentName="DatePicker"
                ComponentDescription="Picking a date can be tough without context. A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available dates."
                ComponentParameters="componentParameters"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
 
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
@@ -75,7 +76,41 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Style="padding: 1rem; background: purple;" />
+
+                <BitDatePicker Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
+                                                 Divider = "border-color: green;",
+                                                 DayPickerMonth = "color: red;",
+                                                 TodayDayButton = "background-color: red;",
+                                                 SelectedDayButton = "background-color: purple;",
+                                                 YearPickerToggleButton = "color: blue;" })" />
+
+                <BitDatePicker Classes="@(new() { Root = "custom-root",
+                                                  DayPickerWrapper = "custom-day-picker",
+                                                  DayButton = "custom-day",
+                                                  TodayDayButton = "custom-today-day",
+                                                  PrevMonthNavButton = "custom-prev-month",
+                                                  NextMonthNavButton = "custom-next-month",
+                                                  DayPickerMonth = "custom-day-month",
+                                                  DayPickerHeader = "custom-day-header",
+                                                  WeekNumbersHeader = "custom-week-header",
+                                                  YearMonthPickerWrapper = "custom-year-picker"})" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-content">
                 <BitDatePicker @bind-Value="@selectedDate" />
@@ -85,7 +120,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Culture" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Culture" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>
                 By default, BitDatePicker picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
@@ -108,7 +143,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-content">
                 <BitDatePicker>
@@ -150,7 +185,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Responsive" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div class="example-content">
                 <BitDatePicker Label="Response DatePicker"
@@ -160,7 +195,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div class="example-content">
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">

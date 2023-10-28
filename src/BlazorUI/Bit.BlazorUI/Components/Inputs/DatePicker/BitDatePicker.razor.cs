@@ -139,6 +139,11 @@ public partial class BitDatePicker
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new();
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitDatePicker component.
+    /// </summary>
+    [Parameter] public BitDatePickerClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// CultureInfo for the DatePicker.
     /// </summary>
     [Parameter]
@@ -369,6 +374,11 @@ public partial class BitDatePicker
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitDatePicker component.
+    /// </summary>
+    [Parameter] public BitDatePickerClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The tabIndex of the DatePicker's input.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -381,7 +391,7 @@ public partial class BitDatePicker
     /// <summary>
     /// The aria-label of the week number.
     /// </summary>
-    [Parameter] public string? WeekNumberAriaLabel { get; set; } = "Week number {0}";
+    [Parameter] public string WeekNumberAriaLabel { get; set; } = "Week number {0}";
 
     /// <summary>
     /// The title of the week number (tooltip).
@@ -404,18 +414,18 @@ public partial class BitDatePicker
     [Parameter] public string YearRangePickerToggleAriaLabel { get; set; } = "{0} - {1}, change month";
 
 
-
     public Task OpenCallout()
     {
         return HandleOnClick();
     }
 
 
-
     protected override string RootElementClass { get; } = "bit-dtp";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
@@ -425,6 +435,11 @@ public partial class BitDatePicker
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
@@ -848,18 +863,19 @@ public partial class BitDatePicker
         return month;
     }
 
-    private bool IsGoTodayButtonDisabled()
+    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth)
     {
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-
         if (_showMonthPickerAsOverlayInternal)
         {
-            return (_yearPickerStartYear == todayYear - 1 && _yearPickerEndYear == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
+            return _yearPickerStartYear == todayYear - 1
+                && _yearPickerEndYear == todayYear + 10
+                && todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
         else
         {
-            return (todayMonth == _currentMonth && todayYear == _currentYear);
+            return todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
     }
 
@@ -1020,43 +1036,56 @@ public partial class BitDatePicker
             : string.Empty;
     }
 
-    private string GetDateButtonCssClass(int day, int week)
+    private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
     {
-        StringBuilder className = new StringBuilder();
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
-        var currentDay = _daysOfCurrentMonth[week, day];
+        StringBuilder klass = new StringBuilder();
+        StringBuilder style = new StringBuilder();
 
         if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className.Append(" bit-dtp-dbs");
+            klass.Append(" bit-dtp-dbs");
+
+            if (Classes?.SelectedDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.SelectedDayButton);
+            }
+
+            if (Styles?.SelectedDayButton is not null)
+            {
+                style.Append(Styles?.SelectedDayButton);
+            }
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-dtp-dbo");
+            klass.Append(" bit-dtp-dbo");
         }
 
+        var currentDay = _daysOfCurrentMonth[week, day];
         if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
-            className.Append(" bit-dtp-dtd");
+            klass.Append(" bit-dtp-dtd");
+
+            if (Classes?.TodayDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.TodayDayButton);
+            }
+
+            if (Styles?.TodayDayButton is not null)
+            {
+                style.Append(' ').Append(Styles?.TodayDayButton);
+            }
         }
 
-        return className.ToString();
+        return (style.ToString(), klass.ToString());
     }
 
-    private string GetMonthCellCssClass(int monthIndex)
+    private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
     {
         var className = new StringBuilder();
-        if (HighlightCurrentMonth)
+        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _displayYear)
         {
-            var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-            var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-            if (todayMonth == monthIndex && todayYear == _displayYear)
-            {
-                className.Append(" bit-dtp-pcm");
-            }
+            className.Append(" bit-dtp-pcm");
         }
 
         if (HighlightSelectedMonth && _currentMonth == monthIndex)
