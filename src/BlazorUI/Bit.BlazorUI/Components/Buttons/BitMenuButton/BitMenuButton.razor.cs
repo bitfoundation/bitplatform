@@ -428,7 +428,8 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                                 0,
                                 "",
                                 "",
-                                false);
+                                false,
+                                RootElementClass);
     }
 
 

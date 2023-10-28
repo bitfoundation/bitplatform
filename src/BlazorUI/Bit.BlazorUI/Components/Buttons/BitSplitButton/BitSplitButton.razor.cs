@@ -519,7 +519,8 @@ public partial class BitSplitButton<TItem> where TItem : class
                                 0,
                                 "",
                                 "",
-                                false);
+                                false,
+                                RootElementClass);
     }
 
 

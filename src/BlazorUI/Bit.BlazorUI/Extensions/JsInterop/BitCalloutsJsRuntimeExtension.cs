@@ -17,12 +17,14 @@ internal static class BitCalloutsJsRuntimeExtension
         int scrollOffset,
         string headerId,
         string footerId,
-        bool setCalloutWidth
+        bool setCalloutWidth,
+        string rootCssClass
         ) where T : class
     {
         return await jsRuntime.InvokeAsync<bool>("BitCallouts.toggle",
-                                dotnetObj, componentId, calloutId, isCalloutOpen, responsiveMode,
-                                dropDirection, isRtl, scrollContainerId, scrollOffset, headerId, footerId, setCalloutWidth);
+                                                 dotnetObj, componentId, calloutId, isCalloutOpen, responsiveMode, dropDirection,
+                                                 isRtl, scrollContainerId, scrollOffset, headerId, footerId, setCalloutWidth,
+                                                 rootCssClass);
     }
 
     internal static async Task ClearCallout(this IJSRuntime jsRuntime, string calloutId)

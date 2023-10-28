@@ -10,7 +10,7 @@
 
 window.addEventListener('scroll', (e: Event) => {
     const currentCallout = BitCallouts.current;
-    if (window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
+    if (window.innerWidth < Bit.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
 
     const target = e.target as HTMLElement;
     if (target?.id && target.id == currentCallout.scrollContainerId) return;
@@ -19,8 +19,8 @@ window.addEventListener('scroll', (e: Event) => {
 }, true);
 
 window.addEventListener('resize', (e: any) => {
-    const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
-    if (window.innerWidth < BitCallouts.MAX_MOBILE_WIDTH && resizeTriggeredByKeyboardOpen) return;
+    const resizeTriggeredByOpenningKeyboard = document?.activeElement?.getAttribute('type') === 'text';
+    if (window.innerWidth < Bit.MAX_MOBILE_WIDTH && resizeTriggeredByOpenningKeyboard) return;
 
     BitCallouts.replaceCurrent();
 }, true);

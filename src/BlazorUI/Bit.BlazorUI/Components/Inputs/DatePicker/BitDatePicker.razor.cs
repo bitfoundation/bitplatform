@@ -1160,7 +1160,8 @@ public partial class BitDatePicker
                                        0,
                                        "",
                                        "",
-                                       false);
+                                       false,
+                                       RootElementClass);
     }
 
     protected override void Dispose(bool disposing)

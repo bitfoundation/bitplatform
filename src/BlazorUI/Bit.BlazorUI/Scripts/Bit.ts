@@ -1,4 +1,8 @@
 ﻿class Bit {
+
+    public static MIN_MOBILE_WIDTH = 320;
+    public static MAX_MOBILE_WIDTH = 600;
+
     static setProperty(element: Record<string, any>, property: string, value: any): void {
         if (!element) return;
         element[property] = value;
