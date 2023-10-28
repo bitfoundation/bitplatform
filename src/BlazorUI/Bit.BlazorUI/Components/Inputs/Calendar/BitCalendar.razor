@@ -10,6 +10,13 @@
         <div class="bit-cal-sdt" aria-live="polite" aria-atomic="true">
             @(string.Format(SelectedDateAriaAtomic, CurrentValueAsString))
         </div>
+
+        @{
+            var todayYear = Culture.Calendar.GetYear(DateTime.Now);
+            var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
+            var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
+        }
+
         @if (MonthPickerPosition == BitCalendarMonthPickerPosition.Besides || _showMonthPicker is false)
         {
             <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
@@ -56,7 +63,7 @@
                                     style="@Styles?.GoToTodayButton"
                                     class="bit-cal-gtb @Classes?.GoToTodayButton"
                                     title="@GoToTodayTitle"
-                                    disabled="@IsGoToTodayButtonDisabled()">
+                                    disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                 <i aria-hidden="true"
                                    style="@Styles?.GoToTodayIcon"
                                    class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
@@ -91,6 +98,7 @@
                         </div>
                     }
                 </div>
+
                 @for (var week = 0; week < 6; week++)
                 {
                     //to ignore the last empty week of the month || to ignore the first whole week of the month
@@ -108,20 +116,20 @@
                                 @weekNumber
                             </div>
                         }
-
                         @for (var day = 0; day < 7; day++)
                         {
                             var w = week;
                             var d = day;
                             var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
+                            var (style, klass) = GetDayButtonCss(d, w, todayYear, todayMonth, todayDay);
                             <button @onclick="() => SelectDate(d, w)"
                                     type="button"
                                     role="gridcell"
                                     disabled="@disabled"
                                     aria-readonly="true"
                                     aria-disabled="@disabled"
-                                    style="@(GetDateButtonCssStyle(d, w)) @Styles?.DayButton"
-                                    class="bit-cal-dbt@(GetDateButtonCssClass(d, w)) @Classes?.DayButton"
+                                    style="@style @Styles?.DayButton"
+                                    class="bit-cal-dbt@(klass) @Classes?.DayButton"
                                     tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
                                     aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
                                 @if (DayCellTemplate is not null)
@@ -212,7 +220,7 @@
                                         style="@Styles?.GoToTodayButton"
                                         class="bit-cal-gtb @Classes?.GoToTodayButton"
                                         title="@GoToTodayTitle"
-                                        disabled="@IsGoToTodayButtonDisabled()">
+                                        disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
                                        class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
@@ -251,7 +259,7 @@
                                         tabindex="@(selected ? 0 : -1)"
                                         aria-selected="@(selected ? "true" : "false")"
                                         style="@Styles?.MonthButton"
-                                        class="bit-cal-pkb@(GetMonthCellCssClass(month)) @Classes?.MonthButton">
+                                        class="bit-cal-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
                                     @if (MonthCellTemplate is not null)
                                     {
                                         @MonthCellTemplate(GetDateTimeOfMonthCell(month))
@@ -298,7 +306,7 @@
                                         style="@Styles?.GoToTodayButton"
                                         class="bit-cal-gtb @Classes?.GoToTodayButton"
                                         title="@GoToTodayTitle"
-                                        disabled="@IsGoToTodayButtonDisabled()">
+                                        disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
                                        class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />

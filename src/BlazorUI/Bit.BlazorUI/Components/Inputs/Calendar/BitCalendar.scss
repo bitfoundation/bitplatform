@@ -6,6 +6,7 @@
     box-shadow: none;
     font-weight: 400;
     position: relative;
+    max-width: fit-content;
     box-sizing: border-box;
     font-size: spacing(2.25);
     font-family: $typography-font-family;
