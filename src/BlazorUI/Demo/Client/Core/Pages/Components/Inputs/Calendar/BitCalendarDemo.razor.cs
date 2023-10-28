@@ -52,14 +52,14 @@ public partial class BitCalendarDemo
         {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to next year range {0} - {1}",
+            DefaultValue = "Next year range {0} - {1}",
             Description = "The title of the Go to next year range button (tooltip)."
         },
         new()
         {
             Name = "GoToPreviousYearRangeTitle",
             Type = "string",
-            DefaultValue = "Go to previous year range {0} - {1}",
+            DefaultValue = "Previous year range {0} - {1}",
             Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
@@ -156,17 +156,17 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "ShowGoToToday",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the GoToToday button should be shown or not."
-        },
-        new()
-        {
             Name = "SelectedDateAriaAtomic",
             Type = "string",
             DefaultValue = "Selected date {0}",
             Description = "The text of selected date aria-atomic of the calendar."
+        },
+        new()
+        {
+            Name = "ShowGoToToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the GoToToday button should be shown or not."
         },
         new()
         {
@@ -193,6 +193,20 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "WeekNumberAriaLabel",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The aria-label of the week number."
+        },
+        new()
+        {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip)."
+        },
+        new()
+        {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
@@ -211,27 +225,6 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
             Description = "The aria-label of the year range picker's toggle."
-        },
-        new()
-        {
-            Name = "WeekNumberTitle",
-            Type = "string",
-            DefaultValue = "Week number {0}",
-            Description = "The title of the week number (tooltip)."
-        },
-        new()
-        {
-            Name = "WeekNumberAriaLabel",
-            Type = "string",
-            DefaultValue = "Week number {0}",
-            Description = "The aria-label of the week number."
-        },
-        new()
-        {
-            Name = "WeekNumberTitle",
-            Type = "string",
-            DefaultValue = "Week number {0}",
-            Description = "The title of the week number (tooltip)."
         }
     };
 
