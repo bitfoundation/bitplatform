@@ -8,7 +8,7 @@
 @inject IConfiguration Configuration
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["ContainerId"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
