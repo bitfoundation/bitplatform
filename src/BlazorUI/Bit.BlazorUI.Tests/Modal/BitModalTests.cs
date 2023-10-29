@@ -21,7 +21,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-mdl > div");
+        var element = com.Find(".bit-mdl");
         Assert.AreEqual(element.Attributes["role"].Value, isAlert.HasValue && isAlert.Value ? "alertdialog" : "dialog");
     }
 
@@ -60,7 +60,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-mdl > div");
+        var element = com.Find(".bit-mdl");
         Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
 
         var elementOverlay = com.FindAll(".bit-mdl-ovl");
@@ -95,7 +95,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-mdl > div");
+        var element = com.Find(".bit-mdl");
 
         if (subtitleAriaId == null)
         {
@@ -124,7 +124,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-mdl > div");
+        var element = com.Find(".bit-mdl");
 
         if (titleAriaId == null)
         {
@@ -149,9 +149,9 @@ public class BitModalTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        var elementContent = com.Find(".bit-mdl-scr-cnt");
+        var elementContent = com.Find(".bit-mdl-scn");
 
-        elementContent.MarkupMatches("<div class=\"bit-mdl-scr-cnt\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div class=\"bit-mdl-scn\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
