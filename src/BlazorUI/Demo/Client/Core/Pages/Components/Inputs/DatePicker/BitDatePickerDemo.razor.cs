@@ -9,7 +9,7 @@ public partial class BitDatePickerDemo
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the DatePicker allows a string date input.",
+            Description = "Whether or not the DatePicker allows a string date input."
         },
         new()
         {
@@ -27,6 +27,15 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitDatePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitDatePicker.",
+            Href = "#datepicker-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
@@ -37,7 +46,7 @@ public partial class BitDatePickerDemo
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of the date in the DatePicker.",
+            Description = "The format of the date in the DatePicker."
         },
         new()
         {
@@ -100,7 +109,7 @@ public partial class BitDatePickerDemo
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the DatePicker has a border.",
+            Description = "Determines if the DatePicker has a border."
         },
         new()
         {
@@ -130,7 +139,7 @@ public partial class BitDatePickerDemo
             DefaultValue = "BitIconLocation.Right",
             Description = "Determines the location of the DatePicker's icon.",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
+            Href = "#icon-location-enum"
         },
         new()
         {
@@ -151,35 +160,35 @@ public partial class BitDatePickerDemo
             Name = "IsMonthPickerVisible",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden.",
+            Description = "Whether the month picker is shown or hidden."
         },
         new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this DatePicker is open.",
+            Description = "Whether or not this DatePicker is open."
         },
         new()
         {
             Name = "IsResponsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
+            Description = "Enables the responsive mode in small screens."
         },
         new()
         {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the Text field of the DatePicker is underlined.",
+            Description = "Whether or not the Text field of the DatePicker is underlined."
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the DatePicker's label.",
+            Description = "The text of the DatePicker's label."
         },
         new()
         {
@@ -193,14 +202,14 @@ public partial class BitDatePickerDemo
             Name = "MaxDate",
             Type = "DateTimeOffset",
             DefaultValue = "null",
-            Description = "The maximum date allowed for the DatePicker.",
+            Description = "The maximum date allowed for the DatePicker."
         },
         new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The minimum date allowed for the DatePicker.",
+            Description = "The minimum date allowed for the DatePicker."
         },
         new()
         {
@@ -220,38 +229,38 @@ public partial class BitDatePickerDemo
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "The callback for clicking on the DatePicker's input.",
+            Description = "The callback for clicking on the DatePicker's input."
         },
         new()
         {
             Name = "OnFocus",
             Type = "EventCallback",
-            Description = "The callback for focusing the DatePicker's input.",
+            Description = "The callback for focusing the DatePicker's input."
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            Description = "The callback for when the focus moves into the DatePicker's input.",
+            Description = "The callback for when the focus moves into the DatePicker's input."
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            Description = "The callback for when the focus moves out of the DatePicker's input.",
+            Description = "The callback for when the focus moves out of the DatePicker's input."
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
-            Description = "The callback for selecting a date in the DatePicker.",
+            Description = "The callback for selecting a date in the DatePicker."
         },
         new()
         {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "The placeholder text of the DatePicker's input.",
+            Description = "The placeholder text of the DatePicker's input."
         },
         new()
         {
@@ -279,28 +288,37 @@ public partial class BitDatePickerDemo
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
+            Description = "Show month picker on top of date picker when visible."
         },
         new()
         {
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not render the time-picker.",
+            Description = "Whether or not render the time-picker."
         },
         new()
         {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the week number (weeks 1 to 53) should be shown before each week row.",
+            Description = "Whether the week number (weeks 1 to 53) should be shown before each week row."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitDatePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitDatePicker.",
+            Href = "#datepicker-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
-            Description = "The tabIndex of the DatePicker's input.",
+            Description = "The tabIndex of the DatePicker's input."
         },
         new()
         {
@@ -309,14 +327,7 @@ public partial class BitDatePickerDemo
             DefaultValue = "BitTimeFormat.TwentyFourHours",
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
-            Href = "#time-format-enum",
-        },
-        new()
-        {
-            Name = "WeekNumberTitle",
-            Type = "string",
-            DefaultValue = "Week number {0}",
-            Description = "The title of the week number (tooltip)."
+            Href = "#time-format-enum"
         },
         new()
         {
@@ -368,19 +379,19 @@ public partial class BitDatePickerDemo
                 {
                     Name = "Visible",
                     Description = "Show content of the component.",
-                    Value = "0",
+                    Value = "0"
                 },
                 new()
                 {
                     Name = "Hidden",
                     Description = "Hide content of the component,though the space it takes on the page remains.",
-                    Value = "1",
+                    Value = "1"
                 },
                 new()
                 {
                     Name = "Collapsed",
                     Description = "Hide content of the component,though the space it takes on the page gone.",
-                    Value = "2",
+                    Value = "2"
                 }
             }
         },
@@ -395,13 +406,13 @@ public partial class BitDatePickerDemo
                 {
                     Name = "Left",
                     Description = "Show the icon at the left side.",
-                    Value = "0",
+                    Value = "0"
                 },
                 new()
                 {
                     Name = "Right",
                     Description = "Show the icon at the right side.",
-                    Value = "1",
+                    Value = "1"
                 }
             }
         },
@@ -416,13 +427,445 @@ public partial class BitDatePickerDemo
                 {
                     Name= "TwentyFourHours",
                     Description="Show time pickers in 24 hours format.",
-                    Value="0",
+                    Value="0"
                 },
                 new()
                 {
                     Name= "TwelveHours",
                     Description="Show time pickers in 12 hours format.",
-                    Value="1",
+                    Value="1"
+                }
+            }
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "datepicker-class-styles",
+            Title = "BitDatePickerClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Label of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input wrapper of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "InputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "InputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the overlay of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Callout",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "CalloutContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Group",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the group of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DayPickerWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the day-picker's wrapper of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DayPickerHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the day-picker's header of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DayPickerMonth",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the day-picker's month of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DayPickerNavWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the day-picker's nav buttons of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevMonthNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous month button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevMonthNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous month icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "GoToTodayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to today button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "GoToTodayIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to today icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "CloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "CloseButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextMonthNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next month button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextMonthNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next month icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DaysHeaderRow",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header row of the days of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "WeekNumbersHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header of the week numbers of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DaysRow",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each row of the days of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "WeekNumber",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the week number of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "DayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each day button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TodayDayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for today day button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "SelectedDayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for selected day button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's main container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's wrapper of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerHourInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's hour input of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerDivider",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's divider of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerMinuteInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's minute input of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerAmPmContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Am Pm container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerAmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Am button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "TimePickerPmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Pm button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "Divider",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main divider of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearMonthPickerWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the year-month-picker's wrapper of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthPickerHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the month-picker's header of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearPickerToggleButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the year-picker's toggle button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthPickerNavWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the month-picker's nav buttons of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevYearNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous year button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevYearNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous year icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextYearNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next year button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextYearNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next year icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthsContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the months container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthsRow",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each row of the months of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each month button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearPickerHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the year-picker's header of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "MonthPickerToggleButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the month-picker's toggle button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearPickerNavWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the year-picker nav buttons of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevYearRangeNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous year-range button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "PrevYearRangeNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to previous year-range icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextYearRangeNavButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next year-range button of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "NextYearRangeNavIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to next year-range icon of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearsContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the years container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearsRow",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each row of the years of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "YearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each year button of the BitDatePicker."
                 }
             }
         }
@@ -477,12 +920,92 @@ public partial class BitDatePickerDemo
                Placeholder=""Select a date"" />";
 
     private readonly string example5RazorCode = @"
-<BitDatePicker @bind-Value=""@selectedDate"" />
-<div>Selected date: @selectedDate.ToString()</div>";
-    private readonly string example5CsharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);";
+<style>
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-day-picker {
+        border: 1px solid #e9981e;
+        background-color: #211e1b;
+        border-end-start-radius: 0.5rem;
+        border-start-start-radius: 0.5rem;
+    }
+
+    .custom-day-month,
+    .custom-next-month,
+    .custom-prev-month {
+        color: white;
+    }
+
+    .custom-day {
+        color: #e9981e;
+        margin: 0.15rem;
+        border-radius: 50%;
+        border: 1px solid #e9981e;
+    }
+
+    .custom-today-day {
+        color: #211e1b;
+        background-color: #e9981e;
+    }
+
+    .custom-week-header {
+        color: white;
+        margin: 0.15rem;
+    }
+
+    .custom-day-header {
+        height: 2rem;
+        color: white;
+        margin: 0.15rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9981e;
+    }
+
+    .custom-year-picker {
+        border: 1px solid #211e1b;
+        background-color: #e9981e;
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: 0.5rem;
+    }
+</style>
+
+
+<BitDatePicker Style=""""margin: 1rem; background: purple;"""" />
+<BitDatePicker Class=""""custom-class"""" />
+
+<BitDatePicker Styles=""""@(new() { Root = """"margin: 1rem; border: 1px solid gold;"""",
+                                   Divider = """"border-color: green;"""",
+                                   DayPickerMonth = """"color: red;"""",
+                                   TodayDayButton = """"background-color: red;"""",
+                                   SelectedDayButton = """"background-color: purple;"""",
+                                   YearPickerToggleButton = """"color: blue;"""" })"""" />
+<BitDatePicker Classes=""""@(new() { Root = """"custom-root"""",
+                                    DayPickerWrapper = """"custom-day-picker"""",
+                                    DayButton = """"custom-day"""",
+                                    TodayDayButton = """"custom-today-day"""",
+                                    PrevMonthNavButton = """"custom-prev-month"""",
+                                    NextMonthNavButton = """"custom-next-month"""",
+                                    DayPickerMonth = """"custom-day-month"""",
+                                    DayPickerHeader = """"custom-day-header"""",
+                                    WeekNumbersHeader = """"custom-week-header"""",
+                                    YearMonthPickerWrapper = """"custom-year-picker""""})"""" />";
 
     private readonly string example6RazorCode = @"
+<BitDatePicker @bind-Value=""@selectedDate"" />
+<div>Selected date: @selectedDate.ToString()</div>";
+    private readonly string example6CsharpCode = @"
+private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);";
+
+    private readonly string example7RazorCode = @"
 <BitDatePicker Label=""fa-IR culture with Farsi names""
                GoToTodayTitle=""برو به امروز""
                Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
@@ -491,7 +1014,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
                GoToTodayTitle=""Boro be emrouz""
                Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .day-cell {
         width: 28px;
@@ -558,15 +1081,15 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
         </span>
     </YearCellTemplate>
 </BitDatePicker>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Response DatePicker""
                IsResponsive=""true""
                Placeholder=""Select a date"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -585,7 +1108,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class BitDatePickerValidationModel
 {
     [Required]
