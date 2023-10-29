@@ -69,7 +69,16 @@ public partial class BitPivotItem : IDisposable
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsSelected ? "bit-pvti-sel" : string.Empty);
+        ClassBuilder.Register(() => Parent?.Classes?.HeaderItem);
+
+        ClassBuilder.Register(() => IsSelected ? $"bit-pvti-sel {Parent?.Classes?.SelectedItem}" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Parent?.Styles?.HeaderItem);
+
+        StyleBuilder.Register(() => IsSelected ? Parent?.Styles?.SelectedItem : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

@@ -13,12 +13,12 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitPivotClassStyles?",
             DefaultValue = "null",
-            Href = "#class-styles",
-            LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the BitPivot component."
+            Description = "Custom CSS classes for different parts of the BitPivot component.",
+            Href = "#pivot-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -85,6 +85,15 @@ public partial class BitPivotDemo
             DefaultValue = "null",
             Description = "Key of the selected pivot item. Updating this will override the Pivot's selected item state.",
         },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitPivotClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitPivot component.",
+            Href = "#pivot-class-styles",
+            LinkType = LinkType.Link
+        },
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -148,40 +157,79 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Id = "class-styles",
+            Id = "pivot-class-styles",
             Title = "BitPivotClassStyles",
             Parameters = new()
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Root",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS class."
+                   Description = "Custom CSS classes/styles for the root element of the BitPivot."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "Header",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS style."
+                   Description = "Custom CSS classes/styles for the header of the BitPivot."
+               },
+               new()
+               {
+                   Name = "ContentView",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the content view of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header item of the BitPivot."
+               },
+               new()
+               {
+                   Name = "SelectedItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the selected item of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderItemContent",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header item content of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderIconContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header icon container of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header icon of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header text of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderItemCount",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header item count of the BitPivot."
                }
             }
         }
@@ -747,4 +795,113 @@ private void TogglePivotItemVisibility()
     private readonly string example12CsharpCode = @"
 private bool PivotEnabled = true;
 private bool PivotItemEnabled = true;";
+
+    private readonly string example13RazorCode = @"
+<style>
+    .custom-class {
+        margin: 1rem;
+        padding-left: 0.25rem;
+        box-shadow: 0 0 1rem lightskyblue;
+    }
+
+    .custom-selected-item {
+        background-color: goldenrod;
+    }
+
+    .custom-header {
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid gray;
+    }
+
+    .custom-content-view {
+        margin-top: 1rem;
+        background-color: deepskyblue;
+    }
+</style>
+
+
+<BitPivot Style=""border: 1px solid tomato;"">
+    <BitPivotItem HeaderText=""File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>
+
+<BitPivot Class=""custom-class"">
+    <BitPivotItem HeaderText=""File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>
+
+<BitPivot Styles=""@(new() { HeaderIcon = ""color: tomato;"", HeaderText = ""color: purple;"" })"">
+    <BitPivotItem HeaderText=""File"" IconName=""Info"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>
+
+<BitPivot Classes=""@(new() { ContentView = ""custom-content-view"", SelectedItem = ""custom-selected-item"", Header = ""custom-header"" })"">
+    <BitPivotItem HeaderText=""File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>";
 }
