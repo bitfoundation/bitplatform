@@ -3,17 +3,17 @@
 public enum BitButtonStyle
 {
     /// <summary>
-    /// The button with white text on a blue background
+    /// The button for primary actions that are high-emphasis
     /// </summary>
     Primary,
 
     /// <summary>
-    /// The button with black text on a white background
+    /// The button for important actions that are medium-emphasis
     /// </summary>
     Standard,
 
     /// <summary>
-    /// The button with white text on a transparent background
+    /// The button for less-pronounced actions
     /// </summary>
     Text
 }
