@@ -27,12 +27,12 @@ public partial class BitModalDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
-            Href = "#class-styles",
-            LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the BitModal component."
+            Description = "Custom CSS classes for different parts of the BitModal component.",
+            Href = "#modal-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -100,6 +100,15 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitModalClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitModal component.",
+            Href = "#modal-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
@@ -118,37 +127,44 @@ public partial class BitModalDemo
     {
         new()
         {
-            Id = "class-styles",
+            Id = "modal-class-styles",
             Title = "BitModalClassStyles",
             Parameters = new()
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Root",
                    Type = "string?",
-                   Description = "Custom CSS class."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitModal."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "Container",
                    Type = "string?",
-                   Description = "Custom CSS style."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the main container of the BitModal."
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitModal."
+               },
+               new()
+               {
+                   Name = "Content",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the content of the BitModal."
+               },
+               new()
+               {
+                   Name = "ScrollContent",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the scroll content of the BitModal."
                }
             }
         }

@@ -29,6 +29,7 @@
     width: 100%;
     height: 100%;
     display: flex;
+    outline: none;
     position: absolute;
     pointer-events: auto;
     background-color: transparent;
@@ -42,7 +43,7 @@
     background-color: $color-background-overlay;
 }
 
-.bit-mdl-scr-cnt {
+.bit-mdl-scn {
     flex-grow: 1;
     display: flex;
     overflow-y: auto;
