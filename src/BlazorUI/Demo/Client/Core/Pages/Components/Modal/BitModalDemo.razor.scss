@@ -43,3 +43,25 @@
     position: relative;
     border: rem2(2px) lightgreen solid;
 }
+
+::deep {
+    .custom-class {
+        border: 0.5rem solid tomato;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-container {
+        border: 0.25rem solid #0054C6;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-content {
+        margin: 1rem;
+        box-shadow: 0 0 10rem purple;
+        border-end-end-radius: 1rem;
+        border-end-start-radius: 1rem;
+    }
+}
