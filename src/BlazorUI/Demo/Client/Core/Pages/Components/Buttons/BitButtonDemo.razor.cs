@@ -99,6 +99,12 @@ public partial class BitButtonDemo
                     Name= "Standard",
                     Description="The button with black text on a white background.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="The button with white text on a transparent background.",
+                    Value="2",
                 }
             }
         },
@@ -140,10 +146,15 @@ public partial class BitButtonDemo
     Standard (@standardCounter)
 </BitButton>
 
+<BitButton ButtonStyle=""BitButtonStyle.Text"" OnClick=""() => textCounter++"">
+    Text (@textCounter)
+</BitButton>
+
 <BitButton IsEnabled=""false"">Disabled</BitButton>";
     private readonly string example1CsharpCode = @"
 private int primaryCounter;
-private int standardCounter;";
+private int standardCounter;
+private int textCounter;";
 
     private readonly string example2RazorCode = @"
 <style>

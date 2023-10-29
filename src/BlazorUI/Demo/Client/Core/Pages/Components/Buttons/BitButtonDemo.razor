@@ -15,6 +15,9 @@
                 <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
                     Standard (@standardCounter)
                 </BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Text" OnClick="() => textCounter++">
+                    Text (@textCounter)
+                </BitButton>
                 <BitButton IsEnabled="false">Disabled</BitButton>
             </div>
         </ExamplePreview>
@@ -123,6 +126,7 @@
 @code {
     private int primaryCounter;
     private int standardCounter;
+    private int textCounter;
 
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();

@@ -80,9 +80,13 @@ public partial class BitButton
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                    ? $"{RootElementClass}-pri"
-                                    : $"{RootElementClass}-std");
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => $"{RootElementClass}-pri",
+            BitButtonStyle.Standard => $"{RootElementClass}-std",
+            BitButtonStyle.Text => $"{RootElementClass}-txt",
+            _ => $"{RootElementClass}-pri"
+        });
     }
 
     protected override void OnParametersSet()
