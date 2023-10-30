@@ -77,8 +77,8 @@
                     @if (AmPm)
                     {
                         <div class="bit-ctp-am-pm">
-                            <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">AM</button>
-                            <button type="button" class="bit-ctp-txt @(IsAm() is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnPmClick">PM</button>
+                            <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
+                            <button type="button" class="bit-ctp-txt @(IsAm() is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
                         </div>
                     }
                 </div>
