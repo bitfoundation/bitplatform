@@ -28,7 +28,7 @@ public class BitPivotClassStyles
     public string? SelectedItem { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the header content of the BitPivot.
+    /// Custom CSS classes/styles for the header item content of the BitPivot.
     /// </summary>
     public string? HeaderItemContent { get; set; }
 
