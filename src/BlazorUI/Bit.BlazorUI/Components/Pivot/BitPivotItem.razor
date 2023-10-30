@@ -12,11 +12,11 @@
         id="@Parent?.GetPivotItemId(this)"
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
         aria-selected="@(IsSelected ? "true": "false")">
-    <span>
+    <span style="@Parent?.Styles?.HeaderItemContent" class="@Parent?.Classes?.HeaderItemContent">
         @if (@IconName.HasValue())
         {
-            <span>
-                <i class="bit-icon bit-icon--@IconName" />
+            <span style="@Parent?.Styles?.HeaderIconContainer" class="@Parent?.Classes?.HeaderIconContainer">
+                <i style="@Parent?.Styles?.HeaderIcon" class="bit-icon bit-icon--@IconName @Parent?.Classes?.HeaderIcon" />
             </span>
         }
 
@@ -26,12 +26,12 @@
         }
         else if (HeaderText.HasValue())
         {
-            <span>@HeaderText</span>
+            <span style="@Parent?.Styles?.HeaderText" class="@Parent?.Classes?.HeaderText">@HeaderText</span>
         }
 
         @if (ItemCount is not null)
         {
-            <span>(@ItemCount)</span>
+            <span style="@Parent?.Styles?.HeaderItemCount" class="@Parent?.Classes?.HeaderItemCount">(@ItemCount)</span>
         }
     </span>
 </button>
