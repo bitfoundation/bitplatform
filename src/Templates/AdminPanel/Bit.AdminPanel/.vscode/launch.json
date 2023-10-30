@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "Watch Api and Web",
+            "configurations": [
+                "Watch Api",
+                "Watch Web"
+            ]
+        }
+    ],
+    "configurations": [
+        {
+            "name": "Watch Api",
+            "type": "coreclr",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src/Server/Api",
+            "program": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                ".",
+                "verbose"
+            ],
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Watch Web",
+            "type": "coreclr",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src/Client/Web",
+            "program": "dotnet",
+            "args": [
+                "watch",
+                "--project",
+                ".",
+                "verbose"
+            ],
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    ]
+}

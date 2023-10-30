@@ -56,9 +56,9 @@ public partial class BitLoadingButton
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitLoadingButton.
+    /// Custom CSS classes for different parts of the BitLoadingButton.
     /// </summary>
-    [Parameter] public BitLoadingButtonClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitLoadingButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Determine whether the button is in loading mode or not.
@@ -86,12 +86,31 @@ public partial class BitLoadingButton
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitLoadingButton.
+    /// </summary>
+    [Parameter] public BitLoadingButtonClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The tooltip to show when the mouse is placed on the icon button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
 
     protected override string RootElementClass => "bit-ldb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
+                                    ? $"{RootElementClass}-pri"
+                                    : $"{RootElementClass}-std");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnParametersSet()
     {
@@ -103,13 +122,6 @@ public partial class BitLoadingButton
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         base.OnParametersSet();
-    }
-
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                    ? $"{RootElementClass}-pri"
-                                    : $"{RootElementClass}-std");
     }
 
 

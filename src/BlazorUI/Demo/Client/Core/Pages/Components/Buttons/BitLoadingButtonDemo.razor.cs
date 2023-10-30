@@ -51,12 +51,12 @@ public partial class BitLoadingButtonDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitLoadingButtonClassStyles?",
             LinkType = LinkType.Link,
             Href = "#class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes/styles for different parts of the BitLoadingButton.",
+            Description = "Custom CSS classes for different parts of the BitLoadingButton.",
         },
         new()
         {
@@ -96,6 +96,15 @@ public partial class BitLoadingButtonDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitLoadingButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitLoadingButton.",
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
@@ -113,48 +122,32 @@ public partial class BitLoadingButtonDemo
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitLoadingButton."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the internal container of the BitLoadingButton."
                },
                new()
                {
-                   Name = "Primary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the primary section of the BitLoadingButton."
-               },
-               new()
-               {
-                   Name = "Secondary",
-                   Type = "BitClassStylePair?",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
-                   Description = "Custom CSS classes/styles for the secondary section of the BitLoadingButton."
-               },
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Spinner",
                    Type = "string?",
-                   Description = "Custom CSS classes."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner section of the BitLoadingButton."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "LoadingLabel",
                    Type = "string?",
-                   Description = "Custom CSS styles."
-               }
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label section of the BitLoadingButton."
+               },
             }
         }
     };
@@ -832,11 +825,18 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example8RazorCode = @"
+<style>
+    .custom-label {
+        color: blue;
+    }
+</style>
+
+
 <BitLoadingButton IsLoading=""ClassStylesPrimaryIsLoading""
                   ButtonStyle=""BitButtonStyle.Primary""
                   OnClick=""ClassStylesPrimaryOnClick""
                   LoadingLabel=""Loading...""
-                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:red"" } })"">
+                  Styles=""@(new() { LoadingLabel = ""color:red"" })"">
     Primary (@ClassStylesPrimaryCounter)
 </BitLoadingButton>
 
@@ -844,7 +844,7 @@ private void HandleInvalidSubmit()
                   ButtonStyle=""BitButtonStyle.Standard""
                   OnClick=""ClassStylesStandardOnClick""
                   LoadingLabel=""Saving...""
-                  ClassStyles=""@(new() { LoadingLabel = new() { Style = ""color:blue"" } })"">
+                  Classes=""@(new() { LoadingLabel = ""custom-label"" })"">
     Standard (@ClassStylesStandardCounter)
 </BitLoadingButton>
 

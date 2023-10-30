@@ -7,6 +7,7 @@
 <ComponentDemo ComponentName="Calendar"
                ComponentDescription="The calendar control lets people select and view a single date or a range of dates in their calendar. It’s made up of 3 separate views: the month view, year view, and decade view."
                ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
@@ -44,7 +45,41 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitCalendar Style="padding: 1rem; background: purple;" />
+
+                <BitCalendar Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitCalendar Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
+                                               Divider = "border-color: green;",
+                                               DayPickerMonth = "color: red;",
+                                               TodayDayButton = "background-color: red;",
+                                               SelectedDayButton = "background-color: purple;",
+                                               YearPickerToggleButton = "color: blue;" })" />
+
+                <BitCalendar Classes="@(new() { Root = "custom-root",
+                                                DayPickerWrapper = "custom-day-picker",
+                                                DayButton = "custom-day",
+                                                TodayDayButton = "custom-today-day",
+                                                PrevMonthNavButton = "custom-prev-month",
+                                                NextMonthNavButton = "custom-next-month",
+                                                DayPickerMonth = "custom-day-month",
+                                                DayPickerHeader = "custom-day-header",
+                                                WeekNumbersHeader = "custom-week-header",
+                                                YearMonthPickerWrapper = "custom-year-picker"})" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-content">
                 <BitCalendar @bind-Value="@selectedDate" />
@@ -53,7 +88,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Culture" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Culture" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
                 By default, BitCalendar picks the current culture. But you can provide your own instance of CultureInfo for any custom culture.
@@ -76,7 +111,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-content">
                 <div>DayCellTemplate:</div>
@@ -99,7 +134,7 @@
                 <BitCalendar>
                     <MonthCellTemplate>
                         <div style="width:28px;padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
-                            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+                            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
                         </div>
                     </MonthCellTemplate>
                 </BitCalendar>
@@ -118,7 +153,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="MonthPicker" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="MonthPicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-content">
                 <div>IsMonthPickerVisible:</div>
@@ -135,7 +170,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="TimePicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="TimePicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-content">
                 <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" />
@@ -145,7 +180,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div>
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">

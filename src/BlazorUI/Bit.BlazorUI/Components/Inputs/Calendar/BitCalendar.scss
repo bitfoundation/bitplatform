@@ -6,12 +6,13 @@
     box-shadow: none;
     font-weight: 400;
     position: relative;
+    max-width: fit-content;
     box-sizing: border-box;
     font-size: spacing(2.25);
     font-family: $typography-font-family;
 
     &.bit-dis {
-        .bit-cal-ctn {
+        .bit-cal-cnt {
             user-select: none;
             pointer-events: none;
             -webkit-user-select: none;
@@ -22,20 +23,18 @@
         .bit-cal-wlb,
         .bit-cal-dbt,
         .bit-cal-pkb,
-        .bit-cal-ptb,
-        .bit-cal-dcl {
+        .bit-cal-ptb {
             color: $color-foreground-disabled;
         }
 
-        .bit-cal-dct {
-            .bit-cal-dbt {
-                background-color: $color-background-disabled;
-            }
+        .bit-cal-dbt.bit-cal-dtd {
+                background-color: $color-background-disabled;            
         }
     }
 }
 
-.bit-cal-ctn {
+.bit-cal-cnt {
+    display: flex;
     font-weight: 400;
     top: spacing(4.25);
     outline: transparent;
@@ -43,15 +42,6 @@
     font-size: spacing(1.75);
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
-}
-
-.bit-cal-grp {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    outline: none;
-    box-shadow: none;
-    box-sizing: border-box;
 }
 
 .bit-cal-sdt {
@@ -95,7 +85,6 @@
     margin: 0;
     padding: 0;
     border: none;
-    cursor: pointer;
     font-weight: 400;
     position: relative;
     text-align: center;
@@ -110,26 +99,6 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
-.bit-cal-dcl {
-    margin: 0;
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    font-weight: 400;
-    position: relative;
-    text-align: center;
-    font-size: spacing(1.5);
-    line-height: spacing(3.5);
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $color-action-hover-background-primary;
-        }
-    }
-}
-
 .bit-cal-dbt {
     padding: 0;
     border: none;
@@ -138,13 +107,24 @@
     cursor: pointer;
     overflow: visible;
     position: relative;
+    width: spacing(3.5);
+    align-items: center;
+    height: spacing(3.5);
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
     font-size: spacing(1.5);
     line-height: spacing(3);
+    justify-content: center;
     background-color: transparent;
+    color: $color-foreground-primary;
     border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
 
     &:disabled {
         pointer-events: none;
@@ -153,20 +133,23 @@
     }
 }
 
-.bit-cal-dtx {
-    align-items: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    display: inline-flex;
-    justify-content: center;
+.bit-cal-dbs {
+    background-color: $color-background-secondary;
+
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border: $shape-border-width $shape-border-style $color-border-primary;
+    }
 }
 
-.bit-cal-dom {
+.bit-cal-dbo {
     font-weight: 400;
     color: $color-foreground-secondary;
 }
 
-.bit-cal-dct {
+.bit-cal-dtd {
     font-weight: 600;
     border-radius: 50%;
     color: $color-primary-text;
@@ -176,17 +159,6 @@
         &:hover {
             background-color: $color-action-hover-primary;
         }
-    }
-}
-
-.bit-cal-dcs {
-    background-color: $color-background-secondary;
-
-    &::after {
-        inset: 0;
-        content: "";
-        position: absolute;
-        border: $shape-border-width $shape-border-style $color-border-primary;
     }
 }
 
@@ -314,11 +286,6 @@
     flex-flow: column nowrap;
 }
 
-.bit-cal-pkc {
-    margin-top: spacing(0.5);
-    margin-bottom: spacing(1.5);
-}
-
 .bit-cal-pkr {
     display: flex;
     gap: spacing(0.5);
@@ -432,7 +399,7 @@
 }
 
 .bit-cal-rtl {
-    .bit-cal-grp {
+    .bit-cal-cnt {
         direction: rtl;
     }
 
@@ -441,7 +408,8 @@
         border-left: $shape-border-width $shape-border-style $color-border-secondary;
     }
 
-    .bit-cal-pkt {
+    .bit-cal-pkt,
+    .bit-cal-ptb {
         text-align: right;
         padding: 0 spacing(1.25) 0 spacing(0.5);
     }

@@ -4,23 +4,27 @@ namespace Bit.BlazorUI;
 
 internal static class BitCalloutsJsRuntimeExtension
 {
-    internal static async Task ToggleCallout<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+    internal static async Task<bool> ToggleCallout<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this IJSRuntime jsRuntime,
         DotNetObjectReference<T> dotnetObj,
         string componentId,
         string calloutId,
         bool isCalloutOpen,
-        bool isResponsive,
+        BitResponsiveMode responsiveMode,
         BitDropDirection dropDirection,
         bool isRtl,
         string scrollContainerId,
         int scrollOffset,
         string headerId,
-        string footerId
+        string footerId,
+        bool setCalloutWidth,
+        string rootCssClass
         ) where T : class
     {
-        await jsRuntime.InvokeVoidAsync("BitCallouts.toggle",
-            dotnetObj, componentId, calloutId, isCalloutOpen, isResponsive, dropDirection, isRtl, scrollContainerId, scrollOffset, headerId, footerId);
+        return await jsRuntime.InvokeAsync<bool>("BitCallouts.toggle",
+                                                 dotnetObj, componentId, calloutId, isCalloutOpen, responsiveMode, dropDirection,
+                                                 isRtl, scrollContainerId, scrollOffset, headerId, footerId, setCalloutWidth,
+                                                 rootCssClass);
     }
 
     internal static async Task ClearCallout(this IJSRuntime jsRuntime, string calloutId)

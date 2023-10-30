@@ -15,8 +15,8 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-        var settings = appsettings.IdentitySettings;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var settings = appSettings.IdentitySettings;
 
         services.AddIdentity<User, Role>(options =>
         {
@@ -39,8 +39,8 @@ public static class IServiceCollectionExtensions
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-        var settings = appsettings.JwtSettings;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var settings = appSettings.JwtSettings;
 
         services.AddScoped<IJwtService, JwtService>();
 
@@ -53,7 +53,7 @@ public static class IServiceCollectionExtensions
         {
             var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
             RSA? rsaPrivateKey;
-            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appsettings.JwtSettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet))
+            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appSettings.JwtSettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet))
             {
                 rsaPrivateKey = signingCert.GetRSAPrivateKey();
             }
@@ -144,9 +144,9 @@ public static class IServiceCollectionExtensions
 
     public static IServiceCollection AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
-        var appsettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        var healthCheckSettings = appsettings.HealthCheckSettings;
+        var healthCheckSettings = appSettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return services;
@@ -162,7 +162,7 @@ public static class IServiceCollectionExtensions
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024))
             .AddDbContextCheck<AppDbContext>();
 
-        var emailSettings = appsettings.EmailSettings;
+        var emailSettings = appSettings.EmailSettings;
 
         if (emailSettings.UseLocalFolderForEmails is false)
         {

@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.Websites.Sales.Shared.Exceptions;
 
-[Serializable]
 public class ResourceValidationException : RestException
 {
     public ResourceValidationException(params LocalizedString[] errorMessages)
@@ -43,7 +41,7 @@ public class ResourceValidationException : RestException
     }
 
     public ResourceValidationException(ErrorResourcePayload payload)
-        : this(message: nameof(ResourceNotFoundException), payload)
+        : this(message: nameof(AppStrings.ResourceValidationException), payload)
     {
 
     }
@@ -52,11 +50,6 @@ public class ResourceValidationException : RestException
         : base(message)
     {
         Payload = payload;
-    }
-
-    protected ResourceValidationException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
     }
 
     public ErrorResourcePayload Payload { get; set; } = new ErrorResourcePayload();

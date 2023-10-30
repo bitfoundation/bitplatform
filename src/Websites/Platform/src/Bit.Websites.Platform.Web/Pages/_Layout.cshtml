@@ -8,11 +8,11 @@
 @inject IConfiguration Configuration
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["ContainerId"];
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
     var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
-    
+
     RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
 
     if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
@@ -34,6 +34,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms." />
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', '@gtmId');
+    </script>
+    <!-- End Google Tag Manager -->
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version=true>
     <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
@@ -64,16 +73,6 @@
     <link href="Bit.Websites.Platform.Web.styles.css" rel="stylesheet" asp-append-version=true />
 </head>
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', '@gtmId');
-    </script>
-    <!-- Google tag -->
     <!-- Microsoft Clarity -->
     <script type="text/javascript">
         (function (c, l, a, r, i, t, y) {

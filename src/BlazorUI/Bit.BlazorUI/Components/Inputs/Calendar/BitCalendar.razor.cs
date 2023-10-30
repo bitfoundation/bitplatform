@@ -52,7 +52,6 @@ public partial class BitCalendar
     private int _yearPickerStartYear;
     private bool _showYearPicker;
     private bool _showMonthPicker;
-    private string? _monthTitleId;
     private int? _selectedDateWeek;
     private int? _selectedDateDayOfWeek;
     private string? _activeDescendantId;
@@ -66,6 +65,11 @@ public partial class BitCalendar
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// CultureInfo for the Calendar.
@@ -94,9 +98,24 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the GoToToday button (tooltip).
+    /// The title of the Go to next month button (tooltip).
     /// </summary>
-    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+
+    /// <summary>
+    /// The title of the Go to next year button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
+
+    /// <summary>
+    /// The title of the Go to next year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
+
+    /// <summary>
+    /// The title of the Go to previous year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -104,9 +123,14 @@ public partial class BitCalendar
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
 
     /// <summary>
-    /// The title of the Go to next month button (tooltip).
+    /// The title of the Go to previous year button (tooltip).
     /// </summary>
-    [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
+    [Parameter] public string GoToPrevYearTitle { get; set; } = "Go to previous year {0}";
+
+    /// <summary>
+    /// The title of the GoToToday button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
     /// Whether the month picker should highlight the current month.
@@ -157,6 +181,11 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
+    /// The title of the month picker's toggle.
+    /// </summary>
+    [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
+
+    /// <summary>
     /// Used to set the month picker position. 
     /// </summary>
     [Parameter] public BitCalendarMonthPickerPosition MonthPickerPosition { get; set; } = BitCalendarMonthPickerPosition.Besides;
@@ -167,9 +196,19 @@ public partial class BitCalendar
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
+    /// The text of selected date aria-atomic of the calendar.
+    /// </summary>
+    [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
+
+    /// <summary>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
+
+    /// <summary>
+    /// Whether the time picker should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowTimePicker { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -177,27 +216,47 @@ public partial class BitCalendar
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitCalendar component.
+    /// </summary>
+    [Parameter] public BitCalendarClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
+
+    /// <summary>
     /// Used to customize how content inside the year cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
     /// <summary>
-    /// Whether the time picker should be shown or not.
+    /// The title of the year picker's toggle.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter] public string YearPickerToggleTitle { get; set; } = "{0}, change year";
 
+    /// <summary>
+    /// The title of the year range picker's toggle.
+    /// </summary>
+    [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
 
     protected override string RootElementClass { get; } = "bit-cal";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
     {
-        _monthTitleId = $"BitCalendar-{UniqueId}-month-title";
         _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
 
         base.OnInitialized();
@@ -526,18 +585,19 @@ public partial class BitCalendar
         return month;
     }
 
-    private bool IsGoToTodayButtonDisabled()
+    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth)
     {
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-
         if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay)
         {
-            return (_yearPickerStartYear == todayYear - 1 && _yearPickerEndYear == todayYear + 10 && todayMonth == _currentMonth && todayYear == _currentYear);
+            return _yearPickerStartYear == todayYear - 1
+                && _yearPickerEndYear == todayYear + 10
+                && todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
         else
         {
-            return (todayMonth == _currentMonth && todayYear == _currentYear);
+            return todayMonth == _currentMonth
+                && todayYear == _currentYear;
         }
     }
 
@@ -691,46 +751,56 @@ public partial class BitCalendar
         }
     }
 
-    private string GetDateCellCssClass(int day, int week)
+    private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
     {
-        return (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
-            ? " bit-cal-dcs"
-            : string.Empty;
+        StringBuilder klass = new StringBuilder();
+        StringBuilder style = new StringBuilder();
 
-    }
-
-    private string GetDateButtonCssClass(int day, int week)
-    {
-        StringBuilder className = new StringBuilder();
-        var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-        var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-        var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
-        var currentDay = _daysOfCurrentMonth[week, day];
-
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        if (week == _selectedDateWeek && day == _selectedDateDayOfWeek)
         {
-            className.Append(" bit-cal-dct");
+            klass.Append(" bit-cal-dbs");
+
+            if (Classes?.SelectedDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.SelectedDayButton);
+            }
+
+            if (Styles?.SelectedDayButton is not null)
+            {
+                style.Append(Styles?.SelectedDayButton);
+            }
         }
 
         if (IsInCurrentMonth(week, day) is false)
         {
-            className.Append(" bit-cal-dom");
+            klass.Append(" bit-cal-dbo");
         }
 
-        return className.ToString();
+        var currentDay = _daysOfCurrentMonth[week, day];
+        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        {
+            klass.Append(" bit-cal-dtd");
+
+            if (Classes?.TodayDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.TodayDayButton);
+            }
+
+            if (Styles?.TodayDayButton is not null)
+            {
+                style.Append(' ').Append(Styles?.TodayDayButton);
+            }
+        }
+
+        return (style.ToString(), klass.ToString());
     }
 
-    private string GetMonthCellCssClass(int monthIndex)
+    private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
     {
         var className = new StringBuilder();
-        if (HighlightCurrentMonth)
+        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _displayYear)
         {
-            var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-            var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-            if (todayMonth == monthIndex && todayYear == _displayYear)
-            {
-                className.Append(" bit-cal-pcm");
-            }
+            className.Append(" bit-cal-pcm");
         }
 
         if (HighlightSelectedMonth && _currentMonth == monthIndex)

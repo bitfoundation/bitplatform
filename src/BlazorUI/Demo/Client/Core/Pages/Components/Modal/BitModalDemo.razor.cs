@@ -27,12 +27,12 @@ public partial class BitModalDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
-            Href = "#class-styles",
-            LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the BitModal component."
+            Description = "Custom CSS classes for different parts of the BitModal component.",
+            Href = "#modal-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -100,6 +100,15 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitModalClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitModal component.",
+            Href = "#modal-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
@@ -118,37 +127,44 @@ public partial class BitModalDemo
     {
         new()
         {
-            Id = "class-styles",
+            Id = "modal-class-styles",
             Title = "BitModalClassStyles",
             Parameters = new()
             {
                new()
                {
-                   Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the modal container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
+                   Name = "Root",
                    Type = "string?",
-                   Description = "Custom CSS class."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitModal."
                },
                new()
                {
-                   Name = "Style",
+                   Name = "Container",
                    Type = "string?",
-                   Description = "Custom CSS style."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the main container of the BitModal."
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitModal."
+               },
+               new()
+               {
+                   Name = "Content",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the content of the BitModal."
+               },
+               new()
+               {
+                   Name = "ScrollContent",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the scroll content of the BitModal."
                }
             }
         }
@@ -525,5 +541,133 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 private bool IsDraggable = false;
 private bool IsOpen5 = false;
 private bool IsOpen6 = false;
+";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .modal-header {
+        display: flex;
+        align-items: center;
+        font-size: 24px;
+        font-weight: 600;
+        border-top: 4px solid #0054C6;
+        justify-content: space-between;
+        padding: 12px 12px 14px 24px;
+    }
+
+    .modal-body {
+        padding: 0 24px 24px;
+        overflow-y: hidden;
+        line-height: 20px;
+        max-width: 960px;
+    }
+
+    .custom-class {
+        border: 0.5rem solid tomato;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-container {
+        border: 0.25rem solid #0054C6;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-content {
+        margin: 1rem;
+        box-shadow: 0 0 10rem purple;
+        border-end-end-radius: 1rem;
+        border-end-start-radius: 1rem;
+    }
+</style>
+
+
+<BitButton OnClick=""() => IsOpen7 = true"">Open styled modal</BitButton>
+<BitButton OnClick=""() => IsOpen8 = true"">Open classed modal</BitButton>
+<BitButton OnClick=""() => IsOpen9 = true"">Open modal styles</BitButton>
+<BitButton OnClick=""() => IsOpen10 = true"">Open modal classes</BitButton>
+
+<BitModal @bind-IsOpen=""IsOpen7"" Style=""box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;"">
+    <div class=""modal-header"">
+        <span>Styled modal</span>
+        <BitIconButton OnClick=""@(() => IsOpen7 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""IsOpen8"" Class=""custom-class"">
+    <div class=""modal-header"">
+        <span>Classed modal</span>
+        <BitIconButton OnClick=""@(() => IsOpen8 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""IsOpen9"" Styles=""@(new() { Overlay = ""background-color: #4776f433;"", Content = ""box-shadow: 0 0 1rem tomato;"" })"">
+    <div class=""modal-header"">
+        <span>Modal styles</span>
+        <BitIconButton OnClick=""@(() => IsOpen9 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""IsOpen10"" Classes=""@(new() { Container = ""custom-container"", Overlay = ""custom-overlay"", Content = ""custom-content"" })"">
+    <div class=""modal-header"">
+        <span>Modal classes</span>
+        <BitIconButton OnClick=""@(() => IsOpen10 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+            efficitur.
+        </p>
+    </div>
+</BitModal>";
+    private readonly string example6CsharpCode = @"
+private bool IsOpen7 = false;
+private bool IsOpen8 = false;
+private bool IsOpen9 = false;
+private bool IsOpen10 = false;
 ";
 }
