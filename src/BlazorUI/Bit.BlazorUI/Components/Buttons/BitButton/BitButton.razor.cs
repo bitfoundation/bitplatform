@@ -4,7 +4,25 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
+    private static readonly Dictionary<BitButtonStyle, string> StyleClassMorphemeMapping = new()
+    {
+        { BitButtonStyle.Primary, "pri"},
+        { BitButtonStyle.Standard, "std"},
+        { BitButtonStyle.Text, "txt"}
+    };
+    private static readonly Dictionary<BitButtonColor, string> ColorClassMorphemeMapping = new()
+    {
+        { BitButtonColor.None, String.Empty},
+        { BitButtonColor.Info, "-info"},
+        { BitButtonColor.Warning, "-warning"},
+        { BitButtonColor.Success, "-success"},
+        { BitButtonColor.Error, "-error"},
+        { BitButtonColor.SevereWarning, "-severe-warning"},
+    };
+    
+    
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonColor buttonColor = BitButtonColor.None;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -32,7 +50,7 @@ public partial class BitButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of button, Possible values: Primary | Standard
+    /// The style of button, Possible values: Primary | Standard | Text
     /// </summary>
     [Parameter]
     public BitButtonStyle ButtonStyle
@@ -41,6 +59,20 @@ public partial class BitButton
         set
         {
             buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The color of button
+    /// </summary>
+    [Parameter]
+    public BitButtonColor ButtonColor
+    {
+        get => buttonColor;
+        set
+        {
+            buttonColor = value;
             ClassBuilder.Reset();
         }
     }
@@ -80,13 +112,10 @@ public partial class BitButton
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ButtonStyle switch
-        {
-            BitButtonStyle.Primary => $"{RootElementClass}-pri",
-            BitButtonStyle.Standard => $"{RootElementClass}-std",
-            BitButtonStyle.Text => $"{RootElementClass}-txt",
-            _ => $"{RootElementClass}-pri"
-        });
+        string styleClassMorpheme = StyleClassMorphemeMapping[buttonStyle];
+        string colorClassMorpheme= ColorClassMorphemeMapping[buttonColor];
+        
+        ClassBuilder.Register(() => $"{RootElementClass}-{styleClassMorpheme}{colorClassMorpheme}");
     }
 
     protected override void OnParametersSet()
