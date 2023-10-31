@@ -586,49 +586,49 @@ public partial class BitNavDemo
                new()
                {
                    Name = "Root",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitNav."
                },
                new()
                {
                    Name = "Item",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item of the BitNav."
                },
                new()
                {
                    Name = "SelectedItem",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item of the BitNav."
                },
                new()
                {
                    Name = "ItemContainer",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item container of the BitNav."
                },
                new()
                {
                    Name = "ItemIcon",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item icon of the BitNav."
                },
                new()
                {
                    Name = "SelectedItemContainer",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item container of the BitNav."
                },
                new()
                {
                    Name = "ToggleButton",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the toggle button of the BitNav."
                },
