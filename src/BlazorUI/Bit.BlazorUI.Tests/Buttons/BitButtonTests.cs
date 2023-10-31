@@ -213,19 +213,19 @@ public class BitButtonTests : BunitTestContext
      DataRow(null),
     ]
     [TestMethod]
-    public void BitButtonColorOfButtonTest(BitButtonColor? buttonColor)
+    public void BitButtonColorOfButtonTest(BitButtonColor? color)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (buttonColor.HasValue)
+            if (color.HasValue)
             {
-                parameters.Add(p => p.ButtonColor, buttonColor.Value);
+                parameters.Add(p => p.Color, color.Value);
             }
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        var buttonColorClassName = buttonColor switch
+        var colorClassName = color switch
         {
             BitButtonColor.Info => "bit-btn-inf",
             BitButtonColor.Success => "bit-btn-suc",
@@ -235,9 +235,9 @@ public class BitButtonTests : BunitTestContext
             _ => String.Empty
         };
 
-        if (buttonColor.HasValue)
+        if (color.HasValue)
         {
-            Assert.IsTrue(bitButton.ClassList.Contains(buttonColorClassName));
+            Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
         }
         else
         {
