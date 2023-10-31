@@ -4,6 +4,7 @@
     display: flex;
     gap: rem2(16px);
     flex-flow: column;
+    max-width: max-content;
 }
 
 .position-btn {
@@ -18,7 +19,7 @@
 }
 
 ::deep {
-    .header-margin, custom-header {
+    .header-margin, .custom-header {
         margin-top: var(--bit-status-bar-height);
 
         @supports (-webkit-touch-callout: none) {
@@ -32,9 +33,12 @@
         }
     }
 
-    .custom-class {
-        border: 0.5rem solid tomato;
-        background-color: darkgoldenrod;
+    .custom-class .item {
+        width: 3rem;
+        height: 3rem;
+        margin: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: brown;
     }
 
     .custom-container {
@@ -47,7 +51,13 @@
         background-color: #ffbd5a66;
     }
 
+    .custom-header {
+        padding-bottom: 1.25rem;
+        background-color: tomato;
+    }
+
     .custom-body {
-        background-color: darkslateblue;
+        padding-top: 1.25rem;
+        background-color: lightseagreen;
     }
 }

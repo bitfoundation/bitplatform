@@ -184,13 +184,6 @@ public partial class BitPanelDemo
                },
                new()
                {
-                   Name = "CloseIconWrapper",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the close icon wrapper of the BitPanel."
-               },
-               new()
-               {
                    Name = "CloseIcon",
                    Type = "string?",
                    DefaultValue = "null",
@@ -389,13 +382,12 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
 
     private readonly string example6RazorCode = @"
 <style>
-    .custon-header {
-        margin-top: env(safe-area-inset-top);
-    }
-
-    .custom-class {
-        border: 0.5rem solid tomato;
-        background-color: darkgoldenrod;
+    .custom-class .item {
+        width: 3rem;
+        height: 3rem;
+        margin: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: brown;
     }
 
     .custom-container {
@@ -408,8 +400,14 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
         background-color: #ffbd5a66;
     }
 
+    .custom-header {
+        padding-bottom: 1.25rem;
+        background-color: tomato;
+    }
+
     .custom-body {
-        background-color: darkslateblue;
+        padding-top: 1.25rem;
+        background-color: lightseagreen;
     }
 </style>
 
@@ -419,8 +417,11 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
 <BitButton OnClick=""() => IsPanelStylesOpen = true"">Open panel styles</BitButton>
 <BitButton OnClick=""() => IsPanelClassesOpen = true"">Open panel classes</BitButton>
 
-<BitPanel @bind-IsOpen=""IsStyledPanelOpen"" Style=""box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;"">
+<BitPanel @bind-IsOpen=""IsStyledPanelOpen"" Style=""font-size: 3rem;"">
     Content goes here.
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div>
 </BitPanel>
 
 <BitPanel @bind-IsOpen=""IsClassedPanelOpen"" Class=""custom-class"">
@@ -432,6 +433,7 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
 </BitPanel>
 
 <BitPanel @bind-IsOpen=""IsPanelClassesOpen"" 
+          HeaderText=""Simple header""
           Classes=""@(new() { Container = ""custom-container"",
                              Overlay = ""custom-overlay"",
                              Body = ""custom-body"",

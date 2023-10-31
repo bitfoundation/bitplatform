@@ -193,12 +193,15 @@
                     </div>
                 </div>
 
-                <BitPanel @bind-IsOpen="IsStyledPanelOpen" Style="box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;" Classes="@panelClassStyles">
+                <BitPanel @bind-IsOpen="IsStyledPanelOpen" Style="font-size: 3rem;" Classes="@panelClassStyles">
                     Content goes here.
                 </BitPanel>
 
                 <BitPanel @bind-IsOpen="IsClassedPanelOpen" Class="custom-class" Classes="@panelClassStyles">
                     Content goes here.
+                    <div class="item">Item 1</div>
+                    <div class="item">Item 2</div>
+                    <div class="item">Item 3</div>
                 </BitPanel>
 
                 <BitPanel @bind-IsOpen="IsPanelStylesOpen" Classes="@panelClassStyles" Styles="@(new() { Overlay = "background-color: #4776f433;", Container = "box-shadow: 0 0 1rem tomato;" })">
@@ -206,6 +209,7 @@
                 </BitPanel>
 
                 <BitPanel @bind-IsOpen="IsPanelClassesOpen"
+                          HeaderText="Simple header"
                           Classes="@(new() { Container = "custom-container",
                                              Overlay = "custom-overlay",
                                              Body = "custom-body",

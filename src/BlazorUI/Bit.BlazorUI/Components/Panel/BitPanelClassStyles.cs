@@ -33,11 +33,6 @@ public class BitPanelClassStyles
     public string? CloseButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the close icon wrapper of the BitPanel.
-    /// </summary>
-    public string? CloseIconWrapper { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the close button of the BitPanel.
     /// </summary>
     public string? CloseIcon { get; set; }
