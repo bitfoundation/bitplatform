@@ -4,24 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
-    private static readonly Dictionary<BitButtonStyle, string> StyleClassMorphemeMapping = new()
-    {
-        { BitButtonStyle.Primary, "pri"},
-        { BitButtonStyle.Standard, "std"},
-        { BitButtonStyle.Text, "txt"}
-    };
-    private static readonly Dictionary<BitButtonColor, string> ColorClassMorphemeMapping = new()
-    {
-        { BitButtonColor.None, String.Empty},
-        { BitButtonColor.Info, "-info"},
-        { BitButtonColor.Warning, "-warning"},
-        { BitButtonColor.Success, "-success"},
-        { BitButtonColor.Error, "-error"},
-        { BitButtonColor.SevereWarning, "-severe-warning"},
-    };
-    
-    
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonColor buttonColor = BitButtonColor.None;
 
     private int? _tabIndex;
@@ -112,10 +95,24 @@ public partial class BitButton
 
     protected override void RegisterCssClasses()
     {
-        string styleClassMorpheme = StyleClassMorphemeMapping[buttonStyle];
-        string colorClassMorpheme= ColorClassMorphemeMapping[buttonColor];
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => $"{RootElementClass}-pri",
+            BitButtonStyle.Standard => $"{RootElementClass}-std",
+            BitButtonStyle.Text => $"{RootElementClass}-txt",
+            _ => $"{RootElementClass}-pri"
+        });
         
-        ClassBuilder.Register(() => $"{RootElementClass}-{styleClassMorpheme}{colorClassMorpheme}");
+        ClassBuilder.Register(() => ButtonColor switch
+        {
+            BitButtonColor.None => String.Empty,
+            BitButtonColor.Info => $"{RootElementClass}-inf",
+            BitButtonColor.Warning => $"{RootElementClass}-wrn",
+            BitButtonColor.Success => $"{RootElementClass}-suc",
+            BitButtonColor.Error => $"{RootElementClass}-err",
+            BitButtonColor.SevereWarning => $"{RootElementClass}-swr",
+            _ => String.Empty
+        });
     }
 
     protected override void OnParametersSet()
