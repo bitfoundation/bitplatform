@@ -36,7 +36,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "ButtonColor",
+            Name = "Color",
             Type = "BitButtonColor",
             LinkType = LinkType.Link,
             Href = "#button-color-enum",
@@ -205,25 +205,25 @@ private int standardCounter;
 private int textCounter;";
     
     private readonly string example2RazorCode = @"
-<BitButton ButtonColor=""BitButtonColor.Info"">Info</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+<BitButton Color=""BitButtonColor.Info"">Info</BitButton>
+<BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
 
-<BitButton ButtonColor=""BitButtonColor.Success"">Success</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+<BitButton Color=""BitButtonColor.Success"">Success</BitButton>
+<BitButton Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
 
-<BitButton ButtonColor=""BitButtonColor.Warning"">Warning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+<BitButton Color=""BitButtonColor.Warning"">Warning</BitButton>
+<BitButton Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
 
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"">SevereWarning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+<BitButton Color=""BitButtonColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
 
-<BitButton ButtonColor=""BitButtonColor.Error"">Error</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
+<BitButton Color=""BitButtonColor.Error"">Error</BitButton>
+<BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
     private readonly string example3RazorCode = @"
 <style>
