@@ -32,7 +32,16 @@ public partial class BitButtonDemo
             LinkType = LinkType.Link,
             Href = "#button-style-enum",
             DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard.",
+            Description = "The style of the button, Possible values: Primary | Standard | Text.",
+        },
+        new()
+        {
+            Name = "ButtonColor",
+            Type = "BitButtonColor",
+            LinkType = LinkType.Link,
+            Href = "#button-color-enum",
+            DefaultValue = "null",
+            Description = "The color of the button.",
         },
         new()
         {
@@ -91,20 +100,59 @@ public partial class BitButtonDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Description="The button for primary actions that are high-emphasis.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Description="The button for important actions that are medium-emphasis.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button with white text on a transparent background.",
+                    Description="The button for less-pronounced actions.",
                     Value="2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-color-enum",
+            Name = "BitButtonColor",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Info",
+                    Description="Info styled Button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success styled Button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning styled Button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning styled Button.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error styled Button.",
+                    Value="4",
                 }
             }
         },
@@ -268,4 +316,26 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
+
+    private readonly string bitButtonColorsExampleRazorCode = @"
+<BitButton ButtonColor=""BitButtonColor.Info"">Info</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Success"">Success</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Warning"">Warning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Error"">Error</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>
+";
 }
