@@ -3,22 +3,52 @@
 public class BitPanelClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the panel container.
+    /// Custom CSS classes/styles for the root element of the BitPanel.
     /// </summary>
-    public BitClassStylePair? Container { get; set; }
+    public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the panel header.
+    /// Custom CSS classes/styles for the overlay of the BitPanel.
     /// </summary>
-    public BitClassStylePair? Header { get; set; }
+    public string? Overlay { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the panel body.
+    /// Custom CSS classes/styles for the container of the BitPanel.
     /// </summary>
-    public BitClassStylePair? Body { get; set; }
+    public string? Container { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the panel footer.
+    /// Custom CSS classes/styles for the header of the BitPanel.
     /// </summary>
-    public BitClassStylePair? Footer { get; set; }
+    public string? Header { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the header text of the BitPanel.
+    /// </summary>
+    public string? HeaderText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close button of the BitPanel.
+    /// </summary>
+    public string? CloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close icon wrapper of the BitPanel.
+    /// </summary>
+    public string? CloseIconWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close button of the BitPanel.
+    /// </summary>
+    public string? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the body of the BitPanel.
+    /// </summary>
+    public string? Body { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer of the BitPanel.
+    /// </summary>
+    public string? Footer { get; set; }
 }

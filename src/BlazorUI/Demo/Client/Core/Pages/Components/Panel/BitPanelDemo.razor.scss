@@ -1,8 +1,8 @@
 ﻿@import "../../../Styles/abstracts/functions";
 
 .btn-container {
-    gap: rem2(16px);
     display: flex;
+    gap: rem2(16px);
     flex-flow: column;
 }
 
@@ -18,7 +18,7 @@
 }
 
 ::deep {
-    .header-margin {
+    .header-margin, custom-header {
         margin-top: var(--bit-status-bar-height);
 
         @supports (-webkit-touch-callout: none) {
@@ -30,5 +30,24 @@
         @supports (-webkit-touch-callout: none) {
             margin-top: env(safe-area-inset-bottom);
         }
+    }
+
+    .custom-class {
+        border: 0.5rem solid tomato;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-container {
+        border: 0.25rem solid #0054C6;
+        border-end-start-radius: 1rem;
+        border-start-start-radius: 1rem;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-body {
+        background-color: darkslateblue;
     }
 }
