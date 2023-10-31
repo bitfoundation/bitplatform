@@ -57,6 +57,6 @@ We welcome contributions! Many people all over the world have helped make this p
 
 <br/>
 
-# **Contributions**
+## Contributions
 
 ![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg "bit platform open source contributions report")
