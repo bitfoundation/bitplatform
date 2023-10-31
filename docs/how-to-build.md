@@ -8,7 +8,7 @@
 
 ## Projects
 
-bit platform consists of multiple different projects/prodcuts with the following being the most important ones:
+bit platform consists of multiple different projects/products with the following being the most important ones:
 
 - [bit platform website](../src/Websites/Platform/)
 - [bit BlazorUI (Blazor components)](../src/BlazorUI/)
@@ -34,7 +34,7 @@ Building each bit platform project requires specific steps that are explained pe
 <br/>
 
 ### bit platform Website
-This website only requires the basic requirements and can be simply built by runnning the following command in the `Bit.Websites.Platform.Web` project folder:
+This website only requires the basic requirements and can be simply built by running the following command in the `Bit.Websites.Platform.Web` project folder:
 
 ```bash
 dotnet build
@@ -92,7 +92,7 @@ dotnet build
 ### bit Project Templates
 Like the bit BlazorUI Demo project, the project templates (located in the `src/Templates` folder) have two different projects (Web & App) with different requirements to build.
 
-For exmaple for the `AdminPanel` porject template in the `AdminPanel/Bit.AdminPanel` folder:
+For example for the `AdminPanel` project template in the `AdminPanel/Bit.AdminPanel` folder:
 
 The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `AdminPanel.Client.Web` project folder (`src/Client/Web`):
 

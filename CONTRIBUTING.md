@@ -6,7 +6,7 @@ You can contribute to bit platform with issues and PRs. Simply filing issues for
 
 We always welcome bug reports, API proposals and overall feedback. Here are a few tips on how you can make reporting your issue as effective as possible.
 
-The bit platform codebase is consisted of multiple projects/products in a monorepo structure. Depending on the feedback you might want to file the issue with enough information to distinguish it among these projects/products.
+The bit platform codebase consists of multiple projects/products in a monorepo structure. Depending on the feedback you might want to file the issue with enough information to distinguish it among these projects/products.
 
 ### Finding Existing Issues
 
@@ -32,7 +32,7 @@ When ready to submit a bug report, please use the [Bug Report issue template](ht
 
 #### Are Minimal Reproductions Required?
 
-In certain cases, creating a minimal reproduction might not be practical (e.g. due to nondeterministic factors, external dependencies). In such cases you would be asked to provide as much information as possible. If maintainers are unable to root cause the problem, they might still close the issue as not actionable. While not required, minimal reproductions are strongly encouraged and will significantly improve the chances of your issue being prioritized and fixed by the maintainers.
+In certain cases, creating a minimal reproduction might not be practical (e.g. due to nondeterministic factors, external dependencies). In such cases you would be asked to provide as much information as possible. If maintainers are unable to root cause of the problem, they might still close the issue as not actionable. While not required, minimal reproductions are strongly encouraged and will significantly improve the chances of your issue being prioritized and fixed by the maintainers.
 
 #### How to Create a Minimal Reproduction
 
