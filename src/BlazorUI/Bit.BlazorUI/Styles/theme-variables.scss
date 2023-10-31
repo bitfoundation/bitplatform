@@ -69,16 +69,26 @@ $color-state-error-bg: var(--bit-clr-sta-error-bg);
 $color-state-required: var(--bit-clr-sta-req);
 
 //actions-states
-$color-action-state-info-primary: var(--bit-clr-act-sta-info-pri);
-$color-action-state-info-secondary: var(--bit-clr-act-sta-info-sec);
-$color-action-state-success-primary: var(--bit-clr-act-sta-success-pri);
-$color-action-state-success-secondary: var(--bit-clr-act-sta-success-sec);
-$color-action-state-warning-primary: var(--bit-clr-act-sta-warning-pri);
-$color-action-state-warning-secondary: var(--bit-clr-act-sta-warning-sec);
-$color-action-state-severe-warning-primary: var(--bit-clr-act-sta-severe-warning-pri);
-$color-action-state-severe-warning-secondary: var(--bit-clr-act-sta-severe-warning-sec);
-$color-action-state-error-primary: var(--bit-clr-act-sta-error-pri);
-$color-action-state-error-secondary: var(--bit-clr-act-sta-error-sec);
+$color-action-hover-state-info: var(--bit-clr-act-hover-sta-info);
+$color-action-active-state-info: var(--bit-clr-act-active-sta-info);
+$color-action-hover-state-info-bg: var(--bit-clr-act-hover-sta-info-bg);
+$color-action-active-state-info-bg: var(--bit-clr-act-active-sta-info-bg);
+$color-action-hover-state-success: var(--bit-clr-act-hover-sta-success);
+$color-action-active-state-success: var(--bit-clr-act-active-sta-success);
+$color-action-hover-state-success-bg: var(--bit-clr-act-hover-sta-success-bg);
+$color-action-active-state-success-bg: var(--bit-clr-act-active-sta-success-bg);
+$color-action-hover-state-warning: var(--bit-clr-act-hover-sta-warning);
+$color-action-active-state-warning: var(--bit-clr-act-active-sta-warning);
+$color-action-hover-state-warning-bg: var(--bit-clr-act-hover-sta-warning-bg);
+$color-action-active-state-warning-bg: var(--bit-clr-act-active-sta-warning-bg);
+$color-action-hover-state-severe-warning: var(--bit-clr-act-hover-sta-severe-warning);
+$color-action-active-state-severe-warning: var(--bit-clr-act-active-sta-severe-warning);
+$color-action-hover-state-severe-warning-bg: var(--bit-clr-act-hover-sta-severe-warning-bg);
+$color-action-active-state-severe-warning-bg: var(--bit-clr-act-active-sta-severe-warning-bg);
+$color-action-hover-state-error: var(--bit-clr-act-hover-sta-error);
+$color-action-active-state-error: var(--bit-clr-act-active-sta-error);
+$color-action-hover-state-error-bg: var(--bit-clr-act-hover-sta-error-bg);
+$color-action-active-state-error-bg: var(--bit-clr-act-active-sta-error-bg);
 
 //neutrals
 $color-neutrals-white: var(--bit-clr-ntr-white);
