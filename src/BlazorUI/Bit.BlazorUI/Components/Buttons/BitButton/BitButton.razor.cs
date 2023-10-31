@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonColor? buttonColor;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -32,7 +33,7 @@ public partial class BitButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of button, Possible values: Primary | Standard
+    /// The style of button, Possible values: Primary | Standard | Text
     /// </summary>
     [Parameter]
     public BitButtonStyle ButtonStyle
@@ -40,7 +41,23 @@ public partial class BitButton
         get => buttonStyle;
         set
         {
+            if (buttonStyle == value) return;
             buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The color of button
+    /// </summary>
+    [Parameter]
+    public BitButtonColor? ButtonColor
+    {
+        get => buttonColor;
+        set
+        {
+            if(buttonColor == value) return;
+            buttonColor = value;
             ClassBuilder.Reset();
         }
     }
@@ -86,6 +103,16 @@ public partial class BitButton
             BitButtonStyle.Standard => $"{RootElementClass}-std",
             BitButtonStyle.Text => $"{RootElementClass}-txt",
             _ => $"{RootElementClass}-pri"
+        });
+        
+        ClassBuilder.Register(() => ButtonColor switch
+        {
+            BitButtonColor.Info => $"{RootElementClass}-inf",
+            BitButtonColor.Success => $"{RootElementClass}-suc",
+            BitButtonColor.Warning => $"{RootElementClass}-wrn",
+            BitButtonColor.SevereWarning => $"{RootElementClass}-swr",
+            BitButtonColor.Error => $"{RootElementClass}-err",
+            _ => String.Empty
         });
     }
 

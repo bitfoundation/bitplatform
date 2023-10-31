@@ -21,56 +21,107 @@
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
+
+    --bit-btn-clr: #{$color-primary-main};
+    --bit-btn-clr-hover1: #{$color-action-hover-primary};
+    --bit-btn-clr-hover2: #{$color-action-hover-secondary};
+    --bit-btn-clr-active1: #{$color-action-active-primary};
+    --bit-btn-clr-active2: #{$color-action-active-secondary};
 }
 
 .bit-btn-pri {
     color: $color-primary-text;
-    border-color: $color-primary-main;
-    background-color: $color-primary-main;
+    border-color: var(--bit-btn-clr);
+    background-color: var(--bit-btn-clr);
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
+            border-color: var(--bit-btn-clr-hover1);
+            background-color: var(--bit-btn-clr-hover1);
         }
     }
 
     &:active {
-        border-color: $color-action-active-primary;
-        background-color: $color-action-active-primary;
+        border-color: var(--bit-btn-clr-active1);
+        background-color: var(--bit-btn-clr-active1);
     }
 }
 
 .bit-btn-std {
-    color: $color-secondary-text;
-    border-color: $color-border-primary;
+    --bit-btn-clr: #{$color-secondary-text};
+    
+    color: var(--bit-btn-clr);
+    border-color: var(--bit-btn-clr);
     background-color: $color-secondary-main;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
+            background-color: var(--bit-btn-clr-hover2);
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
+        background-color: var(--bit-btn-clr-active2);
     }
 }
 
 .bit-btn-txt {
-    color: $color-secondary-text;
+    --bit-btn-clr: #{$color-secondary-text};
+    
+    color: var(--bit-btn-clr);
     border-color: transparent;
     background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
-            border-color: $color-action-hover-secondary;
+            background-color: var(--bit-btn-clr-hover2);
+            border-color: var(--bit-btn-clr-hover2);
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
-        border-color: $color-action-hover-secondary;
+        background-color: var(--bit-btn-clr-active2);
+        border-color: var(--bit-btn-clr-active2);
     }
 }
+
+.bit-btn-inf {
+    --bit-btn-clr: #{$color-state-info};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-info};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-info-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-info};
+    --bit-btn-clr-active2: #{$color-action-active-state-info-bg};
+}
+
+.bit-btn-suc {
+    --bit-btn-clr: #{$color-state-success};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-success};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-success-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-success};
+    --bit-btn-clr-active2: #{$color-action-active-state-success-bg};
+}
+
+.bit-btn-wrn {
+    --bit-btn-clr: #{$color-state-warning};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-warning};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-warning-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-warning};
+    --bit-btn-clr-active2: #{$color-action-active-state-warning-bg};
+}
+
+.bit-btn-swr {
+    --bit-btn-clr: #{$color-state-severe-warning};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-severe-warning};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-severe-warning-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-severe-warning};
+    --bit-btn-clr-active2: #{$color-action-active-state-severe-warning-bg};
+}
+
+.bit-btn-err {
+    --bit-btn-clr: #{$color-state-error};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-error};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-error-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-error};
+    --bit-btn-clr-active2: #{$color-action-active-state-error-bg};
+}
+

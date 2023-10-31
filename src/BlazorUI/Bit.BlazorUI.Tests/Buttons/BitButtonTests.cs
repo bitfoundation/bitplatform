@@ -204,4 +204,45 @@ public class BitButtonTests : BunitTestContext
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
+    [DataTestMethod,
+     DataRow(BitButtonColor.Info),
+     DataRow(BitButtonColor.Success),
+     DataRow(BitButtonColor.Warning),
+     DataRow(BitButtonColor.SevereWarning),
+     DataRow(BitButtonColor.Error),
+     DataRow(null),
+    ]
+    [TestMethod]
+    public void BitButtonColorOfButtonTest(BitButtonColor? buttonColor)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            if (buttonColor.HasValue)
+            {
+                parameters.Add(p => p.ButtonColor, buttonColor.Value);
+            }
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var buttonColorClassName = buttonColor switch
+        {
+            BitButtonColor.Info => "bit-btn-inf",
+            BitButtonColor.Success => "bit-btn-suc",
+            BitButtonColor.Warning => "bit-btn-wrn",
+            BitButtonColor.SevereWarning => "bit-btn-swr",
+            BitButtonColor.Error => "bit-btn-err",
+            _ => String.Empty
+        };
+
+        if (buttonColor.HasValue)
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains(buttonColorClassName));
+        }
+        else
+        {
+            Assert.AreEqual(2, bitButton.ClassList.Length);
+        }
+
+    }
 }
