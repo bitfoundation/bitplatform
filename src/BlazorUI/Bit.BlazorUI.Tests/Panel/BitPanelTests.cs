@@ -43,7 +43,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-pnl > div");
+        var element = com.Find(".bit-pnl");
         Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
 
         var elementOverlay = com.FindAll(".bit-pnl-ovl");
@@ -78,7 +78,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-pnl > div");
+        var element = com.Find(".bit-pnl");
 
         if (subtitleAriaId == null)
         {
@@ -107,7 +107,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-pnl > div");
+        var element = com.Find(".bit-pnl");
 
         if (titleAriaId == null)
         {
