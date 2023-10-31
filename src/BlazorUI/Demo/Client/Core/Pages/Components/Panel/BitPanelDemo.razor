@@ -6,15 +6,15 @@
 
 <div>
     <ComponentDemo ComponentName="Panel"
-                ComponentDescription="Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences.  For example, viewing details about an item in a list or editing settings."
-                ComponentParameters="componentParameters"
-                ComponentSubClasses="componentSubClasses"
-                ComponentSubEnums="componentSubEnums">
+                   ComponentDescription="Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences.  For example, viewing details about an item in a list or editing settings."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
                 <BitButton OnClick=@(() => IsBasicPanelOpen = true)>Open Panel</BitButton>
 
-                <BitPanel ClassStyles="@panelClassStyles" @bind-IsOpen="IsBasicPanelOpen">
+                <BitPanel Classes="@panelClassStyles" @bind-IsOpen="IsBasicPanelOpen">
                     Content goes here.
                 </BitPanel>
             </ExamplePreview>
@@ -32,7 +32,8 @@
                         <BitButton OnClick=@(() => IsPanelWithCustomHeaderOpen = true)>Open Panel</BitButton>
                     </div>
                 </div>
-                <BitPanel ClassStyles="@panelClassStyles" HeaderText="Simple header" @bind-IsOpen="IsPanelWithHeaderTextOpen">
+
+                <BitPanel Classes="@panelClassStyles" HeaderText="Simple header" @bind-IsOpen="IsPanelWithHeaderTextOpen">
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -45,7 +46,7 @@
                     </p>
                 </BitPanel>
 
-                <BitPanel ClassStyles="@panelClassStyles" @bind-IsOpen="IsPanelWithCustomHeaderOpen">
+                <BitPanel Classes="@panelClassStyles" @bind-IsOpen="IsPanelWithCustomHeaderOpen">
                     <HeaderTemplate>
                         <div>
                             <BitSearchBox Placeholder="Search here..." />
@@ -75,7 +76,7 @@
                 <BitLabel>Panel with custom footer content</BitLabel>
                 <BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
 
-                <BitPanel ClassStyles="@(new() { Header = new() {Class = "header-margin"}, Footer = new() {Class = "footer-margin"}})" HeaderText="BitPanel with custom footer content" @bind-IsOpen="IsPanelWithFooterOpen">
+                <BitPanel Classes="@(new() { Header = "header-margin", Footer = "footer-margin" })" HeaderText="BitPanel with custom footer content" @bind-IsOpen="IsPanelWithFooterOpen">
                     <ChildContent>
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -100,53 +101,53 @@
             <ExamplePreview>
                 <div class="example-desc">BitPanel has some advanced options to be customized.</div>
                 <div>
-                <div class="btn-container">
-                    <div>
-                        <BitLabel>Panel with IsBlocking = true</BitLabel>
-                        <BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
+                    <div class="btn-container">
+                        <div>
+                            <BitLabel>Panel with IsBlocking = true</BitLabel>
+                            <BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Panel with IsModeless = true</BitLabel>
+                            <BitButton OnClick=@(() => IsModelessPanelOpen = true)>Open Panel</BitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Panel with AutoToggleScroll = false</BitLabel>
+                            <BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
+                        </div>
+                        <div>
+                            <BitLabel>Panel with ShowCloseButton = false</BitLabel>
+                            <BitButton OnClick="() => bitPanelRef.Open()">Open Panel</BitButton>
+                        </div>
                     </div>
-                    <div>
-                        <BitLabel>Panel with IsModeless = true</BitLabel>
-                        <BitButton OnClick=@(() => IsModelessPanelOpen = true)>Open Panel</BitButton>
-                    </div>
-                    <div>
-                        <BitLabel>Panel with AutoToggleScroll = false</BitLabel>
-                        <BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
-                    </div>
-                    <div>
-                        <BitLabel>Panel with ShowCloseButton = false</BitLabel>
-                        <BitButton OnClick="() => bitPanelRef.Open()">Open Panel</BitButton>
-                    </div>
-                </div>
-                <BitPanel ClassStyles="@panelClassStyles" HeaderText="IsBlocking = true" @bind-IsOpen="IsBlockingPanelOpen" IsBlocking="true">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non.
-                    </p>
-                </BitPanel>
-                <BitPanel ClassStyles="@panelClassStyles" HeaderText="IsModeless = true" @bind-IsOpen="IsModelessPanelOpen" IsModeless="true">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non.
-                    </p>
-                </BitPanel>
-                <BitPanel ClassStyles="@panelClassStyles" HeaderText="AutoToggleScroll = false" @bind-IsOpen="IsAutoToggleScrollPanelOpen" AutoToggleScroll="false">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non.
-                    </p>
-                </BitPanel>
-                <BitPanel ClassStyles="@panelClassStyles" @ref="bitPanelRef" HeaderText="ShowCloseButton = false" ShowCloseButton="false">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                        sagittis nunc, ut interdum ipsum vestibulum non.
-                    </p>
-                    <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => bitPanelRef.Close()">Close</BitButton>
-                </BitPanel>
+                    <BitPanel Classes="@panelClassStyles" HeaderText="IsBlocking = true" @bind-IsOpen="IsBlockingPanelOpen" IsBlocking="true">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non.
+                        </p>
+                    </BitPanel>
+                    <BitPanel Classes="@panelClassStyles" HeaderText="IsModeless = true" @bind-IsOpen="IsModelessPanelOpen" IsModeless="true">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non.
+                        </p>
+                    </BitPanel>
+                    <BitPanel Classes="@panelClassStyles" HeaderText="AutoToggleScroll = false" @bind-IsOpen="IsAutoToggleScrollPanelOpen" AutoToggleScroll="false">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non.
+                        </p>
+                    </BitPanel>
+                    <BitPanel Classes="@panelClassStyles" @ref="bitPanelRef" HeaderText="ShowCloseButton = false" ShowCloseButton="false">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non.
+                        </p>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => bitPanelRef.Close()">Close</BitButton>
+                    </BitPanel>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
@@ -155,7 +156,7 @@
             <ExamplePreview>
                 <div class="example-desc">To set the Panel position on the page you can use the Position parameter.</div>
                 <div class="position-btn">
-                    <BitSpinButton @bind-Value="CustomPanelSize" Label="Custom size" />
+                    <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                     <div>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Left)">Left</BitButton>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Right)">Right</BitButton>
@@ -165,12 +166,55 @@
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Bottom)">Bottom</BitButton>
                     </div>
                 </div>
-                <BitPanel ClassStyles="@panelClassStyles" @bind-Size="CustomPanelSize" HeaderText="Panel types" @bind-IsOpen="IsOpenInPosition" Position="position">
+                <BitPanel Classes="@panelClassStyles" @bind-Size="CustomPanelSize" HeaderText="Panel types" @bind-IsOpen="IsOpenInPosition" Position="position">
                     <p>
                         BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                     </p>
+                    <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                </BitPanel>
+            </ExamplePreview>
+        </ComponentExampleBox>
 
-                    <BitSpinButton @bind-Value="CustomPanelSize" Label="Custom size" />
+        <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <ExamplePreview>
+                <div>
+                    <div class="btn-container">
+                        <div>Component's Style & Class:</div>
+                        <br />
+                        <BitButton OnClick="() => IsStyledPanelOpen = true">Open styled panel</BitButton>
+                        <BitButton OnClick="() => IsClassedPanelOpen = true">Open classed panel</BitButton>
+                    </div>
+                    <br /><br /><br />
+                    <div class="btn-container">
+                        <div><b>Styles</b> & <b>Classes</b>:</div>
+                        <br />
+                        <BitButton OnClick="() => IsPanelStylesOpen = true">Open panel styles</BitButton>
+                        <BitButton OnClick="() => IsPanelClassesOpen = true">Open panel classes</BitButton>
+                    </div>
+                </div>
+
+                <BitPanel @bind-IsOpen="IsStyledPanelOpen" Style="font-size: 3rem;" Classes="@panelClassStyles">
+                    Content goes here.
+                </BitPanel>
+
+                <BitPanel @bind-IsOpen="IsClassedPanelOpen" Class="custom-class" Classes="@panelClassStyles">
+                    Content goes here.
+                    <div class="item">Item 1</div>
+                    <div class="item">Item 2</div>
+                    <div class="item">Item 3</div>
+                </BitPanel>
+
+                <BitPanel @bind-IsOpen="IsPanelStylesOpen" Classes="@panelClassStyles" Styles="@(new() { Overlay = "background-color: #4776f433;", Container = "box-shadow: 0 0 1rem tomato;" })">
+                    Content goes here.
+                </BitPanel>
+
+                <BitPanel @bind-IsOpen="IsPanelClassesOpen"
+                          HeaderText="Simple header"
+                          Classes="@(new() { Container = "custom-container",
+                                             Overlay = "custom-overlay",
+                                             Body = "custom-body",
+                                             Header = "custom-header" })">
+                    Content goes here.
                 </BitPanel>
             </ExamplePreview>
         </ComponentExampleBox>
@@ -178,16 +222,25 @@
 </div>
 
 @code {
-    private BitPanelClassStyles panelClassStyles = new() { Header = new() {Class = "header-margin"}};
+    private BitPanelClassStyles panelClassStyles = new() { Header = "header-margin" };
 
     private bool IsBasicPanelOpen = false;
+
     private bool IsPanelWithHeaderTextOpen = false;
     private bool IsPanelWithCustomHeaderOpen = false;
+
     private bool IsPanelWithFooterOpen = false;
+
     private bool IsBlockingPanelOpen = false;
     private bool IsModelessPanelOpen = false;
     private bool IsAutoToggleScrollPanelOpen = false;
+
     private bool IsOpenInPosition = false;
+
+    private bool IsStyledPanelOpen = false;
+    private bool IsClassedPanelOpen = false;
+    private bool IsPanelStylesOpen = false;
+    private bool IsPanelClassesOpen = false;
 
     private BitPanel bitPanelRef = default!;
 

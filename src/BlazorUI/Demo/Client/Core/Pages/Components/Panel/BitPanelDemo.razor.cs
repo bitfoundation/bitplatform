@@ -20,12 +20,12 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitPanelClassStyles?",
             DefaultValue = "null",
-            Href = "#class-styles",
+            Description = "Custom CSS classes for different parts of the BitPanel component.",
+            Href = "#panel-class-styles",
             LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the BitPanel component."
         },
         new()
         {
@@ -107,6 +107,15 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitPanelClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitPanel component.",
+            Href = "#panel-class-styles",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
@@ -125,61 +134,72 @@ public partial class BitPanelDemo
     {
         new()
         {
-            Id = "class-styles",
+            Id = "panel-class-styles",
             Title = "BitPanelClassStyles",
             Parameters = new()
             {
                new()
                {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitPanel."
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitPanel."
+               },
+               new()
+               {
                    Name = "Container",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the Panel container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the BitPanel."
                },
                new()
                {
                    Name = "Header",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel header.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header of the BitPanel."
+               },
+               new()
+               {
+                   Name = "HeaderText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header text of the BitPanel."
+               },
+               new()
+               {
+                   Name = "CloseButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the close button of the BitPanel."
+               },
+               new()
+               {
+                   Name = "CloseIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the close icon of the BitPanel."
                },
                new()
                {
                    Name = "Body",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel body.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the body of the BitPanel."
                },
                new()
                {
                    Name = "Footer",
-                   Type = "BitClassStylePair?",
-                   Description = "Custom CSS classes/styles for the panel footer.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
-               }
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
                    Type = "string?",
-                   Description = "Custom CSS class."
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   Description = "Custom CSS style."
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the footer of the BitPanel."
                }
             }
         }
@@ -334,7 +354,7 @@ private bool IsAutoToggleScrollPanelOpen = false;
 private BitPanel bitPanelRef = default!;";
 
     private readonly string example5RazorCode = @"
-<BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
+<BitSpinButton @bind-Value=""CustomPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Left)"">Left</BitButton>
 <BitButton OnClick=""() => OpenPanelInPosition(BitPanelPosition.Right)"">Right</BitButton>
@@ -345,7 +365,7 @@ private BitPanel bitPanelRef = default!;";
     <p>
         BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     </p>
-    <BitSpinButton @bind-Value=""CustomPanelSize"" Label=""Custom size"" />
+    <BitSpinButton @bind-Value=""CustomPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 </BitPanel>";
     private readonly string example5CsharpCode = @"
 private bool IsOpenInPosition = false;
@@ -357,4 +377,71 @@ private void OpenPanelInPosition(BitPanelPosition positionValue)
     IsOpenInPosition = true;
     position = positionValue;
 }";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .custom-class .item {
+        width: 3rem;
+        height: 3rem;
+        margin: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: brown;
+    }
+
+    .custom-container {
+        border: 0.25rem solid #0054C6;
+        border-end-start-radius: 1rem;
+        border-start-start-radius: 1rem;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-header {
+        padding-bottom: 1.25rem;
+        background-color: tomato;
+    }
+
+    .custom-body {
+        padding-top: 1.25rem;
+        background-color: lightseagreen;
+    }
+</style>
+
+
+<BitButton OnClick=""() => IsStyledPanelOpen = true"">Open styled panel</BitButton>
+<BitButton OnClick=""() => IsClassedPanelOpen = true"">Open classed panel</BitButton>
+<BitButton OnClick=""() => IsPanelStylesOpen = true"">Open panel styles</BitButton>
+<BitButton OnClick=""() => IsPanelClassesOpen = true"">Open panel classes</BitButton>
+
+<BitPanel @bind-IsOpen=""IsStyledPanelOpen"" Style=""font-size: 3rem;"">
+    Content goes here.
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""IsClassedPanelOpen"" Class=""custom-class"">
+    Content goes here.
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""IsPanelStylesOpen"" Styles=""@(new() { Overlay = ""background-color: #4776f433;"", Container = ""box-shadow: 0 0 1rem tomato;"" })"">
+    Content goes here.
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""IsPanelClassesOpen"" 
+          HeaderText=""Simple header""
+          Classes=""@(new() { Container = ""custom-container"",
+                             Overlay = ""custom-overlay"",
+                             Body = ""custom-body"",
+                             Header = ""custom-header"" })"">
+    Content goes here.
+</BitPanel>
+";
+    private readonly string example6CsharpCode = @"
+private bool IsStyledPanelOpen = false;
+private bool IsClassedPanelOpen = false;
+private bool IsPanelStylesOpen = false;
+private bool IsPanelClassesOpen = false;";
 }
