@@ -117,10 +117,10 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav Items="BitPlatformNavMenu"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
-                                                           ToggleButton = new() { Style="color:cyan" },
-                                                           Item = new() { Style="color:red" },
-                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })" />
+                                    Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
+                                                      ToggleButton = "color: cyan;",
+                                                      Item = "color: red;",
+                                                      ItemIcon = "color: gold; margin-right: 15px;" })" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -284,10 +284,10 @@
                                     IsEnabledField="@nameof(BitPlatformMenu.IsEnabled)"
                                     ChildItemsField="@nameof(BitPlatformMenu.Links)"
                                     DescriptionField="@nameof(BitPlatformMenu.Comment)"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
-                                                           ToggleButton = new() { Style="color:cyan" },
-                                                           Item = new() { Style="color:red" },
-                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })" />
+                                    Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
+                                                      ToggleButton = "color: cyan;",
+                                                      Item = "color: red;",
+                                                      ItemIcon = "color: gold; margin-right: 15px;" })" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -580,10 +580,10 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <BitNav TItem="BitNavOption"
-                                    ClassStyles="@(new() { ItemContainer = new() { Style="border:1px solid green; margin:2px" },
-                                                           ToggleButton = new() { Style="color:cyan" },
-                                                           Item = new() { Style="color:red" },
-                                                           ItemIcon = new() { Style="color:gold; margin-right: 15px" } })">
+                                    Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
+                                                      ToggleButton = "color: cyan;",
+                                                      Item = "color: red;",
+                                                      ItemIcon = "color: gold; margin-right: 15px;" })">
                                 <BitNavOption Text="bit platform"
                                               ExpandAriaLabel="bit platform Expanded"
                                               CollapseAriaLabel="bit platform Collapsed">
