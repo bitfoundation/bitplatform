@@ -21,202 +21,103 @@
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
+
+    --bit-btn-clr-pri: #{$color-primary-main};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-hover-primary};
+    --bit-btn-clr-act-sec: #{$color-action-hover-secondary};
 }
 
 .bit-btn-pri {
-    --btn-clr-pri: #{$color-primary-text};
-    --btn-clr-brd-pri: #{$color-primary-main};
-    --btn-clr-bg-pri: #{$color-primary-main};
-    --btn-clr-act-hvr-brd-pri: #{$color-action-hover-primary};
-    --btn-clr-act-hvr-bg-pri: #{$color-action-hover-primary};
-    --btn-clr-act-acv-brd-pri: #{$color-action-active-primary};
-    --btn-clr-act-acv-bg-pri: #{$color-action-active-primary};
-    
-    color: var(--btn-clr-pri);
-    border-color: var(--btn-clr-brd-pri);
-    background-color: var(--btn-clr-bg-pri);
+    color: var(--bit-btn-clr-sec);
+    border-color: var(--bit-btn-clr-pri);
+    background-color: var(--bit-btn-clr-pri);
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--btn-clr-act-hvr-brd-pri);
-            background-color: var(--btn-clr-act-hvr-bg-pri);
+            border-color: var(--bit-btn-clr-act-pri);
+            background-color: var(--bit-btn-clr-act-pri);
         }
     }
 
     &:active {
-        border-color: var(--btn-clr-act-acv-brd-pri);
-        background-color: var(--btn-clr-act-acv-bg-pri);
+        border-color: var(--bit-btn-clr-act-pri);
+        background-color: var(--bit-btn-clr-act-pri);
     }
 }
 
 .bit-btn-std {
-    --btn-clr-std: #{$color-secondary-text};
-    --btn-clr-brd-std: #{$color-border-primary};
-    --btn-clr-bg-std: #{$color-secondary-main};
-    --btn-clr-act-hvr-bg-std: #{$color-action-hover-secondary};
-    --btn-clr-act-acv-bg-std: #{$color-action-active-secondary};
-
-    color: var(--btn-clr-std);
-    border-color: var(--btn-clr-brd-std);
-    background-color: var(--btn-clr-bg-std);
+    --bit-btn-clr-pri: #{$color-secondary-text};
+    --bit-btn-clr-sec: #{$color-background-secondary};
+    --bit-btn-clr-act-pri: #{$color-action-hover-secondary};
+    
+    color: var(--bit-btn-clr-pri);
+    border-color: var(--bit-btn-clr-pri);
+    background-color: var(--bit-btn-clr-sec);
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--btn-clr-act-hvr-bg-std);
+            background-color: var(--bit-btn-clr-act-sec);
         }
     }
 
     &:active {
-        background-color: var(--btn-clr-act-acv-bg-std);
+        background-color: var(--bit-btn-clr-act-sec);
     }
 }
 
 .bit-btn-txt {
-    --btn-clr-txt: #{$color-secondary-text};
-    --btn-clr-act-hvr-bg-txt: #{$color-action-hover-secondary};
-    --btn-clr-act-hvr-brd-txt: #{$color-action-hover-secondary};
-    --btn-clr-act-acv-bg-txt: #{$color-action-active-secondary};
-    --btn-clr-act-acv-brd-txt: #{$color-action-hover-secondary};
+    --bit-btn-clr-pri: #{$color-primary-main};
+    --bit-btn-clr-act-sec: #{$color-action-hover-secondary};
     
-    color: var(--btn-clr-txt);
+    color: var(--bit-btn-clr-pri);
     border-color: transparent;
     background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--btn-clr-act-hvr-bg-txt);
-            border-color: var(--btn-clr-act-hvr-brd-txt);
+            background-color: var(--bit-btn-clr-act-sec);
+            border-color: var(--bit-btn-clr-act-sec);
         }
     }
 
     &:active {
-        background-color: var(--btn-clr-act-acv-bg-txt);
-        border-color: var(--btn-clr-act-acv-brd-txt);
+        background-color: var(--bit-btn-clr-act-sec);
+        border-color: var(--bit-btn-clr-act-sec);
     }
 }
 
 .bit-btn-suc {
-    --btn-clr-bg-pri: green;
-    --btn-clr-brd-pri: green;
-    --btn-clr-act-hvr-brd-pri: #{darken(green, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(green, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(green, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(green, 5%)};
-
-    --btn-clr-std: green;
-    --btn-clr-brd-std: green;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(green, 0.9)};
-
-    --btn-clr-txt: green;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(green, 0.9)};
-}
-
-.bit-btn-suc {
-    --btn-clr-bg-pri: green;
-    --btn-clr-brd-pri: green;
-    --btn-clr-act-hvr-brd-pri: #{darken(green, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(green, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(green, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(green, 5%)};
-
-    --btn-clr-std: green;
-    --btn-clr-brd-std: green;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(green, 0.9)};
-
-    --btn-clr-txt: green;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(green, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(green, 0.9)};
+    --bit-btn-clr-pri: #{$color-state-success};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-state-success-primary};
+    --bit-btn-clr-act-sec: #{$color-action-state-success-secondary};
 }
 
 .bit-btn-inf {
-    --btn-clr-bg-pri: gray;
-    --btn-clr-brd-pri: gray;
-    --btn-clr-act-hvr-brd-pri: #{darken(gray, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(gray, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(gray, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(gray, 5%)};
-
-    --btn-clr-std: gray;
-    --btn-clr-brd-std: gray;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(gray, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(gray, 0.9)};
-
-    --btn-clr-txt: gray;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(gray, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(gray, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(gray, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(gray, 0.9)};
+    --bit-btn-clr-pri: #{$color-state-info};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-state-info-primary};
+    --bit-btn-clr-act-sec: #{$color-action-state-info-secondary};
 }
 
 .bit-btn-wrn {
-    --btn-clr-bg-pri: yellow;
-    --btn-clr-brd-pri: yellow;
-    --btn-clr-act-hvr-brd-pri: #{darken(yellow, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(yellow, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(yellow, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(yellow, 5%)};
-
-    --btn-clr-std: yellow;
-    --btn-clr-brd-std: yellow;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(yellow, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(yellow, 0.9)};
-
-    --btn-clr-txt: yellow;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(yellow, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(yellow, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(yellow, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(yellow, 0.9)};
+    --bit-btn-clr-pri: #{$color-state-warning};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-state-warning-primary};
+    --bit-btn-clr-act-sec: #{$color-action-state-warning-secondary};
 }
 
 .bit-btn-err {
-    --btn-clr-bg-pri: red;
-    --btn-clr-brd-pri: red;
-    --btn-clr-act-hvr-brd-pri: #{darken(red, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(red, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(red, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(red, 5%)};
-
-    --btn-clr-std: red;
-    --btn-clr-brd-std: red;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(red, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(red, 0.9)};
-
-    --btn-clr-txt: red;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(red, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(red, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(red, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(red, 0.9)};
+    --bit-btn-clr-pri: #{$color-state-error};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-state-error-primary};
+    --bit-btn-clr-act-sec: #{$color-action-state-error-secondary};
 }
 
 .bit-btn-swr {
-    --btn-clr-bg-pri: orange;
-    --btn-clr-brd-pri: orange;
-    --btn-clr-act-hvr-brd-pri: #{darken(orange, 5%)};
-    --btn-clr-act-hvr-bg-pri: #{darken(orange, 5%)};
-    --btn-clr-act-acv-brd-pri: #{darken(orange, 5%)};
-    --btn-clr-act-acv-bg-pri: #{darken(orange, 5%)};
-
-    --btn-clr-std: orange;
-    --btn-clr-brd-std: orange;
-    --btn-clr-bg-std: transparent;
-    --btn-clr-act-hvr-bg-std: #{transparentize(orange, 0.9)};
-    --btn-clr-act-acv-bg-std: #{transparentize(orange, 0.9)};
-
-    --btn-clr-txt: orange;
-    --btn-clr-act-hvr-bg-txt: #{transparentize(orange, 0.9)};
-    --btn-clr-act-hvr-brd-txt: #{transparentize(orange, 0.9)};
-    --btn-clr-act-acv-bg-txt: #{transparentize(orange, 0.9)};
-    --btn-clr-act-acv-brd-txt: #{transparentize(orange, 0.9)};
+    --bit-btn-clr-pri: #{$color-state-severe-warning};
+    --bit-btn-clr-sec: #{$color-primary-text};
+    --bit-btn-clr-act-pri: #{$color-action-state-severe-warning-primary};
+    --bit-btn-clr-act-sec: #{$color-action-state-severe-warning-secondary};
 }

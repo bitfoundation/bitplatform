@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
-private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonColor buttonColor = BitButtonColor.None;
 
     private int? _tabIndex;

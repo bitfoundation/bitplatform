@@ -68,6 +68,18 @@ $color-state-error: var(--bit-clr-sta-error);
 $color-state-error-bg: var(--bit-clr-sta-error-bg);
 $color-state-required: var(--bit-clr-sta-req);
 
+//actions-states
+$color-action-state-info-primary: var(--bit-clr-act-sta-info-pri);
+$color-action-state-info-secondary: var(--bit-clr-act-sta-info-sec);
+$color-action-state-success-primary: var(--bit-clr-act-sta-success-pri);
+$color-action-state-success-secondary: var(--bit-clr-act-sta-success-sec);
+$color-action-state-warning-primary: var(--bit-clr-act-sta-warning-pri);
+$color-action-state-warning-secondary: var(--bit-clr-act-sta-warning-sec);
+$color-action-state-severe-warning-primary: var(--bit-clr-act-sta-severe-warning-pri);
+$color-action-state-severe-warning-secondary: var(--bit-clr-act-sta-severe-warning-sec);
+$color-action-state-error-primary: var(--bit-clr-act-sta-error-pri);
+$color-action-state-error-secondary: var(--bit-clr-act-sta-error-sec);
+
 //neutrals
 $color-neutrals-white: var(--bit-clr-ntr-white);
 $color-neutrals-black: var(--bit-clr-ntr-black);
