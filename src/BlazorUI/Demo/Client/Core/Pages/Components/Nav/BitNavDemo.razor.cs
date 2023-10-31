@@ -56,12 +56,12 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "ClassStyles",
+            Name = "Classes",
             Type = "BitNavClassStyles?",
-            DefaultValue = "",
-            Href = "#class-styles",
-            LinkType = LinkType.Link,
-            Description = "Custom CSS classes/styles for different parts of the component."
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitNav component.",
+            Href = "#nav-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -256,6 +256,15 @@ public partial class BitNavDemo
             Type = "Expression<Func<TItem, string>>?",
             DefaultValue = "null",
             Description = "Custom style for the each item element."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitNavClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitNav component.",
+            Href = "#nav-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -570,86 +579,59 @@ public partial class BitNavDemo
         },
         new()
         {
-            Id = "class-styles",
+            Id = "nav-class-styles",
             Title = "BitNavClassStyles",
             Parameters = new()
             {
                new()
                {
-                   Name = "Item",
-                   Type = "BitClassStylePair?",
+                   Name = "Root",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for item.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Description = "Custom CSS classes/styles for the root element of the BitNav."
+               },
+               new()
+               {
+                   Name = "Item",
+                   Type = "String?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item of the BitNav."
                },
                new()
                {
                    Name = "SelectedItem",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for selected item.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Description = "Custom CSS classes/styles for the selected item of the BitNav."
                },
                new()
                {
                    Name = "ItemContainer",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for item container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the item container of the BitNav."
                },
                new()
                {
                    Name = "ItemIcon",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for item icon.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link,
+                   Description = "Custom CSS classes/styles for the item icon of the BitNav."
                },
                new()
                {
                    Name = "SelectedItemContainer",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for selected item container.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Description = "Custom CSS classes/styles for the selected item container of the BitNav."
                },
                new()
                {
                    Name = "ToggleButton",
-                   Type = "BitClassStylePair?",
+                   Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for toggle button.",
-                   Href = "#class-style-pair",
-                   LinkType = LinkType.Link
+                   Description = "Custom CSS classes/styles for the toggle button of the BitNav."
                },
-            }
-        },
-        new()
-        {
-            Id = "class-style-pair",
-            Title = "BitClassStylePair",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Class",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS class."
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS style."
-               }
             }
         }
     };
@@ -1226,10 +1208,10 @@ private BitNavItem ToggledItem;";
 
     private readonly string example6NavItemRazorCode = @"
 <BitNav Items=""BitPlatformNavMenu""
-        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
-                               ToggleButton = new() { Style=""color:cyan"" },
-                               Item = new() { Style=""color:red"" },
-                               ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })""";
+        Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
+                          ToggleButton = ""color: cyan;"",
+                          Item = ""color: red;"",
+                          ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
     private readonly string example6NavItemCsharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu = new()
 {
@@ -1848,10 +1830,11 @@ private FoodMenu CustomToggledItem;";
         IconNameField=""@nameof(BitPlatformMenu.Icon)""
         IsEnabledField=""@nameof(BitPlatformMenu.IsEnabled)""
         ChildItemsField=""@nameof(BitPlatformMenu.Links)""
-        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
-                               ToggleButton = new() { Style=""color:cyan"" },
-                               Item = new() { Style=""color:red"" },
-                               ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })"" />";
+        DescriptionField=""@nameof(BitPlatformMenu.Comment)""
+        Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
+                          ToggleButton = ""color: cyan;"",
+                          Item = ""color: red;"",
+                          ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
     private readonly string example6CustomItemCsharpCode = @"
 public class BitPlatformMenu
 {
@@ -2156,10 +2139,10 @@ private BitNavOption ToggledOption;";
 
     private readonly string example6NavOptionRazorCode = @"
 <BitNav TItem=""BitNavOption""
-        ClassStyles=""@(new() { ItemContainer = new() { Style=""border:1px solid green; margin:2px"" },
-                               ToggleButton = new() { Style=""color:cyan"" },
-                               Item = new() { Style=""color:red"" },
-                               ItemIcon = new() { Style=""color:gold; margin-right: 15px"" } })"">
+        Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
+                          ToggleButton = ""color: cyan;"",
+                          Item = ""color: red;"",
+                          ItemIcon = ""color: gold; margin-right: 15px;"" })"">
     <BitNavOption Text=""bit platform""
                   ExpandAriaLabel=""bit platform Expanded""
                   CollapseAriaLabel=""bit platform Collapsed"">

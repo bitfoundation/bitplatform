@@ -103,9 +103,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public Expression<Func<TItem, IList<TItem>>>? ChildItemsFieldSelector { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the component.
+    /// Custom CSS classes for different parts of the BitNav component.
     /// </summary>
-    [Parameter] public BitNavClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Aria label when group is collapsed.
@@ -285,6 +285,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Custom style for the each item element.
     /// </summary>
     [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitNav component.
+    /// </summary>
+    [Parameter] public BitNavClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Link target, specifies how to open the item link.
@@ -698,6 +703,16 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
 
     protected override string RootElementClass => "bit-nav";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override async Task OnInitializedAsync()
     {
