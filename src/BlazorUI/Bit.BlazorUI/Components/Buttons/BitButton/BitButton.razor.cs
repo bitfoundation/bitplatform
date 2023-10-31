@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private BitButtonColor buttonColor = BitButtonColor.None;
+    private BitButtonColor? buttonColor;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -41,6 +41,7 @@ public partial class BitButton
         get => buttonStyle;
         set
         {
+            if (buttonStyle == value) return;
             buttonStyle = value;
             ClassBuilder.Reset();
         }
@@ -50,11 +51,12 @@ public partial class BitButton
     /// The color of button
     /// </summary>
     [Parameter]
-    public BitButtonColor ButtonColor
+    public BitButtonColor? ButtonColor
     {
         get => buttonColor;
         set
         {
+            if(buttonColor == value) return;
             buttonColor = value;
             ClassBuilder.Reset();
         }
@@ -105,12 +107,11 @@ public partial class BitButton
         
         ClassBuilder.Register(() => ButtonColor switch
         {
-            BitButtonColor.None => String.Empty,
             BitButtonColor.Info => $"{RootElementClass}-inf",
-            BitButtonColor.Warning => $"{RootElementClass}-wrn",
             BitButtonColor.Success => $"{RootElementClass}-suc",
-            BitButtonColor.Error => $"{RootElementClass}-err",
+            BitButtonColor.Warning => $"{RootElementClass}-wrn",
             BitButtonColor.SevereWarning => $"{RootElementClass}-swr",
+            BitButtonColor.Error => $"{RootElementClass}-err",
             _ => String.Empty
         });
     }

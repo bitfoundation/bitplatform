@@ -3,19 +3,9 @@
 public enum BitButtonColor
 {
     /// <summary>
-    /// Default styled Button
-    /// </summary>
-    None,
-
-    /// <summary>
     /// Info styled Button
     /// </summary>
     Info,
-
-    /// <summary>
-    /// Warning styled Button
-    /// </summary>
-    Warning,
 
     /// <summary>
     /// Success styled Button
@@ -23,12 +13,17 @@ public enum BitButtonColor
     Success,
 
     /// <summary>
-    /// Error styled Button
+    /// Warning styled Button
     /// </summary>
-    Error,
+    Warning,
 
     /// <summary>
     /// Severe Warning styled Button
     /// </summary>
     SevereWarning,
+
+    /// <summary>
+    /// Error styled Button
+    /// </summary>
+    Error,
 }

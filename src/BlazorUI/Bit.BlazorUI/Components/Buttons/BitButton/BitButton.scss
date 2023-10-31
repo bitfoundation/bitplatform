@@ -66,7 +66,7 @@
 }
 
 .bit-btn-txt {
-    --bit-btn-clr: #{$color-primary-main};
+    --bit-btn-clr: #{$color-secondary-text};
     
     color: var(--bit-btn-clr);
     border-color: transparent;
@@ -85,20 +85,20 @@
     }
 }
 
-.bit-btn-suc {
-    --bit-btn-clr: #{$color-state-success};
-    --bit-btn-clr-hover1: #{$color-action-hover-state-success};
-    --bit-btn-clr-hover2: #{$color-action-hover-state-success-bg};
-    --bit-btn-clr-active1: #{$color-action-active-state-success};
-    --bit-btn-clr-active2: #{$color-action-active-state-success-bg};
-}
-
 .bit-btn-inf {
     --bit-btn-clr: #{$color-state-info};
     --bit-btn-clr-hover1: #{$color-action-hover-state-info};
     --bit-btn-clr-hover2: #{$color-action-hover-state-info-bg};
     --bit-btn-clr-active1: #{$color-action-active-state-info};
     --bit-btn-clr-active2: #{$color-action-active-state-info-bg};
+}
+
+.bit-btn-suc {
+    --bit-btn-clr: #{$color-state-success};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-success};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-success-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-success};
+    --bit-btn-clr-active2: #{$color-action-active-state-success-bg};
 }
 
 .bit-btn-wrn {
@@ -109,6 +109,14 @@
     --bit-btn-clr-active2: #{$color-action-active-state-warning-bg};
 }
 
+.bit-btn-swr {
+    --bit-btn-clr: #{$color-state-severe-warning};
+    --bit-btn-clr-hover1: #{$color-action-hover-state-severe-warning};
+    --bit-btn-clr-hover2: #{$color-action-hover-state-severe-warning-bg};
+    --bit-btn-clr-active1: #{$color-action-active-state-severe-warning};
+    --bit-btn-clr-active2: #{$color-action-active-state-severe-warning-bg};
+}
+
 .bit-btn-err {
     --bit-btn-clr: #{$color-state-error};
     --bit-btn-clr-hover1: #{$color-action-hover-state-error};
@@ -117,10 +125,3 @@
     --bit-btn-clr-active2: #{$color-action-active-state-error-bg};
 }
 
-.bit-btn-swr {
-    --bit-btn-clr: #{$color-state-severe-warning};
-    --bit-btn-clr-hover1: #{$color-action-hover-state-severe-warning};
-    --bit-btn-clr-hover2: #{$color-action-hover-state-severe-warning-bg};
-    --bit-btn-clr-active1: #{$color-action-active-state-severe-warning};
-    --bit-btn-clr-active2: #{$color-action-active-state-severe-warning-bg};
-}
