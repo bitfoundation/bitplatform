@@ -203,8 +203,29 @@ public partial class BitButtonDemo
 private int primaryCounter;
 private int standardCounter;
 private int textCounter;";
-
+    
     private readonly string example2RazorCode = @"
+<BitButton ButtonColor=""BitButtonColor.Info"">Info</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Success"">Success</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Warning"">Warning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+
+<BitButton ButtonColor=""BitButtonColor.Error"">Error</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
+    
+    private readonly string example3RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -216,14 +237,14 @@ private int textCounter;";
 
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
     Button with AriaDescription
 </BitButton>
@@ -232,7 +253,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Button with AriaHidden
 </BitButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
     Open bit platform In New Tab
 </BitButton>
@@ -241,7 +262,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Go To bit platform
 </BitButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-button {
         gap: 0.5rem;
@@ -262,7 +283,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitRollerLoading Size=""30"" />
 </BitButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -287,7 +308,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -316,26 +337,4 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
-
-    private readonly string bitButtonColorsExampleRazorCode = @"
-<BitButton ButtonColor=""BitButtonColor.Info"">Info</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
-
-<BitButton ButtonColor=""BitButtonColor.Success"">Success</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
-
-<BitButton ButtonColor=""BitButtonColor.Warning"">Warning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
-
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"">SevereWarning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton ButtonColor=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
-
-<BitButton ButtonColor=""BitButtonColor.Error"">Error</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton ButtonColor=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>
-";
 }
