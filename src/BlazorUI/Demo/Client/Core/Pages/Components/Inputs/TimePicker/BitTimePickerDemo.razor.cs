@@ -305,25 +305,25 @@ public partial class BitTimePickerDemo
 
 
     private readonly string example1RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
     private readonly string example2RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time...""
                TimeFormat=""BitTimeFormat.TwelveHours"" />";
 
     private readonly string example3RazorCode = @"
 <BitTimePicker IsEnabled=""false""
-               Style=""max-width: 300px""
+               Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
     private readonly string example4RazorCode = @"
 <BitTimePicker IsEnabled=""false""
-               Style=""max-width: 300px""
+               Style=""max-width: 175px""
                Label=""Start time""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
@@ -338,7 +338,7 @@ public partial class BitTimePickerDemo
     <div>
         <BitTimePicker @bind-Value=""formValidationTimePickerModel.Time""
                         AllowTextInput=""true""
-                        Style=""max-width: 300px""
+                        Style=""max-width: 175px""
                         AriaLabel=""Select a time""
                         Placeholder=""Select a time...""
                         Label=""Time required"" />
@@ -380,20 +380,20 @@ private void HandleInvalidSubmit()
 }";
 
     private readonly string example6RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AllowTextInput=""true""
                Label=""Start time""
                AriaLabel=""Select a time"" />";
 
     private readonly string example7RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
                CustomFormat=""hh-mm.ss"" />";
 
     private readonly string example8RazorCode = @"
 <BitTimePicker @ref=""timePicker""
-               Style=""max-width: 300px""
+               Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."">
    <LabelTemplate>
@@ -410,7 +410,7 @@ private async Task OpenCallout()
 
     private readonly string example9RazorCode = @"
 <BitTimePicker @bind-Value=""@selectedTime""
-               Style=""max-width: 300px""
+               Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
 <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>";
@@ -418,7 +418,7 @@ private async Task OpenCallout()
 private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 
     private readonly string example10RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                IconLocation=""BitIconLocation.Left""
                 laceholder=""Select a time..."">
@@ -428,7 +428,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 </BitTimePicker>";
 
     private readonly string example11RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                IconName=""@BitIconName.Airplane""
                Placeholder=""Select a time..."" />";
@@ -438,9 +438,8 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
     <DataAnnotationsValidator />
     <div>
         <BitTimePicker @bind-Value=""formValidationTimePickerModel.Time""
-                        Style=""max-width: 350px""
+                        Style=""max-width: 175px""
                         AllowTextInput=""true""
-                        Label=""BitTimePicker with Custom Invalid Error Message""
                         InvalidErrorMessage=""Invalid Time!!!"" />
         <ValidationMessage For=""@(() => formValidationTimePickerModel.Time)"" />
     </div>
@@ -459,7 +458,7 @@ public class FormValidationTimePickerModel
 private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
     private readonly string example13RazorCode = @"
-<BitTimePicker Style=""max-width: 300px""
+<BitTimePicker Style=""max-width: 175px""
                IsResponsive=""true""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";

@@ -256,7 +256,14 @@ public partial class BitTimePicker
 
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened() => IsOpen = false;
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (IsEnabled is false) return;
+        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
+
+        IsOpen = false;
+        StateHasChanged();
+    }
 
     public Task OpenCallout() => HandleOnClick();
 

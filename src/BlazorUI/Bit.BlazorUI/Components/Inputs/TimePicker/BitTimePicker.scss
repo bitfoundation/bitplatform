@@ -322,7 +322,18 @@
 }
 
 .bit-tpc-bns {
-    background-color: $color-primary-light;
+    color: $color-primary-text;
+    background-color: $color-primary-main;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-primary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-active-primary;
+    }
 }
 
 .bit-tpc-cbn {
