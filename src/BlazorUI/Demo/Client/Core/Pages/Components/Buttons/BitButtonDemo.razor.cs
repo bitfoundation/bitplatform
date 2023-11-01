@@ -224,21 +224,9 @@ public partial class BitButtonDemo
 
 
     private readonly string example1RazorCode = @"
-<BitButton OnClick=""() => primaryCounter++"">Primary (@primaryCounter)</BitButton>
-
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => standardCounter++"">
-    Standard (@standardCounter)
-</BitButton>
-
-<BitButton ButtonStyle=""BitButtonStyle.Text"" OnClick=""() => textCounter++"">
-    Text (@textCounter)
-</BitButton>
-
-<BitButton IsEnabled=""false"">Disabled</BitButton>";
-    private readonly string example1CsharpCode = @"
-private int primaryCounter;
-private int standardCounter;
-private int textCounter;";
+<BitButton>Primary</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>";
     
     private readonly string example2RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>

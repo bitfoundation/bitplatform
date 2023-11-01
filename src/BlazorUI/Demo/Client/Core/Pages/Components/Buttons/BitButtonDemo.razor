@@ -8,17 +8,12 @@
                ComponentDescription="Buttons allow users to take actions, and make choices, with a single tap."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="buttons-container">
-                <BitButton OnClick="() => primaryCounter++">Primary (@primaryCounter)</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
-                    Standard (@standardCounter)
-                </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Text" OnClick="() => textCounter++">
-                    Text (@textCounter)
-                </BitButton>
-                <BitButton IsEnabled="false">Disabled</BitButton>
+                <BitButton>Primary</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard">Standard</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Text">Text</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
