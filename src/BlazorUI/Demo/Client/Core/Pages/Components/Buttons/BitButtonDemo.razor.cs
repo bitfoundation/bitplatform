@@ -287,7 +287,11 @@ public partial class BitButtonDemo
 
 <BitButton Style=""color:darkblue; font-weight:bold"">Styled Button</BitButton>
 
-<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
+<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>
+
+<BitButton Class=""custom-class"" Style=""color:green;"" ButtonStyle=""BitButtonStyle.Text"">
+    Styled Classed Button
+</BitButton>";
 
     private readonly string example5RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
