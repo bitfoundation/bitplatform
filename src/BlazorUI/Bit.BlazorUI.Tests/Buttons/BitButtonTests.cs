@@ -204,13 +204,14 @@ public class BitButtonTests : BunitTestContext
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
+    
     [DataTestMethod,
-     DataRow(BitButtonColor.Info),
-     DataRow(BitButtonColor.Success),
-     DataRow(BitButtonColor.Warning),
-     DataRow(BitButtonColor.SevereWarning),
-     DataRow(BitButtonColor.Error),
-     DataRow(null),
+         DataRow(BitButtonColor.Info),
+         DataRow(BitButtonColor.Success),
+         DataRow(BitButtonColor.Warning),
+         DataRow(BitButtonColor.SevereWarning),
+         DataRow(BitButtonColor.Error),
+         DataRow(null),
     ]
     [TestMethod]
     public void BitButtonColorOfButtonTest(BitButtonColor? color)
@@ -243,6 +244,42 @@ public class BitButtonTests : BunitTestContext
         {
             Assert.AreEqual(2, bitButton.ClassList.Length);
         }
+    }
+    
+    [DataTestMethod,
+         DataRow(BitButtonSize.Small),
+         DataRow(BitButtonSize.Medium),
+         DataRow(BitButtonSize.Large),
+         DataRow(null)
+    ]
+    [TestMethod]
+    public void BitButtonSizeOfButtonTest(BitButtonSize? size)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.Size, size.Value);
+            }
+        });
 
+        var bitButton = com.Find(".bit-btn");
+
+        var sizeClassName = size switch
+        {
+            BitButtonSize.Small => "bit-btn-sm",
+            BitButtonSize.Medium => "bit-btn-md",
+            BitButtonSize.Large => "bit-btn-lg",
+            _ => String.Empty
+        };
+
+        if (size.HasValue)
+        {
+            Assert.IsTrue(bitButton.ClassList.Contains(sizeClassName));
+        }
+        else
+        {
+            Assert.AreEqual(2, bitButton.ClassList.Length);
+        }
     }
 }
