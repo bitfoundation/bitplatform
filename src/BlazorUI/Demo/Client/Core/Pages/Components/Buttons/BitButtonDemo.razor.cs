@@ -242,6 +242,12 @@ public partial class BitButtonDemo
 <BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"">Disabled</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
+
+    private readonly string handleClicksExampleRazorCode = @"
+<BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
+
+    private readonly string handleClicksExampleCsharpCode = @"
+private int clickCounter;";
     
     private readonly string example2RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>

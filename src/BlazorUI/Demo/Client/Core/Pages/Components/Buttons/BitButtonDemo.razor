@@ -48,6 +48,15 @@
         </ExamplePreview>
     </ComponentExampleBox>
     
+    <ComponentExampleBox Title="Handling clicks" RazorCode="@handleClicksExampleRazorCode" CsharpCode="@handleClicksExampleCsharpCode" Id="handleClicksExample">
+        <ExamplePreview>
+            <div class="buttons-container">
+                <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    
     <ComponentExampleBox Title="Colors" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="buttons-container-grid">
@@ -186,9 +195,7 @@
 </ComponentDemo>
 
 @code {
-    private int primaryCounter;
-    private int standardCounter;
-    private int textCounter;
+    private int clickCounter;
 
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();
