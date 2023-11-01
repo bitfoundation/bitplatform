@@ -296,24 +296,6 @@ Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButto
 
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example6RazorCode = @"
-<BitButton AriaDescription=""Detailed description used for screen reader."">
-    Button with AriaDescription
-</BitButton>
-
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
-    Button with AriaHidden
-</BitButton>";
-
-    private readonly string example7RazorCode = @"
-<BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
-    Open bit platform In New Tab
-</BitButton>
-
-<BitButton Title=""Standard"" Href=""https://bitplatform.dev"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To bit platform
-</BitButton>";
-
     private readonly string example8RazorCode = @"
 <style>
     .custom-button {
