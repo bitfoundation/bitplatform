@@ -18,8 +18,8 @@
         cursor: default;
         pointer-events: none;
         color: $color-foreground-disabled;
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: var(--bit-btn-clr-brd-dis);
+        background-color: var(--bit-btn-clr-bg-dis);
     }
 
     --bit-btn-clr: #{$color-primary-main};
@@ -27,6 +27,9 @@
     --bit-btn-clr-hover2: #{$color-action-hover-secondary};
     --bit-btn-clr-active1: #{$color-action-active-primary};
     --bit-btn-clr-active2: #{$color-action-active-secondary};
+    
+    --bit-btn-clr-brd-dis: #{$color-border-disabled};
+    --bit-btn-clr-bg-dis: #{$color-background-disabled};
 }
 
 .bit-btn-pri {
@@ -49,6 +52,7 @@
 
 .bit-btn-std {
     --bit-btn-clr: #{$color-secondary-text};
+    --bit-btn-clr-bg-dis: transparent;
     
     color: var(--bit-btn-clr);
     border-color: var(--bit-btn-clr);
@@ -67,6 +71,8 @@
 
 .bit-btn-txt {
     --bit-btn-clr: #{$color-secondary-text};
+    --bit-btn-clr-brd-dis: transparent;
+    --bit-btn-clr-bg-dis: transparent;
     
     color: var(--bit-btn-clr);
     border-color: transparent;
