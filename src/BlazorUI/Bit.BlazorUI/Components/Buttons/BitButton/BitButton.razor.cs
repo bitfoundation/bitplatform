@@ -6,7 +6,7 @@ public partial class BitButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonColor? color;
-    private BitButtonSize size = BitButtonSize.Medium;
+    private BitButtonSize? size;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -67,7 +67,7 @@ public partial class BitButton
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize Size
+    public BitButtonSize? Size
     {
         get => size;
         set
@@ -133,9 +133,9 @@ public partial class BitButton
         
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => $"{RootElementClass}-small",
-            BitButtonSize.Medium => String.Empty,
-            BitButtonSize.Large => $"{RootElementClass}-large",
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Medium => $"{RootElementClass}-md",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
             _ => String.Empty
         });
     }
