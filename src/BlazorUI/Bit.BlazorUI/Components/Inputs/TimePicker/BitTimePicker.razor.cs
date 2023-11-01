@@ -9,6 +9,7 @@ public partial class BitTimePicker
     private const string FORMAT_12_HOURS = "hh:mm tt";
 
     private bool isOpen;
+    private bool IsOpenHasBeenSet;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
     private string focusClass = string.Empty;
@@ -160,9 +161,12 @@ public partial class BitTimePicker
             if (isOpen == value) return;
 
             isOpen = value;
+            _ = IsOpenChanged.InvokeAsync(value);
             ClassBuilder.Reset();
         }
     }
+
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the main callout's parameters
@@ -350,6 +354,7 @@ public partial class BitTimePicker
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
+        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = true;
         await ToggleCallout();
