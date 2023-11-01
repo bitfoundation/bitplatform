@@ -8,12 +8,22 @@
                ComponentDescription="Buttons allow users to take actions, and make choices, with a single tap."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@bacisExampleRazorCode" Id="basicExample">
         <ExamplePreview>
             <div class="buttons-container">
                 <BitButton>Primary</BitButton>
                 <BitButton ButtonStyle="BitButtonStyle.Standard">Standard</BitButton>
                 <BitButton ButtonStyle="BitButtonStyle.Text">Text</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Primary Button" RazorCode="@primaryButtonExampleRazorCode" Id="primaryButtonExample">
+        <ExamplePreview>
+            <div class="buttons-container">
+                <BitButton>Primary</BitButton>
+                <BitButton IsEnabled="false">Disabled</BitButton>
+                <BitButton Href="https://bitplatform.dev">Link</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

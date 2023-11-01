@@ -223,10 +223,15 @@ public partial class BitButtonDemo
 
 
 
-    private readonly string example1RazorCode = @"
+    private readonly string bacisExampleRazorCode = @"
 <BitButton>Primary</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>";
+
+    private readonly string primaryButtonExampleRazorCode = @"
+<BitButton>Primary</BitButton>
+<BitButton IsEnabled=""false"">Disabled</BitButton>
+<BitButton Href=""https://bitplatform.dev"">Link</BitButton>";
     
     private readonly string example2RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>
