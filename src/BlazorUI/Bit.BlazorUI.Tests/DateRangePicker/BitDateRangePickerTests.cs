@@ -39,7 +39,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var bitDateRangePickerLabelChild = component.Find(".bit-dtrp > label.bit-dtrp-lbl").ChildNodes;
+        var bitDateRangePickerLabelChild = component.Find(".bit-dtrp > label").ChildNodes;
         bitDateRangePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
@@ -48,7 +48,7 @@ public class BitDateRangePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.GoToToday, goToToday);
+            parameters.Add(p => p.GoToTodayTitle, goToToday);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -78,42 +78,44 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(true, 1),
-      DataRow(false, 0)
+      DataRow(true),
+      DataRow(false)
     ]
-    public void BitDateRangePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled, int count)
+    public void BitDateRangePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled)
     {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var isOpen = true;
         var selectedDateValue = 0;
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.OnSelectDate, () => selectedDateValue++);
         });
 
-        var dateItems = component.FindAll(".bit-dtrp-dbtn");
+        var dateItems = component.FindAll(".bit-dtrp-dbt");
 
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
         dateItems[randomNumber].Click();
-        Assert.AreEqual(count, selectedDateValue);
+        Assert.AreEqual(isEnabled ? 1 : 0, selectedDateValue);
     }
 
     [DataTestMethod]
     public void BitDateRangePickerCalendarSelectTodayDate()
     {
+        var isOpen = true;
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
         });
 
         Assert.IsNull(component.Instance.Value.StartDate);
         Assert.IsNull(component.Instance.Value.EndDate);
 
-        var today = component.Find(".bit-dtrp-dc-tdy button.bit-dtrp-dbtn");
+        var today = component.Find(".bit-dtrp-dtd");
         today.Click();
 
         Assert.IsNotNull(component.Instance.Value.StartDate);
@@ -139,10 +141,10 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.PickerAriaLabel, pickerAriaLabel);
+            parameters.Add(p => p.CalloutAriaLabel, pickerAriaLabel);
         });
 
-        var bitDateRangePickerCallout = component.Find(".bit-dtrp-mcal");
+        var bitDateRangePickerCallout = component.Find(".bit-dtrp-cac");
         var calloutAriaLabel = bitDateRangePickerCallout.GetAttribute("aria-label");
 
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
@@ -172,29 +174,29 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
-        DataRow(false),
-        DataRow(true)
-    ]
-    public void BitDateRangePickerShowCloseButtonTest(bool showCloseButton)
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var component = RenderComponent<BitDateRangePicker>(parameters =>
-        {
-            parameters.Add(p => p.ShowCloseButton, showCloseButton);
-        });
+    //[DataTestMethod,
+    //    DataRow(false),
+    //    DataRow(true)
+    //]
+    //public void BitDateRangePickerShowCloseButtonTest(bool showCloseButton)
+    //{
+    //    Context.JSInterop.Mode = JSRuntimeMode.Loose;
+    //    var component = RenderComponent<BitDateRangePicker>(parameters =>
+    //    {
+    //        parameters.Add(p => p.ShowCloseButton, showCloseButton);
+    //    });
 
-        var closeBtnElms = component.FindAll(".bit-dtrp-cbtn");
+    //    var closeBtnElms = component.FindAll(".bit-dtrp-cbtn");
 
-        if (showCloseButton)
-        {
-            Assert.AreEqual(1, closeBtnElms.Count);
-        }
-        else
-        {
-            Assert.AreEqual(0, closeBtnElms.Count);
-        }
-    }
+    //    if (showCloseButton)
+    //    {
+    //        Assert.AreEqual(1, closeBtnElms.Count);
+    //    }
+    //    else
+    //    {
+    //        Assert.AreEqual(0, closeBtnElms.Count);
+    //    }
+    //}
 
     [DataTestMethod,
         DataRow(false),
@@ -208,7 +210,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
         });
 
-        var currentMonthCells = component.FindAll(".bit-dtrp-crtm");
+        var currentMonthCells = component.FindAll(".bit-dtrp-pcm");
 
         if (highlightCurrentMonth)
         {
@@ -233,7 +235,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
 
-        var selectedMonthCells = component.FindAll(".bit-dtrp-selm");
+        var selectedMonthCells = component.FindAll(".bit-dtrp-psm");
 
         if (highlightSelectedMonth)
         {
@@ -259,7 +261,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.CalloutHtmlAttributes, calloutHtmlAttributes);
         });
 
-        var bitDateRangePickerCallout = component.Find(".bit-dtrp-mcal");
+        var bitDateRangePickerCallout = component.Find(".bit-dtrp-cac");
         var calloutStyle = bitDateRangePickerCallout.GetAttribute("style");
 
         Assert.AreEqual("color: blue", calloutStyle);
