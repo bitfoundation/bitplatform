@@ -223,33 +223,33 @@ public partial class BitButtonDemo
 
 
 
-    private readonly string bacisExampleRazorCode = @"
+    private readonly string example1RazorCode = @"
 <BitButton>Primary</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>";
 
-    private readonly string primaryButtonExampleRazorCode = @"
+    private readonly string example2RazorCode = @"
 <BitButton>Primary</BitButton>
 <BitButton IsEnabled=""false"">Disabled</BitButton>
 <BitButton Href=""https://bitplatform.dev"">Link</BitButton>";
 
-    private readonly string standardButtonExampleRazorCode = @"
+    private readonly string example3RazorCode = @"
 <BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"">Disabled</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Standard"" Href=""https://bitplatform.dev"">Link</BitButton>";
 
-    private readonly string textButtonExampleRazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"">Disabled</BitButton>
 <BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
 
-    private readonly string handleClicksExampleRazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
 
-    private readonly string handleClicksExampleCsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private int clickCounter;";
     
-    private readonly string example2RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
@@ -270,7 +270,7 @@ private int clickCounter;";
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
-    private readonly string example3RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
@@ -283,7 +283,7 @@ private int clickCounter;";
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
     
-    private readonly string example4RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -299,14 +299,14 @@ private int clickCounter;";
     Styled Classed Button
 </BitButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example9RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -333,7 +333,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitCircleLoading Size=""20"" />
 </BitButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -358,7 +358,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
