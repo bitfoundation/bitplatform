@@ -302,23 +302,29 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
 
     private readonly string example8RazorCode = @"
 <style>
-    .custom-button {
+    .custom-content {
         gap: 0.5rem;
         display: flex;
         align-items: center;
     }
 </style>
 
-<BitButton Class=""custom-button"">
+<BitButton Class=""custom-content"">
     <BitIcon IconName=""@BitIconName.Airplane"" />
-    <span>A custom text</span>
-    <BitRippleLoading Size=""30""/>
+    <span>A Primary custom content</span>
+    <BitRippleLoading Size=""20"" />
 </BitButton>
 
-<BitButton Class=""custom-button"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Standard"">
     <BitIcon IconName=""@BitIconName.Accept"" />
-    <span>A Standard custom text</span>
-    <BitRollerLoading Size=""30"" />
+    <span>A Standard custom content</span>
+    <BitRollerLoading Size=""20"" />
+</BitButton>
+
+<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Text"">
+    <BitIcon IconName=""@BitIconName.Asterisk"" />
+    <span>A Text custom content</span>
+    <BitCircleLoading Size=""20"" />
 </BitButton>";
 
     private readonly string example9RazorCode = @"
