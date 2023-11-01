@@ -24,6 +24,6 @@
                 Items="_filteredNavItems"
                 AriaLabel="bit project templates doc nav"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)"
-                Styles="@(new() { SelectedItemContainer = $"background-color:var({BitCss.Var.Color.Background.Primary});" })" />
+                ClassStyles="@(new() { SelectedItemContainer = new() { Style = $"background-color:var({BitCss.Var.Color.Background.Primary});" } })" />
     </div>
 </div>

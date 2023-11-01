@@ -111,7 +111,7 @@
         </div>
     </section>
 
-    <BitModal IsOpen=@_isBuyModalOpen Classes="@(new() { Container = "modal-container" })">
+    <BitModal IsOpen=@_isBuyModalOpen ClassStyles="@(new() { Container = new() { Class = "modal-container" } })">
         <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" />
         @if (_isSent)
         {
