@@ -54,8 +54,30 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Sizes" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="buttons-container-grid">
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Primary">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Primary">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary">Large</BitButton>
+                </div>
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Standard">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Standard">Large</BitButton>
+                </div>
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Text">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Text">Large</BitButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="buttons-container">
                 <BitButton Style="color:darkblue; font-weight:bold">
@@ -68,7 +90,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="buttons-container-grid">
                 <div>Visible: [ <BitButton Visibility="BitVisibility.Visible">Visible Button</BitButton> ]</div>
@@ -78,7 +100,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ARIA" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="ARIA" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="buttons-container">
                 <BitButton AriaDescription="Detailed description used for screen reader.">
@@ -91,7 +113,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Link button" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Link button" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div class="buttons-container">
                 <BitButton Title="Primary" Target="_blank" Href="https://bitplatform.dev">
@@ -104,7 +126,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom content" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Custom content" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div class="buttons-container">
                 <BitButton Class="custom-content">
@@ -122,7 +144,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div class="form-container">
                 @if (formIsValidSubmit is false)

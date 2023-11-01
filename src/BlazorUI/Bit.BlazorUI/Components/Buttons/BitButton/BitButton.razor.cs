@@ -6,6 +6,7 @@ public partial class BitButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonColor? color;
+    private BitButtonSize? size;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -61,6 +62,21 @@ public partial class BitButton
             ClassBuilder.Reset();
         }
     }
+    
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+            size = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The type of the button
@@ -112,6 +128,14 @@ public partial class BitButton
             BitButtonColor.Warning => $"{RootElementClass}-wrn",
             BitButtonColor.SevereWarning => $"{RootElementClass}-swr",
             BitButtonColor.Error => $"{RootElementClass}-err",
+            _ => String.Empty
+        });
+        
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => $"{RootElementClass}-sm",
+            BitButtonSize.Medium => $"{RootElementClass}-md",
+            BitButtonSize.Large => $"{RootElementClass}-lg",
             _ => String.Empty
         });
     }

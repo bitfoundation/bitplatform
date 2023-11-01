@@ -45,6 +45,15 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "null",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new()
+        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
@@ -158,6 +167,33 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Id = "button-size-enum",
+            Name = "BitButtonSize",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size button.",
+                    Value="2",
+                }
+            }
+        },
+        new()
+        {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
@@ -226,6 +262,19 @@ private int textCounter;";
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
     private readonly string example3RazorCode = @"
+<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
+<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
+<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
+
+<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitButton>
+<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitButton>
+<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitButton>
+
+<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitButton>
+<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
+<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
+    
+    private readonly string example4RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -237,14 +286,14 @@ private int textCounter;";
 
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton AriaDescription=""Detailed description used for screen reader."">
     Button with AriaDescription
 </BitButton>
@@ -253,7 +302,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Button with AriaHidden
 </BitButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
     Open bit platform In New Tab
 </BitButton>
@@ -262,7 +311,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     Go To bit platform
 </BitButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-button {
         gap: 0.5rem;
@@ -283,7 +332,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitRollerLoading Size=""30"" />
 </BitButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -308,7 +357,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
