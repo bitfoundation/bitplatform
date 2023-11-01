@@ -204,7 +204,7 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Capture and render additional html attributes for the DateRangePicker's callout.
     /// </summary>
-    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new Dictionary<string, object>();
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
     /// <summary>
     /// CultureInfo for the DateRangePicker.
@@ -233,12 +233,12 @@ public partial class BitDateRangePicker
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the Go to next month button
+    /// The title of the Go to next month button.
     /// </summary>
     [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
 
     /// <summary>
-    /// The title of the Go to previous month button
+    /// The title of the Go to previous month button.
     /// </summary>
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
 
@@ -299,7 +299,7 @@ public partial class BitDateRangePicker
     [Parameter] public bool IsMonthPickerVisible { get; set; } = true;
 
     /// <summary>
-    /// Whether or not the DateRangePicker's callout is open
+    /// Whether or not the DateRangePicker's callout is open.
     /// </summary>
     [Parameter]
     public bool IsOpen
