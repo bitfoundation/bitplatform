@@ -365,239 +365,99 @@ public partial class BitDateRangePickerDemo
             }
         }
     };
-    
+
+
+
+    private BitDateRangePickerValue selectedDateRange = new()
+    {
+        StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+        EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
+    };
+
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
+
 
 
     private readonly string example1RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker Label=""Basic DateRangePicker"" />
+<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDateRangePicker Label=""PlaceHolder"" Placeholder=""Select a date range"" />
+<BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers=""true"" />
+<BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
+<BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
+<BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
+<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitDateRangePicker IsEnabled=false
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />
-
-<BitDateRangePicker IsEnabled=false
-                    Style=""max-width: 300px""
-                    Label=""Date range""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />";
 
     private readonly string example3RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    ShowWeekNumbers=true
-                    ShowMonthPickerAsOverlay=true
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker Label=""DateFormat: 'dd=MM(yy)'"" DateFormat=""dd=MM(yy)"" />
+<BitDateRangePicker Label=""ValueFormat: 'Dep: {0}, Arr: {1}'"" ValueFormat=""Dep: {0}, Arr: {1}"" />";
 
     private readonly string example4RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    DateFormat=""dd=MM(yy)"" />";
-
-    private readonly string example5RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddDays(5)""
-                    MinDate=""DateTimeOffset.Now.AddDays(-5)"" />
-<br />
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddMonths(1)""
-                    MinDate=""DateTimeOffset.Now.AddMonths(-2)"" />
-<br />
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddYears(1)""
-                    MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
-
-    private readonly string example6RazorCode = @"
-<BitDateRangePicker @ref=""dateRangePicker""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
-    <LabelTemplate>
-        Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
-    </LabelTemplate>
-</BitDateRangePicker>";
-    private readonly string example6CsharpCode = @"
-private BitDateRangePicker dateRangePicker;
-private async Task OpenCallout()
-{
-    await dateRangePicker.OpenCallout();
-}";
-
-    private readonly string example7RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    @bind-Value=""@selectedDateRange""
-                    AriaLabel=""select dates""
-                    Placeholder=""select dates..."" />
-<BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>";
-    private readonly string example7CsharpCode = @"
+<BitDateRangePicker @bind-Value=""@selectedDateRange"" />
+<div>From: <b>@selectedDateRange.StartDate.ToString()</b></div>
+<div>To: <b>@selectedDateRange.EndDate.ToString()</b></div>";
+    private readonly string example4CsharpCode = @"
 private BitDateRangePickerValue selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
 };";
 
-    private readonly string example8RazorCode = @"
-<BitDateRangePicker DateFormat=""dd-MM-yyyy""
-                    Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
-                    GoToToday=""برو به امروز""
+    private readonly string example5RazorCode = @"
+<BitDateRangePicker Label=""fa-IR culture with Farsi names""
+                    GoToTodayTitle=""برو به امروز""
                     ValueFormat=""شروع: {0}, پایان: {1}""
-                    Style=""max-width: 300px"">
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
+
+<BitDateRangePicker Label=""fa-IR culture with Fingilish names""
+                    GoToTodayTitle=""Boro be emrouz""
+                    ValueFormat=""Shoro: {0}, Payan: {1}""
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+
+    private readonly string example6RazorCode = @"
+<BitDateRangePicker>
+    <LabelTemplate>
+        Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
+    </LabelTemplate>
 </BitDateRangePicker>
 
-<BitDateRangePicker DateFormat=""dd-MM-yyyy""
-                    Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
-                    GoToToday=""Boro be emrouz""
-                    ValueFormat=""شروع: {0}, پایان: {1}""
-                    Style=""max-width: 300px"">
-</BitDateRangePicker>";
-
-    private readonly string example9RazorCode = @"
-<style>
-    .weekend-cell {
-        color: red;
-    }
-
-    .custom-day-cell {
-        position: relative;
-        width: 44px !important;
-        height: 44px !important;
-    }
-
-    .discount-badge {
-        position: absolute;
-        top: 0;
-        right: 0;
-        display: inline-flex;
-        align-items: center;
-        width: fit-content !important;
-        height: 16px !important;
-        border-radius: 2px;
-        padding: 0 4px;
-        background-color: red;
-        color: white;
-        font-size: 8px;
-    }
-
-    .year-suffix {
-        position: absolute;
-        bottom: 10px;
-        right: -12px;
-        height: 12px;
-        color: gray;
-        font-size: 8px;
-    }
-</style>
-
-<BitDateRangePicker Label=""Custom weekend cells""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
+<BitDateRangePicker Label=""DayCellTemplate"">
     <DayCellTemplate>
-        <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
-            @context.Day
-        </span>
-    </DayCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""Custom year, month, and day cells""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
-    <DayCellTemplate>
-        <span class=""custom-day-cell"">
+        <span class=""day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? "" weekend-cell"" : null)"">
             @context.Day
 
             @if (context.Day % 5 is 0)
             {
-                <span class=""discount-badge"">off</span>
+                <span class=""badge""></span>
             }
         </span>
     </DayCellTemplate>
-    <MonthCellTemplate>
-        <span>
-            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+</BitDateRangePicker>
 
-            @if (context.Month == 1)
-            {
-                <span class=""discount-badge"">Xmas</span>
-            }
-        </span>
+<BitDateRangePicker Label=""MonthCellTemplate"">
+    <MonthCellTemplate>
+        <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
+            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+        </div>
     </MonthCellTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""YearCellTemplate"">
     <YearCellTemplate>
         <span style=""position: relative"">
             @context
             <span class=""year-suffix"">AC</span>
         </span>
     </YearCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""Icon template""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    IconLocation=""BitIconLocation.Left""
-                    Placeholder=""Select dates..."">
-    <IconTemplate>
-        <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
-    </IconTemplate>
 </BitDateRangePicker>";
-    private readonly string example9CsharpCode = @"
-private CultureInfo Culture = CultureInfo.CurrentUICulture;";
+    private readonly string example6CsharpCode = @"
+private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example10RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    ValueFormat=""Dep: {0}, Arr: {1}""
-                    DateFormat=""dd=MM(yy)""
-                    Placeholder=""Select dates..."" />";
-
-    private readonly string example11RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    IconName=""@BitIconName.Airplane""
-                    Placeholder=""Select dates..."" />";
-
-    private readonly string example12RazorCode = @"
-<BitDateRangePicker IsResponsive=""true""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example13RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AutoClose=""false""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example14RazorCode = @"
-<BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
-                    Label=""Time format 24 hours""
-                    ShowTimePicker=""true""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />
-
-<BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
-                    Label=""Time format 12 hours""
-                    ShowTimePicker=""true""
-                    TimeFormat=""BitTimeFormat.TwelveHours""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example14CsharpCode = @"
-private BitDateRangePickerValue selectedDateTimeRange = new()
-{
-    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
-};";
+    private readonly string example7RazorCode = @"
+<BitDateRangePicker Label=""Responsive DateRangePicker"" IsResponsive=""true"" />";
 }
