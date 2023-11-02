@@ -237,7 +237,7 @@ public partial class BitTimePicker
     /// <summary>
     /// The format of the time in the time-picker
     /// </summary>
-    [Parameter] public string? CustomFormat { get; set; }
+    [Parameter] public string? ValueFormat { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.
@@ -480,9 +480,9 @@ public partial class BitTimePicker
         await UpdateCurrentValue();
     }
 
-    private string GetTimeFormat()
+    private string GetValueFormat()
     {
-        return CustomFormat.HasValue() ? CustomFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
+        return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
     }
 
     /// <inheritdoc />
@@ -497,7 +497,7 @@ public partial class BitTimePicker
             return true;
         }
 
-        if (DateTime.TryParseExact(value, GetTimeFormat(), Culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, GetValueFormat(), Culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
@@ -516,7 +516,7 @@ public partial class BitTimePicker
         if (value.HasValue is false) return null;
 
         DateTime time = DateTime.Today.Add(value.Value);
-        return time.ToString(GetTimeFormat(), Culture);
+        return time.ToString(GetValueFormat(), Culture);
     }
 
     protected override void Dispose(bool disposing)
