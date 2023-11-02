@@ -155,7 +155,7 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "CustomFormat",
+            Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
@@ -404,7 +404,7 @@ private void HandleInvalidSubmit()
 <BitCircularTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
-               CustomFormat=""hh-mm.ss"" />";
+               ValueFormat=""hh-mm.ss"" />";
 
     private readonly string example8RazorCode = @"
 <BitCircularTimePicker @ref=""timePicker""

@@ -178,7 +178,7 @@ public partial class BitCircularTimePicker
     /// <summary>
     /// The format of the time in the TimePicker
     /// </summary>
-    [Parameter] public string? CustomFormat { get; set; }
+    [Parameter] public string? ValueFormat { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.
@@ -441,9 +441,9 @@ public partial class BitCircularTimePicker
 
     private bool IsAm() => _hour.GetValueOrDefault() >= 00 && _hour < 12; // am is 00:00 to 11:59 
 
-    private string GetTimeFormat()
+    private string GetValueFormat()
     {
-        return CustomFormat.HasValue() ? CustomFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
+        return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
     }
 
     /// <inheritdoc />
@@ -458,7 +458,7 @@ public partial class BitCircularTimePicker
             return true;
         }
 
-        if (DateTime.TryParseExact(value, GetTimeFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
@@ -477,7 +477,7 @@ public partial class BitCircularTimePicker
         if (value.HasValue is false) return null;
 
         DateTime time = DateTime.Today.Add(value.Value);
-        return time.ToString(GetTimeFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
+        return time.ToString(GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
     }
 
     protected override void Dispose(bool disposing)
