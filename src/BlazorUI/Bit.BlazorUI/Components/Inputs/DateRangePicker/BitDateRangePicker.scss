@@ -15,7 +15,7 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-dtrp-igp {
+        .bit-dtrp-icn {
             cursor: default;
             pointer-events: none;
             color: $color-foreground-disabled;
@@ -532,11 +532,11 @@
 
 .bit-dtrp-psm {
     font-weight: 600;
-    background-color: $color-primary-main;
+    background-color: $color-background-secondary;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-primary;
+            background-color: $color-action-hover-background-primary;
         }
     }
 }
