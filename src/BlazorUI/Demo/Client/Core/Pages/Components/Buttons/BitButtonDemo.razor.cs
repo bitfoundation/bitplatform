@@ -224,23 +224,32 @@ public partial class BitButtonDemo
 
 
     private readonly string example1RazorCode = @"
-<BitButton OnClick=""() => primaryCounter++"">Primary (@primaryCounter)</BitButton>
+<BitButton>Primary</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>";
 
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => standardCounter++"">
-    Standard (@standardCounter)
-</BitButton>
-
-<BitButton ButtonStyle=""BitButtonStyle.Text"" OnClick=""() => textCounter++"">
-    Text (@textCounter)
-</BitButton>
-
-<BitButton IsEnabled=""false"">Disabled</BitButton>";
-    private readonly string example1CsharpCode = @"
-private int primaryCounter;
-private int standardCounter;
-private int textCounter;";
-    
     private readonly string example2RazorCode = @"
+<BitButton>Primary</BitButton>
+<BitButton IsEnabled=""false"">Disabled</BitButton>
+<BitButton Href=""https://bitplatform.dev"">Link</BitButton>";
+
+    private readonly string example3RazorCode = @"
+<BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"">Disabled</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Standard"" Href=""https://bitplatform.dev"">Link</BitButton>";
+
+    private readonly string example4RazorCode = @"
+<BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"">Disabled</BitButton>
+<BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
+
+    private readonly string example5RazorCode = @"
+<BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
+
+    private readonly string example5CsharpCode = @"
+private int clickCounter;";
+    
+    private readonly string example6RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
@@ -261,7 +270,7 @@ private int textCounter;";
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
-    private readonly string example3RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
@@ -274,7 +283,7 @@ private int textCounter;";
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
     
-    private readonly string example4RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -283,67 +292,52 @@ private int textCounter;";
 </style>
 
 <BitButton Style=""color:darkblue; font-weight:bold"">Styled Button</BitButton>
+<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>
+<BitButton Class=""custom-class"" Style=""color:green;"" ButtonStyle=""BitButtonStyle.Text"">
+    Styled Classed Button
+</BitButton>";
 
-<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>";
-
-    private readonly string example5RazorCode = @"
+    private readonly string example11RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
-
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
-
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example6RazorCode = @"
-<BitButton AriaDescription=""Detailed description used for screen reader."">
-    Button with AriaDescription
-</BitButton>
-
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" AriaHidden=""true"">
-    Button with AriaHidden
-</BitButton>";
-
-    private readonly string example7RazorCode = @"
-<BitButton Title=""Primary"" Target=""_blank"" Href=""https://bitplatform.dev"">
-    Open bit platform In New Tab
-</BitButton>
-
-<BitButton Title=""Standard"" Href=""https://bitplatform.dev"" ButtonStyle=""BitButtonStyle.Standard"">
-    Go To bit platform
-</BitButton>";
-
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
-    .custom-button {
+    .custom-content {
         gap: 0.5rem;
         display: flex;
         align-items: center;
     }
 </style>
 
-<BitButton Class=""custom-button"">
+<BitButton Class=""custom-content"">
     <BitIcon IconName=""@BitIconName.Airplane"" />
-    <span>A custom text</span>
-    <BitRippleLoading Size=""30""/>
+    <span>A Primary custom content</span>
+    <BitRippleLoading Size=""20"" />
 </BitButton>
 
-<BitButton Class=""custom-button"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Standard"">
     <BitIcon IconName=""@BitIconName.Accept"" />
-    <span>A Standard custom text</span>
-    <BitRollerLoading Size=""30"" />
+    <span>A Standard custom content</span>
+    <BitRollerLoading Size=""20"" />
+</BitButton>
+
+<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Text"">
+    <BitIcon IconName=""@BitIconName.Asterisk"" />
+    <span>A Text custom content</span>
+    <BitCircleLoading Size=""20"" />
 </BitButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
         <DataAnnotationsValidator />
-
         <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
         <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
-
         <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
         <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
-
         <div>
             <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
             <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
@@ -357,12 +351,11 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
     public string RequiredText { get; set; } = string.Empty;
-
     public string? NonRequiredText { get; set; }
 }
 
@@ -372,13 +365,9 @@ private ButtonValidationModel buttonValidationModel = new();
 private async Task HandleValidSubmit()
 {
     formIsValidSubmit = true;
-
     await Task.Delay(2000);
-
     buttonValidationModel = new();
-
     formIsValidSubmit = false;
-
     StateHasChanged();
 }
 
