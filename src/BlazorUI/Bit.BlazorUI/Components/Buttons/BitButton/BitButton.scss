@@ -13,6 +13,8 @@
     border-radius: $shape-border-radius;
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
+    display: inline-flex;
+    align-items: center;
 
     &.bit-dis {
         cursor: default;
