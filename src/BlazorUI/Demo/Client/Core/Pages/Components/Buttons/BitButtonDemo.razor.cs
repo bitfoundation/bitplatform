@@ -292,21 +292,17 @@ private int clickCounter;";
 </style>
 
 <BitButton Style=""color:darkblue; font-weight:bold"">Styled Button</BitButton>
-
 <BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>
-
 <BitButton Class=""custom-class"" Style=""color:green;"" ButtonStyle=""BitButtonStyle.Text"">
     Styled Classed Button
 </BitButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
-
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
-
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -333,18 +329,15 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitCircleLoading Size=""20"" />
 </BitButton>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
         <DataAnnotationsValidator />
-
         <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
         <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
-
         <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
         <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
-
         <div>
             <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
             <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
@@ -358,12 +351,11 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
     public string RequiredText { get; set; } = string.Empty;
-
     public string? NonRequiredText { get; set; }
 }
 
@@ -373,13 +365,9 @@ private ButtonValidationModel buttonValidationModel = new();
 private async Task HandleValidSubmit()
 {
     formIsValidSubmit = true;
-
     await Task.Delay(2000);
-
     buttonValidationModel = new();
-
     formIsValidSubmit = false;
-
     StateHasChanged();
 }
 
