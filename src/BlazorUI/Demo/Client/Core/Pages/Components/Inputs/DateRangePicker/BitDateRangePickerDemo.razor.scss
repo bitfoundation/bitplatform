@@ -36,9 +36,3 @@
     font-size: 8px;
     position: absolute;
 }
-
-::deep {
-    .validation-message {
-        color: red;
-    }
-}
