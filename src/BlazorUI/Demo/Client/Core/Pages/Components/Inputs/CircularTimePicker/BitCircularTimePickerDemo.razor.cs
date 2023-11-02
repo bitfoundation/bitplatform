@@ -20,13 +20,6 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "AmPm",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, sets 12 hour selection clock."
-        },
-        new()
-        {
             Name = "EditMode",
             Type = "BitCircularTimePickerEditMode",
             LinkType = LinkType.Link,
@@ -154,6 +147,15 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "The time format of the time-picker, 24H or 12H.",
+            LinkType = LinkType.Link,
+            Href = "#time-format-enum",
+        },
+        new()
+        {
+            Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
@@ -269,6 +271,27 @@ public partial class BitCircularTimePickerDemo
                     Value = "1",
                 }
             }
+        },
+        new()
+        {
+            Id = "time-format-enum",
+            Name = "BitTimeFormat",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "TwentyFourHours",
+                    Description="Show time pickers in 24 hours format.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "TwelveHours",
+                    Description="Show time pickers in 12 hours format.",
+                    Value="1",
+                }
+            }
         }
     };
 
@@ -306,7 +329,7 @@ public partial class BitCircularTimePickerDemo
 <BitCircularTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time...""
-               AmPm=""true"" />";
+               TimeFormat=""BitTimeFormat.TwelveHours"" />";
 
     private readonly string example3RazorCode = @"
 <BitCircularTimePicker IsEnabled=false
@@ -381,7 +404,7 @@ private void HandleInvalidSubmit()
 <BitCircularTimePicker Style=""max-width: 300px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
-               TimeFormat=""hh:MM:ss"" />";
+               ValueFormat=""hh-mm.ss"" />";
 
     private readonly string example8RazorCode = @"
 <BitCircularTimePicker @ref=""timePicker""

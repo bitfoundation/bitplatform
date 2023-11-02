@@ -25,7 +25,6 @@ public partial class BitCircularTimePicker
     private string? _overlayId;
     private BitCircularTimePickerDialMode _currentView = BitCircularTimePickerDialMode.Hours;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
-    private string _timeFormat => TimeFormat ?? (AmPm ? FORMAT_12_HOURS : FORMAT_24_HOURS);
     private string _focusClass
     {
         get => focusClass;
@@ -47,11 +46,6 @@ public partial class BitCircularTimePicker
     /// Shows the custom label for text field
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
-    /// If true, sets 12 hour selection clock.
-    /// </summary>
-    [Parameter] public bool AmPm { get; set; }
 
     /// <summary>
     /// Choose the edition mode. By default, you can edit hours and minutes.
@@ -177,9 +171,14 @@ public partial class BitCircularTimePicker
     }
 
     /// <summary>
+    /// The time format of the time-picker, 24H or 12H.
+    /// </summary>
+    [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
     /// The format of the time in the TimePicker
     /// </summary>
-    [Parameter] public string? TimeFormat { get; set; }
+    [Parameter] public string? ValueFormat { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.
@@ -301,7 +300,7 @@ public partial class BitCircularTimePicker
             ? "bit-ctp-sel"
             : string.Empty;
 
-    private int GetClockHandHeightPercent() => (_currentView == BitCircularTimePickerDialMode.Hours && AmPm is false && _hour > 0 && _hour < 13) ? 26 : 40;
+    private int GetClockHandHeightPercent() => (_currentView == BitCircularTimePickerDialMode.Hours && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
     private double GetPointerDegree() => _currentView switch
     {
@@ -313,7 +312,7 @@ public partial class BitCircularTimePicker
     private async Task HandleOnHourClockHandClick(int hour)
     {
         _hour = hour;
-        if (AmPm)
+        if (TimeFormat == BitTimeFormat.TwelveHours)
         {
             if (IsAm() && _hour == 12)
             {
@@ -399,7 +398,7 @@ public partial class BitCircularTimePicker
     {
         if (_hour.HasValue is false) return "--";
 
-        var hours = AmPm ? GetAmPmHours(_hour.Value) : _hour.Value;
+        var hours = TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.Value) : _hour.Value;
         return Math.Min(23, Math.Max(0, hours)).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -411,7 +410,7 @@ public partial class BitCircularTimePicker
         return result == 0 ? 12 : result;
     }
 
-    private int GetHours() => AmPm ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
+    private int GetHours() => TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
 
     private void HandleOnHourClick() => _currentView = BitCircularTimePickerDialMode.Hours;
 
@@ -442,6 +441,11 @@ public partial class BitCircularTimePicker
 
     private bool IsAm() => _hour.GetValueOrDefault() >= 00 && _hour < 12; // am is 00:00 to 11:59 
 
+    private string GetValueFormat()
+    {
+        return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
+    }
+
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
@@ -454,7 +458,7 @@ public partial class BitCircularTimePicker
             return true;
         }
 
-        if (DateTime.TryParseExact(value, _timeFormat ?? Culture.DateTimeFormat.ShortTimePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
@@ -473,7 +477,7 @@ public partial class BitCircularTimePicker
         if (value.HasValue is false) return null;
 
         DateTime time = DateTime.Today.Add(value.Value);
-        return time.ToString(_timeFormat ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
+        return time.ToString(GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
     }
 
     protected override void Dispose(bool disposing)
