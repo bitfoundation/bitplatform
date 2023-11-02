@@ -12,36 +12,36 @@
     <ComponentExampleBox Title="Default BitCircularTimePicker" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitCircularTimePicker Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..." />
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="BitCircularTimePicker with 12 hours (AM/PM)" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <BitCircularTimePicker Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..."
-                           AmPm="true" />
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..."
+                                   TimeFormat="BitTimeFormat.TwelveHours" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Disabled BitCircularTimePicker" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <BitCircularTimePicker IsEnabled=false
-                           Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..." />
+                                   Style="max-width: 300px"
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Disabled BitCircularTimePicker with label" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <BitCircularTimePicker IsEnabled=false
-                           Style="max-width: 300px"
-                           Label="Start time"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..." />
+                                   Style="max-width: 300px"
+                                   Label="Start time"
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..." />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -57,11 +57,11 @@
                 </div>
                 <div>
                     <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
-                                   AllowTextInput="true"
-                                   Style="max-width: 300px"
-                                   AriaLabel="Select a time"
-                                   Placeholder="Select a time..."
-                                   Label="Time required" />
+                                           AllowTextInput="true"
+                                           Style="max-width: 300px"
+                                           AriaLabel="Select a time"
+                                           Placeholder="Select a time..."
+                                           Label="Time required" />
                     <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
                 </div>
                 <br />
@@ -86,9 +86,9 @@
                 allow text input. Please note to use this feature, you must enter the time in the exact <code>TimeFormat</code> provided for the BitCircularTimePicker.
             </div>
             <BitCircularTimePicker Style="max-width: 300px"
-                           AllowTextInput=true
-                           Label="Start time"
-                           AriaLabel="Select a time" />
+                                   AllowTextInput=true
+                                   Label="Start time"
+                                   AriaLabel="Select a time" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -96,12 +96,12 @@
         <ExamplePreview>
             <div class="example-desc">
                 Applications can customize how times are formatted and parsed. Formatted times can be ambiguous, so the control will avoid parsing the formatted strings of times selected using the UI when text input is allowed.
-                In this example, we are formatting and parsing times as hh:MM:ss.
+                In this example, we are formatting and parsing times as hh-mm.ss.
             </div>
             <BitCircularTimePicker Style="max-width: 300px"
-                           AriaLabel="Select a time."
-                           Placeholder="Select a time..."
-                           TimeFormat="hh:MM:ss" />
+                                   AriaLabel="Select a time."
+                                   Placeholder="Select a time..."
+                                   CustomFormat="hh-mm.ss" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -112,9 +112,9 @@
                 This functionality has been implemented using a public API provided in the BitCircularTimePicker.
             </div>
             <BitCircularTimePicker @ref="circularTimePicker"
-                           Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time...">
+                                   Style="max-width: 300px"
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time...">
                 <LabelTemplate>
                     Custom label <BitIconButton IconName="@BitIconName.AlarmClock" OnClick="OpenCallout"></BitIconButton>
                 </LabelTemplate>
@@ -125,63 +125,63 @@
     <ComponentExampleBox Title="BitCircularTimePicker with value two-way binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <BitCircularTimePicker @bind-Value="@selectedTime"
-                           Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..." />
+                                   Style="max-width: 300px"
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..." />
             <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            </ExamplePreview>
+        </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitCircularTimePicker with custom left-handed icon" RazorCode="@example10RazorCode" Id="example10">
-        <ExamplePreview>
-            <BitCircularTimePicker Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           IconLocation="BitIconLocation.Left"
-                           Placeholder="Select a time...">
-                <IconTemplate>
-                    <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
-                </IconTemplate>
-            </BitCircularTimePicker>
-        </ExamplePreview>
-    </ComponentExampleBox>
+        <ComponentExampleBox Title="BitCircularTimePicker with custom left-handed icon" RazorCode="@example10RazorCode" Id="example10">
+            <ExamplePreview>
+                <BitCircularTimePicker Style="max-width: 300px"
+                                       AriaLabel="Select a time"
+                                       IconLocation="BitIconLocation.Left"
+                                       Placeholder="Select a time...">
+                    <IconTemplate>
+                        <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
+                    </IconTemplate>
+                </BitCircularTimePicker>
+            </ExamplePreview>
+        </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BitCircularTimePicker with custom icon name" RazorCode="@example11RazorCode" Id="example11">
-        <ExamplePreview>
-            <BitCircularTimePicker Style="max-width: 300px"
-                           AriaLabel="Select a time"
-                           IconName="@BitIconName.Airplane"
-                           Placeholder="Select a time..." />
-        </ExamplePreview>
-    </ComponentExampleBox>
+        <ComponentExampleBox Title="BitCircularTimePicker with custom icon name" RazorCode="@example11RazorCode" Id="example11">
+            <ExamplePreview>
+                <BitCircularTimePicker Style="max-width: 300px"
+                                       AriaLabel="Select a time"
+                                       IconName="@BitIconName.Airplane"
+                                       Placeholder="Select a time..." />
+            </ExamplePreview>
+        </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <ExamplePreview>
-            <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
+        <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <ExamplePreview>
+                <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
 
-            <EditForm Model="formValidationCircularTimePickerModel">
-                <DataAnnotationsValidator />
-                <div>
-                    <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
-                                   Style="max-width: 350px"
-                                   AllowTextInput="true"
-                                   Label="BitCircularTimePicker with Custom Invalid Error Message"
-                                   InvalidErrorMessage="Invalid Time!!!" />
-                    <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
-                </div>
-                <br />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
-            </EditForm>
-        </ExamplePreview>
-    </ComponentExampleBox>
+                <EditForm Model="formValidationCircularTimePickerModel">
+                    <DataAnnotationsValidator />
+                    <div>
+                        <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
+                                               Style="max-width: 350px"
+                                               AllowTextInput="true"
+                                               Label="BitCircularTimePicker with Custom Invalid Error Message"
+                                               InvalidErrorMessage="Invalid Time!!!" />
+                        <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
+                    </div>
+                    <br />
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+                </EditForm>
+            </ExamplePreview>
+        </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive BitCircularTimePicker" RazorCode="@example13RazorCode" Id="example13">
-        <ExamplePreview>
-            <BitCircularTimePicker Style="max-width: 300px"
-                           IsResponsive="true"
-                           AriaLabel="Select a time"
-                           Placeholder="Select a time..." />
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+        <ComponentExampleBox Title="Responsive BitCircularTimePicker" RazorCode="@example13RazorCode" Id="example13">
+            <ExamplePreview>
+                <BitCircularTimePicker Style="max-width: 300px"
+                                       IsResponsive="true"
+                                       AriaLabel="Select a time"
+                                       Placeholder="Select a time..." />
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>

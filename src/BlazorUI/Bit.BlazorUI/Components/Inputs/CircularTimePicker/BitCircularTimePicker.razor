@@ -74,7 +74,7 @@
                             <span class="bit-ctp-txt">@GetHourString():@GetMinuteString()</span>
                         }
                     </div>
-                    @if (AmPm)
+                    @if (TimeFormat == BitTimeFormat.TwelveHours)
                     {
                         <div class="bit-ctp-am-pm">
                             <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
@@ -93,7 +93,7 @@
                     @if (_currentView == BitCircularTimePickerDialMode.Hours)
                     {
                         <div class="bit-ctp-dil">
-                            @if (AmPm)
+                            @if (TimeFormat == BitTimeFormat.TwelveHours)
                             {
                                 @*Hours from 1 to 12*@
                                 for (int i = 1; i <= 12; ++i)
