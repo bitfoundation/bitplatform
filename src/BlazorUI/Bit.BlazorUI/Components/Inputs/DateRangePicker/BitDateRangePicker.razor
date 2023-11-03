@@ -51,7 +51,9 @@
         </div>
     </div>
 
-    <div class="bit-dtrp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block;" : "none;")"
+         class="bit-dtrp-ovl"></div>
 
     <div class="bit-dtrp-cal @(IsResponsive ? "bit-dtrp-rsp" : null)" id="@_calloutId">
         <div class="bit-dtrp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
