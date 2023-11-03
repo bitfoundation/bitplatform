@@ -146,7 +146,7 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "CustomFormat",
+            Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
@@ -389,7 +389,7 @@ private void HandleInvalidSubmit()
 <BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
-               CustomFormat=""hh-mm.ss"" />";
+               ValueFormat=""hh-mm.ss"" />";
 
     private readonly string example8RazorCode = @"
 <BitTimePicker @ref=""timePicker""
