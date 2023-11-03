@@ -64,13 +64,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "GoToNextYearTitle",
-            Type = "string",
-            DefaultValue = "Go to next year {0}",
-            Description = "The title of the Go to next year button (tooltip)."
-        },
-        new()
-        {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
             DefaultValue = "Next year range {0} - {1}",
@@ -78,10 +71,10 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "GoToPreviousYearRangeTitle",
+            Name = "GoToNextYearTitle",
             Type = "string",
-            DefaultValue = "Previous year range {0} - {1}",
-            Description = "The title of the Go to previous year range button (tooltip)."
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip)."
         },
         new()
         {
@@ -89,6 +82,13 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "Go to previous month",
             Description = "The title of the Go to previous month button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToPrevYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Previous year range {0} - {1}",
+            Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
         {
@@ -220,10 +220,10 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "MonthPickerToggleAriaLabel",
+            Name = "MonthPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change month",
-            Description = "The aria-label of the month picker's toggle."
+            Description = "The title of the month picker's toggle (tooltip)."
         },
         new()
         {
@@ -331,13 +331,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "WeekNumberAriaLabel",
-            Type = "string",
-            DefaultValue = "Week number {0}",
-            Description = "The aria-label of the week number."
-        },
-        new()
-        {
             Name = "WeekNumberTitle",
             Type = "string",
             DefaultValue = "Week number {0}",
@@ -352,17 +345,17 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "YearPickerToggleAriaLabel",
+            Name = "YearPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change year",
-            Description = "The aria-label of the year picker's toggle."
+            Description = "The title of the year picker's toggle (tooltip)."
         },
         new()
         {
-            Name = "YearRangePickerToggleAriaLabel",
+            Name = "YearRangePickerToggleTitle",
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
-            Description = "The aria-label of the year range picker's toggle."
+            Description = "The title of the year range picker's toggle (tooltip)."
         }
     };
 

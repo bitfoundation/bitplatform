@@ -207,6 +207,11 @@ public partial class BitDateRangePicker
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
     /// <summary>
+    /// The title of the close button (tooltip).
+    /// </summary>
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close date range picker";
+
+    /// <summary>
     /// CultureInfo for the DateRangePicker.
     /// </summary>
     [Parameter]
@@ -233,14 +238,34 @@ public partial class BitDateRangePicker
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the Go to next month button.
+    /// The title of the Go to next month button (tooltip).
     /// </summary>
     [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
 
     /// <summary>
-    /// The title of the Go to previous month button.
+    /// The title of the Go to next year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
+
+    /// <summary>
+    /// The title of the Go to next year button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
+
+    /// <summary>
+    /// The title of the Go to previous month button (tooltip).
     /// </summary>
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
+
+    /// <summary>
+    /// The title of the Go to previous year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPrevYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
+
+    /// <summary>
+    /// The title of the Go to previous year button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPrevYearTitle { get; set; } = "Go to previous year {0}";
 
     /// <summary>
     /// The title of the GoToToday button (tooltip).
@@ -310,7 +335,8 @@ public partial class BitDateRangePicker
             if (isOpen == value) return;
 
             isOpen = value;
-            ClassBuilder.Reset();
+
+            _ = IsOpenChanged.InvokeAsync(value);
         }
     }
 
@@ -350,6 +376,11 @@ public partial class BitDateRangePicker
     /// Custom template to render the month cells of the DateRangePicker.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
+
+    /// <summary>
+    /// The title of the month picker's toggle (tooltip).
+    /// </summary>
+    [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
     /// <summary>
     /// The callback for clicking on the DateRangePicker's input.
@@ -417,6 +448,11 @@ public partial class BitDateRangePicker
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
+
+    /// <summary>
     /// The string format used to show the DateRangePicker's value in its input.
     /// </summary>
     [Parameter] public string ValueFormat { get; set; } = "Start: {0} - End: {1}";
@@ -425,6 +461,16 @@ public partial class BitDateRangePicker
     /// Custom template to render the year cells of the DateRangePicker.
     /// </summary>
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
+
+    /// <summary>
+    /// The title of the year picker's toggle (tooltip).
+    /// </summary>
+    [Parameter] public string YearPickerToggleTitle { get; set; } = "{0}, change year";
+
+    /// <summary>
+    /// The title of the year range picker's toggle (tooltip).
+    /// </summary>
+    [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
 
 
@@ -674,7 +720,7 @@ public partial class BitDateRangePicker
 
         if (_showMonthPickerAsOverlayInternal)
         {
-            ToggleMonthPickerAsOverlay();
+            ToggleMonthPickerOverlay();
         }
     }
 
@@ -983,7 +1029,7 @@ public partial class BitDateRangePicker
         return Culture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFullWeek, Culture.DateTimeFormat.FirstDayOfWeek);
     }
 
-    private void ToggleMonthPickerAsOverlay()
+    private void ToggleMonthPickerOverlay()
     {
         _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
     }
