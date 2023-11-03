@@ -175,7 +175,6 @@ public partial class BitDateRangePicker
     private string _dateRangePickerId = string.Empty;
     private string _calloutId = string.Empty;
     private string? _labelId;
-    private string? _overlayId;
     private string? _inputId;
     private string? _activeDescendantId;
     private ElementReference _inputStartTimeHourRef = default!;
@@ -457,7 +456,6 @@ public partial class BitDateRangePicker
         _dateRangePickerId = $"DateRangePicker-{UniqueId}";
         _labelId = $"{_dateRangePickerId}-label";
         _calloutId = $"{_dateRangePickerId}-callout";
-        _overlayId = $"{_dateRangePickerId}-overlay";
         _inputId = $"{_dateRangePickerId}-input";
         _activeDescendantId = $"{_dateRangePickerId}-active-descendant";
 
@@ -537,13 +535,12 @@ public partial class BitDateRangePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
-
-        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
+        IsOpen = true;
+        var result = await ToggleCallout();
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = await _js.InvokeAsync<bool>("BitDateRangePicker.checkMonthPickerWidth", _Id, _calloutId, IsResponsive);
+            _showMonthPickerAsOverlayInternal = result;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -551,9 +548,7 @@ public partial class BitDateRangePicker
             _isMonthPickerOverlayOnTop = false;
         }
 
-        IsOpen = !IsOpen;
-
-        if (IsOpen && CurrentValue is not null)
+        if (CurrentValue is not null)
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
@@ -645,8 +640,8 @@ public partial class BitDateRangePicker
             CurrentValue.EndDate = selectedDate;
             if (AutoClose)
             {
-                await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
                 IsOpen = false;
+                await ToggleCallout();
             }
         }
 
@@ -1260,11 +1255,11 @@ public partial class BitDateRangePicker
 
     private async Task CloseCallout()
     {
+        if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        await _js.InvokeVoidAsync("BitDateRangePicker.toggleDateRangePickerCallout", _dotnetObj, _Id, _calloutId, _overlayId, IsOpen);
-
         IsOpen = false;
+        await ToggleCallout();
 
         StateHasChanged();
     }
@@ -1272,10 +1267,33 @@ public partial class BitDateRangePicker
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
         StateHasChanged();
+    }
+
+    private async Task<bool> ToggleCallout()
+    {
+        if (IsEnabled is false) return false;
+
+        _isMonthPickerOverlayOnTop = false;
+        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+
+        return await _js.ToggleCallout(_dotnetObj,
+                                       _dateRangePickerId,
+                                       _calloutId,
+                                       IsOpen,
+                                       IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                       BitDropDirection.TopAndBottom,
+                                       false,
+                                       "",
+                                       0,
+                                       "",
+                                       "",
+                                       false,
+                                       RootElementClass);
     }
 
     protected override void Dispose(bool disposing)
