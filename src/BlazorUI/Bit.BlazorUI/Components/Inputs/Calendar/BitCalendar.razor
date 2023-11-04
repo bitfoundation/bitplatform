@@ -72,7 +72,7 @@
                                     disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                 <i aria-hidden="true"
                                    style="@Styles?.GoToTodayIcon"
-                                   class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                   class="bit-cal-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                             </button>
                         }
                         <button @onclick="() => HandleMonthChange(true)"
@@ -236,7 +236,7 @@
                                         disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
-                                       class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                       class="bit-cal-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                 </button>
                             }
                             <button @onclick="() => HandleYearChange(true)"
@@ -329,7 +329,7 @@
                                         disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
-                                       class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                       class="bit-cal-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                 </button>
                             }
                             <button @onclick="() => HandleYearRangeChange(true)"

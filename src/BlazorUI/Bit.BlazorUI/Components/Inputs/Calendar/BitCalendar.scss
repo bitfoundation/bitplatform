@@ -103,7 +103,6 @@
     padding: 0;
     border: none;
     display: flex;
-    color: inherit;
     cursor: pointer;
     overflow: visible;
     position: relative;
@@ -126,10 +125,14 @@
         }
     }
 
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
+
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -159,6 +162,10 @@
         &:hover {
             background-color: $color-action-hover-primary;
         }
+    }
+
+    &:active {
+        background-color: $color-action-active-primary;
     }
 }
 
@@ -241,8 +248,8 @@
     width: spacing(3.5);
     height: spacing(3.5);
     outline: transparent;
-    min-width: spacing(3.5);
     font-size: spacing(1.5);
+    min-width: spacing(3.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
     background-color: transparent;
@@ -255,16 +262,11 @@
         }
     }
 
-    i {
-        speak: none;
-        display: inline-block;
-    }
-
     &:disabled {
         pointer-events: none;
         background-color: transparent;
 
-        i {
+        .bit-cal-gti {
             color: $color-foreground-disabled;
         }
     }
@@ -321,8 +323,8 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -384,10 +386,10 @@
     height: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    -moz-appearance: textfield; // Firefox
+    -moz-appearance: textfield;
     background-color: $color-background-primary;
 
-    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
