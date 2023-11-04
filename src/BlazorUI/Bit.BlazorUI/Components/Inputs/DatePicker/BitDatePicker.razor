@@ -124,7 +124,7 @@
                                             disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                         <i aria-hidden="true"
                                            style="@Styles?.GoToTodayIcon"
-                                           class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                           class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                     </button>
                                 }
                                 <button @onclick="() => HandleMonthChange(true)"
@@ -152,6 +152,7 @@
                                 }
                             </div>
                         </div>
+                        
                         <div style="@Styles?.DaysHeaderRow" class="bit-dtp-dgh @Classes?.DaysHeaderRow">
                             @if (ShowWeekNumbers)
                             {
@@ -169,6 +170,7 @@
                                 </div>
                             }
                         </div>
+                        
                         @for (var week = 0; week < 6; week++)
                         {
                             //to ignore the last empty week out of month || to ignore the first whole week out of month
@@ -321,7 +323,7 @@
                                                 disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
-                                               class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                         </button>
                                     }
                                     <button @onclick="() => HandleYearChange(true)"
@@ -416,7 +418,7 @@
                                                 disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
-                                               class="bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
                                         </button>
                                     }
                                     <button @onclick="() => HandleYearRangeChange(true)"

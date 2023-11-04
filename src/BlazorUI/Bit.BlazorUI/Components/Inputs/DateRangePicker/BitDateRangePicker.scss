@@ -172,11 +172,6 @@
         align-items: center;
         font-size: spacing(2);
         justify-content: center;
-
-        span {
-            width: 100%;
-            height: spacing(6);
-        }
     }
 
     .bit-dtrp-nbt,
@@ -270,13 +265,11 @@
 }
 
 .bit-dtrp-dbt {
-    width: 100%;
-    aspect-ratio: 1;
     padding: 0;
     border: none;
     display: flex;
-    color: inherit;
     cursor: pointer;
+    aspect-ratio: 1;
     overflow: visible;
     position: relative;
     width: spacing(3.5);
@@ -298,10 +291,14 @@
         }
     }
 
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
+
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -320,6 +317,10 @@
         &:hover {
             background-color: $color-action-hover-primary;
         }
+    }
+
+    &:active {
+        background-color: $color-action-active-primary;
     }
 }
 
@@ -370,7 +371,6 @@
     aspect-ratio: 1;
     font-weight: 400;
     align-items: center;
-    height: spacing(3.5);
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
@@ -394,8 +394,8 @@
     border: none;
     cursor: text;
     flex-grow: 1;
-    text-align: left;
     overflow: hidden;
+    text-align: left;
     font-weight: 600;
     position: relative;
     align-items: center;
@@ -456,16 +456,11 @@
         }
     }
 
-    i {
-        speak: none;
-        display: inline-block;
-    }
-
     &:disabled {
         pointer-events: none;
         background-color: transparent;
 
-        i {
+        .bit-dtrp-gti {
             color: $color-foreground-disabled;
         }
     }
@@ -527,8 +522,8 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -621,10 +616,10 @@
     height: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    -moz-appearance: textfield; // Firefox
+    -moz-appearance: textfield;
     background-color: $color-background-primary;
 
-    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }

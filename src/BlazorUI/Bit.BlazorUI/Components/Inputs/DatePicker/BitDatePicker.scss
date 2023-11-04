@@ -66,8 +66,8 @@
     height: spacing(4);
     position: relative;
     align-items: center;
-    flex-flow: row nowrap;
     padding: 0 spacing(1);
+    flex-flow: row nowrap;
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
@@ -172,11 +172,6 @@
         align-items: center;
         font-size: spacing(2);
         justify-content: center;
-
-        span {
-            width: 100%;
-            height: spacing(6);
-        }
     }
 
     .bit-dtp-nbt,
@@ -270,13 +265,11 @@
 }
 
 .bit-dtp-dbt {
-    width: 100%;
-    aspect-ratio: 1;
     padding: 0;
     border: none;
     display: flex;
-    color: inherit;
     cursor: pointer;
+    aspect-ratio: 1;
     overflow: visible;
     position: relative;
     width: spacing(3.5);
@@ -298,10 +291,14 @@
         }
     }
 
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
+
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -332,6 +329,10 @@
             background-color: $color-action-hover-primary;
         }
     }
+
+    &:active {
+        background-color: $color-action-active-primary;
+    }
 }
 
 .bit-dtp-wnm {
@@ -341,7 +342,6 @@
     aspect-ratio: 1;
     font-weight: 400;
     align-items: center;
-    height: spacing(3.5);
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
@@ -427,16 +427,11 @@
         }
     }
 
-    i {
-        speak: none;
-        display: inline-block;
-    }
-
     &:disabled {
         pointer-events: none;
         background-color: transparent;
 
-        i {
+        .bit-dtp-gti {
             color: $color-foreground-disabled;
         }
     }
@@ -498,8 +493,8 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
@@ -528,10 +523,10 @@
 
 .bit-dtp-tgp {
     display: flex;
+    gap: spacing(1);
     align-items: center;
     justify-content: center;
     padding-bottom: spacing(0.5);
-    gap: spacing(1);
 }
 
 .bit-dtp-twp {
@@ -554,15 +549,15 @@
 }
 
 .bit-dtp-apb {
+    margin: 0;
+    padding: 0;
     border: none;
     overflow: visible;
     outline: transparent;
-    padding: 0;
     font-size: spacing(1.5);
     box-sizing: content-box;
     background-color: transparent;
     color: $color-foreground-primary;
-    margin: 0;
 
     @media (hover: hover) {
         &:hover {
@@ -592,10 +587,10 @@
     height: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    -moz-appearance: textfield; // Firefox
+    -moz-appearance: textfield;
     background-color: $color-background-primary;
 
-    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
