@@ -9,6 +9,4 @@ public class ResetPasswordModel
     public string? ResetPasswordLink { get; set; }
 
     public Uri? HostUri { get; set; }
-
-    public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }

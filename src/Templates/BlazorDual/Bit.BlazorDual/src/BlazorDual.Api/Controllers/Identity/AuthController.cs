@@ -5,10 +5,12 @@ using BlazorDual.Api.Resources;
 using BlazorDual.Api.Models.Identity;
 using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Api.Models.Emailing;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 
 namespace BlazorDual.Api.Controllers.Identity;
 
-[Route("api/[controller]/[action]")]
+[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
 public partial class AuthController : AppControllerBase
 {
@@ -21,6 +23,8 @@ public partial class AuthController : AppControllerBase
     [AutoInject] private IFluentEmail _fluentEmail = default!;
 
     [AutoInject] private IStringLocalizer<EmailStrings> _emailLocalizer = default!;
+
+    [AutoInject] private HtmlRenderer _htmlRenderer = default!;
 
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
@@ -81,22 +85,28 @@ public partial class AuthController : AppControllerBase
 
         var controller = RouteData.Values["controller"]!.ToString();
 
-        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller,
-            new { user.Email, token },
-            HttpContext.Request.Scheme);
+        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller, new { user.Email, token }, HttpContext.Request.Scheme);
 
-        var assembly = typeof(Program).Assembly;
+        var body = await _htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await _htmlRenderer.RenderComponentAsync<EmailConfirmationTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            {
+                {   nameof(EmailConfirmationTemplate.Model),
+                    new EmailConfirmationModel
+                    {
+                        ConfirmationLink = confirmationLink,
+                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                    }
+                }
+            }));
+
+            return renderedComponent.ToHtmlString();
+        });
 
         var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(_emailLocalizer[EmailStrings.ConfirmationEmailSubject])
-            .UsingTemplateFromEmbedded("BlazorDual.Api.Resources.EmailConfirmation.cshtml",
-                new EmailConfirmationModel
-                {
-                    ConfirmationLink = confirmationLink,
-                    HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}"),
-                    EmailLocalizer = _emailLocalizer
-                }, assembly)
+            .Body(body, isHtml: true)
             .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
@@ -131,20 +141,27 @@ public partial class AuthController : AppControllerBase
         resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
 #endif
 
-        var assembly = typeof(Program).Assembly;
+        var body = await _htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await _htmlRenderer.RenderComponentAsync<ResetPasswordTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            {
+                { nameof(ResetPasswordTemplate.Model),
+                    new ResetPasswordModel
+                    {
+                        DisplayName = user.DisplayName,
+                        ResetPasswordLink = resetPasswordLink,
+                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                    }
+                }
+            }));
+
+            return renderedComponent.ToHtmlString();
+        });
 
         var result = await _fluentEmail
             .To(user.Email, user.DisplayName)
             .Subject(_emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
-            .UsingTemplateFromEmbedded("BlazorDual.Api.Resources.ResetPassword.cshtml",
-                                    new ResetPasswordModel
-                                    {
-                                        DisplayName = user.DisplayName,
-                                        ResetPasswordLink = resetPasswordLink,
-                                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}"),
-                                        EmailLocalizer = _emailLocalizer
-                                    },
-                                    assembly)
+            .Body(body, isHtml: true)
             .SendAsync(cancellationToken);
 
         user.ResetPasswordEmailRequestedOn = DateTimeOffset.Now;
@@ -201,7 +218,7 @@ public partial class AuthController : AppControllerBase
         var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password!, lockoutOnFailure: true);
 
         if (checkPasswordResult.IsLockedOut)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd).Value.ToString("mm\\:ss")));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")));
 
         if (!checkPasswordResult.Succeeded)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));

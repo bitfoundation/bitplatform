@@ -62,7 +62,7 @@ public class Middlewares
         }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
 
-        app.UseExceptionHandler("/");
+        app.UseExceptionHandler("/", createScopeForErrors: true);
 
         app.UseSwagger();
 
