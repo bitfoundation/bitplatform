@@ -11,7 +11,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
         return dimensionPixelSize / density;
 #elif IOS
         var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
-        return window.StatusBarManager.StatusBarFrame.Height;
+        return window!.StatusBarManager!.StatusBarFrame.Height;
 #elif WINDOWS
         return 30;
 #elif MACCATALYST
@@ -23,7 +23,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
 
     public async Task ApplyTheme(bool isDark)
     {
-        Application.Current.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
+        Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if ANDROID
         var window = Platform.CurrentActivity?.Window;
         window!.DecorView!.SystemUiFlags = Android.Views.SystemUiFlags.LightStatusBar;
@@ -44,7 +44,7 @@ public class AppDeviceCoordinator : IBitDeviceCoordinator
         var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;
         if (window != null)
         {
-            window.Titlebar.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
+            window.Titlebar!.TitleVisibility = UIKit.UITitlebarTitleVisibility.Hidden;
         }
 #endif
     }
