@@ -169,6 +169,7 @@
         width: 100%;
         height: 100%;
         display: flex;
+        aspect-ratio: 1;
         align-items: center;
         font-size: spacing(2);
         justify-content: center;
@@ -269,7 +270,6 @@
     border: none;
     display: flex;
     cursor: pointer;
-    aspect-ratio: 1;
     overflow: visible;
     position: relative;
     width: spacing(3.5);
