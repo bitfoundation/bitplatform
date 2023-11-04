@@ -15,7 +15,7 @@ public class HttpResponseExceptionHandlerMiddleware
     public async Task Invoke(HttpContext context, IHostEnvironment webHostEnvironment)
     {
         // Using the Request-Id header, one can find the log for server-related exceptions
-        context.Response.Headers.Add("Request-ID", context.TraceIdentifier);
+        context.Response.Headers.Append("Request-ID", context.TraceIdentifier);
 
         try
         {
