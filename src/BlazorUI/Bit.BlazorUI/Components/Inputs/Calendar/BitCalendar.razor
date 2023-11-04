@@ -27,12 +27,12 @@
                         <button @onclick="@ToggleMonthPickerOverlay"
                                 tabindex="0"
                                 type="button"
+                                title="@title"
                                 aria-live="polite"
                                 aria-atomic="true"
+                                aria-label="@title"
                                 style="@Styles?.DayPickerMonth"
-                                class="bit-cal-ptb @Classes?.DayPickerMonth"
-                                title="@title"
-                                aria-label="@title">
+                                class="bit-cal-ptb @Classes?.DayPickerMonth">
                             @_monthTitle
                         </button>
                     }
@@ -46,14 +46,18 @@
                             @_monthTitle
                         </div>
                     }
+                    @{
+                        var prevDisabled = CanChangeMonth(false) is false;
+                        var nextDisabled = CanChangeMonth(true) is false;
+                    }
                     <div style="@Styles?.DayPickerNavWrapper" class="bit-cal-nbc @Classes?.DayPickerNavWrapper">
                         <button @onclick="() => HandleMonthChange(false)"
                                 type="button"
                                 title="@GoToPrevMonthTitle"
                                 style="@Styles?.PrevMonthNavButton"
                                 class="bit-cal-nbt @Classes?.PrevMonthNavButton"
-                                disabled="@(CanChangeMonth(false) is false)"
-                                aria-disabled="@(CanChangeMonth(false) is false)">
+                                disabled="@prevDisabled"
+                                aria-disabled="@prevDisabled">
                             <i aria-hidden="true"
                                style="@Styles?.PrevMonthNavIcon"
                                class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
@@ -76,8 +80,8 @@
                                 style="@Styles?.NextMonthNavButton"
                                 class="bit-cal-nbt @Classes?.NextMonthNavButton"
                                 title="@GoToNextMonthTitle"
-                                disabled="@(CanChangeMonth(true) is false)"
-                                aria-disabled="@(CanChangeMonth(true) is false)">
+                                disabled="@nextDisabled"
+                                aria-disabled="@nextDisabled">
                             <i aria-hidden="true"
                                style="@Styles?.NextMonthNavIcon"
                                class="bit-icon bit-icon--Down @Classes?.NextMonthNavIcon" />
@@ -288,7 +292,7 @@
                     var prevDisabled = CanChangeYearRange(false) is false;
                     var nextDisabled = CanChangeYearRange(true) is false;
                     var toggleTitle = string.Format(YearRangePickerToggleTitle, _yearPickerStartYear, _yearPickerEndYear);
-                    var prevTitle = string.Format(GoToPreviousYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1);
+                    var prevTitle = string.Format(GoToPrevYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1);
                     var nextTitle = string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12);
                     <div style="@Styles?.YearPickerHeader" class="bit-cal-pkh @Classes?.YearPickerHeader">
                         <button @onclick="ToggleBetweenMonthAndYearPicker"

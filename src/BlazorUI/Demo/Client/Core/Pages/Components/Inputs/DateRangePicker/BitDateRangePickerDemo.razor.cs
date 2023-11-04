@@ -34,6 +34,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close date range picker",
+            Description = "The title of the close button (tooltip)."
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
@@ -58,14 +65,42 @@ public partial class BitDateRangePickerDemo
             Name = "GoToNextMonthTitle",
             Type = "string",
             DefaultValue = "Go to next month",
-            Description = "The title of the Go to next month button.",
+            Description = "The title of the Go to next month button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToNextYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Next year range {0} - {1}",
+            Description = "The title of the Go to next year range button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToNextYearTitle",
+            Type = "string",
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip).",
         },
         new()
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
             DefaultValue = "Go to previous month",
-            Description = "The title of the Go to previous month button.",
+            Description = "The title of the Go to previous month button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToPrevYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Previous year range {0} - {1}",
+            Description = "The title of the Go to previous year range button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToPrevYearTitle",
+            Type = "string",
+            DefaultValue = "Go to previous year {0}",
+            Description = "The title of the Go to previous year button (tooltip).",
         },
         new()
         {
@@ -190,6 +225,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "MonthPickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0}, change month",
+            Description = "The title of the month picker's toggle (tooltip)."
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback",
             Description = "The callback for clicking on the DateRangePicker's input.",
@@ -280,6 +322,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip).",
+        },
+        new()
+        {
             Name = "ValueFormat",
             Type = "string",
             DefaultValue = "Start: {0} - End: {1}",
@@ -291,6 +340,20 @@ public partial class BitDateRangePickerDemo
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
             Description = "Custom template to render the year cells of the DateRangePicker."
+        },
+        new()
+        {
+            Name = "YearPickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0}, change year",
+            Description = "The title of the year picker's toggle (tooltip).",
+        },
+        new()
+        {
+            Name = "YearRangePickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0} - {1}, change month",
+            Description = "The title of the year range picker's toggle (tooltip).",
         },
     };
 

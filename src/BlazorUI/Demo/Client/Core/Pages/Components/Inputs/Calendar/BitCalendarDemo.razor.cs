@@ -43,13 +43,6 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "GoToNextYearTitle",
-            Type = "string",
-            DefaultValue = "Go to next year {0}",
-            Description = "The title of the Go to next year button (tooltip)."
-        },
-        new()
-        {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
             DefaultValue = "Next year range {0} - {1}",
@@ -57,10 +50,10 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "GoToPreviousYearRangeTitle",
+            Name = "GoToNextYearTitle",
             Type = "string",
-            DefaultValue = "Previous year range {0} - {1}",
-            Description = "The title of the Go to previous year range button (tooltip)."
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip)."
         },
         new()
         {
@@ -68,6 +61,13 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "Go to previous month",
             Description = "The title of the Go to previous month button (tooltip)."
+        },
+        new()
+        {
+            Name = "GoToPrevYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Previous year range {0} - {1}",
+            Description = "The title of the Go to previous year range button (tooltip)."
         },
         new()
         {
@@ -137,7 +137,7 @@ public partial class BitCalendarDemo
             Name = "MonthPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change month",
-            Description = "The title of the month picker's toggle."
+            Description = "The title of the month picker's toggle (tooltip)."
         },
         new()
         {
@@ -210,14 +210,14 @@ public partial class BitCalendarDemo
             Name = "YearPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change year",
-            Description = "The title of the year picker's toggle."
+            Description = "The title of the year picker's toggle (tooltip)."
         },
         new()
         {
             Name = "YearRangePickerToggleTitle",
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
-            Description = "The title of the year range picker's toggle."
+            Description = "The title of the year range picker's toggle (tooltip)."
         }
     };
 

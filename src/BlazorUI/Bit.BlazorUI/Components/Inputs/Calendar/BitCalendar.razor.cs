@@ -103,24 +103,24 @@ public partial class BitCalendar
     [Parameter] public string GoToNextMonthTitle { get; set; } = "Go to next month";
 
     /// <summary>
-    /// The title of the Go to next year button (tooltip).
-    /// </summary>
-    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
-
-    /// <summary>
     /// The title of the Go to next year range button (tooltip).
     /// </summary>
     [Parameter] public string GoToNextYearRangeTitle { get; set; } = "Next year range {0} - {1}";
 
     /// <summary>
-    /// The title of the Go to previous year range button (tooltip).
+    /// The title of the Go to next year button (tooltip).
     /// </summary>
-    [Parameter] public string GoToPreviousYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
+    [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
     /// </summary>
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
+
+    /// <summary>
+    /// The title of the Go to previous year range button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToPrevYearRangeTitle { get; set; } = "Previous year range {0} - {1}";
 
     /// <summary>
     /// The title of the Go to previous year button (tooltip).
@@ -181,7 +181,7 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the month picker's toggle.
+    /// The title of the month picker's toggle (tooltip).
     /// </summary>
     [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
@@ -231,12 +231,12 @@ public partial class BitCalendar
     [Parameter] public RenderFragment<int>? YearCellTemplate { get; set; }
 
     /// <summary>
-    /// The title of the year picker's toggle.
+    /// The title of the year picker's toggle (tooltip).
     /// </summary>
     [Parameter] public string YearPickerToggleTitle { get; set; } = "{0}, change year";
 
     /// <summary>
-    /// The title of the year range picker's toggle.
+    /// The title of the year range picker's toggle (tooltip).
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
@@ -777,7 +777,7 @@ public partial class BitCalendar
         }
 
         var currentDay = _daysOfCurrentMonth[week, day];
-        if (todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
         {
             klass.Append(" bit-cal-dtd");
 
