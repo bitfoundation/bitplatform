@@ -13,7 +13,7 @@
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
-                <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" MaxSize="1024 * 1024 * 500" />
+                <BitFileUpload Label="Upload files" FileView="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" MaxSize="1024 * 1024 * 500" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -24,7 +24,7 @@
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />
             </div>
@@ -38,7 +38,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
                                MaxSize="1024 * 1024 * 100"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl" />
             </div>
         </ExamplePreview>
@@ -51,7 +51,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />
             </div>
@@ -63,7 +63,7 @@
             <div class="example-desc">Single or multiple file uploading with remove functionality enabled.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
                                ShowRemoveButton="true"
@@ -79,7 +79,7 @@
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
                                OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />
             </div>
@@ -92,7 +92,7 @@
             <div class="example-desc">Multiple files can be selected to upload and remove with custom http headers and query strings.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
-                               Label="Select or drag and drop files"
+                               FileView="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
                                UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
@@ -108,7 +108,7 @@
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
-                <BitFileUpload Label="Select or drag and drop files"
+                <BitFileUpload FileView="Select or drag and drop files"
                                ChunkedUploadEnabled="false"
                                UploadUrl="@NonChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />

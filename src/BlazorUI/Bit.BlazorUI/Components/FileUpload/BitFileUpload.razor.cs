@@ -85,14 +85,24 @@ public partial class BitFileUpload : IDisposable
     [Parameter] public bool IsMultiSelect { get; set; }
 
     /// <summary>
+    /// Label for the file upload
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Shows the custom label for file upload
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
     /// The text of select file button.
     /// </summary>
-    [Parameter] public string Label { get; set; } = "Browse";
+    [Parameter] public string FileView { get; set; } = "Browse";
 
     /// <summary>
     /// A custom razor template for select button.
     /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter] public RenderFragment? FileViewTemplate { get; set; }
 
     /// <summary>
     /// Specifies the maximum size (byte) of the file (0 for unlimited).

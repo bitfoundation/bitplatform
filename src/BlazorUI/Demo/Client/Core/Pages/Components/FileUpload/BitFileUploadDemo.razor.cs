@@ -58,11 +58,25 @@ public partial class BitFileUploadDemo
             Name = "Label",
             Type = "string",
             DefaultValue = "Browse",
-            Description = "The text of select file button."
+            Description = "Label for the file upload."
         },
         new()
         {
             Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Shows the custom label for file upload."
+        },
+        new()
+        {
+            Name = "FileView",
+            Type = "string",
+            DefaultValue = "Browse",
+            Description = "The text of select file button."
+        },
+        new()
+        {
+            Name = "FileViewTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "A custom razor fragment for select button."
@@ -272,7 +286,7 @@ public partial class BitFileUploadDemo
 
 
     private readonly string example1RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" />";
+<BitFileUpload Label=""Upload files"" FileView=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" MaxSize=""1024 * 1024 * 500"" />";
     private readonly string example1CsharpCode = @"
 private string UploadUrl = $""/Upload"";
 ";
@@ -280,7 +294,7 @@ private string UploadUrl = $""/Upload"";
     private readonly string example2RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
     private readonly string example2CsharpCode = @"
 private string UploadUrl = $""/Upload"";
@@ -291,19 +305,19 @@ private string RemoveUrl = $""/Remove"";
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                MaxSize=""1024 * 1024 * 100""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example4RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""false""
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example5RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
                RemoveUrl=""@RemoveUrl""
                ShowRemoveButton=""true"" />";
@@ -312,12 +326,12 @@ private string RemoveUrl = $""/Remove"";
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example7RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
-               Label=""Select or drag and drop files""
+               FileView=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
                UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
                UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
@@ -326,7 +340,7 @@ private string RemoveUrl = $""/Remove"";
                RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })"" />";
 
     private readonly string example8RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
+<BitFileUpload FileView=""Select or drag and drop files""
                ChunkedUploadEnabled=""false""
                UploadUrl=""@UploadUrl"" />";
 }

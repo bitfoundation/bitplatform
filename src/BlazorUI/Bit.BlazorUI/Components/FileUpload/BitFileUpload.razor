@@ -7,14 +7,25 @@
      class="@ClassBuilder.Value">
     @if (LabelTemplate is not null)
     {
-        <label class="bit-upl-lbl" for="@_inputId">
-            @LabelTemplate
-        </label>
+        @LabelTemplate
     }
     else if (Label.HasValue())
     {
-        <label class="bit-upl-lbl" for="@_inputId">
+        <label class="bit-upl-lbl">
             @Label
+        </label>
+    }
+
+    @if (FileViewTemplate is not null)
+    {
+        <label for="@_inputId">
+            @FileViewTemplate
+        </label>
+    }
+    else if (FileView.HasValue())
+    {
+        <label class="bit-upl-fv" for="@_inputId">
+            @FileView
         </label>
     }
 
