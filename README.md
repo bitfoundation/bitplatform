@@ -60,3 +60,11 @@ We welcome contributions! Many people all over the world have helped make this p
 # **Contributions**
 
 ![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg "bit platform open source contributions report")
+
+
+# Contributors
+Thanks go to these wonderful people (List made with [contrib.rocks](https://contrib.rocks)):
+
+[![Bit Platform Contributors](https://contrib.rocks/image?repo=bitfoundation/bitplatform)](https://github.com/bitfoundation/bitplatform/graphs/contributors)
+
+💖 Thank you.
