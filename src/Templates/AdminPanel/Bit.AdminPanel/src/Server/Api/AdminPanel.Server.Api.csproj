@@ -20,7 +20,7 @@
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\AdminPanel.Client.Web.csproj" />
         <!--/+:msbuild-conditional:noEmit -->
 
-        <EmbeddedResource Include="Resources\*.cshtml" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.3.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="7.1.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
