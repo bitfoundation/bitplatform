@@ -41,4 +41,15 @@
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
+    <ItemGroup>
+        <None Include="..\..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
 </Project>
