@@ -11,10 +11,6 @@
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
 
-        .bit-upl-lbl {
-            color: $color-foreground-disabled;
-        }
-
         @media (hover: hover) {
             &:hover {
                 border-color: $color-border-disabled;
@@ -31,7 +27,7 @@
     display: none;
 }
 
-.bit-upl-fv {
+.bit-upl-lbl {
     outline: 0;
     display: flex;
     cursor: pointer;
@@ -60,18 +56,6 @@
     i {
         padding-right: spacing(0.625);
     }
-}
-
-.bit-upl-lbl {
-    margin: 0;
-    display: block;
-    box-shadow: none;
-    font-weight: 600;
-    box-sizing: border-box;
-    font-size: spacing(1.75);
-    padding: spacing(0.625) 0;
-    overflow-wrap: break-word;
-    color: $color-foreground-primary;
 }
 
 .bit-upl-fl {

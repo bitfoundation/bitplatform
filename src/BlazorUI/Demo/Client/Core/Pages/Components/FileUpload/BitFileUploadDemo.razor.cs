@@ -58,25 +58,11 @@ public partial class BitFileUploadDemo
             Name = "Label",
             Type = "string",
             DefaultValue = "Browse",
-            Description = "Label for the file upload."
-        },
-        new()
-        {
-            Name = "LabelTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Shows the custom label for file upload."
-        },
-        new()
-        {
-            Name = "FileView",
-            Type = "string",
-            DefaultValue = "Browse",
             Description = "The text of select file button."
         },
         new()
         {
-            Name = "FileViewTemplate",
+            Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "A custom razor fragment for select button."
@@ -282,19 +268,147 @@ public partial class BitFileUploadDemo
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"FileUpload/RemoveFile";
 
+    private BitFileUpload bitFileUpload;
+    private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+    private async Task HandleUploadOnClick()
+    {
+        if (bitFileUpload.Files is null) return;
+
+        await bitFileUpload.Upload();
+    }
+    private async Task HandleRemoveOnClick()
+    {
+        if (bitFileUpload.Files is null) return;
+
+        await bitFileUpload.RemoveFile();
+    }
+    private static int GetFileUploadPercent(BitFileInfo file)
+    {
+        int uploadedPercent;
+        if (file.TotalSizeOfUploaded >= file.Size)
+        {
+            uploadedPercent = 100;
+        }
+        else
+        {
+            uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
+        }
+
+        return uploadedPercent;
+    }
+    private static string GetFileUploadSize(BitFileInfo file)
+    {
+        long totalSize = file.Size / 1024;
+        long uploadSize;
+        if (file.TotalSizeOfUploaded >= file.Size)
+        {
+            uploadSize = totalSize;
+        }
+        else
+        {
+            uploadSize = (file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / 1024;
+        }
+
+        return $"{uploadSize}KB / {totalSize}KB";
+    }
+    private string GetUploadMessageStr(BitFileInfo file)
+        => file.Status switch
+        {
+            BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
+            BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
+            BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
+            _ => string.Empty,
+        };
+    private bool IsFileTypeNotAllowed(BitFileInfo file)
+    {
+        if (bitFileUpload.Accept is not null) return false;
+
+        var fileSections = file.Name.Split('.');
+        var extension = $".{fileSections?.Last()}";
+        return bitFileUpload.AllowedExtensions.Count > 0 && bitFileUpload.AllowedExtensions.All(ext => ext != "*") && bitFileUpload.AllowedExtensions.All(ext => ext != extension);
+    }
+
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] public IConfiguration Configuration { get; set; } = default!;
 
 
     private readonly string example1RazorCode = @"
-<BitFileUpload Label=""Upload files"" FileView=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" MaxSize=""1024 * 1024 * 500"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" MaxSize=""1024 * 1024 * 500"" />";
+
     private readonly string example1CsharpCode = @"
 private string UploadUrl = $""/Upload"";
+";
+
+    private readonly string example9CsharpCode = @"
+[Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+private string NonChunkedUploadUrl => ""FileUpload/UploadNonChunkedFile"";
+private string RemoveUrl => $""FileUpload/RemoveFile"";
+
+private BitFileUpload bitFileUpload;
+private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+private async Task HandleUploadOnClick()
+{
+    if (bitFileUpload.Files is null) return;
+
+    await bitFileUpload.Upload();
+}
+private async Task HandleRemoveOnClick()
+{
+    if (bitFileUpload.Files is null) return;
+
+    await bitFileUpload.RemoveFile();
+}
+private static int GetFileUploadPercent(BitFileInfo file)
+{
+    int uploadedPercent;
+    if (file.TotalSizeOfUploaded >= file.Size)
+    {
+        uploadedPercent = 100;
+    }
+    else
+    {
+        uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
+    }
+
+    return uploadedPercent;
+}
+private static string GetFileUploadSize(BitFileInfo file)
+{
+    long totalSize = file.Size / 1024;
+    long uploadSize;
+    if (file.TotalSizeOfUploaded >= file.Size)
+    {
+        uploadSize = totalSize;
+    }
+    else
+    {
+        uploadSize = (file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / 1024;
+    }
+
+    return $""{uploadSize}KB / {totalSize}KB"";
+}
+private string GetUploadMessageStr(BitFileInfo file)
+    => file.Status switch
+    {
+        BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
+        BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
+        BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
+        _ => string.Empty,
+    };
+private bool IsFileTypeNotAllowed(BitFileInfo file)
+{
+    if (bitFileUpload.Accept is not null) return false;
+
+    var fileSections = file.Name.Split('.');
+    var extension = $"".{fileSections?.Last()}"";
+    return bitFileUpload.AllowedExtensions.Count > 0 && bitFileUpload.AllowedExtensions.All(ext => ext != ""*"") && bitFileUpload.AllowedExtensions.All(ext => ext != extension);
+}
 ";
 
     private readonly string example2RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
     private readonly string example2CsharpCode = @"
 private string UploadUrl = $""/Upload"";
@@ -305,19 +419,19 @@ private string RemoveUrl = $""/Remove"";
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                MaxSize=""1024 * 1024 * 100""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example4RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""false""
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example5RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
                RemoveUrl=""@RemoveUrl""
                ShowRemoveButton=""true"" />";
@@ -326,12 +440,12 @@ private string RemoveUrl = $""/Remove"";
 <BitFileUpload IsMultiSelect=""true""
                AutoUploadEnabled=""true""
                OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example7RazorCode = @"
 <BitFileUpload IsMultiSelect=""true""
-               FileView=""Select or drag and drop files""
+               Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
                UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
                UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
@@ -340,7 +454,235 @@ private string RemoveUrl = $""/Remove"";
                RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })"" />";
 
     private readonly string example8RazorCode = @"
-<BitFileUpload FileView=""Select or drag and drop files""
+<BitFileUpload Label=""Select or drag and drop files""
                ChunkedUploadEnabled=""false""
                UploadUrl=""@UploadUrl"" />";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .browse-file {
+        border: 1px solid #D2D2D7;
+        border-radius: 2px;
+        padding: 24px;
+        width: 420px;
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 50px;
+        cursor: pointer;
+    }
+
+    .browse-file-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+    }
+
+    .browse-file-header i {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0072CE;
+    }
+
+    .browse-file-header strong {
+        color: #0072CE;
+    }
+
+    .browse-file-footer {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        color: #78787D;
+    }
+
+    .file-list {
+        border: 1px solid #D2D2D7;
+        border-radius: 2px;
+        padding: 24px;
+        width: 420px;
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .file-info {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .file-info-name {
+        overflow: hidden;
+        margin-right: 10px;
+    }
+
+    .file-info-title {
+        color: #5A5A5F;
+        line-height: 22px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .file-info-subtitle {
+        color: #909096;
+    }
+
+    .file-info-ico {
+        border: 1px solid #F3F3F8;
+        border-radius: 2px;
+        background-color: #F3F3F8;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .file-info-ico i {
+        font-size: 24px;
+    }
+
+    .file-info-data {
+        width: 275px;
+    }
+
+    .file-info-btns {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .file-info-btns i {
+        display: block;
+        cursor: pointer;
+    }
+
+    .file-info-btns .upload-ico {
+        color: #0072CE;
+    }
+
+    .file-info-btns .remove-ico {
+        color: #F9423A;
+    }
+
+    .file-info-progressbar-container {
+        width: 100%;
+        overflow: hidden;
+        height: 2px;
+        margin-top: 24px;
+        background-color: #D9D9D9;
+    }
+
+    .file-info-progressbar {
+        height: 2px;
+        transition: width 0.15s linear 0s;
+        background-color: #0072CE;
+    }
+
+    .file-info-s-msg {
+        margin-top: 12px;
+        color: #5EB227;
+    }
+
+    .file-info-e-msg {
+        margin-top: 12px;
+        color: #F9423A;
+    }
+
+    .file-list-footer {
+        font-size: 12px;
+        color: #78787D;
+    }
+
+</style>
+
+<BitFileUpload @ref=""bitFileUpload""
+                Label=""""
+                UploadUrl=""@NonChunkedUploadUrl""
+                RemoveUrl=""@RemoveUrl""
+                MaxSize=""1024 * 1024 * 500""
+                AllowedExtensions=""@(new List<string> { "".jpeg"", "".jpg"", "".png"", "".bpm"" })""
+                SuccessfulUploadMessage=""File upload succeeded""
+                NotAllowedExtensionErrorMessage=""File type not supported"">
+    <LabelTemplate>
+        @if (FileUploadIsEmpty())
+        {
+            <div class=""browse-file"">
+                <div class=""browse-file-header"">
+                    <i class=""bit-icon bit-icon--CloudUpload"" />
+                    <div>
+                        Drag and drop or
+                    </div>
+                    <div>
+                        <strong>
+                            Browse file
+                        </strong>
+                    </div>
+                </div>
+
+                <div class=""browse-file-footer"">
+                    <div>
+                        Max file size: 2 MB
+                    </div>
+                    <div>
+                        Supported file types: jpg, jpeg, png, bpm
+                    </div>
+                </div>
+            </div>
+        }
+    </LabelTemplate>
+    <FileViewTemplate Context=""file"">
+        @if (file.Status != BitFileUploadStatus.Removed)
+        {
+            <div class=""file-list"">
+                <div class=""file-info"">
+                    <div class=""file-info-ico"">
+                        <i class=""bit-icon bit-icon--FileImage"" />
+                    </div>
+                    <div class=""file-info-data"">
+                        <div class=""file-info-title"">
+                            <div class=""file-info-name"">@file.Name</div>
+                            <div class=""file-info-btns"">
+                                <label for=""@bitFileUpload.InputId""><i class=""bit-icon bit-icon--CloudUpload upload-ico"" /></label>
+                                <i class=""bit-icon bit-icon--ChromeClose remove-ico"" @onclick=""HandleRemoveOnClick"" />
+                            </div>
+                        </div>
+
+                        @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
+                        {
+                            var fileUploadPercent = GetFileUploadPercent(file);
+                            <div class=""file-info-subtitle"">@GetFileUploadSize(file) - @fileUploadPercent%</div>
+                            <div class=""file-info-progressbar-container"">
+                                <div class=""file-info-progressbar"" role=""progressbar"" style=""width:@fileUploadPercent%;"" aria-valuemin=""0"" aria-valuemax=""100"" aria-valuenow=""@fileUploadPercent""></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class=""@(file.Status == BitFileUploadStatus.Completed ? ""file-info-s-msg"" : ""file-info-e-msg"")"">@GetUploadMessageStr(file)</div>
+                        }
+                    </div>
+                </div>
+
+                <div class=""file-list-footer"">
+                    <div>
+                        Max file size: 2 MB
+                    </div>
+                    <div>
+                        Supported file types: jpg, jpeg, png, bpm
+                    </div>
+                </div>
+            </div>
+        }
+    </FileViewTemplate>
+</BitFileUpload>
+
+<br />
+
+<BitButton OnClick=""HandleUploadOnClick"">Upload</BitButton>";
 }

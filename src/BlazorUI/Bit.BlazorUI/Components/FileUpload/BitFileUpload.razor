@@ -5,33 +5,23 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
+
     @if (LabelTemplate is not null)
     {
-        @LabelTemplate
+        <label for="@InputId">
+            @LabelTemplate
+        </label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-upl-lbl">
+        <label class="bit-upl-lbl" for="@InputId">
             @Label
-        </label>
-    }
-
-    @if (FileViewTemplate is not null)
-    {
-        <label for="@_inputId">
-            @FileViewTemplate
-        </label>
-    }
-    else if (FileView.HasValue())
-    {
-        <label class="bit-upl-fv" for="@_inputId">
-            @FileView
         </label>
     }
 
     <input @ref="inputFileElement" @onchange="HandleOnChange"
            class="bit-upl-fi"
-           id="@_inputId"
+           id="@InputId"
            type="file"
            disabled="@(IsEnabled is false)"
            aria-labelledby="@(Label.HasValue() ? Label : null)"
@@ -40,62 +30,71 @@
 
     @if (Files is not null)
     {
-        <ul class="bit-upl-fl">
+        <div class="bit-upl-fl">
             @for (var i = 0; i < Files.Count; i++)
             {
                 var index = i;
                 var file = Files[index];
-                if (file.Status != BitFileUploadStatus.Removed)
+
+                if (FileViewTemplate is not null)
                 {
-                    <li class="bit-upl-itm @GetFileElClass(file.Status)">
-                        <div class="bit-upl-fic">
-                            <div title="@file.Name" class="bit-upl-fnc">
-                                <div class="bit-upl-fn">@file.Name</div>
+                    @FileViewTemplate(file)
+                }
+                else
+                {
+                    if (file.Status != BitFileUploadStatus.Removed)
+                    {
+                        var fileUploadPercent = GetFileUploadPercent(file);
+                        <div class="bit-upl-itm @GetFileElClass(file.Status)">
+                            <div class="bit-upl-fic">
+                                <div title="@file.Name" class="bit-upl-fnc">
+                                    <div class="bit-upl-fn">@file.Name</div>
+                                </div>
+                                <div class="bit-upl-fsc">
+                                    <span class="bit-upl-fs">@($"{GetFileUploadSize(file)}/{FileSizeHumanizer.Humanize(file.Size)}")</span>
+                                    <span class="bit-upl-pct">@fileUploadPercent%</span>
+                                </div>
+                                @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+                                {
+                                    <div class="bit-upl-pbc">
+                                        <div class="bit-upl-pbr" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="bit-upl-us">@GetUploadMessageStr(file)</div>
+                                }
                             </div>
-                            <div class="bit-upl-fsc">
-                                <span class="bit-upl-fs">@($"{GetFileUploadSize(file)}/{FileSizeHumanizer.Humanize(file.Size)}")</span>
-                                <span class="bit-upl-pct">@GetFileUploadPercent(file)%</span>
-                            </div>
-                            @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+                            @if (file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
                             {
-                                <div class="bit-upl-pbc">
-                                    <div class="bit-upl-pbr" role="progressbar" style="width:@GetFileUploadPercent(file)%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@GetFileUploadPercent(file)"></div>
+                                <div class="bit-upl-usi" @onclick="() => Upload(file)">
+                                    <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true" />
                                 </div>
                             }
-                            else
+
+                            @if (file.Status == BitFileUploadStatus.InProgress)
                             {
-                                <div class="bit-upl-us">@GetUploadMessageStr(file)</div>
+                                <div class="bit-upl-usi" @onclick="() => PauseUpload(file)">
+                                    <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true" />
+                                </div>
+                            }
+
+                            @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+                            {
+                                <div class="bit-upl-usi" @onclick="() => CancelUpload(file)">
+                                    <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+                                </div>
+                            }
+                            else if (ShowRemoveButton)
+                            {
+                                <div class="bit-upl-usi" @onclick="() => RemoveFile(file)">
+                                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                                </div>
                             }
                         </div>
-                        @if (file.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
-                        {
-                            <div class="bit-upl-usi" @onclick="() => Upload(index)">
-                                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true" />
-                            </div>
-                        }
-
-                        @if (file.Status == BitFileUploadStatus.InProgress)
-                        {
-                            <div class="bit-upl-usi" @onclick="() => PauseUpload(index)">
-                                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true" />
-                            </div>
-                        }
-
-                        @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
-                        {
-                            <div class="bit-upl-usi" @onclick="() => CancelUpload(index)">
-                                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true" />
-                            </div>
-                        }
-                        else if (ShowRemoveButton)
-                        {
-                            <div class="bit-upl-usi" @onclick="() => RemoveFile(index)">
-                                <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
-                            </div>
-                        }
-                    </li>
+                    }
                 }
             }
-        </ul>
+        </div>
     }
 </div>
