@@ -282,8 +282,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Inputs/CircularTimePicker/BitCircularTimePickerDemo.razor.css",
-        "inputFile": "Pages/Components/Inputs/CircularTimePicker/BitCircularTimePickerDemo.razor.scss",
+        "outputFile": "Pages/Components/Inputs/TimePickers/CircularTimePicker/BitCircularTimePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/TimePickers/CircularTimePicker/BitCircularTimePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/TimePickers/TimePicker/BitTimePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/TimePickers/TimePicker/BitTimePickerDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
