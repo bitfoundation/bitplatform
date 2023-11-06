@@ -8,11 +8,14 @@ public class BitFileInfo
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
     [JsonPropertyName("size")] public long Size { get; set; }
 
+
     public long TotalSizeOfUploaded { get; internal set; }
+
 
     internal bool PauseUploadRequested { get; set; }
     internal bool CancelUploadRequested { get; set; }
     internal long SizeOfLastChunkUploaded { get; set; }
+
 
     [JsonIgnore] public int Index { get; internal set; }
     [JsonIgnore] public string? Message { get; internal set; }
