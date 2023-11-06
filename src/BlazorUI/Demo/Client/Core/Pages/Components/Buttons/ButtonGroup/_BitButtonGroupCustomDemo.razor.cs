@@ -184,6 +184,23 @@ public partial class _BitButtonGroupCustomDemo
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example1CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> basicCustomItems = new()
 {
     new()
@@ -213,6 +230,23 @@ private List<ButtonGroupActionItem> basicCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example2CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> primaryCustomItems = new()
 {
     new()
@@ -243,6 +277,23 @@ private List<ButtonGroupActionItem> primaryCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example3CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> standardCustomItems = new()
 {
     new()
@@ -273,6 +324,23 @@ private List<ButtonGroupActionItem> standardCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example4CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> textCustomItems = new()
 {
     new()
@@ -304,6 +372,23 @@ private List<ButtonGroupActionItem> textCustomItems = new()
                                          OnClick = { Name = nameof(ButtonGroupActionItem.Clicked) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example5CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private int clickCounter;
 
 private List<ButtonGroupActionItem> counterCustomItems = new()
@@ -440,6 +525,23 @@ protected override void OnInitialized()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example6CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> basicCustomItems = new()
 {
     new()
@@ -484,6 +586,23 @@ private List<ButtonGroupActionItem> basicCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example7CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> basicCustomItems = new()
 {
     new()
@@ -520,6 +639,23 @@ private List<ButtonGroupActionItem> basicCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example8CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> styleClassCustomItems = new()
 {
     new()
@@ -559,6 +695,23 @@ private List<ButtonGroupActionItem> styleClassCustomItems = new()
                                          Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                          Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" />";
     private readonly string example9CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> basicCustomItems = new()
 {
     new()
@@ -600,6 +753,23 @@ Collapsed: [ <BitButtonGroup Visibility=""BitVisibility.Collapsed""
                                                       Key = { Name = nameof(ButtonGroupActionItem.Id) },
                                                       Text = { Name = nameof(ButtonGroupActionItem.Name) } })"" /> ]";
     private readonly string example10CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? Icon { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+
+    public string? Class { get; set; }
+
+    public string? Style { get; set; }
+
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
 private List<ButtonGroupActionItem> visibilityCustomItems = new()
 {
     new()
