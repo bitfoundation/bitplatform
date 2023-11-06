@@ -1,27 +1,27 @@
-﻿.buttons-container {
-    gap: 0.5rem;
-    display: flex;
-    overflow-x: auto;
-    flex-flow: row wrap;
-}
+﻿::deep {
+    .buttons-container {
+        gap: 0.5rem;
+        display: flex;
+        overflow-x: auto;
+        flex-flow: row wrap;
+    }
 
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
-    overflow-x: auto;
-}
+    .buttons-container-grid {
+        gap: 0.5rem;
+        display: grid;
+        overflow-x: auto;
+    }
 
-.form-container {
-    max-width: 20rem;
-}
-
-::deep {
-    .custom-class {
-        color: blueviolet;
-        background-color: goldenrod;
+    .form-container {
+        max-width: 20rem;
     }
 
     .validation-message {
         color: red;
+    }
+
+    .custom-class {
+        color: blueviolet;
+        background-color: goldenrod;
     }
 }
