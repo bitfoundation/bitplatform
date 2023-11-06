@@ -197,7 +197,7 @@ public partial class BitFileUpload : IDisposable
     /// <summary>
     /// General upload status.
     /// </summary>
-    public BitFileUploadStatus UploadStatus { get; set; }
+    public BitFileUploadStatus UploadStatus { get; private set; }
 
     /// <summary>
     /// File input id.
@@ -209,7 +209,7 @@ public partial class BitFileUpload : IDisposable
 
     protected override Task OnInitializedAsync()
     {
-        InputId = $"BitFileUpload-{UniqueId}-input";
+        InputId = $"FileUpload-{UniqueId}-input";
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -343,16 +343,15 @@ public partial class BitFileUpload : IDisposable
             return;
         }
 
-        var index = Files.IndexOf(fileInfo);
         if (fileInfo.PauseUploadRequested)
         {
-            await PauseUploadOneFile(index);
+            await PauseUploadOneFile(fileInfo.Index);
             return;
         }
 
         if (fileInfo.CancelUploadRequested)
         {
-            await CancelUploadOneFile(index);
+            await CancelUploadOneFile(fileInfo.Index);
             return;
         }
 
@@ -378,7 +377,7 @@ public partial class BitFileUpload : IDisposable
             to = fileInfo.Size;
         }
 
-        await _js.UploadFile(from, to, index);
+        await _js.UploadFile(from, to, fileInfo.Index);
     }
 
     private async Task PauseUploadOneFile(int index)
@@ -582,61 +581,13 @@ public partial class BitFileUpload : IDisposable
         }
     }
 
-    private string GetFileElClass(BitFileUploadStatus status)
-        => status switch
-        {
-            BitFileUploadStatus.Completed => $"{RootElementClass}-uld",
-            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => $"{RootElementClass}-fld",
-            BitFileUploadStatus.Paused => $"{RootElementClass}-psd",
-            _ => $"{RootElementClass}-ip",
-        };
-
-    private string GetUploadMessageStr(BitFileInfo file)
-        => file.Status switch
-        {
-            BitFileUploadStatus.Completed => SuccessfulUploadMessage,
-            BitFileUploadStatus.Failed => FailedUploadMessage,
-            BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage,
-            _ => string.Empty,
-        };
-
-    private bool IsFileTypeNotAllowed(BitFileInfo file)
+    internal bool IsFileTypeNotAllowed(BitFileInfo file)
     {
-        if (Accept is not null) return false;
+        if (Accept.HasNoValue()) return false;
 
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
         return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
-    }
-
-    private static int GetFileUploadPercent(BitFileInfo file)
-    {
-        int uploadedPercent;
-        if (file.TotalSizeOfUploaded >= file.Size)
-        {
-            uploadedPercent = 100;
-        }
-        else
-        {
-            uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
-        }
-
-        return uploadedPercent;
-    }
-
-    private static string GetFileUploadSize(BitFileInfo file)
-    {
-        long uploadedSize;
-        if (file.TotalSizeOfUploaded >= file.Size)
-        {
-            uploadedSize = file.Size;
-        }
-        else
-        {
-            uploadedSize = file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded;
-        }
-
-        return FileSizeHumanizer.Humanize(uploadedSize);
     }
 
     private static string AddQueryString(string uri, string name, string value)
