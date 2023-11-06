@@ -3,7 +3,7 @@ public partial class _BitFileUploadItem
 {
     private const string ROOT_ELEMENT_CLASS = "bit-upl";
 
-    [CascadingParameter] protected BitFileUpload FileUpload { get; set; } = default!;
+    [Parameter] public BitFileUpload FileUpload { get; set; } = default!;
     [Parameter] public BitFileInfo Item { get; set; } = default!;
 
     private static int GetFileUploadPercent(BitFileInfo file)
