@@ -31,6 +31,8 @@ public partial class BitButtonGroup<TItem> where TItem : class
         get => buttonStyle;
         set
         {
+            if (buttonStyle == value) return;
+
             buttonStyle = value;
             ClassBuilder.Reset();
         }
@@ -51,6 +53,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
         set
         {
             if (color == value) return;
+
             color = value;
             ClassBuilder.Reset();
         }
@@ -107,6 +110,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
         set
         {
             if (size == value) return;
+
             size = value;
             ClassBuilder.Reset();
         }
@@ -135,23 +139,31 @@ public partial class BitButtonGroup<TItem> where TItem : class
     {
         ClassBuilder.Register(() => ButtonStyle switch
         {
-            BitButtonStyle.Primary => $"bit-btg-pri",
-            BitButtonStyle.Standard => $"bit-btg-std",
-            BitButtonStyle.Text => $"bit-btg-txt",
-            _ => $"bit-btg-pri"
+            BitButtonStyle.Primary => "bit-btg-pri",
+            BitButtonStyle.Standard => "bit-btg-std",
+            BitButtonStyle.Text => "bit-btg-txt",
+            _ => "bit-btg-pri"
         });
 
         ClassBuilder.Register(() => Color switch
         {
-            BitButtonColor.Info => $"bit-btg-inf",
-            BitButtonColor.Success => $"bit-btg-suc",
-            BitButtonColor.Warning => $"bit-btg-war",
-            BitButtonColor.SevereWarning => $"bit-btg-swa",
-            BitButtonColor.Error => $"bit-btg-err",
+            BitButtonColor.Info => "bit-btg-inf",
+            BitButtonColor.Success => "bit-btg-suc",
+            BitButtonColor.Warning => "bit-btg-war",
+            BitButtonColor.SevereWarning => "bit-btg-swa",
+            BitButtonColor.Error => "bit-btg-err",
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Vertical ? $"bit-btg-vrt" : "");
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-btg-sm",
+            BitButtonSize.Medium => "bit-btg-md",
+            BitButtonSize.Large => "bit-btg-lg",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
     }
 
     protected override Task OnParametersSetAsync()
@@ -191,9 +203,9 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         className.Append(Size switch
         {
-            BitButtonSize.Small => " bit-btg-sm",
-            BitButtonSize.Medium => " bit-btg-md",
-            BitButtonSize.Large => " bit-btg-lg",
+            BitButtonSize.Small => " bit-btg-ism",
+            BitButtonSize.Medium => " bit-btg-imd",
+            BitButtonSize.Large => " bit-btg-ilg",
             _ => string.Empty
         });
 

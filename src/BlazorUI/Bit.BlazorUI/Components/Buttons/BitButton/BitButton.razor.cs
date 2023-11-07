@@ -43,6 +43,7 @@ public partial class BitButton
         set
         {
             if (buttonStyle == value) return;
+
             buttonStyle = value;
             ClassBuilder.Reset();
         }
@@ -58,6 +59,7 @@ public partial class BitButton
         set
         {
             if (color == value) return;
+
             color = value;
             ClassBuilder.Reset();
         }
@@ -73,6 +75,7 @@ public partial class BitButton
         set
         {
             if (size == value) return;
+
             size = value;
             ClassBuilder.Reset();
         }
@@ -115,28 +118,28 @@ public partial class BitButton
     {
         ClassBuilder.Register(() => ButtonStyle switch
         {
-            BitButtonStyle.Primary => $"{RootElementClass}-pri",
-            BitButtonStyle.Standard => $"{RootElementClass}-std",
-            BitButtonStyle.Text => $"{RootElementClass}-txt",
-            _ => $"{RootElementClass}-pri"
+            BitButtonStyle.Primary => "bit-btn-pri",
+            BitButtonStyle.Standard => "bit-btn-std",
+            BitButtonStyle.Text => "bit-btn-txt",
+            _ => "bit-btn-pri"
         });
         
         ClassBuilder.Register(() => Color switch
         {
-            BitButtonColor.Info => $"{RootElementClass}-inf",
-            BitButtonColor.Success => $"{RootElementClass}-suc",
-            BitButtonColor.Warning => $"{RootElementClass}-wrn",
-            BitButtonColor.SevereWarning => $"{RootElementClass}-swr",
-            BitButtonColor.Error => $"{RootElementClass}-err",
-            _ => String.Empty
+            BitButtonColor.Info => "bit-btn-inf",
+            BitButtonColor.Success => "bit-btn-suc",
+            BitButtonColor.Warning => "bit-btn-wrn",
+            BitButtonColor.SevereWarning => "bit-btn-swr",
+            BitButtonColor.Error => "bit-btn-err",
+            _ => string.Empty
         });
         
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => $"{RootElementClass}-sm",
-            BitButtonSize.Medium => $"{RootElementClass}-md",
-            BitButtonSize.Large => $"{RootElementClass}-lg",
-            _ => String.Empty
+            BitButtonSize.Small => "bit-btn-sm",
+            BitButtonSize.Medium => "bit-btn-md",
+            BitButtonSize.Large => "bit-btn-lg",
+            _ => string.Empty
         });
     }
 
