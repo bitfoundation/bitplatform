@@ -1,0 +1,335 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <ExamplePreview>
+        <div>
+            The Button offers three style options: Primary (default), Standard, and Text.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <div>
+                <div>Primary</div>
+                <BitButtonGroup TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br/>
+            <div>
+                <div>Standard</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br/>
+            <div>
+                <div>Text</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" Id="example2">
+    <ExamplePreview>
+        <div>
+            Primary buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption IsEnabled="false" Text="Add (Disabled)" Key="add-key" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" Id="example3">
+    <ExamplePreview>
+        <div>
+            Standard buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text buttons and the more prominent Primary buttons, providing flexibility in emphasis.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption IsEnabled="false" Text="Edit (Disabled)" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" Id="example4">
+    <ExamplePreview>
+        <div>
+            Text buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption IsEnabled="false" Text="Delete (Disabled)" Key="delete-key" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>
+            Managing button click event (OnClick).
+        </div>
+        <br />
+        <div>
+            <div>Click count: @clickCounter</div>
+            <BitButtonGroup TItem="BitButtonGroupOption">
+                <BitButtonGroupOption OnClick="@(() => clickCounter++)" Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption OnClick="@(() => clickCounter = 0)" Text="Reset" Key="reset-key" IconName="@BitIconName.Refresh" />
+                <BitButtonGroupOption OnClick="@(() => clickCounter--)" Text="Remove" Key="remove-key" IconName="@BitIconName.Remove" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" Id="example6">
+    <ExamplePreview>
+        <div>
+            Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
+        </div>
+        <br />
+        <div class="buttons-container-grid">
+            <div>Info</div>
+            <div class="buttons-container">
+                <BitButtonGroup Color="BitButtonColor.Info" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>Success</div>
+            <div class="buttons-container">
+                <BitButtonGroup Color="BitButtonColor.Success" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>Warning</div>
+            <div class="buttons-container">
+                <BitButtonGroup Color="BitButtonColor.Warning" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>SevereWarning</div>
+            <div class="buttons-container">
+                <BitButtonGroup Color="BitButtonColor.SevereWarning" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>Error</div>
+            <div class="buttons-container">
+                <BitButtonGroup Color="BitButtonColor.Error" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+                <br />
+                <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
+    <ExamplePreview>
+        <div>
+            Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+        </div>
+        <br />
+        <div class="buttons-container-grid">
+            <div>
+                <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>
+                <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>
+                <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+    <ExamplePreview>
+        <div>
+            Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Style="color:darkblue; font-weight:bold;" Text="Styled" Key="styled-key" IconName="@BitIconName.Brush" />
+                <BitButtonGroupOption Class="custom-class" Text="Classed" Key="classed-key" IconName="@BitIconName.FormatPainter" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Vertical" RazorCode="@example9RazorCode" Id="example9">
+    <ExamplePreview>
+        <div>
+            By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.
+        </div>
+        <br />
+        <div class="buttons-container">
+            <div>
+                <BitButtonGroup Vertical TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>
+                <BitButtonGroup Vertical ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+            <br />
+            <div>
+                <BitButtonGroup Vertical ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                    <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                    <BitButtonGroupOption Text="Delete" Key="ok-key" IconName="@BitIconName.Delete" />
+                </BitButtonGroup>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Visibility" RazorCode="@example10RazorCode" Id="example10">
+    <ExamplePreview>
+        <div>
+            You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
+        </div>
+        <br />
+        <div class="buttons-container-grid">
+            <div>
+                 Visible: [ <BitButtonGroup Visibility="BitVisibility.Visible" TItem="BitButtonGroupOption">
+                               <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                               <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                               <BitButtonGroupOption Text="Ok" Key="delete-key" IconName="@BitIconName.CheckMark" />
+                           </BitButtonGroup> ]
+            </div>
+            <div>
+                Hidden: [ <BitButtonGroup Visibility="BitVisibility.Hidden" TItem="BitButtonGroupOption">
+                               <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                               <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                               <BitButtonGroupOption Text="Ok" Key="delete-key" IconName="@BitIconName.CheckMark" />
+                           </BitButtonGroup> ]
+            </div>
+            <div>
+                Collapsed: [ <BitButtonGroup Visibility="BitVisibility.Collapsed" TItem="BitButtonGroupOption">
+                                 <BitButtonGroupOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                                 <BitButtonGroupOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                                 <BitButtonGroupOption Text="Ok" Key="delete-key" IconName="@BitIconName.CheckMark" />
+                             </BitButtonGroup> ]
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+@code {
+    private int clickCounter;
+}
