@@ -5,8 +5,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitTimePicker
 {
+    private const int STEP_DELAY = 75;
+    private const int INITIAL_STEP_DELAY = 400;
     private const string FORMAT_24_HOURS = "HH:mm";
     private const string FORMAT_12_HOURS = "hh:mm tt";
+
 
     private bool isOpen;
     private bool IsOpenHasBeenSet;
@@ -22,6 +25,7 @@ public partial class BitTimePicker
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
+    private Timer? _pointerDownTimer;
     private string _focusClass
     {
         get => focusClass;
@@ -420,10 +424,8 @@ public partial class BitTimePicker
         await _js.SelectText(_inputMinuteRef);
     }
 
-    private async Task HandleHourChange(bool isNext)
+    private async Task ChangeHour(bool isNext)
     {
-        if (IsEnabled is false) return;
-
         if (isNext)
         {
             if (_hour < 23)
@@ -450,10 +452,8 @@ public partial class BitTimePicker
         await UpdateCurrentValue();
     }
 
-    private async Task HandleMinuteChange(bool isNext)
+    private async Task ChangeMinute(bool isNext)
     {
-        if (IsEnabled is false) return;
-
         if (isNext)
         {
             if (_minute < 59)
@@ -478,6 +478,41 @@ public partial class BitTimePicker
         }
 
         await UpdateCurrentValue();
+    }
+
+    private async Task HandleOnPointerDown(bool isNext, bool isHour)
+    {
+        if (IsEnabled is false) return;
+
+        if (isHour)
+        {
+            await ChangeHour(isNext);
+        }
+        else
+        {
+            await ChangeMinute(isNext);
+        }
+
+        _pointerDownTimer = new Timer(async (_) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                if (isHour)
+                {
+                    await ChangeHour(isNext);
+                }
+                else
+                {
+                    await ChangeMinute(isNext);
+                }
+                StateHasChanged();
+            });
+        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+    }
+
+    private void HandleOnPointerUpOrOut()
+    {
+        _pointerDownTimer?.Dispose();
     }
 
     private string GetValueFormat()
