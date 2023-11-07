@@ -60,7 +60,45 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitDateRangePicker Style="padding: 1rem; background: purple;" />
+
+                <BitDateRangePicker Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitDateRangePicker Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
+                                                      Divider = "border-color: green;",
+                                                      DayPickerMonth = "color: red;",
+                                                      TodayDayButton = "background-color: red;",
+                                                      SelectedDayButtons = "background-color: purple;",
+                                                      StartAndEndSelectionDays = "background-color: rebeccapurple;",
+                                                      YearPickerToggleButton = "color: blue;" })" />
+
+                <BitDateRangePicker Classes="@(new() { Root = "custom-root",
+                                                       Callout = "custom-callout",
+                                                       DayPickerWrapper = "custom-day-picker",
+                                                       DayButton = "custom-day",
+                                                       TodayDayButton = "custom-today-day",
+                                                       StartAndEndSelectionDays = "custom-start-end",
+                                                       SelectedDayButtons = "custom-selected-days",
+                                                       PrevMonthNavButton = "custom-prev-month",
+                                                       NextMonthNavButton = "custom-next-month",
+                                                       DayPickerMonth = "custom-day-month",
+                                                       DayPickerHeader = "custom-day-header",
+                                                       WeekNumbersHeader = "custom-week-header",
+                                                       YearMonthPickerWrapper = "custom-year-picker"})" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-content">
                 <BitDateRangePicker @bind-Value="@selectedDateRange" />
@@ -71,7 +109,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Culture" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Culture" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-desc">
                 By default, BitDateRangePicker picks the current culture.
@@ -97,7 +135,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-content">
                 <BitDateRangePicker>
@@ -139,7 +177,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Responsive" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Responsive" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div class="example-content">
                 <BitDateRangePicker Label="Responsive DateRangePicker" IsResponsive="true" />
