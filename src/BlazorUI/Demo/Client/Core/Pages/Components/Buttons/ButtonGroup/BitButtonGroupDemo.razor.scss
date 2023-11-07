@@ -1,26 +1,17 @@
 ﻿::deep {
-    .buttons-container {
+    .example-content {
         gap: 0.5rem;
         display: flex;
-        overflow-x: auto;
-        flex-flow: row wrap;
-    }
-
-    .buttons-container-grid {
-        gap: 0.5rem;
-        display: grid;
-        overflow-x: auto;
-    }
-
-    .form-container {
-        max-width: 20rem;
-    }
-
-    .validation-message {
-        color: red;
+        flex-flow: column;
     }
 
     .custom-class {
+        padding: 2rem;
+        border-radius:1rem;
+        background-color: blueviolet;
+    }
+
+    .custom-item {
         color: blueviolet;
         background-color: goldenrod;
     }

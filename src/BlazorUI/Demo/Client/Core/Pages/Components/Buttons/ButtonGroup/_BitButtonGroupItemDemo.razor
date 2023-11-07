@@ -1,204 +1,181 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <div>
-            The Button offers three style options: Primary (default), Standard, and Text.
-        </div>
+        <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
         <br />
-        <div class="buttons-container">
-            <div>
-                <div>Primary</div>
-                <BitButtonGroup Items="basicItems" />
-            </div>
-            <br />
-            <div>
-                <div>Standard</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            </div>
-            <br />
-            <div>
-                <div>Text</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
+        <BitButtonGroup Items="basicItems" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ButtonStyle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>All the standard button styles are supported.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Primary (default)</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="disabledItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" IsEnabled="false" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Standard</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="disabledItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" IsEnabled="false" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="disabledItems" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" IsEnabled="false" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
-        <div>
-            Primary buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+        <div>Each item in the ButtonGroup can have an icon.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Primary (default)</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="iconItems" />
         </div>
-        <br />
-        <div class="buttons-container">
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="primaryItems" />
+        <br /><br />
+        <div class="example-content">
+            <div>Standard</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="iconItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Vertical" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
-        <div>
-            Standard buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text buttons and the more prominent Primary buttons, providing flexibility in emphasis.
-        </div>
-        <br />
+        <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
+        <br /><br />
         <div class="buttons-container">
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="standardItems" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-    <ExamplePreview>
-        <div>
-            Text buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
-        </div>
-        <br />
-        <div class="buttons-container">
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="textItems" />
+            <div class="example-content">
+                <div>Primary (default)</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" Vertical />
+            </div>
+            <br /><br />
+            <div class="example-content">
+               <div>Standard</div>
+               <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" Vertical />
+            </div>
+            <br /><br />
+            <div class="example-content">
+               <div>Text</div>
+               <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" Vertical />
+            </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
-        <div>
-            Managing button click event (OnClick).
+        <div>Managing button click events.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's ItemClick event:</div>
+            <BitButtonGroup Items="basicItems" OnItemClick="(BitButtonGroupItem item) => clickedItem = item.Text" />
+            <div>Clicked item: <b>@clickedItem</b></div>
         </div>
-        <br />
-        <div>
-            <div>Click count: @clickCounter</div>
-            <BitButtonGroup Items="counterItems" />
+        <br /><br />
+        <div class="example-content">
+            <div>Item's Click event:</div>
+            <BitButtonGroup Items="eventsItems" />
+            <div>Click count: <b>@clickCounter</b></div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
-        <div>
-            Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
-        </div>
-        <br />
-        <div class="buttons-container-grid">
+        <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+        <br /><br />
+        <div class="example-content">
             <div>Info</div>
-            <div class="buttons-container">
-                <BitButtonGroup Color="BitButtonColor.Info" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
-            <br />
+            <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
             <div>Success</div>
-            <div class="buttons-container">
-                <BitButtonGroup Color="BitButtonColor.Success" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
-            <br />
+            <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
             <div>Warning</div>
-            <div class="buttons-container">
-                <BitButtonGroup Color="BitButtonColor.Warning" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
-            <br />
+            <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
             <div>SevereWarning</div>
-            <div class="buttons-container">
-                <BitButtonGroup Color="BitButtonColor.SevereWarning" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
-            <br />
+            <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
             <div>Error</div>
-            <div class="buttons-container">
-                <BitButtonGroup Color="BitButtonColor.Error" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-                <br />
-                <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
+            <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div>
-            Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+        <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Small</div>
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
         </div>
-        <br />
-        <div class="buttons-container-grid">
-            <div>
-                <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            </div>
-            <br />
-            <div>
-                <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            </div>
-            <br />
-            <div>
-                <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Medium</div>
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Large</div>
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
-        <div>
-            Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's style & class:</div>
+            <BitButtonGroup Items="basicItems" Style="padding:1rem;background:red" />
+            <BitButtonGroup Items="basicItems" Class="custom-class" />
         </div>
-        <br />
-        <div class="buttons-container">
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="styleClassItems" />
+        <br /><br />
+        <div class="example-content">
+            <div>Item's style & class:</div>
+            <BitButtonGroup Items="styleClassItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
-
-<ComponentExampleBox Title="Vertical" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <ExamplePreview>
-        <div>
-            By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.
-        </div>
-        <br />
-        <div class="buttons-container">
-            <div>
-                <BitButtonGroup Vertical Items="basicItems" />
-             </div>
-             <br />
-             <div>
-                 <BitButtonGroup Vertical ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-             </div>
-             <br />
-             <div>
-                 <BitButtonGroup Vertical ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-             </div>
-         </div>
-     </ExamplePreview>
- </ComponentExampleBox>
-
- <ComponentExampleBox Title="Visibility" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-     <ExamplePreview>
-         <div>
-             You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
-         </div>
-         <br />
-         <div class="buttons-container-grid">
-             <div>
-                 Visible: [ <BitButtonGroup Visibility="BitVisibility.Visible" Items="visibilityItems" /> ]
-             </div>
-             <div>
-                 Hidden: [ <BitButtonGroup Visibility="BitVisibility.Hidden" Items="visibilityItems" /> ]
-             </div>
-             <div>
-                 Collapsed: [ <BitButtonGroup Visibility="BitVisibility.Collapsed" Items="visibilityItems" /> ]
-             </div>
-         </div>
-     </ExamplePreview>
- </ComponentExampleBox>
