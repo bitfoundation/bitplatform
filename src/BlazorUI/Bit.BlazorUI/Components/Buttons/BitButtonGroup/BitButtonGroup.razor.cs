@@ -31,6 +31,8 @@ public partial class BitButtonGroup<TItem> where TItem : class
         get => buttonStyle;
         set
         {
+            if (buttonStyle == value) return;
+
             buttonStyle = value;
             ClassBuilder.Reset();
         }
@@ -51,6 +53,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
         set
         {
             if (color == value) return;
+
             color = value;
             ClassBuilder.Reset();
         }
@@ -88,9 +91,9 @@ public partial class BitButtonGroup<TItem> where TItem : class
     [Parameter] public BitButtonGroupNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback is called when the button or button item is clicked.
+    /// The callback that is called when a button is clicked.
     /// </summary>
-    [Parameter] public EventCallback<TItem> OnClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -107,6 +110,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
         set
         {
             if (size == value) return;
+
             size = value;
             ClassBuilder.Reset();
         }
@@ -135,23 +139,31 @@ public partial class BitButtonGroup<TItem> where TItem : class
     {
         ClassBuilder.Register(() => ButtonStyle switch
         {
-            BitButtonStyle.Primary => $" {RootElementClass}-pri",
-            BitButtonStyle.Standard => $" {RootElementClass}-std",
-            BitButtonStyle.Text => $" {RootElementClass}-txt",
-            _ => $" {RootElementClass}-pri"
+            BitButtonStyle.Primary => "bit-btg-pri",
+            BitButtonStyle.Standard => "bit-btg-std",
+            BitButtonStyle.Text => "bit-btg-txt",
+            _ => "bit-btg-pri"
         });
 
         ClassBuilder.Register(() => Color switch
         {
-            BitButtonColor.Info => $" {RootElementClass}-inf",
-            BitButtonColor.Success => $" {RootElementClass}-suc",
-            BitButtonColor.Warning => $" {RootElementClass}-wrn",
-            BitButtonColor.SevereWarning => $" {RootElementClass}-swr",
-            BitButtonColor.Error => $" {RootElementClass}-err",
+            BitButtonColor.Info => "bit-btg-inf",
+            BitButtonColor.Success => "bit-btg-suc",
+            BitButtonColor.Warning => "bit-btg-war",
+            BitButtonColor.SevereWarning => "bit-btg-swa",
+            BitButtonColor.Error => "bit-btg-err",
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Vertical ? $"{RootElementClass}-vrt" : "");
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-btg-sm",
+            BitButtonSize.Medium => "bit-btg-md",
+            BitButtonSize.Large => "bit-btg-lg",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
     }
 
     protected override Task OnParametersSetAsync()
@@ -164,6 +176,86 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         return base.OnParametersSetAsync();
     }
+
+    
+    
+    private string? GetItemClass(int index, bool isEnabled)
+    {
+        StringBuilder className = new StringBuilder();
+
+        className.Append(ButtonStyle switch
+        {
+            BitButtonStyle.Primary => " bit-btg-ipr",
+            BitButtonStyle.Standard => " bit-btg-ist",
+            BitButtonStyle.Text => " bit-btg-itx",
+            _ => " bit-btg-ipr"
+        });
+
+        className.Append(Color switch
+        {
+            BitButtonColor.Info => " bit-btg-iin",
+            BitButtonColor.Success => " bit-btg-isu",
+            BitButtonColor.Warning => " bit-btg-iwa",
+            BitButtonColor.SevereWarning => " bit-btg-isw",
+            BitButtonColor.Error => " bit-btg-ier",
+            _ => string.Empty
+        });
+
+        className.Append(Size switch
+        {
+            BitButtonSize.Small => " bit-btg-ism",
+            BitButtonSize.Medium => " bit-btg-imd",
+            BitButtonSize.Large => " bit-btg-ilg",
+            _ => string.Empty
+        });
+
+        if (index == 0)
+        {
+            className.Append(" bit-btg-ift");
+        }
+
+        if (index == (_items.Count - 1))
+        {
+            className.Append(" bit-btg-ilt");
+        }
+
+        if(isEnabled is false)
+        {
+            className.Append(" bit-btg-ids");
+        }
+
+        return className.ToString();
+    }
+
+    private async Task HandleOnItemClick(TItem item)
+    {
+        if (GetIsEnabled(item) is false) return;
+
+        await OnItemClick.InvokeAsync(item);
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            buttonGroupItem.OnClick?.Invoke(buttonGroupItem);
+        }
+        else if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            await buttonGroupOption.OnClick.InvokeAsync(buttonGroupOption);
+        }
+        else
+        {
+            if (NameSelectors is null) return;
+
+            if (NameSelectors.OnClick.Selector is not null)
+            {
+                NameSelectors.OnClick.Selector!(item)?.Invoke(item);
+            }
+            else
+            {
+                item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
+            }
+        }
+    }
+
 
     private string? GetClass(TItem? item)
     {
@@ -187,49 +279,6 @@ public partial class BitButtonGroup<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
-    }
-
-    private string? GetButtonClass(int index)
-    {
-        StringBuilder className = new StringBuilder();
-
-        className.Append(ButtonStyle switch
-        {
-            BitButtonStyle.Primary => $" {RootElementClass}-ipr",
-            BitButtonStyle.Standard => $" {RootElementClass}-ist",
-            BitButtonStyle.Text => $" {RootElementClass}-itx",
-            _ => $" {RootElementClass}-ipr"
-        });
-
-        className.Append(Color switch
-        {
-            BitButtonColor.Info => $" {RootElementClass}-iif",
-            BitButtonColor.Success => $" {RootElementClass}-isc",
-            BitButtonColor.Warning => $" {RootElementClass}-iwn",
-            BitButtonColor.SevereWarning => $" {RootElementClass}-isr",
-            BitButtonColor.Error => $" {RootElementClass}-ier",
-            _ => string.Empty
-        });
-
-        className.Append(Size switch
-        {
-            BitButtonSize.Small => $" {RootElementClass}-sm",
-            BitButtonSize.Medium => $" {RootElementClass}-md",
-            BitButtonSize.Large => $" {RootElementClass}-lg",
-            _ => string.Empty
-        });
-
-        if (index == 0)
-        {
-            className.Append($" {RootElementClass}-ift");
-        }
-
-        if (index == (_items.Count - 1))
-        {
-            className.Append($" {RootElementClass}-ilt");
-        }
-
-        return className.ToString();
     }
 
     private string? GetIconName(TItem? item)
@@ -350,39 +399,5 @@ public partial class BitButtonGroup<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
-    }
-
-    private async Task HandleOnItemClick(TItem item)
-    {
-        if (GetIsEnabled(item) is false) return;
-
-        await OnClick.InvokeAsync(item);
-
-        await InvokeItemClick(item);
-    }
-
-    private async Task InvokeItemClick(TItem item)
-    {
-        if (item is BitButtonGroupItem buttonGroupItem)
-        {
-            buttonGroupItem.OnClick?.Invoke(buttonGroupItem);
-        }
-        else if (item is BitButtonGroupOption buttonGroupOption)
-        {
-            await buttonGroupOption.OnClick.InvokeAsync(buttonGroupOption);
-        }
-        else
-        {
-            if (NameSelectors is null) return;
-
-            if (NameSelectors.OnClick.Selector is not null)
-            {
-                NameSelectors.OnClick.Selector!(item)?.Invoke(item);
-            }
-            else
-            {
-                item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
-            }
-        }
     }
 }
