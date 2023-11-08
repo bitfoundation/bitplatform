@@ -165,7 +165,8 @@
     .bit-dtp-gtb,
     .bit-dtp-wlb,
     .bit-dtp-dbt,
-    .bit-dtp-pkb {
+    .bit-dtp-pkb,
+    .bit-dtp-wnm {
         width: 100%;
         height: 100%;
         display: flex;
@@ -336,12 +337,11 @@
 }
 
 .bit-dtp-wnm {
-    margin: 0;
-    width: 100%;
     display: flex;
-    aspect-ratio: 1;
     font-weight: 400;
+    width: spacing(3.5);
     align-items: center;
+    height: spacing(3.5);
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
