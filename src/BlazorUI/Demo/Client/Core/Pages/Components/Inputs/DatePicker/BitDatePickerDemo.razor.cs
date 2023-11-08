@@ -1080,6 +1080,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Response DatePicker""
                IsResponsive=""true""
+               ShowWeekNumbers=""true""
                Placeholder=""Select a date"" />";
 
     private readonly string example10RazorCode = @"

@@ -1112,5 +1112,8 @@ private BitDateRangePickerValue selectedDateRange = new()
 private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example8RazorCode = @"
-<BitDateRangePicker Label=""Responsive DateRangePicker"" IsResponsive=""true"" />";
+<BitDateRangePicker Label=""Responsive DateRangePicker""
+                    IsResponsive=""true""
+                    ShowWeekNumbers=""true""
+                    Placeholder=""Select a date range"" />";
 }

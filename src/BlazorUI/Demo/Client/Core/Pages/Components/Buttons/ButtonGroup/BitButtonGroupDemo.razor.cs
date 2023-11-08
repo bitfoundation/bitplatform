@@ -54,9 +54,9 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "OnClick",
+            Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "The callback is called when the button or button item is clicked."
+            Description = "The callback that is called when a button is clicked."
         },
         new()
         {
