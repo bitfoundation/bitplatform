@@ -63,7 +63,9 @@
             <div class="bit-tpc-grp" role="group">
                 <div class="bit-tpc-tim">
                     <div class="bit-tpc-tpr">
-                        <button @onclick="() => HandleHourChange(true)"
+                        <button @onpointerup="HandleOnPointerUpOrOut"
+                                @onpointerout="HandleOnPointerUpOrOut"
+                                @onpointerdown="() => HandleOnPointerDown(true, true)"
                                 type="button"
                                 class="bit-tpc-tbt">
                             <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
@@ -78,7 +80,9 @@
                                inputmode="numeric"
                                class="bit-tpc-tin"
                                autocomplete="@BitAutoCompleteValue.NewPassword" />
-                        <button @onclick="() => HandleHourChange(false)"
+                        <button @onpointerup="HandleOnPointerUpOrOut"
+                                @onpointerout="HandleOnPointerUpOrOut"
+                                @onpointerdown="() => HandleOnPointerDown(false, true)"
                                 type="button"
                                 class="bit-tpc-tbt">
                             <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
@@ -86,7 +90,9 @@
                     </div>
                     <div class="bit-tpc-tpr bit-tpc-tdv">:</div>
                     <div class="bit-tpc-tpr">
-                        <button @onclick="() => HandleMinuteChange(true)"
+                        <button @onpointerup="HandleOnPointerUpOrOut"
+                                @onpointerout="HandleOnPointerUpOrOut"
+                                @onpointerdown="() => HandleOnPointerDown(true, false)"
                                 type="button"
                                 class="bit-tpc-tbt">
                             <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
@@ -101,7 +107,9 @@
                                inputmode="numeric"
                                class="bit-tpc-tin"
                                autocomplete="@BitAutoCompleteValue.NewPassword" />
-                        <button @onclick="() => HandleMinuteChange(false)"
+                        <button @onpointerup="HandleOnPointerUpOrOut"
+                                @onpointerout="HandleOnPointerUpOrOut"
+                                @onpointerdown="() => HandleOnPointerDown(false, false)"
                                 type="button"
                                 class="bit-tpc-tbt">
                             <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
