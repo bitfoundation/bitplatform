@@ -48,7 +48,7 @@
                                 <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
-                            <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @Nav.ClassStyles?.Description?.Class">
+                            <span style="@Nav.Styles?.Description" class="bit-nav-des @Nav.Classes?.Description">
                                 @description
                             </span>
                         </div>
@@ -73,8 +73,8 @@
                 <button @onclick="ToggleItem"
                         type="button"
                         tabindex="0"
-                        style="@Nav.ClassStyles?.ToggleButton?.Style"
-                        class="bit-nav-cbt @Nav.ClassStyles?.ToggleButton?.Class"
+                        style="@Nav.Styles?.ToggleButton"
+                        class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                         aria-expanded="@(isExpanded ? "true" : "false")"
                         aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
                     <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
@@ -125,11 +125,11 @@
                                     <div class="bit-nav-iit">
                                         @if (iconName.HasValue())
                                         {
-                                            <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                            <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                         }
                                         <span>@text</span>
                                     </div>
-                                    <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.ClassStyles?.Description?.Class">
+                                    <span style="@Nav.Styles?.Description" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.Classes?.Description">
                                         @description
                                     </span>
                                 </div>
@@ -138,7 +138,7 @@
                             {
                                 @if (iconName.HasValue())
                                 {
-                                    <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                 }
                                 <span>@text</span>
                             }
@@ -173,11 +173,11 @@
                                     <div class="bit-nav-iit">
                                         @if (iconName.HasValue())
                                         {
-                                            <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                            <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                         }
                                         <span>@text</span>
                                     </div>
-                                    <span style="@Nav.ClassStyles?.Description?.Style" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.ClassStyles?.Description?.Class">
+                                    <span style="@Nav.Styles?.Description" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.Classes?.Description">
                                         @description
                                     </span>
                                 </div>
@@ -186,7 +186,7 @@
                             {
                                 @if (iconName.HasValue())
                                 {
-                                    <i class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.ClassStyles?.ItemIcon?.Class" style="@Nav.ClassStyles?.ItemIcon?.Style" aria-hidden="true" />
+                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                 }
                                 <span>@text</span>
                             }

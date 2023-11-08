@@ -187,46 +187,10 @@ public partial class _BitChoiceGroupOptionDemo
 </BitChoiceGroup>";
 
     private readonly string example6RazorCode = @"
-Visible: [
-<BitChoiceGroup Visibility=""BitVisibility.Visible""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<string>""
-                DefaultValue=""@(""B"")""
-                TValue=""string"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup> ]
-
-Hidden: [
-<BitChoiceGroup Visibility=""BitVisibility.Hidden""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<string>""
-                DefaultValue=""@(""B"")""
-                TValue=""string"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup> ]
-
-Collapsed: [
-<BitChoiceGroup Visibility=""BitVisibility.Collapsed""
-                LayoutFlow=""BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<string>""
-                DefaultValue=""@(""B"")""
-                TValue=""string"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup> ]";
-
-    private readonly string example7RazorCode = @"
 <style>
     .custom-label {
-        color: #A4262C;
+        color: red;
+        font-size: 18px;
         font-weight: bold;
     }
 </style>
@@ -244,6 +208,29 @@ Collapsed: [
         <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </Options>
 </BitChoiceGroup>";
+
+    private readonly string example7RazorCode = @"
+<BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+<BitTextField @bind-Value=""oneWayValue"" />
+
+
+<BitChoiceGroup Label=""Two-way"" @bind-Value=""twoWayValue""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+<BitTextField @bind-Value=""twoWayValue"" />";
+    private readonly string example7CsharpCode = @"
+private string oneWayValue = ""A"";
+private string twoWayValue = ""A"";";
 
     private readonly string example8RazorCode = @"
 <style>
@@ -280,10 +267,22 @@ Collapsed: [
     }
 </style>
 
+<BitChoiceGroup Label=""ItemPrefixTemplate"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <ItemPrefixTemplate Context=""option"">
+        @(option.Index + 1).&nbsp;
+    </ItemPrefixTemplate>
+    <Options>
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+    </Options>
+</BitChoiceGroup>
+
 <BitChoiceGroup Label=""ItemLabelTemplate"" @bind-Value=""itemLabelTemplateValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <ItemLabelTemplate Context=""option"">
-        <div style=""margin-left:30px;height:20px"" class=""custom-container @(itemLabelTemplateValue == option.Value ? ""selected"" : string.Empty)"">
+        <div class=""custom-container @(itemLabelTemplateValue == option.Value ? ""selected"" : string.Empty)"">
             <BitIcon IconName=""@option.IconName"" />
             <span>@option.Text</span>
         </div>
@@ -294,6 +293,7 @@ Collapsed: [
         <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </Options>
 </BitChoiceGroup>
+
 
 <BitChoiceGroup Label=""ItemTemplate"" @bind-Value=""itemTemplateValue""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
@@ -309,7 +309,6 @@ Collapsed: [
         <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" />
     </Options>
 </BitChoiceGroup>
-
 
 <BitChoiceGroup Label=""Item's Template"" @bind-Value=""itemTemplateValue2""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
@@ -339,63 +338,46 @@ Collapsed: [
     </BitChoiceGroupOption>
 </BitChoiceGroup>";
     private readonly string example8CsharpCode = @"
-private string itemLabelTemplateValue = ""Day"";
 private string itemTemplateValue = ""Day"";
-private string itemTemplateValue2 = ""Day"";";
+private string itemTemplateValue2 = ""Day"";
+private string itemLabelTemplateValue = ""Day"";";
 
     private readonly string example9RazorCode = @"
-<BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
-                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-<BitTextField @bind-Value=""oneWayValue"" />
-
-
-<BitChoiceGroup Label=""Two-way"" @bind-Value=""twoWayValue""
-                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-<BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example9CsharpCode = @"
-private string oneWayValue = ""A"";
-private string twoWayValue = ""A"";";
-
-    private readonly string example10RazorCode = @"
-<BitChoiceGroup Label=""Basic"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" IsRtl=""true"">
+<BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" IsRtl=""true"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""گزینه پ"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Disabled"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"">
+<BitChoiceGroup Label=""غیرفعال"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""گزینه پ"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
+<style>
+    .validation-message {
+        color: red;
+    }
+</style>
+
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
-    <div>
-        <BitChoiceGroup TItem=""BitChoiceGroupOption<string>"" TValue=""string"" @bind-Value=""validationModel.Value"">
-            <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-            <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-            <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-            <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-        </BitChoiceGroup>
-        <ValidationMessage For=""@(() => validationModel.Value)"" />
-    </div>
+    
+    <BitChoiceGroup TItem=""BitChoiceGroupOption<string>"" TValue=""string"" @bind-Value=""validationModel.Value"">
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+    </BitChoiceGroup>
+    <ValidationMessage For=""@(() => validationModel.Value)"" />
+    
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
     [Required(ErrorMessage = ""Pick one"")]
@@ -405,6 +387,5 @@ public class ChoiceGroupValidationModel
 public ChoiceGroupValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
-
 private void HandleInvalidSubmit() { }";
 }

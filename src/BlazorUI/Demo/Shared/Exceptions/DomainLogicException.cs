@@ -1,8 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿namespace Bit.BlazorUI.Demo.Shared.Exceptions;
 
-namespace Bit.BlazorUI.Demo.Shared.Exceptions;
-
-[Serializable]
 public class DomainLogicException : KnownException
 {
     public DomainLogicException(string message)
@@ -25,8 +22,4 @@ public class DomainLogicException : KnownException
     {
     }
 
-    protected DomainLogicException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-    }
 }

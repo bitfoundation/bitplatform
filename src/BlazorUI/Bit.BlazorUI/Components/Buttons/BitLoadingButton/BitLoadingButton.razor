@@ -19,11 +19,11 @@
         }
         else
         {
-            <div style="@ClassStyles?.LoadingContainer?.Style" class="bit-ldb-ldg @GetLabelPositionClass() @ClassStyles?.LoadingContainer?.Class">
-                <div style="@ClassStyles?.Spinner?.Style" class="bit-ldb-spn @ClassStyles?.Spinner?.Class"></div>
+            <div style="@Styles?.LoadingContainer" class="bit-ldb-ldg @GetLabelPositionClass() @Classes?.LoadingContainer">
+                <div style="@Styles?.Spinner" class="bit-ldb-spn @Classes?.Spinner"></div>
                 @if (LoadingLabel.HasValue())
                 {
-                    <div style="@ClassStyles?.LoadingLabel?.Style" class="bit-ldb-lbl @ClassStyles?.LoadingLabel?.Class">
+                    <div style="@Styles?.LoadingLabel" class="bit-ldb-lbl @Classes?.LoadingLabel">
                         @LoadingLabel
                     </div>
                 }

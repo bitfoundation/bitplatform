@@ -19,7 +19,7 @@ public class SignUpRequestDto
 
     /// <example>true</example>
     [NotMapped]
-    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptPrivacyPolicy))]
-    [Display(Name = nameof(AppStrings.IsAcceptPrivacy))]
+    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
+    [Display(Name = nameof(AppStrings.IsTermsAccepted))]
     public bool IsAcceptPrivacy { get; set; }
 }

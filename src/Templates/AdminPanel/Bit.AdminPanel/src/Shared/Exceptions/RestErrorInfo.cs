@@ -8,5 +8,5 @@ public class RestErrorInfo
 
     public string? Message { get; set; }
 
-    public ErrorResourcePayload Payload { get; set; } = new();
+    public ErrorResourcePayload? Payload { get; set; }
 }

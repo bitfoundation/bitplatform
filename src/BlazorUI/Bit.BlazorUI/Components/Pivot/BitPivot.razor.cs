@@ -18,9 +18,9 @@ public partial class BitPivot
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitPivot component.
+    /// Custom CSS classes for different parts of the BitPivot component.
     /// </summary>
-    [Parameter] public BitPivotClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitPivotClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Default selected key for the pivot
@@ -118,10 +118,17 @@ public partial class BitPivot
 
     [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitPivot component.
+    /// </summary>
+    [Parameter] public BitPivotClassStyles? Styles { get; set; }
+
     protected override string RootElementClass => "bit-pvt";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => LinkSize switch
         {
             BitPivotLinkSize.Large => "bit-pvt-large",
@@ -146,6 +153,11 @@ public partial class BitPivot
             BitPivotPosition.Right => "bit-pvt-right",
             _ => string.Empty
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override Task OnInitializedAsync()

@@ -88,6 +88,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} field does not equal any of the values specified in AllowedValuesAttribute..
+        /// </summary>
+        public static string AllowedValuesAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("AllowedValuesAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Alphabetical.
         /// </summary>
         public static string Alphabetical {
@@ -115,15 +124,6 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The argument &apos;{0}&apos; cannot be null, empty or contain only whitespace..
-        /// </summary>
-        public static string ArgumentIsNullOrWhitespace {
-            get {
-                return ResourceManager.GetString("ArgumentIsNullOrWhitespace", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
         /// </summary>
         public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
@@ -147,6 +147,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string BadRequestException {
             get {
                 return ResourceManager.GetString("BadRequestException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid Base64 encoding..
+        /// </summary>
+        public static string Base64StringAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("Base64StringAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -359,6 +368,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An unknown failure has occurred..
+        /// </summary>
+        public static string DefaultError {
+            get {
+                return ResourceManager.GetString("DefaultError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete Account.
         /// </summary>
         public static string DeleteAccount {
@@ -382,6 +400,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string DeleteTodoItem {
             get {
                 return ResourceManager.GetString("DeleteTodoItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field equals one of the values specified in DeniedValuesAttribute..
+        /// </summary>
+        public static string DeniedValuesAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("DeniedValuesAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -710,6 +737,33 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type {0} must derive from {1}&lt;{2}&gt;..
+        /// </summary>
+        public static string InvalidManagerType {
+            get {
+                return ResourceManager.GetString("InvalidManagerType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided PasswordHasherCompatibilityMode is invalid..
+        /// </summary>
+        public static string InvalidPasswordHasherCompatibilityMode {
+            get {
+                return ResourceManager.GetString("InvalidPasswordHasherCompatibilityMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The iteration count must be a positive integer..
+        /// </summary>
+        public static string InvalidPasswordHasherIterationCount {
+            get {
+                return ResourceManager.GetString("InvalidPasswordHasherIterationCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Role name &apos;{0}&apos; is invalid..
         /// </summary>
         public static string InvalidRoleName {
@@ -764,11 +818,38 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to LengthAttribute must have a MaximumLength value that is greater than or equal to MinimumLength..
+        /// </summary>
+        public static string LengthAttribute_InvalidMaxLength {
+            get {
+                return ResourceManager.GetString("LengthAttribute_InvalidMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LengthAttribute must have a MinimumLength value that is zero or greater..
+        /// </summary>
+        public static string LengthAttribute_InvalidMinLength {
+            get {
+                return ResourceManager.GetString("LengthAttribute_InvalidMinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The field of type {0} must be a string, array or ICollection type..
         /// </summary>
         public static string LengthAttribute_InvalidValueType {
             get {
                 return ResourceManager.GetString("LengthAttribute_InvalidValueType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be a string or collection type with a minimum length of &apos;{1}&apos; and maximum length of &apos;{2}&apos;..
+        /// </summary>
+        public static string LengthAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("LengthAttribute_ValidationError", resourceCulture);
             }
         }
         
@@ -827,11 +908,20 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} must be at least {1} characters..
+        ///   Looks up a localized string similar to The field {0} must be a string or array type with a minimum length of &apos;{1}&apos;..
         /// </summary>
         public static string MinLengthAttribute_ValidationError {
             get {
                 return ResourceManager.GetString("MinLengthAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddIdentity must be called on the service collection..
+        /// </summary>
+        public static string MustCallAddIdentity {
+            get {
+                return ResourceManager.GetString("MustCallAddIdentity", resourceCulture);
             }
         }
         
@@ -854,11 +944,38 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true..
+        /// </summary>
+        public static string NoPersonalDataProtector {
+            get {
+                return ResourceManager.GetString("NoPersonalDataProtector", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No RoleType was specified, try AddRoles&lt;TRole&gt;()..
+        /// </summary>
+        public static string NoRoleType {
+            get {
+                return ResourceManager.GetString("NoRoleType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No todos yet.
         /// </summary>
         public static string NoTodos {
             get {
                 return ResourceManager.GetString("NoTodos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No IUserTwoFactorTokenProvider&lt;{0}&gt; named &apos;{1}&apos; is registered..
+        /// </summary>
+        public static string NoTokenProvider {
+            get {
+                return ResourceManager.GetString("NoTokenProvider", resourceCulture);
             }
         }
         
@@ -877,6 +994,15 @@ namespace TodoTemplate.Shared.Resources {
         public static string NotReceivedConfirmationEmailMessage1 {
             get {
                 return ResourceManager.GetString("NotReceivedConfirmationEmailMessage1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User security stamp cannot be null..
+        /// </summary>
+        public static string NullSecurityStamp {
+            get {
+                return ResourceManager.GetString("NullSecurityStamp", resourceCulture);
             }
         }
         
@@ -962,6 +1088,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Passwords must be at least {0} characters..
+        /// </summary>
+        public static string PasswordTooShort {
+            get {
+                return ResourceManager.GetString("PasswordTooShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0} field is not a valid phone number..
         /// </summary>
         public static string PhoneAttribute_Invalid {
@@ -998,6 +1133,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot use exclusive bounds when the maximum value is equal to the minimum value..
+        /// </summary>
+        public static string RangeAttribute_CannotUseExclusiveBoundsWhenTheyAreEqual {
+            get {
+                return ResourceManager.GetString("RangeAttribute_CannotUseExclusiveBoundsWhenTheyAreEqual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The maximum value &apos;{0}&apos; must be greater than or equal to the minimum value &apos;{1}&apos;..
         /// </summary>
         public static string RangeAttribute_MinGreaterThanMax {
@@ -1030,6 +1174,33 @@ namespace TodoTemplate.Shared.Resources {
         public static string RangeAttribute_ValidationError {
             get {
                 return ResourceManager.GetString("RangeAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be between {1} and {2} exclusive..
+        /// </summary>
+        public static string RangeAttribute_ValidationError_MaxExclusive {
+            get {
+                return ResourceManager.GetString("RangeAttribute_ValidationError_MaxExclusive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be between {1} exclusive and {2}..
+        /// </summary>
+        public static string RangeAttribute_ValidationError_MinExclusive {
+            get {
+                return ResourceManager.GetString("RangeAttribute_ValidationError_MinExclusive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field {0} must be between {1} exclusive and {2} exclusive..
+        /// </summary>
+        public static string RangeAttribute_ValidationError_MinExclusive_MaxExclusive {
+            get {
+                return ResourceManager.GetString("RangeAttribute_ValidationError_MinExclusive_MaxExclusive", resourceCulture);
             }
         }
         
@@ -1241,6 +1412,159 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true..
+        /// </summary>
+        public static string StoreNotIProtectedUserStore {
+            get {
+                return ResourceManager.GetString("StoreNotIProtectedUserStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IQueryableRoleStore&lt;TRole&gt;..
+        /// </summary>
+        public static string StoreNotIQueryableRoleStore {
+            get {
+                return ResourceManager.GetString("StoreNotIQueryableRoleStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IQueryableUserStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIQueryableUserStore {
+            get {
+                return ResourceManager.GetString("StoreNotIQueryableUserStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IRoleClaimStore&lt;TRole&gt;..
+        /// </summary>
+        public static string StoreNotIRoleClaimStore {
+            get {
+                return ResourceManager.GetString("StoreNotIRoleClaimStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserAuthenticationTokenStore&lt;User&gt;..
+        /// </summary>
+        public static string StoreNotIUserAuthenticationTokenStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserAuthenticationTokenStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserAuthenticatorKeyStore&lt;User&gt;..
+        /// </summary>
+        public static string StoreNotIUserAuthenticatorKeyStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserAuthenticatorKeyStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserClaimStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserClaimStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserClaimStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserConfirmationStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserConfirmationStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserConfirmationStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserEmailStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserEmailStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserEmailStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserLockoutStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserLockoutStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserLockoutStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserLoginStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserLoginStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserLoginStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserPasswordStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserPasswordStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserPasswordStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserPhoneNumberStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserPhoneNumberStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserPhoneNumberStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserRoleStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserRoleStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserRoleStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserSecurityStampStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserSecurityStampStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserSecurityStampStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;..
+        /// </summary>
+        public static string StoreNotIUserTwoFactorRecoveryCodeStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserTwoFactorRecoveryCodeStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorStore&lt;TUser&gt;..
+        /// </summary>
+        public static string StoreNotIUserTwoFactorStore {
+            get {
+                return ResourceManager.GetString("StoreNotIUserTwoFactorStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The maximum length must be a nonnegative integer..
         /// </summary>
         public static string StringLengthAttribute_InvalidMaxLength {
@@ -1394,6 +1718,15 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to server..
+        /// </summary>
+        public static string UnableToConnectToServer {
+            get {
+                return ResourceManager.GetString("UnableToConnectToServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {
@@ -1475,11 +1808,20 @@ namespace TodoTemplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User is locked out. Try again in {0}.
+        ///   Looks up a localized string similar to User is locked out..
         /// </summary>
         public static string UserLockedOut {
             get {
                 return ResourceManager.GetString("UserLockedOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lockout is not enabled for this user..
+        /// </summary>
+        public static string UserLockoutNotEnabled {
+            get {
+                return ResourceManager.GetString("UserLockoutNotEnabled", resourceCulture);
             }
         }
         

@@ -15,28 +15,28 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-dtrp-fld-grp {
+        .bit-dtrp-icn {
             cursor: default;
             pointer-events: none;
             color: $color-foreground-disabled;
             background: none $color-background-disabled;
             border: $shape-border-width $shape-border-style $color-border-disabled;
+        }
 
-            .bit-icon {
-                cursor: default;
-                color: $color-foreground-disabled;
-            }
+        .bit-dtrp-ico {
+            cursor: default;
+            color: $color-foreground-disabled;
+        }
 
-            input {
-                cursor: default;
-                color: $color-foreground-disabled;
-                background: none $color-background-disabled;
-            }
+        .bit-dtrp-inp {
+            cursor: default;
+            color: $color-foreground-disabled;
+            background: none $color-background-disabled;
         }
     }
 
     &.bit-inv {
-        .bit-dtrp-fld-grp {
+        .bit-dtrp-icp {
             border-color: $color-state-error;
         }
     }
@@ -48,8 +48,8 @@
     box-shadow: none;
     font-weight: 600;
     box-sizing: border-box;
+    padding: spacing(0.5) 0;
     font-size: spacing(1.75);
-    padding: spacing(0.625) 0;
     overflow-wrap: break-word;
     color: $color-foreground-primary;
 }
@@ -58,69 +58,66 @@
     position: relative;
 }
 
-.bit-dtrp-fld-grp {
+.bit-dtrp-icn {
     margin: 0;
     display: flex;
-    gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
     height: spacing(4);
     position: relative;
     align-items: center;
-    padding: 0 spacing(1);
     flex-flow: row nowrap;
+    padding: 0 spacing(1);
     box-sizing: border-box;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;
-
-    input {
-        margin: 0;
-        outline: 0;
-        padding: 0;
-        width: 100%;
-        min-width: 0;
-        height: 100%;
-        border: none;
-        cursor: pointer;
-        box-shadow: none;
-        font-weight: 400;
-        border-radius: 0;
-        box-sizing: border-box;
-        text-overflow: ellipsis;
-        font-size: spacing(1.75);
-        background: none transparent;
-        color: $color-foreground-primary;
-        font-family: $typography-font-family;
-    }
-
-    .bit-icon {
-        cursor: pointer;
-        padding-right: 0;
-        padding-left: spacing(1);
-        color: $color-foreground-secondary;
-    }
 }
 
-.bit-dtrp-edt-inp {
-    input {
-        cursor: default;
-    }
+.bit-dtrp-ico {
+    cursor: pointer;
+    padding-right: 0;
+    padding-left: spacing(1);
+    color: $color-foreground-secondary;
 }
 
-.bit-dtrp-lfic {
-    .bit-dtrp-fld-grp {
+.bit-dtrp-inp {
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+    box-shadow: none;
+    font-weight: 400;
+    border-radius: 0;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    background: none transparent;
+    color: $color-foreground-primary;
+    font-family: $typography-font-family;
+}
+
+.bit-dtrp-ein {
+    cursor: default;
+}
+
+.bit-dtrp-lic {
+    .bit-dtrp-icn {
         flex-direction: row-reverse;
+    }
 
-        .bit-icon {
-            padding-left: 0;
-            padding-right: spacing(1);
-        }
+    .bit-dtrp-ico {
+        padding-left: 0;
+        padding-right: spacing(1);
     }
 }
 
 .bit-dtrp-foc {
-    .bit-dtrp-fld-grp::after {
+    .bit-dtrp-icn::after {
         content: "";
         position: absolute;
         pointer-events: none;
@@ -134,7 +131,6 @@
     display: none;
     position: fixed;
     font-weight: 400;
-    top: spacing(4.25);
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
@@ -145,40 +141,53 @@
 }
 
 .bit-dtrp-rsp {
-    @media only screen and (max-width: 600px) {
-        .bit-dtrp-dwp, 
-        .bit-dtrp-mwp {
-            flex-grow: 1;
-        }
+    .bit-dtrp-dwp,
+    .bit-dtrp-mwp {
+        flex-grow: 1;
+    }
 
-        th, td {
-            margin: auto;
-            width: calc(100%/7);
-            font-size: spacing(2);
-        }
+    .bit-dtrp-pkh {
+        min-height: spacing(5.5);
+    }
 
-        .bit-dtrp-dbtn,
-        .bit-dtrp-rbtn {
-            width: 100%;
-            font-size: spacing(2);
+    .bit-dtrp-pkc {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
 
-            span {
-                width: 100%;
-                height: spacing(6);
-            }
-        }
+    .bit-dtrp-pkr {
+        height: 100%;
+    }
 
-        &.bit-dtrp-dc-tdy {
-            border-radius: unset;
+    .bit-dtrp-nbt,
+    .bit-dtrp-gtb,
+    .bit-dtrp-wlb,
+    .bit-dtrp-dbt,
+    .bit-dtrp-pkb,
+    .bit-dtrp-wnm {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        aspect-ratio: 1;
+        align-items: center;
+        font-size: spacing(2);
+        justify-content: center;
+    }
 
-            &::after {
-                border-radius: unset;
-            }
-        }
+    .bit-dtrp-nbt,
+    .bit-dtrp-gtb {
+        width: spacing(5.5);
+    }
+
+    .bit-dtrp-wlb {
+        font-weight: bold;
     }
 }
 
-.bit-dtrp-mcal {
+.bit-dtrp-cac {
+    height: 100%;
     outline: none;
     position: relative;
     overflow: hidden auto;
@@ -189,6 +198,7 @@
 .bit-dtrp-grp {
     margin: 0;
     padding: 0;
+    height: 100%;
     display: flex;
     outline: none;
     box-shadow: none;
@@ -199,7 +209,7 @@
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
-.bit-dtrp-sd {
+.bit-dtrp-sdt {
     height: 0;
     border: 0;
     margin: 0;
@@ -215,37 +225,38 @@
     box-shadow: none;
     padding: spacing(1.5);
     box-sizing: content-box;
-    flex-flow: column nowrap;
     min-width: spacing(24.5);
-
-    table {
-        position: relative;
-        text-align: center;
-        border-collapse: collapse;
-        border-spacing: 0;
-        table-layout: fixed;
-        font-size: inherit;
-        margin-top: spacing(0.5);
-        margin-bottom: spacing(1.25);
-    }
-
-    tr {
-        width: 100%;
-        display: flex;
-        flex-flow: row nowrap;
-    }
+    flex-flow: column nowrap;
 }
 
-.bit-dtrp-wd-lbl {
+.bit-dtrp-dgd {
+    border-spacing: 0;
+    position: relative;
+    text-align: center;
+    font-size: inherit;
+    table-layout: fixed;
+    margin-top: spacing(0.5);
+    border-collapse: collapse;
+    margin-bottom: spacing(1.25);
+}
+
+.bit-dtrp-dgh,
+.bit-dtrp-dgr {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+}
+
+.bit-dtrp-wlb {
     margin: 0;
     padding: 0;
+    width: 100%;
     border: none;
-    cursor: pointer;
+    aspect-ratio: 1;
     font-weight: 400;
     position: relative;
     text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
@@ -255,16 +266,23 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
-.bit-dtrp-dc {
-    margin: 0;
+.bit-dtrp-dbt {
     padding: 0;
     border: none;
+    display: flex;
     cursor: pointer;
-    font-weight: 400;
+    overflow: visible;
     position: relative;
-    text-align: center;
+    width: spacing(3.5);
+    align-items: center;
+    height: spacing(3.5);
+    outline: transparent;
+    font-weight: inherit;
+    box-sizing: border-box;
     font-size: spacing(1.5);
-    line-height: spacing(3.5);
+    line-height: spacing(3);
+    justify-content: center;
+    background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
 
@@ -273,62 +291,41 @@
             background-color: $color-action-hover-background-primary;
         }
     }
-}
 
-.bit-dtrp-dbtn {
-    padding: 0;
-    z-index: 1;
-    border: none;
-    display: flex;
-    color: inherit;
-    cursor: pointer;
-    overflow: visible;
-    position: relative;
-    outline: transparent;
-    font-weight: inherit;
-    box-sizing: border-box;
-    line-height: spacing(3);
-    font-size: spacing(1.5);
-    background-color: transparent;
-    border-radius: $shape-border-radius;
+    &:active {
+        background-color: $color-action-active-background-primary;
+    }
 
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
-    }
-
-    span {
-        width: spacing(3.5);
-        align-items: center;
-        display: inline-flex;
-        height: spacing(3.5);
-        justify-content: center;
+        color: $color-foreground-disabled;
     }
 }
 
-.bit-dtrp-dc-ots-m {
-    .bit-dtrp-dbtn {
-        font-weight: 400;
-        color: $color-foreground-secondary;
-    }
+.bit-dtrp-dbo {
+    font-weight: 400;
+    color: $color-foreground-secondary;
 }
 
-.bit-dtrp-dc-tdy {
+.bit-dtrp-dtd {
     font-weight: 600;
     border-radius: 50%;
-    background-color: $color-background-secondary;
+    color: $color-primary-text;
+    background-color: $color-primary-main;
 
-    &::after {
-        inset: 0;
-        content: "";
-        position: absolute;
-        border-radius: 50%;
-        border: $shape-border-width $shape-border-style $color-border-primary;
+    @media(hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-primary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-active-primary;
     }
 }
 
-.bit-dtrp-dc-sel-st {
+.bit-dtrp-dss {
     color: $color-primary-text;
     background-color: $color-primary-main;
     border-radius: spacing(1) 0 0 spacing(1);
@@ -340,7 +337,7 @@
     }
 }
 
-.bit-dtrp-dc-sel-en {
+.bit-dtrp-dse {
     color: $color-primary-text;
     background-color: $color-primary-main;
     border-radius: 0 spacing(1) spacing(1) 0;
@@ -352,11 +349,11 @@
     }
 }
 
-.bit-dtrp-dc-sel-st-en {
+.bit-dtrp-dsse {
     border-radius: spacing(1);
 }
 
-.bit-dtrp-dc-sel-btw {
+.bit-dtrp-dsb {
     border-radius: 0;
     color: $color-foreground-primary;
     background-color: $color-primary-light;
@@ -368,47 +365,37 @@
     }
 }
 
-.bit-dtrp-wnumc {
-    margin: 0;
+.bit-dtrp-wnm {
     display: flex;
     font-weight: 400;
-    align-items: center;
     width: spacing(3.5);
+    align-items: center;
     height: spacing(3.5);
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
-    color: $color-foreground-primary;
+    color: $color-foreground-secondary;
     background-color: $color-background-secondary;
     border-right: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
-.bit-dtrp-pkr-hdr {
+.bit-dtrp-pkh {
     width: 100%;
     position: relative;
-    display: inline-flex;
     height: spacing(3.5);
+    display: inline-flex;
     line-height: spacing(5.5);
-
-    button.bit-dtrp-pkr-tit {
-        cursor: pointer;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $color-action-hover-background-primary;
-            }
-        }
-    }
 }
 
-.bit-dtrp-pkr-tit {
+.bit-dtrp-pkt,
+.bit-dtrp-ptb {
     margin: 0;
     border: none;
     cursor: text;
     flex-grow: 1;
-    text-align: left;
     overflow: hidden;
+    text-align: left;
     font-weight: 600;
     position: relative;
     align-items: center;
@@ -428,13 +415,23 @@
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
+.bit-dtrp-ptb {
+    cursor: pointer;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+}
+
 .bit-dtrp-nbc {
     display: flex;
     align-items: center;
-    align-self: flex-end;
 }
 
-.bit-dtrp-nbt, .bit-dtrp-gtb {
+.bit-dtrp-nbt,
+.bit-dtrp-gtb {
     padding: 0;
     border: none;
     display: block;
@@ -457,56 +454,19 @@
         &:hover {
             background-color: $color-action-hover-background-primary;
         }
-    }
-
-    i {
-        speak: none;
-        display: inline-block;
     }
 
     &:disabled {
         pointer-events: none;
         background-color: transparent;
 
-        i {
+        .bit-dtrp-gti {
             color: $color-foreground-disabled;
         }
     }
 }
 
-.bit-dtrp-hdr-ibtn {
-    padding: 0;
-    border: none;
-    display: block;
-    cursor: pointer;
-    overflow: visible;
-    position: relative;
-    text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    outline: transparent;
-    min-width: spacing(3.5);
-    font-size: spacing(1.5);
-    min-height: spacing(3.5);
-    line-height: spacing(3.5);
-    background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $color-action-hover-background-primary;
-        }
-    }
-
-    span {
-        i {
-            font-size: spacing(1.5);
-        }
-    }
-}
-
-.bit-dtrp-div {
+.bit-dtrp-dvd {
     top: 0;
     border-right: $shape-border-width $shape-border-style $color-border-secondary;
 }
@@ -522,12 +482,12 @@
     flex-flow: column nowrap;
 }
 
-.bit-dtrp-gctn {
+.bit-dtrp-pkc {
     margin-top: spacing(0.5);
     margin-bottom: spacing(1.5);
 }
 
-.bit-dtrp-btn-row {
+.bit-dtrp-pkr {
     display: flex;
     margin-bottom: spacing(2);
     justify-content: space-evenly;
@@ -537,7 +497,7 @@
     }
 }
 
-.bit-dtrp-rbtn {
+.bit-dtrp-pkb {
     border: none;
     cursor: pointer;
     overflow: hidden;
@@ -562,35 +522,35 @@
 
     &:disabled {
         pointer-events: none;
-        color: $color-foreground-disabled;
         background-color: transparent;
+        color: $color-foreground-disabled;
     }
 }
 
-.bit-dtrp-crtm {
-    color: $color-primary-text;
-    background-color: $color-primary-main;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $color-action-hover-primary;
-        }
-    }
-}
-
-.bit-dtrp-selm {
+.bit-dtrp-psm {
     font-weight: 600;
+    background-color: $color-background-secondary;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+}
+
+.bit-dtrp-pcm {
     color: $color-primary-text;
     background-color: $color-primary-main;
 
     @media (hover: hover) {
         &:hover {
+            color: $color-action-hover-secondary;
             background-color: $color-action-hover-primary;
         }
     }
 }
 
-.bit-dtrp-tgrp {
+.bit-dtrp-tgp {
     display: flex;
     gap: spacing(2);
     align-items: center;
@@ -612,53 +572,21 @@
     }
 }
 
-.bit-dtrp-tdiv {
-    display: block;
-}
-
-.bit-dtrp-tinp {
-    border: none;
-    display: flex;
-    cursor: pointer;
-    text-align: center;
-    align-items: center;
-    width: spacing(3.75);
-    height: spacing(3.75);
-    box-sizing: border-box;
-    justify-content: center;
-    -moz-appearance: textfield; // Firefox
-    background-color: $color-background-primary;
-
-    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
-    &::-webkit-outer-spin-button {
-        -webkit-appearance: none
-    }
-
-    &:focus {
-        border: none;
-        outline: none;
-    }
-}
-
-.bit-dtrp-tgrp-ampm {
-    gap: spacing(1)
-}
-
-.bit-dtrp-ampm-ctn {
+.bit-dtrp-apc {
     display: flex;
     flex-direction: column;
 }
 
-.bit-dtrp-ampm-btn {
+.bit-dtrp-apb {
+    margin: 0;
+    padding: 0;
     border: none;
     overflow: visible;
     outline: transparent;
-    padding: 0;
     font-size: spacing(1.5);
     box-sizing: content-box;
     background-color: transparent;
     color: $color-foreground-primary;
-    margin: 0;
 
     @media (hover: hover) {
         &:hover {
@@ -672,6 +600,38 @@
         pointer-events: none;
         color: $color-foreground-disabled;
     }
+}
+
+.bit-dtrp-tdv {
+    display: block;
+}
+
+.bit-dtrp-tin {
+    border: none;
+    display: flex;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    box-sizing: border-box;
+    justify-content: center;
+    -moz-appearance: textfield;
+    background-color: $color-background-primary;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none
+    }
+
+    &:focus {
+        border: none;
+        outline: none;
+    }
+}
+
+.bit-dtrp-tap {
+    gap: spacing(1)
 }
 
 .bit-dtrp-ovl {
@@ -692,7 +652,7 @@
         border-bottom: $shape-border-width $shape-border-style $color-border-primary;
     }
 
-    .bit-dtrp-fld-grp {
+    .bit-dtrp-icn {
         border: none;
         flex: 1 1 0px;
         text-align: left;
@@ -705,7 +665,7 @@
     }
 
     &.bit-dtrp-foc {
-        .bit-dtrp-fld-grp::after {
+        .bit-dtrp-icn::after {
             border: none;
             border-radius: 0;
             border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
@@ -713,8 +673,8 @@
     }
 }
 
-.bit-dtrp-no-brd {
-    .bit-dtrp-fld-grp {
+.bit-dtrp-nbd {
+    .bit-dtrp-icn {
         border: none;
     }
 }
@@ -724,27 +684,26 @@
         direction: rtl;
     }
 
-    .bit-dtrp-wnumc {
+    .bit-dtrp-wnm {
         border-right: none;
         border-left: $shape-border-width $shape-border-style $color-border-secondary;
     }
 
-    .bit-dtrp-pkr-tit {
+    .bit-dtrp-pkt,
+    .bit-dtrp-ptb {
         text-align: right;
         padding: 0 spacing(1.25) 0 spacing(0.5);
     }
 
-    .bit-dtrp-dwp {
-        .bit-dtrp-dc-sel-st {
-            border-radius: 0 spacing(1) spacing(1) 0;
-        }
-
-        .bit-dtrp-dc-sel-en {
-            border-radius: spacing(1) 0 0 spacing(1);
-        }
-    }
-
     .bit-dtrp-twp {
         flex-direction: row-reverse;
+    }
+
+    .bit-dtrp-dss {
+        border-radius: 0 spacing(1) spacing(1) 0;
+    }
+
+    .bit-dtrp-dse {
+        border-radius: spacing(1) 0 0 spacing(1);
     }
 }

@@ -13,4 +13,5 @@ public class ChoiceModel
     public string? Class { get; set; }
     public string? Style { get; set; }
     public RenderFragment<ChoiceModel>? Fragment { get; set; }
+    public int Idx { get; set; }
 }

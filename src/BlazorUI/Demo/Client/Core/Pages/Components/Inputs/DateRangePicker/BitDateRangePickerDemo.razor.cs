@@ -9,21 +9,35 @@ public partial class BitDateRangePickerDemo
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the DateRangePicker allows input a date string directly or not.",
+            Description = "Whether or not the DateRangePicker allows string date inputs.",
         },
         new()
         {
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the DateRangePicker closes automatically after selecting the second value or not.",
+            Description = "Whether the DateRangePicker closes automatically after selecting the second value.",
+        },
+        new()
+        {
+            Name = "CalloutAriaLabel",
+            Type = "string",
+            DefaultValue = "Calendar",
+            Description = "Aria label of the DateRangePicker's callout for screen readers."
         },
         new()
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+            Description = "Capture and render additional html attributes for the DateRangePicker's callout."
+        },
+        new()
+        {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close date range picker",
+            Description = "The title of the close button (tooltip)."
         },
         new()
         {
@@ -34,38 +48,66 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "DayCellTemplate",
-            Type = "RenderFragment<DateTimeOffset>?",
-            DefaultValue = "null",
-            Description = "Used to customize how content inside the day cell is rendered."
-        },
-        new()
-        {
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"Date format like ""yyyy/MM/dd"".",
+            Description = "The format of the date in the DateRangePicker.",
         },
         new()
         {
-            Name = "GoToToday",
-            Type = "string",
-            DefaultValue = "Go to today",
-            Description = "GoToToday text for the DateRangePicker.",
-        },
-        new()
-        {
-            Name = "GoToPrevMonthTitle",
-            Type = "string",
-            DefaultValue = "Go to previous month",
-            Description = "The title of the Go to previous month button.",
+            Name = "DayCellTemplate",
+            Type = "RenderFragment<DateTimeOffset>?",
+            DefaultValue = "null",
+            Description = "Custom template to render the day cells of the DateRangePicker."
         },
         new()
         {
             Name = "GoToNextMonthTitle",
             Type = "string",
             DefaultValue = "Go to next month",
-            Description = "The title of the Go to next month button.",
+            Description = "The title of the Go to next month button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToNextYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Next year range {0} - {1}",
+            Description = "The title of the Go to next year range button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToNextYearTitle",
+            Type = "string",
+            DefaultValue = "Go to next year {0}",
+            Description = "The title of the Go to next year button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToPrevMonthTitle",
+            Type = "string",
+            DefaultValue = "Go to previous month",
+            Description = "The title of the Go to previous month button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToPrevYearRangeTitle",
+            Type = "string",
+            DefaultValue = "Previous year range {0} - {1}",
+            Description = "The title of the Go to previous year range button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToPrevYearTitle",
+            Type = "string",
+            DefaultValue = "Go to previous year {0}",
+            Description = "The title of the Go to previous year button (tooltip).",
+        },
+        new()
+        {
+            Name = "GoToTodayTitle",
+            Type = "string",
+            DefaultValue = "Go to today",
+            Description = "The title of the GoToToday button (tooltip).",
         },
         new()
         {
@@ -93,37 +135,44 @@ public partial class BitDateRangePickerDemo
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom DateRangePicker icon template."
+            Description = "Custom template for the DateRangePicker's icon."
         },
         new()
         {
             Name = "IconLocation",
             Type = "BitIconLocation",
+            DefaultValue = "BitIconLocation.Right",
+            Description = "Determines the location of the DateRangePicker's icon.",
             LinkType = LinkType.Link,
             Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "DateRangePicker icon location"
         },
         new()
         {
             Name = "IconName",
             Type = "string",
             DefaultValue = "CalendarMirrored",
-            Description = "Optional DateRangePicker icon."
+            Description = "The name of the DateRangePicker's icon."
+        },
+        new()
+        {
+            Name = "InvalidErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for the invalid value."
         },
         new()
         {
             Name = "IsMonthPickerVisible",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown beside the day picker or hidden.",
+            Description = "Whether the month picker is shown or hidden.",
         },
         new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this DateRangePicker is open.",
+            Description = "Whether or not the DateRangePicker's callout is open.",
         },
         new()
         {
@@ -144,89 +193,95 @@ public partial class BitDateRangePickerDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Label for the DateRangePicker.",
+            Description = "The text of the DateRangePicker's label.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize the label for the DateRangePicker."
+            Description = "Custom template for the DateRangePicker's label."
         },
         new()
         {
             Name = "MaxDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Maximum date for the DateRangePicker",
+            Description = "The maximum date allowed for the DateRangePicker.",
         },
         new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Minimum date for the DateRangePicker",
+            Description = "The minimum date allowed for the DateRangePicker.",
         },
         new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the month cell is rendered."
+            Description = "Custom template to render the month cells of the DateRangePicker."
+        },
+        new()
+        {
+            Name = "MonthPickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0}, change month",
+            Description = "The title of the month picker's toggle (tooltip)."
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "Callback for when clicking on DateRangePicker input.",
+            Description = "The callback for clicking on the DateRangePicker's input.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback",
+            Description = "The callback for focusing the DateRangePicker's input.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            Description = "Callback for when focus moves into the DateRangePicker input.",
+            Description = "The callback for when the focus moves into the DateRangePicker's input.",
         },
         new()
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            Description = "Callback for when clicking on DateRangePicker input.",
+            Description = "The callback for when the focus moves out of the DateRangePicker's input.",
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<BitDateRangePickerValue?>",
+            Description = "The callback for selecting a date in the DateRangePicker.",
             LinkType = LinkType.Link,
-            Href = "#dateRangePickerValue",
-            Description = "Callback for when the on selected date changed.",
-        },
-        new()
-        {
-            Name = "PickerAriaLabel",
-            Type = "string",
-            DefaultValue = "Calendar",
-            Description = "Aria label for date picker popup for screen reader users."
+            Href = "#date-range-picker-value",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "Placeholder text for the DateRangePicker.",
+            Description = "The placeholder text of the DateRangePicker's input.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the CalendarDay close button should be shown or not."
+            Description = "Whether the DateRangePicker's close button should be shown or not."
         },
         new()
         {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the \"Go to today\" link should be shown or not."
+            Description = "Whether the GoToToday button should be shown or not."
         },
         new()
         {
@@ -237,64 +292,68 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not render the time-picker.",
+        },
+        new()
+        {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show week number in the year.",
+            Description = "Whether the week number (weeks 1 to 53) should be shown before each week row.",
         },
         new()
         {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
-            Description = "The tabIndex of the TextField.",
+            Description = "The tabIndex of the DateRangePicker's input.",
         },
         new()
         {
-            Name = "Value",
-            Type = "BitDateRangePickerValue?",
+            Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "Time format of the time-pickers, 24H or 12H.",
             LinkType = LinkType.Link,
-            Href = "#dateRangePickerValue",
-            DefaultValue = "null",
-            Description = "The value of DateRangePicker.",
+            Href = "#time-format-enum",
         },
         new()
         {
-            Name = "ValueChanged",
-            Type = "EventCallback<BitDateRangePickerValue?>",
-            LinkType = LinkType.Link,
-            Href = "#dateRangePickerValue",
-            Description = "Callback for when the on date value changed.",
+            Name = "WeekNumberTitle",
+            Type = "string",
+            DefaultValue = "Week number {0}",
+            Description = "The title of the week number (tooltip).",
         },
         new()
         {
             Name = "ValueFormat",
             Type = "string",
             DefaultValue = "Start: {0} - End: {1}",
-            Description = "ValueFormat for the DateRangePicker.",
+            Description = "The string format used to show the DateRangePicker's value in its input.",
         },
         new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the year cell is rendered."
+            Description = "Custom template to render the year cells of the DateRangePicker."
         },
         new()
         {
-            Name = "ShowTimePicker",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Show time picker for select times.",
+            Name = "YearPickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0}, change year",
+            Description = "The title of the year picker's toggle (tooltip).",
         },
         new()
         {
-            Name = "TimeFormat",
-            Type = "BitTimeFormat",
-            LinkType = LinkType.Link,
-            Href = "#time-format-enum",
-            DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "Time format of the time pickers, 24H or 12H"
+            Name = "YearRangePickerToggleTitle",
+            Type = "string",
+            DefaultValue = "{0} - {1}, change month",
+            Description = "The title of the year range picker's toggle (tooltip).",
         },
     };
 
@@ -302,7 +361,7 @@ public partial class BitDateRangePickerDemo
     {
         new()
         {
-            Id = "dateRangePickerValue",
+            Id = "date-range-picker-value",
             Title = "BitDateRangePickerValue",
             Parameters = new()
             {
@@ -369,239 +428,102 @@ public partial class BitDateRangePickerDemo
             }
         }
     };
-    
+
+
+
+    private BitDateRangePickerValue selectedDateRange = new()
+    {
+        StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+        EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
+    };
+
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
+
 
 
     private readonly string example1RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker Label=""Basic DateRangePicker"" />
+<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDateRangePicker Label=""PlaceHolder"" Placeholder=""Select a date range"" />
+<BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers=""true"" />
+<BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
+<BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
+<BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
+<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitDateRangePicker IsEnabled=false
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />
-
-<BitDateRangePicker IsEnabled=false
-                    Style=""max-width: 300px""
-                    Label=""Date range""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
+<BitDateRangePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />";
 
     private readonly string example3RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    ShowWeekNumbers=true
-                    ShowMonthPickerAsOverlay=true
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."" />";
+<BitDateRangePicker Label=""DateFormat: 'dd=MM(yy)'"" DateFormat=""dd=MM(yy)"" />
+<BitDateRangePicker Label=""ValueFormat: 'Dep: {0}, Arr: {1}'"" ValueFormat=""Dep: {0}, Arr: {1}"" />";
 
     private readonly string example4RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    DateFormat=""dd=MM(yy)"" />";
-
-    private readonly string example5RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddDays(5)""
-                    MinDate=""DateTimeOffset.Now.AddDays(-5)"" />
-<br />
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddMonths(1)""
-                    MinDate=""DateTimeOffset.Now.AddMonths(-2)"" />
-<br />
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates...""
-                    MaxDate=""DateTimeOffset.Now.AddYears(1)""
-                    MinDate=""DateTimeOffset.Now.AddYears(-5)"" />";
-
-    private readonly string example6RazorCode = @"
-<BitDateRangePicker @ref=""dateRangePicker""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
-    <LabelTemplate>
-        Custom label <BitIconButton IconName=""@BitIconName.Calendar"" OnClick=""OpenCallout""></BitIconButton>
-    </LabelTemplate>
-</BitDateRangePicker>";
-    private readonly string example6CsharpCode = @"
-private BitDateRangePicker dateRangePicker;
-private async Task OpenCallout()
-{
-    await dateRangePicker.OpenCallout();
-}";
-
-    private readonly string example7RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    @bind-Value=""@selectedDateRange""
-                    AriaLabel=""select dates""
-                    Placeholder=""select dates..."" />
-<BitLabel>selected date: @selectedDateRange.StartDate.ToString() - @selectedDateRange.EndDate.ToString()</BitLabel>";
-    private readonly string example7CsharpCode = @"
+<BitDateRangePicker @bind-Value=""@selectedDateRange"" />
+<div>From: <b>@selectedDateRange.StartDate.ToString()</b></div>
+<div>To: <b>@selectedDateRange.EndDate.ToString()</b></div>";
+    private readonly string example4CsharpCode = @"
 private BitDateRangePickerValue selectedDateRange = new()
 {
-    StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
+    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
 };";
 
-    private readonly string example8RazorCode = @"
-<BitDateRangePicker DateFormat=""dd-MM-yyyy""
-                    Culture=""CultureInfoHelper.GetFaIrCultureByFarsiNames()""
-                    GoToToday=""برو به امروز""
+    private readonly string example5RazorCode = @"
+<BitDateRangePicker Label=""fa-IR culture with Farsi names""
+                    GoToTodayTitle=""برو به امروز""
                     ValueFormat=""شروع: {0}, پایان: {1}""
-                    Style=""max-width: 300px"">
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
+
+<BitDateRangePicker Label=""fa-IR culture with Fingilish names""
+                    GoToTodayTitle=""Boro be emrouz""
+                    ValueFormat=""Shoro: {0}, Payan: {1}""
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+
+    private readonly string example6RazorCode = @"
+<BitDateRangePicker>
+    <LabelTemplate>
+        Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
+    </LabelTemplate>
 </BitDateRangePicker>
 
-<BitDateRangePicker DateFormat=""dd-MM-yyyy""
-                    Culture=""CultureInfoHelper.GetFaIrCultureByFingilishNames()""
-                    GoToToday=""Boro be emrouz""
-                    ValueFormat=""شروع: {0}, پایان: {1}""
-                    Style=""max-width: 300px"">
-</BitDateRangePicker>";
-
-    private readonly string example9RazorCode = @"
-<style>
-    .weekend-cell {
-        color: red;
-    }
-
-    .custom-day-cell {
-        position: relative;
-        width: 44px !important;
-        height: 44px !important;
-    }
-
-    .discount-badge {
-        position: absolute;
-        top: 0;
-        right: 0;
-        display: inline-flex;
-        align-items: center;
-        width: fit-content !important;
-        height: 16px !important;
-        border-radius: 2px;
-        padding: 0 4px;
-        background-color: red;
-        color: white;
-        font-size: 8px;
-    }
-
-    .year-suffix {
-        position: absolute;
-        bottom: 10px;
-        right: -12px;
-        height: 12px;
-        color: gray;
-        font-size: 8px;
-    }
-</style>
-
-<BitDateRangePicker Label=""Custom weekend cells""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
+<BitDateRangePicker Label=""DayCellTemplate"">
     <DayCellTemplate>
-        <span class=""@(context.DayOfWeek == DayOfWeek.Sunday ? ""weekend-cell"" : null)"">
-            @context.Day
-        </span>
-    </DayCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""Custom year, month, and day cells""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    Placeholder=""Select dates..."">
-    <DayCellTemplate>
-        <span class=""custom-day-cell"">
+        <span class=""day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? "" weekend-cell"" : null)"">
             @context.Day
 
             @if (context.Day % 5 is 0)
             {
-                <span class=""discount-badge"">off</span>
+                <span class=""badge""></span>
             }
         </span>
     </DayCellTemplate>
-    <MonthCellTemplate>
-        <span>
-            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+</BitDateRangePicker>
 
-            @if (context.Month == 1)
-            {
-                <span class=""discount-badge"">Xmas</span>
-            }
-        </span>
+<BitDateRangePicker Label=""MonthCellTemplate"">
+    <MonthCellTemplate>
+        <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
+            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+        </div>
     </MonthCellTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""YearCellTemplate"">
     <YearCellTemplate>
         <span style=""position: relative"">
             @context
             <span class=""year-suffix"">AC</span>
         </span>
     </YearCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""Icon template""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    IconLocation=""BitIconLocation.Left""
-                    Placeholder=""Select dates..."">
-    <IconTemplate>
-        <img src=""https://img.icons8.com/fluency/2x/calendar-13.png"" width=""24"" height=""24""/>
-    </IconTemplate>
 </BitDateRangePicker>";
-    private readonly string example9CsharpCode = @"
-private CultureInfo Culture = CultureInfo.CurrentUICulture;";
+    private readonly string example6CsharpCode = @"
+private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example10RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    ValueFormat=""Dep: {0}, Arr: {1}""
-                    DateFormat=""dd=MM(yy)""
-                    Placeholder=""Select dates..."" />";
-
-    private readonly string example11RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AriaLabel=""Select dates""
-                    IconName=""@BitIconName.Airplane""
-                    Placeholder=""Select dates..."" />";
-
-    private readonly string example12RazorCode = @"
-<BitDateRangePicker IsResponsive=""true""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example13RazorCode = @"
-<BitDateRangePicker Style=""max-width: 300px""
-                    AutoClose=""false""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example14RazorCode = @"
-<BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
-                    Label=""Time format 24 hours""
-                    ShowTimePicker=""true""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />
-
-<BitDateRangePicker @bind-Value=""@selectedDateTimeRange""
-                    Label=""Time format 12 hours""
-                    ShowTimePicker=""true""
-                    TimeFormat=""BitTimeFormat.TwelveHours""
-                    Style=""max-width: 300px""
-                    AriaLabel=""Select a date""
-                    Placeholder=""Select a date..."" />";
-
-    private readonly string example14CsharpCode = @"
-private BitDateRangePickerValue selectedDateTimeRange = new()
-{
-    StartDate = new DateTimeOffset(new DateTime(2020, 1, 17), DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(new DateTime(2020, 1, 25), DateTimeOffset.Now.Offset)
-};";
+    private readonly string example7RazorCode = @"
+<BitDateRangePicker Label=""Responsive DateRangePicker""
+                    IsResponsive=""true""
+                    ShowWeekNumbers=""true""
+                    Placeholder=""Select a date range"" />";
 }

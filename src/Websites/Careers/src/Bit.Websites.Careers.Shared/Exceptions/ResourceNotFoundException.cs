@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Runtime.Serialization;
 
 namespace Bit.Websites.Careers.Shared.Exceptions;
 
-[Serializable]
 public class ResourceNotFoundException : RestException
 {
     public ResourceNotFoundException(string message)
@@ -13,11 +11,6 @@ public class ResourceNotFoundException : RestException
 
     public ResourceNotFoundException(string message, Exception? innerException)
         : base(message, innerException)
-    {
-    }
-
-    protected ResourceNotFoundException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 

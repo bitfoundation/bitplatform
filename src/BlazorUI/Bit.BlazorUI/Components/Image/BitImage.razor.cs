@@ -24,9 +24,9 @@ public partial class BitImage
     [Parameter] public BitImageCoverStyle CoverStyle { get; set; }
 
     /// <summary>
-    /// The image height value in px.
+    /// The image height value.
     /// </summary>
-    [Parameter] public double? Height { get; set; }
+    [Parameter] public string? Height { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the image's parameters
@@ -85,9 +85,9 @@ public partial class BitImage
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// The image width value in px.
+    /// The image width value.
     /// </summary>
-    [Parameter] public double? Width { get; set; }
+    [Parameter] public string? Width { get; set; }
 
 
 
@@ -106,8 +106,8 @@ public partial class BitImage
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Width > 0 ? $"width:{Width}px" : string.Empty);
-        StyleBuilder.Register(() => Height > 0 ? $"height:{Height}px" : string.Empty);
+        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 
     private string GetImageClasses()

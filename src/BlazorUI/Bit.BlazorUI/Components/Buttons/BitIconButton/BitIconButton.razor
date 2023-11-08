@@ -14,8 +14,8 @@
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-icb-ict @ClassStyles?.Container?.Class">
-            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
+        <span style="@Styles?.Container" class="bit-icb-ict @Classes?.Container">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         </span>
     </a>
 }
@@ -31,8 +31,8 @@ else
             class="@ClassBuilder.Value"
             type="@_buttonType.GetValue()"
             aria-describedby="@AriaDescription">
-        <span style="@ClassStyles?.Container?.Style" class="bit-icb-ict @ClassStyles?.Container?.Class">
-            <i style="@ClassStyles?.Icon?.Style" class="bit-icon bit-icon--@IconName @ClassStyles?.Icon?.Class" />
+        <span style="@Styles?.Container" class="bit-icb-ict @Classes?.Container">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         </span>
     </button>
 }

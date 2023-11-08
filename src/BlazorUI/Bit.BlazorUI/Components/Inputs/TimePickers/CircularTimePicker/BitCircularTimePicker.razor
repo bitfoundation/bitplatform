@@ -1,0 +1,153 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TimeSpan?>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    @if (LabelTemplate is not null)
+    {
+        <label class="bit-ctp-lbl" id="@_labelId" for="@_textFieldId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label class="bit-ctp-lbl" id="@_labelId" for="@_textFieldId">
+            @Label
+        </label>
+    }
+
+    <div class="bit-ctp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div class="bit-ctp-fld-grp @(AllowTextInput ? "bit-ctp-edt-inp" : null)">
+            <input @attributes="InputHtmlAttributes"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   type="text"
+                   role="combobox"
+                   id="@_textFieldId"
+                   tabindex="@TabIndex"
+                   aria-haspopup="dialog"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   value="@CurrentValueAsString"
+                   disabled=@(IsEnabled is false)
+                   readonly=@(AllowTextInput is false)
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-controls="@(IsOpen ? _calloutId : null)" 
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)" />
+
+            @if (IconTemplate is not null)
+            {
+                @IconTemplate
+            }
+            else
+            {
+                <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
+            }
+        </div>
+    </div>
+
+    <div class="bit-ctp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
+
+    <div class="bit-ctp-cal @(IsResponsive ? "bit-ctp-rsp" : string.Empty)" id="@_calloutId">
+        <div class="bit-ctp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+            <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+            <div role="group" aria-label="">
+                <div class="bit-ctp-tbr">
+                    <div class="bit-ctp-hm">
+                        @if (EditMode == BitCircularTimePickerEditMode.Normal)
+                        {
+                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Hours ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                                @GetHourString()
+                            </button>
+                            <span class="bit-ctp-txt">:</span>
+                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Minutes ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnMinuteClick">
+                                @GetMinuteString()
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="bit-ctp-txt">@GetHourString():@GetMinuteString()</span>
+                        }
+                    </div>
+                    @if (TimeFormat == BitTimeFormat.TwelveHours)
+                    {
+                        <div class="bit-ctp-am-pm">
+                            <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
+                            <button type="button" class="bit-ctp-txt @(IsAm() is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
+                        </div>
+                    }
+                </div>
+                <div class="bit-ctp-clk" @onpointerdown="HandleOnPointerDown" @onpointerup="HandleOnPointerUp">
+                    <div class="bit-ctp-pin"></div>
+                    @{
+                        var deg = GetPointerDegree();
+                    }
+                    <div class="bit-ctp-ptr@(_isPointerDown ? string.Empty : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                        <div class="bit-ctp-thm@(deg % 30 == 0 ? string.Empty : " bit-ctp-thm-min")"></div>
+                    </div>
+                    @if (_currentView == BitCircularTimePickerDialMode.Hours)
+                    {
+                        <div class="bit-ctp-dil">
+                            @if (TimeFormat == BitTimeFormat.TwelveHours)
+                            {
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="bit-ctp-stk bit-ctp-hr" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                }
+                            }
+                            else
+                            {
+                                @*Hours from 13 to 24 (00)*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
+                                }
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                }
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    var _i = i;
+                                    <div class="bit-ctp-stk" style="@($"transform: rotateZ({_i * 30}deg);")">
+                                        <div class="bit-ctp-inr" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                        <div class="bit-ctp-otr" @onclick="(() => HandleOnHourClockHandClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                    else if (_currentView == BitCircularTimePickerDialMode.Minutes)
+                    {
+                        <div class="bit-ctp-dil">
+                            @*Minutes from 05 to 60 (00) - step 5*@
+                            @for (int i = 0; i < 12; ++i)
+                            {
+                                <p class="bit-ctp-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
+                            }
+                            @for (int i = 0; i < 60; ++i)
+                            {
+                                var _i = i;
+                                <div class="bit-ctp-stk bit-ctp-min" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
+        </div>
+    </div>
+
+</div>

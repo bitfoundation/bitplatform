@@ -5,7 +5,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
-        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, and macOS)
+        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS and Linux)
 
         services.AddScoped<IPrerenderStateService, PrerenderStateService>();
         services.AddScoped<IPubSubService, PubSubService>();

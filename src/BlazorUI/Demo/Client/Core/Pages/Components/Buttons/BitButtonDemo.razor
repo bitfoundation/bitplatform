@@ -5,23 +5,145 @@
             Description="Button component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Button"
-               ComponentDescription="Buttons allow users to take actions, and make choices, with a single tap."
+               ComponentDescription="Buttons enable users to take actions with a single tap. They're commonly used in forms, dialog panels, and specialized for tasks like navigation or repeated actions."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>
+                The Button offers three style options: Primary (default), Standard, and Text.
+            </div>
+            <br />
             <div class="buttons-container">
-                <BitButton OnClick="() => primaryCounter++">Primary (@primaryCounter)</BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => standardCounter++">
-                    Standard (@standardCounter)
-                </BitButton>
+                <BitButton>Primary</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard">Standard</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Text">Text</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>
+                Primary buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitButton>Primary</BitButton>
                 <BitButton IsEnabled="false">Disabled</BitButton>
+                <BitButton Href="https://bitplatform.dev">Link</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>
+                Standard buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text buttons and the more prominent Primary buttons, providing flexibility in emphasis.
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitButton ButtonStyle="BitButtonStyle.Standard">Standard</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="false">Disabled</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Standard" Href="https://bitplatform.dev">Link</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>
+                Text buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitButton ButtonStyle="BitButtonStyle.Text">Text</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Text" IsEnabled="false">Disabled</BitButton>
+                <BitButton ButtonStyle="BitButtonStyle.Text" Href="https://bitplatform.dev">Link</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                Managing button click event (OnClick).
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>
+                Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>
+                    <BitButton Color="BitButtonColor.Info">Info</BitButton>
+                    <BitButton Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Standard">Info</BitButton>
+                    <BitButton Color="BitButtonColor.Info" ButtonStyle="BitButtonStyle.Text">Info</BitButton>
+                </div>
+                <div>
+                    <BitButton Color="BitButtonColor.Success">Success</BitButton>
+                    <BitButton Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Standard">Success</BitButton>
+                    <BitButton Color="BitButtonColor.Success" ButtonStyle="BitButtonStyle.Text">Success</BitButton>
+                </div>
+                <div>
+                    <BitButton Color="BitButtonColor.Warning">Warning</BitButton>
+                    <BitButton Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Standard">Warning</BitButton>
+                    <BitButton Color="BitButtonColor.Warning" ButtonStyle="BitButtonStyle.Text">Warning</BitButton>
+                </div>
+                <div>
+                    <BitButton Color="BitButtonColor.SevereWarning">SevereWarning</BitButton>
+                    <BitButton Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Standard">SevereWarning</BitButton>
+                    <BitButton Color="BitButtonColor.SevereWarning" ButtonStyle="BitButtonStyle.Text">SevereWarning</BitButton>
+                </div>
+                <div>
+                    <BitButton Color="BitButtonColor.Error">Error</BitButton>
+                    <BitButton Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Standard">Error</BitButton>
+                    <BitButton Color="BitButtonColor.Error" ButtonStyle="BitButtonStyle.Text">Error</BitButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Primary">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Primary">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary">Large</BitButton>
+                </div>
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Standard">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Standard">Large</BitButton>
+                </div>
+                <div>
+                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text">Small</BitButton>
+                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Text">Medium</BitButton>
+                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Text">Large</BitButton>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
+            <div>
+                Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+            </div>
+            <br />
             <div class="buttons-container">
                 <BitButton Style="color:darkblue; font-weight:bold">
                     Styled Button
@@ -29,78 +151,59 @@
                 <BitButton Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
                     Classed Button
                 </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Visibility" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
-            <div class="buttons-container-grid">
-                <div>Visible: [ <BitButton Visibility="BitVisibility.Visible">Visible Button</BitButton> ]</div>
-                <div>Hidden: [ <BitButton Visibility="BitVisibility.Hidden">Hidden Button</BitButton> ]</div>
-                <div>Collapsed: [ <BitButton Visibility="BitVisibility.Collapsed">Collapsed Button</BitButton> ]</div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="ARIA" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <div class="buttons-container">
-                <BitButton AriaDescription="Detailed description used for screen reader.">
-                    Button with AriaDescription
-                </BitButton>
-                <BitButton ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">
-                    Button with AriaHidden
+                <BitButton Class="custom-class" Style="color:green;" ButtonStyle="BitButtonStyle.Text">
+                    Styled Classed Button
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Link button" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Custom content" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
-            <div class="buttons-container">
-                <BitButton Title="Primary" Target="_blank" Href="https://bitplatform.dev">
-                    Open bit platform In New Tab
-                </BitButton>
-                <BitButton Title="Standard" Href="https://bitplatform.dev" ButtonStyle="BitButtonStyle.Standard">
-                    Go To bit platform
-                </BitButton>
+            <div>
+                Here are some examples of customizing the button content.
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Custom content" RazorCode="@example6RazorCode" Id="example6">
-        <ExamplePreview>
+            <br />
             <div class="buttons-container">
                 <BitButton Class="custom-content">
-                    <BitIcon IconName="@BitIconName.Airplane" />
-                    <span>A Primary custom text</span>
-                    <BitRippleLoading Size="20" />
+                    <BitIcon IconName="@BitIconName.Airplane"/>
+                    <span>A Primary custom content</span>
+                    <BitRippleLoading Size="20"/>
                 </BitButton>
 
                 <BitButton Class="custom-content" ButtonStyle="BitButtonStyle.Standard">
-                    <BitIcon IconName="@BitIconName.Accept" />
-                    <span>A Standard custom text</span>
-                    <BitRollerLoading Size="20" />
+                    <BitIcon IconName="@BitIconName.Accept"/>
+                    <span>A Standard custom content</span>
+                    <BitRollerLoading Size="20"/>
+                </BitButton>
+
+                <BitButton Class="custom-content" ButtonStyle="BitButtonStyle.Text">
+                    <BitIcon IconName="@BitIconName.Asterisk"/>
+                    <span>A Text custom content</span>
+                    <BitHeartLoading Size="20"/>
                 </BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
+            <div>
+                BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
+            </div>
+            <br />
             <div class="form-container">
                 @if (formIsValidSubmit is false)
                 {
                     <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
-                        <DataAnnotationsValidator />
+                        <DataAnnotationsValidator/>
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
-                        <ValidationMessage For="() => buttonValidationModel.RequiredText" />
-                        <br />
-                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
-                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText" />
-                        <br />
+                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText"/>
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText"/>
+                        <br/>
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText"/>
+                        <ValidationMessage For="() => buttonValidationModel.NonRequiredText"/>
+                        <br/>
                         <div>
                             <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                             <BitButton ButtonType="BitButtonType.Reset">Reset</BitButton>
@@ -118,11 +221,24 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Visibility" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div>
+                 You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>Visible: [ <BitButton Visibility="BitVisibility.Visible">Visible Button</BitButton> ]</div>
+                <div>Hidden: [ <BitButton Visibility="BitVisibility.Hidden">Hidden Button</BitButton> ]</div>
+                <div>Collapsed: [ <BitButton Visibility="BitVisibility.Collapsed">Collapsed Button</BitButton> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
 
 @code {
-    private int primaryCounter;
-    private int standardCounter;
+    private int clickCounter;
 
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();

@@ -67,15 +67,15 @@ public partial class _BitNavChild<TItem> where TItem : class
         if (Nav.SelectedItem == Item)
         {
             classes.Add("bit-nav-sel");
-            if (Nav.ClassStyles?.SelectedItemContainer?.Class is not null)
+            if (Nav.Classes?.SelectedItemContainer is not null)
             {
-                classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Class!);
+                classes.Add(Nav.Classes?.SelectedItemContainer!);
             }
         }
 
-        if (Nav.ClassStyles?.ItemContainer?.Class is not null)
+        if (Nav.Classes?.ItemContainer is not null)
         {
-            classes.Add(Nav.ClassStyles?.ItemContainer?.Class!);
+            classes.Add(Nav.Classes?.ItemContainer!);
         }
 
         return string.Join(" ", classes);
@@ -83,14 +83,14 @@ public partial class _BitNavChild<TItem> where TItem : class
     private string GetItemContainerStyles()
     {
         var classes = new List<string>();
-        if (Nav.ClassStyles?.ItemContainer?.Style is not null)
+        if (Nav.Styles?.ItemContainer is not null)
         {
-            classes.Add(Nav.ClassStyles?.ItemContainer?.Style!);
+            classes.Add(Nav.Styles.ItemContainer);
         }
 
-        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItemContainer?.Style is not null)
+        if (Nav.SelectedItem == Item && Nav.Styles?.SelectedItemContainer is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItemContainer?.Style!);
+            classes.Add(Nav.Styles?.SelectedItemContainer!);
         }
 
         return string.Join(" ", classes);
@@ -99,14 +99,14 @@ public partial class _BitNavChild<TItem> where TItem : class
     private string GetItemClasses()
     {
         var classes = new List<string>();
-        if (Nav.ClassStyles?.Item?.Class is not null)
+        if (Nav.Classes?.Item is not null)
         {
-            classes.Add(Nav.ClassStyles?.Item?.Class!);
+            classes.Add(Nav.Classes?.Item!);
         }
 
-        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItem?.Class is not null)
+        if (Nav.SelectedItem == Item && Nav.Classes?.SelectedItem is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItem?.Class!);
+            classes.Add(Nav.Classes?.SelectedItem!);
         }
 
         return string.Join(" ", classes);
@@ -114,14 +114,14 @@ public partial class _BitNavChild<TItem> where TItem : class
     private string GetItemStyles()
     {
         var classes = new List<string>();
-        if (Nav.ClassStyles?.Item?.Style is not null)
+        if (Nav.Styles?.Item is not null)
         {
-            classes.Add(Nav.ClassStyles?.Item?.Style!);
+            classes.Add(Nav.Styles?.Item!);
         }
 
-        if (Nav.SelectedItem == Item && Nav.ClassStyles?.SelectedItem?.Style is not null)
+        if (Nav.SelectedItem == Item && Nav.Styles?.SelectedItem is not null)
         {
-            classes.Add(Nav.ClassStyles?.SelectedItem?.Style!);
+            classes.Add(Nav.Styles?.SelectedItem!);
         }
 
         return string.Join(" ", classes);

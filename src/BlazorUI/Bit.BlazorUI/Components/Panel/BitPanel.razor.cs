@@ -23,9 +23,9 @@ public partial class BitPanel
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitPanel component.
+    /// Custom CSS classes for different parts of the BitPanel component.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitPanelClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Used to customize how the footer inside the Panel is rendered.
@@ -98,6 +98,11 @@ public partial class BitPanel
     [Parameter] public bool ShowCloseButton { get; set; } = true;
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitPanel component.
+    /// </summary>
+    [Parameter] public BitPanelClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// ARIA id for the subtitle of the Panel, if any.
     /// </summary>
     [Parameter] public string? SubtitleAriaId { get; set; }
@@ -106,7 +111,6 @@ public partial class BitPanel
     /// ARIA id for the title of the Panel, if any.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
-
 
 
     public void Open()
@@ -127,6 +131,13 @@ public partial class BitPanel
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+
         StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }
 

@@ -9,7 +9,7 @@
      class="@ClassBuilder.Value">
 
     <CascadingValue Value="this" IsFixed="true">
-        <div style="@ClassStyles?.Header?.Style" class="bit-pvt-hct @ClassStyles?.Header?.Class" role="tablist">
+        <div style="@Styles?.Header" class="bit-pvt-hct @Classes?.Header" role="tablist">
             @ChildContent
         </div>
     </CascadingValue>
@@ -18,9 +18,9 @@
     {
         <div role="tabpanel"
              aria-hidden="false"
-             style="@GetSelectedItemStyle()"
              aria-labelledby="@GetAriaLabelledby"
-             class="bit-pvt-cct@((_selectedItem?.IsEnabled??false) ? "" : " disabled")">
+             style="@GetSelectedItemStyle() @Styles?.ContentView"
+             class="bit-pvt-cct@((_selectedItem?.IsEnabled??false) ? "" : " disabled") @Classes?.ContentView">
             @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
         </div>
     }

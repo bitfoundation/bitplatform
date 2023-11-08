@@ -19,4 +19,15 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.3.1" PrivateAssets="All" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="..\..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
 </Project>

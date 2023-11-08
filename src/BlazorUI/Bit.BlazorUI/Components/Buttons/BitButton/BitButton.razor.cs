@@ -5,6 +5,8 @@ namespace Bit.BlazorUI;
 public partial class BitButton
 {
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonColor? color;
+    private BitButtonSize? size;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -32,7 +34,7 @@ public partial class BitButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of button, Possible values: Primary | Standard
+    /// The style of button, Possible values: Primary | Standard | Text
     /// </summary>
     [Parameter]
     public BitButtonStyle ButtonStyle
@@ -40,7 +42,41 @@ public partial class BitButton
         get => buttonStyle;
         set
         {
+            if (buttonStyle == value) return;
+
             buttonStyle = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The color of button
+    /// </summary>
+    [Parameter]
+    public BitButtonColor? Color
+    {
+        get => color;
+        set
+        {
+            if (color == value) return;
+
+            color = value;
+            ClassBuilder.Reset();
+        }
+    }
+    
+    /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
             ClassBuilder.Reset();
         }
     }
@@ -80,9 +116,31 @@ public partial class BitButton
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                    ? $"{RootElementClass}-pri"
-                                    : $"{RootElementClass}-std");
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => "bit-btn-pri",
+            BitButtonStyle.Standard => "bit-btn-std",
+            BitButtonStyle.Text => "bit-btn-txt",
+            _ => "bit-btn-pri"
+        });
+        
+        ClassBuilder.Register(() => Color switch
+        {
+            BitButtonColor.Info => "bit-btn-inf",
+            BitButtonColor.Success => "bit-btn-suc",
+            BitButtonColor.Warning => "bit-btn-wrn",
+            BitButtonColor.SevereWarning => "bit-btn-swr",
+            BitButtonColor.Error => "bit-btn-err",
+            _ => string.Empty
+        });
+        
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-btn-sm",
+            BitButtonSize.Medium => "bit-btn-md",
+            BitButtonSize.Large => "bit-btn-lg",
+            _ => string.Empty
+        });
     }
 
     protected override void OnParametersSet()

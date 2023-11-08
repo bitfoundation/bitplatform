@@ -81,9 +81,11 @@ public partial class App
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        if (OperatingSystem.IsMacCatalyst() is false)
         {
-            //This is handled in css using safe-area env() variables
+            //For iOS this is handled in css using safe-area env() variables
+            //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626
+            //For Windows there's an issue with TitleBar. more info: https://github.com/bitfoundation/bitplatform/issues/5695
             statusBarHeight = 0;
         }
 

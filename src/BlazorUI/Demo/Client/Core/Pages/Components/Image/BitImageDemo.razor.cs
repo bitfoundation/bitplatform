@@ -32,9 +32,9 @@ public partial class BitImageDemo
         new()
         {
             Name = "Height",
-            Type = "double?",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The image height value in px."
+            Description = "The image height value."
         },
         new()
         {
@@ -122,9 +122,9 @@ public partial class BitImageDemo
         new()
         {
             Name = "Width",
-            Type = "double?",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The image width value in px."
+            Description = "The image width value."
         }
     };
 
@@ -260,16 +260,16 @@ public partial class BitImageDemo
 <BitImage Alt=""Disabled BitImage"" IsEnabled=""false"" Src=""images/bit-logo-blue.png"" />";
 
     private readonly string example2RazorCode = @"
-<BitImage Width=""144""
+<BitImage Width=""9rem""
           Alt=""BitImage with width""
           Src=""images/bit-logo-blue.png"" />
                 
-<BitImage Height=""80""
+<BitImage Height=""5rem""
           Alt=""BitImage with height""
           Src=""images/bit-logo-blue.png"" />
              
-<BitImage Width=""256""
-          Height=""128""
+<BitImage Width=""256px""
+          Height=""128px""
           Alt=""BitImage with width and height""
           Src=""images/bit-logo-blue.png"" />";
 

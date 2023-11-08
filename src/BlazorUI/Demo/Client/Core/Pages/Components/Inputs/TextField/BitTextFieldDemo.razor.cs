@@ -254,31 +254,10 @@ public partial class BitTextFieldDemo
             {
                 new()
                 {
-                    Name = "Description",
+                    Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's description."
-                },
-                new()
-                {
-                    Name = "DescriptionContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's description container."
-                },
-                new()
-                {
-                    Name = "Label",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's label."
-                },
-                new()
-                {
-                    Name = "FieldGroup",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's field group."
+                    Description = "Custom CSS classes/styles for the BitTextField's root element."
                 },
                 new()
                 {
@@ -289,87 +268,101 @@ public partial class BitTextFieldDemo
                 },
                 new()
                 {
-                    Name = "Icon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's icon."
-                },
-                new()
-                {
-                    Name = "Input",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's input."
-                },
-                new()
-                {
-                    Name = "InputIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's input icon."
-                },
-                new()
-                {
                     Name = "InputWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the wrapper of label and input in the text field."
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the BitTextField."
                 },
                 new()
                 {
-                    Name = "Prefix",
+                    Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's prefix."
+                    Description = "Custom CSS classes/styles for the BitTextField's label."
+                },
+                new()
+                {
+                    Name = "FieldGroup",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's field group."
                 },
                 new()
                 {
                     Name = "PrefixContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's prefix container."
+                    Description = "Custom CSS classes/styles for the BitTextField's prefix container."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's prefix."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's input."
                 },
                 new()
                 {
                     Name = "RevealPassword",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's reveal password."
-                },
-                new()
-                {
-                    Name = "RevealPasswordIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's reveal password icon."
+                    Description = "Custom CSS classes/styles for the BitTextField's reveal password."
                 },
                 new()
                 {
                     Name = "RevealPasswordIconContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's reveal password icon container."
+                    Description = "Custom CSS classes/styles for the BitTextField's reveal password icon container."
                 },
                 new()
                 {
-                    Name = "Root",
+                    Name = "RevealPasswordIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's root element."
+                    Description = "Custom CSS classes/styles for the BitTextField's reveal password icon."
                 },
                 new()
                 {
-                    Name = "Suffix",
+                    Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's suffix."
+                    Description = "Custom CSS classes/styles for the BitTextField's icon."
                 },
                 new()
                 {
                     Name = "SuffixContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the text field's suffix container."
+                    Description = "Custom CSS classes/styles for the BitTextField's suffix container."
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's suffix."
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's description container."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's description."
                 }
             }
         }

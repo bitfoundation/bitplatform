@@ -43,6 +43,11 @@ public class BitChoiceGroupItem<TValue>
     public BitSize? ImageSize { get; set; }
 
     /// <summary>
+    /// The text to show as a prefix for the BitChoiceGroup item.
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
     /// Provides a new image for the selected state of the image of the BitChoiceGroup item.
     /// </summary>
     public string? SelectedImageSrc { get; set; }
@@ -66,4 +71,11 @@ public class BitChoiceGroupItem<TValue>
     /// The value returned when BitChoiceGroup item is checked.
     /// </summary>
     public TValue? Value { get; set; }
+
+
+
+    /// <summary>
+    /// Index of the BitChoiceGroup item. This property's value is set by the component at render.
+    /// </summary>
+    public int Index { get; internal set; }
 }

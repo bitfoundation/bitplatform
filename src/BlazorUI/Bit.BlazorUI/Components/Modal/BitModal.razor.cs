@@ -30,9 +30,9 @@ public partial class BitModal : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for different parts of the BitModal component.
+    /// Custom CSS classes for different parts of the BitModal component.
     /// </summary>
-    [Parameter] public BitModalClassStyles? ClassStyles { get; set; }
+    [Parameter] public BitModalClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The CSS selector of the drag element. by default it's the Modal container.
@@ -102,6 +102,11 @@ public partial class BitModal : IDisposable
     [Parameter] public string ScrollerSelector { get; set; } = "body";
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitModal component.
+    /// </summary>
+    [Parameter] public BitModalClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// ARIA id for the subtitle of the Modal, if any.
     /// </summary>
     [Parameter] public string? SubtitleAriaId { get; set; }
@@ -114,14 +119,18 @@ public partial class BitModal : IDisposable
 
     protected override string RootElementClass => "bit-mdl";
 
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
-    }
-
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }
 
     protected override Task OnInitializedAsync()

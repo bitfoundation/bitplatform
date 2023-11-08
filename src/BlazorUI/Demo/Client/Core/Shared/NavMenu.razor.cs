@@ -18,6 +18,7 @@ public partial class NavMenu : IDisposable
             {
                 new() { Text = "Button", Url = "/components/button" },
                 new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = new string[] { "/components/action-button" } },
+                new() { Text = "ButtonGroup", Url = "/components/button-group" },
                 new() { Text = "CompoundButton", Url = "/components/compoundbutton", AdditionalUrls = new string[] { "/components/compound-button" } },
                 new() { Text = "IconButton", Url = "/components/iconbutton", AdditionalUrls = new string[] { "/components/icon-button" } },
                 new() { Text = "LoadingButton", Url = "/components/loadingbutton", AdditionalUrls = new string[] { "/components/loading-button" } },
@@ -31,7 +32,7 @@ public partial class NavMenu : IDisposable
             Text = "Inputs",
             ChildItems = new()
             {
-                new() { Text = "CheckBox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
+                new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" }, Description = "Radio, RadioButton" },
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect" },
                 new() { Text = "Rating", Url = "/components/rating" },
@@ -55,6 +56,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = new string[] { "/components/date-range-picker" } },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = new string[] { "/components/file-upload" } },
                 new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = new string[] { "/components/time-picker" } },
+                new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = new string[] { "/components/circular-time-picker" } },
             }
         },
         new()

@@ -372,23 +372,23 @@ private readonly List<ChoiceModel> itemStyleClassCustoms = new()
 };";
 
     private readonly string example6RazorCode = @"
-Visible: [ <BitChoiceGroup Visibility=""BitVisibility.Visible""
-                                  Items=""basicCustoms""
-                                  LayoutFlow=""BitLayoutFlow.Horizontal""
-                                  DefaultValue=""basicCustoms[1].ItemValue""
-                                  NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" /> ]
+<style>
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+</style>
 
-Hidden: [ <BitChoiceGroup Visibility=""BitVisibility.Hidden""
-                                 Items=""basicCustoms""
-                                 LayoutFlow=""BitLayoutFlow.Horizontal""
-                                 DefaultValue=""basicCustoms[1].ItemValue""
-                                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" /> ]
-
-Collapsed: [ <BitChoiceGroup Visibility=""BitVisibility.Collapsed""
-                             Items=""basicCustoms""
-                             LayoutFlow=""BitLayoutFlow.Horizontal""
-                             DefaultValue=""basicCustoms[1].ItemValue""
-                             NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" /> ]";
+<BitChoiceGroup Items=""basicCustoms""
+                DefaultValue=""@(""A"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"">
+    <LabelTemplate>
+        <div class=""custom-label"">
+            Custom label <BitIcon IconName=""@BitIconName.Filter"" />
+        </div>
+    </LabelTemplate>
+</BitChoiceGroup>";
     private readonly string example6CsharpCode = @"
 public class ChoiceModel
 {
@@ -405,27 +405,23 @@ private readonly List<ChoiceModel> basicCustoms = new()
 };";
 
     private readonly string example7RazorCode = @"
-<style>
-    .custom-label {
-        color: #A4262C;
-        font-weight: bold;
-    }
-</style>
+<BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
+                Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
+<BitTextField @bind-Value=""oneWayValue"" />
 
-<BitChoiceGroup Items=""basicCustoms""
-                DefaultValue=""@(""A"")""
-                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"">
-    <LabelTemplate>
-        <div class=""custom-label"">
-            Custom label <BitIcon IconName=""@BitIconName.Filter"" />
-        </div>
-    </LabelTemplate>
-</BitChoiceGroup>";
+<BitChoiceGroup Label=""Two-way"" @bind-Value=""twoWayValue""
+                Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />
+<BitTextField @bind-Value=""twoWayValue"" />";
     private readonly string example7CsharpCode = @"
+private string oneWayValue = ""A"";
+private string twoWayValue = ""A"";
+
 public class ChoiceModel
 {
-    public string Name { get; set; }
-    public string ItemValue { get; set; }
+    public string? Name { get; set; }
+    public string? ItemValue { get; set; }
 }
 
 private readonly List<ChoiceModel> basicCustoms = new()
@@ -471,11 +467,20 @@ private readonly List<ChoiceModel> basicCustoms = new()
     }
 </style>
 
+<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""basicCustoms"" DefaultValue=""@string.Empty""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name},
+                                         Value = { Selector = i => i.ItemValue },
+                                         Index = nameof(ChoiceModel.Idx) })"">
+    <ItemPrefixTemplate Context=""item"">
+        @(item.Idx + 1).&nbsp;
+    </ItemPrefixTemplate>
+</BitChoiceGroup>
+
 <BitChoiceGroup Label=""ItemLabelTemplate"" @bind-Value=""itemLabelTemplateValue""
                 Items=""itemTemplateCustoms""
                 NameSelectors=""@(new() { Value = { Selector = i => i.ItemValue } })"">
     <ItemLabelTemplate Context=""custom"">
-        <div style=""margin-left:30px;height:20px"" class=""custom-container @(itemLabelTemplateValue == custom.ItemValue ? ""selected"" : string.Empty)"">
+        <div class=""custom-container @(itemLabelTemplateValue == custom.ItemValue ? ""selected"" : string.Empty)"">
             <BitIcon IconName=""@custom.IconName"" />
             <span>@custom.Name</span>
         </div>
@@ -505,11 +510,20 @@ private string itemTemplateValue2 = ""Day"";
 
 public class ChoiceModel
 {
-    public string Name { get; set; }
-    public string ItemValue { get; set; }
+    public string? Name { get; set; }
+    public string? ItemValue { get; set; }
     public string? IconName { get; set; }
     public RenderFragment<ChoiceModel>? Fragment { get; set; }
+    public int Idx { get; set; }
 }
+
+private readonly List<ChoiceModel> basicCustoms = new()
+{
+    new() { Name = ""Custom A"", ItemValue = ""A"" },
+    new() { Name = ""Custom B"", ItemValue = ""B"" },
+    new() { Name = ""Custom C"", ItemValue = ""C"" },
+    new() { Name = ""Custom D"", ItemValue = ""D"" }
+};
 
 private readonly List<ChoiceModel> itemTemplateCustoms = new()
 {
@@ -554,47 +568,19 @@ protected override void OnInitialized()
 }";
 
     private readonly string example9RazorCode = @"
-<BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
-                Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
-<BitTextField @bind-Value=""oneWayValue"" />
-
-<BitChoiceGroup Label=""Two-way"" @bind-Value=""twoWayValue""
-                Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />
-<BitTextField @bind-Value=""twoWayValue"" />";
-    private readonly string example9CsharpCode = @"
-private string oneWayValue = ""A"";
-private string twoWayValue = ""A"";
-
-public class ChoiceModel
-{
-    public string Name { get; set; }
-    public string ItemValue { get; set; }
-}
-
-private readonly List<ChoiceModel> basicCustoms = new()
-{
-    new() { Name = ""Custom A"", ItemValue = ""A"" },
-    new() { Name = ""Custom B"", ItemValue = ""B"" },
-    new() { Name = ""Custom C"", ItemValue = ""C"" },
-    new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
-
-    private readonly string example10RazorCode = @"
-<BitChoiceGroup Label=""Basic""
+<BitChoiceGroup Label=""ساده""
                 IsRtl=""true""
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""Disabled""
+<BitChoiceGroup Label=""غیرفعال""
                 IsRtl=""true""
                 IsEnabled=""false""
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ChoiceModel
 {
     public string Name { get; set; }
@@ -609,18 +595,35 @@ private readonly List<ChoiceModel> rtlCustoms = new()
     new() { Name = ""ویژه ت"", ItemValue = ""D"" }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
+<style>
+    .validation-message {
+        color: red;
+    }
+</style>
+
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
-    <div>
-        <BitChoiceGroup @bind-Value=""validationModel.Value""
-                        Items=""basicCustoms""
-                        NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
-        <ValidationMessage For=""@(() => validationModel.Value)"" />
-    </div>
-    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    
+    <BitChoiceGroup @bind-Value=""validationModel.Value""
+                    Items=""basicCustoms""
+                    NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
+    <ValidationMessage For=""@(() => validationModel.Value)"" />
+    
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
+public class ChoiceGroupValidationModel
+{
+    [Required(ErrorMessage = ""Pick one"")]
+    public string Value { get; set; }
+}
+
+public ChoiceGroupValidationModel validationModel = new();
+
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }
+
 public class ChoiceModel
 {
     public string Name { get; set; }
@@ -633,17 +636,5 @@ private readonly List<ChoiceModel> basicCustoms = new()
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};
-
-public class ChoiceGroupValidationModel
-{
-    [Required(ErrorMessage = ""Pick one"")]
-    public string Value { get; set; }
-}
-
-public ChoiceGroupValidationModel validationModel = new();
-
-private void HandleValidSubmit() { }
-
-private void HandleInvalidSubmit() { }";
+};";
 }

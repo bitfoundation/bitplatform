@@ -12,14 +12,7 @@ public partial class ContactUsController : AppControllerBase
     [HttpPost]
     public async Task<IActionResult> SendMessage(ContactUsDto contactUsDto, CancellationToken cancellationToken)
     {
-        if (ModelState.IsValid)
-        {
-            await TelegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Message, cancellationToken);
-            return Ok();
-        }
-        else
-        {
-            return BadRequest(ModelState);
-        }
+        await TelegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Message, cancellationToken);
+        return Ok();
     }
 }

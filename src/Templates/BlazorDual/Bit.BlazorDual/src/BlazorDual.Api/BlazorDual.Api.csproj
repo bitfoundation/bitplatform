@@ -18,18 +18,16 @@
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\BlazorDual.Web\BlazorDual.Web.csproj" />
         <!--/+:msbuild-conditional:noEmit -->
-
         <EmbeddedResource Include="Resources\*.cshtml" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="7.0.0">
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="7.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="7.0.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="7.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-rc.2.23480.2" />
