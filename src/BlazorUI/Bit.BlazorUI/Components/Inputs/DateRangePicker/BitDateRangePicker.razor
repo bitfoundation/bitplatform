@@ -175,7 +175,7 @@
                             //to ignore the last empty week out of month || to ignore the first whole week out of month
                             if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
 
-                            <div class="bit-dtrp-dgr">
+                            <div style="@Styles?.DaysRow" class="bit-dtrp-dgr @Classes?.DaysRow">
                                 @if (ShowWeekNumbers)
                                 {
                                     var weekNumber = GetWeekNumber(week);
