@@ -268,7 +268,7 @@
                                     </div>
                                 }
 
-                                <div style="@Styles?.TimePickerWrapper @Styles?.StartTimePickerWrapper" class="bit-dtrp-twp @Classes?.TimePickerWrapper @Classes?.StartTimePickerWrapper">
+                                <div style="@Styles?.TimePickerWrapper @Styles?.EndTimePickerWrapper" class="bit-dtrp-twp @Classes?.TimePickerWrapper @Classes?.EndTimePickerWrapper">
                                     <input @ref="_inputEndTimeHourRef"
                                            @bind="@_endTimeHourView"
                                            @bind:event="oninput"
@@ -296,7 +296,7 @@
 
                                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                                 {
-                                    <div style="@Styles?.TimePickerAmPmContainer @Styles?.StartTimePickerAmPmContainer" class="bit-dtrp-ampm-ctn @Classes?.TimePickerAmPmContainer @Classes?.StartTimePickerAmPmContainer">
+                                    <div style="@Styles?.TimePickerAmPmContainer @Styles?.EndTimePickerAmPmContainer" class="bit-dtrp-ampm-ctn @Classes?.TimePickerAmPmContainer @Classes?.EndTimePickerAmPmContainer">
                                         <button @onclick="ToggleEndTimeAmPm"
                                                 type="button"
                                                 style="@Styles?.TimePickerAmButton"
