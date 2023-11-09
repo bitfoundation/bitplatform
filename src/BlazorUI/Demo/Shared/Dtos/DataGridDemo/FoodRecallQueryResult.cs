@@ -3,8 +3,8 @@
 public class FoodRecallQueryResult
 {
     [JsonPropertyName("meta")]
-    public Meta Meta { get; set; }
+    public Meta? Meta { get; set; }
 
     [JsonPropertyName("results")]
-    public List<FoodRecall> Results { get; set; }
+    public List<FoodRecall>? Results { get; set; }
 }

@@ -63,7 +63,7 @@ public partial class BitSnackBar
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
 
-    public async Task Show(string title, string body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
+    public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
         {

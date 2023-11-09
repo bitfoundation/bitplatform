@@ -33,7 +33,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         
         <NeutralLanguage>en</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
