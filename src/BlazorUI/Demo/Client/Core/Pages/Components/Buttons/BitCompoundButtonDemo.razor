@@ -12,16 +12,14 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>
+                The CompoundButton offers three style options: Primary (default), Standard, and Text.
+            </div>
+            <br />
             <div class="buttons-container">
-                <div>
-                    The Button offers three style options: Primary (default), Standard, and Text.
-                </div>
-                <br />
-                <div class="buttons-container">
-                    <BitCompoundButton SecondaryText="This is the secondary text">Primary</BitCompoundButton>
-                    <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text">Standard</BitCompoundButton>
-                    <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text">Text</BitCompoundButton>
-                </div>
+                <BitCompoundButton SecondaryText="This is the secondary text">Primary</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text">Standard</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text">Text</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
