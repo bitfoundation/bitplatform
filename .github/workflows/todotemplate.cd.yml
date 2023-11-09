@@ -231,6 +231,10 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 18
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15'
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 

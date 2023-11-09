@@ -229,6 +229,10 @@ jobs:
       with:
         global-json-file: src/Templates/AdminPanel/Bit.AdminPanel/global.json
 
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15'
+
     - uses: actions/setup-node@v3
       with:
         node-version: 18
