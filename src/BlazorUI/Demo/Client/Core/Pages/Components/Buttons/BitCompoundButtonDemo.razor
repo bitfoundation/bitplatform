@@ -12,55 +12,78 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>
+                The CompoundButton offers three style options: Primary (default), Standard, and Text.
+            </div>
+            <br />
             <div class="buttons-container">
                 <BitCompoundButton SecondaryText="This is the secondary text">Primary</BitCompoundButton>
-                <BitCompoundButton SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Standard</BitCompoundButton>
-                <BitCompoundButton IsEnabled="false" SecondaryText="This Button is a disabled compound button">Disabled</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text">Standard</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text">Text</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
+            <div>
+                Primary buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+            </div>
+            <br />
             <div class="buttons-container">
-                <BitCompoundButton Style="color:darkblue; font-weight:bold" SecondaryText="This is a styled compound button">Styled</BitCompoundButton>
-                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" Class="custom-class" SecondaryText="This is a classed compound button">Classed</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is the secondary text">Primary</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is the secondary text" IsEnabled="false">Disabled</BitCompoundButton>
+                <BitCompoundButton SecondaryText="This is the secondary text" Href="https://bitplatform.dev">Link</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <div class="buttons-container-grid">
-                <div>Visible: [ <BitCompoundButton Visibility="BitVisibility.Visible" SecondaryText="This is a visible compound button">Visible</BitCompoundButton> ]</div>
-                <div>Hidden: [<BitCompoundButton Visibility="BitVisibility.Hidden" SecondaryText="This is a hidden compound button">Hidden</BitCompoundButton>]</div>
-                <div>Collapsed: [ <BitCompoundButton Visibility="BitVisibility.Collapsed" SecondaryText="This is a collapsed compound button">Collapsed</BitCompoundButton> ]</div>
+            <div>
+                Standard buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text buttons and the more prominent Primary buttons, providing flexibility in emphasis.
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="ARIA" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
+            <br />
             <div class="buttons-container">
-                <BitCompoundButton SecondaryText="This is a compound button with AriaDescription" AriaDescription="Button with AriaDescription">
-                    AriaDescription
-                </BitCompoundButton>
-                <BitCompoundButton SecondaryText="This is a compound button with AriaHidden" ButtonStyle="BitButtonStyle.Standard" AriaHidden="true">AriaHidden</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text">Standard</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text" IsEnabled="false">Disabled</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Standard" SecondaryText="This is the secondary text" Href="https://bitplatform.dev">Link</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Link button" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
+            <div>
+                Text buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
+            </div>
+            <br />
             <div class="buttons-container">
-                <BitCompoundButton Href="https://github.com/bitfoundation/bitplatform" SecondaryText="Open bit platform In New Tab" Target="_blank">Open the site</BitCompoundButton>
-                <BitCompoundButton Href="https://github.com/bitfoundation/bitplatform" SecondaryText="Go To bit platform" ButtonStyle="BitButtonStyle.Standard">Open the site</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text">Text</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text" IsEnabled="false">Disabled</BitCompoundButton>
+                <BitCompoundButton ButtonStyle="BitButtonStyle.Text" SecondaryText="This is the secondary text" Href="https://bitplatform.dev">Link</BitCompoundButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                Managing button click event (OnClick).
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitCompoundButton OnClick="() => clickCounter++" SecondaryText="@($"Click count is: {@clickCounter}")">Click me</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Button Type" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
+            <div>
+                BitCompoundButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
+            </div>
+            <br />
             <div class="form-container">
                 @if (formIsValidSubmit is false)
                 {
@@ -92,6 +115,10 @@
 
     <ComponentExampleBox Title="Template" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
+            <div>
+                Here are some examples of customizing the button content.
+            </div>
+            <br />
             <div class="buttons-container">
                 <BitCompoundButton>
                     <PrimaryTemplate>
@@ -116,17 +143,83 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ClassStyles" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Color" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
+            <div>
+                Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>
+                    <BitCompoundButton Color="BitButtonColor.Info" SecondaryText="This is the secondary text">Info</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Info" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Info</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Info" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Info</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Color="BitButtonColor.Success" SecondaryText="This is the secondary text">Success</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Success" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Success</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Success" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Success</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Color="BitButtonColor.Warning" SecondaryText="This is the secondary text">Warning</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Warning" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Warning</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Warning" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Warning</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Color="BitButtonColor.SevereWarning" SecondaryText="This is the secondary text">SevereWarning</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.SevereWarning" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">SevereWarning</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.SevereWarning" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">SevereWarning</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Color="BitButtonColor.Error" SecondaryText="This is the secondary text">Error</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Error" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Error</BitCompoundButton>
+                    <BitCompoundButton Color="BitButtonColor.Error" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Error</BitCompoundButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div>
+                Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>
+                    <BitCompoundButton Size="BitButtonSize.Small" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Primary">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Medium" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Primary">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Large" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Primary">Large</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Size="BitButtonSize.Small" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Medium" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Large" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Standard">Large</BitCompoundButton>
+                </div>
+                <div>
+                    <BitCompoundButton Size="BitButtonSize.Small" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Medium" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitButtonSize.Large" SecondaryText="This is the secondary text" ButtonStyle="BitButtonStyle.Text">Large</BitCompoundButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ClassStyles" RazorCode="@example10RazorCode" Id="example10">
+        <ExamplePreview>
+            <div>
+                Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+            </div>
+            <br />
             <div class="buttons-container">
-                <BitCompoundButton SecondaryText="This is secondary text"
+                <BitCompoundButton SecondaryText="This is the secondary text"
                                    Styles="@(new() { Container = "line-height: 2;",
                                                      Primary = "color: darkmagenta;",
                                                      Secondary = "color: darkslateblue;" })">
                     Primary
                 </BitCompoundButton>
 
-                <BitCompoundButton SecondaryText="This is secondary text"
+                <BitCompoundButton SecondaryText="This is the secondary text"
                                    ButtonStyle="BitButtonStyle.Standard"
                                    Classes="@(new() { Container = "custom-container",
                                                       Primary = "custom-primary",
@@ -137,9 +230,25 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Visibility" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div>
+                You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>Visible: [ <BitCompoundButton Visibility="BitVisibility.Visible" SecondaryText="This is a visible compound button">Visible</BitCompoundButton> ]</div>
+                <div>Hidden: [<BitCompoundButton Visibility="BitVisibility.Hidden" SecondaryText="This is a hidden compound button">Hidden</BitCompoundButton>]</div>
+                <div>Collapsed: [ <BitCompoundButton Visibility="BitVisibility.Collapsed" SecondaryText="This is a collapsed compound button">Collapsed</BitCompoundButton> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
 
 @code {
+    private int clickCounter;
+
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();
 
