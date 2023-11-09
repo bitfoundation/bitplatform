@@ -675,7 +675,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         {
             if (IsMultiSelect)
             {
-                bool isEqual = SelectedItems.Select(GetValue).OrderBy(i => i).SequenceEqual(Values.OrderBy(v => v));
+                bool isEqual = SelectedItems.Select(GetValue).OrderBy(i => i).SequenceEqual(Values!.OrderBy(v => v));
                 if (isEqual) return;
 
                 Values = SelectedItems.Select(GetValue).ToArray();

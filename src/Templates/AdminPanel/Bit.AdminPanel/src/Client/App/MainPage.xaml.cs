@@ -69,7 +69,7 @@ public partial class MainPage
             try
             {
 #if WINDOWS && RELEASE
-                var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler.PlatformView;
+                var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
                 await webView2.EnsureCoreWebView2Async();
 
                 var settings = webView2.CoreWebView2.Settings;
