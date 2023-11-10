@@ -7,6 +7,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
+        services.AddCascadingAuthenticationState();
         services.AddScoped<IPrerenderStateService, PrerenderStateService>();
         services.AddScoped<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
