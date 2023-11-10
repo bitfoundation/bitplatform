@@ -1,0 +1,136 @@
+trigger:
+- main
+
+# https://bitplatform.dev/templates/devops
+
+variables:
+  APP_SERVICE_NAME: 'app-service-td-test'
+  AZURE_SUBSCRIPTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
+  ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
+  AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
+  ApiServerAddress: 'https://web.bitplatform.dev/api/'
+
+jobs:
+
+- job: build_api_blazor
+  displayName: 'build api + blazor'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - task: Bash@3
+    displayName: 'Install wasm'
+    inputs:
+      targetType: 'inline'
+      script: |
+          'cd src && dotnet workload install wasm-tools wasm-experimental'
+
+  - task: FileTransform@1
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'src/WebTemplate.Web/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Generate CSS/JS files'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/WebTemplate.Web/WebTemplate.Web.csproj -t:BeforeBuildTasks --no-restore'
+
+  - task: Bash@3
+    displayName: 'Publish'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet publish src/WebTemplate.Api/WebTemplate.Api.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload api-web artifact
+    inputs:
+      targetPath: 'api-web'
+      artifact: 'api-web-bundle'
+      publishLocation: 'pipeline'
+
+  - task: Bash@3
+    displayName: 'Build migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: 'cd src/WebTemplate.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project WebTemplate.Api.csproj'
+  
+  - task: PublishPipelineArtifact@1
+    displayName: Upload ef migrations bundle
+    inputs:
+      targetPath: 'src/WebTemplate.Api/efbundle'
+      artifact: 'migrations-bundle'
+      publishLocation: 'pipeline'
+
+- job: deploy_api_blazor
+  dependsOn: build_api_blazor
+  displayName: 'deploy api + blazor'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve api-web bundle
+    inputs:
+      artifact: 'api-web-bundle'
+      path: ./
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve migrations bundle
+    inputs:
+      artifact: 'migrations-bundle'
+      path: ./
+
+  - task: FileTransform@1
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'appsettings.json'
+
+  - task: DownloadSecureFile@1
+    displayName: Download .pfx file
+    name: IdentityCertificate
+    inputs:
+      secureFile: 'IdentityCertificate.pfx'
+          
+  - script: |
+      rm IdentityCertificate.pfx
+      cp "$(IdentityCertificate.secureFilePath)" "IdentityCertificate.pfx"
+    failOnStderr: true
+    displayName: Copy .pfx file
+
+  - task: Bash@3
+    displayName: 'Run migrations'
+    inputs:
+      targetType: 'inline'
+      script: |
+        chmod +x efbundle
+        ./efbundle
+        rm efbundle
+      failOnStderr: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy to App Service'
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      appType: 'webAppLinux'
+      WebAppName: '$(APP_SERVICE_NAME)'
+      packageForLinux: '.'

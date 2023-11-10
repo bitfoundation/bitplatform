@@ -1,0 +1,119 @@
+name: WebTemplate CD
+
+env:
+  API_SERVER_ADDRESS: 'https://web.bitplatform.dev/api/'
+  APP_SERVICE_NAME: 'app-service-td-test'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  build_api_blazor:
+    name: build api + blazor
+    runs-on: ubuntu-22.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/WebTemplate.Web/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Generate CSS/JS files
+      run: dotnet build src/WebTemplate.Web/WebTemplate.Web.csproj -t:BeforeBuildTasks --no-restore
+
+    - name: Publish
+      run: dotnet publish src/WebTemplate.Api/WebTemplate.Api.csproj -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+
+    - name: Build migrations bundle
+      run: |
+        cd src/WebTemplate.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project WebTemplate.Api.csproj
+
+    - name: Upload ef migrations bundle
+      uses: actions/upload-artifact@v3
+      with:
+        name: migrations-bundle
+        path: src/WebTemplate.Api/efbundle
+
+    - name: Upload api-web artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-web-bundle
+        path: ${{env.DOTNET_ROOT}}/api-web
+
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
+    runs-on: ubuntu-22.04
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve api-web bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: api-web-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+
+      - name: Delete IdentityCertificate.pfx
+        run: |
+            rm IdentityCertificate.pfx
+
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1
+        with:
+            fileDir: './'
+            fileName: 'IdentityCertificate.pfx'
+            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Run migrations
+        run: |
+            chmod +x efbundle
+            ./efbundle
+            rm efbundle
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .

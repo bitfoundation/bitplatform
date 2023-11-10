@@ -1,0 +1,13 @@
+{
+  "name": "To Do",
+  "short_name": "To Do",
+  "start_url": "./",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "images/icons/bit-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
