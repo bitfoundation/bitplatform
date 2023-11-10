@@ -1,7 +1,7 @@
-﻿using MimeTypes;
+﻿using ImageMagick;
+using MimeTypes;
 using WebTemplate.Api.Models.Identity;
 using SystemFile = System.IO.File;
-using ImageMagick;
 
 namespace WebTemplate.Api.Controllers;
 

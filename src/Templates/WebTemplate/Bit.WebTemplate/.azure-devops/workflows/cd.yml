@@ -5,10 +5,11 @@ trigger:
 
 variables:
   APP_SERVICE_NAME: 'app-service-td-test'
-  AZURE_SUBSCRIPTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
+  AZURE_SERVICE_CONNECTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
-  ApiServerAddress: 'https://web.bitplatform.dev/api/'
+  # ApiServerAddress: 'api/'
+  # You can either use either absolute or relative server address such as https://todo.bitplatform.dev/api/
 
 jobs:
 
@@ -130,7 +131,7 @@ jobs:
     displayName: 'Deploy to App Service'
     inputs:
       ConnectionType: 'AzureRM'
-      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
       appType: 'webAppLinux'
       WebAppName: '$(APP_SERVICE_NAME)'
       packageForLinux: '.'

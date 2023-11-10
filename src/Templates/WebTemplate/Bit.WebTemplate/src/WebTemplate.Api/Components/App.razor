@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@attribute [StreamRendering(true)]
+
+<!DOCTYPE html>
 <html bit-theme="dark">
 
 <head>
@@ -8,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The WebTemplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor." />
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <HeadOutlet @rendermode=@(new InteractiveServerRenderMode(prerender: false)) />
+    <HeadOutlet @rendermode=@(new InteractiveWebAssemblyRenderMode(prerender: true)) />
     <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
 </head>
 
@@ -20,7 +22,7 @@
     <link rel="stylesheet" href="styles/app.css" />
     <link rel="stylesheet" href="WebTemplate.Web.bundle.scp.css" />
 
-    <Routes @rendermode=@(new InteractiveServerRenderMode(prerender: false)) />
+    <Routes @rendermode=@(new InteractiveWebAssemblyRenderMode(prerender: true)) />
 
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>

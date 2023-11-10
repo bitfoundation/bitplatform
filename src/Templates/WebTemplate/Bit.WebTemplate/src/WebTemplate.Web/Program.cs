@@ -1,5 +1,4 @@
-﻿using WebTemplate.Web.Services;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -21,8 +20,8 @@ builder.Services.AddClientSharedServices();
 var host = builder.Build();
 
 #if MultilingualEnabled
-    var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
-    CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
+CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
 #endif
 
 await host.RunAsync();

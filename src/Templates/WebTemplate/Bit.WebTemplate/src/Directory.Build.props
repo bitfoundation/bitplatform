@@ -2,7 +2,7 @@
 <Project>
     <!--/-:msbuild-conditional:noEmit -->
     <PropertyGroup>	
-        <LangVersion>11.0</LangVersion>
+        <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

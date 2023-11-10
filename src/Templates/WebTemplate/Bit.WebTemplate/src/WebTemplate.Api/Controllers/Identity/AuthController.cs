@@ -1,13 +1,13 @@
 ﻿//-:cnd:noEmit
 using System.Web;
 using FluentEmail.Core;
-using WebTemplate.Api.Resources;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Shared.Dtos.Identity;
-using WebTemplate.Api.Models.Emailing;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using WebTemplate.Api.Components;
+using WebTemplate.Api.Models.Emailing;
+using WebTemplate.Api.Models.Identity;
+using WebTemplate.Api.Resources;
+using WebTemplate.Shared.Dtos.Identity;
 
 namespace WebTemplate.Api.Controllers.Identity;
 

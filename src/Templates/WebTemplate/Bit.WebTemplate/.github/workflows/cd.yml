@@ -1,8 +1,9 @@
 name: WebTemplate CD
 
 env:
-  API_SERVER_ADDRESS: 'https://web.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'app-service-td-test'
+  API_SERVER_ADDRESS: 'api/'
+  # You can either use either absolute or relative server address such as https://api.myproject.com
 
 on:
   workflow_dispatch:

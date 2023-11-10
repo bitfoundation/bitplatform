@@ -1,6 +1,6 @@
-﻿using WebTemplate.Api.Models.Identity;
+﻿using Riok.Mapperly.Abstractions;
+using WebTemplate.Api.Models.Identity;
 using WebTemplate.Shared.Dtos.Identity;
-using Riok.Mapperly.Abstractions;
 
 namespace WebTemplate.Api.Mappers;
 

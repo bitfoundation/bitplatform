@@ -37,8 +37,6 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<LazyAssemblyLoader>();
 
-        services.AddMvcCore();
-
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();

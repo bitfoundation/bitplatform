@@ -1,6 +1,4 @@
 ﻿//-:cnd:noEmit
-using WebTemplate.Web.Shared;
-
 var builder = WebApplication.CreateBuilder(args);
 
 WebTemplate.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);

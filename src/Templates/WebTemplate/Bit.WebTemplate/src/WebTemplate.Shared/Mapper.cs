@@ -1,6 +1,6 @@
-﻿using WebTemplate.Shared.Dtos.Identity;
+﻿using Riok.Mapperly.Abstractions;
+using WebTemplate.Shared.Dtos.Identity;
 using WebTemplate.Shared.Dtos.Todo;
-using Riok.Mapperly.Abstractions;
 
 namespace WebTemplate.Shared;
 

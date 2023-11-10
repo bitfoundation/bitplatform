@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebTemplate.Api.Models.Identity;
 using WebTemplate.Api.Models.Todo;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace WebTemplate.Api.Data;
 
