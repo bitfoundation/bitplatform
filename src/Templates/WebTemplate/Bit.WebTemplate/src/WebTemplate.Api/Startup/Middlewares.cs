@@ -2,6 +2,7 @@
 using System.Reflection;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 using WebTemplate.Api.Components;
 
@@ -23,6 +24,23 @@ public class Middlewares
             app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
+
+        app.UseStatusCodePages(options: new()
+        {
+            HandleAsync = async (statusCodeContext) =>
+            {
+                var httpContext = statusCodeContext.HttpContext;
+
+                if (httpContext.Response.StatusCode is 404)
+                {
+                    httpContext.Response.Redirect($"not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+                else if (httpContext.Response.StatusCode is 401)
+                {
+                    httpContext.Response.Redirect($"not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+            }
+        });
 
         app.UseStaticFiles(new StaticFileOptions
         {

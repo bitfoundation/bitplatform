@@ -4,6 +4,8 @@ public partial class NotAuthorizedComponent
 {
     private ClaimsPrincipal _user { get; set; } = default!;
 
+    [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
+
     [CascadingParameter] private Task<AuthenticationState> _authenticationStateTask { get; set; } = default!;
 
     protected async override Task OnParamsSetAsync()
@@ -39,8 +41,6 @@ public partial class NotAuthorizedComponent
 
     private void RedirectToSignInPage()
     {
-        var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-
-        NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+        NavigationManager.NavigateTo($"/sign-in?redirectUrl={RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
     }
 }
