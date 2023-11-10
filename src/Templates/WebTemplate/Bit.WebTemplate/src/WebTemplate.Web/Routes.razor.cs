@@ -4,7 +4,7 @@ namespace WebTemplate.Web;
 
 public partial class Routes
 {
-    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
+    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = [];
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;

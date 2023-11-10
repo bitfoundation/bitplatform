@@ -19,7 +19,7 @@ public class PubSubService : IPubSubService
     {
         var handlers = _handlers.ContainsKey(message)
                             ? _handlers[message]
-                            : _handlers[message] = new List<Action<object?>>();
+                            : _handlers[message] = [];
 
         handlers.Add(handler);
 

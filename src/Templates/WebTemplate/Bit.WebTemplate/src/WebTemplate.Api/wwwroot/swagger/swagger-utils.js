@@ -145,7 +145,7 @@ const createLoginUI = function (swagger, rootDiv) {
 }
 
 const login = async (swagger, userName, password) => {
-    const response = await fetch('api/Auth/SignIn', {
+    const response = await fetch('/api/Auth/SignIn', {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
         body: JSON.stringify({ "userName": userName, "password": password })

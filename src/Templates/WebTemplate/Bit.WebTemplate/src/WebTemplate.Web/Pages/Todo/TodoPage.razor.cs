@@ -15,18 +15,18 @@ public partial class TodoPage
     private ConfirmMessageBox _confirmMessageBox = default!;
     private IList<TodoItemDto> _allTodoItems = default!;
     private IList<TodoItemDto> _viewTodoItems = default!;
-    private List<BitDropdownItem<string>> _sortItems = new();
+    private List<BitDropdownItem<string>> _sortItems = [];
 
     protected override async Task OnInitAsync()
     {
         _selectedFilter = nameof(AppStrings.All);
         _selectedSort = nameof(AppStrings.Alphabetical);
 
-        _sortItems = new()
-        {
+        _sortItems =
+        [
             new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Alphabetical)], Value = nameof(AppStrings.Alphabetical) },
             new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Date)], Value = nameof(AppStrings.Date) }
-        };
+        ];
 
         await LoadTodoItems();
 
@@ -40,7 +40,7 @@ public partial class TodoPage
         try
         {
             _allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
-                                async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto)) ?? new();
+                                async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto)) ?? [];
 
             FilterViewTodoItems();
         }

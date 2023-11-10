@@ -10,7 +10,7 @@ public partial class NavMenu : IDisposable
     private string? _profileImageUrl;
     private string? _profileImageUrlBase;
     private UserDto _user = new();
-    private List<BitNavItem> _navItems = new();
+    private List<BitNavItem> _navItems = [];
     private Action _unsubscribe = default!;
 
     [AutoInject] private NavigationManager _navManager { get; set; } = default!;
@@ -21,8 +21,8 @@ public partial class NavMenu : IDisposable
 
     protected override async Task OnInitAsync()
     {
-        _navItems = new()
-        {
+        _navItems =
+        [
             new BitNavItem
             {
                 Text = Localizer[nameof(AppStrings.Home)],
@@ -47,7 +47,7 @@ public partial class NavMenu : IDisposable
                 IconName = BitIconName.EntityExtraction,
                 Url = "/privacy",
             }
-        };
+        ];
 
         _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, payload =>
         {
