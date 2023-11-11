@@ -1,29 +1,23 @@
-﻿//-:cnd:noEmit
-using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net;
 
-namespace BlazorDual.Web.Services;
+namespace BlazorDual.Web.Services.HttpMessageHandlers;
 
-public partial class AppHttpClientHandler : HttpClientHandler
+public class ExceptionHandlerDelegatingHandler
+    : DelegatingHandler
 {
-    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
+    public ExceptionHandlerDelegatingHandler(HttpClientHandler httpClientHandler) 
+        : base(httpClientHandler)
+    {
+
+    }
+
+    public ExceptionHandlerDelegatingHandler()
+    {
+
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null)
-        {
-            var access_token = await _tokenProvider.GetAccessTokenAsync();
-            if (access_token is not null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
-            }
-        }
-
-#if MultilingualEnabled && BlazorServer
-        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
-        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
-#endif
-
         bool serverCommunicationSuccess = false;
 
         try
