@@ -49,16 +49,16 @@
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.BlazorUI" />
-        <Using Include="WebTemplate.Web.Shared" />
-        <Using Include="WebTemplate.Web.Services.Contracts" />
-        <Using Include="WebTemplate.Web.Services" />
-        <Using Include="WebTemplate.Shared" />
+        <Using Include="BlazorWeb.Web.Shared" />
+        <Using Include="BlazorWeb.Web.Services.Contracts" />
+        <Using Include="BlazorWeb.Web.Services" />
+        <Using Include="BlazorWeb.Shared" />
 
         <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\WebTemplate.Shared\WebTemplate.Shared.csproj" />
+        <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

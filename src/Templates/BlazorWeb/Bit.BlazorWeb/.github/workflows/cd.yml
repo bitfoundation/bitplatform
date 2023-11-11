@@ -1,4 +1,4 @@
-name: WebTemplate CD
+name: BlazorWeb CD
 
 env:
   APP_SERVICE_NAME: 'app-service-td-test'
@@ -39,25 +39,25 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/WebTemplate.Web/appsettings.json'
+        files: 'src/BlazorWeb.Web/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Generate CSS/JS files
-      run: dotnet build src/WebTemplate.Web/WebTemplate.Web.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/BlazorWeb.Web/BlazorWeb.Web.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish src/WebTemplate.Api/WebTemplate.Api.csproj -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/BlazorWeb.Api/BlazorWeb.Api.csproj -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Build migrations bundle
       run: |
-        cd src/WebTemplate.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project WebTemplate.Api.csproj
+        cd src/BlazorWeb.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project BlazorWeb.Api.csproj
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v3
       with:
         name: migrations-bundle
-        path: src/WebTemplate.Api/efbundle
+        path: src/BlazorWeb.Api/efbundle
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3

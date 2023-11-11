@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Pages;
+﻿namespace BlazorWeb.Web.Pages;
 
 public partial class NotAuthorizedPage
 {

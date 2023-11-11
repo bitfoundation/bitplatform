@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Services;
+﻿namespace BlazorWeb.Web.Services;
 
 /// <summary>
 /// For more information <see cref="IPubSubService"/> docs.

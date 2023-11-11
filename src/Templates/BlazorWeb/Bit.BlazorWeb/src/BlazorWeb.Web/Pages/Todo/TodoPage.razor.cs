@@ -1,6 +1,6 @@
-﻿using WebTemplate.Shared.Dtos.Todo;
+﻿using BlazorWeb.Shared.Dtos.Todo;
 
-namespace WebTemplate.Web.Pages.Todo;
+namespace BlazorWeb.Web.Pages.Todo;
 
 [Authorize]
 public partial class TodoPage

@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace WebTemplate.Shared.Infra;
+namespace BlazorWeb.Shared.Infra;
 
 public class BuildConfigurationModeDetector
 {

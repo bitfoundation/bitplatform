@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace WebTemplate.Web.Shared;
+namespace BlazorWeb.Web.Shared;
 
 /// <summary>
 /// This component is used during prerendering to determine the value of the StatusCode parameter for the returned HTTP response.

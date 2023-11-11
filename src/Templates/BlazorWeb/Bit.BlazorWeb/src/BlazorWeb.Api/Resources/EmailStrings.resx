@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>WebTemplate - Confirm your email address</value>
+    <value>BlazorWeb - Confirm your email address</value>
   </data>
   <data name="ConfirmEmail" xml:space="preserve">
     <value>Confirm email</value>
@@ -127,11 +127,11 @@
     <value>Or, copy the link below to your browser address bar:</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>You're receiving this message because recently you have signed up for a WebTemplate account.
+    <value>You're receiving this message because recently you have signed up for a BlazorWeb account.
                     Confirm your email address by clicking the button below.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>WebTemplate - Reset your password</value>
+    <value>BlazorWeb - Reset your password</value>
   </data>
   <data name="ResetPasswordHello" xml:space="preserve">
     <value>Hello {0}</value>
@@ -146,9 +146,9 @@
     <value>Reset your password</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>WebTemplate</value>
+    <value>BlazorWeb</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>Welcome to WebTemplate!</value>
+    <value>Welcome to BlazorWeb!</value>
   </data>
 </root>

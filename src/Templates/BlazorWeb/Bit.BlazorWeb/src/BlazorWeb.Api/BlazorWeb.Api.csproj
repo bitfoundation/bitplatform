@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\WebTemplate.Shared\WebTemplate.Shared.csproj" />
-        <ProjectReference Include="..\WebTemplate.Web\WebTemplate.Web.csproj" />
+        <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
+        <ProjectReference Include="..\BlazorWeb.Web\BlazorWeb.Web.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
@@ -61,10 +61,10 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="WebTemplate.Api.Data" />
-        <Using Include="WebTemplate.Api.Mappers" />
-        <Using Include="WebTemplate.Shared.Enums" />
-        <Using Include="WebTemplate.Api.Services.Contracts" />
+        <Using Include="BlazorWeb.Api.Data" />
+        <Using Include="BlazorWeb.Api.Mappers" />
+        <Using Include="BlazorWeb.Shared.Enums" />
+        <Using Include="BlazorWeb.Api.Services.Contracts" />
     </ItemGroup>
 
     <ItemGroup>

@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace WebTemplate.Api.Services;
+namespace BlazorWeb.Api.Services;
 
 public partial class ApiExceptionHandler : IExceptionHandler
 {

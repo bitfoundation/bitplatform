@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace WebTemplate.Shared.Resources;
+namespace BlazorWeb.Shared.Resources;
 
 public static class StringLocalizerProvider
 {

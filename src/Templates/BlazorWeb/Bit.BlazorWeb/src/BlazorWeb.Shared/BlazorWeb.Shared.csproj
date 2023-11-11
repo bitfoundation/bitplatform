@@ -25,7 +25,7 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
-        <Using Include="WebTemplate.Shared.Attributes" />
+        <Using Include="BlazorWeb.Shared.Attributes" />
     </ItemGroup>
 
     <ItemGroup>

@@ -4,9 +4,9 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
-using WebTemplate.Api.Components;
+using BlazorWeb.Api.Components;
 
-namespace WebTemplate.Api.Startup;
+namespace BlazorWeb.Api.Startup;
 
 public class Middlewares
 {
@@ -95,6 +95,6 @@ public class Middlewares
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(Assembly.Load("WebTemplate.Web"));
+            .AddAdditionalAssemblies(Assembly.Load("BlazorWeb.Web"));
     }
 }

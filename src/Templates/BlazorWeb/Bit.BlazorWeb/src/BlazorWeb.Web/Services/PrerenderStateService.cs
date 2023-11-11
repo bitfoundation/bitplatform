@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Components.Web;
 
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 // Using this class, persisting the application state on Pre-Rendering mode (explained here: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state) will be very simple in this multi-mode Template project.
 

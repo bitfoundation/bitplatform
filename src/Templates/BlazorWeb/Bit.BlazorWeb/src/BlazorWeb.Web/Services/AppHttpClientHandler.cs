@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 public partial class AppHttpClientHandler : HttpClientHandler
 {

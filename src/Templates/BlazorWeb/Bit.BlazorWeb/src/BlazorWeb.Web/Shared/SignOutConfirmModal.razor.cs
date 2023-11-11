@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Shared;
+﻿namespace BlazorWeb.Web.Shared;
 
 public partial class SignOutConfirmModal
 {

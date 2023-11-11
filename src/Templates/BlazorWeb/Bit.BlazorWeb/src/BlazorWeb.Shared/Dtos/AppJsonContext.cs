@@ -1,7 +1,7 @@
-﻿using WebTemplate.Shared.Dtos.Identity;
-using WebTemplate.Shared.Dtos.Todo;
+﻿using BlazorWeb.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Todo;
 
-namespace WebTemplate.Shared.Dtos;
+namespace BlazorWeb.Shared.Dtos;
 
 /// <summary>
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/

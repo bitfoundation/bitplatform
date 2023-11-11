@@ -1,6 +1,6 @@
-﻿using WebTemplate.Shared.Dtos.Identity;
+﻿using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Web.Services.Contracts;
+namespace BlazorWeb.Web.Services.Contracts;
 
 public interface IAuthenticationService
 {

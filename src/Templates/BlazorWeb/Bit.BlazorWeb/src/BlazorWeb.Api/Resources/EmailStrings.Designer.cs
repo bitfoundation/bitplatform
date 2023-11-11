@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WebTemplate.Api.Resources {
+namespace BlazorWeb.Api.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace WebTemplate.Api.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WebTemplate.Api.Resources.EmailStrings", typeof(EmailStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BlazorWeb.Api.Resources.EmailStrings", typeof(EmailStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace WebTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WebTemplate.
+        ///   Looks up a localized string similar to BlazorWeb.
         /// </summary>
         public static string AppName {
             get {
@@ -70,7 +70,7 @@ namespace WebTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WebTemplate - Confirm your email address.
+        ///   Looks up a localized string similar to BlazorWeb - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
             get {
@@ -97,7 +97,7 @@ namespace WebTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a WebTemplate account.
+        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a BlazorWeb account.
         ///                    Confirm your email address by clicking the button below..
         /// </summary>
         public static string EmailConfirmationMessageBody {
@@ -107,7 +107,7 @@ namespace WebTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WebTemplate - Reset your password.
+        ///   Looks up a localized string similar to BlazorWeb - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {
@@ -152,7 +152,7 @@ namespace WebTemplate.Api.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Welcome to WebTemplate!.
+        ///   Looks up a localized string similar to Welcome to BlazorWeb!.
         /// </summary>
         public static string WelcomeToApp {
             get {

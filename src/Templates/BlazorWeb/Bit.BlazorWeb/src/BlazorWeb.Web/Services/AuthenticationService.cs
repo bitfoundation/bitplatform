@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 public partial class AuthenticationService : IAuthenticationService
 {

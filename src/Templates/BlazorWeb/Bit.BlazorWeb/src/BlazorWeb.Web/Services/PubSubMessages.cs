@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Services;
+﻿namespace BlazorWeb.Web.Services;
 
 public static class PubSubMessages
 {

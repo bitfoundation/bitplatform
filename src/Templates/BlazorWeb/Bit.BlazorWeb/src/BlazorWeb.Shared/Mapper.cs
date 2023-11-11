@@ -1,8 +1,8 @@
 ﻿using Riok.Mapperly.Abstractions;
-using WebTemplate.Shared.Dtos.Identity;
-using WebTemplate.Shared.Dtos.Todo;
+using BlazorWeb.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Todo;
 
-namespace WebTemplate.Shared;
+namespace BlazorWeb.Shared;
 
 /// <summary>
 /// Patching methods help you patch the DTO you have received from the server (for example, after calling an Update api) 

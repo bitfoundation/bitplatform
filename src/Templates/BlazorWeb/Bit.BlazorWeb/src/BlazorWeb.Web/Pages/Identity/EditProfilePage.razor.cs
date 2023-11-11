@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Web.Pages.Identity;
+namespace BlazorWeb.Web.Pages.Identity;
 
 [Authorize]
 public partial class EditProfilePage

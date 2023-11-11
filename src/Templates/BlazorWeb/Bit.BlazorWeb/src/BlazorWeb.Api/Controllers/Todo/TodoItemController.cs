@@ -1,7 +1,7 @@
-﻿using WebTemplate.Api.Models.Todo;
-using WebTemplate.Shared.Dtos.Todo;
+﻿using BlazorWeb.Api.Models.Todo;
+using BlazorWeb.Shared.Dtos.Todo;
 
-namespace WebTemplate.Api.Controllers.Todo;
+namespace BlazorWeb.Api.Controllers.Todo;
 
 [Route("api/[controller]/[action]")]
 [ApiController]

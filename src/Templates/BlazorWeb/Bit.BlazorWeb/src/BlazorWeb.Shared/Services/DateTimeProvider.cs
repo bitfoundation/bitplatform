@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Shared.Services;
+﻿namespace BlazorWeb.Shared.Services;
 
 public class DateTimeProvider : IDateTimeProvider
 {

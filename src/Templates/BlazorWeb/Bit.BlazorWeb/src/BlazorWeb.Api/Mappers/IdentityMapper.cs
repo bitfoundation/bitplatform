@@ -1,8 +1,8 @@
 ﻿using Riok.Mapperly.Abstractions;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Api.Mappers;
+namespace BlazorWeb.Api.Mappers;
 
 /// <summary>
 /// More info at Server/Api/Mappers/README.md

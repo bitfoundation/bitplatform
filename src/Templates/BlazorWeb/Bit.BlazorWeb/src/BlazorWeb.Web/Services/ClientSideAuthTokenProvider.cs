@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {

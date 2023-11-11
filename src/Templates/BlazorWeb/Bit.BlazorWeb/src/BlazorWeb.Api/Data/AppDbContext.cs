@@ -1,9 +1,9 @@
 ﻿//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Api.Models.Todo;
+using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Api.Models.Todo;
 
-namespace WebTemplate.Api.Data;
+namespace BlazorWeb.Api.Data;
 
 public class AppDbContext : IdentityDbContext<User, Role, int>
 {

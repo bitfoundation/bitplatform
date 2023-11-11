@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Web.Shared;
+namespace BlazorWeb.Web.Shared;
 
 public partial class NavMenu : IDisposable
 {

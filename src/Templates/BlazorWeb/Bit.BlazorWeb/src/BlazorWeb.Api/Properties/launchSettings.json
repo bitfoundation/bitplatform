@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/launchsettings.json",
     "profiles": {
-        "WebTemplate": {
+        "BlazorWeb": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
@@ -10,7 +10,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
-        "WebTemplate + WASM debugging": {
+        "BlazorWeb + WASM debugging": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

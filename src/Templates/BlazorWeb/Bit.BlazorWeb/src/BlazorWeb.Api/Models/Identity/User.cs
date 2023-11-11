@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api.Models.Identity;
+﻿namespace BlazorWeb.Api.Models.Identity;
 
 public class User : IdentityUser<int>
 {

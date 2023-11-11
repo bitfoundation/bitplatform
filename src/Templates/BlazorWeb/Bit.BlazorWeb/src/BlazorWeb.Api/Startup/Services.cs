@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using WebTemplate.Api.Services;
+using BlazorWeb.Api.Services;
 
-namespace WebTemplate.Api.Startup;
+namespace BlazorWeb.Api.Startup;
 
 public static class Services
 {

@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api.Services;
+﻿namespace BlazorWeb.Api.Services;
 
 public partial class UserInformationProvider : IUserInformationProvider
 {

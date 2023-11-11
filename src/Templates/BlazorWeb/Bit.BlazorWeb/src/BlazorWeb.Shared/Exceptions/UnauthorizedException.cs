@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace WebTemplate.Shared.Exceptions;
+namespace BlazorWeb.Shared.Exceptions;
 
 public class UnauthorizedException : RestException
 {

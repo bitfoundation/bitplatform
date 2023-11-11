@@ -1,7 +1,7 @@
-﻿using WebTemplate.Api.Models.Identity;
-using WebTemplate.Shared.Dtos.Identity;
+﻿using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Api.Controllers.Identity;
+namespace BlazorWeb.Api.Controllers.Identity;
 
 [Route("api/[controller]/[action]")]
 [ApiController]

@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Services.Contracts;
+﻿namespace BlazorWeb.Web.Services.Contracts;
 
 public interface IExceptionHandler
 {

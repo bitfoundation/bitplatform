@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Shared.Exceptions;
+﻿namespace BlazorWeb.Shared.Exceptions;
 
 public abstract class KnownException : Exception
 {

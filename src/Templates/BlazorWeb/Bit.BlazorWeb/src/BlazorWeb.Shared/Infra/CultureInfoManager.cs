@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace WebTemplate.Shared.Infra;
+namespace BlazorWeb.Shared.Infra;
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");

@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
 
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 public partial class ExceptionHandler : IExceptionHandler
 {

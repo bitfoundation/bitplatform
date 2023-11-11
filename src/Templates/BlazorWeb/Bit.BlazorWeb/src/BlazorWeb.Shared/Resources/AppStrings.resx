@@ -542,7 +542,7 @@
     <data name="ServerConnectionException" xml:space="preserve">
     <value>Unable to connect to the server.</value>
   </data>
-    <!-- WebTemplate strings -->
+    <!-- BlazorWeb strings -->
     <data name="FileRemoveFailed" xml:space="preserve">
     <value>An error occurred while removing file</value>
   </data>

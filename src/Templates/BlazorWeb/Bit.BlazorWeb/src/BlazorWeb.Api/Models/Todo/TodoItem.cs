@@ -1,6 +1,6 @@
-﻿using WebTemplate.Api.Models.Identity;
+﻿using BlazorWeb.Api.Models.Identity;
 
-namespace WebTemplate.Api.Models.Todo;
+namespace BlazorWeb.Api.Models.Todo;
 
 public class TodoItem
 {

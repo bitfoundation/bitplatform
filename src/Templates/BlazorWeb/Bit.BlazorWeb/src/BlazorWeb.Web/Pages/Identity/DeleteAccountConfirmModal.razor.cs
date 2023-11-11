@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Web.Pages.Identity;
+﻿namespace BlazorWeb.Web.Pages.Identity;
 
 public partial class DeleteAccountConfirmModal
 {

@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api.Services.Contracts;
+﻿namespace BlazorWeb.Api.Services.Contracts;
 
 public interface IUserInformationProvider
 {

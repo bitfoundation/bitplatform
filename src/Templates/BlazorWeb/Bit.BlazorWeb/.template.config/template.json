@@ -10,10 +10,10 @@
         "language": "C#",
         "type": "solution"
     },
-    "identity": "Bit.WebTemplate",
-    "name": "bit WebTemplate",
+    "identity": "Bit.BlazorWeb",
+    "name": "bit BlazorWeb",
     "shortName": "bit-web",
-    "sourceName": "WebTemplate",
+    "sourceName": "BlazorWeb",
     "preferNameDirectory": true,
     "symbols": {
         "database": {

@@ -1,9 +1,9 @@
 ﻿using ImageMagick;
 using MimeTypes;
-using WebTemplate.Api.Models.Identity;
+using BlazorWeb.Api.Models.Identity;
 using SystemFile = System.IO.File;
 
-namespace WebTemplate.Api.Controllers;
+namespace BlazorWeb.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]

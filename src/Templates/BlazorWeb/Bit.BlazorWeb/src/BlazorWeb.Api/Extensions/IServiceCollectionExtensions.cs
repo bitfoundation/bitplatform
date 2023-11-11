@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using WebTemplate.Api;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Api.Services;
-using WebTemplate.Web.Services;
+using BlazorWeb.Api;
+using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Api.Services;
+using BlazorWeb.Web.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -138,8 +138,8 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "WebTemplate.Api.xml"));
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "WebTemplate.Shared.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorWeb.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorWeb.Shared.xml"));
 
             options.OperationFilter<ODataOperationFilter>();
 

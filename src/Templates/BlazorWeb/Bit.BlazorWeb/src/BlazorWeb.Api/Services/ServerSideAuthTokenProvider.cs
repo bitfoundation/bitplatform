@@ -3,7 +3,7 @@
 using System.Reflection;
 using Microsoft.JSInterop;
 
-namespace WebTemplate.Web.Services;
+namespace BlazorWeb.Web.Services;
 
 /// <summary>
 /// The <see cref="ClientSideAuthTokenProvider"/> reads the token from the cookie,

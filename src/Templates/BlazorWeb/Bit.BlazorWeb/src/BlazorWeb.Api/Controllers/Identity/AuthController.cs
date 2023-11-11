@@ -3,13 +3,13 @@ using System.Web;
 using FluentEmail.Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using WebTemplate.Api.Components;
-using WebTemplate.Api.Models.Emailing;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Api.Resources;
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Api.Components;
+using BlazorWeb.Api.Models.Emailing;
+using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Api.Resources;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Api.Controllers.Identity;
+namespace BlazorWeb.Api.Controllers.Identity;
 
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]

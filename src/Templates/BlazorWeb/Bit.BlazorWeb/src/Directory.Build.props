@@ -24,13 +24,13 @@
         <Using Include="Microsoft.Extensions.Localization" />
         <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
-        <Using Include="WebTemplate" />
-        <Using Include="WebTemplate.Shared.Dtos" />
-        <Using Include="WebTemplate.Shared.Enums" />
-        <Using Include="WebTemplate.Shared.Infra" />
-        <Using Include="WebTemplate.Shared.Resources" />
-        <Using Include="WebTemplate.Shared.Exceptions" />
-        <Using Include="WebTemplate.Shared.Services.Contracts" />
+        <Using Include="BlazorWeb" />
+        <Using Include="BlazorWeb.Shared.Dtos" />
+        <Using Include="BlazorWeb.Shared.Enums" />
+        <Using Include="BlazorWeb.Shared.Infra" />
+        <Using Include="BlazorWeb.Shared.Resources" />
+        <Using Include="BlazorWeb.Shared.Exceptions" />
+        <Using Include="BlazorWeb.Shared.Services.Contracts" />
     </ItemGroup>
 
 </Project>

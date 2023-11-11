@@ -218,14 +218,14 @@ ModelManifest.xml
 
 profile.arm.json
 
-# WebTemplate
+# BlazorWeb
 *.map
 *Resource.designer.cs
 /**/*.css
 
 /src/Server/Api/Attachments/**/*.*
 
-/src/WebTemplate.Web/Scripts/app*.js
-/src/WebTemplate.Web/wwwroot/scripts/app*.js
+/src/BlazorWeb.Web/Scripts/app*.js
+/src/BlazorWeb.Web/wwwroot/scripts/app*.js
 
-/src/WebTemplate.Api/WebTemplateDb.db*
+/src/BlazorWeb.Api/BlazorWebDb.db*

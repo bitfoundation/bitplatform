@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api.Controllers;
+﻿namespace BlazorWeb.Api.Controllers;
 
 public partial class AppControllerBase : ControllerBase
 {

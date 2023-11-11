@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Shared.Dtos.Identity;
+﻿namespace BlazorWeb.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class SignUpRequestDto

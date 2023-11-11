@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api.Models.Emailing;
+﻿namespace BlazorWeb.Api.Models.Emailing;
 
 public class ResetPasswordModel
 {

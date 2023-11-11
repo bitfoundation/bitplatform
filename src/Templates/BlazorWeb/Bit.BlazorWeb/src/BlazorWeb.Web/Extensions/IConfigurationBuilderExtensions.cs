@@ -6,7 +6,7 @@ public static class IConfigurationBuilderExtensions
 {
     public static void AddClientAppConfigurations(this IConfigurationBuilder builder)
     {
-        var assembly = Assembly.Load("WebTemplate.Web");
-        builder.AddJsonStream(assembly.GetManifestResourceStream("WebTemplate.Web.appsettings.json")!);
+        var assembly = Assembly.Load("BlazorWeb.Web");
+        builder.AddJsonStream(assembly.GetManifestResourceStream("BlazorWeb.Web.appsettings.json")!);
     }
 }

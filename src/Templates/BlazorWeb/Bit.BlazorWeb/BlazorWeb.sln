@@ -31,11 +31,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	EndProjectSection
 EndProject
 #endif
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTemplate.Shared", "src\WebTemplate.Shared\WebTemplate.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Shared", "src\BlazorWeb.Shared\BlazorWeb.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTemplate.Api", "src\WebTemplate.Api\WebTemplate.Api.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Api", "src\BlazorWeb.Api\BlazorWeb.Api.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTemplate.Web", "src\WebTemplate.Web\WebTemplate.Web.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Web", "src\BlazorWeb.Web\BlazorWeb.Web.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

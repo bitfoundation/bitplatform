@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Shared.Attributes;
+﻿namespace BlazorWeb.Shared.Attributes;
 
 /// <summary>
 /// Gets or sets the resource type to use for error message and localizations lookups.

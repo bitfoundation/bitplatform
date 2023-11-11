@@ -1,6 +1,6 @@
-﻿using WebTemplate.Api.Models.Identity;
+﻿using BlazorWeb.Api.Models.Identity;
 
-namespace WebTemplate.Api.Data.Configurations.Identity;
+namespace BlazorWeb.Api.Data.Configurations.Identity;
 
 public class RoleConfiguration : IEntityTypeConfiguration<Role>
 {

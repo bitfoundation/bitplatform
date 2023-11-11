@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace WebTemplate.Web.Shared;
+namespace BlazorWeb.Web.Shared;
 
 /// <summary>
 /// https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/handle-errors

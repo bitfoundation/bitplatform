@@ -2,10 +2,10 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
-using WebTemplate.Api.Models.Identity;
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Api.Models.Identity;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Api.Services;
+namespace BlazorWeb.Api.Services;
 
 public partial class JwtService : IJwtService
 {

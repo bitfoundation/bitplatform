@@ -1,6 +1,6 @@
-﻿using WebTemplate.Api.Models.Identity;
+﻿using BlazorWeb.Api.Models.Identity;
 
-namespace WebTemplate.Api.Data.Configurations.Identity;
+namespace BlazorWeb.Api.Data.Configurations.Identity;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
@@ -14,7 +14,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             EmailConfirmed = true,
             Gender = Gender.Other,
             BirthDate = new DateTime(2023, 1, 1),
-            FullName = "WebTemplate test account",
+            FullName = "BlazorWeb test account",
             UserName = userName,
             Email = userName,
             NormalizedUserName = userName.ToUpperInvariant(),

@@ -1,4 +1,4 @@
-name: WebTemplate CI
+name: BlazorWeb CI
 
 on:
   workflow_dispatch:
@@ -26,4 +26,4 @@ jobs:
         node-version: 18
 
     - name: Build
-      run: dotnet build src/WebTemplate.Web/WebTemplate.Web.csproj -p:Configuration=Release
+      run: dotnet build src/BlazorWeb.Web/BlazorWeb.Web.csproj -p:Configuration=Release

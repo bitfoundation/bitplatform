@@ -1,4 +1,4 @@
-﻿using WebTemplate.Shared.Services;
+﻿using BlazorWeb.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

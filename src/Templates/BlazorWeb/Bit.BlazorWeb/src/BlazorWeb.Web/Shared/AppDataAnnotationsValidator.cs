@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Forms;
-using WebTemplate.Shared.Attributes;
-using WebTemplate.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Attributes;
+using BlazorWeb.Shared.Dtos.Identity;
 
-namespace WebTemplate.Web.Shared;
+namespace BlazorWeb.Web.Shared;
 
 
 /// <summary>

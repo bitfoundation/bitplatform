@@ -1,4 +1,4 @@
-﻿namespace WebTemplate.Api;
+﻿namespace BlazorWeb.Api;
 
 public class AppSettings
 {

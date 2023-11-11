@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
 
-namespace WebTemplate.Web;
+namespace BlazorWeb.Web;
 
 public partial class Routes
 {

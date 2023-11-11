@@ -118,23 +118,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>WebTemplate - Confirmez votre adresse e-mail</value>
+    <value>BlazorWeb - Confirmez votre adresse e-mail</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>WebTemplate - Réinitialiser votre mot de passe</value>
+    <value>BlazorWeb - Réinitialiser votre mot de passe</value>
   </data>
   <data name="ConfirmEmail" xml:space="preserve">
     <value>Confirmez votre email</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>Vous recevez ce message car vous vous êtes récemment inscrit à un compte WebTemplate.
+    <value>Vous recevez ce message car vous vous êtes récemment inscrit à un compte BlazorWeb.
                      Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>Bienvenue sur WebTemplate !</value>
+    <value>Bienvenue sur BlazorWeb !</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>WebTemplate</value>
+    <value>BlazorWeb</value>
   </data>
   <data name="CopyLink" xml:space="preserve">
     <value>Ou copiez le lien ci-dessous dans la barre d'adresse de votre navigateur :</value>
