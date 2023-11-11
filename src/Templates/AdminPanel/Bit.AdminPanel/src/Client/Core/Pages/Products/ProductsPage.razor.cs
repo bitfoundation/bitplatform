@@ -93,7 +93,7 @@ public partial class ProductsPage
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty), 
+        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty),
                                                      Localizer[nameof(AppStrings.DeleteProduct)]);
 
         if (confirmed)

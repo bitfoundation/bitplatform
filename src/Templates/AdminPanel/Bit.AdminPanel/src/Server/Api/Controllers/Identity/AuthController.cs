@@ -1,12 +1,12 @@
 ﻿//-:cnd:noEmit
 using System.Web;
-using FluentEmail.Core;
-using AdminPanel.Server.Api.Resources;
-using AdminPanel.Server.Api.Models.Identity;
-using AdminPanel.Shared.Dtos.Identity;
 using AdminPanel.Server.Api.Models.Emailing;
-using Microsoft.AspNetCore.Components.Web;
+using AdminPanel.Server.Api.Models.Identity;
+using AdminPanel.Server.Api.Resources;
+using AdminPanel.Shared.Dtos.Identity;
+using FluentEmail.Core;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace AdminPanel.Server.Api.Controllers;
 

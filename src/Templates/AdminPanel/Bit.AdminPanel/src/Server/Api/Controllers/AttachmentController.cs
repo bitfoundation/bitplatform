@@ -1,7 +1,7 @@
-﻿using MimeTypes;
-using AdminPanel.Server.Api.Models.Identity;
-using SystemFile = System.IO.File;
+﻿using AdminPanel.Server.Api.Models.Identity;
 using ImageMagick;
+using MimeTypes;
+using SystemFile = System.IO.File;
 
 namespace AdminPanel.Server.Api.Controllers;
 

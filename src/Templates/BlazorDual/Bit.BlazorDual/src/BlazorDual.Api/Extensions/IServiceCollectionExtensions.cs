@@ -1,13 +1,13 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using BlazorDual.Api;
+using BlazorDual.Api.Models.Identity;
+using BlazorDual.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using BlazorDual.Api;
-using BlazorDual.Api.Models.Identity;
-using BlazorDual.Api.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

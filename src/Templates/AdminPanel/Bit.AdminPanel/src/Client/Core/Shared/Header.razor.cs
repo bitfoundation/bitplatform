@@ -56,7 +56,7 @@ public partial class Header : IDisposable
 
         var access_token = await PrerenderStateService.GetValue($"{nameof(Header)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
         _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
-        
+
         SetProfileImageUrl();
     }
 

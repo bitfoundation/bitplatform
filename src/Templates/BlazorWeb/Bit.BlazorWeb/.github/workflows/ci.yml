@@ -1,0 +1,29 @@
+name: BlazorWeb CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+
+  build_blazor_server:
+    name: build blazor
+    runs-on: ubuntu-22.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: global.json
+      
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Build
+      run: dotnet build src/BlazorWeb.Client/BlazorWeb.Client.csproj -p:Configuration=Release

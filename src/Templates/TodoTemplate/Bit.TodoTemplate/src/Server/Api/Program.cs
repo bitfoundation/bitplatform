@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 #if DEBUG
 if (OperatingSystem.IsWindows())
 {
-// The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
+    // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
     builder.WebHost.UseUrls("https://localhost:5041", "http://localhost:5040", "https://*:5041", "http://*:5040");
 }
 else

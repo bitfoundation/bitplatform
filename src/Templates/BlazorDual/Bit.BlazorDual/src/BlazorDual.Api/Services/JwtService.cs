@@ -1,9 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
 using BlazorDual.Api.Models.Identity;
 using BlazorDual.Shared.Dtos.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BlazorDual.Api.Services;
 

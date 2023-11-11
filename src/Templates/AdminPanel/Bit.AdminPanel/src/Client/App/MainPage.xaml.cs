@@ -30,7 +30,7 @@ public partial class MainPage
             handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
 
             handler.PlatformView.ScrollView.Bounces = false;
-            
+
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
 #if DEBUG
@@ -42,9 +42,9 @@ public partial class MainPage
 #endif
 #elif ANDROID
             handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
-            
+
             handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
-            
+
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
             settings.AllowFileAccessFromFileURLs =
@@ -69,7 +69,7 @@ public partial class MainPage
             try
             {
 #if WINDOWS && RELEASE
-                var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler.PlatformView;
+                var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
                 await webView2.EnsureCoreWebView2Async();
 
                 var settings = webView2.CoreWebView2.Settings;

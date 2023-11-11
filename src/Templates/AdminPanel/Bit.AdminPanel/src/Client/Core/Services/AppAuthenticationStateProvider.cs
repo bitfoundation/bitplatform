@@ -52,7 +52,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
         string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
 
         // Deserialize the JSON string to a dictionary
-        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.DictionaryStringObject);
+        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.DictionaryStringObject)!;
 
         return claims;
     }
