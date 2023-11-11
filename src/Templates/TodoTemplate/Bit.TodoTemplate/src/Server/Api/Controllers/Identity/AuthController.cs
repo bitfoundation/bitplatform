@@ -1,12 +1,12 @@
 ﻿//-:cnd:noEmit
 using System.Web;
 using FluentEmail.Core;
-using TodoTemplate.Server.Api.Resources;
-using TodoTemplate.Server.Api.Models.Identity;
-using TodoTemplate.Shared.Dtos.Identity;
-using TodoTemplate.Server.Api.Models.Emailing;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using TodoTemplate.Server.Api.Models.Emailing;
+using TodoTemplate.Server.Api.Models.Identity;
+using TodoTemplate.Server.Api.Resources;
+using TodoTemplate.Shared.Dtos.Identity;
 
 namespace TodoTemplate.Server.Api.Controllers.Identity;
 
