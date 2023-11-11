@@ -1,6 +1,6 @@
-﻿using TodoTemplate.Server.Api.Models.Identity;
+﻿using Riok.Mapperly.Abstractions;
+using TodoTemplate.Server.Api.Models.Identity;
 using TodoTemplate.Shared.Dtos.Identity;
-using Riok.Mapperly.Abstractions;
 
 namespace TodoTemplate.Server.Api.Mappers;
 

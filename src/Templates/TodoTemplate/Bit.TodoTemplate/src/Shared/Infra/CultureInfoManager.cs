@@ -1,17 +1,15 @@
-﻿using System.Reflection;
-
-namespace TodoTemplate.Shared.Infra;
+﻿namespace TodoTemplate.Shared.Infra;
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
 
-    public static (string name, string code)[] SupportedCultures { get; } = new (string name, string code)[]
-    {
+    public static (string name, string code)[] SupportedCultures { get; } =
+    [
         ("English US", "en-US"),
         ("English UK", "en-GB"),
         ("Française", "fr-FR"),
         // ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
-    };
+    ];
 
     public static CultureInfo CreateCultureInfo(string cultureInfoId)
     {

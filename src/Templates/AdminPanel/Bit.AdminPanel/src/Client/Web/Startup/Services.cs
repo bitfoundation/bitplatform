@@ -1,8 +1,8 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
 using System.IO.Compression;
-using Microsoft.AspNetCore.ResponseCompression;
 using AdminPanel.Client.Web.Services;
+using Microsoft.AspNetCore.ResponseCompression;
 
 namespace AdminPanel.Client.Web.Startup;
 
@@ -26,7 +26,7 @@ public static class Services
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })

@@ -1,6 +1,6 @@
-﻿using Riok.Mapperly.Abstractions;
-using BlazorDual.Api.Models.Todo;
+﻿using BlazorDual.Api.Models.Todo;
 using BlazorDual.Shared.Dtos.Todo;
+using Riok.Mapperly.Abstractions;
 
 namespace BlazorDual.Api.Mappers;
 

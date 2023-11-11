@@ -17,9 +17,9 @@ public partial class NavMenu
         set
         {
             if (value == isMenuOpen) return;
-            
+
             isMenuOpen = value;
-            
+
             _ = IsMenuOpenChanged.InvokeAsync(value);
         }
     }

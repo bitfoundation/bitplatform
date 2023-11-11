@@ -1,13 +1,13 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using AdminPanel.Server.Api;
+using AdminPanel.Server.Api.Models.Identity;
+using AdminPanel.Server.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using AdminPanel.Server.Api;
-using AdminPanel.Server.Api.Models.Identity;
-using AdminPanel.Server.Api.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

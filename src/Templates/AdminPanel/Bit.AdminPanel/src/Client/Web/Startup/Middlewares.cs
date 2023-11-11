@@ -23,8 +23,6 @@ public class Middlewares
         }
         app.UseStaticFiles();
 
-        app.UseRouting();
-
 #if MultilingualEnabled
         var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
         app.UseRequestLocalization(new RequestLocalizationOptions

@@ -1,6 +1,4 @@
-﻿using BlazorDual.Api.Resources;
-
-namespace BlazorDual.Api.Models.Emailing;
+﻿namespace BlazorDual.Api.Models.Emailing;
 
 public class EmailConfirmationModel
 {

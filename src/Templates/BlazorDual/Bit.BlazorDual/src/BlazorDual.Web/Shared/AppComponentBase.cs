@@ -19,15 +19,15 @@ public partial class AppComponentBase : ComponentBase
     [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
-    
+
     [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
     [AutoInject] protected IAuthenticationService AuthenticationService = default!;
-    
+
     [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
-    
+
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
 
     protected async sealed override Task OnInitializedAsync()

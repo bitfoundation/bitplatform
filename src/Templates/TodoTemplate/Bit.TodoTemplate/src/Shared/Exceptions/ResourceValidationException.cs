@@ -5,7 +5,7 @@ namespace TodoTemplate.Shared.Exceptions;
 public class ResourceValidationException : RestException
 {
     public ResourceValidationException(params LocalizedString[] errorMessages)
-    : this(new[] { ("*", errorMessages) })
+    : this([("*", errorMessages)])
     {
 
     }
