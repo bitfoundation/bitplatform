@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using BlazorWeb.Web.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -11,7 +12,7 @@ if (apiServerAddress!.IsAbsoluteUri is false)
     apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
 }
 
-builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = apiServerAddress });
+builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<LocalizationDelegatingHandler>()) { BaseAddress = apiServerAddress });
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
 builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
