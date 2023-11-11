@@ -37,7 +37,7 @@ public static class Services
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
             .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
-            .AddHttpMessageHandler(sp => new AuthorizationDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
+            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
             .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
             .AddHttpMessageHandler(sp => new ExceptionHandlerDelegatingHandler())
             .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
@@ -47,7 +47,7 @@ public static class Services
 
                 if (apiServerAddress!.IsAbsoluteUri is false)
                 {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.BaseUrl()}{apiServerAddress}");
+                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
                 }
 
                 httpClient.BaseAddress = apiServerAddress;

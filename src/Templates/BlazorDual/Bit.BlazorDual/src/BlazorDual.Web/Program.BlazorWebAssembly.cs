@@ -12,7 +12,7 @@ public partial class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddClientAppConfigurations();
+        builder.Configuration.AddClientConfigurations();
 
         Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
