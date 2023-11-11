@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace BlazorDual.Api.Services;
 

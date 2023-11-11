@@ -2,11 +2,11 @@
 using System.IO.Compression;
 using System.Net;
 using System.Net.Mail;
+using BlazorDual.Api.Services;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorDual.Api.Services;
-using Microsoft.AspNetCore.Components.Web;
 #if BlazorWebAssembly
 using Microsoft.AspNetCore.Components;
 using BlazorDual.Web.Services;
@@ -81,7 +81,7 @@ public static class Services
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })

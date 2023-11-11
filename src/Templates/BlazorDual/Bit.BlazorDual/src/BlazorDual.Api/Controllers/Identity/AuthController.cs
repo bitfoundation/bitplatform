@@ -1,12 +1,12 @@
 ﻿//-:cnd:noEmit
 using System.Web;
-using FluentEmail.Core;
-using BlazorDual.Api.Resources;
-using BlazorDual.Api.Models.Identity;
-using BlazorDual.Shared.Dtos.Identity;
 using BlazorDual.Api.Models.Emailing;
-using Microsoft.AspNetCore.Components.Web;
+using BlazorDual.Api.Models.Identity;
+using BlazorDual.Api.Resources;
+using BlazorDual.Shared.Dtos.Identity;
+using FluentEmail.Core;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace BlazorDual.Api.Controllers.Identity;
 

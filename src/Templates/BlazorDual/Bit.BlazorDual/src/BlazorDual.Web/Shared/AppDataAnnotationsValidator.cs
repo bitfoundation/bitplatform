@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Components.Forms;
 using BlazorDual.Shared.Attributes;
 using BlazorDual.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace BlazorDual.Web.Shared;
 
