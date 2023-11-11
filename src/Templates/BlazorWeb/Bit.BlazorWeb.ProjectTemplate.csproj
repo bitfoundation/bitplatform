@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Bit.BlazorWeb\src\BlazorWeb.Web\wwwroot\images\icons\bit-icon-512.png">
+        <None Include="Bit.BlazorWeb\src\BlazorWeb.Client\wwwroot\images\icons\bit-icon-512.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>

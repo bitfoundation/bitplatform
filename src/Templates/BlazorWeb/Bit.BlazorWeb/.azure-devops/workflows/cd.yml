@@ -43,19 +43,19 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/BlazorWeb.Web/appsettings.json'
+      targetFiles: 'src/BlazorWeb.Client/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/BlazorWeb.Web/BlazorWeb.Web.csproj -t:BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/BlazorWeb.Client/BlazorWeb.Client.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/BlazorWeb.Api/BlazorWeb.Api.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+      script: 'dotnet publish src/BlazorWeb.Server/BlazorWeb.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload api-web artifact
@@ -68,12 +68,12 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/BlazorWeb.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project BlazorWeb.Api.csproj'
+      script: 'cd src/BlazorWeb.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project BlazorWeb.Server.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/BlazorWeb.Api/efbundle'
+      targetPath: 'src/BlazorWeb.Server/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 

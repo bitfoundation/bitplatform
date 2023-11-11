@@ -225,7 +225,7 @@ profile.arm.json
 
 /src/Server/Api/Attachments/**/*.*
 
-/src/BlazorWeb.Web/Scripts/app*.js
-/src/BlazorWeb.Web/wwwroot/scripts/app*.js
+/src/BlazorWeb.Client/Scripts/app*.js
+/src/BlazorWeb.Client/wwwroot/scripts/app*.js
 
-/src/BlazorWeb.Api/BlazorWebDb.db*
+/src/BlazorWeb.Server/BlazorWebDb.db*

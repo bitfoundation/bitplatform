@@ -33,9 +33,9 @@ EndProject
 #endif
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Shared", "src\BlazorWeb.Shared\BlazorWeb.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Api", "src\BlazorWeb.Api\BlazorWeb.Api.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Server", "src\BlazorWeb.Server\BlazorWeb.Server.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Web", "src\BlazorWeb.Web\BlazorWeb.Web.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Client", "src\BlazorWeb.Client\BlazorWeb.Client.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

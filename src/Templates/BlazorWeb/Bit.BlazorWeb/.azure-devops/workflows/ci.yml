@@ -25,4 +25,4 @@ trigger:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/BlazorWeb.Api/BlazorWeb.Api.csproj -p:Configuration=Release'
+      script: 'dotnet build src/BlazorWeb.Server/BlazorWeb.Server.csproj -p:Configuration=Release'
