@@ -1,0 +1,36 @@
+﻿@page "/"
+@*#if (OnlyServer && !InteractiveAtRoot)
+@rendermode InteractiveServer
+##elseif (OnlyWasm && !InteractiveAtRoot)
+@rendermode InteractiveWebAssembly
+##elseif (OnlyAuto && !InteractiveAtRoot)
+@rendermode InteractiveAuto
+##endif*@
+
+<PageTitle>Home</PageTitle>
+
+<div class="page">
+    <div class="hero @BitCss.Class.Color.Border.Disabled">
+        <div class="container">
+            <BitTypography Variant="BitTypographyVariant.H1" Gutter>
+                Hello World
+            </BitTypography>
+
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                Welcome to your bit Blazor Empty app
+            </BitTypography>
+        </div>
+    </div>
+
+    <div class="section @BitCss.Class.Color.Border.Disabled">
+        <BitTypography Variant="BitTypographyVariant.H3" Gutter>
+            Counter
+        </BitTypography>
+        <BitButton OnClick="() => _counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
+        <BitButton OnClick="() => _counter++">Increase [@_counter]</BitButton>
+    </div>
+ </div>
+
+ @code {
+    int _counter;
+}
