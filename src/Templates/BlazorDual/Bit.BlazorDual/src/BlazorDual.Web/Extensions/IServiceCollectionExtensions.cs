@@ -14,7 +14,7 @@ public static class IServiceCollectionExtensions
         services.AddBitBlazorUIServices();
 
         services.AddTransient<LocalizationDelegatingHandler>();
-        services.AddTransient<AuthorizationDelegatingHandler>();
+        services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionHandlerDelegatingHandler>();
         services.AddTransient<HttpClientHandler>();

@@ -2,20 +2,20 @@
 
 namespace BlazorDual.Web.Services.HttpMessageHandlers;
 
-public class AuthorizationDelegatingHandler
+public class AuthDelegatingHandler
     : DelegatingHandler
 {
     private IAuthTokenProvider _tokenProvider = default!;
     private IJSRuntime _jsRuntime = default!;
 
-    public AuthorizationDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
         : base(handler)
     {
         _tokenProvider = tokenProvider;
         _jsRuntime = jsRuntime;
     }
 
-    public AuthorizationDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime)
         : base()
     {
         _tokenProvider = tokenProvider;

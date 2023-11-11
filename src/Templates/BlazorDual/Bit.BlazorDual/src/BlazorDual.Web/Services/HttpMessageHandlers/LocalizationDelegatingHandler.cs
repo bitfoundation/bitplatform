@@ -5,7 +5,7 @@ namespace BlazorDual.Web.Services.HttpMessageHandlers;
 public class LocalizationDelegatingHandler
     : DelegatingHandler
 {
-    public LocalizationDelegatingHandler(AuthorizationDelegatingHandler handler) 
+    public LocalizationDelegatingHandler(AuthDelegatingHandler handler) 
         : base(handler)
     {
 
