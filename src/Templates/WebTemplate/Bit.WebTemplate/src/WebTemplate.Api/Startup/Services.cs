@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿//+:cnd:noEmit
+using System.IO.Compression;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.AspNetCore.Components.Web;

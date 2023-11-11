@@ -12,8 +12,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		global.json = global.json
 	EndProjectSection
 EndProject
+#if (pipeline == "Azure")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{DE7F66C7-5190-4846-8949-C99444148634}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5F2028FC-13C5-479D-8665-7346B7C3D990}"
+	ProjectSection(SolutionItems) = preProject
+		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
+		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
+	EndProjectSection
+EndProject
+#elif (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{CB4F0FA9-2686-497C-A3D1-6E730B818A74}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F502B327-2CA6-48DC-992F-0B432ABF60B1}"
@@ -22,12 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\ci.yml = .github\workflows\ci.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5F2028FC-13C5-479D-8665-7346B7C3D990}"
-	ProjectSection(SolutionItems) = preProject
-		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
-		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
-	EndProjectSection
-EndProject
+#endif
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTemplate.Shared", "src\WebTemplate.Shared\WebTemplate.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTemplate.Api", "src\WebTemplate.Api\WebTemplate.Api.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
