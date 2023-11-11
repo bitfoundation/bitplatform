@@ -40,7 +40,7 @@ public class AuthDelegatingHandler
         catch (UnauthorizedException)
         {
             // try to get refresh token, store access token and refresh token,
-            // then add new access token to request's authorization header and call base.SendAsync again.
+            // then use the new access token to request's authorization header and call base.SendAsync again.
             throw;
         }
     }
