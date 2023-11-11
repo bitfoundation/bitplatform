@@ -98,7 +98,7 @@ public partial class EditProfilePage
             _isLoading = false;
         }
     }
-    
+
     private async Task RemoveProfileImage()
     {
         if (_isRemoving) return;

@@ -29,8 +29,8 @@ public partial class ProductsSalesWidget
         {
             _isLoading = true;
 
-            var data = await PrerenderStateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsSalesWidget)}", 
-                                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats", 
+            var data = await PrerenderStateService.GetValue($"{nameof(HomePage)}-{nameof(ProductsSalesWidget)}",
+                                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats",
                                     AppJsonContext.Default.ListProductSaleStatDto)) ?? new();
 
             BitChartBarDataset<decimal> chartDataSet = new BitChartBarDataset<decimal>();
