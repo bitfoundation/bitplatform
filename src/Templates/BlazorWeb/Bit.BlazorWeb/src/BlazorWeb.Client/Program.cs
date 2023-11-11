@@ -2,7 +2,7 @@
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Configuration.AddClientAppConfigurations();
+builder.Configuration.AddClientConfigurations();
 
 Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 

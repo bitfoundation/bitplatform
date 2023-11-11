@@ -2,7 +2,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // We need to load the client app configurations to prerender the app on server side.
-builder.Configuration.AddClientAppConfigurations();
+builder.Configuration.AddClientConfigurations();
 
 BlazorWeb.Server.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
 
