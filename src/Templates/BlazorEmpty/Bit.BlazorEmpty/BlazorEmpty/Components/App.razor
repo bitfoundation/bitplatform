@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="BlazorEmpty.styles.css" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+    @*#if (!InteractiveAtRoot)
+    <HeadOutlet />
+    ##elseif (UseServer && UseWebAssembly)
+    <HeadOutlet @rendermode="@InteractiveAuto" />
+    ##elseif (UseServer)
+    <HeadOutlet @rendermode="@InteractiveServer" />
+    ##else
+    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
+    ##endif*@
+</head>
+
+<body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
+    @*#if (!InteractiveAtRoot)
+    <Routes />
+    ##elseif (UseServer && UseWebAssembly)
+    <Routes @rendermode="@InteractiveAuto" />
+    ##elseif (UseServer)
+    <Routes @rendermode="@InteractiveServer" />
+    ##else
+    <Routes @rendermode="@InteractiveWebAssembly" />
+    ##endif*@
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+</body>
+
+</html>
