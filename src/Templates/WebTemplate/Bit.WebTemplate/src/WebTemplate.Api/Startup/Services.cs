@@ -22,11 +22,8 @@ public static class Services
 
         services.AddScoped<IUserInformationProvider, UserInformationProvider>();
         services.AddExceptionHandler<ApiExceptionHandler>();
-        services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddBlazor();
-
-        services.AddCors();
 
         services
             .AddControllers()

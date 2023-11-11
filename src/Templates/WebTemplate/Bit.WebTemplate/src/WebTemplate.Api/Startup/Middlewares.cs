@@ -16,7 +16,6 @@ public class Middlewares
 
         if (env.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
             app.UseWebAssemblyDebugging();
         }
         else
@@ -55,8 +54,6 @@ public class Middlewares
             }
         });
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4051").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
-
         app.UseResponseCaching();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -71,9 +68,7 @@ public class Middlewares
             ApplyCurrentCultureToResponseHeaders = true
         }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
 #endif
-
         app.UseExceptionHandler("/", createScopeForErrors: true);
-
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>
