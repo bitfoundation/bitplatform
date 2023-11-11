@@ -1,24 +1,22 @@
-﻿<CascadingAuthenticationState>
-    <LayoutView Layout="@typeof(MainLayout)">
-        <Router AppAssembly="@GetType().Assembly"
-                AdditionalAssemblies="@(new[] { Assembly.Load(BlazorModeDetector.Current.IsBlazorHybrid() ? "TodoTemplate.Client.App" : "TodoTemplate.Client.Web") })"
-                OnNavigateAsync="@OnNavigateAsync">
-            <Found Context="routeData">
-                <AuthorizeRouteView RouteData="@routeData">
-                    <NotAuthorized>
-                        <NotAuthorizedComponent />
-                    </NotAuthorized>
-                    <Authorizing>
-                        <LoadingComponent Color="#FFF" />
-                    </Authorizing>
-                </AuthorizeRouteView>
-            </Found>
-            <NotFound>
-                <PageNotFound />
-            </NotFound>
-            <Navigating>
-                <LoadingComponent Color="#FFF" />
-            </Navigating>
-        </Router>
-    </LayoutView>
-</CascadingAuthenticationState>
+﻿<LayoutView Layout="@typeof(MainLayout)">
+    <Router AppAssembly="@GetType().Assembly"
+            AdditionalAssemblies="@([Assembly.Load(BlazorModeDetector.Current.IsBlazorHybrid() ? "TodoTemplate.Client.App" : "TodoTemplate.Client.Web")])"
+            OnNavigateAsync="@OnNavigateAsync">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData">
+                <NotAuthorized>
+                    <NotAuthorizedComponent />
+                </NotAuthorized>
+                <Authorizing>
+                    <LoadingComponent Color="#FFF" />
+                </Authorizing>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <PageNotFound />
+        </NotFound>
+        <Navigating>
+            <LoadingComponent Color="#FFF" />
+        </Navigating>
+    </Router>
+</LayoutView>

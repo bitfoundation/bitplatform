@@ -65,7 +65,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
         catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
         {
-            throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
+            throw new ServerConnectionException(nameof(AppStrings.ServerConnectionException), exp);
         }
     }
 }

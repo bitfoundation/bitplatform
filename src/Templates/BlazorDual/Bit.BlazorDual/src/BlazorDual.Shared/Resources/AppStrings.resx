@@ -539,6 +539,9 @@
     <data name="TooManyRequestsExceptions" xml:space="preserve">
     <value>Too many requests</value>
   </data>
+    <data name="ServerConnectionException" xml:space="preserve">
+    <value>Unable to connect to server.</value>
+  </data>
     <!-- BlazorDual strings -->
     <data name="FileRemoveFailed" xml:space="preserve">
     <value>An error occurred while removing file</value>
@@ -817,8 +820,5 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="PrivacyPolicyTitle" xml:space="preserve">
     <value>Privacy Policy</value>
-  </data>
-    <data name="UnableToConnectToServer" xml:space="preserve">
-    <value>Incapable de se connecter au serveur.</value>
   </data>
 </root>

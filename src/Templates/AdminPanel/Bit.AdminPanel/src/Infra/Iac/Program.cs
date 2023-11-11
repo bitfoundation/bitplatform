@@ -1,5 +1,5 @@
-﻿using Pulumi;
-using AdminPanel.Iac;
+﻿using AdminPanel.Iac;
+using Pulumi;
 
 public class Program
 {

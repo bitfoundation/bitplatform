@@ -92,7 +92,7 @@ public partial class CategoriesPage
 
     private async Task DeleteCategory(CategoryDto category)
     {
-        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty), 
+        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty),
                                                      Localizer[nameof(AppStrings.DeleteCategory)]);
 
         if (confirmed)

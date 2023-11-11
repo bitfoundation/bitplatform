@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Reflection;
-using k8s.KubeConfigModels;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace AdminPanel.Server.Api.Services;

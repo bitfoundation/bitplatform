@@ -1,9 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
 using AdminPanel.Server.Api.Models.Identity;
 using AdminPanel.Shared.Dtos.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AdminPanel.Server.Api.Services;
 

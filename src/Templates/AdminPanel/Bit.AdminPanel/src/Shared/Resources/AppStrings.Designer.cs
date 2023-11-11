@@ -1799,6 +1799,15 @@ namespace AdminPanel.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to server..
+        /// </summary>
+        public static string ServerConnectionException {
+            get {
+                return ResourceManager.GetString("ServerConnectionException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign in.
         /// </summary>
         public static string SignIn {
@@ -2146,15 +2155,6 @@ namespace AdminPanel.Shared.Resources {
         public static string UIHintImplementation_NeedEvenNumberOfControlParameters {
             get {
                 return ResourceManager.GetString("UIHintImplementation_NeedEvenNumberOfControlParameters", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Incapable de se connecter au serveur..
-        /// </summary>
-        public static string UnableToConnectToServer {
-            get {
-                return ResourceManager.GetString("UnableToConnectToServer", resourceCulture);
             }
         }
         

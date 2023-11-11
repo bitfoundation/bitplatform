@@ -1,6 +1,4 @@
-﻿using TodoTemplate.Server.Api.Resources;
-
-namespace TodoTemplate.Server.Api.Models.Emailing;
+﻿namespace TodoTemplate.Server.Api.Models.Emailing;
 
 public class EmailConfirmationModel
 {

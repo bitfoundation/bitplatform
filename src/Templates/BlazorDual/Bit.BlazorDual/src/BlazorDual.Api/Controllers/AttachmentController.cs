@@ -1,7 +1,7 @@
-﻿using MimeTypes;
-using BlazorDual.Api.Models.Identity;
-using SystemFile = System.IO.File;
+﻿using BlazorDual.Api.Models.Identity;
 using ImageMagick;
+using MimeTypes;
+using SystemFile = System.IO.File;
 
 namespace BlazorDual.Api.Controllers;
 
