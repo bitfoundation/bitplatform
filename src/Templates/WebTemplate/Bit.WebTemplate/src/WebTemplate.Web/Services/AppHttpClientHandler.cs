@@ -51,7 +51,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
                         args.Add(restError.Payload);
                     }
 
-                    Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+                    Exception exp = (Exception)Activator.CreateInstance(exceptionType, [.. args])!;
 
                     throw exp;
                 }
@@ -64,7 +64,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
         catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
         {
-            throw new RestException(nameof(AppStrings.UnableToConnectToServer), exp);
+            throw new ServerConnectionException(nameof(AppStrings.ServerConnectionException), exp);
         }
     }
 }

@@ -17,7 +17,9 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
         _applicationState = applicationState;
 
         if (OperatingSystem.IsBrowser() is false)
-            _subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.CurrentRenderMode);
+        {
+            _subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.Current);
+        }
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)

@@ -23,7 +23,7 @@ public static class Services
         services.AddScoped<IUserInformationProvider, UserInformationProvider>();
         services.AddExceptionHandler<ApiExceptionHandler>();
 
-        services.AddBlazor();
+        services.AddBlazor(configuration);
 
         services
             .AddControllers()

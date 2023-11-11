@@ -539,6 +539,9 @@
     <data name="TooManyRequestsExceptions" xml:space="preserve">
     <value>Too many requests</value>
   </data>
+    <data name="ServerConnectionException" xml:space="preserve">
+    <value>Unable to connect to the server.</value>
+  </data>
     <!-- WebTemplate strings -->
     <data name="FileRemoveFailed" xml:space="preserve">
     <value>An error occurred while removing file</value>
@@ -735,7 +738,7 @@ Please confirm your email by clicking on the link.</value>
     <value>Search some todo...</value>
   </data>
     <data name="HomeMessage" xml:space="preserve">
-    <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
+    <value>Create your full featured Blazor app easily in the shortest time ever!</value>
   </data>
     <data name="HomeTitle" xml:space="preserve">
     <value>TodoTemplate Home</value>
@@ -817,8 +820,5 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="PrivacyPolicyTitle" xml:space="preserve">
     <value>Privacy Policy</value>
-  </data>
-    <data name="UnableToConnectToServer" xml:space="preserve">
-    <value>Incapable de se connecter au serveur.</value>
   </data>
 </root>

@@ -39,6 +39,8 @@ public partial class TodoPage
 
         try
         {
+            await Task.Delay(10_000);
+
             _allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
                                 async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto)) ?? [];
 

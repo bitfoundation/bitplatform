@@ -42,26 +42,26 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/NotAuthorizedComponent.razor.css",
-        "inputFile": "Shared/NotAuthorizedComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/SignOutConfirmModal.razor.css",
         "inputFile": "Shared/SignOutConfirmModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/PageNotFound.razor.css",
-        "inputFile": "Shared/PageNotFound.razor.scss",
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss",
+        "outputFile": "Pages/NotAuthorizedPage.razor.css",
+        "inputFile": "Pages/NotAuthorizedPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/NotFoundPage.razor.css",
+        "inputFile": "Pages/NotFoundPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -9,7 +9,7 @@ variables:
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
   # ApiServerAddress: 'api/'
-  # You can either use either absolute or relative server address such as https://todo.bitplatform.dev/api/
+  # // You can also use absolute urls such as https://todob.bitplatform.dev/api/
 
 jobs:
 

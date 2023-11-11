@@ -2,7 +2,7 @@
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("WebTemplate.Web.appsettings.json")!);
+builder.Configuration.AddClientAppConfigurations();
 
 Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 

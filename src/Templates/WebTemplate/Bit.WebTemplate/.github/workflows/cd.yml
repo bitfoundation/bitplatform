@@ -3,7 +3,7 @@ name: WebTemplate CD
 env:
   APP_SERVICE_NAME: 'app-service-td-test'
   API_SERVER_ADDRESS: 'api/'
-  # You can either use either absolute or relative server address such as https://api.myproject.com
+  # // You can also use absolute urls such as https://todob.bitplatform.dev/api/
 
 on:
   workflow_dispatch:

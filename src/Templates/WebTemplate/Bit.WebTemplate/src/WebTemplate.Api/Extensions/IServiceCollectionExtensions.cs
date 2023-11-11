@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static void AddBlazor(this IServiceCollection services)
+    public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
@@ -32,7 +32,14 @@ public static class IServiceCollectionExtensions
             .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {
-                httpClient.BaseAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.BaseUrl()}api/");
+                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+                if (apiServerAddress!.IsAbsoluteUri is false)
+                {
+                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.BaseUrl()}{apiServerAddress}");
+                }
+
+                httpClient.BaseAddress = apiServerAddress;
             });
 
         services.AddScoped<LazyAssemblyLoader>();

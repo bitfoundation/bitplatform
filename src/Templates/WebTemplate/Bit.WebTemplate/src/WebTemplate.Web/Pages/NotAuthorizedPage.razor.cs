@@ -1,6 +1,6 @@
-﻿namespace WebTemplate.Web.Shared;
+﻿namespace WebTemplate.Web.Pages;
 
-public partial class NotAuthorizedComponent
+public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal _user { get; set; } = default!;
 

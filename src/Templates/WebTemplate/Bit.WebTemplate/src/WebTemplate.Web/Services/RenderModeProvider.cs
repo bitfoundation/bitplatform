@@ -12,12 +12,7 @@ public static class RenderModeProvider
     static IComponentRenderMode BlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
     static IComponentRenderMode BlazorServer = new InteractiveServerRenderMode(prerender: false);
 
-    // PrerenderOnly: In order to have pre render only mode, simply remove @rendermode usages from App.razor
+    // PrerenderOnly: In order to have prerender only mode, simply remove @rendermode usages from App.razor
 
-    public static IComponentRenderMode CurrentRenderMode = PrerenderEnabledAuto;
-}
-
-public class PrerenderOnlyRenderMode : IComponentRenderMode
-{
-
+    public static IComponentRenderMode Current => PrerenderEnabledAuto;
 }
