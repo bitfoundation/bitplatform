@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
+using TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace TodoTemplate.Client.App;
 
@@ -26,13 +27,15 @@ public static class MauiProgram
         services.AddBlazorWebViewDeveloperTools();
 #endif
 
+        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
+
         services.AddScoped(sp =>
         {
-            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
+            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            HttpClient httpClient = new(handler)
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                BaseAddress = apiServerAddress
             };
-
             return httpClient;
         });
 

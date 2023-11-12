@@ -10,6 +10,8 @@ using BlazorWeb.Server;
 using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Services;
 using BlazorWeb.Client.Services;
+using Microsoft.JSInterop;
+using BlazorWeb.Web.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -22,21 +24,25 @@ public static class IServiceCollectionExtensions
         services.AddScoped(sp =>
         {
             IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return httpClientFactory.CreateClient("PreRenderingHttpClient");
-            // This registers HttpClient for pre rendering purposes only, so to use http client to call 3rd party apis and other use cases,
+            return httpClientFactory.CreateClient("BlazorHttpClient");
+            // This registers HttpClient for pre rendering & blazor server only, so to use http client to call 3rd party apis and other use cases,
             // either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
-        services.AddHttpClient("PreRenderingHttpClient")
-            .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
+        services.AddHttpClient("BlazorHttpClient")
+            .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
+            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
+            .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
+            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
+            .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {
                 Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
                 if (apiServerAddress!.IsAbsoluteUri is false)
                 {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.BaseUrl()}{apiServerAddress}");
+                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
                 }
 
                 httpClient.BaseAddress = apiServerAddress;

@@ -1,4 +1,6 @@
 ﻿//-:cnd:noEmit
+using BlazorDual.Web.Services.HttpMessageHandlers;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
@@ -11,7 +13,11 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<AppHttpClientHandler>();
+        services.AddTransient<LocalizationDelegatingHandler>();
+        services.AddTransient<AuthDelegatingHandler>();
+        services.AddTransient<RetryDelegatingHandler>();
+        services.AddTransient<ExceptionDelegatingHandler>();
+        services.AddTransient<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();

@@ -8,8 +8,11 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using TodoTemplate.Server.Api.Services;
 #if BlazorWebAssembly
+using System.Net.Http;
+using Microsoft.JSInterop;
 using TodoTemplate.Client.Web.Services;
 using TodoTemplate.Client.Core.Services;
+using TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components;
 #endif
 
@@ -35,11 +38,19 @@ public static class Services
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
-            .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
+            .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
+            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
+            .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
+            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
+            .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {
-                NavigationManager navManager = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetRequiredService<NavigationManager>();
-                httpClient.BaseAddress = new Uri($"{navManager.BaseUri}api/");
+                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+                if (apiServerAddress!.IsAbsoluteUri is false)
+                {
+                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+                }
+                httpClient.BaseAddress = apiServerAddress;
             });
         services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
 
@@ -51,7 +62,6 @@ public static class Services
             // for other usages of http client, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
         services.AddRazorPages();
-        services.AddMvcCore();
 #endif
 
         //+:cnd:noEmit

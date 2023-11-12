@@ -4,10 +4,8 @@ public static class IConfigurationExtensions
 {
     public static string GetApiServerAddress(this IConfiguration configuration)
     {
-#if BlazorWebAssembly
-        return "api/";
-#else
-        return configuration.GetValue<string?>("ApiServerAddress") ?? throw new InvalidOperationException("Could not find ApiServerAddress config");
-#endif
+        var apiServerAddress = configuration.GetValue("ApiServerAddress", defaultValue: "api/")!;
+
+        return Uri.TryCreate(apiServerAddress, UriKind.RelativeOrAbsolute, out _) ? apiServerAddress : throw new InvalidOperationException($"Api server address {apiServerAddress} is invalid");
     }
 }

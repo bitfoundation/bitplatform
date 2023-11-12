@@ -1,28 +1,23 @@
-﻿//-:cnd:noEmit
-using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net;
 
-namespace BlazorWeb.Client.Services;
+namespace AdminPanel.Client.Core.Services.HttpMessageHandlers;
 
-public partial class AppHttpClientHandler : HttpClientHandler
+public class ExceptionDelegatingHandler
+    : DelegatingHandler
 {
-    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
+    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
+        : base(httpClientHandler)
+    {
+
+    }
+
+    public ExceptionDelegatingHandler()
+    {
+
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null)
-        {
-            var access_token = await _tokenProvider.GetAccessTokenAsync();
-            if (access_token is not null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
-            }
-        }
-
-#if MultilingualEnabled
-        request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name));
-#endif
-
         bool serverCommunicationSuccess = false;
 
         try
@@ -51,7 +46,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
                         args.Add(restError.Payload);
                     }
 
-                    Exception exp = (Exception)Activator.CreateInstance(exceptionType, [.. args])!;
+                    Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                     throw exp;
                 }
