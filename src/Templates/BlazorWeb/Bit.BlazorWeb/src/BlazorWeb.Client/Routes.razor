@@ -7,8 +7,14 @@
                     <Authorizing>
                         <LoadingComponent Color="#FFF" />
                     </Authorizing>
+                    <NotAuthorized>
+                        <NotAuthorizedPage />
+                    </NotAuthorized>
                 </AuthorizeRouteView>
             </Found>
+            <NotFound>
+                <NotFoundPage />
+            </NotFound>
             <Navigating>
                 <LoadingComponent Color="#FFF" />
             </Navigating>
