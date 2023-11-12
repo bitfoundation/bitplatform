@@ -13,7 +13,7 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("AdminPanel.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();

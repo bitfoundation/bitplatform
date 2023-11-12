@@ -1,6 +1,10 @@
 ﻿//-:cnd:noEmit
 var builder = WebApplication.CreateBuilder(args);
 
+#if BlazorWebAssembly
+builder.Configuration.AddClientConfigurations();
+#endif
+
 #if DEBUG
 if (OperatingSystem.IsWindows())
 {

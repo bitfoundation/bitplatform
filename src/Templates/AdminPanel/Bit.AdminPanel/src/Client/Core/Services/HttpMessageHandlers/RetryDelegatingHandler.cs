@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Services.HttpMessageHandlers;
+﻿namespace AdminPanel.Client.Core.Services.HttpMessageHandlers;
 
 public class RetryDelegatingHandler
     : DelegatingHandler

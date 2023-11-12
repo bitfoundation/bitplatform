@@ -16,9 +16,9 @@ public class RetryDelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var delays = GetDelays(scaleFirstTry: TimeSpan.FromSeconds(3), maxRetries: 3);
+        var delays = GetDelays(scaleFirstTry: TimeSpan.FromSeconds(3), maxRetries: 3).ToArray();
 
-        List<UnknownException>? exceptions = [];
+        Exception? lastExp = null;
 
         foreach (var delay in delays)
         {
@@ -26,14 +26,14 @@ public class RetryDelegatingHandler
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (UnknownException exp)
+            catch (Exception exp) when (exp is not KnownException)
             {
-                exceptions.Add(exp);
+                lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }
         }
 
-        throw new AggregateException(exceptions);
+        throw lastExp!;
     }
 
     private static IEnumerable<TimeSpan> GetDelays(TimeSpan scaleFirstTry, int maxRetries)

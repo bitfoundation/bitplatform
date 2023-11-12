@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 #if BlazorServer
 using System.IO.Compression;
+using AdminPanel.Client.Core.Services.HttpMessageHandlers;
 using AdminPanel.Client.Web.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 
@@ -12,9 +13,11 @@ public static class Services
     {
         services.AddScoped(sp =>
         {
-            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
+            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            HttpClient httpClient = new(handler)
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                BaseAddress = apiServerAddress
             };
 
             return httpClient;

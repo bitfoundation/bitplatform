@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 #if BlazorWebAssembly
+using TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #endif
 
@@ -12,13 +13,25 @@ public partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
-        var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
+        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
-        var apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddressConfig}");
+        if (apiServerAddress!.IsAbsoluteUri is false)
+        {
+            apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
+        }
 
-        builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = apiServerAddress });
+        builder.Services.AddSingleton(sp =>
+        {
+            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            HttpClient httpClient = new(handler)
+            {
+                BaseAddress = apiServerAddress
+            };
+            return httpClient;
+        });
+
         builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 

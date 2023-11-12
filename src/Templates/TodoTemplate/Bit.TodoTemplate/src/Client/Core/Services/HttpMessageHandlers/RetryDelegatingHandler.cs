@@ -1,4 +1,4 @@
-﻿namespace BlazorDual.Web.Services.HttpMessageHandlers;
+﻿namespace TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 
 public class RetryDelegatingHandler
     : DelegatingHandler
