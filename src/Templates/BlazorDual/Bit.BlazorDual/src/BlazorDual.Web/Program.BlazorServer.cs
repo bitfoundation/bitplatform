@@ -9,7 +9,7 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("BlazorDual.Web.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
         Startup.Services.Add(builder.Services, builder.Configuration);
 
