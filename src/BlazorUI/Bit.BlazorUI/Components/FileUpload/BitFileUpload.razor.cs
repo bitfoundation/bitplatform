@@ -207,7 +207,7 @@ public partial class BitFileUpload : IDisposable
     /// <summary>
     /// Loading when do remove a file
     /// </summary>
-    public bool IsLoadingRemove { get; private set; }
+    public bool IsRemoving { get; private set; }
 
     protected override string RootElementClass => "bit-upl";
 
@@ -295,9 +295,9 @@ public partial class BitFileUpload : IDisposable
     public async Task RemoveFile(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
-        if (IsLoadingRemove) return;
+        if (IsRemoving) return;
 
-        IsLoadingRemove = true;
+        IsRemoving = true;
 
         if (fileInfo is null)
         {
@@ -311,7 +311,7 @@ public partial class BitFileUpload : IDisposable
             await RemoveOneFile(fileInfo);
         }
 
-        IsLoadingRemove = false;
+        IsRemoving = false;
     }
 
     protected override Task OnInitializedAsync()
