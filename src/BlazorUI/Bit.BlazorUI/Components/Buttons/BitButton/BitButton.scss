@@ -8,6 +8,7 @@
     min-width: spacing(8);
     min-height: spacing(4);
     box-sizing: border-box;
+    justify-content: center;
     font-size: spacing(1.75);
     padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
@@ -21,6 +22,16 @@
         pointer-events: none;
         color: $color-foreground-disabled;
     }
+
+    @keyframes bit-btn-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-btn-pri {
@@ -32,6 +43,14 @@
     --bit-btn-pri-brd-clr: #{$color-primary-main};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-primary};
     --bit-btn-pri-active-bg-clr: #{$color-action-active-primary};
+
+    .bit-btn-lbl {
+        color: var(--bit-btn-pri-clr);
+    }
+
+    .bit-btn-spn {
+        border-top-color: var(--bit-btn-pri-clr);
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -60,6 +79,14 @@
     --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
     --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
 
+    .bit-btn-lbl {
+        color: var(--bit-btn-sec-clr);
+    }
+
+    .bit-btn-spn {
+        border-top-color: var(--bit-btn-sec-clr);
+    }
+
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-btn-sec-hover-bg-clr);
@@ -83,6 +110,14 @@
     --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
     --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
 
+    .bit-btn-lbl {
+        color: var(--bit-btn-sec-clr);
+    }
+
+    .bit-btn-spn {
+        border-top-color: var(--bit-btn-sec-clr);
+    }
+
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-btn-sec-hover-bg-clr);
@@ -92,6 +127,31 @@
     &:active {
         background-color: var(--bit-btn-sec-active-bg-clr);
     }
+}
+
+.bit-btn-spn {
+    border-radius: 50%;
+    width: spacing(2.5);
+    height: spacing(2.5);
+    border-width: spacing(0.2125);
+    border-style: $shape-border-style;
+    border-color: $color-border-secondary;
+    border-top-color: $color-primary-dark;
+    animation: bit-btn-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
+.bit-btn-ldg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+}
+
+.bit-btn-lbl {
+    text-align: center;
+    font-size: spacing(1.5);
+    margin: spacing(0.25) spacing(1);
 }
 
 .bit-btn-inf {
@@ -166,4 +226,36 @@
     min-height: spacing(5);
     font-size: spacing(2);
     padding: spacing(0.7) spacing(2.5);
+}
+
+.bit-btn-top {
+    flex-direction: column-reverse;
+
+    .bit-btn-lbl {
+        margin: 0 0 spacing(1) 0;
+    }
+}
+
+.bit-btn-btm {
+    flex-direction: column;
+
+    .bit-btn-lbl {
+        margin: spacing(1) 0 0 0;
+    }
+}
+
+.bit-btn-rgt {
+    flex-direction: row;
+
+    .bit-btn-lbl {
+        margin: 0 0 0 spacing(1);
+    }
+}
+
+.bit-btn-lft {
+    flex-direction: row-reverse;
+
+    .bit-btn-lbl {
+        margin: 0 spacing(1) 0 0;
+    }
 }
