@@ -1,4 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<!--/-:replacements:noEmit -->
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<!--/+:replacements:noEmit -->
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
