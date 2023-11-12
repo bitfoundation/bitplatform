@@ -49,7 +49,8 @@ jobs:
         echo "HELLO5"
 
     - name: Switch to blazor web assembly
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
+      run: |
+      echo "$PWD" && sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
