@@ -48,9 +48,18 @@
         }
         else if (FileUpload.ShowRemoveButton)
         {
-            <div class="bit-upl-usi" @onclick="() => FileUpload.RemoveFile(Item)">
-                <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
-            </div>
+            @if (FileUpload.IsLoadingRemove)
+            {
+                <div class="bit-upl-ldg">
+                    <div class="bit-upl-spn"></div>
+                </div>
+            }
+            else
+            {
+                <div class="bit-upl-usi" @onclick="() => FileUpload.RemoveFile(Item)">
+                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                </div>
+            }
         }
     </div>
 }
