@@ -43,7 +43,7 @@ jobs:
         dotnet new install Bit.TodoTemplate.0.0.0.nupkg
         echo "HELLO3"
         echo "$PWD"
-        cd ../../../ && dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        cd ../../../ && dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer && echo "$PWD"
         echo "HELLO4"
         echo "$PWD"
         echo "HELLO5"
