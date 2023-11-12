@@ -38,8 +38,8 @@ jobs:
       run: |
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+        cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
 
     - name: Switch to blazor web assembly
       run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' Bit.TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -116,8 +116,8 @@ jobs:
       run: |
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+        cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -163,8 +163,8 @@ jobs:
       run: |
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+        cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -217,8 +217,8 @@ jobs:
        run: |
           cd src/Templates/TodoTemplate && dotnet build -c Release
           dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-          dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-          dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+          dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+          cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -268,8 +268,8 @@ jobs:
       run: |
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+        cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -341,8 +341,8 @@ jobs:
        run: |
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
+        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
+        cd ../../../ && dotnet new install Bit.TodoTemplate.0.0.0.nupkg
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
