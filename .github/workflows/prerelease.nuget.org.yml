@@ -90,12 +90,6 @@ jobs:
     - name: dotnet pack AdminPanel
       run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
 
-    - name: dotnet pack BlazorServer
-      run: dotnet pack src/Templates/BlazorServer/Bit.BlazorServer.ProjectTemplate.csproj --output . --configuration Release
-
-    - name: dotnet pack BlazorWasm
-      run: dotnet pack src/Templates/BlazorWasm/Bit.BlazorWasm.ProjectTemplate.csproj --output . --configuration Release
-
     - name: dotnet pack BlazorDual
       run: dotnet pack src/Templates/BlazorDual/Bit.BlazorDual.ProjectTemplate.csproj --output . --configuration Release
 
