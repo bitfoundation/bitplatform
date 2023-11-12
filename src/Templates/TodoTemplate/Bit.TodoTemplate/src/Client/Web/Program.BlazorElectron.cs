@@ -12,7 +12,7 @@ public partial class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("TodoTemplate.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();
 

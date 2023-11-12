@@ -1,6 +1,10 @@
 ﻿//-:cnd:noEmit
 var builder = WebApplication.CreateBuilder(args);
 
+#if BlazorWebAssembly
+builder.Configuration.AddClientConfigurations();
+#endif
+
 BlazorDual.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
 
 var app = builder.Build();

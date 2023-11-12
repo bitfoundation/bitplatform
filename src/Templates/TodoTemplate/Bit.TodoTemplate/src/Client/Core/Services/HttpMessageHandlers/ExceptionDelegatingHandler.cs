@@ -1,29 +1,23 @@
-﻿//-:cnd:noEmit
-using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net;
 
-namespace TodoTemplate.Client.Core.Services;
+namespace TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class AppHttpClientHandler : HttpClientHandler
+public class ExceptionDelegatingHandler
+    : DelegatingHandler
 {
-    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
+    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
+        : base(httpClientHandler)
+    {
+
+    }
+
+    public ExceptionDelegatingHandler()
+    {
+
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null)
-        {
-            var access_token = await _tokenProvider.GetAccessTokenAsync();
-            if (access_token is not null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
-            }
-        }
-
-#if MultilingualEnabled && (BlazorServer || BlazorHybrid)
-        string cultureCookie = $"c={CultureInfo.CurrentCulture.Name}|uic={CultureInfo.CurrentCulture.Name}";
-        request.Headers.Add("Cookie", $".AspNetCore.Culture={cultureCookie}");
-#endif
-
         bool serverCommunicationSuccess = false;
 
         try
@@ -43,7 +37,7 @@ public partial class AppHttpClientHandler : HttpClientHandler
                 {
                     RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken))!;
 
-                    Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError!.ExceptionType!) ?? typeof(UnknownException);
+                    Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
 
                     var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message! };
 

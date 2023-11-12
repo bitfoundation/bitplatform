@@ -2,6 +2,7 @@
 #if BlazorServer
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using TodoTemplate.Client.Core.Services.HttpMessageHandlers;
 using TodoTemplate.Client.Web.Services;
 
 namespace TodoTemplate.Client.Web.Startup;
@@ -12,9 +13,11 @@ public static class Services
     {
         services.AddScoped(sp =>
         {
-            HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
+            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            HttpClient httpClient = new(handler)
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                BaseAddress = apiServerAddress
             };
 
             return httpClient;
