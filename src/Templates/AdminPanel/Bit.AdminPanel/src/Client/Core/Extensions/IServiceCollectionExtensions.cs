@@ -18,7 +18,7 @@ public static class IServiceCollectionExtensions
         services.AddTransient<LocalizationDelegatingHandler>();
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
-        services.AddTransient<ExceptionHandlerDelegatingHandler>();
+        services.AddTransient<ExceptionDelegatingHandler>();
         services.AddTransient<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();

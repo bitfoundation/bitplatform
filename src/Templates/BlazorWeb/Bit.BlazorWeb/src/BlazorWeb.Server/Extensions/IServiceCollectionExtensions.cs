@@ -34,7 +34,7 @@ public static class IServiceCollectionExtensions
             .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
             .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
             .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
-            .AddHttpMessageHandler(sp => new ExceptionHandlerDelegatingHandler())
+            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
             .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {

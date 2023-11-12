@@ -3,7 +3,7 @@
 public class RetryDelegatingHandler
     : DelegatingHandler
 {
-    public RetryDelegatingHandler(ExceptionHandlerDelegatingHandler handler)
+    public RetryDelegatingHandler(ExceptionDelegatingHandler handler)
         : base(handler)
     {
 

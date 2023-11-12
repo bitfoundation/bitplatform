@@ -1,17 +1,17 @@
 ﻿using System.Net;
 
-namespace TodoTemplate.Client.Core.Services.HttpMessageHandlers;
+namespace BlazorWeb.Web.Services.HttpMessageHandlers;
 
-public class ExceptionHandlerDelegatingHandler
+public class ExceptionDelegatingHandler
     : DelegatingHandler
 {
-    public ExceptionHandlerDelegatingHandler(HttpClientHandler httpClientHandler)
+    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler) 
         : base(httpClientHandler)
     {
 
     }
 
-    public ExceptionHandlerDelegatingHandler()
+    public ExceptionDelegatingHandler()
     {
 
     }
