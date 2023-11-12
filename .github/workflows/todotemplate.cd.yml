@@ -36,12 +36,12 @@ jobs:
 
     - name: Create project from TodoTemplate
       run: |
-        echo HELLO
+        echo "HELLO"
         cd src/Templates/TodoTemplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        echo HELLO2
+        echo "HELLO2"
         dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-        echo HELLO3
+        echo "HELLO3"
         cd ../../../ && dotnet new bit-todo --name Bit.TodoTemplate --database SqlServer
 
     - name: Switch to blazor web assembly
