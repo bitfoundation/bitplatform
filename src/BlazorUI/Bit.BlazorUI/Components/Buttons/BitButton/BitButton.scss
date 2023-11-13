@@ -43,14 +43,7 @@
     --bit-btn-pri-brd-clr: #{$color-primary-main};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-primary};
     --bit-btn-pri-active-bg-clr: #{$color-action-active-primary};
-
-    .bit-btn-lbl {
-        color: var(--bit-btn-pri-clr);
-    }
-
-    .bit-btn-spn {
-        border-top-color: var(--bit-btn-pri-clr);
-    }
+    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
 
     @media (hover: hover) {
         &:hover {
@@ -78,14 +71,7 @@
     --bit-btn-sec-brd-clr: #{$color-secondary-text};
     --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
     --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
-
-    .bit-btn-lbl {
-        color: var(--bit-btn-sec-clr);
-    }
-
-    .bit-btn-spn {
-        border-top-color: var(--bit-btn-sec-clr);
-    }
+    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
 
     @media (hover: hover) {
         &:hover {
@@ -109,14 +95,7 @@
     --bit-btn-sec-clr: #{$color-secondary-text};
     --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
     --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
-
-    .bit-btn-lbl {
-        color: var(--bit-btn-sec-clr);
-    }
-
-    .bit-btn-spn {
-        border-top-color: var(--bit-btn-sec-clr);
-    }
+    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
 
     @media (hover: hover) {
         &:hover {
@@ -136,26 +115,28 @@
     border-width: spacing(0.2125);
     border-style: $shape-border-style;
     border-color: $color-border-secondary;
-    border-top-color: $color-primary-dark;
+    border-top-color: var(--bit-btn-ldg-brd-top-clr);
     animation: bit-btn-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
 .bit-btn-ldg {
     display: flex;
+    gap: spacing(1);
     align-items: center;
     justify-content: center;
     background-color: transparent;
 }
 
 .bit-btn-lbl {
+    color: inherit;
     text-align: center;
     font-size: spacing(1.5);
-    margin: spacing(0.25) spacing(1);
 }
 
 .bit-btn-inf {
     --bit-btn-bg-clr: #{$color-state-info-bg};
+    --bit-btn-ldg-brd-top-clr: #{$color-state-info};
     --bit-btn-pri-clr: #{$color-foreground-primary};
     --bit-btn-pri-brd-clr: #{$color-state-info-bg};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-info-bg};
@@ -168,6 +149,7 @@
 
 .bit-btn-suc {
     --bit-btn-bg-clr: #{$color-state-success-bg};
+    --bit-btn-ldg-brd-top-clr: #{$color-state-success};
     --bit-btn-pri-clr: #{$color-foreground-primary};
     --bit-btn-pri-brd-clr: #{$color-state-success-bg};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-success-bg};
@@ -180,6 +162,7 @@
 
 .bit-btn-wrn {
     --bit-btn-bg-clr: #{$color-state-warning-bg};
+    --bit-btn-ldg-brd-top-clr: #{$color-state-warning};
     --bit-btn-pri-clr: #{$color-foreground-primary};
     --bit-btn-pri-brd-clr: #{$color-state-warning-bg};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-warning-bg};
@@ -192,6 +175,7 @@
 
 .bit-btn-swr {
     --bit-btn-bg-clr: #{$color-state-severe-warning-bg};
+    --bit-btn-ldg-brd-top-clr: #{$color-state-severe-warning};
     --bit-btn-pri-clr: #{$color-foreground-primary};
     --bit-btn-pri-brd-clr: #{$color-state-severe-warning-bg};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
@@ -204,6 +188,7 @@
 
 .bit-btn-err {
     --bit-btn-bg-clr: #{$color-state-error-bg};
+    --bit-btn-ldg-brd-top-clr: #{$color-state-error};
     --bit-btn-pri-clr: #{$color-foreground-primary};
     --bit-btn-pri-brd-clr: #{$color-state-error-bg};
     --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-error-bg};
@@ -230,32 +215,16 @@
 
 .bit-btn-top {
     flex-direction: column-reverse;
-
-    .bit-btn-lbl {
-        margin: 0 0 spacing(1) 0;
-    }
 }
 
 .bit-btn-btm {
     flex-direction: column;
-
-    .bit-btn-lbl {
-        margin: spacing(1) 0 0 0;
-    }
 }
 
 .bit-btn-rgt {
     flex-direction: row;
-
-    .bit-btn-lbl {
-        margin: 0 0 0 spacing(1);
-    }
 }
 
 .bit-btn-lft {
     flex-direction: row-reverse;
-
-    .bit-btn-lbl {
-        margin: 0 spacing(1) 0 0;
-    }
 }

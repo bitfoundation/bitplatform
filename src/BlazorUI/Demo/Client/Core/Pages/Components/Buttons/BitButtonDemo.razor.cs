@@ -361,7 +361,7 @@ private int standardLoadingCounter;
 private async Task LoadingPrimaryClick()
 {
     primaryIsLoading = true;
-    await Task.Delay(1000);
+    await Task.Delay(3000);
     primaryLoadingCounter++;
     primaryIsLoading = false;
 }
@@ -369,17 +369,46 @@ private async Task LoadingPrimaryClick()
 private async Task LoadingStandardClick()
 {
     standardIsLoading = true;
-    await Task.Delay(1000);
+    await Task.Delay(3000);
     standardLoadingCounter++;
     standardIsLoading = false;
 }";
-
+    
     private readonly string example6RazorCode = @"
+<BitButton IsLoading=""true""
+           LoadingLabel=""Right...""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Right"">
+    Right
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Left...""
+           LoadingLabelPosition=""BitLabelPosition.Left""
+           ButtonStyle=""BitButtonStyle.Standard"">
+    Left
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Bottom...""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Bottom"">
+    Bottom
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Top...""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Top"">
+    Top
+</BitButton>";
+
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private int clickCounter;";
     
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitButton Color=""BitButtonColor.Info"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
 <BitButton Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
@@ -400,7 +429,7 @@ private int clickCounter;";
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
 <BitButton Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
@@ -413,7 +442,7 @@ private int clickCounter;";
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
     
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -427,7 +456,7 @@ private int clickCounter;";
     Styled Classed Button
 </BitButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -454,7 +483,7 @@ private int clickCounter;";
     <BitCircleLoading Size=""20"" />
 </BitButton>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -476,7 +505,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -500,8 +529,66 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
-    
-    private readonly string example12RazorCode = @"
+
+    private readonly string example13RazorCode = @"
+<style>
+    .custom-root {
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-container {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-label {
+        color: blue;
+    }
+
+    .custom-spinner {
+        border-color: aqua;
+        border-top-color: blue;
+    }
+</style>
+
+
+<BitButton IsLoading=""primaryIsLoading""
+           LoadingLabel=""Wait...""
+           OnClick=""LoadingPrimaryClick""
+           Styles=""@(new() { Root = ""border-radius: 1rem;"",
+                             LoadingLabel = ""color: darkmagenta;"",
+                             Spinner = ""border-color: goldenrod; border-top-color: tomato;"" })"">
+    Primary
+</BitButton>
+
+<BitButton IsLoading=""standardIsLoading""
+           LoadingLabel=""Sending...""
+           OnClick=""LoadingStandardClick"" 
+           ButtonStyle=""BitButtonStyle.Standard""
+           Classes=""@(new() { Root = ""custom-root"",
+                              LoadingContainer = ""custom-container"",
+                              LoadingLabel = ""custom-label"",
+                              Spinner = ""custom-spinner"" })"">
+    Standard
+</BitButton>";
+    private readonly string example13CsharpCode = @"
+private bool primaryIsLoading;
+private bool standardIsLoading;
+
+private async Task LoadingPrimaryClick()
+{
+    primaryIsLoading = true;
+    await Task.Delay(3000);
+    primaryIsLoading = false;
+}
+
+private async Task LoadingStandardClick()
+{
+    standardIsLoading = true;
+    await Task.Delay(3000);
+    standardIsLoading = false;
+}";
+
+    private readonly string example14RazorCode = @"
 Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
 Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
 Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";

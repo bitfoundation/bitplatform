@@ -28,4 +28,21 @@
     .validation-message {
         color: red;
     }
+
+    .custom-root {
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-container {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-label {
+        color: blue;
+    }
+
+    .custom-spinner {
+        border-color: aqua;
+        border-top-color: blue;
+    }
 }
