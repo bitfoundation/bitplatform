@@ -9,12 +9,12 @@ public class BitFileInfo
     [JsonPropertyName("size")] public long Size { get; set; }
 
 
-    public long TotalSizeOfUploaded { get; internal set; }
+    public long LastChunkUploadedSize { get; internal set; }
+    public long TotalUploadedSize { get; internal set; }
 
 
     internal bool PauseUploadRequested { get; set; }
     internal bool CancelUploadRequested { get; set; }
-    internal long SizeOfLastChunkUploaded { get; set; }
 
 
     [JsonIgnore] public int Index { get; internal set; }
