@@ -285,13 +285,13 @@ public partial class BitFileUploadDemo
     private static int GetFileUploadPercent(BitFileInfo file)
     {
         int uploadedPercent;
-        if (file.TotalSizeOfUploaded >= file.Size)
+        if (file.TotalUploadedSize >= file.Size)
         {
             uploadedPercent = 100;
         }
         else
         {
-            uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
+            uploadedPercent = (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
         }
 
         return uploadedPercent;
@@ -300,13 +300,13 @@ public partial class BitFileUploadDemo
     {
         long totalSize = file.Size / 1024;
         long uploadSize;
-        if (file.TotalSizeOfUploaded >= file.Size)
+        if (file.TotalUploadedSize >= file.Size)
         {
             uploadSize = totalSize;
         }
         else
         {
-            uploadSize = (file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / 1024;
+            uploadSize = (file.TotalUploadedSize + file.LastChunkUploadedSize) / 1024;
         }
 
         return $"{uploadSize}KB / {totalSize}KB";
@@ -361,13 +361,13 @@ private async Task HandleRemoveOnClick()
 private static int GetFileUploadPercent(BitFileInfo file)
 {
     int uploadedPercent;
-    if (file.TotalSizeOfUploaded >= file.Size)
+    if (file.TotalUploadedSize >= file.Size)
     {
         uploadedPercent = 100;
     }
     else
     {
-        uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
+        uploadedPercent = (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
     }
 
     return uploadedPercent;
@@ -376,13 +376,13 @@ private static string GetFileUploadSize(BitFileInfo file)
 {
     long totalSize = file.Size / 1024;
     long uploadSize;
-    if (file.TotalSizeOfUploaded >= file.Size)
+    if (file.TotalUploadedSize >= file.Size)
     {
         uploadSize = totalSize;
     }
     else
     {
-        uploadSize = (file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / 1024;
+        uploadSize = (file.TotalUploadedSize + file.LastChunkUploadedSize) / 1024;
     }
 
     return $""{uploadSize}KB / {totalSize}KB"";

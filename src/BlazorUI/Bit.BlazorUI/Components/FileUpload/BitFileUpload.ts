@@ -110,14 +110,14 @@ class BitFileUploader {
 
         this.xhr.upload.onprogress = function (e: ProgressEvent) {
             if (e.lengthComputable) {
-                dotnetReference.invokeMethodAsync("HandleUploadProgress", index, e.loaded);
+                dotnetReference.invokeMethodAsync("HandleChunkUploadProgress", index, e.loaded);
             }
         };
 
         const me = this;
         this.xhr.onreadystatechange = function (event) {
             if (me.xhr.readyState === 4) {
-                dotnetReference.invokeMethodAsync("HandleFileUpload", index, me.xhr.status, me.xhr.responseText);
+                dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, me.xhr.responseText);
             }
         };
     }
