@@ -171,6 +171,7 @@
         height: 100%;
         display: flex;
         aspect-ratio: 1;
+        max-width: unset;
         align-items: center;
         font-size: spacing(2);
         justify-content: center;
