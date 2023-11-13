@@ -184,6 +184,44 @@
     .bit-dtp-wlb {
         font-weight: bold;
     }
+
+    @media only screen and (max-width: 600px) {
+        .bit-dtp-grp {
+            justify-content: center;
+        }
+
+        .bit-dtp-tdv {
+            font-size: spacing(7);
+        }
+
+        .bit-dtp-tin {
+            width: 100%;
+            min-width: spacing(7);
+            max-width: spacing(12);
+            font-size: spacing(5);
+        }
+
+        .bit-dtp-tpr {
+            .bit-dtp-nbt {
+                width: 100%;
+                min-width: spacing(7);
+                max-width: spacing(12);
+                font-size: spacing(3);
+            }
+        }
+
+        .bit-dtp-bam,
+        .bit-dtp-bpm {
+            width: 100%;
+            font-size: spacing(4);
+            margin: spacing(0.25);
+        }
+
+        .bit-dtp-cbn {
+            display: block;
+            max-width: spacing(5);
+        }
+    }
 }
 
 .bit-dtp-cac {
@@ -427,6 +465,10 @@
         }
     }
 
+    &:active {
+        background-color: $color-action-hover-background-primary;
+    }
+
     &:disabled {
         pointer-events: none;
         background-color: transparent;
@@ -530,17 +572,86 @@
 }
 
 .bit-dtp-twp {
+    margin: 0;
+    padding: spacing(2);
     display: flex;
+    outline: none;
+    box-shadow: none;
+    box-sizing: border-box;
     align-items: center;
+    align-content: center;
     justify-content: center;
-    border-radius: $shape-border-radius;
+}
+
+.bit-dtp-tim {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: spacing(1);
+}
+
+.bit-dtp-tpr {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing(0.25);
+}
+
+.bit-dtp-tdv {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    font-size: spacing(2.5);
+    font-weight: $typography-font-weight;
+}
+
+.bit-dtp-am-pm {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-left: spacing(2);
+    padding: spacing(1.6) 0;
+}
+
+.bit-dtp-tin {
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    width: spacing(3.75);
+    box-sizing: border-box;
+    justify-content: center;
+    -moz-appearance: textfield; // Firefox
     background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    font-size: spacing(2.28);
+    font-weight: $typography-font-weight;
+    overflow: hidden;
+    aspect-ratio: 1;
+
+    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 
     &:focus {
+        border: none;
+        border-bottom: $shape-border-width $shape-border-style $color-action-active-border-primary;
         outline: none;
-        border: spacing(0.25) $shape-border-style $color-primary-main;
     }
+}
+
+.bit-dtp-cbn {
+    position: absolute;
+    top: spacing(1.5);
+    right: spacing(1.5);
+    max-width: spacing(5.5);
+    max-height: spacing(5.5);
 }
 
 .bit-dtp-apc {
@@ -573,10 +684,27 @@
     }
 }
 
-.bit-dtp-tdv {
-    display: block;
+.bit-dtp-bam,
+.bit-dtp-bpm {
+    font-size: spacing(1.8);
+    font-weight: $typography-font-weight;
 }
 
+.bit-dtp-bns {
+    color: $color-primary-text;
+    background-color: $color-primary-main;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-primary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-active-primary;
+    }
+}
+/*
 .bit-dtp-tin {
     border: none;
     display: flex;
@@ -599,7 +727,7 @@
         border: none;
         outline: none;
     }
-}
+}*/
 
 .bit-dtp-ovl {
     top: 0;
