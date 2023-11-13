@@ -205,9 +205,10 @@ public partial class BitFileUpload : IDisposable
     public string? InputId { get; private set; }
 
     /// <summary>
-    /// Loading when do remove a file
+    /// Indicates that the FileUpload is in the middle of removing a file.
     /// </summary>
     public bool IsRemoving { get; private set; }
+
 
     protected override string RootElementClass => "bit-upl";
 
@@ -286,7 +287,7 @@ public partial class BitFileUpload : IDisposable
     }
 
     /// <summary>
-    /// Remove file.
+    /// Removes a file by calling the RemoveUrl if the file upload is already started.
     /// </summary>
     /// <param name="fileInfo">
     /// null => all files | else => specific file
@@ -325,10 +326,9 @@ public partial class BitFileUpload : IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
-        }
+        if (firstRender is false) return;
+
+        dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
     }
 
     private async Task HandleOnChange()
@@ -353,7 +353,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null || fileInfo.Status == BitFileUploadStatus.NotAllowed) return;
 
-        var uploadedSize = fileInfo.TotalSizeOfUploaded;
+        var uploadedSize = fileInfo.TotalUploadedSize;
         if (fileInfo.Size != 0 && uploadedSize >= fileInfo.Size) return;
 
         if (MaxSize > 0 && fileInfo.Size > MaxSize)
@@ -384,7 +384,7 @@ public partial class BitFileUpload : IDisposable
         long from = 0;
         if (ChunkedUploadEnabled)
         {
-            from = fileInfo.TotalSizeOfUploaded;
+            from = fileInfo.TotalUploadedSize;
             if (fileInfo.Size > _internalChunkSize)
             {
                 to = from + _internalChunkSize;
@@ -395,7 +395,7 @@ public partial class BitFileUpload : IDisposable
             }
 
             fileInfo.StartTimeUpload = DateTime.UtcNow;
-            fileInfo.SizeOfLastChunkUploaded = 0;
+            fileInfo.LastChunkUploadedSize = 0;
         }
         else
         {
@@ -500,7 +500,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (fileInfo.Status is BitFileUploadStatus.Removed) return;
 
-        if (fileInfo.TotalSizeOfUploaded > 0)
+        if (fileInfo.TotalUploadedSize > 0)
         {
             await RemoveOneFileFromServer(fileInfo);
         }
@@ -588,15 +588,15 @@ public partial class BitFileUpload : IDisposable
     /// <summary>
     /// Receive upload progress notification from underlying javascript.
     /// </summary>
-    [JSInvokable("HandleUploadProgress")]
-    public async Task HandleUploadProgress(int index, long loaded)
+    [JSInvokable("HandleChunkUploadProgress")]
+    public async Task HandleChunkUploadProgress(int index, long loaded)
     {
         if (Files is null) return;
 
         var file = Files[index];
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
-        file.SizeOfLastChunkUploaded = loaded;
+        file.LastChunkUploadedSize = loaded;
         await UpdateStatus(BitFileUploadStatus.InProgress, file);
         StateHasChanged();
     }
@@ -604,20 +604,20 @@ public partial class BitFileUpload : IDisposable
     /// <summary>
     /// Receive upload finished notification from underlying JavaScript.
     /// </summary>
-    [JSInvokable("HandleFileUpload")]
-    public async Task HandleFileUpload(int fileIndex, int responseStatus, string responseText)
+    [JSInvokable("HandleChunkUpload")]
+    public async Task HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
     {
         if (Files is null || UploadStatus == BitFileUploadStatus.Paused) return;
 
         var file = Files[fileIndex];
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
-        file.TotalSizeOfUploaded += ChunkedUploadEnabled ? _internalChunkSize : file.Size;
-        file.SizeOfLastChunkUploaded = 0;
+        file.TotalUploadedSize += ChunkedUploadEnabled ? _internalChunkSize : file.Size;
+        file.LastChunkUploadedSize = 0;
 
         UpdateChunkSize(fileIndex);
 
-        if (file.TotalSizeOfUploaded < file.Size)
+        if (file.TotalUploadedSize < file.Size)
         {
             await Upload(file);
         }
