@@ -30,17 +30,17 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="8.0.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.0.0-pre-01" />
+        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.0.1" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.0-pre-01">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.0-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
