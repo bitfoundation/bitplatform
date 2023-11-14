@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Components.Forms;
 using BlazorWeb.Shared.Attributes;
 using BlazorWeb.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace BlazorWeb.Client.Shared;
-
 
 /// <summary>
 /// To implement forms where each error is displayed according to the language chosen by the user, you can use the <see cref="DtoResourceTypeAttribute"/>
@@ -14,8 +13,7 @@ namespace BlazorWeb.Client.Shared;
 /// </summary>
 public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 {
-    private static readonly PropertyInfo _OtherPropertyNamePropertyInfo =
-        typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;
+    private static readonly PropertyInfo _OtherPropertyNamePropertyInfo = typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;
 
     private bool _disposed;
     private ValidationMessageStore _validationMessageStore = default!;
@@ -53,11 +51,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
         var parent = propertyInfo.DeclaringType!;
         var dtoResourceTypeAttr = parent.GetCustomAttribute<DtoResourceTypeAttribute>();
-        if (dtoResourceTypeAttr is null)
-        {
-            Validator.TryValidateProperty(propertyValue, validationContext, results);
-        }
-        else
+        if (dtoResourceTypeAttr is not null)
         {
             var resourceType = dtoResourceTypeAttr.ResourceType;
             var stringLocalizer = _stringLocalizerFactory.Create(resourceType);
@@ -93,9 +87,12 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
             }
 
         }
+        else
+        {
+            Validator.TryValidateProperty(propertyValue, validationContext, results);
+        }
 
         _validationMessageStore.Clear(fieldIdentifier);
-
         foreach (var result in CollectionsMarshal.AsSpan(results))
         {
             _validationMessageStore.Add(fieldIdentifier, result.ErrorMessage!);
@@ -114,12 +111,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         var dtoResourceTypeAttr = objectType.GetCustomAttribute<DtoResourceTypeAttribute>();
 
         _validationMessageStore.Clear();
-
-        if (dtoResourceTypeAttr is null)
-        {
-            Validator.TryValidateObject(_editContext.Model, validationContext, results, true);
-        }
-        else
+        if (dtoResourceTypeAttr is not null)
         {
             var resourceType = dtoResourceTypeAttr.ResourceType;
 
@@ -129,7 +121,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
 
             foreach (var propertyInfo in properties)
             {
-                var context = new ValidationContext(objectInstance, validationContext, validationContext.Items) { MemberName = propertyInfo.Name };
+                var context = new ValidationContext(objectInstance, validationContext, validationContext.Items);
+                context.MemberName = propertyInfo.Name;
                 var propertyValue = propertyInfo.GetValue(objectInstance);
                 var validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
                 foreach (var attribute in validationAttributes)
@@ -147,11 +140,8 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                         validationContext.DisplayName = stringLocalizer.GetString(displayAttribute?.Name ?? propertyInfo.Name);
                         if (attribute is CompareAttribute compareAttribute)
                         {
-                            var otherPropertyInfoDisplayAttribute = (properties.FirstOrDefault(p => p.Name == compareAttribute.OtherProperty)
-                                ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
-
-                            _OtherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name
-                                ?? compareAttribute.OtherProperty).ToString());
+                            var otherPropertyInfoDisplayAttribute = (properties.FirstOrDefault(p => p.Name == compareAttribute.OtherProperty) ?? throw new InvalidOperationException($"Invalid OtherProperty {compareAttribute.OtherProperty}")).GetCustomAttribute<DisplayAttribute>();
+                            _OtherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
                         }
                     }
 
@@ -164,15 +154,17 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
                 }
             }
         }
+        else
+        {
+            Validator.TryValidateObject(_editContext.Model, validationContext, results, true);
+        }
 
         _validationMessageStore.Clear();
-
         foreach (var validationResult in results)
         {
             if (validationResult == null) continue;
 
             var hasMemberNames = false;
-
             foreach (var memberName in validationResult.MemberNames)
             {
                 hasMemberNames = true;

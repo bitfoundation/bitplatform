@@ -61,6 +61,15 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action.
+        /// </summary>
+        public static string Action {
+            get {
+                return ResourceManager.GetString("Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Active.
         /// </summary>
         public static string Active {
@@ -79,20 +88,29 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New category.
+        /// </summary>
+        public static string AddCategory {
+            get {
+                return ResourceManager.GetString("AddCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add product.
+        /// </summary>
+        public static string AddProduct {
+            get {
+                return ResourceManager.GetString("AddProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         public static string All {
             get {
                 return ResourceManager.GetString("All", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} field does not equal any of the values specified in AllowedValuesAttribute..
-        /// </summary>
-        public static string AllowedValuesAttribute_Invalid {
-            get {
-                return ResourceManager.GetString("AllowedValuesAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -124,20 +142,29 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The associated metadata type for type &apos;{0}&apos; contains the following unknown properties or fields: {1}. Please make sure that the names of these members match the names of the properties on the main type..
+        ///   Looks up a localized string similar to Are you sure you want to delete category {0}.
         /// </summary>
-        public static string AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties {
+        public static string AreYouSureWannaDeleteCategory {
             get {
-                return ResourceManager.GetString("AssociatedMetadataTypeTypeDescriptor_MetadataTypeContainsUnknownProperties", resourceCulture);
+                return ResourceManager.GetString("AreYouSureWannaDeleteCategory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type &apos;{0}&apos; does not contain a public property named &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Are you sure you want to delete product {0}.
         /// </summary>
-        public static string AttributeStore_Unknown_Property {
+        public static string AreYouSureWannaDeleteProduct {
             get {
-                return ResourceManager.GetString("AttributeStore_Unknown_Property", resourceCulture);
+                return ResourceManager.GetString("AreYouSureWannaDeleteProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Back.
+        /// </summary>
+        public static string Back {
+            get {
+                return ResourceManager.GetString("Back", resourceCulture);
             }
         }
         
@@ -147,15 +174,6 @@ namespace BlazorWeb.Shared.Resources {
         public static string BadRequestException {
             get {
                 return ResourceManager.GetString("BadRequestException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} field is not a valid Base64 encoding..
-        /// </summary>
-        public static string Base64StringAttribute_Invalid {
-            get {
-                return ResourceManager.GetString("Base64StringAttribute_Invalid", resourceCulture);
             }
         }
         
@@ -178,6 +196,51 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Categories.
+        /// </summary>
+        public static string Categories {
+            get {
+                return ResourceManager.GetString("Categories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Categories.
+        /// </summary>
+        public static string CategoriesPageTitle {
+            get {
+                return ResourceManager.GetString("CategoriesPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Category.
+        /// </summary>
+        public static string Category {
+            get {
+                return ResourceManager.GetString("Category", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Category entity could not be found.
+        /// </summary>
+        public static string CategoryCouldNotBeFound {
+            get {
+                return ResourceManager.GetString("CategoryCouldNotBeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This category contain some products, so you can&apos;t delete it.
+        /// </summary>
+        public static string CategoryNotEmpty {
+            get {
+                return ResourceManager.GetString("CategoryNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Check your Spam/Junk, if you could not find it in the Inbox..
         /// </summary>
         public static string CheckSpamMailMessage {
@@ -187,20 +250,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The property {0}.{1} could not be found..
+        ///   Looks up a localized string similar to Color.
         /// </summary>
-        public static string Common_PropertyNotFound {
+        public static string Color {
             get {
-                return ResourceManager.GetString("Common_PropertyNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not find a property named {0}..
-        /// </summary>
-        public static string CompareAttribute_UnknownProperty {
-            get {
-                return ResourceManager.GetString("CompareAttribute_UnknownProperty", resourceCulture);
+                return ResourceManager.GetString("Color", resourceCulture);
             }
         }
         
@@ -219,15 +273,6 @@ namespace BlazorWeb.Shared.Resources {
         public static string Completed {
             get {
                 return ResourceManager.GetString("Completed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Optimistic concurrency failure, object has been modified..
-        /// </summary>
-        public static string ConcurrencyFailure {
-            get {
-                return ResourceManager.GetString("ConcurrencyFailure", resourceCulture);
             }
         }
         
@@ -269,92 +314,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} field is not a valid credit card number..
+        ///   Looks up a localized string similar to Custom color.
         /// </summary>
-        public static string CreditCardAttribute_Invalid {
+        public static string CustomColor {
             get {
-                return ResourceManager.GetString("CreditCardAttribute_Invalid", resourceCulture);
+                return ResourceManager.GetString("CustomColor", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must return System.ComponentModel.DataAnnotations.ValidationResult.  Use System.ComponentModel.DataAnnotations.ValidationResult.Success to represent success..
+        ///   Looks up a localized string similar to Dashboard.
         /// </summary>
-        public static string CustomValidationAttribute_Method_Must_Return_ValidationResult {
+        public static string Dashboard {
             get {
-                return ResourceManager.GetString("CustomValidationAttribute_Method_Must_Return_ValidationResult", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; does not exist in type &apos;{1}&apos; or is not public and static..
-        /// </summary>
-        public static string CustomValidationAttribute_Method_Not_Found {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_Method_Not_Found", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The CustomValidationAttribute.Method was not specified..
-        /// </summary>
-        public static string CustomValidationAttribute_Method_Required {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_Method_Required", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The CustomValidationAttribute method &apos;{0}&apos; in type &apos;{1}&apos; must match the expected signature: public static ValidationResult {0}(object value, ValidationContext context).  The value can be strongly typed.  The ValidationContext parameter is optional..
-        /// </summary>
-        public static string CustomValidationAttribute_Method_Signature {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_Method_Signature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not convert the value of type &apos;{0}&apos; to &apos;{1}&apos; as expected by method {2}.{3}..
-        /// </summary>
-        public static string CustomValidationAttribute_Type_Conversion_Failed {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_Type_Conversion_Failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The custom validation type &apos;{0}&apos; must be public..
-        /// </summary>
-        public static string CustomValidationAttribute_Type_Must_Be_Public {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_Type_Must_Be_Public", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is not valid..
-        /// </summary>
-        public static string CustomValidationAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The CustomValidationAttribute.ValidatorType was not specified..
-        /// </summary>
-        public static string CustomValidationAttribute_ValidatorType_Required {
-            get {
-                return ResourceManager.GetString("CustomValidationAttribute_ValidatorType_Required", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The custom DataType string cannot be null or empty..
-        /// </summary>
-        public static string DataTypeAttribute_EmptyDataTypeString {
-            get {
-                return ResourceManager.GetString("DataTypeAttribute_EmptyDataTypeString", resourceCulture);
+                return ResourceManager.GetString("Dashboard", resourceCulture);
             }
         }
         
@@ -368,11 +341,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An unknown failure has occurred..
+        ///   Looks up a localized string similar to Default color picker.
         /// </summary>
-        public static string DefaultError {
+        public static string DefaultColorPicker {
             get {
-                return ResourceManager.GetString("DefaultError", resourceCulture);
+                return ResourceManager.GetString("DefaultColorPicker", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string Delete {
+            get {
+                return ResourceManager.GetString("Delete", resourceCulture);
             }
         }
         
@@ -395,6 +377,24 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete category.
+        /// </summary>
+        public static string DeleteCategory {
+            get {
+                return ResourceManager.GetString("DeleteCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete product.
+        /// </summary>
+        public static string DeleteProduct {
+            get {
+                return ResourceManager.GetString("DeleteProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete todo item.
         /// </summary>
         public static string DeleteTodoItem {
@@ -404,20 +404,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} field equals one of the values specified in DeniedValuesAttribute..
+        ///   Looks up a localized string similar to Description.
         /// </summary>
-        public static string DeniedValuesAttribute_Invalid {
+        public static string Description {
             get {
-                return ResourceManager.GetString("DeniedValuesAttribute_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} property has not been set.  Use the {1} method to get the value..
-        /// </summary>
-        public static string DisplayAttribute_PropertyNotSet {
-            get {
-                return ResourceManager.GetString("DisplayAttribute_PropertyNotSet", resourceCulture);
+                return ResourceManager.GetString("Description", resourceCulture);
             }
         }
         
@@ -440,29 +431,29 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Role name &apos;{0}&apos; is already taken..
-        /// </summary>
-        public static string DuplicateRoleName {
-            get {
-                return ResourceManager.GetString("DuplicateRoleName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Username &apos;{0}&apos; is already taken..
-        /// </summary>
-        public static string DuplicateUserName {
-            get {
-                return ResourceManager.GetString("DuplicateUserName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit category.
+        /// </summary>
+        public static string EditCategory {
+            get {
+                return ResourceManager.GetString("EditCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit product.
+        /// </summary>
+        public static string EditProduct {
+            get {
+                return ResourceManager.GetString("EditProduct", resourceCulture);
             }
         }
         
@@ -530,29 +521,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email &apos;{0}&apos; is not confirmed..
+        ///   Looks up a localized string similar to Enter category name.
         /// </summary>
-        public static string EmailNotConfirmed {
+        public static string EnterCategoryName {
             get {
-                return ResourceManager.GetString("EmailNotConfirmed", resourceCulture);
+                return ResourceManager.GetString("EnterCategoryName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type provided for EnumDataTypeAttribute cannot be null..
+        ///   Looks up a localized string similar to Enter product name.
         /// </summary>
-        public static string EnumDataTypeAttribute_TypeCannotBeNull {
+        public static string EnterProductName {
             get {
-                return ResourceManager.GetString("EnumDataTypeAttribute_TypeCannotBeNull", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The type &apos;{0}&apos; needs to represent an enumeration type..
-        /// </summary>
-        public static string EnumDataTypeAttribute_TypeNeedsToBeAnEnum {
-            get {
-                return ResourceManager.GetString("EnumDataTypeAttribute_TypeNeedsToBeAnEnum", resourceCulture);
+                return ResourceManager.GetString("EnterProductName", resourceCulture);
             }
         }
         
@@ -562,24 +544,6 @@ namespace BlazorWeb.Shared.Resources {
         public static string Error {
             get {
                 return ResourceManager.GetString("Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} field only accepts files with the following extensions: {1}.
-        /// </summary>
-        public static string FileExtensionsAttribute_Invalid {
-            get {
-                return ResourceManager.GetString("FileExtensionsAttribute_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while removing file.
-        /// </summary>
-        public static string FileRemoveFailed {
-            get {
-                return ResourceManager.GetString("FileRemoveFailed", resourceCulture);
             }
         }
         
@@ -701,7 +665,7 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create your full featured Blazor app easily in the shortest time ever!.
+        ///   Looks up a localized string similar to Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!.
         /// </summary>
         public static string HomeMessage {
             get {
@@ -710,11 +674,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to TodoTemplate Home.
+        ///   Looks up a localized string similar to BlazorWeb Home.
         /// </summary>
         public static string HomeTitle {
             get {
                 return ResourceManager.GetString("HomeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Id.
+        /// </summary>
+        public static string Id {
+            get {
+                return ResourceManager.GetString("Id", resourceCulture);
             }
         }
         
@@ -728,69 +701,6 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email &apos;{0}&apos; is invalid..
-        /// </summary>
-        public static string InvalidEmail {
-            get {
-                return ResourceManager.GetString("InvalidEmail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Type {0} must derive from {1}&lt;{2}&gt;..
-        /// </summary>
-        public static string InvalidManagerType {
-            get {
-                return ResourceManager.GetString("InvalidManagerType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The provided PasswordHasherCompatibilityMode is invalid..
-        /// </summary>
-        public static string InvalidPasswordHasherCompatibilityMode {
-            get {
-                return ResourceManager.GetString("InvalidPasswordHasherCompatibilityMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The iteration count must be a positive integer..
-        /// </summary>
-        public static string InvalidPasswordHasherIterationCount {
-            get {
-                return ResourceManager.GetString("InvalidPasswordHasherIterationCount", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Role name &apos;{0}&apos; is invalid..
-        /// </summary>
-        public static string InvalidRoleName {
-            get {
-                return ResourceManager.GetString("InvalidRoleName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid token..
-        /// </summary>
-        public static string InvalidToken {
-            get {
-                return ResourceManager.GetString("InvalidToken", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Username &apos;{0}&apos; is invalid, can only contain letters or digits..
-        /// </summary>
-        public static string InvalidUserName {
-            get {
-                return ResourceManager.GetString("InvalidUserName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid username or password.
         /// </summary>
         public static string InvalidUsernameOrPassword {
@@ -800,74 +710,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do you accept terms?.
+        ///   Looks up a localized string similar to Last 30 days category count.
         /// </summary>
-        public static string IsTermsAccepted {
+        public static string Last30DaysCategoryCount {
             get {
-                return ResourceManager.GetString("IsTermsAccepted", resourceCulture);
+                return ResourceManager.GetString("Last30DaysCategoryCount", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Known error.
+        ///   Looks up a localized string similar to Last 30 days product count.
         /// </summary>
-        public static string KnownException {
+        public static string Last30DaysProductCount {
             get {
-                return ResourceManager.GetString("KnownException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to LengthAttribute must have a MaximumLength value that is greater than or equal to MinimumLength..
-        /// </summary>
-        public static string LengthAttribute_InvalidMaxLength {
-            get {
-                return ResourceManager.GetString("LengthAttribute_InvalidMaxLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to LengthAttribute must have a MinimumLength value that is zero or greater..
-        /// </summary>
-        public static string LengthAttribute_InvalidMinLength {
-            get {
-                return ResourceManager.GetString("LengthAttribute_InvalidMinLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field of type {0} must be a string, array or ICollection type..
-        /// </summary>
-        public static string LengthAttribute_InvalidValueType {
-            get {
-                return ResourceManager.GetString("LengthAttribute_InvalidValueType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be a string or collection type with a minimum length of &apos;{1}&apos; and maximum length of &apos;{2}&apos;..
-        /// </summary>
-        public static string LengthAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("LengthAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot retrieve property &apos;{0}&apos; because localization failed.  Type &apos;{1}&apos; is not public or does not contain a public static string property with the name &apos;{2}&apos;..
-        /// </summary>
-        public static string LocalizableString_LocalizationFailed {
-            get {
-                return ResourceManager.GetString("LocalizableString_LocalizationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A user with this login already exists..
-        /// </summary>
-        public static string LoginAlreadyAssociated {
-            get {
-                return ResourceManager.GetString("LoginAlreadyAssociated", resourceCulture);
+                return ResourceManager.GetString("Last30DaysProductCount", resourceCulture);
             }
         }
         
@@ -881,33 +737,6 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be a string or array type with a maximum length of &apos;{1}&apos;..
-        /// </summary>
-        public static string MaxLengthAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("MaxLengthAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MetadataClassType cannot be null..
-        /// </summary>
-        public static string MetadataTypeAttribute_TypeCannotBeNull {
-            get {
-                return ResourceManager.GetString("MetadataTypeAttribute_TypeCannotBeNull", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MinLengthAttribute must have a Length value that is zero or greater..
-        /// </summary>
-        public static string MinLengthAttribute_InvalidMinLength {
-            get {
-                return ResourceManager.GetString("MinLengthAttribute_InvalidMinLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The field {0} must be a string or array type with a minimum length of &apos;{1}&apos;..
         /// </summary>
         public static string MinLengthAttribute_ValidationError {
@@ -917,11 +746,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AddIdentity must be called on the service collection..
+        ///   Looks up a localized string similar to Name.
         /// </summary>
-        public static string MustCallAddIdentity {
+        public static string Name {
             get {
-                return ResourceManager.GetString("MustCallAddIdentity", resourceCulture);
+                return ResourceManager.GetString("Name", resourceCulture);
             }
         }
         
@@ -944,24 +773,6 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true..
-        /// </summary>
-        public static string NoPersonalDataProtector {
-            get {
-                return ResourceManager.GetString("NoPersonalDataProtector", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No RoleType was specified, try AddRoles&lt;TRole&gt;()..
-        /// </summary>
-        public static string NoRoleType {
-            get {
-                return ResourceManager.GetString("NoRoleType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No todos yet.
         /// </summary>
         public static string NoTodos {
@@ -971,38 +782,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No IUserTwoFactorTokenProvider&lt;{0}&gt; named &apos;{1}&apos; is registered..
-        /// </summary>
-        public static string NoTokenProvider {
-            get {
-                return ResourceManager.GetString("NoTokenProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
         /// </summary>
         public static string NotReceivedConfirmationEmailMessage {
             get {
                 return ResourceManager.GetString("NotReceivedConfirmationEmailMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Haven’t you received the confirmation email?.
-        /// </summary>
-        public static string NotReceivedConfirmationEmailMessage1 {
-            get {
-                return ResourceManager.GetString("NotReceivedConfirmationEmailMessage1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User security stamp cannot be null..
-        /// </summary>
-        public static string NullSecurityStamp {
-            get {
-                return ResourceManager.GetString("NullSecurityStamp", resourceCulture);
             }
         }
         
@@ -1034,110 +818,101 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Incorrect password..
+        ///   Looks up a localized string similar to Price.
         /// </summary>
-        public static string PasswordMismatch {
+        public static string Price {
             get {
-                return ResourceManager.GetString("PasswordMismatch", resourceCulture);
+                return ResourceManager.GetString("Price", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must have at least one digit (&apos;0&apos;-&apos;9&apos;)..
+        ///   Looks up a localized string similar to Product category.
         /// </summary>
-        public static string PasswordRequiresDigit {
+        public static string ProductCategory {
             get {
-                return ResourceManager.GetString("PasswordRequiresDigit", resourceCulture);
+                return ResourceManager.GetString("ProductCategory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must have at least one lowercase (&apos;a&apos;-&apos;z&apos;)..
+        ///   Looks up a localized string similar to Product entity could not be found.
         /// </summary>
-        public static string PasswordRequiresLower {
+        public static string ProductCouldNotBeFound {
             get {
-                return ResourceManager.GetString("PasswordRequiresLower", resourceCulture);
+                return ResourceManager.GetString("ProductCouldNotBeFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must have at least one non alphanumeric character..
+        ///   Looks up a localized string similar to Products.
         /// </summary>
-        public static string PasswordRequiresNonAlphanumeric {
+        public static string Products {
             get {
-                return ResourceManager.GetString("PasswordRequiresNonAlphanumeric", resourceCulture);
+                return ResourceManager.GetString("Products", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must use at least {0} different characters..
+        ///   Looks up a localized string similar to Product sales.
         /// </summary>
-        public static string PasswordRequiresUniqueChars {
+        public static string ProductSales {
             get {
-                return ResourceManager.GetString("PasswordRequiresUniqueChars", resourceCulture);
+                return ResourceManager.GetString("ProductSales", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must have at least one uppercase (&apos;A&apos;-&apos;Z&apos;)..
+        ///   Looks up a localized string similar to This chart shows the sale number of each product..
         /// </summary>
-        public static string PasswordRequiresUpper {
+        public static string ProductSalesText {
             get {
-                return ResourceManager.GetString("PasswordRequiresUpper", resourceCulture);
+                return ResourceManager.GetString("ProductSalesText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Passwords must be at least {0} characters..
+        ///   Looks up a localized string similar to Products count per category chart.
         /// </summary>
-        public static string PasswordTooShort {
+        public static string ProductsCountPerCategoryChart {
             get {
-                return ResourceManager.GetString("PasswordTooShort", resourceCulture);
+                return ResourceManager.GetString("ProductsCountPerCategoryChart", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} field is not a valid phone number..
+        ///   Looks up a localized string similar to This chart shows the number of products in each category..
         /// </summary>
-        public static string PhoneAttribute_Invalid {
+        public static string ProductsCountPerCategoryChartText {
             get {
-                return ResourceManager.GetString("PhoneAttribute_Invalid", resourceCulture);
+                return ResourceManager.GetString("ProductsCountPerCategoryChartText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to I agree to the .
+        ///   Looks up a localized string similar to Products.
         /// </summary>
-        public static string PrivacyPolicyAgreementMessage {
+        public static string ProductsPageTitle {
             get {
-                return ResourceManager.GetString("PrivacyPolicyAgreementMessage", resourceCulture);
+                return ResourceManager.GetString("ProductsPageTitle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use this page to detail your site&apos;s privacy policy..
+        ///   Looks up a localized string similar to Products percentage per category.
         /// </summary>
-        public static string PrivacyPolicyPageMessage {
+        public static string ProductsPercentagePerCategory {
             get {
-                return ResourceManager.GetString("PrivacyPolicyPageMessage", resourceCulture);
+                return ResourceManager.GetString("ProductsPercentagePerCategory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use this section to detail your site&apos;s privacy policy..
+        ///   Looks up a localized string similar to This chart shows the percentage of products in each category..
         /// </summary>
-        public static string PrivacyPolicySectionMessage {
+        public static string ProductsPercentagePerCategoryText {
             get {
-                return ResourceManager.GetString("PrivacyPolicySectionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Privacy Policy.
-        /// </summary>
-        public static string PrivacyPolicyTitle {
-            get {
-                return ResourceManager.GetString("PrivacyPolicyTitle", resourceCulture);
+                return ResourceManager.GetString("ProductsPercentagePerCategoryText", resourceCulture);
             }
         }
         
@@ -1160,110 +935,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type {0} must implement {1}..
-        /// </summary>
-        public static string RangeAttribute_ArbitraryTypeNotIComparable {
-            get {
-                return ResourceManager.GetString("RangeAttribute_ArbitraryTypeNotIComparable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot use exclusive bounds when the maximum value is equal to the minimum value..
-        /// </summary>
-        public static string RangeAttribute_CannotUseExclusiveBoundsWhenTheyAreEqual {
-            get {
-                return ResourceManager.GetString("RangeAttribute_CannotUseExclusiveBoundsWhenTheyAreEqual", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The maximum value &apos;{0}&apos; must be greater than or equal to the minimum value &apos;{1}&apos;..
-        /// </summary>
-        public static string RangeAttribute_MinGreaterThanMax {
-            get {
-                return ResourceManager.GetString("RangeAttribute_MinGreaterThanMax", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The minimum and maximum values must be set..
-        /// </summary>
-        public static string RangeAttribute_Must_Set_Min_And_Max {
-            get {
-                return ResourceManager.GetString("RangeAttribute_Must_Set_Min_And_Max", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The OperandType must be set when strings are used for minimum and maximum values..
-        /// </summary>
-        public static string RangeAttribute_Must_Set_Operand_Type {
-            get {
-                return ResourceManager.GetString("RangeAttribute_Must_Set_Operand_Type", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The field {0} must be between {1} and {2}..
         /// </summary>
         public static string RangeAttribute_ValidationError {
             get {
                 return ResourceManager.GetString("RangeAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be between {1} and {2} exclusive..
-        /// </summary>
-        public static string RangeAttribute_ValidationError_MaxExclusive {
-            get {
-                return ResourceManager.GetString("RangeAttribute_ValidationError_MaxExclusive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be between {1} exclusive and {2}..
-        /// </summary>
-        public static string RangeAttribute_ValidationError_MinExclusive {
-            get {
-                return ResourceManager.GetString("RangeAttribute_ValidationError_MinExclusive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be between {1} exclusive and {2} exclusive..
-        /// </summary>
-        public static string RangeAttribute_ValidationError_MinExclusive_MaxExclusive {
-            get {
-                return ResourceManager.GetString("RangeAttribute_ValidationError_MinExclusive_MaxExclusive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recovery code redemption failed..
-        /// </summary>
-        public static string RecoveryCodeRedemptionFailed {
-            get {
-                return ResourceManager.GetString("RecoveryCodeRedemptionFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must match the regular expression &apos;{1}&apos;..
-        /// </summary>
-        public static string RegexAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("RegexAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The pattern must be set to a valid regular expression..
-        /// </summary>
-        public static string RegularExpressionAttribute_Empty_Pattern {
-            get {
-                return ResourceManager.GetString("RegularExpressionAttribute_Empty_Pattern", resourceCulture);
             }
         }
         
@@ -1358,20 +1034,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Role {0} does not exist..
-        /// </summary>
-        public static string RoleNotFound {
-            get {
-                return ResourceManager.GetString("RoleNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string Save {
             get {
                 return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search on name.
+        /// </summary>
+        public static string SearchOnName {
+            get {
+                return ResourceManager.GetString("SearchOnName", resourceCulture);
             }
         }
         
@@ -1385,7 +1061,16 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to connect to the server..
+        ///   Looks up a localized string similar to Select category.
+        /// </summary>
+        public static string SelectCategory {
+            get {
+                return ResourceManager.GetString("SelectCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to server..
         /// </summary>
         public static string ServerConnectionException {
             get {
@@ -1399,6 +1084,15 @@ namespace BlazorWeb.Shared.Resources {
         public static string SignIn {
             get {
                 return ResourceManager.GetString("SignIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in as different user.
+        /// </summary>
+        public static string SignInAsDifferentUser {
+            get {
+                return ResourceManager.GetString("SignInAsDifferentUser", resourceCulture);
             }
         }
         
@@ -1448,195 +1142,6 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sort by.
-        /// </summary>
-        public static string SortBy {
-            get {
-                return ResourceManager.GetString("SortBy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true..
-        /// </summary>
-        public static string StoreNotIProtectedUserStore {
-            get {
-                return ResourceManager.GetString("StoreNotIProtectedUserStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IQueryableRoleStore&lt;TRole&gt;..
-        /// </summary>
-        public static string StoreNotIQueryableRoleStore {
-            get {
-                return ResourceManager.GetString("StoreNotIQueryableRoleStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IQueryableUserStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIQueryableUserStore {
-            get {
-                return ResourceManager.GetString("StoreNotIQueryableUserStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IRoleClaimStore&lt;TRole&gt;..
-        /// </summary>
-        public static string StoreNotIRoleClaimStore {
-            get {
-                return ResourceManager.GetString("StoreNotIRoleClaimStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserAuthenticationTokenStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserAuthenticationTokenStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserAuthenticationTokenStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserAuthenticatorKeyStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserAuthenticatorKeyStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserAuthenticatorKeyStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserClaimStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserClaimStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserClaimStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserConfirmationStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserConfirmationStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserConfirmationStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserEmailStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserEmailStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserEmailStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserLockoutStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserLockoutStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserLockoutStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserLoginStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserLoginStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserLoginStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserPasswordStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserPasswordStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserPasswordStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserPhoneNumberStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserPhoneNumberStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserPhoneNumberStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserRoleStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserRoleStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserRoleStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserSecurityStampStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserSecurityStampStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserSecurityStampStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserTwoFactorRecoveryCodeStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserTwoFactorRecoveryCodeStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserTwoFactorStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserTwoFactorStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The maximum length must be a nonnegative integer..
-        /// </summary>
-        public static string StringLengthAttribute_InvalidMaxLength {
-            get {
-                return ResourceManager.GetString("StringLengthAttribute_InvalidMaxLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be a string with a maximum length of {1}..
-        /// </summary>
-        public static string StringLengthAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("StringLengthAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} must be a string with a minimum length of {2} and a maximum length of {1}..
-        /// </summary>
-        public static string StringLengthAttribute_ValidationErrorIncludingMinimum {
-            get {
-                return ResourceManager.GetString("StringLengthAttribute_ValidationErrorIncludingMinimum", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {
@@ -1646,11 +1151,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Terms.
+        ///   Looks up a localized string similar to Term.
         /// </summary>
-        public static string Terms {
+        public static string Term {
             get {
-                return ResourceManager.GetString("Terms", resourceCulture);
+                return ResourceManager.GetString("Term", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Is accept terms?.
+        /// </summary>
+        public static string TermsAccepted {
+            get {
+                return ResourceManager.GetString("TermsAccepted", resourceCulture);
             }
         }
         
@@ -1691,7 +1205,7 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To Do item could not be found.
+        ///   Looks up a localized string similar to Todo item could not be found.
         /// </summary>
         public static string ToDoItemCouldNotBeFound {
             get {
@@ -1727,38 +1241,20 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; is not a string. Every key control parameter must be a string..
+        ///   Looks up a localized string similar to Total categories.
         /// </summary>
-        public static string UIHintImplementation_ControlParameterKeyIsNotAString {
+        public static string TotalCategories {
             get {
-                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyIsNotAString", resourceCulture);
+                return ResourceManager.GetString("TotalCategories", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The key parameter at position {0} is null. Every key control parameter must be a string..
+        ///   Looks up a localized string similar to Total products.
         /// </summary>
-        public static string UIHintImplementation_ControlParameterKeyIsNull {
+        public static string TotalProducts {
             get {
-                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyIsNull", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The key parameter at position {0} with value &apos;{1}&apos; occurs more than once..
-        /// </summary>
-        public static string UIHintImplementation_ControlParameterKeyOccursMoreThanOnce {
-            get {
-                return ResourceManager.GetString("UIHintImplementation_ControlParameterKeyOccursMoreThanOnce", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The number of control parameters must be even..
-        /// </summary>
-        public static string UIHintImplementation_NeedEvenNumberOfControlParameters {
-            get {
-                return ResourceManager.GetString("UIHintImplementation_NeedEvenNumberOfControlParameters", resourceCulture);
+                return ResourceManager.GetString("TotalProducts", resourceCulture);
             }
         }
         
@@ -1781,15 +1277,6 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update.
-        /// </summary>
-        public static string Update {
-            get {
-                return ResourceManager.GetString("Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The record was modified by another user after you got the original data. the operation was canceled..
         /// </summary>
         public static string UpdateConcurrencyException {
@@ -1804,33 +1291,6 @@ namespace BlazorWeb.Shared.Resources {
         public static string UploadNewProfileImage {
             get {
                 return ResourceManager.GetString("UploadNewProfileImage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} field is not a valid fully-qualified http, https, or ftp URL..
-        /// </summary>
-        public static string UrlAttribute_Invalid {
-            get {
-                return ResourceManager.GetString("UrlAttribute_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User already has a password set..
-        /// </summary>
-        public static string UserAlreadyHasPassword {
-            get {
-                return ResourceManager.GetString("UserAlreadyHasPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User already in role &apos;{0}&apos;..
-        /// </summary>
-        public static string UserAlreadyInRole {
-            get {
-                return ResourceManager.GetString("UserAlreadyInRole", resourceCulture);
             }
         }
         
@@ -1853,110 +1313,11 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lockout is not enabled for this user..
-        /// </summary>
-        public static string UserLockoutNotEnabled {
-            get {
-                return ResourceManager.GetString("UserLockoutNotEnabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Username.
-        /// </summary>
-        public static string UserName {
-            get {
-                return ResourceManager.GetString("UserName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to User {0} does not exist..
         /// </summary>
         public static string UserNameNotFound {
             get {
                 return ResourceManager.GetString("UserNameNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User is not in role &apos;{0}&apos;..
-        /// </summary>
-        public static string UserNotInRole {
-            get {
-                return ResourceManager.GetString("UserNotInRole", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Either ErrorMessageString or ErrorMessageResourceName must be set, but not both..
-        /// </summary>
-        public static string ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_Cannot_Set_ErrorMessage_And_Resource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to IsValid(object value) has not been implemented by this class.  The preferred entry point is GetValidationResult() and classes should override IsValid(object value, ValidationContext context)..
-        /// </summary>
-        public static string ValidationAttribute_IsValid_NotImplemented {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_IsValid_NotImplemented", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Both ErrorMessageResourceType and ErrorMessageResourceName need to be set on this attribute..
-        /// </summary>
-        public static string ValidationAttribute_NeedBothResourceTypeAndResourceName {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_NeedBothResourceTypeAndResourceName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The property &apos;{0}&apos; on resource type &apos;{1}&apos; is not a string type..
-        /// </summary>
-        public static string ValidationAttribute_ResourcePropertyNotStringType {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_ResourcePropertyNotStringType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The resource type &apos;{0}&apos; does not have an accessible static property named &apos;{1}&apos;..
-        /// </summary>
-        public static string ValidationAttribute_ResourceTypeDoesNotHaveProperty {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_ResourceTypeDoesNotHaveProperty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The field {0} is invalid..
-        /// </summary>
-        public static string ValidationAttribute_ValidationError {
-            get {
-                return ResourceManager.GetString("ValidationAttribute_ValidationError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The instance provided must match the ObjectInstance on the ValidationContext supplied..
-        /// </summary>
-        public static string Validator_InstanceMustMatchValidationContextInstance {
-            get {
-                return ResourceManager.GetString("Validator_InstanceMustMatchValidationContextInstance", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value for property &apos;{0}&apos; must be of type &apos;{1}&apos;..
-        /// </summary>
-        public static string Validator_Property_Value_Wrong_Type {
-            get {
-                return ResourceManager.GetString("Validator_Property_Value_Wrong_Type", resourceCulture);
             }
         }
         
@@ -1984,6 +1345,15 @@ namespace BlazorWeb.Shared.Resources {
         public static string Yes {
             get {
                 return ResourceManager.GetString("Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re sign in as.
+        /// </summary>
+        public static string YouAreSignInAs {
+            get {
+                return ResourceManager.GetString("YouAreSignInAs", resourceCulture);
             }
         }
         

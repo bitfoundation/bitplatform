@@ -21,28 +21,30 @@
             1. Install the project templates from the NuGet package manager with one of the following commands:
         </div>
         <pre class="code-box">
-dotnet new install Bit.AdminPanel::7.1.0
-dotnet new install Bit.TodoTemplate::7.1.0
-dotnet new install Bit.BlazorDual::7.1.0</pre>
+dotnet new install Bit.Boilerplate::7.1.0
+dotnet new install Bit.BlazorWeb::7.1.0</pre>
         <div class="section-card-txt">
-            2. Create a new project using the installed project template with one of the following commands:
+            2. Create a new project using dotnet new command or Visual Studio create new project wizard:
         </div>
-        <pre class="code-box">
-dotnet new bit-admin
-dotnet new bit-todo
-dotnet new bit-dual</pre>
         <div class="section-card-txt">
             <b>Note</b>: bit project templates accept the following parameters:
             <ul>
                 <li>--name (default is current folder name)</li>
-                <li>--database default to 'SqlServer' among following options: 'SqlServer', 'Sqlite', 'Other'</li>
-                <li>--pipeline default to 'GitHub' among the following options: 'GitHub', 'Azure' (AzureDevOps pipelines), 'Other'</li>
+                <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
+                <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>Other</i></li>
+                <li>--sample default to <i>AdminPanel</i> among the following options: <i>AdminPanel</i>, <i>Todo</i>, <i>None</i></li>
             </ul>
         </div>
+        Examples:
         <pre class="code-box">
-dotnet new bit-admin --name MyProject --database sqlite --pipeline github
-dotnet new bit-todo --name MyProject --database sqlite --pipeline github
-dotnet new bit-dual --name MyProject --database sqlite --pipeline github</pre>
+1- Create a web based admin panel with SQL Server, using Azure DevOps for CI/CD:
+dotnet new bit-web --name MyAdminPanel --database SqlServer --pipeline Azure --sample AdminPanel
+
+2- Create a cross-platform Todo app for mobile, desktop, and web with GitHub Actions and a SQLite database.
+dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo
+
+3- Create a mobile, desktop, and web app without sample pages, integrating GitHub Actions and a SQL Server database.
+dotnet new bit-web --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
         <div class="section-card-txt">
             <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
         </div>

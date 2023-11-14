@@ -1,13 +1,13 @@
 ﻿//-:cnd:noEmit
 using System.Web;
-using FluentEmail.Core;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using BlazorWeb.Server.Components;
 using BlazorWeb.Server.Models.Emailing;
 using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Resources;
 using BlazorWeb.Shared.Dtos.Identity;
+using FluentEmail.Core;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace BlazorWeb.Server.Controllers.Identity;
 
@@ -26,6 +26,8 @@ public partial class AuthController : AppControllerBase
     [AutoInject] private IStringLocalizer<EmailStrings> _emailLocalizer = default!;
 
     [AutoInject] private HtmlRenderer _htmlRenderer = default!;
+
+    [AutoInject] protected IStringLocalizer<IdentityStrings> IdentityLocalizer = default!;
 
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
@@ -55,7 +57,7 @@ public partial class AuthController : AppControllerBase
 
         if (result.Succeeded is false)
         {
-            throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, signUpRequest.Email!)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => IdentityLocalizer.GetString(e.Code, signUpRequest.Email!)).ToArray());
         }
 
         await SendConfirmationEmail(new() { Email = userToAdd.Email }, userToAdd, cancellationToken);
@@ -86,7 +88,9 @@ public partial class AuthController : AppControllerBase
 
         var controller = RouteData.Values["controller"]!.ToString();
 
-        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller, new { user.Email, token }, HttpContext.Request.Scheme);
+        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller,
+            new { user.Email, token },
+            HttpContext.Request.Scheme);
 
         var body = await _htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -120,7 +124,7 @@ public partial class AuthController : AppControllerBase
 
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
-        , CancellationToken cancellationToken)
+          , CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!);
 
@@ -179,9 +183,7 @@ public partial class AuthController : AppControllerBase
 
         var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
 
-        string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
-
-        url = $"/{url}";
+        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}";
 
         return Redirect(url);
     }
@@ -197,7 +199,7 @@ public partial class AuthController : AppControllerBase
         var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token!, resetPasswordRequest.Password!);
 
         if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(e => Localizer.GetString(e.Code, resetPasswordRequest.Email!)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => IdentityLocalizer.GetString(e.Code, resetPasswordRequest.Email!)).ToArray());
     }
 
     [HttpPost]

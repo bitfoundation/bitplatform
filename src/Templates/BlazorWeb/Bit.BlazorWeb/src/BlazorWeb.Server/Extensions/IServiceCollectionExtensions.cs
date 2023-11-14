@@ -11,7 +11,7 @@ using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Services;
 using BlazorWeb.Client.Services;
 using Microsoft.JSInterop;
-using BlazorWeb.Web.Services.HttpMessageHandlers;
+using BlazorWeb.Client.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -187,7 +187,7 @@ public static class IServiceCollectionExtensions
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
-            setup.AddHealthCheckEndpoint("TodoHealthChecks", env.IsDevelopment() ? "https://localhost:5051/healthz" : "/healthz");
+            setup.AddHealthCheckEndpoint("WebHealthChecks", env.IsDevelopment() ? "https://localhost:5051/healthz" : "/healthz");
         }).AddInMemoryStorage();
 
         var healthChecksBuilder = services.AddHealthChecks()
