@@ -54,8 +54,8 @@
 
         <div class="form-input-container">
             <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
-            <div class="color-container">
-                @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
+                <div class="color-container">
+                    @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                 {
                     <button @onclick="() => SetCategoryColor(color)"
                             class="color-btn @(_category.Color == color ? "color-btn--active" : null)"
@@ -82,12 +82,12 @@
             <ValidationMessage For="() => _category.Color" />
         </div>
 
-        <BitLoadingButton IsLoading="_isSaving"
-                          ButtonStyle="BitButtonStyle.Primary"
-                          ButtonType="BitButtonType.Submit"
-                          AriaLabel="Category">
+        <BitButton IsLoading="_isSaving"
+                   ButtonStyle="BitButtonStyle.Primary"
+                   ButtonType="BitButtonType.Submit"
+                   AriaLabel="Category">
             @Localizer[nameof(AppStrings.Save)]
-        </BitLoadingButton>
+        </BitButton>
 
     </EditForm>
 </div>

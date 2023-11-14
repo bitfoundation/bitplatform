@@ -37,11 +37,11 @@
             <div class="form-input-container">
                 @if (_user.ProfileImageName is not null)
                 {
-                    <BitLoadingButton IsLoading="_isRemoving"
-                                      ButtonStyle="BitButtonStyle.Standard"
-                                      OnClick="RemoveProfileImage">
+                    <BitButton IsLoading="_isRemoving"
+                               ButtonStyle="BitButtonStyle.Standard"
+                               OnClick="RemoveProfileImage">
                         @Localizer[nameof(AppStrings.Remove)]
-                    </BitLoadingButton>
+                    </BitButton>
                 }
 
                 <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
@@ -92,13 +92,13 @@
                     </BitChoiceGroup>
                 </div>
 
-                <BitLoadingButton IsLoading="_isSaving"
-                                  ButtonType="BitButtonType.Submit"
-                                  ButtonStyle="BitButtonStyle.Primary"
-                                  Title="@Localizer[nameof(AppStrings.Save)]"
-                                  AriaLabel="@Localizer[nameof(AppStrings.Save)]">
+                <BitButton IsLoading="_isSaving"
+                           ButtonType="BitButtonType.Submit"
+                           ButtonStyle="BitButtonStyle.Primary"
+                           Title="@Localizer[nameof(AppStrings.Save)]"
+                           AriaLabel="@Localizer[nameof(AppStrings.Save)]">
                     @Localizer[nameof(AppStrings.Save)]
-                </BitLoadingButton>
+                </BitButton>
             </EditForm>
 
         }
