@@ -9,13 +9,13 @@ public partial class _BitFileUploadItem
     private static int GetFileUploadPercent(BitFileInfo file)
     {
         int uploadedPercent;
-        if (file.TotalSizeOfUploaded >= file.Size)
+        if (file.TotalUploadedSize >= file.Size)
         {
             uploadedPercent = 100;
         }
         else
         {
-            uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
+            uploadedPercent = (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
         }
 
         return uploadedPercent;
@@ -24,13 +24,13 @@ public partial class _BitFileUploadItem
     private static string GetFileUploadSize(BitFileInfo file)
     {
         long uploadedSize;
-        if (file.TotalSizeOfUploaded >= file.Size)
+        if (file.TotalUploadedSize >= file.Size)
         {
             uploadedSize = file.Size;
         }
         else
         {
-            uploadedSize = file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded;
+            uploadedSize = file.TotalUploadedSize + file.LastChunkUploadedSize;
         }
 
         return FileSizeHumanizer.Humanize(uploadedSize);

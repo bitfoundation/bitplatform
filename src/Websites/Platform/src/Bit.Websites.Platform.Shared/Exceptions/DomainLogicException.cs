@@ -11,14 +11,4 @@ public class DomainLogicException : KnownException
         : base(message, innerException)
     {
     }
-
-    public DomainLogicException(LocalizedString message)
-        : base(message)
-    {
-    }
-
-    public DomainLogicException(LocalizedString message, Exception? innerException)
-        : base(message, innerException)
-    {
-    }
 }

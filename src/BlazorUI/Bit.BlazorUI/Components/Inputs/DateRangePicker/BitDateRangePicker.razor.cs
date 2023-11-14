@@ -206,6 +206,11 @@ public partial class BitDateRangePicker
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitDateRangePicker component.
+    /// </summary>
+    [Parameter] public BitDateRangePickerClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The title of the close button (tooltip).
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close date range picker";
@@ -437,6 +442,11 @@ public partial class BitDateRangePicker
     [Parameter] public bool ShowWeekNumbers { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitDateRangePicker component.
+    /// </summary>
+    [Parameter] public BitDateRangePickerClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The tabIndex of the DateRangePicker's input.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -447,14 +457,14 @@ public partial class BitDateRangePicker
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
-    /// The title of the week number (tooltip).
-    /// </summary>
-    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
-
-    /// <summary>
     /// The string format used to show the DateRangePicker's value in its input.
     /// </summary>
     [Parameter] public string ValueFormat { get; set; } = "Start: {0} - End: {1}";
+
+    /// <summary>
+    /// The title of the week number (tooltip).
+    /// </summary>
+    [Parameter] public string WeekNumberTitle { get; set; } = "Week number {0}";
 
     /// <summary>
     /// Custom template to render the year cells of the DateRangePicker.
@@ -484,6 +494,8 @@ public partial class BitDateRangePicker
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
@@ -493,6 +505,11 @@ public partial class BitDateRangePicker
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
@@ -1140,42 +1157,103 @@ public partial class BitDateRangePicker
         }
     }
 
-    private string GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
+    private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)
     {
-        StringBuilder className = new();
-        var currentDay = _daysOfCurrentMonth[week, day];
-
-        if (IsInCurrentMonth(week, day) is false)
-        {
-            className.Append(" bit-dtrp-dbo");
-        }
-
-        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
-        {
-            className.Append(" bit-dtrp-dtd");
-        }
+        StringBuilder klass = new StringBuilder();
+        StringBuilder style = new StringBuilder();
 
         if (IsInCurrentMonth(week, day) && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
         {
-            className.Append(" bit-dtrp-dss");
-        }
+            klass.Append(" bit-dtrp-dss");
 
-        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
-        {
-            className.Append(" bit-dtrp-dse");
-        }
+            if (Classes?.StartDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.StartDayButton);
+            }
 
-        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
-        {
-            className.Append(" bit-dtrp-dsse");
+            if (Styles?.StartDayButton is not null)
+            {
+                style.Append(Styles?.StartDayButton);
+            }
+
+            if (Classes?.StartAndEndSelectionDays is not null)
+            {
+                klass.Append(' ').Append(Classes?.StartAndEndSelectionDays);
+            }
+
+            if (Styles?.StartAndEndSelectionDays is not null)
+            {
+                style.Append(Styles?.StartAndEndSelectionDays);
+            }
         }
 
         if (IsBetweenTwoSelectedDate(day, week))
         {
-            className.Append(" bit-dtrp-dsb");
+            klass.Append(" bit-dtrp-dsb");
+
+            if (Classes?.SelectedDayButtons is not null)
+            {
+                klass.Append(' ').Append(Classes?.SelectedDayButtons);
+            }
+
+            if (Styles?.SelectedDayButtons is not null)
+            {
+                style.Append(Styles?.SelectedDayButtons);
+            }
         }
 
-        return className.ToString();
+        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek)
+        {
+            klass.Append(" bit-dtrp-dse");
+
+            if (Classes?.EndDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.EndDayButton);
+            }
+
+            if (Styles?.EndDayButton is not null)
+            {
+                style.Append(Styles?.EndDayButton);
+            }
+
+            if (Classes?.StartAndEndSelectionDays is not null)
+            {
+                klass.Append(' ').Append(Classes?.StartAndEndSelectionDays);
+            }
+
+            if (Styles?.StartAndEndSelectionDays is not null)
+            {
+                style.Append(Styles?.StartAndEndSelectionDays);
+            }
+        }
+
+        if (IsInCurrentMonth(week, day) is false)
+        {
+            klass.Append(" bit-dtrp-dbo");
+        }
+
+        var currentDay = _daysOfCurrentMonth[week, day];
+        if (IsInCurrentMonth(week, day) && todayYear == _currentYear && todayMonth == _currentMonth && todayDay == currentDay)
+        {
+            klass.Append(" bit-dtrp-dtd");
+
+            if (Classes?.TodayDayButton is not null)
+            {
+                klass.Append(' ').Append(Classes?.TodayDayButton);
+            }
+
+            if (Styles?.TodayDayButton is not null)
+            {
+                style.Append(' ').Append(Styles?.TodayDayButton);
+            }
+        }
+
+        if (IsInCurrentMonth(week, day) && week == _selectedEndDateWeek && day == _selectedEndDateDayOfWeek && week == _selectedStartDateWeek && day == _selectedStartDateDayOfWeek)
+        {
+            klass.Append(" bit-dtrp-dsse");
+        }
+
+        return (style.ToString(), klass.ToString());
     }
 
     private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)

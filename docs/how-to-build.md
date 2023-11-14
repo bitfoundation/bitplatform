@@ -92,9 +92,9 @@ dotnet build
 ### bit Project Templates
 Like the bit BlazorUI Demo project, the project templates (located in the `src/Templates` folder) have two different projects (Web & App) with different requirements to build.
 
-For example for the `AdminPanel` project template in the `AdminPanel/Bit.AdminPanel` folder:
+For example for the `Boilerplate` project template in the `Boilerplate/Bit.Boilerplate` folder:
 
-The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `AdminPanel.Client.Web` project folder (`src/Client/Web`):
+The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `Boilerplate.Client.Web` project folder (`src/Client/Web`):
 
 ```bash
 dotnet build
@@ -113,7 +113,7 @@ dotnet workload install maui-android
 dotnet workload install maui
 ```
 
-To build the App project run the following command in the `AdminPanel.Client.App` project folder (`src/Client/Web`):
+To build the App project run the following command in the `Boilerplate.Client.App` project folder (`src/Client/Web`):
 
 ```bash
 dotnet build

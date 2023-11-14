@@ -4,6 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitCompoundButton
 {
+    private BitButtonSize? size;
+    private BitButtonColor? color;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private int? _tabIndex;
@@ -61,6 +63,22 @@ public partial class BitCompoundButton
     [Parameter] public BitCompoundButtonClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The color of button
+    /// </summary>
+    [Parameter]
+    public BitButtonColor? Color
+    {
+        get => color;
+        set
+        {
+            if (color == value) return;
+
+            color = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -86,6 +104,22 @@ public partial class BitCompoundButton
     [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitCompoundButton.
     /// </summary>
     [Parameter] public BitCompoundButtonClassStyles? Styles { get; set; }
@@ -107,9 +141,31 @@ public partial class BitCompoundButton
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                    ? $"{RootElementClass}-pri"
-                                    : $"{RootElementClass}-std");
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => "bit-cmb-pri",
+            BitButtonStyle.Standard => "bit-cmb-std",
+            BitButtonStyle.Text => "bit-cmb-txt",
+            _ => "bit-cmb-pri"
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitButtonColor.Info => "bit-cmb-inf",
+            BitButtonColor.Success => "bit-cmb-suc",
+            BitButtonColor.Warning => "bit-cmb-wrn",
+            BitButtonColor.SevereWarning => "bit-cmb-swr",
+            BitButtonColor.Error => "bit-cmb-err",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-cmb-sm",
+            BitButtonSize.Medium => "bit-cmb-md",
+            BitButtonSize.Large => "bit-cmb-lg",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
