@@ -2,13 +2,15 @@
 
 .bit-tgb {
     cursor: pointer;
-    text-align: center;
     position: relative;
-    display: inline-block;
+    text-align: center;
+    align-items: center;
+    display: inline-flex;
     text-decoration: none;
     min-width: spacing(10);
     min-height: spacing(4);
     box-sizing: border-box;
+    justify-content: center;
     font-size: spacing(1.75);
     padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
