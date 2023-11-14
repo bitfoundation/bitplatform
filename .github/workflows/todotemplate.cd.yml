@@ -39,7 +39,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
 
     - name: Switch to blazor web assembly
       run: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -117,7 +117,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -164,7 +164,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -218,7 +218,7 @@ jobs:
          cd src/Templates/Boilerplate && dotnet build -c Release
          dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
          dotnet new install Bit.Boilerplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -269,7 +269,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -342,7 +342,7 @@ jobs:
          cd src/Templates/Boilerplate && dotnet build -c Release
          dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
          dotnet new install Bit.Boilerplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer  --sample Todo
+         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
      
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
