@@ -6,14 +6,14 @@
 ![Code size](https://img.shields.io/github/languages/code-size/bitfoundation/bitplatform.svg?logo=github)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-3.7M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+[![Nuget downloads](https://img.shields.io/badge/packages_download-3.9M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 
 <br/>
 <hr />
 
 ![image](https://user-images.githubusercontent.com/6169846/271820882-0d816266-ebd1-4c2b-a3b7-296b35248536.png)
 <br/>
-Join us and start contributing to bit platform in [hacktoberfest](https://hacktoberfest.com/). you can find the the `good first issues` [here](https://github.com/bitfoundation/bitplatform/labels/good%20first%20issue).
+Join us and start contributing to the bit platform in [hacktoberfest](https://hacktoberfest.com/). you can find the the `good first issues` [here](https://github.com/bitfoundation/bitplatform/labels/good%20first%20issue).
 
 <hr />
 <br/>
@@ -31,7 +31,7 @@ With these templates, one can easily switch between different modes:
 * **Blazor Hybrid**: provides apps for Android, iOS, macOS, and Windows with full access to the platform's native features.
 * **Blazor Electron**: provides apps for Windows, macOS, and Linux with full access to platform native features.
 
-These templates are powered by [bit BlazorUI](https://components.bitplatform.dev) components, which are super-fast 🌶 and lightweight making them together the best toolbox for developing common apps.
+These templates are powered by [bit BlazorUI](https://components.bitplatform.dev) components, which are super-fast 🌶 and lightweight making them the best toolbox for developing common apps.
 
 <br/>
 
