@@ -36,11 +36,12 @@ public static class MauiProgram
             services.AddBlazorWebViewDeveloperTools();
 #endif
 
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
             services.AddScoped(sp =>
             {
                 HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
                 {
-                    BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                    BaseAddress = apiServerAddress
                 };
 
                 return httpClient;

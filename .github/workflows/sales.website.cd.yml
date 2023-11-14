@@ -33,6 +33,13 @@ jobs:
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
+
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'src/Websites/Sales/src/Bit.Websites.Sales.Web/appsettings.json'
+      env:
+        ApiServerAddress: 'api/'
       
     - name: Generate CSS/JS files
       run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Web/Bit.Websites.Sales.Web.csproj -t:BeforeBuildTasks --no-restore

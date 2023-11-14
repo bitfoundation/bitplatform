@@ -12,10 +12,7 @@ public partial class Program
         var builder = WebAssemblyHostBuilder.CreateDefault();
         builder.Configuration.AddClientConfigurations();
 
-        if (Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress) is false)
-        {
-            throw new InvalidOperationException("Api server address is invalid");
-        }
+        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
         if (apiServerAddress.IsAbsoluteUri is false)
         {
