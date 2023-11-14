@@ -5,7 +5,7 @@ namespace Bit.Websites.Platform.Shared.Exceptions;
 public class TooManyRequestsExceptions : RestException
 {
     public TooManyRequestsExceptions()
-        : base(nameof(AppStrings.TooManyRequestsExceptions))
+        : base(nameof(TooManyRequestsExceptions))
     {
     }
 
@@ -15,16 +15,6 @@ public class TooManyRequestsExceptions : RestException
     }
 
     public TooManyRequestsExceptions(string message, Exception? innerException)
-        : base(message, innerException)
-    {
-    }
-
-    public TooManyRequestsExceptions(LocalizedString message)
-        : base(message)
-    {
-    }
-
-    public TooManyRequestsExceptions(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }
