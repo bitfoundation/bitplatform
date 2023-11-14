@@ -2,6 +2,8 @@
 
 public partial class AppComponentBase : ComponentBase
 {
+    [AutoInject] protected IJSRuntime JSRuntime = default!;
+
     [AutoInject] protected HttpClient HttpClient = default!;
 
     /// <summary>
@@ -16,8 +18,6 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IConfiguration Configuration = default!;
 
-    [AutoInject] protected IJSRuntime JSRuntime { get; set; } = default!;
-
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
     [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
@@ -30,7 +30,7 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
 
-    protected async sealed override Task OnInitializedAsync()
+    protected sealed override async Task OnInitializedAsync()
     {
         try
         {
@@ -43,7 +43,7 @@ public partial class AppComponentBase : ComponentBase
         }
     }
 
-    protected async sealed override Task OnParametersSetAsync()
+    protected sealed override async Task OnParametersSetAsync()
     {
         try
         {
@@ -56,7 +56,15 @@ public partial class AppComponentBase : ComponentBase
         }
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    /// <summary>
+    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
+    protected virtual Task OnInitAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
@@ -73,12 +81,9 @@ public partial class AppComponentBase : ComponentBase
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    /// <summary>
-    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
-    /// </summary>
-    protected virtual Task OnInitAsync()
+    protected sealed override void OnInitialized()
     {
-        return Task.CompletedTask;
+        base.OnInitialized();
     }
 
     /// <summary>

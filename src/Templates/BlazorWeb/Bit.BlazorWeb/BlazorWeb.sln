@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Server", "src\Bla
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Client", "src\BlazorWeb.Client\BlazorWeb.Client.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Iac", "src\BlazorWeb.Infra\BlazorWeb.Iac.csproj", "{F63859EB-108D-48FA-9F3D-5232E2A12184}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,15 +57,22 @@ Global
 		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+#if (pipeline == "Azure")
 		{DE7F66C7-5190-4846-8949-C99444148634} = {07D3DE94-9EB8-41FE-8888-0A483D30EBFD}
+		{5F2028FC-13C5-479D-8665-7346B7C3D990} = {DE7F66C7-5190-4846-8949-C99444148634}
+#elif (pipeline == "GitHub")
 		{CB4F0FA9-2686-497C-A3D1-6E730B818A74} = {07D3DE94-9EB8-41FE-8888-0A483D30EBFD}
 		{F502B327-2CA6-48DC-992F-0B432ABF60B1} = {CB4F0FA9-2686-497C-A3D1-6E730B818A74}
-		{5F2028FC-13C5-479D-8665-7346B7C3D990} = {DE7F66C7-5190-4846-8949-C99444148634}
+#endif
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {62EABCA9-B5C9-489A-B101-38E38ACEDC1E}

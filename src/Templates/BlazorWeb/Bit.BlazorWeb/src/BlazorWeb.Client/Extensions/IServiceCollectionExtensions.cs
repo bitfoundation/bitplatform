@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using BlazorWeb.Web.Services.HttpMessageHandlers;
+using BlazorWeb.Client.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

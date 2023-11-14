@@ -11,13 +11,13 @@
     align-items: center;
     flex-flow: row nowrap;
     min-height: rem2(48px);
-    padding-top: rem2(7px);
     padding-left: rem2(16px);
     padding-right: rem2(16px);
     padding-bottom: rem2(7px);
     justify-content: space-between;
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
+    padding-top: rem2(7px);
 }
 
 .logo-lnk {

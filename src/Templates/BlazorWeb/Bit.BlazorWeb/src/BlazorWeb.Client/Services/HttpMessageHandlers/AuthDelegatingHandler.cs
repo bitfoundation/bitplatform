@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace BlazorWeb.Web.Services.HttpMessageHandlers;
+namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
 public class AuthDelegatingHandler
     : DelegatingHandler

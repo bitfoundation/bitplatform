@@ -16,12 +16,12 @@ public partial class NavMenu : IDisposable
         new BitNavItem { Text = "Run", Url = "/templates/run", AdditionalUrls = new string[] { "/admin-panel/run", "/todo-template/run" } },
         new BitNavItem { Text = "Hosting models", Url = "/templates/hosting-models", AdditionalUrls = new string[] { "/admin-panel/hosting-models", "/todo-template/hosting-models" } },
         new BitNavItem { Text = "Deployment type", Url = "/templates/deployment-type", AdditionalUrls = new string[] { "/admin-panel/deployment-type", "/todo-template/deployment-type" } },
-        new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = new string[] { "/admin-panel/settings", "/todo-template/settings" } },
-        new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = new string[] { "/admin-panel/exception-handling", "/todo-template/exception-handling" } },
         new BitNavItem { Text = "Cache mechanism", Url = "/templates/cache-mechanism", AdditionalUrls = new string[] { "/admin-panel/cache-mechanism", "/todo-template/cache-mechanism" } },
-        new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = new string[] { "/admin-panel/multilingualism", "/todo-template/multilingualism" } },
         new BitNavItem { Text = "DevOps", Url = "/templates/devops", AdditionalUrls = new string[] { "/admin-panel/devops", "/todo-template/devops" } },
         new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration", AdditionalUrls = new string[] { "/admin-panel/platform-integration", "/todo-template/platform-integration" } },
+        new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = new string[] { "/admin-panel/settings", "/todo-template/settings" } },
+        new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = new string[] { "/admin-panel/exception-handling", "/todo-template/exception-handling" } },
+        new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = new string[] { "/admin-panel/multilingualism", "/todo-template/multilingualism" } },
     };
 
 

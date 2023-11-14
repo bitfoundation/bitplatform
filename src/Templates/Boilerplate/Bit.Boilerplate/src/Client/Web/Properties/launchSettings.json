@@ -1,0 +1,19 @@
+{
+    "profiles": {
+        "Boilerplate.Client.Web": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "https://localhost:4031;http://localhost:4030"
+        },
+        "Boilerplate.Client.Web.Electron": {
+            "commandName": "Executable",
+            "executablePath": "dotnet",
+            "commandLineArgs": "electronize start",
+            "workingDirectory": "."
+        }
+    }
+}

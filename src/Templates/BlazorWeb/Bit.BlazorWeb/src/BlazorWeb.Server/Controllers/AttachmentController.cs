@@ -1,6 +1,6 @@
-﻿using ImageMagick;
+﻿using BlazorWeb.Server.Models.Identity;
+using ImageMagick;
 using MimeTypes;
-using BlazorWeb.Server.Models.Identity;
 using SystemFile = System.IO.File;
 
 namespace BlazorWeb.Server.Controllers;
@@ -10,6 +10,7 @@ namespace BlazorWeb.Server.Controllers;
 public partial class AttachmentController : AppControllerBase
 {
     [AutoInject] private UserManager<User> _userManager = default!;
+
     [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
 
     [HttpPost]
