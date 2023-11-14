@@ -85,14 +85,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="7.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="7.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="7.3.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="7.3.0">
+        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="7.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -104,10 +104,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9373" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.0-rc.2.9373" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.2.9373" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.0-rc.2.9373" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.3" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

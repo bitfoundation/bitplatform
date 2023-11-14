@@ -19,24 +19,24 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="7.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="7.3.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="7.3.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="7.3.0" />
+        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.0.1" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="7.3.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="7.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-rc.2.23480.2" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-rc.2.23480.2" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.2.23479.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
+        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -54,7 +54,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.2.9373" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.3" />
         <Using Include="Microsoft.Maui" />
         <Using Include="Microsoft.Maui.Graphics" />
         <Using Include="Microsoft.Maui.Accessibility" />
