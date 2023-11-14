@@ -67,6 +67,7 @@ internal class BitColor
             Convert.ToInt32(Math.Floor(value))
             );
 
+        CalculateHsv();
         CalculateHex();
         CalculateRgbCss();
         CalculateRgbaCss();
@@ -161,11 +162,9 @@ internal class BitColor
         var saturation = (max == 0) ? 0 : 1d - (1d * min / max);
         var value = max / 255d;
 
-        hsv = new(
-            Convert.ToInt32(Math.Floor(hue)),
-            Convert.ToInt32(Math.Floor(saturation * 100)),
-            Convert.ToInt32(Math.Floor(value * 100))
-            );
+        hsv = new(Convert.ToInt32(Math.Floor(hue)),
+                  Convert.ToInt32(Math.Floor(saturation * 100)),
+                  Convert.ToInt32(Math.Floor(value * 100)));
     }
 
     private void CalculateHex()
@@ -188,14 +187,17 @@ internal class BitColor
     {
         return obj is BitColor color && this == color;
     }
+
     public override int GetHashCode()
     {
         return Red.GetHashCode() ^ Green.GetHashCode() ^ Blue.GetHashCode() ^ Alpha.GetHashCode();
     }
+
     public static bool operator ==(BitColor x, BitColor y)
     {
         return x.Red == y.Red && x.Green == y.Green && x.Blue == y.Blue && x.Alpha == y.Alpha;
     }
+
     public static bool operator !=(BitColor x, BitColor y)
     {
         return !(x == y);

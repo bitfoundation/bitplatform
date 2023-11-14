@@ -3,12 +3,13 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="group"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     role="group"
      aria-label="@GetRootElAriaLabel()">
 
-    <div @ref="_saturationPickerRef" @onpointerdown="OnSaturationPickerPointerDown"
+    <div @ref="_saturationPickerRef"
+         @onpointerdown="OnSaturationPickerPointerDown"
          tabindex="0"
          role="slider"
          class="bit-clp-rec"
