@@ -50,8 +50,4 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services\Contracts\" />
-    </ItemGroup>
-
 </Project>
