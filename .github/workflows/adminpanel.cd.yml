@@ -37,6 +37,13 @@ jobs:
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+       
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'AdminPanel/src/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - uses: actions/setup-node@v3
       with:

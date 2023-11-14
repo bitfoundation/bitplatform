@@ -2,13 +2,15 @@
 
 .bit-tgb {
     cursor: pointer;
-    text-align: center;
     position: relative;
-    display: inline-block;
+    text-align: center;
+    align-items: center;
+    display: inline-flex;
     text-decoration: none;
     min-width: spacing(10);
     min-height: spacing(4);
     box-sizing: border-box;
+    justify-content: center;
     font-size: spacing(1.75);
     padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
@@ -21,73 +23,100 @@
         cursor: default;
         pointer-events: none;
         color: $color-foreground-disabled;
+    }
+}
+
+.bit-tgb-pri {
+    color: var(--bit-tgb-pri-clr);
+    background-color: var(--bit-tgb-bg-clr);
+    border-color: var(--bit-tgb-pri-brd-clr);
+    --bit-tgb-bg-clr: #{$color-primary-main};
+    --bit-tgb-pri-clr: #{$color-primary-text};
+    --bit-tgb-pri-brd-clr: #{$color-primary-main};
+    --bit-tgb-pri-hover-bg-clr: #{$color-action-hover-primary};
+    --bit-tgb-pri-active-bg-clr: #{$color-action-active-primary};
+    --bit-tgb-chk-bg-clr: #{$color-primary-dark};
+    --bit-tgb-chk-brd-clr: #{$color-primary-dark};
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-pri-hover-bg-clr);
+            background-color: var(--bit-tgb-pri-hover-bg-clr);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-tgb-pri-active-bg-clr);
+        background-color: var(--bit-tgb-pri-active-bg-clr);
+    }
+
+    &.bit-dis {
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
 }
 
-.bit-tgb-pri {
-    color: $color-primary-text;
-    border-color: $color-primary-main;
-    background-color: $color-primary-main;
+.bit-tgb-std {
+    color: var(--bit-tgb-sec-clr);
+    background-color: $color-secondary-main;
+    border-color: var(--bit-tgb-sec-brd-clr);
+    --bit-tgb-sec-clr: #{$color-secondary-text};
+    --bit-tgb-sec-brd-clr: #{$color-secondary-text};
+    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
+    --bit-tgb-chk-brd-clr: #{$color-secondary-text};
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
+            background-color: var(--bit-tgb-sec-hover-bg-clr);
         }
     }
 
     &:active {
-        border-color: $color-action-active-primary;
-        background-color: $color-action-active-primary;
+        background-color: var(--bit-tgb-sec-active-bg-clr);
     }
 
-    &.bit-tgb-chk {
-        border-color: $color-primary-dark;
-        background-color: $color-primary-dark;
-
-        @media (hover: hover) {
-            &:hover {
-                border-color: $color-primary-dark;
-                background-color: $color-primary-dark;
-            }
-        }
-
-        &:active {
-            border-color: $color-primary-dark;
-            background-color: $color-primary-dark;
-        }
+    &.bit-dis {
+        border-color: $color-border-disabled;
     }
 }
 
-.bit-tgb-std {
-    color: $color-secondary-text;
-    border-color: $color-border-primary;
-    background-color: $color-secondary-main;
+.bit-tgb-txt {
+    border-color: transparent;
+    color: var(--bit-tgb-sec-clr);
+    background-color: transparent;
+    --bit-tgb-sec-clr: #{$color-secondary-text};
+    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
+    --bit-tgb-chk-brd-clr: transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
+            background-color: var(--bit-tgb-sec-hover-bg-clr);
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
+        background-color: var(--bit-tgb-sec-active-bg-clr);
+    }
+}
+
+.bit-tgb-chk {
+    border-color: var(--bit-tgb-chk-brd-clr);
+    background-color: var(--bit-tgb-chk-bg-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-chk-brd-clr);
+            background-color: var(--bit-tgb-chk-bg-clr);
+        }
     }
 
-    &.bit-tgb-chk {
-        background-color: $color-secondary-dark;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $color-secondary-dark;
-            }
-        }
-
-        &:active {
-            background-color: $color-secondary-dark;
-        }
+    &:active {
+        border-color: var(--bit-tgb-chk-brd-clr);
+        background-color: var(--bit-tgb-chk-bg-clr);
     }
 }
 
@@ -104,6 +133,20 @@
     }
 }
 
-.bit-tgb-txt {
+.bit-tgb-btx {
     display: block;
+}
+
+.bit-tgb-sm {
+    min-width: spacing(6);
+    min-height: spacing(3);
+    font-size: spacing(1.5);
+    padding: spacing(0.3) spacing(1.5);
+}
+
+.bit-tgb-lg {
+    min-width: spacing(10);
+    min-height: spacing(5);
+    font-size: spacing(2);
+    padding: spacing(0.7) spacing(2.5);
 }

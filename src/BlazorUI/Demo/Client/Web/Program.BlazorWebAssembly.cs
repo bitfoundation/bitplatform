@@ -10,11 +10,16 @@ public partial class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddJsonStream(typeof(Core.Shared.MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
         var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
 
-        var apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddressConfig}");
+        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+        if (apiServerAddress.IsAbsoluteUri is false)
+        {
+            apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
+        }
 
         builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<AppHttpClientHandler>()) { BaseAddress = apiServerAddress });
         builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
