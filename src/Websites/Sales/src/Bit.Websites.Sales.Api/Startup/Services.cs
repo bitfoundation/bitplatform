@@ -28,8 +28,12 @@ public static class Services
             .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
             .ConfigureHttpClient((sp, httpClient) =>
             {
-                NavigationManager navManager = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.RequestServices.GetRequiredService<NavigationManager>();
-                httpClient.BaseAddress = new Uri($"{navManager.BaseUri}api/");
+                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+                if (apiServerAddress!.IsAbsoluteUri is false)
+                {
+                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+                }
+                httpClient.BaseAddress = apiServerAddress;
             });
         services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
 
@@ -41,7 +45,6 @@ public static class Services
             // for other usages of httpclient, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
         });
         services.AddRazorPages();
-        services.AddMvcCore();
 #endif
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();

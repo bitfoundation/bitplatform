@@ -24,11 +24,10 @@ public static class MauiProgram
 #endif
 
             var builder = MauiApp.CreateBuilder();
-            var assembly = typeof(MainLayout).GetTypeInfo().Assembly;
 
             builder
                 .UseMauiApp<App>()
-                .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
+                .Configuration.AddClientConfigurations();
 
             var services = builder.Services;
 

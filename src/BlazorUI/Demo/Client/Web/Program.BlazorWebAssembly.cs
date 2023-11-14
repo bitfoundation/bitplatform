@@ -10,7 +10,7 @@ public partial class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddJsonStream(typeof(Core.Shared.MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
         var apiServerAddressConfig = builder.Configuration.GetApiServerAddress();
 
