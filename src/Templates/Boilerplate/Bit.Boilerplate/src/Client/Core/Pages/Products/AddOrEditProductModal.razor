@@ -53,9 +53,9 @@
                 <ValidationMessage For="() => _product.Description" />
             </div>
 
-            <BitLoadingButton IsLoading="_isSaving" ButtonType="BitButtonType.Submit">
+            <BitButton IsLoading="_isSaving" ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.Save)]
-            </BitLoadingButton>
+            </BitButton>
         </EditForm>
     </div>
 </BitModal>

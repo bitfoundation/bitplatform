@@ -35,14 +35,14 @@
                 <br />
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
-            <BitLoadingButton IsLoading="_isLoading"
-                              Class="form-submit-button"
-                              ButtonStyle="BitButtonStyle.Primary"
-                              Title="@Localizer[nameof(AppStrings.ResendEmail)]"
-                              AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
-                              OnClick="WrapHandled(DoResendLink)">
+            <BitButton IsLoading="_isLoading"
+                       Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="@Localizer[nameof(AppStrings.ResendEmail)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.ResendEmail)]"
+                       OnClick="WrapHandled(DoResendLink)">
                 @Localizer[nameof(AppStrings.ResendEmail)]
-            </BitLoadingButton>
+            </BitButton>
             <br />
             <div>
                 <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
@@ -81,14 +81,14 @@
                     <ValidationMessage For="@(() => _signUpModel.TermsAccepted)" />
                 </div>
 
-            <BitLoadingButton IsLoading="_isLoading"
-                              Class="form-submit-button"
-                              ButtonStyle="BitButtonStyle.Primary"
-                              Title="@Localizer[nameof(AppStrings.SignUp)]"
-                              AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
-                              ButtonType="BitButtonType.Submit">
+            <BitButton IsLoading="_isLoading"
+                       Class="form-submit-button"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="@Localizer[nameof(AppStrings.SignUp)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
+                       ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.SignUp)]
-            </BitLoadingButton>
+            </BitButton>
 
             <div>
                 @Localizer[nameof(AppStrings.AlreadyHaveAccountMessage)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
