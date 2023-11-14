@@ -22,7 +22,7 @@ building each one of them requires some specific steps that are explained below.
 
 Building each of the bit platform projects needs the following basic requirements other than the specific requirements that are explained later:
 
-- [.NET 8 RC1 SDK (8.0.100-rc.2.23502.2)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [.NET 8 RC1 SDK (8.0.100)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [Node.js](https://nodejs.org)
 
 <br/>
