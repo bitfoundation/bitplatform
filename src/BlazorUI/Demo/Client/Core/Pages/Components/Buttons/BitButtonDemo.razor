@@ -139,27 +139,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
-            <ExamplePreview>
-                <div>
-                    Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
-                </div>
-                <br />
-                <div class="buttons-container">
-                    <BitButton Style="color:darkblue; font-weight:bold">
-                        Styled Button
-                    </BitButton>
-                    <BitButton Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
-                        Classed Button
-                    </BitButton>
-                    <BitButton Class="custom-class" Style="color:green;" ButtonStyle="BitButtonStyle.Text">
-                        Styled Classed Button
-                    </BitButton>
-                </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
-
-        <ComponentExampleBox Title="Custom content" RazorCode="@example9RazorCode" Id="example9">
+        <ComponentExampleBox Title="Custom content" RazorCode="@example8RazorCode" Id="example8">
             <ExamplePreview>
                 <div>
                     Here are some examples of customizing the button content.
@@ -187,7 +167,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <ExamplePreview>
                 <div>
                     BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
@@ -222,7 +202,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Loading button" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="Loading button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div>
                 Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.
@@ -253,7 +233,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LoadingLabel position" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="LoadingLabel position" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <div>
                 Explore different loading label positions for buttons, including right, left, bottom, and top. Customize the loading labels and positions to enhance the user experience.
@@ -262,12 +242,14 @@
             <div class="buttons-container">
                 <BitButton IsLoading="true"
                            LoadingLabel="Right..."
+                           Style="min-width: 6.5rem;"
                            ButtonStyle="BitButtonStyle.Standard"
                            LoadingLabelPosition="BitLabelPosition.Right">
                     Right
                 </BitButton>
                 <BitButton IsLoading="true"
                            LoadingLabel="Left..."
+                           Style="min-width: 6.5rem;"
                            LoadingLabelPosition="BitLabelPosition.Left"
                            ButtonStyle="BitButtonStyle.Standard">
                     Left
@@ -278,6 +260,7 @@
 
                 <BitButton IsLoading="true"
                            LoadingLabel="Bottom..."
+                           Style="min-width: 6.5rem;"
                            ButtonStyle="BitButtonStyle.Standard"
                            LoadingLabelPosition="BitLabelPosition.Bottom">
                     Bottom
@@ -285,6 +268,7 @@
 
                 <BitButton IsLoading="true"
                            LoadingLabel="Top..."
+                           Style="min-width: 6.5rem;"
                            ButtonStyle="BitButtonStyle.Standard"
                            LoadingLabelPosition="BitLabelPosition.Top">
                     Top
@@ -293,13 +277,13 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LoadingTemplate" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="LoadingTemplate" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>
                 Utilize the "LoadingTemplate" feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.
             </div>
             <br />
-            <div class="example-box">
+            <div class="buttons-container">
                 <BitButton IsLoading="true"
                            Size="BitButtonSize.Large"
                            Title="Ellipsis loading...">
@@ -321,7 +305,7 @@
                     <LoadingTemplate>
                         <div class="custom-loading">
                             <BitRollerLoading Size="20" Color="royalblue" />
-                            <span>Reconnecting...</span>
+                            <span>Connecting...</span>
                         </div>
                     </LoadingTemplate>
                     <ChildContent>
@@ -332,18 +316,31 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ClassStyles" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
             </div>
+            <br />
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="buttons-container">
+                <BitButton Style="color:darkblue; font-weight:bold">
+                    Styled Button
+                </BitButton>
+                <BitButton Class="custom-class" ButtonStyle="BitButtonStyle.Standard">
+                    Classed Button
+                </BitButton>
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="buttons-container">
                 <BitButton IsLoading="stylesIsLoading"
                            LoadingLabel="Wait..."
                            OnClick="LoadingStylesClick"
                            Styles="@(new() { Root = "border-radius: 1rem; min-width: 6rem;",
-                                             LoadingLabel = "color: darkmagenta;",
+                                             LoadingLabel = "color: tomato;",
                                              Spinner = "border-color: goldenrod; border-top-color: tomato;" })">
                     Primary
                 </BitButton>
@@ -362,7 +359,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example15RazorCode" Id="example15">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <div>
                 You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
