@@ -109,44 +109,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bup.Demo.Client", "Bup\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bup.Demo.Server", "Bup\FullDemo\Server\Bit.Bup.Demo.Server.csproj", "{FEB36A70-3C51-4C7F-949C-B8B938839740}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorDual", "BlazorDual", "{C6624DE1-7886-444E-BB96-380B807593BD}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorDual\Bit.BlazorDual\.gitignore = Templates\BlazorDual\Bit.BlazorDual\.gitignore
-		Templates\BlazorDual\Bit.BlazorDual\Clean.bat = Templates\BlazorDual\Bit.BlazorDual\Clean.bat
-		Templates\BlazorDual\Bit.BlazorDual\src\Directory.Build.props = Templates\BlazorDual\Bit.BlazorDual\src\Directory.Build.props
-		Templates\BlazorDual\Bit.BlazorDual\global.json = Templates\BlazorDual\Bit.BlazorDual\global.json
-		Templates\BlazorDual\Readme.md = Templates\BlazorDual\Readme.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{54611242-B9F6-44F9-A541-B48600CAD28A}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorDual\Bit.BlazorDual\.template.config\template.json = Templates\BlazorDual\Bit.BlazorDual\.template.config\template.json
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorDual.ProjectTemplate", "Templates\BlazorDual\Bit.BlazorDual.ProjectTemplate.csproj", "{89FD519C-8C08-41FB-979E-EDF6EB43F97F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Api", "Templates\BlazorDual\Bit.BlazorDual\src\BlazorDual.Api\BlazorDual.Api.csproj", "{FCD49D2B-5A28-4919-A334-A3F9E46B7495}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Shared", "Templates\BlazorDual\Bit.BlazorDual\src\BlazorDual.Shared\BlazorDual.Shared.csproj", "{51F3127E-6848-468F-A133-F4C67BEC0E24}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorDual.Web", "Templates\BlazorDual\Bit.BlazorDual\src\BlazorDual.Web\BlazorDual.Web.csproj", "{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{51FC3C7A-E553-4C98-B8EF-CD8DBEF08154}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{20C9DA20-C7DA-4842-9D90-085B57DEA880}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{677B433E-6E3F-4CEF-9EA3-2190D1EAD69C}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorDual\Bit.BlazorDual\.github\workflows\cd.yml = Templates\BlazorDual\Bit.BlazorDual\.github\workflows\cd.yml
-		Templates\BlazorDual\Bit.BlazorDual\.github\workflows\ci.yml = Templates\BlazorDual\Bit.BlazorDual\.github\workflows\ci.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{B1EECB57-EEA6-4316-BC13-E6D9D6B297BE}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\cd.yml = Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\cd.yml
-		Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\ci.yml = Templates\BlazorDual\Bit.BlazorDual\.azure-devops\workflows\ci.yml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{110E0546-A108-4AA2-9293-F18AFD55EBDE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{458E8540-9946-4751-B3E2-CEE7F836F05A}"
@@ -590,86 +552,6 @@ Global
 		{FEB36A70-3C51-4C7F-949C-B8B938839740}.Release|x64.Build.0 = Release|Any CPU
 		{FEB36A70-3C51-4C7F-949C-B8B938839740}.Release|x86.ActiveCfg = Release|Any CPU
 		{FEB36A70-3C51-4C7F-949C-B8B938839740}.Release|x86.Build.0 = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|x64.Build.0 = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Debug|x86.Build.0 = Debug|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|iPhone.Build.0 = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|x64.ActiveCfg = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|x64.Build.0 = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|x86.ActiveCfg = Release|Any CPU
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F}.Release|x86.Build.0 = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|x64.Build.0 = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Debug|x86.Build.0 = Debug|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|iPhone.Build.0 = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|x64.ActiveCfg = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|x64.Build.0 = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|x86.ActiveCfg = Release|Any CPU
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495}.Release|x86.Build.0 = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|x64.Build.0 = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Debug|x86.Build.0 = Debug|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|iPhone.Build.0 = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|x64.ActiveCfg = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|x64.Build.0 = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|x86.ActiveCfg = Release|Any CPU
-		{51F3127E-6848-468F-A133-F4C67BEC0E24}.Release|x86.Build.0 = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|x64.Build.0 = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Debug|x86.Build.0 = Debug|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|iPhone.Build.0 = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|x64.ActiveCfg = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|x64.Build.0 = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|x86.ActiveCfg = Release|Any CPU
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53}.Release|x86.Build.0 = Release|Any CPU
 		{0E3D64E7-5650-4A17-8803-3106F1BD30F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E3D64E7-5650-4A17-8803-3106F1BD30F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E3D64E7-5650-4A17-8803-3106F1BD30F0}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -1255,16 +1137,6 @@ Global
 		{E3BD128F-554E-4875-85B8-9AC489AE49A6} = {96D8F7DE-8998-4196-AD73-B49DED4C8A38}
 		{F0C6EF30-3D4F-4407-A605-974E5B42246E} = {E3BD128F-554E-4875-85B8-9AC489AE49A6}
 		{FEB36A70-3C51-4C7F-949C-B8B938839740} = {E3BD128F-554E-4875-85B8-9AC489AE49A6}
-		{C6624DE1-7886-444E-BB96-380B807593BD} = {62A4748E-3F6F-4F20-9FBC-9261F40C4BF1}
-		{54611242-B9F6-44F9-A541-B48600CAD28A} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{89FD519C-8C08-41FB-979E-EDF6EB43F97F} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{FCD49D2B-5A28-4919-A334-A3F9E46B7495} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{51F3127E-6848-468F-A133-F4C67BEC0E24} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{A9A5D4CF-F2A5-4088-93D2-7E5A28580B53} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{51FC3C7A-E553-4C98-B8EF-CD8DBEF08154} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{20C9DA20-C7DA-4842-9D90-085B57DEA880} = {C6624DE1-7886-444E-BB96-380B807593BD}
-		{677B433E-6E3F-4CEF-9EA3-2190D1EAD69C} = {20C9DA20-C7DA-4842-9D90-085B57DEA880}
-		{B1EECB57-EEA6-4316-BC13-E6D9D6B297BE} = {51FC3C7A-E553-4C98-B8EF-CD8DBEF08154}
 		{110E0546-A108-4AA2-9293-F18AFD55EBDE} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{458E8540-9946-4751-B3E2-CEE7F836F05A} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{06BAF737-6421-4321-9C1B-B4CEC712798E} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
