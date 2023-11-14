@@ -13,6 +13,9 @@ public static class Services
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
+        services.AddHttpClient<TelegramBotApiClient>();
+        services.AddScoped<TelegramBotService>();
+
         services.AddClientSharedServices();
 
         services.AddExceptionHandler<ApiExceptionHandler>();
