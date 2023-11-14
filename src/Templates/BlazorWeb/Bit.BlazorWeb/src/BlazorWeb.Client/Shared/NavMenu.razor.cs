@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Shared;
@@ -29,12 +29,36 @@ public partial class NavMenu : IDisposable
                 IconName = BitIconName.Home,
                 Url = "/",
             },
+            //#if (sample == "AdminPanel")
+            new BitNavItem
+            {
+                Text = Localizer[nameof(AppStrings.ProductCategory)],
+                IconName = BitIconName.Product,
+                IsExpanded = true,
+                ChildItems =
+                [
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Dashboard)],
+                        Url = "/dashboard",
+                    },
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Products)],
+                        Url = "/products",
+                    },
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Categories)],
+                        Url = "/categories",
+                    },
+                ]
+            },
+            //#elif (sample == "Todo")
             new BitNavItem
             {
                 Text = Localizer[nameof(AppStrings.TodoTitle)],
                 IconName = BitIconName.ToDoLogoOutline,
                 Url = "/todo",
             },
+            //#endif
             new BitNavItem
             {
                 Text = Localizer[nameof(AppStrings.EditProfileTitle)],
@@ -43,9 +67,9 @@ public partial class NavMenu : IDisposable
             },
             new BitNavItem
             {
-                Text = Localizer[nameof(AppStrings.PrivacyPolicyTitle)],
+                Text = Localizer[nameof(AppStrings.TermsTitle)],
                 IconName = BitIconName.EntityExtraction,
-                Url = "/privacy",
+                Url = "/terms",
             }
         ];
 

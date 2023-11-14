@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.JSInterop;
 
-public static class JsRuntimeExtension
+public static class JSRuntimeExtension
 {
     /// <summary>
     /// To disable the scrollbar of the body when showing the modal, so the modal can be always shown in the viewport without being scrolled out.
@@ -13,5 +13,10 @@ public static class JsRuntimeExtension
     public static async Task GoBack(this IJSRuntime jsRuntime)
     {
         await jsRuntime.InvokeVoidAsync("App.goBack");
+    }
+
+    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
+    {
+        await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
     }
 }

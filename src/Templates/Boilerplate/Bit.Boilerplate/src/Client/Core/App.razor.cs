@@ -108,7 +108,7 @@ public partial class App
 #endif
 
 #if BlazorWebAssembly && !BlazorHybrid
-        if ((args.Path is "/dashboard") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
+        if ((args.Path is "dashboard") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
             var isAuthenticated = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User?.Identity?.IsAuthenticated is true;
             if (isAuthenticated)

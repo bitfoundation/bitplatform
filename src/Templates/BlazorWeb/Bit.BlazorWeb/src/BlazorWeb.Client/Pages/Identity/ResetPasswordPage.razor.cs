@@ -17,15 +17,15 @@ public partial class ResetPasswordPage
     [SupplyParameterFromQuery]
     public string? Token { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         _resetPasswordModel.Email = Email;
         _resetPasswordModel.Token = Token;
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
-    protected async override Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 

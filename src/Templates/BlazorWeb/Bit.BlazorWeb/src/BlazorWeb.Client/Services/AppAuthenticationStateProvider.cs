@@ -16,10 +16,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
     {
         var access_token = await _tokenProvider.GetAccessTokenAsync();
 
-        if (string.IsNullOrWhiteSpace(access_token))
-        {
-            return NotSignedIn();
-        }
+        if (string.IsNullOrWhiteSpace(access_token)) return NotSignedIn();
 
         var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
 
@@ -31,7 +28,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
         return (await GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true;
     }
 
-    AuthenticationState NotSignedIn()
+    private static AuthenticationState NotSignedIn()
     {
         return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
     }

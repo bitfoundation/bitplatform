@@ -22,6 +22,59 @@ namespace BlazorWeb.Server.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("BlazorWeb.Server.Models.Categories.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Color = "#FFCD56",
+                            Name = "Ford"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Color = "#FF6384",
+                            Name = "Nissan"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Color = "#4BC0C0",
+                            Name = "Benz"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Color = "#FF9124",
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Color = "#2B88D8",
+                            Name = "Tesla"
+                        });
+                });
+
             modelBuilder.Entity("BlazorWeb.Server.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -143,7 +196,7 @@ namespace BlazorWeb.Server.Data.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "eddf1e50-721d-4b3d-a524-28b3971ad2ac",
+                            ConcurrencyStamp = "a93803e4-4826-4f8f-a3c0-9b3915222944",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "BlazorWeb test account",
@@ -151,11 +204,253 @@ namespace BlazorWeb.Server.Data.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAECi6UtMFDXHjTXFj5QC8gCP0M7nMq5Nx2QZ4SNp1sD4Oc3/1Po8Lu4Es5fhfxfJhDg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHkXKL/4p8zGmGPVrQLM4FFbgg0ZDGlCtICfXdEArQg/Ih7Kkn9LfNCZME2+wd0APw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ca9bb53f-235e-4bd7-8798-953330a8abe9",
+                            SecurityStamp = "e8fe621c-97fd-41ec-9d33-29c931496432",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
+                        });
+                });
+
+            modelBuilder.Entity("BlazorWeb.Server.Models.Products.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("money");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "The Ford Mustang is ranked #1 in Sports Cars",
+                            Name = "Mustang",
+                            Price = 27155m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
+                            Name = "GT",
+                            Price = 500000m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 1,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
+                            Name = "Ranger",
+                            Price = 25000m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 1,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
+                            Name = "Raptor",
+                            Price = 53205m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 1,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
+                            Name = "Maverick",
+                            Price = 22470m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CategoryId = 2,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "A powerful convertible sports car",
+                            Name = "Roadster",
+                            Price = 42800m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CategoryId = 2,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "A perfectly adequate family sedan with sharp looks",
+                            Name = "Altima",
+                            Price = 24550m
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryId = 2,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
+                            Name = "GT-R",
+                            Price = 113540m
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryId = 2,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "A new smart SUV",
+                            Name = "Juke",
+                            Price = 28100m
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryId = 3,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "H247",
+                            Price = 54950m
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryId = 3,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "V297",
+                            Price = 103360m
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CategoryId = 3,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "R50",
+                            Price = 2000000m
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "M550i",
+                            Price = 77790m
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "540i",
+                            Price = 60945m
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "530e",
+                            Price = 56545m
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "530i",
+                            Price = 55195m
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "M850i",
+                            Price = 100045m
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "X7",
+                            Price = 77980m
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CategoryId = 4,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "",
+                            Name = "IX",
+                            Price = 87000m
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CategoryId = 5,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "rapid acceleration and dynamic handling",
+                            Name = "Model 3",
+                            Price = 61990m
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CategoryId = 5,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "finishes near the top of our luxury electric car rankings.",
+                            Name = "Model S",
+                            Price = 135000m
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CategoryId = 5,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Heart-pumping acceleration, long drive range",
+                            Name = "Model X",
+                            Price = 138890m
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CategoryId = 5,
+                            CreatedOn = new DateTimeOffset(new DateTime(2022, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "extensive driving range, lots of standard safety features",
+                            Name = "Model Y",
+                            Price = 67790m
                         });
                 });
 
@@ -289,6 +584,17 @@ namespace BlazorWeb.Server.Data.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BlazorWeb.Server.Models.Products.Product", b =>
+                {
+                    b.HasOne("BlazorWeb.Server.Models.Categories.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("BlazorWeb.Server.Models.Todo.TodoItem", b =>
                 {
                     b.HasOne("BlazorWeb.Server.Models.Identity.User", "User")
@@ -349,6 +655,11 @@ namespace BlazorWeb.Server.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BlazorWeb.Server.Models.Categories.Category", b =>
+                {
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

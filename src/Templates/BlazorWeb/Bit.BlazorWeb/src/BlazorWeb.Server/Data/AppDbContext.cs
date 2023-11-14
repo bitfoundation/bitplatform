@@ -1,18 +1,25 @@
 ﻿//+:cnd:noEmit
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BlazorWeb.Server.Models.Identity;
+//#if (sample == "Todo")
 using BlazorWeb.Server.Models.Todo;
+//#elif (sample == "AdminPanel")
+using BlazorWeb.Server.Models.Categories;
+using BlazorWeb.Server.Models.Products;
+//#endif
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BlazorWeb.Server.Data;
 
-public class AppDbContext : IdentityDbContext<User, Role, int>
+public class AppDbContext(DbContextOptions<AppDbContext> options) 
+    : IdentityDbContext<User, Role, int>(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
 
+    //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; }
+    //#elif (sample == "AdminPanel")
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; set; }
+    //#endif
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

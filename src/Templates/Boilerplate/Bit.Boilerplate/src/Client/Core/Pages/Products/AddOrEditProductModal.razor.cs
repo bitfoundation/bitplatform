@@ -23,7 +23,7 @@ public partial class AddOrEditProductModal
     {
         await InvokeAsync(() =>
         {
-            _ = JsRuntime.SetBodyOverflow(true);
+            _ = JSRuntime.SetBodyOverflow(true);
 
             _isOpen = true;
             _product = product;
@@ -75,7 +75,7 @@ public partial class AddOrEditProductModal
 
             _isOpen = false;
 
-            await JsRuntime.SetBodyOverflow(false);
+            await JSRuntime.SetBodyOverflow(false);
         }
         finally
         {
@@ -89,6 +89,6 @@ public partial class AddOrEditProductModal
     {
         _isOpen = false;
 
-        await JsRuntime.SetBodyOverflow(false);
+        await JSRuntime.SetBodyOverflow(false);
     }
 }

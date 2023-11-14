@@ -28,6 +28,22 @@ public partial class TodoItemController : AppControllerBase
         return todoItem;
     }
 
+    [HttpGet]
+    public async Task<PagedResult<TodoItemDto>> GetTodoItems(ODataQueryOptions<TodoItemDto> odataQuery, CancellationToken cancellationToken)
+    {
+        var query = (IQueryable<TodoItemDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        if (odataQuery.Skip is not null)
+            query = query.Skip(odataQuery.Skip.Value);
+
+        if (odataQuery.Top is not null)
+            query = query.Take(odataQuery.Top.Value);
+
+        return new PagedResult<TodoItemDto>(await query.ToListAsync(cancellationToken), totalCount);
+    }
+
     [HttpPost]
     public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken)
     {

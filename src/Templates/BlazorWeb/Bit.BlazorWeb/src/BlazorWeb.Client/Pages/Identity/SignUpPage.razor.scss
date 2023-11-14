@@ -31,6 +31,11 @@
         width: 100%;
         max-width: rem2(340px);
 
+        .label {
+            text-align: start;
+            align-items: start;
+        }
+
         @include lt-xl {
             max-width: rem2(300px);
         }

@@ -3,11 +3,11 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
 
-<div class="page-container">
-    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
-        <AppDataAnnotationsValidator />
+    <div class="page-container">
+        <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
+            <AppDataAnnotationsValidator />
 
-        @if (string.IsNullOrEmpty(_signUpMessage) is false)
+            @if (string.IsNullOrEmpty(_signUpMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
                            MessageBarType="@_signUpMessageType"
@@ -46,7 +46,7 @@
             <br />
             <div>
                 <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-            </div>
+                </div>
         }
         else
         {
@@ -73,13 +73,13 @@
             </div>
 
             <div class="form-input-container form-input-container--no-margin">
-                <BitCheckbox Class="form-checkbox" @bind-Value="_signUpModel.IsAcceptPrivacy">
+                <BitCheckbox Class="form-checkbox" @bind-Value="_signUpModel.TermsAccepted">
                     <LabelTemplate>
-                        @Localizer[nameof(AppStrings.PrivacyPolicyAgreementMessage)] &nbsp; <BitLink Href="/privacy" Target="_blank">@Localizer[nameof(AppStrings.PrivacyPolicyTitle)]</BitLink>
-                    </LabelTemplate>
-                </BitCheckbox>
-                <ValidationMessage For="@(() => _signUpModel.IsAcceptPrivacy)" />
-            </div>
+                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="/terms">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
+                        </LabelTemplate>
+                    </BitCheckbox>
+                    <ValidationMessage For="@(() => _signUpModel.TermsAccepted)" />
+                </div>
 
             <BitLoadingButton IsLoading="_isLoading"
                               Class="form-submit-button"
@@ -89,10 +89,10 @@
                               ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitLoadingButton>
-            <br />
+
             <div>
                 @Localizer[nameof(AppStrings.AlreadyHaveAccountMessage)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-            </div>
+                </div>
         }
 
     </EditForm>

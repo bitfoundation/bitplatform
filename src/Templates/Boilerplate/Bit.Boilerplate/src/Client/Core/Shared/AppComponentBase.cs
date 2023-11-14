@@ -2,7 +2,7 @@
 
 public partial class AppComponentBase : ComponentBase
 {
-    [AutoInject] protected IJSRuntime JsRuntime = default!;
+    [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
 

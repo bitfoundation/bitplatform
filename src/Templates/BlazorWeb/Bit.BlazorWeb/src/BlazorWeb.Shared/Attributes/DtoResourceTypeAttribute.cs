@@ -4,12 +4,7 @@
 /// Gets or sets the resource type to use for error message and localizations lookups.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public class DtoResourceTypeAttribute : Attribute
+public class DtoResourceTypeAttribute(Type resourceType) : Attribute
 {
-    public Type ResourceType { get; }
-
-    public DtoResourceTypeAttribute(Type resourceType)
-    {
-        ResourceType = resourceType ?? throw new ArgumentNullException(nameof(resourceType));
-    }
+    public Type ResourceType { get; } = resourceType ?? throw new ArgumentNullException(nameof(resourceType));
 }

@@ -9,11 +9,11 @@
     display: flex;
     position: fixed;
     min-height: 100%;
-    padding-top: rem2(48px);
     flex-flow: column nowrap;
     width: rem2($navMenuWidth);
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
+    padding-top: rem2(48px);
 }
 
 .main-container--closed {

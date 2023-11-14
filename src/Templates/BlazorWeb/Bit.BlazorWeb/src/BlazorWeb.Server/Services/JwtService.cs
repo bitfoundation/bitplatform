@@ -1,17 +1,17 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
 using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Shared.Dtos.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BlazorWeb.Server.Services;
 
 public partial class JwtService : IJwtService
 {
-    [AutoInject] private SignInManager<User> _signInManager = default!;
+    [AutoInject] private readonly SignInManager<User> _signInManager = default!;
 
-    [AutoInject] private AppSettings _appSettings = default!;
+    [AutoInject] private readonly AppSettings _appSettings = default!;
 
     public async Task<SignInResponseDto> GenerateToken(User user)
     {

@@ -1,4 +1,5 @@
-﻿namespace BlazorWeb.Shared.Dtos.Identity;
+﻿
+namespace BlazorWeb.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class UserDto
@@ -6,8 +7,8 @@ public class UserDto
     public int Id { get; set; }
 
     // By default, username gets filled from email during signup in Api/Models/Mapper.cs class.
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError)),
-        EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
+    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
+    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? UserName { get; set; }
 

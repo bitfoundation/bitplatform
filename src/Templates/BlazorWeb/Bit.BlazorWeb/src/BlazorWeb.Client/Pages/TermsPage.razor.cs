@@ -1,5 +1,5 @@
 ﻿namespace BlazorWeb.Client.Pages;
 
-public partial class PrivacyPage
+public partial class TermsPage
 {
 }

@@ -23,7 +23,7 @@ public partial class Footer
 #if BlazorHybrid
         var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
 #else
-        var preferredCultureCookie = await JsRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+        var preferredCultureCookie = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
 #endif
         SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
 
@@ -42,7 +42,7 @@ public partial class Footer
 #if BlazorHybrid
         Preferences.Set(".AspNetCore.Culture", cultureCookie);
 #else
-        await JsRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
+        await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
 #endif
 
         NavigationManager.Refresh(forceReload: true);
