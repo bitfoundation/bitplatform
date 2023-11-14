@@ -24,11 +24,10 @@ public static class MauiProgram
 #endif
 
             var builder = MauiApp.CreateBuilder();
-            var assembly = typeof(MainLayout).GetTypeInfo().Assembly;
 
             builder
                 .UseMauiApp<App>()
-                .Configuration.AddJsonFile(new EmbeddedFileProvider(assembly), "appsettings.json", optional: false, false);
+                .Configuration.AddClientConfigurations();
 
             var services = builder.Services;
 
@@ -37,11 +36,12 @@ public static class MauiProgram
             services.AddBlazorWebViewDeveloperTools();
 #endif
 
+            Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
             services.AddScoped(sp =>
             {
                 HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
                 {
-                    BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                    BaseAddress = apiServerAddress
                 };
 
                 return httpClient;

@@ -41,6 +41,13 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
 
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
     - name: Switch to blazor web assembly
       run: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 

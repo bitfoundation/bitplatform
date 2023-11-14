@@ -8,11 +8,12 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
+        Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
         services.AddScoped(sp =>
         {
             HttpClient httpClient = new(sp.GetRequiredService<AppHttpClientHandler>())
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetApiServerAddress())
+                BaseAddress = apiServerAddress
             };
 
             return httpClient;
