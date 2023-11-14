@@ -14,7 +14,7 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        @ChildContent
+        @(Content ?? ChildContent)
     </a>
 }
 else
@@ -29,6 +29,28 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        @ChildContent
+        @if (IsLoading)
+        {
+            if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer">
+                    <div style="@Styles?.Spinner" class="bit-btn-spn @Classes?.Spinner"></div>
+                    @if (LoadingLabel.HasValue())
+                    {
+                        <div style="@Styles?.LoadingLabel" class="bit-btn-lbl @Classes?.LoadingLabel">
+                            @LoadingLabel
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            @(Content ?? ChildContent)
+        }
     </button>
 }
