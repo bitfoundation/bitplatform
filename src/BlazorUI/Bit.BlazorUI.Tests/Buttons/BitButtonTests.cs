@@ -282,4 +282,86 @@ public class BitButtonTests : BunitTestContext
             Assert.AreEqual(2, bitButton.ClassList.Length);
         }
     }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitButtonLoadingContentTest(bool isLoading)
+    {
+        const string textContent = "Hi";
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Content, textContent);
+            parameters.Add(p => p.IsLoading, isLoading);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        if (isLoading)
+        {
+            Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains("bit-btn-ldg"));
+        }
+        else
+        {
+            Assert.AreEqual(textContent, bitButton.TextContent);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(BitLabelPosition.Top),
+        DataRow(BitLabelPosition.Top),
+        DataRow(BitLabelPosition.Top),
+        DataRow(BitLabelPosition.Top),
+
+        DataRow(BitLabelPosition.Right),
+        DataRow(BitLabelPosition.Right),
+        DataRow(BitLabelPosition.Right),
+        DataRow(BitLabelPosition.Right),
+
+        DataRow(BitLabelPosition.Bottom),
+        DataRow(BitLabelPosition.Bottom),
+        DataRow(BitLabelPosition.Bottom),
+        DataRow(BitLabelPosition.Bottom),
+
+        DataRow(BitLabelPosition.Left),
+        DataRow(BitLabelPosition.Left),
+        DataRow(BitLabelPosition.Left),
+        DataRow(BitLabelPosition.Left),
+
+        DataRow(null),
+    ]
+    public void BitButtonLoaderTest(BitLabelPosition? labelPosition)
+    {
+        const string loadingLabel = "I'm Loading Label";
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingLabel, loadingLabel);
+            if (labelPosition.HasValue)
+            {
+                parameters.Add(p => p.LoadingLabelPosition, labelPosition.Value);
+            }
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var labelPositionClass = labelPosition switch
+        {
+            BitLabelPosition.Top => "bit-btn-top",
+            BitLabelPosition.Right => "bit-btn-rgt",
+            BitLabelPosition.Bottom => "bit-btn-btm",
+            BitLabelPosition.Left => "bit-btn-lft",
+            _ => "bit-btn-rgt"
+        };
+
+        Assert.AreEqual(loadingLabel, bitButton.LastElementChild.TextContent);
+
+        Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains("bit-btn-ldg"));
+
+        Assert.IsTrue(bitButton.FirstElementChild.ClassList.Contains(labelPositionClass));
+    }
+
 }

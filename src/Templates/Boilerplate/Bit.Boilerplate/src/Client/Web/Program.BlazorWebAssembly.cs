@@ -14,7 +14,7 @@ public partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
 
-                builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddClientConfigurations();
 
         Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 

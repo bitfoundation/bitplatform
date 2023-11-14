@@ -10,7 +10,7 @@ public partial class Program
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonStream(typeof(Core.Shared.MainLayout).Assembly.GetManifestResourceStream("Bit.BlazorUI.Demo.Client.Core.appsettings.json")!);
+        builder.Configuration.AddClientConfigurations();
 
         builder.WebHost.UseElectron(args);
         builder.Services.AddElectron();
