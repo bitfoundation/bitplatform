@@ -1,0 +1,80 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34302.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{07D3DE94-9EB8-41FE-8888-0A483D30EBFD}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Clean.bat = Clean.bat
+		src\Directory.Build.props = src\Directory.Build.props
+		global.json = global.json
+	EndProjectSection
+EndProject
+#if (pipeline == "Azure")
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{DE7F66C7-5190-4846-8949-C99444148634}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5F2028FC-13C5-479D-8665-7346B7C3D990}"
+	ProjectSection(SolutionItems) = preProject
+		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
+		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
+	EndProjectSection
+EndProject
+#elif (pipeline == "GitHub")
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{CB4F0FA9-2686-497C-A3D1-6E730B818A74}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F502B327-2CA6-48DC-992F-0B432ABF60B1}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\cd.yml = .github\workflows\cd.yml
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+	EndProjectSection
+EndProject
+#endif
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Shared", "src\BlazorWeb.Shared\BlazorWeb.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Server", "src\BlazorWeb.Server\BlazorWeb.Server.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Client", "src\BlazorWeb.Client\BlazorWeb.Client.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Iac", "src\BlazorWeb.Infra\BlazorWeb.Iac.csproj", "{F63859EB-108D-48FA-9F3D-5232E2A12184}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F63859EB-108D-48FA-9F3D-5232E2A12184}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+#if (pipeline == "Azure")
+		{DE7F66C7-5190-4846-8949-C99444148634} = {07D3DE94-9EB8-41FE-8888-0A483D30EBFD}
+		{5F2028FC-13C5-479D-8665-7346B7C3D990} = {DE7F66C7-5190-4846-8949-C99444148634}
+#elif (pipeline == "GitHub")
+		{CB4F0FA9-2686-497C-A3D1-6E730B818A74} = {07D3DE94-9EB8-41FE-8888-0A483D30EBFD}
+		{F502B327-2CA6-48DC-992F-0B432ABF60B1} = {CB4F0FA9-2686-497C-A3D1-6E730B818A74}
+#endif
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {62EABCA9-B5C9-489A-B101-38E38ACEDC1E}
+	EndGlobalSection
+EndGlobal

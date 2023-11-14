@@ -21,6 +21,16 @@
             background-color: $color-background-disabled;
         }
     }
+
+    @keyframes bit-upl-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-upl-fi {
@@ -88,9 +98,6 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-}
-
-.bit-upl-ip {
 }
 
 .bit-upl-uld {
@@ -185,4 +192,25 @@
             }
         }
     }
+}
+
+.bit-upl-ldg {
+    height: 100%;
+    display: flex;
+    width: spacing(4);
+    margin-right: spacing(0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-upl-spn {
+    border-radius: 50%;
+    width: spacing(2);
+    height: spacing(2);
+    border-width: spacing(0.2125);
+    border-style: $shape-border-style;
+    border-color: $color-border-secondary;
+    border-top-color: $color-primary-dark;
+    animation: bit-upl-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }

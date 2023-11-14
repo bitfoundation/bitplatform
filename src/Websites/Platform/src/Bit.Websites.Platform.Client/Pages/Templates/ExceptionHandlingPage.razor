@@ -1,0 +1,52 @@
+﻿@page "/todo-template/exception-handling"
+@page "/admin-panel/exception-handling"
+@page "/templates/exception-handling"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/exception-handling"
+            Title="Exception handling - Templates"
+            Description="exception handling in the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Exception handling</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide features to handle all of the exceptions occurring in different locations.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server-Side exception handling</BitTypography>
+        <div class="section-card-txt">
+            <ul>
+                <li>
+                    <b>known and unknown exception</b>: In development When an error occurred if this error is known or unknown,
+                    details of the error returned, but in test and production for unknown error details of the error not returned from server.
+                    <ul dir="auto">
+                        <li>known exception inherits <b>KnownException</b> class</li>
+                        <li>Unknown exception inherits <b>UnknownException</b> class</li>
+                    </ul>
+                </li>
+                <li>
+                    <b>RestException</b>: It's a class that has an HTTP Response <b>StatusCode</b>
+                    that you to perform a response with status code.
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client-Side exception handling</BitTypography>
+        <div class="section-card-txt">
+            When an error is raised in App(android, iOS) maybe cause crash app. for avoiding app crash; bit provides some mechanism for error handling.
+            <ul>
+                <li>inheriting <b>AppComponentBase</b> in razor pages.</li>
+                <li>Instead of initializing your components in the <b>OnInitializedAsync</b> method, override the <b>OnInitAsync</b> method of the <b>AppComponentBase</b> class.</li>
+                <li>Use <b>WrapHandle</b> method instead of direct calling events such as <b>OnClick</b> in the Razor components.</li>
+                <li>Use <b>try-catch</b> block in <b>async void</b> method and call <b>StateHasChanged</b> method to handle unexpected errors.</li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Settings" PrevUrl="/templates/settings" Next="Multilingualism" NextUrl="/templates/multilingualism" />

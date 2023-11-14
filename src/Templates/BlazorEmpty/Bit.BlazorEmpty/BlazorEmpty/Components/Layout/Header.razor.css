@@ -1,0 +1,51 @@
+﻿header {
+    top: 0;
+    width: 100%;
+    z-index: 11;
+    position: fixed;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.container {
+    display: flex;
+    min-height: 3rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    align-items: center;
+    padding-right: 1rem;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+.content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+::deep .logo {
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    margin-right: 1rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('/bit-logo.svg');
+}
+
+::deep .link {
+    padding: 1rem;
+    line-height: 1.5;
+    text-decoration: none;
+}
+
+.right-section {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}

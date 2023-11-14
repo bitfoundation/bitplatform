@@ -1,0 +1,28 @@
+trigger:
+- develop
+
+# https://bitplatform.dev/templates/devops
+
+- job: build_api_blazor
+  displayName: 'build api + blazor'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/BlazorWeb.Server/BlazorWeb.Server.csproj -p:Configuration=Release'
