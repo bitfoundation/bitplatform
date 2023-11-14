@@ -1,6 +1,9 @@
-﻿#nullable disable
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BlazorWeb.Server.Migrations
+#nullable disable
+
+namespace BlazorWeb.Server.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration
@@ -186,7 +189,7 @@ namespace BlazorWeb.Server.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "2e94af2d-0b0f-446b-9018-4c8dbe6ca764", null, "test@bitplatform.dev", true, "BlazorWeb test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEC8Chdkxj7JjRFGIVBuO4uIUM8MShPvMlkcHzmaKgvthqvyw6QKK/XAwJy3B+SFauw==", null, false, null, null, "4d670635-e8d9-4b62-bd02-46b8bff61d91", false, "test@bitplatform.dev" });
+                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "eddf1e50-721d-4b3d-a524-28b3971ad2ac", null, "test@bitplatform.dev", true, "BlazorWeb test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAECi6UtMFDXHjTXFj5QC8gCP0M7nMq5Nx2QZ4SNp1sD4Oc3/1Po8Lu4Es5fhfxfJhDg==", null, false, null, null, "ca9bb53f-235e-4bd7-8798-953330a8abe9", false, "test@bitplatform.dev" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",

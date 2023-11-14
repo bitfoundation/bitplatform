@@ -4,23 +4,20 @@ using BlazorWeb.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BlazorWeb.Server.Migrations
+namespace BlazorWeb.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230824105110_InitialMigration")]
-    partial class InitialMigration
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "8.0.0-rc.2.23480.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -146,7 +143,7 @@ namespace BlazorWeb.Server.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "2e94af2d-0b0f-446b-9018-4c8dbe6ca764",
+                            ConcurrencyStamp = "eddf1e50-721d-4b3d-a524-28b3971ad2ac",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "BlazorWeb test account",
@@ -154,9 +151,9 @@ namespace BlazorWeb.Server.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAEC8Chdkxj7JjRFGIVBuO4uIUM8MShPvMlkcHzmaKgvthqvyw6QKK/XAwJy3B+SFauw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECi6UtMFDXHjTXFj5QC8gCP0M7nMq5Nx2QZ4SNp1sD4Oc3/1Po8Lu4Es5fhfxfJhDg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "4d670635-e8d9-4b62-bd02-46b8bff61d91",
+                            SecurityStamp = "ca9bb53f-235e-4bd7-8798-953330a8abe9",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
                         });
