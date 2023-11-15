@@ -117,27 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Panneau d'administration</value>
+  </data>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>BlazorWeb - Confirmez votre adresse e-mail</value>
-  </data>
-  <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>BlazorWeb - Réinitialiser votre mot de passe</value>
   </data>
   <data name="ConfirmEmail" xml:space="preserve">
     <value>Confirmez votre email</value>
   </data>
-  <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>Vous recevez ce message car vous vous êtes récemment inscrit à un compte BlazorWeb.
-                     Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.</value>
-  </data>
-  <data name="WelcomeToApp" xml:space="preserve">
-    <value>Bienvenue sur BlazorWeb !</value>
-  </data>
-  <data name="AppName" xml:space="preserve">
-    <value>BlazorWeb</value>
-  </data>
   <data name="CopyLink" xml:space="preserve">
     <value>Ou copiez le lien ci-dessous dans la barre d'adresse de votre navigateur :</value>
+  </data>
+  <data name="EmailConfirmationMessageBody" xml:space="preserve">
+    <value>Vous recevez ce message car vous vous êtes récemment inscrit pour un compte BlazorWeb.
+                     Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.</value>
+  </data>
+  <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>BlazorWeb - Réinitialisez votre mot de passe</value>
   </data>
   <data name="ResetPasswordHello" xml:space="preserve">
     <value>Bonjour {0}</value>
@@ -150,5 +147,8 @@
   </data>
   <data name="ResetYourPassword" xml:space="preserve">
     <value>réinitialisez votre mot de passe</value>
+  </data>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>Bienvenue dans le panneau d'administration !</value>
   </data>
 </root>

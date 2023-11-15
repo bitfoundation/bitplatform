@@ -5,7 +5,7 @@ namespace Bit.Websites.Platform.Shared.Exceptions;
 public class ResourceNotFoundException : RestException
 {
     public ResourceNotFoundException()
-        : base(nameof(AppStrings.ResourceNotFoundException))
+        : base(nameof(ResourceNotFoundException))
     {
     }
 
@@ -15,16 +15,6 @@ public class ResourceNotFoundException : RestException
     }
 
     public ResourceNotFoundException(string message, Exception? innerException)
-        : base(message, innerException)
-    {
-    }
-
-    public ResourceNotFoundException(LocalizedString message)
-        : base(message)
-    {
-    }
-
-    public ResourceNotFoundException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

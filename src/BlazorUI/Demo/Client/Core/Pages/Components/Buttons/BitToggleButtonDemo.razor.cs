@@ -121,6 +121,15 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "null",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitToggleButtonClassStyles?",
             DefaultValue = "null",
@@ -204,14 +213,47 @@ public partial class BitToggleButtonDemo
                     Name= "Standard",
                     Description="The button with black text on a white background.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="The button for less-pronounced actions.",
+                    Value="2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-size-enum",
+            Name = "BitButtonSize",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size button.",
+                    Value="2",
                 }
             }
         }
     };
 
 
-    private bool example31Value;
-    private bool example32Value;
+    private bool example51Value;
+    private bool example52Value;
 
 
     private readonly string example1RazorCode = @"
@@ -222,10 +264,59 @@ public partial class BitToggleButtonDemo
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
                  ButtonStyle=""BitButtonStyle.Standard"" />
 
-<BitToggleButton IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
-    private readonly string example1CsharpCode = @"";
+<BitToggleButton OffText=""Text Unmute"" OnText=""Text Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 ButtonStyle=""BitButtonStyle.Text"" />";
 
     private readonly string example2RazorCode = @"
+<BitToggleButton OffText=""Primary Unmute"" OnText=""Primary Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
+<BitToggleButton IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
+
+    private readonly string example3RazorCode = @"
+<BitToggleButton OffText=""Standard Unmute"" OnText=""Standard Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 ButtonStyle=""BitButtonStyle.Standard"" />
+<BitToggleButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
+
+    private readonly string example4RazorCode = @"
+<BitToggleButton OffText=""Text Unmute"" OnText=""Text Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 ButtonStyle=""BitButtonStyle.Text"" />
+<BitToggleButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
+
+    private readonly string example5RazorCode = @"
+<BitToggleButton DefaultIsChecked=""true""
+                 OffText=""Unmute"" OnText=""Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
+
+<BitToggleButton @bind-IsChecked=""example51Value""
+                 Text=""@(example51Value ? ""Mute"" : ""Unmute"")""
+                 IconName=""@(example51Value ? BitIconName.MicOff : BitIconName.Microphone)"" />
+<BitCheckbox Label=""Checked Toggle Button"" @bind-Value=""example51Value"" />
+
+<BitToggleButton OnChange=""v => example52Value = v""
+                 OffText=""Unmute"" OnText=""Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
+<BitLabel>Check status is: @example52Value</BitLabel>";
+    private readonly string example5CsharpCode = @"
+private bool example51Value;
+private bool example52Value;";
+
+    private readonly string example6RazorCode = @"
+<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitToggleButton>
+
+<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitToggleButton>
+
+<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitToggleButton>";
+
+    private readonly string example7RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -245,6 +336,7 @@ public partial class BitToggleButtonDemo
     }
 </style>
 
+
 <BitToggleButton Style=""color:darkblue; font-weight:bold""
                  OffText=""Styled Button : Unmute"" OnText=""Styled Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
@@ -257,34 +349,15 @@ public partial class BitToggleButtonDemo
 
 <BitToggleButton OffText=""Styled Button : Unmute"" OnText=""Styled Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 Styles=""@(new() { Container=""font-size:18px"", Icon=""color:red"", Text=""color:blue"" })"" />
+                 Styles=""@(new() { Container = ""font-size: 18px;"", Icon = ""color: red;"", Text = ""color: blue;"" })"" />
 
 <BitToggleButton ButtonStyle=""BitButtonStyle.Standard""
                  OffText=""Classed Button : Unmute"" OnText=""Classed Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 Classes=""@(new() { Container=""custom-container"", Icon=""custom-icon"", Text=""custom-text"" })"" />";
-    private readonly string example2CsharpCode = @"";
+                 Classes=""@(new() { Container = ""custom-container"", Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example8RazorCode = @"
 Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
 Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
 Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
-
-    private readonly string example4RazorCode = @"
-<BitToggleButton DefaultIsChecked=""true""
-                 OffText=""Unmute"" OnText=""Mute""
-                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
-
-<BitToggleButton @bind-IsChecked=""example31Value""
-                 Text=""@(example31Value ? ""Mute"" : ""Unmute"")""
-                 IconName=""@(example31Value ? BitIconName.MicOff : BitIconName.Microphone)"" />
-<BitCheckbox Label=""Checked Toggle Button"" @bind-Value=""example31Value"" />
-
-<BitToggleButton OnChange=""v => example32Value = v""
-                 OffText=""Unmute"" OnText=""Mute""
-                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
-<BitLabel>Check status is: @example32Value</BitLabel>";
-    private readonly string example4CsharpCode = @"
-private bool example31Value;
-private bool example32Value;";
 }

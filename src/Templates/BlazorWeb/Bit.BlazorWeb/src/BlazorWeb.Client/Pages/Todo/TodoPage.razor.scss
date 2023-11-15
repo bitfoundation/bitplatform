@@ -179,6 +179,14 @@
         .sort-todo-icn {
             color: $bit-color-primary-main;
         }
+
+        .bit-drp-iwp .bit-drp-rsp-lbl-ctn {
+            margin-top: calc(var(--bit-status-bar-height) - rem2(24px));
+
+            @supports (-webkit-touch-callout: none) {
+                margin-top: calc(env(safe-area-inset-top) - rem2(24px));
+            }
+        }
     }
 
     .todo-input {

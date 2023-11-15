@@ -1,5 +1,4 @@
 ﻿namespace BlazorWeb.Client.Services;
-
 public partial class MessageBoxService
 {
     [AutoInject] IPubSubService _pubSubService = default!;

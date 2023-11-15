@@ -1,4 +1,4 @@
-﻿using BlazorWeb.Web.Services.HttpMessageHandlers;
+﻿using BlazorWeb.Client.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

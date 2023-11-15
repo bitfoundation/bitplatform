@@ -45,15 +45,6 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Size",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
-            DefaultValue = "null",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
@@ -70,6 +61,22 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#button-class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitButton.",
+        },
+        new()
+        {
+            Name = "Content",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
@@ -77,9 +84,57 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determine whether the button is in loading mode or not."
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The loading label to show next to the spinner."
+        },
+        new()
+        {
+            Name = "LoadingLabelPosition",
+            Type = "BitLabelPosition",
+            DefaultValue = "BitLabelPosition.Right",
+            Description = "The position of the loading Label in regards to the spinner animation.",
+            LinkType = LinkType.Link,
+            Href = "#spinner-position-enum"
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the content inside the Button in the Loading state.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the button clicked.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "null",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitButtonClassStyles?",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitButton.",
         },
         new()
         {
@@ -221,6 +276,46 @@ public partial class BitButtonDemo
         }
     };
 
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "button-class-styles",
+            Title = "BitButtonClassStyles",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitButton."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the internal container of the BitButton."
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner section of the BitButton."
+               },
+               new()
+               {
+                   Name = "LoadingLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label section of the BitButton."
+               },
+            }
+        }
+    };
+
 
 
     private readonly string example1RazorCode = @"
@@ -245,7 +340,6 @@ public partial class BitButtonDemo
 
     private readonly string example5RazorCode = @"
 <BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-
     private readonly string example5CsharpCode = @"
 private int clickCounter;";
     
@@ -282,27 +376,8 @@ private int clickCounter;";
 <BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitButton>
 <BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
 <BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
-    
+
     private readonly string example8RazorCode = @"
-<style>
-    .custom-class {
-        color: aqua;
-        border-radius: 1rem;
-    }
-</style>
-
-<BitButton Style=""color:darkblue; font-weight:bold"">Styled Button</BitButton>
-<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">Classed Button</BitButton>
-<BitButton Class=""custom-class"" Style=""color:green;"" ButtonStyle=""BitButtonStyle.Text"">
-    Styled Classed Button
-</BitButton>";
-
-    private readonly string example11RazorCode = @"
-Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
-Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
-Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
-
-    private readonly string example9RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -310,6 +385,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
         align-items: center;
     }
 </style>
+
 
 <BitButton Class=""custom-content"">
     <BitIcon IconName=""@BitIconName.Airplane"" />
@@ -329,7 +405,7 @@ Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button<
     <BitCircleLoading Size=""20"" />
 </BitButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 @if (formIsValidSubmit is false)
 {
     <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -351,7 +427,7 @@ else
         The form submitted successfully.
     </BitMessageBar>
 }";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -375,4 +451,187 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
+
+    private readonly string example10RazorCode = @"
+<BitButton IsLoading=""primaryIsLoading""
+           Style=""min-width: 6rem;""
+           ButtonStyle=""BitButtonStyle.Primary""
+           OnClick=""LoadingPrimaryClick"">
+    Primary
+</BitButton>
+
+<BitButton IsLoading=""standardIsLoading""
+           Style=""min-width: 6rem;""
+           ButtonStyle=""BitButtonStyle.Standard""
+           OnClick=""LoadingStandardClick"">
+    Standard
+</BitButton>
+
+<BitButton IsLoading=""textIsLoading""
+           Style=""min-width: 6rem;""
+           ButtonStyle=""BitButtonStyle.Text""
+           OnClick=""LoadingTextClick"">
+    Text
+</BitButton>";
+    private readonly string example10CsharpCode = @"
+private bool primaryIsLoading;
+private bool standardIsLoading;
+private bool textIsLoading;
+
+private async Task LoadingPrimaryClick()
+{
+    primaryIsLoading = true;
+    await Task.Delay(3000);
+    primaryIsLoading = false;
+}
+
+private async Task LoadingStandardClick()
+{
+    standardIsLoading = true;
+    await Task.Delay(3000);
+    standardIsLoading = false;
+}
+
+private async Task LoadingTextClick()
+{
+    textIsLoading = true;
+    await Task.Delay(3000);
+    textIsLoading = false;
+}";
+
+    private readonly string example11RazorCode = @"
+<BitButton IsLoading=""true""
+           LoadingLabel=""Right...""
+           Style=""min-width: 6.5rem;""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Right"">
+    Right
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Left...""
+           Style=""min-width: 6.5rem;""
+           LoadingLabelPosition=""BitLabelPosition.Left""
+           ButtonStyle=""BitButtonStyle.Standard"">
+    Left
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Bottom...""
+           Style=""min-width: 6.5rem;""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Bottom"">
+    Bottom
+</BitButton>
+
+<BitButton IsLoading=""true""
+           LoadingLabel=""Top...""
+           Style=""min-width: 6.5rem;""
+           ButtonStyle=""BitButtonStyle.Standard""
+           LoadingLabelPosition=""BitLabelPosition.Top"">
+    Top
+</BitButton>";
+
+    private readonly string example12RazorCode = @"
+<style>
+    .custom-loading {
+        display: flex;
+        gap: 0.3125rem;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+
+<BitButton IsLoading=""true""
+           Size=""BitButtonSize.Large""
+           Title=""Ellipsis loading..."">
+    <LoadingTemplate>
+        <div class=""custom-loading"">
+            <BitEllipsisLoading Size=""20"" />
+            <span>Wait...</span>
+        </div>
+    </LoadingTemplate>
+    <Content>
+        Ellipsis...
+    </Content>
+</BitButton>";
+
+    private readonly string example13RazorCode = @"
+<style>
+    .custom-class {
+        color: blueviolet;
+        border-radius: 1rem;
+    }
+
+    .custom-root {
+        min-width: 7.2rem;
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-container {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-label {
+        color: goldenrod;
+    }
+
+    .custom-spinner {
+        border-color: aqua;
+        border-top-color: goldenrod;
+    }
+</style>
+
+
+<BitButton Style=""color:darkblue; font-weight:bold"">
+    Styled Button
+</BitButton>
+
+<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">
+    Classed Button
+</BitButton>
+
+
+<BitButton IsLoading=""stylesIsLoading""
+           LoadingLabel=""Wait...""
+           OnClick=""LoadingStylesClick""
+           Styles=""@(new() { Root = ""border-radius: 1rem; min-width: 6rem;"",
+                             LoadingLabel = ""color: tomato;"",
+                             Spinner = ""border-color: goldenrod; border-top-color: tomato;"" })"">
+    Primary
+</BitButton>
+
+<BitButton IsLoading=""classesIsLoading""
+           LoadingLabel=""Sending...""
+           OnClick=""LoadingClassesClick"" 
+           ButtonStyle=""BitButtonStyle.Standard""
+           Classes=""@(new() { Root = ""custom-root"",
+                              LoadingContainer = ""custom-container"",
+                              LoadingLabel = ""custom-label"",
+                              Spinner = ""custom-spinner"" })"">
+    Standard
+</BitButton>";
+    private readonly string example13CsharpCode = @"
+private bool stylesIsLoading;
+private bool classesIsLoading;
+
+private async Task LoadingStylesClick()
+{
+    stylesIsLoading = true;
+    await Task.Delay(3000);
+    stylesIsLoading = false;
+}
+
+private async Task LoadingClassesClick()
+{
+    classesIsLoading = true;
+    await Task.Delay(3000);
+    classesIsLoading = false;
+}";
+
+    private readonly string example14RazorCode = @"
+Visible: [ <BitButton Visibility=""BitVisibility.Visible"">Visible Button</BitButton> ]
+Hidden: [ <BitButton Visibility=""BitVisibility.Hidden"">Hidden Button</BitButton> ]
+Collapsed: [ <BitButton Visibility=""BitVisibility.Collapsed"">Collapsed Button</BitButton> ]";
 }

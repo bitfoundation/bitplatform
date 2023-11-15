@@ -14,7 +14,7 @@ public class ODataOperationFilter : IOperationFilter
 
         var descriptor = (ControllerActionDescriptor)context.ApiDescription.ActionDescriptor;
 
-        var odataQueryOptionsParameter = descriptor.Parameters.SingleOrDefault(p => typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType));
+        var odataQueryOptionsParameter = descriptor!.Parameters.SingleOrDefault(p => typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType));
 
         if (descriptor != null && descriptor.FilterDescriptors.Any(filter => filter.Filter is EnableQueryAttribute) || odataQueryOptionsParameter is not null)
         {

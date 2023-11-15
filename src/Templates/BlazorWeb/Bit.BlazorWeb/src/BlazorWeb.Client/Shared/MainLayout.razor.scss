@@ -6,11 +6,11 @@
 .main {
     width: 100%;
     display: flex;
-    flex-flow: column;
     min-height: 100vh;
+    flex-flow: column;
     position: relative;
-    padding-top: rem2(48px);
     background-color: $bit-color-background-secondary;
+    padding-top: rem2(48px);
 }
 
 .main--authenticated {

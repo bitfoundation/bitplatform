@@ -84,14 +84,8 @@ jobs:
     - name: dotnet pack SourceGenerators
       run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
 
-    - name: dotnet pack TodoTemplate
-      run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
-
-    - name: dotnet pack AdminPanel
-      run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
-
-    - name: dotnet pack BlazorDual
-      run: dotnet pack src/Templates/BlazorDual/Bit.BlazorDual.ProjectTemplate.csproj --output . --configuration Release
+    - name: dotnet pack Boilerplate
+      run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
 
     - name: dotnet pack BlazorWeb
       run: dotnet pack src/Templates/BlazorWeb/Bit.BlazorWeb.ProjectTemplate.csproj --output . --configuration Release

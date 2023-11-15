@@ -35,13 +35,6 @@ jobs:
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
-      
-    - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
-      with:
-        files: 'src/BlazorWeb.Client/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Generate CSS/JS files
       run: dotnet build src/BlazorWeb.Client/BlazorWeb.Client.csproj -t:BeforeBuildTasks --no-restore

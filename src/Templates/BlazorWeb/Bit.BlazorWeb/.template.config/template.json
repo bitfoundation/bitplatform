@@ -16,6 +16,14 @@
     "sourceName": "BlazorWeb",
     "preferNameDirectory": true,
     "symbols": {
+        "SeedDataProductCreatedOn": {
+            "type": "generated",
+            "generator": "now",
+            "replaces": "2022-07-12",
+            "parameters": {
+                "format": "yyyy-MM-dd"
+            }
+        },
         "database": {
             "displayName": "Database",
             "type": "parameter",
@@ -55,6 +63,26 @@
                     "description": "Other"
                 }
             ]
+        },
+        "sample": {
+            "displayName": "Sample",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "AdminPanel",
+            "choices": [
+                {
+                    "choice": "AdminPanel",
+                    "description": "AdminPanel"
+                },
+                {
+                    "choice": "Todo",
+                    "description": "Todo app"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
         }
     },
     "sources": [
@@ -88,6 +116,31 @@
                 {
                     "condition": "(pipeline != Azure)",
                     "exclude": [ ".azure-devops/**" ]
+                },
+                {
+                    "condition": "(sample != AdminPanel)",
+                    "exclude": [ "src/BlazorWeb.Shared/Dtos/Categories/**",
+						"src/BlazorWeb.Shared/Dtos/Dashboard/**",
+						"src/BlazorWeb.Shared/Dtos/Products/**",
+						"src/BlazorWeb.Server/Controllers/Categories/**",
+						"src/BlazorWeb.Server/Controllers/Products/**",
+						"src/BlazorWeb.Server/Data/Configurations/Category/**",
+						"src/BlazorWeb.Server/Data/Configurations/Product/**",
+						"src/BlazorWeb.Server/Mappers/CategoriesMapper.cs",
+						"src/BlazorWeb.Server/Mappers/ProductsMapper.cs",
+						"src/BlazorWeb.Server/Models/Categories/**",
+						"src/BlazorWeb.Server/Models/Products/**",
+						"src/BlazorWeb.Client/Pages/Categories/**",
+						"src/BlazorWeb.Client/Pages/Dashboard/**",
+						"src/BlazorWeb.Client/Pages/Products/**"]
+                },
+                {
+                    "condition": "(sample != Todo)",
+                    "exclude": [ "src/BlazorWeb.Shared/Dtos/Todo/**",
+						"src/BlazorWeb.Server/Controllers/Todo/**",
+						"src/BlazorWeb.Server/Mappers/TodoMapper.cs",
+						"src/BlazorWeb.Server/Models/Todo/**",
+						"src/BlazorWeb.Client/Pages/Todo/**"]
                 }
             ]
         }

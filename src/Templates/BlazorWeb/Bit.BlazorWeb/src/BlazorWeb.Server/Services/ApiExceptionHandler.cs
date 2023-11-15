@@ -54,4 +54,3 @@ public partial class ApiExceptionHandler : IExceptionHandler
             : exp;
     }
 }
-

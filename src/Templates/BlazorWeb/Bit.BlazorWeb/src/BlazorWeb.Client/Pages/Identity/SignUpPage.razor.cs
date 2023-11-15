@@ -11,7 +11,7 @@ public partial class SignUpPage
     private SignUpRequestDto _signUpModel = new();
 
 
-    protected async override Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
@@ -37,7 +37,7 @@ public partial class SignUpPage
         catch (ResourceValidationException e)
         {
             _signUpMessageType = BitMessageBarType.Error;
-            _signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(p => p.Errors).Select(e => e.Message));
+            _signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {

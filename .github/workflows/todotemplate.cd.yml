@@ -28,18 +28,25 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
     - uses: actions/setup-node@v3
       with:
         node-version: 18
 
-    - name: Create project from TodoTemplate
+    - name: Create project from Boilerplate
       run: |
-        cd src/Templates/TodoTemplate && dotnet build -c Release
+        cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
+
+    - name: Update appsettings.json api server address
+      uses: microsoft/variable-substitution@v1 
+      with:
+        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Switch to blazor web assembly
       run: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
@@ -106,18 +113,18 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
     - uses: actions/setup-node@v3
       with:
         node-version: 18
 
-    - name: Create project from TodoTemplate
+    - name: Create project from Boilerplate
       run: |
-        cd src/Templates/TodoTemplate && dotnet build -c Release
+        cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -133,7 +140,7 @@ jobs:
       run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
-      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -153,18 +160,18 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
     - uses: actions/setup-node@v3
       with:
         node-version: 18
 
-    - name: Create project from TodoTemplate
+    - name: Create project from Boilerplate
       run: |
-        cd src/Templates/TodoTemplate && dotnet build -c Release
+        cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -187,7 +194,7 @@ jobs:
       run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
-      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
+      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -207,18 +214,18 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
      - uses: actions/setup-node@v3
        with:
         node-version: 18
 
-     - name: Create project from TodoTemplate
+     - name: Create project from Boilerplate
        run: |
-         cd src/Templates/TodoTemplate && dotnet build -c Release
+         cd src/Templates/Boilerplate && dotnet build -c Release
          dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-         dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+         dotnet new install Bit.Boilerplate.0.0.0.nupkg
+         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -234,7 +241,7 @@ jobs:
        run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-maccatalyst
+       run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
@@ -254,7 +261,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -264,12 +271,12 @@ jobs:
       with:
         xcode-version: '15'
 
-    - name: Create project from TodoTemplate
+    - name: Create project from Boilerplate
       run: |
-        cd src/Templates/TodoTemplate && dotnet build -c Release
+        cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -306,7 +313,7 @@ jobs:
       run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -326,7 +333,7 @@ jobs:
      - name: Setup .NET
        uses: actions/setup-dotnet@v3
        with:
-         global-json-file: src/Templates/TodoTemplate/Bit.TodoTemplate/global.json
+         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
      - name: Setup .NET for Electron.NET
        uses: actions/setup-dotnet@v3
@@ -337,12 +344,12 @@ jobs:
        with:
          node-version: 18
 
-     - name: Create project from TodoTemplate
+     - name: Create project from Boilerplate
        run: |
-         cd src/Templates/TodoTemplate && dotnet build -c Release
+         cd src/Templates/Boilerplate && dotnet build -c Release
          dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-         dotnet new install Bit.TodoTemplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-todo --name TodoTemplate --database SqlServer
+         dotnet new install Bit.Boilerplate.0.0.0.nupkg
+         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
      
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
