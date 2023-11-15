@@ -5,18 +5,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>    
     <PackageTags>$(PackageTags) Hybrid Synchronization LocalCache DistributedCache Caching Cache MemoryCache EasyCaching</PackageTags>    
-    <Version>1.8.0</Version>
-    <AssemblyVersion>1.8.0.0</AssemblyVersion>
-    <PackageVersion>1.8.0</PackageVersion>    
+    <Version>1.9.2</Version>
+    <AssemblyVersion>1.9.2.0</AssemblyVersion>
+    <PackageVersion>1.9.2</PackageVersion>    
     <RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
     <PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v1.1.0</PackageReleaseNotes>    
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EasyCaching.HybridCache" Version="1.9.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="EasyCaching.HybridCache" Version="1.9.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
