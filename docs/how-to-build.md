@@ -22,7 +22,7 @@ building each one of them requires some specific steps that are explained below.
 
 Building each of the bit platform projects needs the following basic requirements other than the specific requirements that are explained later:
 
-- [.NET 8 RC1 SDK (8.0.100-rc.2.23502.2)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [.NET 8 SDK (8.0.100)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [Node.js](https://nodejs.org)
 
 <br/>
@@ -34,7 +34,7 @@ Building each bit platform project requires specific steps that are explained pe
 <br/>
 
 ### bit platform Website
-This website only requires the basic requirements and can be simply built by running the following command in the `Bit.Websites.Platform.Web` project folder:
+This website only requires the basic requirements and can be simply built by running the following command in the `Bit.Websites.Platform.Server` project folder:
 
 ```bash
 dotnet build
@@ -92,9 +92,9 @@ dotnet build
 ### bit Project Templates
 Like the bit BlazorUI Demo project, the project templates (located in the `src/Templates` folder) have two different projects (Web & App) with different requirements to build.
 
-For example for the `AdminPanel` project template in the `AdminPanel/Bit.AdminPanel` folder:
+For example for the `Boilerplate` project template in the `Boilerplate/Bit.Boilerplate` folder:
 
-The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `AdminPanel.Client.Web` project folder (`src/Client/Web`):
+The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `Boilerplate.Client.Web` project folder (`src/Client/Web`):
 
 ```bash
 dotnet build
@@ -113,7 +113,7 @@ dotnet workload install maui-android
 dotnet workload install maui
 ```
 
-To build the App project run the following command in the `AdminPanel.Client.App` project folder (`src/Client/Web`):
+To build the App project run the following command in the `Boilerplate.Client.App` project folder (`src/Client/Web`):
 
 ```bash
 dotnet build

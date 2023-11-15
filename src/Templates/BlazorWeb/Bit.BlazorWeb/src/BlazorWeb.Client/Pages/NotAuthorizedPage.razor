@@ -6,11 +6,11 @@
 
 <AuthorizeView>
     <div class="main">
-        <div><img src="/images/icons/error-triangle.svg" /></div>
+        <div><img src="_content/BlazorWeb.Client/images/icons/error-triangle.svg" /></div>
         <h2 class="title">@Localizer[nameof(AppStrings.ForbiddenException)]</h2>
-        <h4 class="description">You're signed in as @_user.GetUserName()</h4>
+        <h4 class="description">@Localizer[nameof(AppStrings.YouAreSignInAs)] @_user.GetUserName()</h4>
         <div class="buttons">
-            <BitButton OnClick="WrapHandled(SignIn)">Sign in as different user</BitButton>
+            <BitButton OnClick="WrapHandled(SignIn)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
         </div>
     </div>
 </AuthorizeView>

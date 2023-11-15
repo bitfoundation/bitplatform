@@ -3,7 +3,7 @@
 public class UnknownException : Exception
 {
     public UnknownException()
-        : base(nameof(AppStrings.UnknownException))
+        : base(nameof(UnknownException))
     {
     }
 
@@ -17,4 +17,3 @@ public class UnknownException : Exception
     {
     }
 }
-

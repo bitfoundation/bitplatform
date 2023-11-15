@@ -150,12 +150,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/BitLoadingButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitLoadingButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Buttons/MenuButton/BitMenuButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/MenuButton/BitMenuButtonDemo.razor.scss",
         "minify": { "enabled": false },

@@ -1,11 +1,11 @@
 ﻿using System.Net;
 
-namespace BlazorWeb.Web.Services.HttpMessageHandlers;
+namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
 public class ExceptionDelegatingHandler
     : DelegatingHandler
 {
-    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler) 
+    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
         : base(httpClientHandler)
     {
 

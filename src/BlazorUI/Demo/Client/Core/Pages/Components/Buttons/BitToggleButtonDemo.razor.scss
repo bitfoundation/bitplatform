@@ -11,6 +11,18 @@
     }
 }
 
+.buttons-container {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+}
+
+.buttons-container-grid {
+    gap: 0.5rem;
+    display: grid;
+}
+
 ::deep {
     .custom-class {
         color: aqua;

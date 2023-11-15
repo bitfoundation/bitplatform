@@ -13,7 +13,7 @@ public partial class SignInPage
     [SupplyParameterFromQuery]
     public string? RedirectUrl { get; set; }
 
-    protected async override Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 

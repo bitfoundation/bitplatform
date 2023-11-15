@@ -5,6 +5,7 @@ public partial class BitToggleButton
     private bool IsCheckedHasBeenSet;
 
     private bool isChecked;
+    private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private int? _tabIndex;
@@ -118,6 +119,22 @@ public partial class BitToggleButton
     [Parameter] public string? OnTitle { get; set; }
 
     /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitToggleButton component.
     /// </summary>
     [Parameter] public BitToggleButtonClassStyles? Styles { get; set; }
@@ -139,11 +156,23 @@ public partial class BitToggleButton
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle == BitButtonStyle.Primary
-                                          ? $"{RootElementClass}-pri"
-                                          : $"{RootElementClass}-std");
+        ClassBuilder.Register(() => IsChecked ? "bit-tgb-chk" : string.Empty);
 
-        ClassBuilder.Register(() => IsChecked ? $"{RootElementClass}-chk" : string.Empty);
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => "bit-tgb-pri",
+            BitButtonStyle.Standard => "bit-tgb-std",
+            BitButtonStyle.Text => "bit-tgb-txt",
+            _ => "bit-tgb-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-tgb-sm",
+            BitButtonSize.Medium => "bit-tgb-md",
+            BitButtonSize.Large => "bit-tgb-lg",
+            _ => string.Empty
+        });
     }
     
     protected override void RegisterCssStyles()

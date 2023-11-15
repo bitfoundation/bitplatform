@@ -50,6 +50,21 @@ public partial class BitButton
     }
 
     /// <summary>
+    /// The type of the button
+    /// </summary>
+    [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
+    /// The content of button, It can be Any custom tag or a text
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitButton.
+    /// </summary>
+    [Parameter] public BitButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The color of button
     /// </summary>
     [Parameter]
@@ -64,7 +79,42 @@ public partial class BitButton
             ClassBuilder.Reset();
         }
     }
-    
+
+    /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// URL the link points to, if provided, button renders as an anchor
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// Determine whether the button is in loading mode or not.
+    /// </summary>        
+    [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// The loading label to show next to the spinner.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// The position of the loading Label in regards to the spinner animation.
+    /// </summary>
+    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.Right;
+
+    /// <summary>
+    /// Used to customize the content inside the Button in the Loading state.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Callback for when the button clicked
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
@@ -82,24 +132,9 @@ public partial class BitButton
     }
 
     /// <summary>
-    /// The type of the button
+    /// Custom CSS styles for different parts of the BitButton.
     /// </summary>
-    [Parameter] public BitButtonType? ButtonType { get; set; }
-
-    /// <summary>
-    /// The content of button, It can be Any custom tag or a text
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor
-    /// </summary>
-    [Parameter] public string? Href { get; set; }
-
-    /// <summary>
-    /// Callback for when the button clicked
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link
@@ -116,6 +151,8 @@ public partial class BitButton
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => ButtonStyle switch
         {
             BitButtonStyle.Primary => "bit-btn-pri",
@@ -143,6 +180,11 @@ public partial class BitButton
         });
     }
 
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override void OnParametersSet()
     {
         if (IsEnabled is false)
@@ -154,6 +196,16 @@ public partial class BitButton
 
         base.OnParametersSet();
     }
+        
+    private string GetLabelPositionClass()
+        => LoadingLabelPosition switch
+        {
+            BitLabelPosition.Top => "bit-btn-top",
+            BitLabelPosition.Left => "bit-btn-lft",
+            BitLabelPosition.Right => "bit-btn-rgt",
+            BitLabelPosition.Bottom => "bit-btn-btm",
+            _ => "bit-btn-rgt"
+        };
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {

@@ -20,9 +20,9 @@
     flex-grow: 1;
     display: flex;
     overflow: auto;
+    max-width: 90vw;
     white-space: pre;
     margin: rem2(10px) 0;
-    max-width: 90vw;
 }
 
 .footer {

@@ -10,12 +10,9 @@ public partial class Program
     public static WebAssemblyHost CreateHostBuilder(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault();
-        builder.Configuration.AddJsonStream(typeof(MainLayout).Assembly.GetManifestResourceStream("Bit.Websites.Sales.Web.appsettings.json"));
+        builder.Configuration.AddClientConfigurations();
 
-        if (Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress) is false)
-        {
-            throw new InvalidOperationException("Api server address is invalid");
-        }
+        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
         if (apiServerAddress.IsAbsoluteUri is false)
         {

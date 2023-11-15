@@ -21,5 +21,4 @@ public class DomainLogicException : KnownException
         : base(message, innerException)
     {
     }
-
 }
