@@ -1,0 +1,15 @@
+﻿<LayoutView Layout="@typeof(MainLayout)">
+    <PageTitle>bit platform software development as a service</PageTitle>
+    <Router AppAssembly="@GetType().Assembly"
+            OnNavigateAsync="@OnNavigateAsync">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+        </Found>
+        <NotFound>
+            <NotFoundPage />
+        </NotFound>
+        <Navigating>
+            <LoadingComponent Color="#FFF" />
+        </Navigating>
+    </Router>
+</LayoutView>

@@ -1,5 +1,4 @@
 ﻿@using Bit.Websites.Platform.Client.Services
-@attribute [StreamRendering(true)]
 
 <!DOCTYPE html>
 <html bit-theme="dark">
@@ -64,9 +63,12 @@
 
     <Routes @rendermode=RenderModeProvider.Current />
 
-    <script src="_framework/blazor.web.js"></script>
-    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
-    <script src="scripts/app.js"></script>
+    @if (HttpContext.Request.IsCrawlerClient() is false)
+    {
+        <script src="_framework/blazor.web.js"></script>
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+        <script src="scripts/app.js"></script>
+    }
 </body>
 
 </html>

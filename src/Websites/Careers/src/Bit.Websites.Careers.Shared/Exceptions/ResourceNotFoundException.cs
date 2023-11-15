@@ -4,6 +4,11 @@ namespace Bit.Websites.Careers.Shared.Exceptions;
 
 public class ResourceNotFoundException : RestException
 {
+    public ResourceNotFoundException()
+        : base(nameof(ResourceNotFoundException))
+    {
+    }
+
     public ResourceNotFoundException(string message)
         : base(message)
     {

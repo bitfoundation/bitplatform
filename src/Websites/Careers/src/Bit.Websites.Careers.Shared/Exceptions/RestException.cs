@@ -4,6 +4,11 @@ namespace Bit.Websites.Careers.Shared.Exceptions;
 
 public class RestException : KnownException
 {
+    public RestException()
+        : base(nameof(RestException))
+    {
+    }
+
     public RestException(string message)
         : base(message)
     {

@@ -14,17 +14,5 @@ public abstract class KnownException : Exception
         Key = message;
     }
 
-    public KnownException(LocalizedString message)
-        : base(message.Value)
-    {
-        Key = message.Name;
-    }
-
-    public KnownException(LocalizedString message, Exception? innerException)
-        : base(message.Value, innerException)
-    {
-        Key = message.Name;
-    }
-
     public string? Key { get; set; }
 }

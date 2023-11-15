@@ -18,7 +18,7 @@ public static class HttpRequestExtensions
         return uriBuilder.Uri.AbsoluteUri;
     }
 
-    public static bool ShouldRenderStaticMode(this HttpRequest request)
+    public static bool IsCrawlerClient(this HttpRequest request)
     {
         var agent = GetLoweredUserAgent(request);
 
