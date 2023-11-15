@@ -1,0 +1,105 @@
+﻿@using Bit.Websites.Sales.Shared.Infra
+@using Microsoft.AspNetCore.Components.Web
+@using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+
+@namespace Bit.Websites.Sales.Client.Pages
+@inject IHttpContextAccessor ContextAccessor
+@inject IConfiguration Configuration
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    var gtmId = @Configuration.GetSection("GoogleTagManager")["Id"];
+    var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
+    var isStatic = WebAppDeploymentTypeDetector.Current.IsStatic();
+    var isSsr = WebAppDeploymentTypeDetector.Current.IsSsr();
+    
+    RenderMode renderMode = isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered;
+
+    if (renderMode is RenderMode.ServerPrerendered or RenderMode.WebAssemblyPrerendered)
+    {
+        var shouldRenderStaticMode = ContextAccessor?.HttpContext?.Request.ShouldRenderStaticMode();
+
+        if (shouldRenderStaticMode is not null && shouldRenderStaticMode.Value)
+        {
+            renderMode = RenderMode.Static;
+            isStatic = true;
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="~/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes." />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version=true>
+    <component type="typeof(HeadOutlet)" render-mode="@renderMode" />
+    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" asp-append-version=true />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" asp-append-version=true />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" asp-append-version=true />
+    <link rel="stylesheet" href="styles/app.css" asp-append-version=true />
+    <link href="Bit.Websites.Sales.Client.styles.css" rel="stylesheet" asp-append-version=true />
+</head>
+<body>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gtmId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', '@gtmId');
+    </script>
+    <!-- Google tag -->
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "ipef1isv2k");
+    </script>
+    <!-- Microsoft Clarity -->
+
+    <div id="app-container">
+        @RenderBody()
+    </div>
+
+    @if (isStatic is false)
+    {
+        @if (isBlazorServer)
+        {
+            <script src="_framework/blazor.server.js" asp-append-version=true></script>
+        }
+        else
+        {
+            <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version=true></script>
+            <script src="_content/Bit.Bup/bit-bup.progress.js" asp-append-version=true></script>
+            <script src="_content/Bit.Bup/bit-bup.js" asp-append-version=true></script>
+
+            @if (isSsr)
+            {
+                <component type="typeof(Bit.Websites.Sales.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
+            }
+            else
+            {
+                <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version=true>
+                <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+                            param-AutoHide="true"
+                            param-HideApp="true"
+                            param-AppContainer="@("#app-container")" />
+            }
+        }
+        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js" asp-append-version=true></script>
+    }
+    <script src="scripts/app.js" asp-append-version=true></script>
+
+    @if (isSsr)
+    {
+        <persist-component-state />
+    }
+</body>
+</html>

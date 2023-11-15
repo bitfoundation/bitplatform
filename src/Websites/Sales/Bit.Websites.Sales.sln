@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Api", "src\Bit.Websites.Sales.Api\Bit.Websites.Sales.Api.csproj", "{DD0474BE-082F-4BE2-92C6-BD454D0A0020}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Server", "src\Bit.Websites.Sales.Server\Bit.Websites.Sales.Server.csproj", "{DD0474BE-082F-4BE2-92C6-BD454D0A0020}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Shared", "src\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj", "{2A240C93-0116-43D3-8409-E9167F655C7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Web", "src\Bit.Websites.Sales.Web\Bit.Websites.Sales.Web.csproj", "{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Client", "src\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj", "{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

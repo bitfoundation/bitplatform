@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Api", "src\Bit.Websites.Careers.Api\Bit.Websites.Careers.Api.csproj", "{87A052C0-DF5B-4560-960C-3B1D31EC2792}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Server", "src\Bit.Websites.Careers.Server\Bit.Websites.Careers.Server.csproj", "{87A052C0-DF5B-4560-960C-3B1D31EC2792}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Shared", "src\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj", "{C7234277-F4B8-4B2B-9C75-BDE54A59B1A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Web", "src\Bit.Websites.Careers.Web\Bit.Websites.Careers.Web.csproj", "{91ABA16B-4583-43F0-94DF-6239586352CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Client", "src\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj", "{91ABA16B-4583-43F0-94DF-6239586352CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
