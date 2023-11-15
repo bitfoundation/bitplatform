@@ -1,8 +1,7 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
-#if BlazorWebAssembly
+// We need to load the client app configurations to prerender the app on server side.
 builder.Configuration.AddClientConfigurations();
-#endif
 
 Bit.Websites.Sales.Server.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
 

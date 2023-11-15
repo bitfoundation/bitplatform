@@ -6,9 +6,6 @@ public class AppSettings
 
     public TelegramBotSettings TelegramBotSettings { get; set; } = default!;
 
-    public string UserProfileImagesDir { get; set; } = default!;
-
-    public string WebServerAddress { get; set; } = default!;
 }
 
 public class HealthCheckSettings

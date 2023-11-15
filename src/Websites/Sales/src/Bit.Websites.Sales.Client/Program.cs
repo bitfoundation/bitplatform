@@ -1,14 +1,22 @@
-﻿namespace Bit.Websites.Sales.Client;
+﻿using Bit.Websites.Sales.Client.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-public partial class Program
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Configuration.AddClientConfigurations();
+
+Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+if (apiServerAddress!.IsAbsoluteUri is false)
 {
-    public static async Task Main(string[] args)
-    {
-#if !BlazorWebAssembly && !BlazorServer
-        throw new InvalidOperationException("Please switch to either blazor webassembly or server as described in readme.md");
-#else
-        await CreateHostBuilder(args)
-            .RunAsync();
-#endif
-    }
+    apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
 }
+
+builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<RetryDelegatingHandler>()) { BaseAddress = apiServerAddress });
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
+
+builder.Services.AddClientSharedServices();
+
+var host = builder.Build();
+
+await host.RunAsync();

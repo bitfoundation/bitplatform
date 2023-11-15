@@ -13,7 +13,6 @@ public partial class ContactUsController : AppControllerBase
     public async Task<IActionResult> SendMessage(ContactUsDto contactUsDto, CancellationToken cancellationToken)
     {
         await TelegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Name, contactUsDto.Information, cancellationToken);
-
         return Ok();
     }
 }

@@ -1,12 +1,8 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Sales.Server.Services;
-#if BlazorWebAssembly
-using Microsoft.AspNetCore.Components;
-using Bit.Websites.Sales.Client.Services;
-#endif
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace Bit.Websites.Sales.Server.Startup;
 
@@ -16,51 +12,20 @@ public static class Services
     {
         // Services being registered here can get injected into controllers and services in Api project.
 
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        services.AddSharedServices();
-
-#if BlazorWebAssembly
-        services.AddClientSharedServices();
-
-        // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
-        services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
-            .ConfigurePrimaryHttpMessageHandler<AppHttpClientHandler>()
-            .ConfigureHttpClient((sp, httpClient) =>
-            {
-                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
-                if (apiServerAddress!.IsAbsoluteUri is false)
-                {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
-                }
-                httpClient.BaseAddress = apiServerAddress;
-            });
-        services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
-
-        services.AddScoped(sp =>
-        {
-            IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return httpClientFactory.CreateClient("WebAssemblyPreRenderingHttpClient");
-            // this is for pre rendering of blazor webassembly
-            // for other usages of httpclient, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
-        });
-        services.AddRazorPages();
-#endif
+        services.AddTransient<IAntiforgery, NullAntiforgery>();
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();
-        services.AddCors();
+
+        services.AddClientSharedServices();
+
+        services.AddExceptionHandler<ApiExceptionHandler>();
+
+        services.AddBlazor(configuration);
 
         services
-            .AddControllers()
-            .AddOData(options => options.EnableQueryFeatures())
-            .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
-            .ConfigureApiBehaviorOptions(options =>
-            {
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    throw new ResourceValidationException(context.ModelState.Select(ms => (ms.Key, ms.Value!.Errors.Select(e => new LocalizedString(e.ErrorMessage, e.ErrorMessage)).ToArray())).ToArray());
-                };
-            });
+            .AddControllers();
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -75,7 +40,7 @@ public static class Services
         services.AddResponseCompression(opts =>
         {
             opts.EnableForHttps = true;
-            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" }).ToArray();
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })
@@ -87,8 +52,6 @@ public static class Services
         services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
-
-        services.AddAutoMapper(typeof(Program).Assembly);
 
         services.AddSwaggerGen();
 

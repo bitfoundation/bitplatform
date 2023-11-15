@@ -1,5 +1,4 @@
-﻿//-:cnd:noEmit
-namespace Microsoft.Extensions.Configuration;
+﻿namespace Microsoft.Extensions.Configuration;
 public static class IConfigurationExtensions
 {
     public static string GetApiServerAddress(this IConfiguration configuration)

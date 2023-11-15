@@ -1,19 +1,21 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.31611.283
+VisualStudioVersion = 17.8.34302.71
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{07D3DE94-9EB8-41FE-8888-0A483D30EBFD}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		Clean.bat = Clean.bat
 		src\Directory.Build.props = src\Directory.Build.props
-		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Server", "src\Bit.Websites.Sales.Server\Bit.Websites.Sales.Server.csproj", "{DD0474BE-082F-4BE2-92C6-BD454D0A0020}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Shared", "src\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj", "{7B577D88-492D-4B13-8B79-55BA13B51EE4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Shared", "src\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj", "{2A240C93-0116-43D3-8409-E9167F655C7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Server", "src\Bit.Websites.Sales.Server\Bit.Websites.Sales.Server.csproj", "{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Client", "src\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj", "{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Client", "src\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,23 +23,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DD0474BE-082F-4BE2-92C6-BD454D0A0020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD0474BE-082F-4BE2-92C6-BD454D0A0020}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD0474BE-082F-4BE2-92C6-BD454D0A0020}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD0474BE-082F-4BE2-92C6-BD454D0A0020}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2A240C93-0116-43D3-8409-E9167F655C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2A240C93-0116-43D3-8409-E9167F655C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2A240C93-0116-43D3-8409-E9167F655C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2A240C93-0116-43D3-8409-E9167F655C7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F41B194E-C7F8-42CD-ADCA-BEABBFD2AB2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B577D88-492D-4B13-8B79-55BA13B51EE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03920E8A-DB33-4239-BCD1-7EE3ECC6E19B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
+		SolutionGuid = {62EABCA9-B5C9-489A-B101-38E38ACEDC1E}
 	EndGlobalSection
 EndGlobal

@@ -4,14 +4,14 @@ public class ErrorResourcePayload
 {
     public string? ResourceTypeName { get; set; } = "*";
 
-    public List<PropertyErrorResourceCollection> Details { get; set; } = new();
+    public List<PropertyErrorResourceCollection> Details { get; set; } = [];
 }
 
 public class PropertyErrorResourceCollection
 {
     public string? Name { get; set; } = "*";
 
-    public List<ErrorResource> Errors { get; set; } = new();
+    public List<ErrorResource> Errors { get; set; } = [];
 }
 
 public class ErrorResource

@@ -1,36 +1,44 @@
-﻿using HealthChecks.UI.Client;
+﻿using System.Reflection;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
+using Bit.Websites.Sales.Server.Components;
 
 namespace Bit.Websites.Sales.Server.Startup;
 
 public class Middlewares
 {
-    public static void Use(IApplicationBuilder app, IHostEnvironment env, IConfiguration configuration)
+    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
         if (env.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
-
-#if BlazorWebAssembly
-            if (env.IsDevelopment())
-            {
-                app.UseWebAssemblyDebugging();
-            }
-#endif
+            app.UseWebAssemblyDebugging();
         }
-
-#if BlazorWebAssembly
-        app.UseBlazorFrameworkFiles();
-#endif
-
-        if (env.IsDevelopment() is false)
+        else
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
+
+        app.UseStatusCodePages(options: new()
+        {
+            HandleAsync = async (statusCodeContext) =>
+            {
+                var httpContext = statusCodeContext.HttpContext;
+
+                if (httpContext.Response.StatusCode is 404)
+                {
+                    httpContext.Response.Redirect($"not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+                else if (httpContext.Response.StatusCode is 401)
+                {
+                    httpContext.Response.Redirect($"not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+            }
+        });
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -45,49 +53,33 @@ public class Middlewares
             }
         });
 
-        app.UseRouting();
-
-        app.UseCors(options => options.WithOrigins("https://localhost:4021").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
-
         app.UseResponseCaching();
+        app.UseAntiforgery();
 
-#if MultilingualEnabled
-        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
-        app.UseRequestLocalization(new RequestLocalizationOptions
-        {
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures,
-            ApplyCurrentCultureToResponseHeaders = true
-        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
-#endif
-
-        app.UseHttpResponseExceptionHandler();
-
+        app.UseExceptionHandler("/", createScopeForErrors: true);
         app.UseSwagger();
 
         app.UseSwaggerUI();
 
-        app.UseEndpoints(endpoints =>
+        app.MapControllers();
+
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+
+        var healthCheckSettings = appSettings.HealthCheckSettings;
+
+        if (healthCheckSettings.EnableHealthChecks)
         {
-            endpoints.MapControllers();
-
-            var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-
-            var healthCheckSettings = appSettings.HealthCheckSettings;
-
-            if (healthCheckSettings.EnableHealthChecks)
+            app.MapHealthChecks("/healthz", new HealthCheckOptions
             {
-                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
-                {
-                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
-                endpoints.MapHealthChecksUI();
-            }
+            app.MapHealthChecksUI();
+        }
 
-#if BlazorWebAssembly
-            endpoints.MapFallbackToPage("/_Host");
-#endif
-        });
+        app.MapRazorComponents<App>()
+            .AddInteractiveServerRenderMode()
+            .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(Assembly.Load("Bit.Websites.Sales.Client"));
     }
 }

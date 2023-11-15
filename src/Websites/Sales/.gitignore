@@ -213,6 +213,9 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
@@ -222,6 +225,11 @@ profile.arm.json
 *.map
 *Resource.designer.cs
 /**/*.css
+custom.aprof
+
+/src/Server/Api/Attachments/**/*.*
 
 /src/Bit.Websites.Sales.Client/Scripts/app*.js
 /src/Bit.Websites.Sales.Client/wwwroot/scripts/app*.js
+
+/src/Bit.Websites.Sales.Server/Bit.Websites.SalesDb.db*

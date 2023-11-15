@@ -1,24 +1,41 @@
-﻿class App {
-    public static setCookie(name: string, value: string, seconds: number) {
-        const date = new Date();
-        date.setSeconds(date.getSeconds() + seconds);
-        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
-    }
+﻿//declare var hljs: any;
 
-    public static getCookie(name: string): string | null {
-        // https://stackoverflow.com/a/25490531/2720104
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || null;
-    }
-
-    public static removeCookie(name: string): void {
-        document.cookie = `${name}=; Max-Age=0`;
-    }
-
-    public static goBack(): void {
-        window.history.back();
-    }
-
-    public static backToTop() {
-        window.scrollTo({ top: 0 });
+function toggleBodyOverflow(isMenuOpen: boolean) {
+    if (window.innerWidth <= 900) {
+        if (isMenuOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
     }
 }
+
+function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
+    window.addEventListener('scroll', (event) => {
+        if (document.documentElement.scrollTop >= 500) {
+            element.classList.add("fixed-getting-started-side-rail-section");
+        }
+        else {
+            element.classList.remove("fixed-getting-started-side-rail-section");
+        }
+    });
+}
+
+function goToTop() {
+    window.scrollTo({ top: 0 });
+}
+
+declare class BitTheme { static init(options: any): void; };
+
+BitTheme.init({
+    system: true,
+    onChange: (newTheme: string, oldThem: string) => {
+        if (newTheme === 'dark') {
+            document.body.classList.add('bit-theme-dark');
+            document.body.classList.remove('bit-theme-light');
+        } else {
+            document.body.classList.add('bit-theme-light');
+            document.body.classList.remove('bit-theme-dark');
+        }
+    }
+});

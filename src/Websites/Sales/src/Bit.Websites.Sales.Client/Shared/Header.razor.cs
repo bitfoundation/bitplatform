@@ -8,13 +8,13 @@ public partial class Header
     [AutoInject] private NavigationManager _navigationManager = default!;
     [AutoInject] private IJSRuntime _js = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitAsync()
     {
         _navigationManager.LocationChanged += OnLocationChanged;
 
         SetCurrentUrl();
 
-        base.OnInitialized();
+        await base.OnInitAsync();
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)

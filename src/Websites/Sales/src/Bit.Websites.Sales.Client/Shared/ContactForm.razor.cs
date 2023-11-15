@@ -32,7 +32,7 @@ public partial class ContactForm
         }
         catch (KnownException e)
         {
-            _errorMessage = AppStrings.ResourceManager.Translate(e.Message);
+            _errorMessage = e.Message;
         }
         finally
         {
