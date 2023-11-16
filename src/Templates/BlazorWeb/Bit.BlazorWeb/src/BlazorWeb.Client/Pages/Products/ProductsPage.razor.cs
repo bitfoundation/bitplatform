@@ -63,7 +63,7 @@ public partial class ProductsPage
 
                 return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
-            catch
+            catch (Exception exp)
             {
                 return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
             }

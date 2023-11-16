@@ -13,7 +13,7 @@ public partial class App
         {
             HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
-                MaxAge = TimeSpan.FromDays(7),
+                MaxAge = TimeSpan.FromDays(1),
                 Public = true
             };
         }, null!);

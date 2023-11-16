@@ -31,11 +31,11 @@ public class Middlewares
 
                 if (httpContext.Response.StatusCode is 404)
                 {
-                    httpContext.Response.Redirect($"not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                    httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
                 }
                 else if (httpContext.Response.StatusCode is 401)
                 {
-                    httpContext.Response.Redirect($"not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
+                    httpContext.Response.Redirect($"/not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
                 }
             }
         });
