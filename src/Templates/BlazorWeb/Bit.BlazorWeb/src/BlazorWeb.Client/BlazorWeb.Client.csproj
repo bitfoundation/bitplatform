@@ -62,6 +62,13 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
+    <!--/+:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''">
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <!--/-:msbuild-conditional:noEmit -->
     <ItemGroup>
         <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
     </ItemGroup>
