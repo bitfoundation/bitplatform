@@ -88,9 +88,24 @@ public class BitDatePickerClassStyles
     public string? GoToTodayButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the Go to now button of the BitDatePicker.
+    /// </summary>
+    public string? GoToNowButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the back to calendar button of the BitDatePicker.
+    /// </summary>
+    public string? BackToCalendarButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the Go to today icon of the BitDatePicker.
     /// </summary>
     public string? GoToTodayIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Go to now icon of the BitDatePicker.
+    /// </summary>
+    public string? GoToNowIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the close button of the BitDatePicker.
@@ -203,14 +218,34 @@ public class BitDatePickerClassStyles
     public string? MonthPickerHeader { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the time-picker's header of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerHeader { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the year-picker's toggle button of the BitDatePicker.
     /// </summary>
     public string? YearPickerToggleButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the show time-picker button of the BitDatePicker.
+    /// </summary>
+    public string? ShowTimePickerButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the show time-picker icon of the BitDatePicker.
+    /// </summary>
+    public string? ShowTimePickerIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the wrapper of the month-picker's nav buttons of the BitDatePicker.
     /// </summary>
     public string? MonthPickerNavWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the wrapper of the time-picker's nav buttons of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerNavWrapper { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the Go to previous year button of the BitDatePicker.
