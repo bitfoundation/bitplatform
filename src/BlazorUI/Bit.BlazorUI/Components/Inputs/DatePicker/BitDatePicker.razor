@@ -67,6 +67,8 @@
                     var todayYear = Culture.Calendar.GetYear(DateTime.Now);
                     var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
                     var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
+                    var showMonthPickerOverlay = (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || _showMonthPickerAsOverlayInternal is false;
+                    var showTimePickerOverlay = (_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false;
                 }
 
                 @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
@@ -242,7 +244,7 @@
                     <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
                 }
 
-                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false) || (_showMonthPickerAsOverlayInternal is false && (ShowTimePicker is false || _showTimePickerAsOverlayInternal)))
+                @if (showMonthPickerOverlay && (ShowTimePicker is false || showTimePickerOverlay is false))
                 {
                     <div style="@Styles?.YearMonthPickerWrapper" class="bit-dtp-mwp @Classes?.YearMonthPickerWrapper">
                         @if (_showMonthPicker)
@@ -452,7 +454,7 @@
                     </div>
                 }
 
-                @if (ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false))
+                @if (ShowTimePicker && showTimePickerOverlay)
                 {
                     <div style="@Styles?.TimePickerWrapper" class="bit-dtp-twp @Classes?.TimePickerWrapper">
                         <div style="@Styles?.TimePickerHeader" class="bit-dtp-pkh bit-dtp-tph @Classes?.TimePickerHeader">
