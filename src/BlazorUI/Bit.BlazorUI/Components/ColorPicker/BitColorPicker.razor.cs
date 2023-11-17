@@ -7,25 +7,25 @@ public partial class BitColorPicker : IDisposable
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;
 
-    private ElementReference _saturationPickerRef;
-    private string? _onWindowPointerUpAbortControllerId;
-    private string? _onWindowPointerMoveAbortControllerId;
-    private string? _saturationPickerBackgroundRgbCss;
-    private bool _saturationPickerPointerDown;
-    private BitColorPosition? _saturationPickerThumbPosition;
+    private bool _disposed;
     private BitColor _color = new();
     private BitColorType _colorType;
-    private double _hue;
+    private bool _saturationPickerPointerDown;
+    private string? _pointerUpAbortControllerId;
+    private string? _pointerMoveAbortControllerId;
+    private ElementReference _saturationPickerRef;
+    private string? _saturationPickerStyle;
+    private (double Left, double Top)? _saturationPickerThumbPosition;
+    private DotNetObjectReference<BitColorPicker> _dotnetObj = default!;
+
+    private double _selectedHue;
     private double _selectedSaturation = 1;
     private double _selectedValue = 1;
-    private string? _colorRectangleDescriptionId;
 
-    public string? Hex => _color.Hex;
-    public string? Rgb => _color.Rgb;
-    public string? Rgba => _color.Rgba;
-    public (int Hue, int Saturation, int Value) Hsv => _color.Hsv;
+
 
     [Inject] public IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>
@@ -34,12 +34,12 @@ public partial class BitColorPicker : IDisposable
     [Parameter]
     public double Alpha
     {
-        get => _color.Alpha;
+        get => _color.A;
         set
         {
-            if (_color.Alpha == value) return;
-            _color.Alpha = value;
+            if (_color.A == value) return;
 
+            _color.A = value;
             AlphaChanged.InvokeAsync(value);
         }
     }
@@ -55,14 +55,20 @@ public partial class BitColorPicker : IDisposable
         get => _colorType == BitColorType.Hex ? _color.Hex! : _color.Rgb!;
         set
         {
-            _colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) ? BitColorType.Hex : BitColorType.Rgb;
+            _colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase)
+                            ? BitColorType.Hex
+                            : BitColorType.Rgb;
 
-            var valueAsBitColor = new BitColor(value, Alpha);
-            if (valueAsBitColor == _color) return;
-            _color = valueAsBitColor;
-            _hue = _color.Hsv.Hue;
-            SetSaturationPickerBackground();
-            _ = SetPositionAsync();
+            var newColor = new BitColor(value, Alpha);
+
+            if (newColor.R == _color.R && newColor.G == _color.G && newColor.B == _color.B && newColor.A == _color.A) return;
+
+            _color = newColor;
+            _selectedHue = _color.Hsv.Hue;
+
+            SetSaturationPickerStyle();
+
+            _ = SetSaturationPickerThumbPositionAsync();
 
             ColorChanged.InvokeAsync(value);
         }
@@ -86,124 +92,129 @@ public partial class BitColorPicker : IDisposable
     [Parameter] public bool ShowPreview { get; set; }
 
 
+
+    public string? Hex => _color.Hex;
+    public string? Rgb => $"rgb({_color.R},{_color.G},{_color.B})";
+    public string? Rgba => $"rgba({_color.R},{_color.G},{_color.B},{_color.A})";
+    public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
+
+
+
     protected override string RootElementClass => "bit-clp";
 
     protected override void OnInitialized()
     {
-        _colorRectangleDescriptionId = $"BitColorPicker-{UniqueId}-color-description";
+        _dotnetObj = DotNetObjectReference.Create(this);
 
-        SetSaturationPickerBackground();
+        SetSaturationPickerStyle();
 
         base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            _onWindowPointerUpAbortControllerId = await _js.RegisterOnWindowPointerUpEvent(this, "OnWindowPointerUp");
-            _onWindowPointerMoveAbortControllerId = await _js.RegisterOnWindowPointerMoveEvent(this, "OnWindowPointerMove");
-
-            await SetPositionAsync();
-        }
-
         await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        _pointerUpAbortControllerId = await _js.RegisterPointerUp(_dotnetObj, "HandlePointerUp");
+        _pointerMoveAbortControllerId = await _js.RegisterPointerMove(_dotnetObj, "HandlePointerMove");
+
+        await SetSaturationPickerThumbPositionAsync();
     }
 
-    private async Task SetPositionAsync()
+
+
+    private async Task SetSaturationPickerThumbPositionAsync()
     {
-        var hsv = _color.Hsv;
+        var (_, saturation, value) = _color.Hsv;
         var saturationPickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
 
         var width = saturationPickerRect?.Width ?? 0;
         var height = saturationPickerRect?.Height ?? 0;
 
-        _saturationPickerThumbPosition = new BitColorPosition
-        {
-            Left = Convert.ToInt32(width * hsv.Saturation / 100),
-            Top = Convert.ToInt32(height - (height * hsv.Value / 100))
-        };
+        _saturationPickerThumbPosition = new(width * saturation, height - (height * value));
 
         StateHasChanged();
     }
 
-    private void SetSaturationPickerBackground()
+    private void SetSaturationPickerStyle()
     {
-        var bitColor = new BitColor(_hue, 1, 1, 1);
-        _saturationPickerBackgroundRgbCss = bitColor.Rgb;
+        var rgb = BitColor.ToRgb(_selectedHue, 1, 1).ToString();
+        _saturationPickerStyle = $"background-color:rgb{rgb}";
     }
 
-    private async Task PickColorTune(MouseEventArgs e)
+    private async Task UpdateColor(MouseEventArgs e)
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        var parent = await _js.GetBoundingClientRect(_saturationPickerRef);
-        _saturationPickerThumbPosition = new BitColorPosition
-        {
-            Left = e.ClientX < parent.Left ? 0 : e.ClientX > parent.Left + parent.Width ? Convert.ToInt32(parent.Width) : Convert.ToInt32(e.ClientX - parent.Left),
-            Top = e.ClientY < parent.Top ? 0 : e.ClientY > parent.Top + parent.Height ? Convert.ToInt32(parent.Height) : Convert.ToInt32(e.ClientY - parent.Top)
-        };
+        var pickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
+        var left = e.ClientX < pickerRect.Left ? 0
+                    : e.ClientX > pickerRect.Left + pickerRect.Width
+                    ? pickerRect.Width
+                    : (e.ClientX - pickerRect.Left);
+        var top = e.ClientY < pickerRect.Top ? 0
+                    : e.ClientY > pickerRect.Top + pickerRect.Height
+                    ? pickerRect.Height
+                    : (e.ClientY - pickerRect.Top);
 
-        _selectedSaturation = Math.Clamp(ToValidSpanValue(0, parent.Width, 0, 1, Convert.ToInt32(e.ClientX - parent.Left)), 0, 1);
-        _selectedValue = Math.Clamp(ToValidSpanValue(0, parent.Height, 0, 1, parent.Height - Convert.ToInt32(e.ClientY - parent.Top)), 0, 1);
-        _color = new BitColor(_hue, _selectedSaturation, _selectedValue, _color.Alpha);
-        SetSaturationPickerBackground();
-        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        _saturationPickerThumbPosition = new(left, top);
+
+        _selectedSaturation = Math.Clamp((e.ClientX - pickerRect.Left) / pickerRect.Width, 0, 1);
+        _selectedValue = Math.Clamp((pickerRect.Height - e.ClientY + pickerRect.Top) / pickerRect.Height, 0, 1);
+
+        _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
+        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+
+        SetSaturationPickerStyle();
+
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(_color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.A);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.A });
+
         StateHasChanged();
     }
 
-    private async Task PickMainColor(ChangeEventArgs args)
+    private async Task HandleOnHueInput(ChangeEventArgs args)
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        _hue = Convert.ToInt32(args.Value, CultureInfo.InvariantCulture);
-        _color = new BitColor(_hue, _selectedSaturation, _selectedValue, _color.Alpha);
-        SetSaturationPickerBackground();
-        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        _selectedHue = Convert.ToDouble(args.Value);
+        _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
+
+        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+
+        SetSaturationPickerStyle();
+
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(_color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.A);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.A });
     }
 
-    private async Task PickAlphaColor(ChangeEventArgs args)
+    private async Task HandleOnAlphaInput(ChangeEventArgs args)
     {
         if (AlphaHasBeenSet && AlphaChanged.HasDelegate is false) return;
 
-        var alpha = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture) / 100;
-        _color = new BitColor(_color.Hex ?? "", alpha);
-        string? colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        _color.A = Convert.ToDouble(args.Value);
+        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+
         await ColorChanged.InvokeAsync(colorValue);
-        await AlphaChanged.InvokeAsync(_color.Alpha);
-        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.Alpha });
+        await AlphaChanged.InvokeAsync(_color.A);
+        await OnChange.InvokeAsync(new() { Color = colorValue, Alpha = _color.A });
     }
 
-    private static double ToValidSpanValue(double min, double max, double newMin, double newMax, double value)
-    {
-        return (value - min) * (newMax - newMin) / (max - min);
-    }
-
-    private async Task OnSaturationPickerPointerDown(MouseEventArgs e)
+    private async Task HandleOnSaturationPickerPointerDown(MouseEventArgs e)
     {
         _saturationPickerPointerDown = true;
-        await PickColorTune(e);
-    }
-
-    private async Task OnSaturationPickerPointerMove(MouseEventArgs e)
-    {
-        if (_saturationPickerPointerDown is false) return;
-
-        await PickColorTune(e);
+        await UpdateColor(e);
     }
 
     private string GetRootElAriaLabel()
     {
-        var ariaLabel = $"Color picker, Red {_color.Red} Green {_color.Green} Blue {_color.Blue} ";
+        var ariaLabel = $"Color picker, Red {_color.R} Green {_color.G} Blue {_color.B} ";
         if (ShowAlphaSlider)
         {
-            ariaLabel += $"Alpha {_color.Alpha * 100}% selected.";
+            ariaLabel += $"Alpha {_color.A * 100}% selected.";
         }
         else
         {
@@ -214,19 +225,23 @@ public partial class BitColorPicker : IDisposable
     }
 
 
-    [JSInvokable]
-    public void OnWindowPointerUp(MouseEventArgs e)
+
+    [JSInvokable("HandlePointerUp")]
+    public void HandlePointerUp(MouseEventArgs e)
     {
         _saturationPickerPointerDown = false;
     }
 
-    [JSInvokable]
-    public async Task OnWindowPointerMove(MouseEventArgs e)
+    [JSInvokable("HandlePointerMove")]
+    public async Task HandlePointerMove(MouseEventArgs e)
     {
-        await OnSaturationPickerPointerMove(e);
+        if (_saturationPickerPointerDown is false) return;
+
+        await UpdateColor(e);
     }
 
-    private bool _disposed;
+
+
     public void Dispose()
     {
         Dispose(true);
@@ -237,8 +252,8 @@ public partial class BitColorPicker : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.AbortProcedure(_onWindowPointerUpAbortControllerId);
-        _ = _js.AbortProcedure(_onWindowPointerMoveAbortControllerId);
+        _ = _js.AbortProcedure(_pointerUpAbortControllerId);
+        _ = _js.AbortProcedure(_pointerMoveAbortControllerId);
 
         _disposed = true;
     }

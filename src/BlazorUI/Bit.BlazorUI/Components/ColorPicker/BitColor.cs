@@ -1,51 +1,85 @@
-﻿using System.Drawing;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 
 [assembly: InternalsVisibleTo("Bit.BlazorUI.Tests")]
 namespace Bit.BlazorUI;
 
 internal class BitColor
 {
-    private string? hex;
-    private string? rgb;
-    private string? rgba;
-    private (int Hue, int Saturation, int Value) hsv;
+    private string? _hex;
+    private string? _rgb;
+    private string? _rgba;
+    private (double Hue, double Saturation, double Value) _hsv;
+    private double _alpha = 1.0;
 
-    public string? Hex => hex;
-    public string? Rgb => rgb;
-    public string? Rgba => rgba;
-    public (int Hue, int Saturation, int Value) Hsv => hsv;
+    public string? Hex => _hex;
+    public string? Rgb => _rgb;
+    public string? Rgba => _rgba;
+    public (double Hue, double Saturation, double Value) Hsv => _hsv;
 
-    public int Red { get; private set; } = 255;
-    public int Green { get; private set; } = 255;
-    public int Blue { get; private set; } = 255;
-    public double Alpha { get; set; } = 1;
+    public byte R { get; private set; } = 255;
+    public byte G { get; private set; } = 255;
+    public byte B { get; private set; } = 255;
 
-    public BitColor(string color = "", double alpha = 1)
+    public double A
+    {
+        get => _alpha;
+        set
+        {
+            _alpha = value;
+            GenerateStringValues();
+        }
+    }
+    public BitColor()
+    {
+        CalculateHsv();
+        GenerateStringValues();
+    }
+
+    public BitColor(string color = "", double alpha = 1.0)
     {
         Parse(color, alpha);
         CalculateHsv();
-        CalculateHex();
-        CalculateRgbCss();
-        CalculateRgbaCss();
+        GenerateStringValues();
     }
 
     public BitColor(double hue, double saturation, double value, double alpha)
     {
-        if (saturation > 1)
-        {
-            saturation /= 100;
-        }
+        Update(hue, saturation, value, alpha);
+    }
 
-        if (value > 1)
-        {
-            value /= 100;
-        }
+    public BitColor(byte red = 255, byte green = 255, byte blue = 255, double alpha = 1.0)
+    {
+        R = red;
+        G = green;
+        B = blue;
+        A = alpha;
+
+        CalculateHsv();
+        GenerateStringValues();
+    }
+
+
+
+    public void Update(double hue, double saturation, double value, double alpha)
+    {
+        A = alpha;
+        (R, G, B) = ToRgb(hue, saturation, value);
+
+        _hsv = new(hue, saturation, value);
+
+        CalculateHsv();
+        GenerateStringValues();
+    }
+
+
+    public static (byte R, byte G, byte B) ToRgb(double hue, double saturation, double value)
+    {
+        if (value > 1) value /= 100;
+        if (saturation > 1) saturation /= 100;
 
         var c = value * saturation;
-        var x = c * (1 - Math.Abs((hue / 60) % 2 - 1));
+        var x = c * (1 - Math.Abs(hue / 60 % 2 - 1));
         var m = value - c;
 
         (double r, double g, double b) color =
@@ -56,150 +90,103 @@ internal class BitColor
             : hue >= 240 && hue < 300 ? (x, 0, c)
             : (c, 0, x);
 
-        Red = Convert.ToInt32(Math.Floor((color.r + m) * 255));
-        Green = Convert.ToInt32(Math.Floor((color.g + m) * 255));
-        Blue = Convert.ToInt32(Math.Floor((color.b + m) * 255));
-        Alpha = alpha;
+        var r = (byte)Math.Floor((color.r + m) * 255);
+        var g = (byte)Math.Floor((color.g + m) * 255);
+        var b = (byte)Math.Floor((color.b + m) * 255);
 
-        hsv = new(
-            Convert.ToInt32(Math.Floor(hue)),
-            Convert.ToInt32(Math.Floor(saturation)),
-            Convert.ToInt32(Math.Floor(value))
-            );
-
-        CalculateHsv();
-        CalculateHex();
-        CalculateRgbCss();
-        CalculateRgbaCss();
+        return (r, g, b);
     }
 
-    public void SetColorByRgba(int? red = null, int? green = null, int? blue = null, double? alpha = null)
+
+    private void Parse(string color, double alpha = 1.0)
     {
-        if (red.HasValue)
-        {
-            Red = red.Value;
-        }
-
-        if (green.HasValue)
-        {
-            Green = green.Value;
-        }
-
-        if (blue.HasValue)
-        {
-            Blue = blue.Value;
-        }
-
-        if (alpha.HasValue)
-        {
-            Alpha = alpha.Value;
-        }
-
-        if (red.HasValue || green.HasValue || blue.HasValue)
-        {
-            CalculateHsv();
-            CalculateHex();
-            CalculateRgbCss();
-        }
-
-        CalculateRgbaCss();
-    }
-
-    private void Parse(string color, double alpha = 1)
-    {
-        Alpha = alpha;
+        A = alpha;
+        ResetRgb();
 
         try
         {
-            if (color.StartsWith("#", StringComparison.InvariantCultureIgnoreCase))
+            if (color.StartsWith('#'))
             {
-                Red = int.Parse(color.AsSpan(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-                Green = int.Parse(color.AsSpan(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-                Blue = int.Parse(color.AsSpan(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+                var value = Convert.ToInt32(color[1..], 16);
+
+                R = (byte)((value >> 16) & 255);
+                G = (byte)((value >> 8) & 255);
+                B = (byte)(value & 255);
             }
-            else if (color.Contains("rgb", StringComparison.InvariantCultureIgnoreCase))
+            else if (color.StartsWith("rgb"))
             {
-                Regex rx = new Regex(@"\(([^)]+)\)");
-                var matchedColor = rx.Match(color).Value;
+                var colorValues = color.Replace("rgba", "").Replace("rgb", "")
+                                       .TrimStart('(').TrimEnd(')')
+                                       .Split(",");
 
-                matchedColor = matchedColor.Trim('(');
-                matchedColor = matchedColor.Trim(')');
-
-                var colorString = matchedColor.Split(",");
-                if (colorString.Length >= 3)
+                if (colorValues.Length >= 3)
                 {
-                    Red = int.Parse(colorString[0], CultureInfo.InvariantCulture);
-                    Green = int.Parse(colorString[1], CultureInfo.InvariantCulture);
-                    Blue = int.Parse(colorString[2], CultureInfo.InvariantCulture);
+                    R = byte.Parse(colorValues[0], CultureInfo.InvariantCulture);
+                    G = byte.Parse(colorValues[1], CultureInfo.InvariantCulture);
+                    B = byte.Parse(colorValues[2], CultureInfo.InvariantCulture);
                 }
-            }
-            else
-            {
-                SetDefaultColor();
             }
         }
         catch
         {
-            SetDefaultColor();
+            ResetRgb();
         }
     }
 
-    private void SetDefaultColor()
+    private void ResetRgb()
     {
-        Red = 255;
-        Green = 255;
-        Blue = 255;
+        R = 255;
+        G = 255;
+        B = 255;
     }
 
     private void CalculateHsv()
     {
-        var myColor = Color.FromArgb(Red, Green, Blue);
+        var r = R / 255.0;
+        var g = G / 255.0;
+        var b = B / 255.0;
 
-        int max = Math.Max(myColor.R, Math.Max(myColor.G, myColor.B));
-        int min = Math.Min(myColor.R, Math.Min(myColor.G, myColor.B));
+        var maxC = Math.Max(r, Math.Max(g, b));
+        var minC = Math.Min(r, Math.Min(g, b));
+        var v = maxC;
 
-        var hue = myColor.GetHue();
-        var saturation = (max == 0) ? 0 : 1d - (1d * min / max);
-        var value = max / 255d;
+        if (minC == maxC || maxC == 0)
+        {
+            _hsv = new(0.0, 0.0, v);
+            return;
+        }
 
-        hsv = new(Convert.ToInt32(Math.Floor(hue)),
-                  Convert.ToInt32(Math.Floor(saturation * 100)),
-                  Convert.ToInt32(Math.Floor(value * 100)));
+        var delta = maxC - minC;
+        var s = delta / maxC;
+        double h;
+
+        if (maxC == r)
+        {
+            h = (g - b) / delta;
+        }
+        else if (maxC == g)
+        {
+            h = (b - r) / delta + 2;
+        }
+        else // if (maxC == b)
+        {
+            h = (r - g) / delta + 4;
+        }
+
+        h *= 60;
+
+        if (h < 0)
+        {
+            h += 360;
+        }
+
+        _hsv = (h, s, v);
     }
 
-    private void CalculateHex()
+    private void GenerateStringValues()
     {
-        var myColor = Color.FromArgb(Red, Green, Blue);
-        hex = $"#{myColor.Name.Remove(0, 2)}";
-    }
-
-    private void CalculateRgbCss()
-    {
-        rgb = $"rgb({Red},{Green},{Blue})";
-    }
-
-    private void CalculateRgbaCss()
-    {
-        rgba = $"rgba({Red},{Green},{Blue},{Alpha})";
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is BitColor color && this == color;
-    }
-
-    public override int GetHashCode()
-    {
-        return Red.GetHashCode() ^ Green.GetHashCode() ^ Blue.GetHashCode() ^ Alpha.GetHashCode();
-    }
-
-    public static bool operator ==(BitColor x, BitColor y)
-    {
-        return x.Red == y.Red && x.Green == y.Green && x.Blue == y.Blue && x.Alpha == y.Alpha;
-    }
-
-    public static bool operator !=(BitColor x, BitColor y)
-    {
-        return !(x == y);
+        _hex = $"#{R:X2}{G:X2}{B:X2}";
+        _rgb = $"rgb({R},{G},{B})";
+        _rgba = $"rgba({R},{G},{B},{A})";
     }
 }
