@@ -18,7 +18,7 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>CI</BitTypography>
         <div class="section-card-txt">
-            <b>CI</b> pipeline which is located in <b>.github/workflows/ci.yml</b> ensures that every change that is committed into 
+            <b>CI</b> pipeline which is located in <b>.github/workflows/ci.yml</b> ensures that every change that is committed into
             <b>develop branch</b> won't break projects build in the following modes:
         </div>
         <div class="section-card-txt">
@@ -42,13 +42,13 @@
             <b>CD</b> pipeline located in <b>.github/workflows/cd.yml</b> builds and deploys every change committed in the main branch into production.
         </div>
         <div class="section-card-txt">
-            By default, the CD pipeline produces <b>.aab</b> and <b>.apk</b> for android, <b>.ipa</b> for iOS, <b>.exe</b> for Windows and, <b>.pkg</b> for macOS. 
-            It also creates a zip folder that contains API+WebAssembly projects and an 
-            <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a> 
+            By default, the CD pipeline produces <b>.aab</b> and <b>.apk</b> for android, <b>.ipa</b> for iOS, <b>.exe</b> for Windows and, <b>.pkg</b> for macOS.
+            It also creates a zip folder that contains API+WebAssembly projects and an
+            <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a>
             to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
         </div>
         <div class="section-card-txt">
-            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes. 
+            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes.
             For example, we've created a deploy phase for API+WebAssembly that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
         </div>
         <div class="section-card-txt">
@@ -59,7 +59,7 @@
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/' # The API backend URL that clients use to connect to the server.
   APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you want to deploy your project to the Azure Web App)</pre>
         <div class="section-card-txt">
-            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>. 
+            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>.
             It's important to mention that since the GitHub Actions secrets does not support storing files,
             to store secret files (such as pfx files), you need to convert the files' content to base64 and store the encoded result value as secret values.
         </div>

@@ -3,9 +3,9 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 
-    <div class="page-container">
-        <div class="content-container profile-panel">
-            @if (string.IsNullOrEmpty(_editProfileMessage) is false)
+<div class="page-container">
+    <div class="content-container profile-panel">
+        @if (string.IsNullOrEmpty(_editProfileMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
                            MessageBarType="@_editProfileMessageType"
@@ -45,16 +45,16 @@
                 }
 
                 <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
-                    <BitFileUpload @onfocus="() => _profileImageError = null"
-                                   Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
-                                   Accept="image/*"
-                                   AutoUploadEnabled="true"
-                                   UploadUrl="@_profileImageUploadUrl"
-                                   OnUploadComplete="WrapHandled(RefreshProfileData)"
-                                   OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
-                                   MaxSize="1024 * 1024 * 10"
-                                   ChunkedUploadEnabled="false" />
-                    <div class="form-input-error">@_profileImageError</div>
+                <BitFileUpload @onfocus="() => _profileImageError = null"
+                               Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
+                               Accept="image/*"
+                               AutoUploadEnabled="true"
+                               UploadUrl="@_profileImageUploadUrl"
+                               OnUploadComplete="WrapHandled(RefreshProfileData)"
+                               OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
+                               MaxSize="1024 * 1024 * 10"
+                               ChunkedUploadEnabled="false" />
+                <div class="form-input-error">@_profileImageError</div>
             </div>
 
             <EditForm Model="_userToEdit" OnValidSubmit="WrapHandled(DoSave)" class="edit-profile-form">

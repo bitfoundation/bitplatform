@@ -33,52 +33,6 @@ public partial class IdentityController : AppControllerBase
 
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> _bearerTokenOptions = default!;
 
-    [HttpPost]
-    public async Task SignIn(SignInRequestDto signInRequest)
-    {
-        _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
-
-        var result = await _signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
-
-        if (result.IsLockedOut)
-        {
-            var user = await _userManager.FindByNameAsync(signInRequest.UserName!);
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
-        }
-
-        /* if (result.RequiresTwoFactor)
-        {
-            if (!string.IsNullOrEmpty(signInRequest.TwoFactorCode))
-            {
-                result = await _signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, rememberClient: true);
-            }
-            else if (!string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode))
-            {
-                result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
-            }
-        } */
-
-        if (result.Succeeded is false)
-            throw new UnauthorizedException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword)));
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
-    {
-        var refreshTokenProtector = _bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
-        var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
-
-        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
-                await _signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
-        {
-            return Challenge();
-        }
-
-        var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
-
-        return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
-    }
-
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
     /// These comments will also be used in swagger docs and ui.
@@ -174,6 +128,67 @@ public partial class IdentityController : AppControllerBase
             throw new ResourceValidationException(result.ErrorMessages.Select(err => Localizer[err]).ToArray());
     }
 
+    [HttpGet]
+    public async Task<ActionResult> ConfirmEmail(string email, string token)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
+
+        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
+
+        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}";
+
+        return Redirect(url);
+    }
+
+    [HttpPost]
+    public async Task SignIn(SignInRequestDto signInRequest)
+    {
+        _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+
+        var result = await _signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+
+        if (result.IsLockedOut)
+        {
+            var user = await _userManager.FindByNameAsync(signInRequest.UserName!);
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
+        }
+
+        /* if (result.RequiresTwoFactor)
+        {
+            if (!string.IsNullOrEmpty(signInRequest.TwoFactorCode))
+            {
+                result = await _signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, rememberClient: true);
+            }
+            else if (!string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode))
+            {
+                result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
+            }
+        } */
+
+        if (result.Succeeded is false)
+            throw new UnauthorizedException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword)));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
+    {
+        var refreshTokenProtector = _bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
+        var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
+
+        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
+                await _signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
+        {
+            return Challenge();
+        }
+
+        var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
+
+        return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
+    }
+
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
           , CancellationToken cancellationToken)
@@ -223,21 +238,6 @@ public partial class IdentityController : AppControllerBase
 
         if (!result.Successful)
             throw new ResourceValidationException(result.ErrorMessages.Select(err => Localizer[err]).ToArray());
-    }
-
-    [HttpGet]
-    public async Task<ActionResult> ConfirmEmail(string email, string token)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
-
-        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
-
-        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}";
-
-        return Redirect(url);
     }
 
     [HttpPost]

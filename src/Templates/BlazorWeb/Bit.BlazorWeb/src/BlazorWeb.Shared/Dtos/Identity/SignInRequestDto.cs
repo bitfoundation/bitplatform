@@ -17,5 +17,5 @@ public class SignInRequestDto
 
     [NotMapped]
     [Display(Name = nameof(AppStrings.RememberMe))]
-    public bool RememberMe { get; set; }
+    public bool RememberMe { get; set; } = true;
 }
