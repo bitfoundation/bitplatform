@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.ColorPicker;
 [TestClass]
 public class BitColorTests
 {
-    [DataTestMethod, DataRow("#5d0914")]
+    [DataTestMethod, DataRow("#5D0914")]
     public void BitColorHexToRgbTest(string color)
     {
         var bitColor = new BitInternalColor(color);
@@ -17,7 +17,7 @@ public class BitColorTests
         Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow("#5d0914", 0.6)]
+    [DataTestMethod, DataRow("#5D0914", 0.6)]
     public void BitColorHexToRgbaTest(string color, double alpha)
     {
         var bitColor = new BitInternalColor(color, alpha);

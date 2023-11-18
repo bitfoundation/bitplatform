@@ -100,8 +100,8 @@ internal class BitInternalColor
 
     private void Parse(string color, double alpha = 1.0)
     {
-        A = alpha;
         ResetColor();
+        A = alpha;
 
         try
         {
