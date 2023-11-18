@@ -69,12 +69,12 @@
                     var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
 
                     var showDayPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop is false && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
-                    (ShowTimePicker is false && _showMonthPickerAsOverlayInternal) ||
-                    (ShowTimePicker && _showMonthPickerAsOverlayInternal is false && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
+                    (ShowTimePicker is false && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop is false)) ||
+                    (ShowTimePicker && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop is false) && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
 
                     var showMonthPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
-                    (ShowTimePicker is false && _showMonthPickerAsOverlayInternal is false) ||
-                    (ShowTimePicker && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop);
+                    (ShowTimePicker is false && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop)) ||
+                    (ShowTimePicker && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop) && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
 
                     var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
                 }
