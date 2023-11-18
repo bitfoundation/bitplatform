@@ -25,39 +25,7 @@ public class Middlewares
             app.UseResponseCompression();
         }
 
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Path.HasValue)
-            {
-                if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                }
-                if (context.Request.Path.Value.Contains("not-authorized", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                }
-            }
-
-            await next.Invoke(context);
-        });
-
-        app.UseStatusCodePages(options: new()
-        {
-            HandleAsync = async (statusCodeContext) =>
-            {
-                var httpContext = statusCodeContext.HttpContext;
-
-                if (httpContext.Response.StatusCode is 404)
-                {
-                    httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
-                }
-                else if (httpContext.Response.StatusCode is 401)
-                {
-                    httpContext.Response.Redirect($"/not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
-                }
-            }
-        });
+        Configure_401_403_404_Pages(app);
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -114,5 +82,44 @@ public class Middlewares
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(Assembly.Load("BlazorWeb.Client"));
+    }
+
+    private static void Configure_401_403_404_Pages(WebApplication app)
+    {
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path.HasValue)
+            {
+                if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                }
+                if (context.Request.Path.Value.Contains("not-authorized", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Response.StatusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                }
+            }
+
+            await next.Invoke(context);
+        });
+
+        app.UseStatusCodePages(options: new()
+        {
+            HandleAsync = async (statusCodeContext) =>
+            {
+                var httpContext = statusCodeContext.HttpContext;
+
+                if (httpContext.Response.StatusCode is 401 or 403)
+                {
+                    bool is403 = httpContext.Response.StatusCode is 403;
+
+                    httpContext.Response.Redirect($"/not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
+                }
+                else if (httpContext.Response.StatusCode is 404)
+                {
+                    httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+            }
+        });
     }
 }

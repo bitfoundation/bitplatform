@@ -55,6 +55,7 @@ public class AuthDelegatingHandler
                 {
                     await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", refreshTokenResponse!.AccessToken, refreshTokenResponse.ExpiresIn, true);
                     await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", refreshTokenResponse.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, true);
+                    await _serviceProvider.GetRequiredService<AppAuthenticationStateProvider>().RaiseAuthenticationStateHasChanged();
                 }
                 catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
 

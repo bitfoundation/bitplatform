@@ -6,6 +6,8 @@ public partial class NotAuthorizedPage
 
     [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
 
+    [SupplyParameterFromQuery, Parameter] public bool? IsForbidden { get; set; }
+
     protected override async Task OnParamsSetAsync()
     {
         _user = (await AuthenticationStateTask).User;
@@ -17,9 +19,17 @@ public partial class NotAuthorizedPage
     {
         try
         {
-            if (firstRender && _user.IsAuthenticated() is false)
+            if (firstRender)
             {
-                RedirectToSignInPage();
+                if (_user.IsAuthenticated() && IsForbidden is false)
+                {
+                    // There's a possibility that the access token might be refreshed using the refresh token, allowing the user to access the resource.
+                    NavigationManager.NavigateTo(RedirectUrl ?? "/");
+                }
+                else if (_user.IsAuthenticated() is false)
+                {
+                    RedirectToSignInPage();
+                }
             }
         }
         catch (Exception exp)
