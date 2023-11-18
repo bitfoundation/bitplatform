@@ -1,11 +1,14 @@
 ﻿using System.Text;
 using System.Text.Json;
+using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Services;
 
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
+    [AutoInject] private HttpClient _httpClient = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
@@ -14,13 +17,31 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var access_token = await _tokenProvider.GetAccessTokenAsync();
-
-        if (string.IsNullOrWhiteSpace(access_token)) return NotSignedIn();
-
         try
         {
-            var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
+            var access_token = await _tokenProvider.GetAccessTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(access_token))
+            {
+                var refresh_token = await _tokenProvider.GetRefreshTokenAsync();
+
+                if (refresh_token is not null)
+                {
+                    var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
+                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+                    access_token = refreshTokenResponse!.AccessToken;
+
+                    try
+                    {
+                        await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", refreshTokenResponse.AccessToken, refreshTokenResponse.ExpiresIn, true);
+                        await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", refreshTokenResponse.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, true);
+                    }
+                    catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
+                }
+            }
+
+            var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token ?? throw new UnauthorizedException()), authenticationType: "Bearer", nameType: "name", roleType: "role");
 
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
