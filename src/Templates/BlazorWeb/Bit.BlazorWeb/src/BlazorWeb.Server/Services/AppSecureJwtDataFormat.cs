@@ -12,41 +12,25 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
 {
     public AuthenticationTicket? Unprotect(string? protectedText)
         => Unprotect(protectedText, null);
+
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
     {
         var handler = new JwtSecurityTokenHandler();
-        ClaimsPrincipal? principal;
-        try
+        ClaimsPrincipal? principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
+        if (validToken is JwtSecurityToken validJwt)
         {
-            principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
-            if (validToken is not JwtSecurityToken validJwt)
+            var data = new AuthenticationTicket(principal, properties: new AuthenticationProperties()
             {
-                throw new ArgumentException("Invalid JWT");
-            }
-            if (!validJwt.Header.Alg.Equals(SecurityAlgorithms.RsaSha512, StringComparison.Ordinal))
-            {
-                throw new ArgumentException($"Algorithm must be '{SecurityAlgorithms.RsaSha512}'");
-            }
-        }
-        catch (SecurityTokenValidationException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
+                ExpiresUtc = validJwt.ValidTo
+            }, IdentityConstants.BearerScheme);
+            return data;
         }
 
-        var expire = long.Parse(principal.FindFirstValue("exp")!);
-
-        var data = new AuthenticationTicket(principal, properties: new(new Dictionary<string, string?>()
-        {
-            { ".expires",  DateTimeOffset.FromUnixTimeSeconds(expire).ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture) }
-        }), "Identity.Bearer:AccessToken");
-
-        return data;
+        throw new InvalidOperationException("Jwt token is not valid");
     }
+
     public string Protect(AuthenticationTicket data) => Protect(data, null);
+
     public string Protect(AuthenticationTicket data, string? purpose)
     {
         var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
@@ -57,7 +41,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
                 Issuer = appSettings.IdentitySettings.Issuer,
                 Audience = appSettings.IdentitySettings.Audience,
                 IssuedAt = DateTime.UtcNow,
-                Expires = DateTime.UtcNow + appSettings.IdentitySettings.BearerTokenExpiration,
+                Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.RsaSha512),
                 Subject = new ClaimsIdentity(data.Principal.Claims),
             });

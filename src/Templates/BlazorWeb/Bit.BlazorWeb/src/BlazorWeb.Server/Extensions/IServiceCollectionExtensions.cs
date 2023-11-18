@@ -121,7 +121,7 @@ public static class IServiceCollectionExtensions
                 ValidateIssuer = true,
                 ValidIssuer = settings.Issuer,
 
-                AuthenticationType = IdentityConstants.ApplicationScheme
+                AuthenticationType = IdentityConstants.BearerScheme
             };
 
             options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
