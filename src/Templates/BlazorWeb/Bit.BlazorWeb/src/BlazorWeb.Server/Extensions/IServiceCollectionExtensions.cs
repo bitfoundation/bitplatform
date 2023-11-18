@@ -4,11 +4,14 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using BlazorWeb.Server;
 using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Client.Services;
-using Microsoft.JSInterop;
 using BlazorWeb.Client.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
 using BlazorWeb.Shared.Dtos.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using BlazorWeb.Server.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -57,6 +60,11 @@ public static class IServiceCollectionExtensions
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
+        // https://github.com/dotnet/aspnetcore/issues/4660
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
         var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
 
         services.AddDataProtection()
@@ -88,6 +96,33 @@ public static class IServiceCollectionExtensions
         {
             options.BearerTokenExpiration = settings.BearerTokenExpiration;
             options.RefreshTokenExpiration = TimeSpan.FromSeconds(TokenResponseDto.RefreshTokenExpiresIn);
+
+            var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
+            RSA? rsaPrivateKey;
+            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet))
+            {
+                rsaPrivateKey = signingCert.GetRSAPrivateKey();
+            }
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ClockSkew = TimeSpan.Zero,
+                RequireSignedTokens = true,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(rsaPrivateKey),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+
+                ValidateAudience = true,
+                ValidAudience = settings.Audience,
+
+                ValidateIssuer = true,
+                ValidIssuer = settings.Issuer,
+            };
+
+            options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
 
             options.Events = new()
             {

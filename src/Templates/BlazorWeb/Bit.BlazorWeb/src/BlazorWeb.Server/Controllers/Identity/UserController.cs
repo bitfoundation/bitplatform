@@ -42,7 +42,7 @@ public partial class UserController : AppControllerBase
     [HttpDelete]
     public async Task Delete(CancellationToken cancellationToken)
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
                     ?? throw new ResourceNotFoundException();

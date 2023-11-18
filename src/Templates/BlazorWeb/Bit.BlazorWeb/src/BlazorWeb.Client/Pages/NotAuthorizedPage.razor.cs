@@ -6,7 +6,7 @@ public partial class NotAuthorizedPage
 
     [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
 
-    protected async override Task OnParamsSetAsync()
+    protected override async Task OnParamsSetAsync()
     {
         _user = (await AuthenticationStateTask).User;
 

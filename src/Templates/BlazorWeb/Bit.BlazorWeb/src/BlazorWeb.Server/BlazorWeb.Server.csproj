@@ -64,7 +64,6 @@
         <Using Include="BlazorWeb.Server.Data" />
         <Using Include="BlazorWeb.Server.Mappers" />
         <Using Include="BlazorWeb.Shared.Enums" />
-        <Using Include="BlazorWeb.Server.Services.Contracts" />
     </ItemGroup>
 
     <ItemGroup>

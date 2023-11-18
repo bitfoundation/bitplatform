@@ -20,7 +20,7 @@ public partial class AttachmentController : AppControllerBase
         if (file is null)
             throw new BadRequestException();
 
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -92,7 +92,7 @@ public partial class AttachmentController : AppControllerBase
     [HttpDelete]
     public async Task RemoveProfileImage()
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -116,7 +116,7 @@ public partial class AttachmentController : AppControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProfileImage()
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
 

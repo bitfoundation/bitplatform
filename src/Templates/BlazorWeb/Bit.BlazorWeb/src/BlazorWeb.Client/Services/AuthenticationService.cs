@@ -17,14 +17,14 @@ public partial class AuthenticationService : IAuthenticationService
             .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
         await StoreAuthToken(result!, dto.RememberMe);
+
+        await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
 
     public async Task StoreAuthToken(TokenResponseDto result, bool rememberMe)
     {
         await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result.AccessToken, result.ExpiresIn, rememberMe);
         await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", result.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, rememberMe);
-
-        await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
 
     public async Task SignOut()

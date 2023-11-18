@@ -10,7 +10,7 @@ public partial class TodoItemController : AppControllerBase
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get()
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         return DbContext.TodoItems
             .Where(t => t.UserId == userId)
@@ -49,7 +49,7 @@ public partial class TodoItemController : AppControllerBase
     {
         var todoItemToAdd = dto.Map();
 
-        todoItemToAdd.UserId = UserInformationProvider.GetUserId();
+        todoItemToAdd.UserId = User.GetUserId();
 
         todoItemToAdd.Date = DateTimeOffset.UtcNow;
 

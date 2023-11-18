@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
 using BlazorWeb.Server.Components;
 using Microsoft.AspNetCore.Http.Extensions;
-using static BlazorWeb.Server.Startup.Middlewares;
 using System.Net;
 
 namespace BlazorWeb.Server.Startup;

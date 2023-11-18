@@ -84,7 +84,7 @@ public partial class NavMenu : IDisposable
             StateHasChanged();
         });
 
-        _user = await PrerenderStateService.GetValue($"CurrentUser", async () =>
+        _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
         var access_token = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);

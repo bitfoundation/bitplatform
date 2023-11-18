@@ -56,4 +56,6 @@ public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
     public override IdentityError UserLockoutNotEnabled() => CreateIdentityError(nameof(IdentityStrings.UserLockoutNotEnabled));
 
     public override IdentityError UserNotInRole(string role) => CreateIdentityError(nameof(IdentityStrings.UserNotInRole), role);
+
+    public override IdentityError DefaultError() => CreateIdentityError(nameof(IdentityStrings.DefaultError));
 }

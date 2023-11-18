@@ -20,7 +20,6 @@ public static class Services
 
         services.AddClientSharedServices();
 
-        services.AddScoped<IUserInformationProvider, UserInformationProvider>();
         services.AddExceptionHandler<ApiExceptionHandler>();
 
         services.AddBlazor(configuration);
