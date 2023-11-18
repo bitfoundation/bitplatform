@@ -214,6 +214,21 @@ public partial class BitDatePicker
     [Parameter] public string GoToNowTitle { get; set; } = "Go to now";
 
     /// <summary>
+    /// The title of the ShowTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+
+    /// <summary>
+    /// The title of the HideTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string HideTimePickerTitle { get; set; } = "Hide time picker";
+
+    /// <summary>
+    /// The title of the CloseDatePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string CloseDatePickerTitle { get; set; } = "Close date picker";
+
+    /// <summary>
     /// Determines if the DatePicker has a border.
     /// </summary>
     [Parameter] public bool HasBorder { get; set; } = true;
@@ -654,7 +669,7 @@ public partial class BitDatePicker
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        if (_showMonthPickerAsOverlayInternal)
+        if (_showMonthPickerAsOverlayInternal || ShowTimePicker)
         {
             ToggleMonthPickerOverlay();
         }

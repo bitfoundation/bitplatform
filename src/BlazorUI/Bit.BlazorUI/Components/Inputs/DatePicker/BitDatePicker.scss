@@ -189,40 +189,38 @@
         font-weight: bold;
     }
 
-    @media only screen and (max-width: 600px) {
-        .bit-dtp-grp {
-            justify-content: center;
-        }
+    .bit-dtp-grp {
+        justify-content: center;
+    }
 
-        .bit-dtp-tdv {
-            font-size: spacing(7);
-        }
+    .bit-dtp-tdv {
+        font-size: spacing(7);
+    }
 
-        .bit-dtp-tin {
-            width: 100%;
-            min-width: spacing(7);
-            max-width: spacing(12);
-            font-size: spacing(5);
-        }
+    .bit-dtp-tin {
+        width: 100%;
+        min-width: spacing(7);
+        max-width: spacing(12);
+        font-size: spacing(5);
+    }
 
-        .bit-dtp-tbt {
-            width: 100%;
-            min-width: spacing(7);
-            max-width: spacing(12);
-            font-size: spacing(3);
-        }
+    .bit-dtp-tbt {
+        width: 100%;
+        min-width: spacing(7);
+        max-width: spacing(12);
+        font-size: spacing(3);
+    }
 
-        .bit-dtp-bam,
-        .bit-dtp-bpm {
-            width: 100%;
-            font-size: spacing(4);
-            margin: spacing(0.25);
-        }
+    .bit-dtp-bam,
+    .bit-dtp-bpm {
+        width: 100%;
+        font-size: spacing(4);
+        margin: spacing(0.25);
+    }
 
-        .bit-dtp-cbn {
-            display: block;
-            max-width: spacing(5);
-        }
+    .bit-dtp-cbn {
+        display: block;
+        max-width: spacing(5);
     }
 }
 
@@ -621,7 +619,7 @@
     }
 }
 
-.bit-dtp-tpc {
+.bit-dtp-tic {
     margin: 0;
     padding: spacing(2);
     display: flex;
@@ -632,12 +630,6 @@
     align-content: center;
     justify-content: center;
     flex: 0.85;
-}
-
-.bit-dtp-tim {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     gap: spacing(1);
 }
 
@@ -725,30 +717,6 @@
         background-color: $color-action-active-primary;
     }
 }
-/*
-.bit-dtp-tin {
-    border: none;
-    display: flex;
-    cursor: pointer;
-    text-align: center;
-    align-items: center;
-    width: spacing(3.75);
-    height: spacing(3.75);
-    box-sizing: border-box;
-    justify-content: center;
-    -moz-appearance: textfield;
-    background-color: $color-background-primary;
-
-    &::-webkit-inner-spin-button,
-    &::-webkit-outer-spin-button {
-        -webkit-appearance: none
-    }
-
-    &:focus {
-        border: none;
-        outline: none;
-    }
-}*/
 
 .bit-dtp-ovl {
     top: 0;

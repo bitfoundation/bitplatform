@@ -67,15 +67,23 @@
                     var todayYear = Culture.Calendar.GetYear(DateTime.Now);
                     var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
                     var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
-                    var showMonthPickerOverlay = (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || _showMonthPickerAsOverlayInternal is false;
-                    var showTimePickerOverlay = (_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false;
+
+                    var showDayPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop is false && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
+                    (ShowTimePicker is false && _showMonthPickerAsOverlayInternal) ||
+                    (ShowTimePicker && _showMonthPickerAsOverlayInternal is false && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
+
+                    var showMonthPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
+                    (ShowTimePicker is false && _showMonthPickerAsOverlayInternal is false) ||
+                    (ShowTimePicker && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop);
+
+                    var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
                 }
 
-                @if ((_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false) || _showMonthPickerAsOverlayInternal is false)
+                @if (showDayPicker)
                 {
                     <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
                         <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
-                            @if (_showMonthPickerAsOverlayInternal)
+                            @if (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false))
                             {
                                 var title = string.Format(MonthPickerToggleTitle, _monthTitle);
                                 <button @onclick="@ToggleMonthPickerOverlay"
@@ -146,7 +154,8 @@
                                             type="button"
                                             style="@Styles?.CloseButton"
                                             class="bit-dtp-nbt @Classes?.CloseButton"
-                                            title="Close date picker">
+                                            title="@CloseDatePickerTitle"
+                                            aria-label="@CloseDatePickerTitle">
                                         <i aria-hidden="true"
                                            style="@Styles?.CloseButtonIcon"
                                            class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" />
@@ -239,12 +248,12 @@
                     </div>
                 }
 
-                @if (_showMonthPickerAsOverlayInternal is false || (ShowTimePicker && _showTimePickerAsOverlayInternal is false))
+                @if (_showMonthPickerAsOverlayInternal is false && showTimePicker is false)
                 {
                     <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
                 }
 
-                @if (showMonthPickerOverlay && (ShowTimePicker is false || showTimePickerOverlay is false))
+                @if (showMonthPicker)
                 {
                     <div style="@Styles?.YearMonthPickerWrapper" class="bit-dtp-mwp @Classes?.YearMonthPickerWrapper">
                         @if (_showMonthPicker)
@@ -310,10 +319,10 @@
                                         <button @onclick="@ToggleTimePickerOverlay"
                                                 tabindex="0"
                                                 type="button"
-                                                title="Show time picker"
+                                                title="@ShowTimePickerTitle"
                                                 aria-live="polite"
                                                 aria-atomic="true"
-                                                aria-label="Show time picker"
+                                                aria-label="@ShowTimePickerTitle"
                                                 style="@Styles?.ShowTimePickerButton"
                                                 class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
                                             <i aria-hidden="true"
@@ -454,8 +463,13 @@
                     </div>
                 }
 
-                @if (ShowTimePicker && showTimePickerOverlay)
+                @if (showTimePicker)
                 {
+                    @if (_showTimePickerAsOverlayInternal is false)
+                    {
+                        <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
+                    }
+
                     <div style="@Styles?.TimePickerWrapper" class="bit-dtp-twp @Classes?.TimePickerWrapper">
                         <div style="@Styles?.TimePickerHeader" class="bit-dtp-pkh bit-dtp-tph @Classes?.TimePickerHeader">
                             <div style="@Styles?.TimePickerNavWrapper" class="bit-dtp-nbc @Classes?.TimePickerNavWrapper">
@@ -476,71 +490,73 @@
                                 {
                                     <button @onclick="ToggleTimePickerOverlay"
                                             type="button"
-                                            style="@Styles?.BackToCalendarButton"
-                                            class="bit-dtp-nbt @Classes?.BackToCalendarButton"
-                                            title="Back to calendar">
-                                        <i class="bit-icon bit-icon--CalendarMirrored" aria-hidden="true" />
+                                            style="@Styles?.HideTimePickerButton"
+                                            class="bit-dtp-nbt @Classes?.HideTimePickerButton"
+                                            title="@HideTimePickerTitle">
+                                        <i style="@Styles?.HideTimePickerIcon" class="bit-icon bit-icon--CalendarMirrored @Classes?.HideTimePickerIcon" aria-hidden="true" />
                                     </button>
                                 }
                             </div>
                         </div>
-                        <div style="@Styles?.TimePickerContainer" class="bit-dtp-tpc @Classes?.TimePickerContainer">
-                            <div class="bit-dtp-tim">
-                                <div class="bit-dtp-tpr">
-                                    <button @onpointerup="HandleOnPointerUpOrOut"
-                                            @onpointerout="HandleOnPointerUpOrOut"
-                                            @onpointerdown="() => HandleOnPointerDown(true, true)"
-                                            type="button"
-                                            class="bit-dtp-tbt">
-                                        <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
-                                    </button>
-                                    <input @ref="_inputTimeHourRef"
-                                           @bind="@_hourView"
-                                           @bind:event="oninput"
-                                           @onfocus="HandleOnTimeHourFocus"
-                                           min="0"
-                                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
-                                           type="number"
-                                           inputmode="numeric"
-                                           style="@Styles?.TimePickerHourInput"
-                                           class="bit-dtp-tin @Classes?.TimePickerHourInput"
-                                           autocomplete="@BitAutoCompleteValue.NewPassword" />
-                                    <button @onpointerup="HandleOnPointerUpOrOut"
-                                            @onpointerout="HandleOnPointerUpOrOut"
-                                            @onpointerdown="() => HandleOnPointerDown(false, true)"
-                                            type="button"
-                                            class="bit-dtp-tbt">
-                                        <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
-                                    </button>
-                                </div>
-                                <div style="@Styles?.TimePickerDivider" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerDivider">:</div>
-                                <div class="bit-dtp-tpr">
-                                    <button @onpointerup="HandleOnPointerUpOrOut"
-                                            @onpointerout="HandleOnPointerUpOrOut"
-                                            @onpointerdown="() => HandleOnPointerDown(true, false)"
-                                            type="button"
-                                            class="bit-dtp-tbt">
-                                        <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
-                                    </button>
-                                    <input @ref="_inputTimeMinuteRef"
-                                           @bind="@_minuteView"
-                                           @bind:event="oninput"
-                                           @onfocus="HandleOnTimeMinuteFocus"
-                                           min="0"
-                                           max="59"
-                                           type="number"
-                                           inputmode="numeric"
-                                           style="@Styles?.TimePickerMinuteInput"
-                                           class="bit-dtp-tin @Classes?.TimePickerMinuteInput"
-                                           autocomplete="@BitAutoCompleteValue.NewPassword" />
-                                    <button @onpointerup="HandleOnPointerUpOrOut"
-                                            @onpointerout="HandleOnPointerUpOrOut"
-                                            @onpointerdown="() => HandleOnPointerDown(false, false)"
-                                            type="button"
-                                            class="bit-dtp-tbt">
-                                        <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
-                                    </button>
-                                </div>
+                        <div style="@Styles?.TimeInputContainer" class="bit-dtp-tic @Classes?.TimeInputContainer">
+                            <div style="@Styles?.HourInputContainer" class="bit-dtp-tpr @Classes?.HourInputContainer">
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(true, true)"
+                                        type="button"
+                                        style="@Styles?.TimePickerHourIncreaseButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerHourIncreaseButton">
+                                    <i style="@Styles?.TimePickerHourIncreaseIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerHourIncreaseIcon" aria-hidden="true" />
+                                </button>
+                                <input @ref="_inputTimeHourRef"
+                                       @bind="@_hourView"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeHourFocus"
+                                       min="0"
+                                       max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
+                                       type="number"
+                                       inputmode="numeric"
+                                       style="@Styles?.TimePickerHourInput"
+                                       class="bit-dtp-tin @Classes?.TimePickerHourInput"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(false, true)"
+                                        type="button"
+                                        style="@Styles?.TimePickerHourDecreaseButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerHourDecreaseButton">
+                                    <i style="@Styles?.TimePickerHourDecreaseIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerHourDecreaseIcon" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div style="@Styles?.TimePickerDivider" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerDivider">:</div>
+                            <div style="@Styles?.MinuteInputContainer" class="bit-dtp-tpr @Classes?.MinuteInputContainer">
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(true, false)"
+                                        type="button"
+                                        style="@Styles?.TimePickerMinuteIncreaseButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerMinuteIncreaseButton">
+                                    <i style="@Styles?.TimePickerMinuteIncreaseIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerMinuteIncreaseIcon" aria-hidden="true" />
+                                </button>
+                                <input @ref="_inputTimeMinuteRef"
+                                       @bind="@_minuteView"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeMinuteFocus"
+                                       min="0"
+                                       max="59"
+                                       type="number"
+                                       inputmode="numeric"
+                                       style="@Styles?.TimePickerMinuteInput"
+                                       class="bit-dtp-tin @Classes?.TimePickerMinuteInput"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(false, false)"
+                                        type="button"
+                                        style="@Styles?.TimePickerMinuteDecreaseButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerMinuteDecreaseButton">
+                                    <i style="@Styles?.TimePickerMinuteDecreaseIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerMinuteDecreaseIcon" aria-hidden="true" />
+                                </button>
                             </div>
 
                             @if (TimeFormat == BitTimeFormat.TwelveHours)
