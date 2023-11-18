@@ -20,8 +20,10 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "OnChange",
-            Type = "EventCallback<BitColorEventArgs>",
+            Type = "EventCallback<BitColorChangeEventArgs>",
             Description = "Callback for when the value changed.",
+            LinkType = LinkType.Link,
+            Href = "#color-change-event-args",
         },
         new()
         {
@@ -39,75 +41,86 @@ public partial class BitColorPickerDemo
         },
     };
 
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "color-change-event-args",
+            Title = "BitColorChangeEventArgs",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Color",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The main color value of the changed color in the same format as the Color parameter of the ColorPicker."
+                },
+                new()
+                {
+                    Name = "Alpha",
+                    Type = "double",
+                    DefaultValue = "0",
+                    Description = "The alpha value of the changed color."
+                },
+            }
+        }
+    };
 
 
-    private string BasicRgbColor = "rgb(255,255,255)";
-    private string BasicHexColor = "#FFFFFF";
 
-    private string AlphaRgbColor = "rgb(255,255,255)";
-    private double Alpha = 1;
+    private string rgbColor = "rgb(255,255,255)";
+    private string hexColor = "#FFFFFF";
+    private string twoWayColor = "#FFFFFF";
 
-    private string TwoWayColor = "#FFFFFF";
+    private string? changedColor;
+    private double changedAlpha;
 
-    private BitColorValue ColorValue;
+    private string boundColor = "#FFFFFF";
+    private BitColorPicker colorPickerRef = default!;
 
-    private string BoundColor = "#FFFFFF";
-    private BitColorPicker ColorPicker;
 
 
     private readonly string example1RazorCode = @"
-<BitLabel>Rgb</BitLabel>
-<BitColorPicker @bind-Color=""BasicRgbColor"" />
-<span>Color: @BasicRgbColor</span>
-
-<BitLabel>Hex</BitLabel>
-<BitColorPicker @bind-Color=""BasicHexColor"" />
-<span>Color: @BasicHexColor</span>";
-    private readonly string example1CsharpCode = @"
-private string BasicRgbColor = ""rgb(255,255,255)"";
-private string BasicHexColor = ""#FFFFFF"";
-";
+<BitColorPicker />";
 
     private readonly string example2RazorCode = @"
-<BitColorPicker @bind-Color=""AlphaRgbColor"" @bind-Alpha=""Alpha"" ShowAlphaSlider=""true"" />
-<span>Color: @AlphaRgbColor</span>
-<span>Alpha: @Alpha</span>";
-    private readonly string example2CsharpCode = @"
-private string AlphaRgbColor = ""rgb(255,255,255)"";
-private double Alpha = 1;
-";
-
-    private readonly string example3RazorCode = @"
 <BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />";
 
+    private readonly string example3RazorCode = @"
+<BitColorPicker @bind-Color=""rgbColor"" />
+<div>Color: @rgbColor</div>
+
+<BitColorPicker @bind-Color=""hexColor"" />
+<div>Color: @hexColor</div>
+
+<BitColorPicker @bind-Color=""twoWayColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""twoWayColor"" Style=""width: 200px;"" />";
+    private readonly string example3CsharpCode = @"
+private string rgbColor = ""rgb(255,255,255)"";
+private string hexColor = ""#FFFFFF"";
+private string twoWayColor = ""#FFFFFF"";";
+
     private readonly string example4RazorCode = @"
-<BitColorPicker @bind-Color=""TwoWayColor"" ShowPreview=""true"" />
-<BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""TwoWayColor"" Style=""width: 200px;"" />";
+<BitColorPicker OnChange=""v => (changedColor, changedAlpha) = v"" ShowAlphaSlider=""true"" />
+<div>Color: @changedColor</div>
+<div>Alpha: @changedAlpha</div>";
     private readonly string example4CsharpCode = @"
-private string TwoWayColor = ""#FFFFFF"";
-";
+private string? changedColor;
+private double changedAlpha;";
 
     private readonly string example5RazorCode = @"
-<BitColorPicker OnChange=""(value) => ColorValue = value"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
-<span>Color (Hex): @ColorValue?.Color</span>
-<span>Alpha: @ColorValue?.Alpha</span>";
+<BitColorPicker @ref=""colorPickerRef"" @bind-Color=""boundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<div>Color: @boundColor</div>
+<div>Hex: @colorPickerRef?.Hex</div>
+<div>Rgb: @colorPickerRef?.Rgb</div>
+<div>Rgba: @colorPickerRef?.Rgba</div>
+<div>Hsv: @colorPickerRef?.Hsv</div>";
     private readonly string example5CsharpCode = @"
-private BitColorValue ColorValue;
-";
+private string boundColor = ""#FFFFFF"";
+private BitColorPicker colorPickerRef = default!;";
 
     private readonly string example6RazorCode = @"
-<BitColorPicker @ref=""ColorPicker"" @bind-Color=""BoundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
-<span>Color Value: @BoundColor</span>
-<span>Hex: @ColorPicker?.Hex</span>
-<span>Rgb: @ColorPicker?.Rgb</span>
-<span>Rgba: @ColorPicker?.Rgba</span>
-<span>Hsv: @ColorPicker?.Hsv</span>";
-    private readonly string example6CsharpCode = @"
-private string BoundColor = ""#FFFFFF"";
-private BitColorPicker ColorPicker;
-";
-
-    private readonly string example7RazorCode = @"
 <style>
     .custom-color-picker {
         width: 100px;
@@ -115,9 +128,7 @@ private BitColorPicker ColorPicker;
     }
 </style>
 
-<BitLabel>Class</BitLabel>
 <BitColorPicker ShowAlphaSlider=""true"" Class=""custom-color-picker"" />
 
-<BitLabel>Style</BitLabel>
 <BitColorPicker ShowAlphaSlider=""true"" Style=""width: 250px; height: 150px;"" />";
 }

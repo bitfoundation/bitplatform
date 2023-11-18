@@ -45,7 +45,7 @@
             @if (ShowAlphaSlider)
             {
                 <div class="bit-clp-sld bit-clp-asd"
-                     style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
+                     style=@($"background:linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
                     <input @oninput="HandleOnAlphaInput"
                            step="0.01"
                            min="0"
@@ -63,9 +63,10 @@
                 </div>
             }
         </div>
+
         @if (ShowPreview)
         {
-            <div class="bit-clp-pre" style=@($"background: {(ShowAlphaSlider ? _color.Rgba : _color.Rgb)}")></div>
+            <div class="bit-clp-pre" style=@($"background: {_color.Rgba}")></div>
         }
     </div>
 </div>  

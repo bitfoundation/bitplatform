@@ -8,8 +8,8 @@ public partial class BitColorPicker : IDisposable
     private bool AlphaHasBeenSet;
 
     private bool _disposed;
-    private BitColor _color = new();
-    private BitColorType _colorType;
+    private BitInternalColor _color = new();
+    private BitInternalColorType _colorType;
     private bool _saturationPickerPointerDown;
     private string? _pointerUpAbortControllerId;
     private string? _pointerMoveAbortControllerId;
@@ -52,14 +52,14 @@ public partial class BitColorPicker : IDisposable
     [Parameter]
     public string Color
     {
-        get => _colorType == BitColorType.Hex ? _color.Hex! : _color.Rgb!;
+        get => _colorType == BitInternalColorType.Hex ? _color.Hex! : _color.Rgb!;
         set
         {
             _colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase)
-                            ? BitColorType.Hex
-                            : BitColorType.Rgb;
+                            ? BitInternalColorType.Hex
+                            : BitInternalColorType.Rgb;
 
-            var newColor = new BitColor(value, Alpha);
+            var newColor = new BitInternalColor(value, Alpha);
 
             if (newColor.R == _color.R && newColor.G == _color.G && newColor.B == _color.B && newColor.A == _color.A) return;
 
@@ -79,7 +79,7 @@ public partial class BitColorPicker : IDisposable
     /// <summary>
     /// Callback for when the value changed.
     /// </summary>
-    [Parameter] public EventCallback<BitColorValue> OnChange { get; set; }
+    [Parameter] public EventCallback<BitColorChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
     /// Whether to show a slider for editing alpha value.
@@ -140,7 +140,7 @@ public partial class BitColorPicker : IDisposable
 
     private void SetSaturationPickerStyle()
     {
-        var rgb = BitColor.ToRgb(_selectedHue, 1, 1).ToString();
+        var rgb = BitInternalColor.ToRgb(_selectedHue, 1, 1).ToString();
         _saturationPickerStyle = $"background-color:rgb{rgb}";
     }
 
@@ -164,7 +164,7 @@ public partial class BitColorPicker : IDisposable
         _selectedValue = Math.Clamp((pickerRect.Height - e.ClientY + pickerRect.Top) / pickerRect.Height, 0, 1);
 
         _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
-        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
 
         SetSaturationPickerStyle();
 
@@ -182,7 +182,7 @@ public partial class BitColorPicker : IDisposable
         _selectedHue = Convert.ToDouble(args.Value);
         _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
 
-        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
 
         SetSaturationPickerStyle();
 
@@ -196,7 +196,7 @@ public partial class BitColorPicker : IDisposable
         if (AlphaHasBeenSet && AlphaChanged.HasDelegate is false) return;
 
         _color.A = Convert.ToDouble(args.Value);
-        var colorValue = _colorType == BitColorType.Hex ? _color.Hex : _color.Rgb;
+        var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
 
         await ColorChanged.InvokeAsync(colorValue);
         await AlphaChanged.InvokeAsync(_color.A);

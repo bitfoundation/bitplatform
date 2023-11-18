@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Bit.BlazorUI.Tests")]
 namespace Bit.BlazorUI;
 
-internal class BitColor
+internal class BitInternalColor
 {
     private string? _hex;
     private string? _rgb;
@@ -30,25 +30,25 @@ internal class BitColor
             GenerateStringValues();
         }
     }
-    public BitColor()
+    public BitInternalColor()
     {
         CalculateHsv();
         GenerateStringValues();
     }
 
-    public BitColor(string color = "", double alpha = 1.0)
+    public BitInternalColor(string color = "", double alpha = 1.0)
     {
         Parse(color, alpha);
         CalculateHsv();
         GenerateStringValues();
     }
 
-    public BitColor(double hue, double saturation, double value, double alpha)
+    public BitInternalColor(double hue, double saturation, double value, double alpha)
     {
         Update(hue, saturation, value, alpha);
     }
 
-    public BitColor(byte red = 255, byte green = 255, byte blue = 255, double alpha = 1.0)
+    public BitInternalColor(byte red = 255, byte green = 255, byte blue = 255, double alpha = 1.0)
     {
         R = red;
         G = green;
@@ -101,7 +101,7 @@ internal class BitColor
     private void Parse(string color, double alpha = 1.0)
     {
         A = alpha;
-        ResetRgb();
+        ResetColor();
 
         try
         {
@@ -121,23 +121,29 @@ internal class BitColor
 
                 if (colorValues.Length >= 3)
                 {
-                    R = byte.Parse(colorValues[0], CultureInfo.InvariantCulture);
-                    G = byte.Parse(colorValues[1], CultureInfo.InvariantCulture);
-                    B = byte.Parse(colorValues[2], CultureInfo.InvariantCulture);
+                    R = byte.Parse(colorValues[0]);
+                    G = byte.Parse(colorValues[1]);
+                    B = byte.Parse(colorValues[2]);
+
+                    if (colorValues.Length == 4)
+                    {
+                        A = double.Parse(colorValues[3]);
+                    }
                 }
             }
         }
         catch
         {
-            ResetRgb();
+            ResetColor();
         }
     }
 
-    private void ResetRgb()
+    private void ResetColor()
     {
         R = 255;
         G = 255;
         B = 255;
+        A = 1;
     }
 
     private void CalculateHsv()
