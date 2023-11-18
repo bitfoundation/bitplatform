@@ -7,4 +7,6 @@ public interface IAuthenticationService
     Task SignIn(SignInRequestDto dto);
 
     Task SignOut();
+
+    Task StoreAuthToken(TokenResponseDto result, bool rememberMe);
 }

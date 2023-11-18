@@ -4,7 +4,6 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
     [AutoInject] private HttpClient _httpClient = default!;
-    [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
@@ -19,12 +18,11 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
         try
         {
-            var userDto = await _prerenderStateService.GetValue($"CurrentUser", async () =>
-                await _httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
+            var userDto = await _httpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
 
             var claimPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims: new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, userDto!.Id.ToString()),
                 new Claim(ClaimTypes.Name, userDto.UserName!)
             }, authenticationType: "Bearer", nameType: "name", roleType: "role"));
 

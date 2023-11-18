@@ -7,20 +7,20 @@ public class AuthDelegatingHandler
     : DelegatingHandler
 {
     private IAuthTokenProvider _tokenProvider = default!;
-    private IJSRuntime _jsRuntime = default!;
+    private IServiceProvider _serviceProvider = default!;
 
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, RetryDelegatingHandler handler)
         : base(handler)
     {
         _tokenProvider = tokenProvider;
-        _jsRuntime = jsRuntime;
+        _serviceProvider = serviceProvider;
     }
 
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider)
         : base()
     {
         _tokenProvider = tokenProvider;
-        _jsRuntime = jsRuntime;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -44,19 +44,18 @@ public class AuthDelegatingHandler
 
             if (refreshToken is not null)
             {
-                HttpRequestMessage refreshRequest = new(HttpMethod.Post, "api/Identity/Refresh")
-                {
-                    Content = JsonContent.Create(new RefreshRequestDto { RefreshToken = refreshToken }, AppJsonContext.Default.RefreshRequestDto)
-                };
+                var httpClient = _serviceProvider.GetRequiredService<HttpClient>();
 
-                var refreshTokenResponse = await (await base.SendAsync(refreshRequest, cancellationToken))
-                    .EnsureSuccessStatusCode().Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
+                var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refreshToken }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
+                    .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
+
+                var authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
+
                 try
                 {
-                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", refreshTokenResponse!.AccessToken, refreshTokenResponse.ExpiresIn, true);
-                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", refreshTokenResponse.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, true);
+                    await authService.StoreAuthToken(refreshTokenResponse!, rememberMe: true);
                 }
-                catch (InvalidOperationException) { }
+                catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
 

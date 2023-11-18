@@ -16,8 +16,13 @@ public partial class AuthenticationService : IAuthenticationService
         var result = await (await _httpClient.PostAsJsonAsync("Identity/SignIn", dto, AppJsonContext.Default.SignInRequestDto))
             .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-        await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result!.AccessToken, result.ExpiresIn, dto.RememberMe);
-        await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", result.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, dto.RememberMe);
+        await StoreAuthToken(result!, dto.RememberMe);
+    }
+
+    public async Task StoreAuthToken(TokenResponseDto result, bool rememberMe)
+    {
+        await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result.AccessToken, result.ExpiresIn, rememberMe);
+        await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", result.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, rememberMe);
 
         await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }

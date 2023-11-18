@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System;
 using System.Web;
 using BlazorWeb.Server.Components;
 using BlazorWeb.Server.Models.Emailing;
@@ -10,8 +9,6 @@ using FluentEmail.Core;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 
 namespace BlazorWeb.Server.Controllers.Identity;
 

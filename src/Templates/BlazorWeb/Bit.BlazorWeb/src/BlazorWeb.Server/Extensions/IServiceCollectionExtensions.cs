@@ -29,7 +29,7 @@ public static class IServiceCollectionExtensions
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("BlazorHttpClient")
             .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
-            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
+            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp))
             .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
             .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
             .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
