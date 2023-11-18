@@ -1326,6 +1326,44 @@ public partial class BitDatePicker
         StateHasChanged();
     }
 
+    private bool ShowDayPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false);
+        }
+    }
+
+    private bool ShowMonthPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return (_showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop)) && _isTimePickerOverlayOnTop is false;
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop);
+        }
+    }
+
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {

@@ -67,19 +67,10 @@
                     var todayYear = Culture.Calendar.GetYear(DateTime.Now);
                     var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
                     var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
-
-                    var showDayPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop is false && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
-                    (ShowTimePicker is false && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop is false)) ||
-                    (ShowTimePicker && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop is false) && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
-
-                    var showMonthPicker = ((_showMonthPickerAsOverlayInternal || ShowTimePicker) && _isMonthPickerOverlayOnTop && _showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop is false) ||
-                    (ShowTimePicker is false && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop)) ||
-                    (ShowTimePicker && (_showMonthPickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop) && _showTimePickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false);
-
                     var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
                 }
 
-                @if (showDayPicker)
+                @if (ShowDayPicker())
                 {
                     <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
                         <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
@@ -248,13 +239,13 @@
                     </div>
                 }
 
-                @if (_showMonthPickerAsOverlayInternal is false && showTimePicker is false)
+                @if (ShowMonthPicker())
                 {
-                    <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
-                }
+                    @if (_showMonthPickerAsOverlayInternal is false)
+                    {
+                        <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
+                    }
 
-                @if (showMonthPicker)
-                {
                     <div style="@Styles?.YearMonthPickerWrapper" class="bit-dtp-mwp @Classes?.YearMonthPickerWrapper">
                         @if (_showMonthPicker)
                         {
@@ -465,7 +456,7 @@
 
                 @if (showTimePicker)
                 {
-                    @if (_showTimePickerAsOverlayInternal is false)
+                    @if (_showTimePickerAsOverlayInternal is false || _showMonthPickerAsOverlayInternal is false)
                     {
                         <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
                     }
