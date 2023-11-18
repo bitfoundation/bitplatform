@@ -30,4 +30,16 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 
         return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
     }
+
+    public async Task<string?> GetRefreshTokenAsync()
+    {
+        var isInitialized = (bool)IsInitializedProp.GetValue(_jsRuntime)!;
+
+        if (isInitialized)
+        {
+            return await _jsRuntime.InvokeAsync<string>("App.getCookie", "refresh_token");
+        }
+
+        return _httpContextAccessor.HttpContext?.Request.Cookies["refresh_token"];
+    }
 }

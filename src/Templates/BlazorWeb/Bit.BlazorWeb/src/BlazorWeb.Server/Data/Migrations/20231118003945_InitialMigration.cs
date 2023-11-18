@@ -28,6 +28,20 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "DataProtectionKeys",
+            columns: table => new
+            {
+                Id = table.Column<int>(type: "int", nullable: false)
+                    .Annotation("SqlServer:Identity", "1, 1"),
+                FriendlyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                Xml = table.Column<string>(type: "nvarchar(max)", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
+            });
+
+        migrationBuilder.CreateTable(
             name: "Roles",
             columns: table => new
             {
@@ -240,7 +254,7 @@ public partial class InitialMigration : Migration
         migrationBuilder.InsertData(
             table: "Users",
             columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-            values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "a93803e4-4826-4f8f-a3c0-9b3915222944", null, "test@bitplatform.dev", true, "BlazorWeb test account", 2, false, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEHkXKL/4p8zGmGPVrQLM4FFbgg0ZDGlCtICfXdEArQg/Ih7Kkn9LfNCZME2+wd0APw==", null, false, null, null, "e8fe621c-97fd-41ec-9d33-29c931496432", false, "test@bitplatform.dev" });
+            values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "3e496120-43ec-4f42-b607-7cdf2a3cd843", null, "test@bitplatform.dev", true, "BlazorWeb test account", 2, true, null, "TEST@BITPLATFORM.DEV", "TEST@BITPLATFORM.DEV", "AQAAAAIAAYagAAAAEBv9z0VdfunYh4mV9x8IJiLvR1WefLnibCf5ugcGZH5E9FstjLa9oQiDMGXDJguDiw==", null, false, null, null, "e8c42956-0730-46cb-8e7b-fdcd7acbd4bf", false, "test@bitplatform.dev" });
 
         migrationBuilder.InsertData(
             table: "Products",
@@ -325,6 +339,9 @@ public partial class InitialMigration : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropTable(
+            name: "DataProtectionKeys");
+
         migrationBuilder.DropTable(
             name: "Products");
 

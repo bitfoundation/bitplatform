@@ -139,7 +139,7 @@
     <value>L'e-mail « {0} » est déjà pris.</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>L'utilisateur est verrouillé.</value>
+    <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
   <data name="UserNameNotFound" xml:space="preserve">
     <value>L'utilisateur {0} n'existe pas.</value>
@@ -554,5 +554,8 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Tableau de bord</value>
+  </data>
+    <data name="RememberMe" xml:space="preserve">
+    <value>Souviens-toi de moi?</value>
   </data>
 </root>

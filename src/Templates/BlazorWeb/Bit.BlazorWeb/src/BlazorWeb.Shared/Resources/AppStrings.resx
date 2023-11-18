@@ -269,7 +269,7 @@
     <value>Home</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
-      <value>User is locked out.</value>
+      <value>User is locked out. Try again in {0}</value>
     </data>
     <data name="UserNameNotFound" xml:space="preserve">
       <value>User {0} does not exist.</value>
@@ -442,6 +442,9 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="GenderFemale" xml:space="preserve">
     <value>Female</value>
+  </data>
+    <data name="RememberMe" xml:space="preserve">
+    <value>Remember me?</value>
   </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">

@@ -1,17 +1,14 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using BlazorWeb.Server;
 using BlazorWeb.Server.Models.Identity;
-using BlazorWeb.Server.Services;
 using BlazorWeb.Client.Services;
 using Microsoft.JSInterop;
 using BlazorWeb.Client.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.DataProtection;
+using System.Security.Cryptography.X509Certificates;
+using BlazorWeb.Shared.Dtos.Identity;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -60,6 +57,12 @@ public static class IServiceCollectionExtensions
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
+        var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
+
+        services.AddDataProtection()
+            .PersistKeysToDbContext<AppDbContext>()
+            .ProtectKeysWithCertificate(new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet));
+
         services.AddIdentity<User, Role>(options =>
         {
             options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
@@ -69,72 +72,31 @@ public static class IServiceCollectionExtensions
             options.Password.RequireUppercase = settings.PasswordRequireUppercase;
             options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumeric;
             options.Password.RequiredLength = settings.PasswordRequiredLength;
-        }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-    }
-
-    public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
-    {
-        // https://github.com/dotnet/aspnetcore/issues/4660
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-        var settings = appSettings.JwtSettings;
-
-        services.AddScoped<IJwtService, JwtService>();
+        })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<AppIdentityErrorDescriber>()
+            .AddApiEndpoints();
 
         services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
+            options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
+            options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+            options.DefaultScheme = IdentityConstants.BearerScheme;
+        })
+        .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
-            RSA? rsaPrivateKey;
-            using (X509Certificate2 signingCert = new X509Certificate2(certificatePath, appSettings.JwtSettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet))
-            {
-                rsaPrivateKey = signingCert.GetRSAPrivateKey();
-            }
+            options.BearerTokenExpiration = settings.BearerTokenExpiration;
+            options.RefreshTokenExpiration = TimeSpan.FromSeconds(TokenResponseDto.RefreshTokenExpiresIn);
 
-            var validationParameters = new TokenValidationParameters
-            {
-                ClockSkew = TimeSpan.Zero,
-                RequireSignedTokens = true,
-
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new RsaSecurityKey(rsaPrivateKey),
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ValidateAudience = true,
-                ValidAudience = settings.Audience,
-
-                ValidateIssuer = true,
-                ValidIssuer = settings.Issuer,
-            };
-
-            options.Events = new JwtBearerEvents
+            options.Events = new()
             {
                 OnMessageReceived = async context =>
                 {
                     // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
-
-                    var access_token = context.Request.Cookies["access_token"];
-
-                    if (string.IsNullOrEmpty(access_token))
-                    {
-                        access_token = context.Request.Query["access_token"];
-                    }
-
-                    context.Token = access_token;
+                    context.Token ??= context.Request.Cookies["access_token"] ?? context.Request.Query["access_token"];
                 }
             };
-
-            options.SaveToken = true;
-            options.TokenValidationParameters = validationParameters;
         });
 
         services.AddAuthorization();
@@ -149,28 +111,29 @@ public static class IServiceCollectionExtensions
 
             options.OperationFilter<ODataOperationFilter>();
 
-            options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
+            options.AddSecurityDefinition("bearerAuth", new()
             {
                 Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
+                Description = "Enter the Bearer Authorization string as following: `Bearer Generated-Bearer-Token`",
                 In = ParameterLocation.Header,
-                Description = "JWT Authorization header using the Bearer scheme."
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
             });
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            options.AddSecurityRequirement(new()
             {
                 {
-                    new OpenApiSecurityScheme
+                    new()
                     {
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
                         Reference = new OpenApiReference
                         {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "bearerAuth"
+                            Id = "Bearer",
+                            Type = ReferenceType.SecurityScheme
                         }
                     },
-                    Array.Empty<string>()
+                    []
                 }
             });
         });

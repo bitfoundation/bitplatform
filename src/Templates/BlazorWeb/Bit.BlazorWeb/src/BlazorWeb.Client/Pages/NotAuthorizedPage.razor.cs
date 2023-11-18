@@ -6,11 +6,9 @@ public partial class NotAuthorizedPage
 
     [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
 
-    [CascadingParameter] private Task<AuthenticationState> _authenticationStateTask { get; set; } = default!;
-
     protected async override Task OnParamsSetAsync()
     {
-        _user = (await _authenticationStateTask).User;
+        _user = (await AuthenticationStateTask).User;
 
         await base.OnParamsSetAsync();
     }
@@ -19,7 +17,7 @@ public partial class NotAuthorizedPage
     {
         try
         {
-            if (firstRender && _user.Identity?.IsAuthenticated is false)
+            if (firstRender && _user.IsAuthenticated() is false)
             {
                 RedirectToSignInPage();
             }

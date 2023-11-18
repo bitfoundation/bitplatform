@@ -26,11 +26,6 @@ public class ExceptionDelegatingHandler
 
             serverCommunicationSuccess = true;
 
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedException();
-            }
-
             if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
                 if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
@@ -50,6 +45,11 @@ public class ExceptionDelegatingHandler
 
                     throw exp;
                 }
+            }
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedException();
             }
 
             response.EnsureSuccessStatusCode();

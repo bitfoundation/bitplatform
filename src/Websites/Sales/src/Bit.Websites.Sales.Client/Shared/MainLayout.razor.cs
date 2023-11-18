@@ -2,7 +2,7 @@
 
 public partial class MainLayout
 {
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
     protected override void OnParametersSet()
     {

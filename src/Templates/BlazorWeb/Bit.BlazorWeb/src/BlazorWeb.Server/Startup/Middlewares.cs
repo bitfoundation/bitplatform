@@ -2,9 +2,11 @@
 using System.Reflection;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 using BlazorWeb.Server.Components;
+using Microsoft.AspNetCore.Http.Extensions;
+using static BlazorWeb.Server.Startup.Middlewares;
+using System.Net;
 
 namespace BlazorWeb.Server.Startup;
 
@@ -23,6 +25,23 @@ public class Middlewares
             app.UseHttpsRedirection();
             app.UseResponseCompression();
         }
+
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path.HasValue)
+            {
+                if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                }
+                if (context.Request.Path.Value.Contains("not-authorized", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                }
+            }
+
+            await next.Invoke(context);
+        });
 
         app.UseStatusCodePages(options: new()
         {

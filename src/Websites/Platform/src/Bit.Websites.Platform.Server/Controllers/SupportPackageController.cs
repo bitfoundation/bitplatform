@@ -7,12 +7,12 @@ namespace Bit.Websites.Platform.Server.Controllers;
 [ApiController]
 public partial class SupportPackageController : AppControllerBase
 {
-    [AutoInject] protected TelegramBotService TelegramBotService = default!;
+    [AutoInject] private TelegramBotService _telegramBotService = default!;
 
     [HttpPost]
     public async Task<IActionResult> BuyPackage(BuyPackageDto buyPackageDto, CancellationToken cancellationToken)
     {
-        await TelegramBotService.SendBuyPackageMessage(buyPackageDto.SalePackageTitle, buyPackageDto.Email, buyPackageDto.Message, cancellationToken);
+        await _telegramBotService.SendBuyPackageMessage(buyPackageDto.SalePackageTitle, buyPackageDto.Email, buyPackageDto.Message, cancellationToken);
         return Ok();
     }
 }

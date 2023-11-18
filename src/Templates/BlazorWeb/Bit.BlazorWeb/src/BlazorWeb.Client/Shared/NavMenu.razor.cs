@@ -13,7 +13,7 @@ public partial class NavMenu : IDisposable
     private List<BitNavItem> _navItems = [];
     private Action _unsubscribe = default!;
 
-    [AutoInject] private NavigationManager _navManager { get; set; } = default!;
+    [AutoInject] private NavigationManager _navManager = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 
@@ -84,7 +84,7 @@ public partial class NavMenu : IDisposable
             StateHasChanged();
         });
 
-        _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
+        _user = await PrerenderStateService.GetValue($"CurrentUser", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
         var access_token = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);

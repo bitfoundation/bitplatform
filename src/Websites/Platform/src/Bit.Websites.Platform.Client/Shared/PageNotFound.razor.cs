@@ -2,10 +2,10 @@
 
 public partial class PageNotFound
 {
-    [AutoInject] public NavigationManager NavigationManager { get; set; }
+    [AutoInject] private NavigationManager _navigationManager = default!;
 
     private void BackToHome()
     {
-        NavigationManager.NavigateTo("/");
+        _navigationManager.NavigateTo("/");
     }
 }

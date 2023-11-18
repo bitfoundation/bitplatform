@@ -11,4 +11,9 @@ public static class ClaimsPrincipalExtensions
     {
         return claimsPrincipal.FindFirst(ClaimTypes.Name)!.Value;
     }
+
+    public static bool IsAuthenticated(this ClaimsPrincipal? claimsPrincipal)
+    {
+        return claimsPrincipal?.Identity?.IsAuthenticated is true;
+    }
 }

@@ -2,8 +2,7 @@
 
 public partial class UserInformationProvider : IUserInformationProvider
 {
-    [AutoInject]
-    public IHttpContextAccessor _httpContextAccessor = default!;
+    [AutoInject] public IHttpContextAccessor _httpContextAccessor = default!;
 
     public IEnumerable<Claim> GetClaims()
     {
@@ -52,6 +51,6 @@ public partial class UserInformationProvider : IUserInformationProvider
             throw new InvalidOperationException();
         }
 
-        return _httpContextAccessor.HttpContext.User?.Identity?.IsAuthenticated is true;
+        return _httpContextAccessor.HttpContext.User.IsAuthenticated();
     }
 }

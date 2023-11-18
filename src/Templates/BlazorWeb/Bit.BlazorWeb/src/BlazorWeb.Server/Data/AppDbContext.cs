@@ -7,12 +7,14 @@ using BlazorWeb.Server.Models.Categories;
 using BlazorWeb.Server.Models.Products;
 //#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace BlazorWeb.Server.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) 
-    : IdentityDbContext<User, Role, int>(options)
+    : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
 {
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; }

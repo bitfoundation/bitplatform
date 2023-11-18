@@ -944,6 +944,15 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remember me?.
+        /// </summary>
+        public static string RememberMe {
+            get {
+                return ResourceManager.GetString("RememberMe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string Remove {
@@ -1304,7 +1313,7 @@ namespace BlazorWeb.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User is locked out..
+        ///   Looks up a localized string similar to User is locked out. Try again in {0}.
         /// </summary>
         public static string UserLockedOut {
             get {

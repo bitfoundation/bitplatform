@@ -32,7 +32,8 @@ namespace BlazorWeb.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
 //#endif
 [JsonSerializable(typeof(SignInRequestDto))]
-[JsonSerializable(typeof(SignInResponseDto))]
+[JsonSerializable(typeof(RefreshRequestDto))]
+[JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
 [JsonSerializable(typeof(RestErrorInfo))]

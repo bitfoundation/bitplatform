@@ -4,7 +4,7 @@ namespace BlazorWeb.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public class SignInRequestDto
 {
-    /// <example>me@gmail.com</example>
+    /// <example>test@bitplatform.dev</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
@@ -14,4 +14,8 @@ public class SignInRequestDto
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
+
+    [NotMapped]
+    [Display(Name = nameof(AppStrings.RememberMe))]
+    public bool RememberMe { get; set; }
 }

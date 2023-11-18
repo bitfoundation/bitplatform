@@ -86,8 +86,6 @@ public static class Services
 
         services.AddIdentity(configuration);
 
-        services.AddJwt(configuration);
-
         services.AddHealthChecks(env, configuration);
 
         services.AddScoped<HtmlRenderer>();

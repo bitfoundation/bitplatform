@@ -13,10 +13,11 @@ public partial class AuthenticationService : IAuthenticationService
 
     public async Task SignIn(SignInRequestDto dto)
     {
-        var result = await (await _httpClient.PostAsJsonAsync("Auth/SignIn", dto, AppJsonContext.Default.SignInRequestDto))
-            .Content.ReadFromJsonAsync(AppJsonContext.Default.SignInResponseDto);
+        var result = await (await _httpClient.PostAsJsonAsync("Identity/SignIn", dto, AppJsonContext.Default.SignInRequestDto))
+            .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-        await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result!.AccessToken, result.ExpiresIn);
+        await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", result!.AccessToken, result.ExpiresIn, dto.RememberMe);
+        await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", result.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, dto.RememberMe);
 
         await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }
@@ -24,6 +25,7 @@ public partial class AuthenticationService : IAuthenticationService
     public async Task SignOut()
     {
         await _jsRuntime.InvokeVoidAsync("App.removeCookie", "access_token");
+        await _jsRuntime.InvokeVoidAsync("App.removeCookie", "refresh_token");
 
         await _authenticationStateProvider.RaiseAuthenticationStateHasChanged();
     }

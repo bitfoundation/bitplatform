@@ -157,7 +157,7 @@ public class BpStack : Stack
                     },
                     new NameValuePairArgs
                     {
-                        Name = "AppSettings__JwtSettings__IdentityCertificatePassword",
+                        Name = "AppSettings__IdentitySettings__IdentityCertificatePassword",
                         Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={identityCertificatePasswordSecretName})"
                     },
                 ],

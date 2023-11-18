@@ -15,7 +15,7 @@ public partial class SignUpPage
     {
         await base.OnAfterFirstRenderAsync();
 
-        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
+        if ((await AuthenticationStateTask).User.IsAuthenticated())
         {
             NavigationManager.NavigateTo("/");
         }

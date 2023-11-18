@@ -4,8 +4,6 @@ public class AppSettings
 {
     public IdentitySettings IdentitySettings { get; set; } = default!;
 
-    public JwtSettings JwtSettings { get; set; } = default!;
-
     public EmailSettings EmailSettings { get; set; } = default!;
 
     public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
@@ -22,6 +20,8 @@ public class HealthCheckSettings
 
 public class IdentitySettings
 {
+    public TimeSpan BearerTokenExpiration { get; set; }
+    public string IdentityCertificatePassword { get; set; } = default!;
     public bool PasswordRequireDigit { get; set; }
     public int PasswordRequiredLength { get; set; }
     public bool PasswordRequireNonAlphanumeric { get; set; }
@@ -30,15 +30,6 @@ public class IdentitySettings
     public bool RequireUniqueEmail { get; set; }
     public TimeSpan ConfirmationEmailResendDelay { get; set; }
     public TimeSpan ResetPasswordEmailResendDelay { get; set; }
-}
-
-public class JwtSettings
-{
-    public string IdentityCertificatePassword { get; set; } = default!;
-    public string Issuer { get; set; } = default!;
-    public string Audience { get; set; } = default!;
-    public int NotBeforeMinutes { get; set; }
-    public int ExpirationMinutes { get; set; }
 }
 
 public class EmailSettings

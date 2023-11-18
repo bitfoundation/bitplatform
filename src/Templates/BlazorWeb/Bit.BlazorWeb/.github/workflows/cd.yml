@@ -84,7 +84,7 @@ jobs:
           files: 'appsettings.json'
         env:
           ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          AppSettings.JwtSettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+          AppSettings.IdentitySettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
 
       - name: Delete IdentityCertificate.pfx
         run: |

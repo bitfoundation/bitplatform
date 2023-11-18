@@ -3,7 +3,7 @@ namespace BlazorWeb.Client.Shared;
 
 public partial class Footer
 {
-    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private BitThemeManager _bitThemeManager = default!;
 
     private BitDropdownItem<string>[] _cultures = default!;
 
