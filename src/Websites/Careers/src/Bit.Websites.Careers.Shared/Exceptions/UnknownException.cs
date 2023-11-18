@@ -2,6 +2,11 @@
 
 public class UnknownException : Exception
 {
+    public UnknownException()
+        : base(nameof(UnknownException))
+    {
+    }
+
     public UnknownException(string message)
         : base(message)
     {
@@ -12,4 +17,3 @@ public class UnknownException : Exception
     {
     }
 }
-

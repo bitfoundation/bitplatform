@@ -5,7 +5,7 @@ namespace Bit.Websites.Sales.Shared.Exceptions;
 public class BadRequestException : RestException
 {
     public BadRequestException()
-        : base(nameof(AppStrings.BadRequestException))
+        : base(nameof(BadRequestException))
     {
     }
 
@@ -15,16 +15,6 @@ public class BadRequestException : RestException
     }
 
     public BadRequestException(string message, Exception? innerException)
-        : base(message, innerException)
-    {
-    }
-
-    public BadRequestException(LocalizedString message)
-        : base(message)
-    {
-    }
-
-    public BadRequestException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

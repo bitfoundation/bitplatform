@@ -1,7 +1,6 @@
 name: Sales Website CD
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'SSR'
   APP_SERVICE_NAME: 'bitservices'
 
 on:
@@ -14,8 +13,8 @@ permissions:
 
 jobs:
 
-  build_blazor_api_wasm:
-    name: build blazor api + web assembly
+  build_api_blazor:
+    name: build api + blazor
     runs-on: ubuntu-22.04
 
     steps:
@@ -27,25 +26,15 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: src/global.json
-
-    - name: Switch to blazor web assembly
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Websites/Sales/src/Bit.Websites.Sales.Web/Bit.Websites.Sales.Web.csproj
-
+        
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
-
-    - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
-      with:
-        files: 'src/Websites/Sales/src/Bit.Websites.Sales.Web/appsettings.json'
-      env:
-        ApiServerAddress: 'api/'
       
     - name: Generate CSS/JS files
-      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Web/Bit.Websites.Sales.Web.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web
+      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
@@ -53,9 +42,9 @@ jobs:
         name: api-web-bundle
         path: api-web
 
-  deploy_blazor_api_wasm:
-    name: deploy blazor api + web assembly
-    needs: build_blazor_api_wasm
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
     runs-on: ubuntu-22.04
     environment:
       name: 'production'

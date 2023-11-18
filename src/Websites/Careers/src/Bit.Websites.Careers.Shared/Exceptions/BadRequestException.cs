@@ -4,6 +4,11 @@ namespace Bit.Websites.Careers.Shared.Exceptions;
 
 public class BadRequestException : RestException
 {
+    public BadRequestException()
+        : base(nameof(BadRequestException))
+    {
+    }
+
     public BadRequestException(string message)
         : base(message)
     {

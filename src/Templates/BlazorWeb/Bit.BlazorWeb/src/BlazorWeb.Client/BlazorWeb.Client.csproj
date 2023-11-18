@@ -30,17 +30,17 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.1.0-pre-01" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.0.1" />
+        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.1.0-pre-01" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -62,6 +62,13 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
+    <!--/+:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''">
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <!--/-:msbuild-conditional:noEmit -->
     <ItemGroup>
         <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
     </ItemGroup>

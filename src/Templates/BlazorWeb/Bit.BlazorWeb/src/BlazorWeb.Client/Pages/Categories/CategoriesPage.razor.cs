@@ -62,8 +62,9 @@ public partial class CategoriesPage
 
                 return BitDataGridItemsProviderResult.From(data.Items!, (int)data.TotalCount);
             }
-            catch
+            catch (Exception exp)
             {
+                ExceptionHandler.Handle(exp);
                 return BitDataGridItemsProviderResult.From(new List<CategoryDto> { }, 0);
             }
             finally

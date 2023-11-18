@@ -38,13 +38,13 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Bup" Version="8.0.1" />
-        <PackageReference Include="Bit.Bswup" Version="8.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
+		<PackageReference Include="Bit.Bup" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.Bswup" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -65,7 +65,7 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(sample)' == 'AdminPanel'">
+    <ItemGroup Condition=" '$(sample)' == 'AdminPanel'  or '$(sample)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />

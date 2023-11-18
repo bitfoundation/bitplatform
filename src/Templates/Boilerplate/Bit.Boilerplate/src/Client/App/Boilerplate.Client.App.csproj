@@ -41,7 +41,7 @@
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
         <!--/+:msbuild-conditional:noEmit -->
-        <MtouchInterpreter Condition=" '$(sample)' == 'AdminPanel'">all</MtouchInterpreter>
+        <MtouchInterpreter Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''">all</MtouchInterpreter>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -85,14 +85,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
+        <PackageReference Include="Bit.BlazorUI" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.1.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.1.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
