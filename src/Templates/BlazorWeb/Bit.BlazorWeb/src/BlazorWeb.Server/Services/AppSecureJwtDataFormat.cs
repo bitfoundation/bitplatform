@@ -36,7 +36,15 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
         {
             return null;
         }
-        return new AuthenticationTicket(principal, IdentityConstants.BearerScheme);
+
+        var expire = long.Parse(principal.FindFirstValue("exp")!);
+
+        var data = new AuthenticationTicket(principal, properties: new(new Dictionary<string, string?>()
+        {
+            { ".expires",  DateTimeOffset.FromUnixTimeSeconds(expire).ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture) }
+        }), "Identity.Bearer:AccessToken");
+
+        return data;
     }
     public string Protect(AuthenticationTicket data) => Protect(data, null);
     public string Protect(AuthenticationTicket data, string? purpose)
