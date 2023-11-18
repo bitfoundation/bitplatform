@@ -329,6 +329,7 @@ private List<MenuActionItem> basicCustoms = new()
 <style>
     .custom-class {
         color: aqua;
+        overflow: hidden;
         border-radius: 1rem;
     }
 

@@ -285,6 +285,7 @@ private List<BitMenuButtonItem> basicItems = new()
 <style>
     .custom-class {
         color: aqua;
+        overflow: hidden;
         border-radius: 1rem;
     }
 
