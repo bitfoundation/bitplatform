@@ -120,10 +120,12 @@ public static class IServiceCollectionExtensions
 
                 ValidateIssuer = true,
                 ValidIssuer = settings.Issuer,
+
+                AuthenticationType = IdentityConstants.ApplicationScheme
             };
 
             options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
-
+            
             options.Events = new()
             {
                 OnMessageReceived = async context =>

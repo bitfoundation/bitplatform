@@ -49,11 +49,12 @@ public class AuthDelegatingHandler
                 var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refreshToken }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                     .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
 
-                var authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
+                var _jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
 
                 try
                 {
-                    await authService.StoreAuthToken(refreshTokenResponse!, rememberMe: true);
+                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", refreshTokenResponse!.AccessToken, refreshTokenResponse.ExpiresIn, true);
+                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", refreshTokenResponse.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, true);
                 }
                 catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
 

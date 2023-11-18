@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace BlazorWeb.Server.Services;
 
+/// <summary>
+/// Stores bearer token in jwt format
+/// </summary>
 public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
-    private readonly TokenValidationParameters validationParameters = validationParameters;
-
     public AuthenticationTicket? Unprotect(string? protectedText)
         => Unprotect(protectedText, null);
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
@@ -23,7 +23,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             {
                 throw new ArgumentException("Invalid JWT");
             }
-            if (!validJwt.Header.Alg.Equals(SecurityAlgorithms.EcdsaSha256, StringComparison.Ordinal))
+            if (!validJwt.Header.Alg.Equals(SecurityAlgorithms.RsaSha512, StringComparison.Ordinal))
             {
                 throw new ArgumentException($"Algorithm must be '{SecurityAlgorithms.RsaSha512}'");
             }
@@ -36,7 +36,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
         {
             return null;
         }
-        return new AuthenticationTicket(principal, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme);
+        return new AuthenticationTicket(principal, IdentityConstants.BearerScheme);
     }
     public string Protect(AuthenticationTicket data) => Protect(data, null);
     public string Protect(AuthenticationTicket data, string? purpose)
