@@ -495,9 +495,9 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, true)"
                                         type="button"
-                                        style="@Styles?.TimePickerHourIncreaseButton"
-                                        class="bit-dtp-tbt @Classes?.TimePickerHourIncreaseButton">
-                                    <i style="@Styles?.TimePickerHourIncreaseIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerHourIncreaseIcon" aria-hidden="true" />
+                                        style="@Styles?.TimePickerIncreaseHourButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerIncreaseHourButton">
+                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeHourRef"
                                        @bind="@_hourView"
@@ -514,9 +514,9 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, true)"
                                         type="button"
-                                        style="@Styles?.TimePickerHourDecreaseButton"
-                                        class="bit-dtp-tbt @Classes?.TimePickerHourDecreaseButton">
-                                    <i style="@Styles?.TimePickerHourDecreaseIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerHourDecreaseIcon" aria-hidden="true" />
+                                        style="@Styles?.TimePickerDecreaseHourButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerDecreaseHourButton">
+                                    <i style="@Styles?.TimePickerDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseHourIcon" aria-hidden="true" />
                                 </button>
                             </div>
                             <div style="@Styles?.TimePickerDivider" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerDivider">:</div>
@@ -525,9 +525,9 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, false)"
                                         type="button"
-                                        style="@Styles?.TimePickerMinuteIncreaseButton"
-                                        class="bit-dtp-tbt @Classes?.TimePickerMinuteIncreaseButton">
-                                    <i style="@Styles?.TimePickerMinuteIncreaseIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerMinuteIncreaseIcon" aria-hidden="true" />
+                                        style="@Styles?.TimePickerIncreaseMinuteButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerIncreaseMinuteButton">
+                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeMinuteRef"
                                        @bind="@_minuteView"
@@ -544,9 +544,9 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, false)"
                                         type="button"
-                                        style="@Styles?.TimePickerMinuteDecreaseButton"
-                                        class="bit-dtp-tbt @Classes?.TimePickerMinuteDecreaseButton">
-                                    <i style="@Styles?.TimePickerMinuteDecreaseIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerMinuteDecreaseIcon" aria-hidden="true" />
+                                        style="@Styles?.TimePickerDecreaseMinuteButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerDecreaseMinuteButton">
+                                    <i style="@Styles?.TimePickerDecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseMinuteIcon" aria-hidden="true" />
                                 </button>
                             </div>
 

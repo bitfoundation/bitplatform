@@ -205,42 +205,42 @@ public class BitDatePickerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's increase hour button of the BitDatePicker.
     /// </summary>
-    public string? TimePickerHourIncreaseButton { get; set; }
+    public string? TimePickerIncreaseHourButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's increase hour icon of the BitDatePicker.
     /// </summary>
-    public string? TimePickerHourIncreaseIcon { get; set; }
+    public string? TimePickerIncreaseHourIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's decrease hour button of the BitDatePicker.
     /// </summary>
-    public string? TimePickerHourDecreaseButton { get; set; }
+    public string? TimePickerDecreaseHourButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's decrease hour icon of the BitDatePicker.
     /// </summary>
-    public string? TimePickerHourDecreaseIcon { get; set; }
+    public string? TimePickerDecreaseHourIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's increase minute button of the BitDatePicker.
     /// </summary>
-    public string? TimePickerMinuteIncreaseButton { get; set; }
+    public string? TimePickerIncreaseMinuteButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's increase minute icon of the BitDatePicker.
     /// </summary>
-    public string? TimePickerMinuteIncreaseIcon { get; set; }
+    public string? TimePickerIncreaseMinuteIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's decrease minute button of the BitDatePicker.
     /// </summary>
-    public string? TimePickerMinuteDecreaseButton { get; set; }
+    public string? TimePickerDecreaseMinuteButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's decrease minute icon of the BitDatePicker.
     /// </summary>
-    public string? TimePickerMinuteDecreaseIcon { get; set; }
+    public string? TimePickerDecreaseMinuteIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's Am Pm container of the BitDatePicker.
