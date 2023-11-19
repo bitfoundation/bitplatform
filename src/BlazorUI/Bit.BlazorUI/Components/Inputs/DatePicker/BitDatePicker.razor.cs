@@ -99,6 +99,7 @@ public partial class BitDatePicker
     private int _currentYear;
     private int _displayYear;
     private int _currentMonth;
+    private bool _isPointerDown;
     private int? _selectedDateWeek;
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
@@ -119,7 +120,6 @@ public partial class BitDatePicker
     private string? _activeDescendantId;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
-    private Timer? _pointerDownTimer;
 
 
 
@@ -1237,26 +1237,38 @@ public partial class BitDatePicker
             await ChangeMinute(isNext);
         }
 
-        _pointerDownTimer = new Timer(async (_) =>
+        _isPointerDown = true;
+
+        await InvokeAsync(async () =>
         {
-            await InvokeAsync(async () =>
-            {
-                if (isHour)
-                {
-                    await ChangeHour(isNext);
-                }
-                else
-                {
-                    await ChangeMinute(isNext);
-                }
-                StateHasChanged();
-            });
-        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+            await Task.Delay(INITIAL_STEP_DELAY);
+
+            await ChangeTime(isNext, isHour);
+        });
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour)
+    {
+        if (_isPointerDown is false) return;
+
+        if (isHour)
+        {
+            await ChangeHour(isNext);
+        }
+        else
+        {
+            await ChangeMinute(isNext);
+        }
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+
+        await ChangeTime(isNext, isHour);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _pointerDownTimer?.Dispose();
+        _isPointerDown = false;
     }
 
     private async Task ChangeHour(bool isNext)
