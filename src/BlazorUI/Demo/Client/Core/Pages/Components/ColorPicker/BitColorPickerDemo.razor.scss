@@ -3,26 +3,12 @@
 
 
 ::deep {
-    @include sm {
-        .color-picker {
-            width: rem2(220px);
-            height: rem2(256px);
-        }
-    }
-
     .custom-color-picker {
         width: rem2(100px);
         height: rem2(250px);
     }
 }
 
-.example-box {
-    display: flex;
-    flex-flow: column nowrap;
-    gap: rem2(30px);
-}
-
-.example {
-    display: flex;
-    flex-flow: column nowrap;
+.example-content {
+    padding: 0 1rem;
 }

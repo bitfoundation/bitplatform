@@ -1,19 +1,23 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "bit platform",
-  "classifications": ["ASP.NET Core", "Blazor", "Web", "WebAssembly" ],
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly"
+  ],
   "tags": {
     "language": "C#",
     "type": "project"
   },
   "shortName": "bit-empty",
   "sourceName": "BlazorEmpty",
-  "identity": "Bit.BlazorEmpty",
   "name": "bit Blazor Empty App",
-  "defaultName": "BitBlazorEmptyApp",
+  "defaultName": "BitBlazorEmpty",
+  "identity": "Bit.BlazorEmpty.8.0",
   "groupIdentity": "Bit.BlazorEmpty",
   "preferNameDirectory": true,
-  "precedence": "9900",
+  "precedence": "9999",
   "description": "A project template for creating a bit Blazor empty app that supports both server-side rendering and client interactivity.",
   "primaryOutputs": [
     {
@@ -37,8 +41,13 @@
     {
       "source": "./",
       "target": "./",
-      "exclude": [ ".template.config/**" ],
-      "copyOnly": [ "global.json", "**/wwwroot/**" ],
+      "exclude": [
+        ".template.config/**"
+      ],
+      "copyOnly": [
+        "global.json",
+        "**/wwwroot/**"
+      ],
       "modifiers": [
         {
           "condition": "(!UseWebAssembly)",
@@ -51,27 +60,17 @@
           }
         },
         {
-          "condition": "(OnlyWasm)",
+          "condition": "(UseWebAssembly)",
           "rename": {
             "BlazorEmpty/Components/Layout/": "./BlazorEmpty.Client/Layout/",
-            "BlazorEmpty/Components/Pages/": "./BlazorEmpty.Client/Pages/"
+            "BlazorEmpty/Components/Pages/About.razor": "./BlazorEmpty.Client/Pages/About.razor",
+            "BlazorEmpty/Components/Pages/About.razor.css": "./BlazorEmpty.Client/Pages/About.razor.css",
+            "BlazorEmpty/Components/Pages/Home.razor": "./BlazorEmpty.Client/Pages/Home.razor",
+            "BlazorEmpty/Components/Pages/Home.razor.css": "./BlazorEmpty.Client/Pages/Home.razor.css"
           }
         },
         {
-          "condition": "(OnlyWasm && InteractiveAtRoot)",
-          "rename": {
-            "BlazorEmpty/Components/Routes.razor": "./BlazorEmpty.Client/Routes.razor"
-          }
-        },
-        {
-          "condition": "(OnlyAuto)",
-          "rename": {
-            "BlazorEmpty/Components/Layout/": "./BlazorEmpty.Client/Layout/",
-            "BlazorEmpty/Components/Pages/": "./BlazorEmpty.Client/Pages/"
-          }
-        },
-        {
-          "condition": "(OnlyAuto && InteractiveAtRoot)",
+          "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
             "BlazorEmpty/Components/Routes.razor": "./BlazorEmpty.Client/Routes.razor"
           }
