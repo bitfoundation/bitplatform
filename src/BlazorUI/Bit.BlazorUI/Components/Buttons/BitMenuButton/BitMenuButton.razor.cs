@@ -156,7 +156,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     /// <summary>
-    ///
+    /// If true, the button will render as a SplitButton.
     /// </summary>
     [Parameter] public bool Split { get; set; }
 

@@ -1,27 +1,35 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example11">
     <ExamplePreview>
+        <div>
+            Present a variety of basic BitMenuButton instances with different button styles: Primary, Standard, Text, and Disabled. Explore customization options for various button appearances and states.
+        </div>
+        <br />
         <div class="example-content">
-            <BitMenuButton Text="Primary"
-                           Items="basicItems"
-                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+            <BitMenuButton Text="Primary" Items="basicItems" />
 
             <BitMenuButton Text="Standard"
                            Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example1SelectedItem = item.Key" />
+                           ButtonStyle="BitButtonStyle.Standard" />
+
+            <BitMenuButton Text="Text"
+                           Items="basicItems"
+                           ButtonStyle="BitButtonStyle.Text" />
 
             <BitMenuButton Text="Disabled" Items="basicItems" IsEnabled="false" />
         </div>
-        <div class="clicked-item">Clicked Item: @example1SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Items" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example12">
+<ComponentExampleBox Title="Events" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example12">
     <ExamplePreview>
+        <div>
+            Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.
+        </div>
+        <br />
         <div class="example-content">
             <BitMenuButton Text="Item Disabled"
                            Items="itemDisabledItems"
-                           OnItemClick="(BitMenuButtonItem item) => example2SelectedItem = item.Key" />
+                           OnClick="(BitMenuButtonItem item) => example2SelectedItem = item?.Key" />
 
             <BitMenuButton Text="Item OnClick" Items="basicItemsOnClick" ButtonStyle="BitButtonStyle.Standard" />
         </div>
@@ -29,50 +37,76 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example13">
+<ComponentExampleBox Title="Split" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example13">
     <ExamplePreview>
+        <div>
+            Display split BitMenuButton instances featuring both sticky and non-sticky behaviors, providing users with flexible options for interaction and selection within the menu buttons.
+        </div>
+        <br />
         <div class="example-content">
-            <BitMenuButton Text="IconName"
-                           Items="basicItems"
-                           IconName="@BitIconName.Edit"
-                           OnItemClick="(BitMenuButtonItem item) => example3SelectedItem = item.Key" />
+            <div>
+                <BitLabel>Sticky</BitLabel>
+                <BitMenuButton Split Sticky
+                               Items="basicItemsOnClick"
+                               OnClick="(BitMenuButtonItem item) => example3SelectedItem = item?.Key" />
+            </div>
 
-            <BitMenuButton Text="ChevronDownIcon"
-                           Items="basicItems"
-                           IconName="@BitIconName.Add"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
-                           OnItemClick="(BitMenuButtonItem item) => example3SelectedItem = item.Key" />
+            <div>
+                <BitLabel>Non-Sticky</BitLabel>
+                <BitMenuButton Split
+                               Text="Split"
+                               Items="basicItemsOnClick"
+                               ButtonStyle="BitButtonStyle.Standard"
+                               OnClick="(BitMenuButtonItem item) => example3SelectedItem = item?.Key" />
+            </div>
         </div>
         <div class="clicked-item">Clicked Item: @example3SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example14">
+<ComponentExampleBox Title="Icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example14">
     <ExamplePreview>
+        <div>
+            Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="IconName"
+                           Items="basicItems"
+                           IconName="@BitIconName.Edit" />
+
+            <BitMenuButton Text="ChevronDownIcon"
+                           Items="basicItems"
+                           IconName="@BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           ChevronDownIcon="@BitIconName.DoubleChevronDown" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example15">
+    <ExamplePreview>
+        <div>
+            Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+        </div>
+        <br />
         <div>Component's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Styled Button"
                            Items="basicItems"
-                           Style="width:200px;height:40px;background-color:#888;" 
-                           OnItemClick="(BitMenuButtonItem item) => example41SelectedItem = item.Key" />
+                           Style="width: 200px; height: 40px; background-color: #888;" />
 
             <BitMenuButton Text="Classed Button"
                            Items="basicItems"
-                           Class="custom-class" 
-                           OnItemClick="(BitMenuButtonItem item) => example41SelectedItem = item.Key" />
+                           Class="custom-class" />
         </div>
-        <div class="clicked-item">Clicked Item: @example41SelectedItem</div>
         <br /><br /><br /><br />
         <div>Item's Style & Class:</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Text="Item Styled & Classed Button"
-                           Items="itemStyleClassItems"
-                           OnItemClick="(BitMenuButtonItem item) => example42SelectedItem = item.Key" />
+            <BitMenuButton Text="Item Styled & Classed Button" Items="itemStyleClassItems" />
         </div>
-        <div class="clicked-item">Clicked Item: @example42SelectedItem</div>
         <br /><br /><br /><br />
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
@@ -80,31 +114,31 @@
             <BitMenuButton Text="Styles"
                            Items="basicItems"
                            IconName="@BitIconName.ExpandMenu"
-                           OnItemClick="(BitMenuButtonItem item) => example43SelectedItem = item.Key"
-                           Styles="@(new() { Icon = "color:red" ,
-                                             Text = "color:aqua",
-                                             ItemText = "color:dodgerblue;font-size:11px",
-                                             Overlay = "background-color: var(--bit-clr-bg-overlay)" })" />
+                           Styles="@(new() { Icon = "color: red;",
+                                             Text = "color: aqua;",
+                                             ItemText = "color: dodgerblue; font-size: 11px;",
+                                             Overlay = "background-color: var(--bit-clr-bg-overlay);" })" />
 
             <BitMenuButton Text="Classes"
                            Items="basicItems"
                            IconName="@BitIconName.ExpandMenu"
                            ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example43SelectedItem = item.Key"
-                           Classes="@(new() { Icon = "custom-icon" , Text = "custom-text" })" />
+                           Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })" />
         </div>
-        <div class="clicked-item">Clicked Item: @example43SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example15">
+<ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example16">
     <ExamplePreview>
+        <div>
+            You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
+        </div>
+        <br />
         <div class="example-content column">
             <div style="display: inline-flex">
                 Visible: [ <BitMenuButton Visibility="BitVisibility.Visible"
                                           Text="Visible menu button"
-                                          Items="basicItems"
-                                          OnItemClick="(BitMenuButtonItem item) => example5SelectedItem = item.Key" /> ]
+                                          Items="basicItems" /> ]
             </div>
             <div style="display: inline-flex">
                 Hidden: [ <BitMenuButton Visibility="BitVisibility.Hidden"
@@ -120,10 +154,14 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="HeaderTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example16">
+<ComponentExampleBox Title="HeaderTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example17">
     <ExamplePreview>
+        <div>
+            Display BitMenuButton instances with customized header templates, allowing unique and distinct header presentations within the menu buttons.
+        </div>
+        <br />
         <div class="example-content">
-            <BitMenuButton Items="basicItems" OnItemClick="(BitMenuButtonItem item) => example6SelectedItem = item.Key">
+            <BitMenuButton Items="basicItems">
                 <HeaderTemplate>
                     <BitIcon IconName="@BitIconName.Warning" />
                     <div style="font-weight: 600; color: white;">
@@ -133,9 +171,7 @@
                 </HeaderTemplate>
             </BitMenuButton>
 
-            <BitMenuButton Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example6SelectedItem = item.Key">
+            <BitMenuButton Items="basicItems" ButtonStyle="BitButtonStyle.Standard">
                 <HeaderTemplate>
                     <div style="font-weight: bold; color: #d13438;">
                         Custom Header!
@@ -143,17 +179,19 @@
                 </HeaderTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example6SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ItemTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example17">
+<ComponentExampleBox Title="ItemTemplate" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example18">
     <ExamplePreview>
+        <div>
+            Providing unique and styled representations for each menu item using ItemTemplate.
+        </div>
+        <br />
         <div class="example-content">
             <BitMenuButton Text="Primary Button"
                            Items="itemTemplateItems"
-                           IconName="@BitIconName.Edit"
-                           OnItemClick="(BitMenuButtonItem item) => example71SelectedItem = item.Key">
+                           IconName="@BitIconName.Edit">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
                         <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -166,8 +204,7 @@
             <BitMenuButton Text="Standard Button"
                            Items="itemTemplateItems"
                            IconName="@BitIconName.Edit"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           OnItemClick="(BitMenuButtonItem item) => example71SelectedItem = item.Key">
+                           ButtonStyle="BitButtonStyle.Standard">
                 <ItemTemplate Context="item">
                     <div class="item-template-box">
                         <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -177,17 +214,14 @@
                 </ItemTemplate>
             </BitMenuButton>
         </div>
-        <div class="clicked-item">Clicked Item: @example71SelectedItem</div>
         <br /><br /><br /><br />
         <div>Item's Template</div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Primary Button"
                            Items="itemTemplateItems2"
-                           IconName="@BitIconName.Edit"
-                           OnItemClick="(BitMenuButtonItem item) => example72SelectedItem = item.Key" />
+                           IconName="@BitIconName.Edit" />
         </div>
-        <div class="clicked-item">Clicked Item: @example72SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
