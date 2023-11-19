@@ -1233,7 +1233,7 @@ public partial class BitDatePicker
         await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour, int delay)
+    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
     {
         if (_isPointerDown is false) return;
 
@@ -1247,7 +1247,7 @@ public partial class BitDatePicker
         }
         StateHasChanged();
 
-        await Task.Delay(delay);
+        await Task.Delay(stepDelay);
 
         await ChangeTime(isNext, isHour, STEP_DELAY);
     }
