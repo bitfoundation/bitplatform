@@ -1,6 +1,6 @@
 ﻿namespace System.Collections.Generic;
 
-public static class IListExtensions
+public static class ICollectionExtensions
 {
     // Basically a Polyfill since we now expose IList instead of List
     // which is better but IList doesn't have AddRange
@@ -19,5 +19,15 @@ public static class IListExtensions
         {
             list.Add(item);
         }
+    }
+
+    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> items, CancellationToken cancellationToken = default)
+    {
+        var results = new List<T>();
+        await foreach (var item in items.WithCancellation(cancellationToken))
+        {
+            results.Add(item);
+        }
+        return results;
     }
 }

@@ -41,7 +41,7 @@ public partial class TodoItemController : AppControllerBase
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<TodoItemDto>(await query.ToListAsync(cancellationToken), totalCount);
+        return new PagedResult<TodoItemDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
     [HttpPost]
