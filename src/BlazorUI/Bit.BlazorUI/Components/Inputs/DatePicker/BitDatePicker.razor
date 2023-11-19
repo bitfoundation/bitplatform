@@ -115,7 +115,7 @@
                                        style="@Styles?.PrevMonthNavIcon"
                                        class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
                                 </button>
-                                @if (_showMonthPickerAsOverlayInternal && ShowGoToToday)
+                                @if (ShowGoToToday && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                                 {
                                     <button @onclick="HandleGoToToday"
                                             type="button"
@@ -154,18 +154,18 @@
                                 }
                                 @if (_showMonthPickerAsOverlayInternal && _showTimePickerAsOverlayInternal && ShowTimePicker)
                                 {
-                                    <button @onclick="ToggleTimePickerOverlay"
+                                    <button @onclick="@ToggleTimePickerOverlay"
                                             tabindex="0"
                                             type="button"
-                                            title="@GoToTodayTitle"
                                             aria-live="polite"
                                             aria-atomic="true"
-                                            aria-label="@GoToTodayTitle"
-                                            style="@Styles?.DayPickerMonth"
-                                            class="bit-dtp-nbt @Classes?.DayPickerMonth">
+                                            title="@ShowTimePickerTitle"
+                                            aria-label="@ShowTimePickerTitle"
+                                            style="@Styles?.ShowTimePickerButton"
+                                            class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
                                         <i aria-hidden="true"
-                                           style="@Styles?.GoToTodayIcon"
-                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.GoToTodayIcon" />
+                                           style="@Styles?.ShowTimePickerIcon"
+                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
                                     </button>
                                 }
                             </div>
@@ -217,11 +217,11 @@
                                     <button @onclick="() => SelectDate(d, w)"
                                             type="button"
                                             role="gridcell"
-                                            style="@style @Styles?.DayButton"
-                                            class="bit-dtp-dbt@(klass) @Classes?.DayButton"
                                             aria-readonly="true"
                                             disabled="@disabled"
                                             aria-disabled="@disabled"
+                                            style="@style @Styles?.DayButton"
+                                            class="bit-dtp-dbt@(klass) @Classes?.DayButton"
                                             tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
                                             aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
                                         @if (DayCellTemplate is not null)
@@ -287,7 +287,7 @@
                                                 aria-label="@GoToTodayTitle"
                                                 style="@Styles?.GoToTodayButton"
                                                 class="bit-dtp-gtb @Classes?.GoToTodayButton"
-                                                disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
+                                                disabled="@IsGoToTodayButtonDisabled(_displayYear, todayMonth)">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
                                                class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
@@ -310,9 +310,9 @@
                                         <button @onclick="@ToggleTimePickerOverlay"
                                                 tabindex="0"
                                                 type="button"
-                                                title="@ShowTimePickerTitle"
                                                 aria-live="polite"
                                                 aria-atomic="true"
+                                                title="@ShowTimePickerTitle"
                                                 aria-label="@ShowTimePickerTitle"
                                                 style="@Styles?.ShowTimePickerButton"
                                                 class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
