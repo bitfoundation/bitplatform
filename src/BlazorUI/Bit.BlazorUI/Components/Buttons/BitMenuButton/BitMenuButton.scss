@@ -179,6 +179,7 @@
     display: none;
     position: fixed;
     overflow: hidden auto;
+    min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
     box-shadow: $box-shadow-callout;

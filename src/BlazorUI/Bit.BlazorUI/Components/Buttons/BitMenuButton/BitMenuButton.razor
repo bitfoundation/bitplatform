@@ -11,7 +11,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <button @onclick="() => HandleOnClick(SelectedItem)"
+    <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
             type="button"
             style="@GetStyle(SelectedItem);@Styles?.ItemButton"
             class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton"
@@ -19,42 +19,42 @@
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        @if ((HeaderTemplate is not null || Text.HasValue()) && Sticky is false)
+        @if (Sticky)
+        {
+            var template = GetTemplate(SelectedItem);
+            if (template is not null)
+            {
+                @template(SelectedItem)
+            }
+            else if (ItemTemplate is not null)
+            {
+                @ItemTemplate(SelectedItem)
+            }
+            else
+            {
+                var iconName = GetIconName(SelectedItem);
+                @if (iconName.HasValue())
+                {
+                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                }
+                <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
+                    @GetText(SelectedItem)
+                </span>
+            }
+        }
+        else
         {
             @if (HeaderTemplate is not null)
             {
                 @HeaderTemplate
             }
-
-            @if (Text.HasValue())
+            else
             {
+                @if (IconName.HasValue())
+                {
+                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                }
                 <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>
-            }
-        }
-        else
-        {
-            @if (SelectedItem is not null)
-            {
-                var template = GetTemplate(SelectedItem);
-                if (template is not null)
-                {
-                    @template(SelectedItem)
-                }
-                else if (ItemTemplate is not null)
-                {
-                    @ItemTemplate(SelectedItem)
-                }
-                else
-                {
-                    var iconName = GetIconName(SelectedItem);
-                    @if (iconName.HasValue())
-                    {
-                        <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
-                    }
-                    <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
-                        @GetText(SelectedItem)
-                    </span>
-                }
             }
         }
 
@@ -87,9 +87,9 @@
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
-                if ((HeaderTemplate is null && Text.HasValue() is false) || (Sticky && Split is false) || (Sticky && Split))
+                if (Sticky)
                 {
-                    if (item == SelectedItem) continue;    
+                    if (item == SelectedItem) continue;
                 }
 
                 var isEnabled = GetIsEnabled(item);

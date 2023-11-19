@@ -7,7 +7,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     private bool SelectedItemHasBeenSet;
 
     private bool isCalloutOpen;
-    private TItem? selectedItem;
+    private TItem selectedItem;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private string _calloutId = default!;
@@ -140,7 +140,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// Determines the current selected item that acts as the main button.
     /// </summary>
     [Parameter]
-    public TItem? SelectedItem
+    public TItem SelectedItem
     {
         get => selectedItem;
         set
@@ -454,9 +454,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
             await OpenCallout();
         }
 
-        if ((HeaderTemplate is null && Text.HasValue() is false) || (Sticky && (HeaderTemplate is not null || Text.HasValue())))
+        if (item is not null)
         {
-            if (item is null || GetIsEnabled(item) is false) return;
+            if (GetIsEnabled(item) is false) return;
 
             await OnClick.InvokeAsync(item);
 
