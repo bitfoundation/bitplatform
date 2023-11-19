@@ -69,7 +69,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         var menuButtonIcon = com.Find(".bit-mnb .bit-icon");
 
-        var menuButtonText = com.Find(".bit-mnb .bit-mnb-txt");
+        var menuButtonText = com.Find(".bit-mnb .bit-mnb-btx");
 
         Assert.IsTrue(menuButtonIcon.ClassList.Contains(iconNameClass));
 
@@ -95,7 +95,7 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         var itemIconNameClass = $"bit-icon--{itemIconName}";
-        var menuButtonItemText = com.Find(".bit-mnb-itm .bit-mnb-txt");
+        var menuButtonItemText = com.Find(".bit-mnb-itm .bit-mnb-btx");
         var menuButtonItemIcon = com.Find(".bit-mnb-itm .bit-icon");
 
         Assert.AreEqual(itemText, menuButtonItemText.TextContent);
@@ -115,7 +115,7 @@ public class BitMenuButtonTests : BunitTestContext
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.OnItemClick, (item) => clickedItem = item);
+            parameters.Add(p => p.OnClick, (item) => clickedItem = item);
         });
 
         var lastItem = com.Find("li:last-child .bit-mnb-itm");
@@ -146,8 +146,9 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         var bitMenuButton = com.Find(".bit-mnb");
+        var operatorButton = com.Find(".bit-mnb-opb");
         Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-omn"));
-        bitMenuButton.Click();
+        operatorButton.Click();
 
         if (isEnabled)
         {
@@ -156,6 +157,58 @@ public class BitMenuButtonTests : BunitTestContext
         else
         {
             Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-omn"));
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMenuButtonStickyTest(bool isSticky)
+    {
+        BitMenuButtonItem clickedItem = default!;
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Sticky, isSticky);
+            parameters.Add(p => p.OnClick, (item) => clickedItem = item);
+        });
+
+        var lastItem = com.Find("li:last-child .bit-mnb-itm");
+        lastItem.Click();
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+        operatorButton.Click();
+
+        if (isSticky)
+        {
+            Assert.AreEqual(clickedItem, items.Last());
+        }
+        else
+        {
+            Assert.IsNull(clickedItem);
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(true)
+    ]
+    public void BitMenuButtonSplitTest(bool isSplit)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, isSplit);
+        });
+
+        var seperator = com.Find(".bit-mnb > .bit-mnb-spb");
+        var chevronDownButton = com.Find(".bit-mnb > .bit-mnb-chb");
+
+        if (isSplit)
+        {
+            Assert.IsNotNull(seperator);
+            Assert.IsNotNull(chevronDownButton);
         }
     }
 }
