@@ -49,14 +49,6 @@ public partial class ResetPasswordPage
             _resetPasswordMessageType = BitMessageBarType.Success;
 
             _resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
-
-            await AuthenticationService.SignIn(new SignInRequestDto
-            {
-                UserName = Email,
-                Password = _resetPasswordModel.Password
-            });
-
-            NavigationManager.NavigateTo("/");
         }
         catch (KnownException e)
         {

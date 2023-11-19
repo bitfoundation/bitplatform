@@ -7,11 +7,11 @@ public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAccessTokenAsync()
     {
-        return await _jsRuntime.InvokeAsync<string>("App.getCookie", "access_token");
+        return await _jsRuntime.GetCookie("access_token");
     }
 
     public async Task<string?> GetRefreshTokenAsync()
     {
-        return await _jsRuntime.InvokeAsync<string>("App.getCookie", "refresh_token");
+        return await _jsRuntime.GetCookie("refresh_token");
     }
 }

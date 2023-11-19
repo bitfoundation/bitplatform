@@ -43,18 +43,16 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        _user = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
+        _user = await GetCurrentUser() ?? new();
 
         UpdateEditProfileData();
     }
 
     private async Task RefreshProfileData()
     {
-        _user = await GetCurrentUser() ?? new();
+        await LoadEditProfileData();
 
-        UpdateEditProfileData();
-
-        PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
+        await PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
     }
 
     private void UpdateEditProfileData()
@@ -64,8 +62,7 @@ public partial class EditProfilePage
         _userToEdit.BirthDate = _user.BirthDate;
     }
 
-    private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
-
+    private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
     private async Task DoSave()
     {
@@ -83,7 +80,7 @@ public partial class EditProfilePage
             (await (await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto))!.Patch(_user);
 
-            PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
+            await PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
 
             _editProfileMessageType = BitMessageBarType.Success;
             _editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];

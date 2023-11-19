@@ -73,15 +73,13 @@ public partial class NavMenu : IDisposable
             }
         ];
 
-        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, payload =>
+        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
 
             _user = (UserDto)payload;
 
             SetProfileImageUrl();
-
-            StateHasChanged();
         });
 
         _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>

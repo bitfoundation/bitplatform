@@ -1,4 +1,6 @@
-﻿namespace Microsoft.JSInterop;
+﻿using BlazorWeb.Shared.Dtos.Identity;
+
+namespace Microsoft.JSInterop;
 
 public static class JSRuntimeExtension
 {
@@ -18,5 +20,32 @@ public static class JSRuntimeExtension
     public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
         await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+    }
+
+    public static async Task SetCookie(this IJSRuntime jsRuntime, string key, string value, long expiresIn, bool rememberMe)
+    {
+        await jsRuntime.InvokeVoidAsync("App.setCookie", key, value, expiresIn, rememberMe);
+    }
+
+    public static async Task RemoveCookie(this IJSRuntime jsRuntime, string key)
+    {
+        await jsRuntime.InvokeVoidAsync("App.removeCookie", key);
+    }
+
+    public static async Task<string?> GetCookie(this IJSRuntime jsRuntime, string key)
+    {
+        return await jsRuntime.InvokeAsync<string?>("App.getCookie", key);
+    }
+
+    public static async Task StoreToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool rememberMe)
+    {
+        await jsRuntime.SetCookie("access_token", tokenResponse.AccessToken!, tokenResponse.ExpiresIn, rememberMe);
+        await jsRuntime.SetCookie("refresh_token", tokenResponse.RefreshToken!, TokenResponseDto.RefreshTokenExpiresIn, rememberMe);
+    }
+
+    public static async Task RemoveToken(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.RemoveCookie("access_token");
+        await jsRuntime.RemoveCookie("refresh_token");
     }
 }

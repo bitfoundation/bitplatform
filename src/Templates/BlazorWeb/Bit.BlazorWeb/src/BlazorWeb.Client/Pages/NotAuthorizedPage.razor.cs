@@ -1,12 +1,14 @@
-﻿namespace BlazorWeb.Client.Pages;
+﻿using BlazorWeb.Shared.Dtos.Identity;
+using System.Net.Http;
+using System.Threading;
+
+namespace BlazorWeb.Client.Pages;
 
 public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal _user { get; set; } = default!;
 
     [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
-
-    [SupplyParameterFromQuery, Parameter] public bool? IsForbidden { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -15,21 +17,35 @@ public partial class NotAuthorizedPage
         await base.OnParamsSetAsync();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterFirstRenderAsync()
     {
         try
         {
-            if (firstRender)
+            string? refresh_token = await JSRuntime.GetCookie("refresh_token");
+
+            // Let's update the access token by refreshing it when a refresh token is available.
+            // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
+            // To prevent infinitie redirect loop, let's append refreshToken=false to the url, so we only redirect in case no refreshToken=false is present
+
+            if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refreshToken=false", StringComparison.InvariantCulture) is false)
             {
-                if (_user.IsAuthenticated() && IsForbidden is false)
+                var refreshTokenResponse = await (await HttpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
+                    .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+                await JSRuntime.StoreToken(refreshTokenResponse!, true);
+                await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+
+                if (string.IsNullOrEmpty(RedirectUrl) is false)
                 {
-                    // There's a possibility that the access token might be refreshed using the refresh token, allowing the user to access the resource.
-                    NavigationManager.NavigateTo(RedirectUrl ?? "/");
+                    var @char = RedirectUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                    NavigationManager.NavigateTo($"{RedirectUrl}{@char}refreshToken=false");
                 }
-                else if (_user.IsAuthenticated() is false)
-                {
-                    RedirectToSignInPage();
-                }
+            }
+            
+            if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
+            {
+                // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
+                await SignIn();
             }
         }
         catch (Exception exp)
@@ -37,12 +53,14 @@ public partial class NotAuthorizedPage
             ExceptionHandler.Handle(exp);
         }
 
-        base.OnAfterRender(firstRender);
+        await base.OnAfterFirstRenderAsync();
     }
 
     private async Task SignIn()
     {
-        await AuthenticationService.SignOut();
+        await JSRuntime.RemoveToken();
+
+        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
         RedirectToSignInPage();
     }

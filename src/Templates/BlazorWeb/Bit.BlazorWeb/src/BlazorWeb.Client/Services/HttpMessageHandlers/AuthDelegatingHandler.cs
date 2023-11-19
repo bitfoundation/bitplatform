@@ -38,30 +38,43 @@ public class AuthDelegatingHandler
         {
             return await base.SendAsync(request, cancellationToken);
         }
-        catch (UnauthorizedException)
+        catch (Exception _) when (_ is ForbiddenException or UnauthorizedException)
         {
-            var refreshToken = await _tokenProvider.GetRefreshTokenAsync();
+            // Notes about ForbiddenException:
+            // Let's update the access token by refreshing it when a refresh token is available.
+            // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            if (refreshToken is not null)
+            var refresh_token = await _tokenProvider.GetRefreshTokenAsync();
+
+            if (refresh_token is not null)
             {
                 var httpClient = _serviceProvider.GetRequiredService<HttpClient>();
 
-                var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refreshToken }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
+                var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                     .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
 
                 var _jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
+                var appAuthStateProvider = _serviceProvider.GetRequiredService<AppAuthenticationStateProvider>();
 
                 try
                 {
-                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "access_token", refreshTokenResponse!.AccessToken, refreshTokenResponse.ExpiresIn, true);
-                    await _jsRuntime.InvokeVoidAsync("App.setCookie", "refresh_token", refreshTokenResponse.RefreshToken, TokenResponseDto.RefreshTokenExpiresIn, true);
-                    await _serviceProvider.GetRequiredService<AppAuthenticationStateProvider>().RaiseAuthenticationStateHasChanged();
+                    await _jsRuntime.StoreToken(refreshTokenResponse!, true);
+                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
                 }
                 catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
 
-                return await base.SendAsync(request, cancellationToken);
+                try
+                {
+                    return await base.SendAsync(request, cancellationToken);
+                }
+                catch (Exception __) when (__ is UnauthorizedException)
+                {
+                    await _jsRuntime.RemoveToken();
+                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
+                    throw;
+                }
             }
 
             throw;

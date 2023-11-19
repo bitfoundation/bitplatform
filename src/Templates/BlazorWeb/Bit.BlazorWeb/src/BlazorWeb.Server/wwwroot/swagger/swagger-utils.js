@@ -104,6 +104,7 @@ const createLoginUI = function (swagger, rootDiv) {
 
     const userNameInput = document.createElement("input");
     userNameInput.type = "text";
+    userNameInput.placeholder = "test@bitplatform.dev";
     userNameInput.style = "margin-left: 10px; margin-right: 10px;";
     userNameLabel.appendChild(userNameInput);
 
@@ -116,6 +117,7 @@ const createLoginUI = function (swagger, rootDiv) {
     passwordLabel.appendChild(passwordSpan);
 
     const passwordInput = document.createElement("input");
+    passwordInput.placeholder = "123456";
     passwordInput.type = "password";
     passwordInput.style = "margin-left: 10px; margin-right: 10px;";
     passwordLabel.appendChild(passwordInput);

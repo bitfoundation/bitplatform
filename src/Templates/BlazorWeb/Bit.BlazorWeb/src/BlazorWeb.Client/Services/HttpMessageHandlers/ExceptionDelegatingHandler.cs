@@ -47,9 +47,9 @@ public class ExceptionDelegatingHandler
                 }
             }
 
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
+            if (response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized)
             {
-                throw new UnauthorizedException();
+                throw new ForbiddenException(nameof(AppStrings.YouNeedToSignIn));
             }
 
             response.EnsureSuccessStatusCode();

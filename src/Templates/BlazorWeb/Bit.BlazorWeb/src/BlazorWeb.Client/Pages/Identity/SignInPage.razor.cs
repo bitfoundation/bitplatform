@@ -32,7 +32,12 @@ public partial class SignInPage
 
         try
         {
-            await AuthenticationService.SignIn(_signInModel);
+            var result = await (await HttpClient.PostAsJsonAsync("Identity/SignIn", _signInModel, AppJsonContext.Default.SignInRequestDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+            await JSRuntime.StoreToken(result!, _signInModel.RememberMe);
+
+            await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
