@@ -113,11 +113,15 @@ public class Middlewares
                 {
                     bool is403 = httpContext.Response.StatusCode is 403;
 
-                    httpContext.Response.Redirect($"/not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
+                    httpContext.Response.Redirect($"/not-authorized?redirect_url={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404)
                 {
                     httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+                else
+                {
+                    await statusCodeContext.Next.Invoke(statusCodeContext.HttpContext);
                 }
             }
         });

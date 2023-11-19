@@ -44,7 +44,7 @@ public partial class ResetPasswordPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/ResetPassword", _resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/ResetPassword", _resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
             _resetPasswordMessageType = BitMessageBarType.Success;
 

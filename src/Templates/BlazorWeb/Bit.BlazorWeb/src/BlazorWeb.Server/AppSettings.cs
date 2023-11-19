@@ -21,6 +21,7 @@ public class HealthCheckSettings
 public class IdentitySettings
 {
     public TimeSpan BearerTokenExpiration { get; set; }
+    public TimeSpan RefreshTokenExpiration { get; set; }
     public string Issuer { get; set; } = default!;
     public string Audience { get; set; } = default!;
     public string IdentityCertificatePassword { get; set; } = default!;

@@ -7,7 +7,6 @@ using BlazorWeb.Client.Services;
 using BlazorWeb.Client.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
-using BlazorWeb.Shared.Dtos.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -31,7 +30,7 @@ public static class IServiceCollectionExtensions
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("BlazorHttpClient")
-            .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
+            .AddHttpMessageHandler(sp => new PrepareRequestDelegatingHandler())
             .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp))
             .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
             .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
@@ -47,8 +46,6 @@ public static class IServiceCollectionExtensions
 
                 httpClient.BaseAddress = apiServerAddress;
             });
-
-        services.AddScoped<LazyAssemblyLoader>();
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
@@ -95,7 +92,7 @@ public static class IServiceCollectionExtensions
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
             options.BearerTokenExpiration = settings.BearerTokenExpiration;
-            options.RefreshTokenExpiration = TimeSpan.FromSeconds(TokenResponseDto.RefreshTokenExpiresIn);
+            options.RefreshTokenExpiration = settings.RefreshTokenExpiration;
 
             var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
             RSA? rsaPrivateKey;

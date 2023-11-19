@@ -3,16 +3,12 @@
 public partial class EmailConfirmationPage
 {
     private bool _isLoading;
-    private string? _emailConfirmationMessage;
-    private BitMessageBarType _emailConfirmationMessageType;
+    private BitMessageBarType _emailConfirmationMessageType = BitMessageBarType.Error;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? Email { get; set; }
+    [SupplyParameterFromQuery, Parameter] public string? Email { get; set; }
+    [SupplyParameterFromQuery, Parameter] public string? Errors { get; set; }
 
-    [Parameter]
-    [SupplyParameterFromQuery(Name = "email-confirmed")]
-    public bool EmailConfirmed { get; set; }
+    [SupplyParameterFromQuery(Name = "email-confirmed"), Parameter] public bool EmailConfirmed { get; set; }
 
     private void RedirectToSignIn()
     {
@@ -24,21 +20,21 @@ public partial class EmailConfirmationPage
         if (_isLoading) return;
 
         _isLoading = true;
-        _emailConfirmationMessage = null;
+        Errors = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             _emailConfirmationMessageType = BitMessageBarType.Success;
 
-            _emailConfirmationMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            Errors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             _emailConfirmationMessageType = BitMessageBarType.Error;
 
-            _emailConfirmationMessage = e.Message;
+            Errors = e.Message;
         }
         finally
         {

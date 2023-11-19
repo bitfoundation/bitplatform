@@ -65,9 +65,7 @@ public partial class ProductController : AppControllerBase
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        productToUpdate.Patch(dto);
-
-        return dto;
+        return productToUpdate.Map();
     }
 
     [HttpDelete("{id:int}")]

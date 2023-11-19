@@ -1,23 +1,26 @@
 ﻿using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class LocalizationDelegatingHandler
+public class PrepareRequestDelegatingHandler
     : DelegatingHandler
 {
-    public LocalizationDelegatingHandler(AuthDelegatingHandler handler) 
+    public PrepareRequestDelegatingHandler(AuthDelegatingHandler handler) 
         : base(handler)
     {
 
     }
 
-    public LocalizationDelegatingHandler()
+    public PrepareRequestDelegatingHandler()
     {
 
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        request.SetBrowserResponseStreamingEnabled(true);
+
 #if MultilingualEnabled
         request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name));
 #endif

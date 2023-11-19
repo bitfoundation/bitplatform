@@ -49,7 +49,9 @@ public partial class IdentityController : AppControllerBase
             }
             else
             {
-                await _userManager.DeleteAsync(existingUser);
+                var deleteResult = await _userManager.DeleteAsync(existingUser);
+                if (!deleteResult.Succeeded)
+                    throw new ResourceValidationException(deleteResult.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
                 userToAdd.ConfirmationEmailRequestedOn = existingUser.ConfirmationEmailRequestedOn;
             }
         }
@@ -133,9 +135,18 @@ public partial class IdentityController : AppControllerBase
         if (user is null)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
 
-        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
+        var emailConfirmed = user.EmailConfirmed;
+        var errors = string.Empty;
 
-        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}";
+        if (emailConfirmed is false)
+        {
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+                errors = string.Join(", ", result.Errors.Select(e => $"{e.Code}: {e.Description}"));
+            emailConfirmed = result.Succeeded;
+        }
+
+        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}{(string.IsNullOrEmpty(errors) ? "" : ($"&error={errors}"))}";
 
         return Redirect(url);
     }

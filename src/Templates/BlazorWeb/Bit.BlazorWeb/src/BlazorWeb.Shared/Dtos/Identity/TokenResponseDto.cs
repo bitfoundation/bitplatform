@@ -10,6 +10,4 @@ public class TokenResponseDto
     public long ExpiresIn { get; set; }
 
     public string? RefreshToken { get; set; }
-
-    public const long RefreshTokenExpiresIn = 14 * 24 * 3600; /* 7 days */
 }

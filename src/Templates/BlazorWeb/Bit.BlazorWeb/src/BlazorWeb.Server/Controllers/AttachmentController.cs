@@ -74,7 +74,9 @@ public partial class AttachmentController : AppControllerBase
 
             user.ProfileImageName = destFileName;
 
-            await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
         }
         catch
         {
@@ -108,7 +110,9 @@ public partial class AttachmentController : AppControllerBase
 
         user.ProfileImageName = null;
 
-        await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
         SystemFile.Delete(filePath);
     }

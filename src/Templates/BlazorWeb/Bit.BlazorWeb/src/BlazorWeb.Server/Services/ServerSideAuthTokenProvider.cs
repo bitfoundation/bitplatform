@@ -18,28 +18,17 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
                                                                 .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
                                                                 .GetProperty("IsInitialized")!;
 
+    public bool IsInitialized => (bool)IsInitializedProp.GetValue(_httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IJSRuntime>())!;
+
     public async Task<string?> GetAccessTokenAsync()
     {
         var jsRuntime = _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IJSRuntime>();
-        var isInitialized = (bool)IsInitializedProp.GetValue(jsRuntime)!;
 
-        if (isInitialized)
+        if (IsInitialized)
         {
             return await jsRuntime.GetCookie("access_token");
         }
+
         return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
-    }
-
-    public async Task<string?> GetRefreshTokenAsync()
-    {
-        var jsRuntime = _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IJSRuntime>();
-        var isInitialized = (bool)IsInitializedProp.GetValue(jsRuntime)!;
-
-        if (isInitialized)
-        {
-            return await jsRuntime.GetCookie("refresh_token");
-        }
-
-        return _httpContextAccessor.HttpContext?.Request.Cookies["refresh_token"];
     }
 }

@@ -8,7 +8,7 @@ public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal _user { get; set; } = default!;
 
-    [SupplyParameterFromQuery, Parameter] public string? RedirectUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "redirect_url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -21,7 +21,7 @@ public partial class NotAuthorizedPage
     {
         try
         {
-            string? refresh_token = await JSRuntime.GetCookie("refresh_token");
+            string? refresh_token = await JSRuntime.GetLocalStorage("refresh_token");
 
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
@@ -67,6 +67,6 @@ public partial class NotAuthorizedPage
 
     private void RedirectToSignInPage()
     {
-        NavigationManager.NavigateTo($"/sign-in?redirectUrl={RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
+        NavigationManager.NavigateTo($"/sign-in?redirect_url={RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
     }
 }

@@ -24,9 +24,6 @@ public static partial class Mapper
 {
     //#if (sample == "Todo")
     public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
-    //#elif (sample == "AdminPanel")
-    public static partial void Patch(this CategoryDto source, CategoryDto destination);
-    public static partial void Patch(this ProductDto source, ProductDto destination);
     //#endif
     public static partial void Patch(this UserDto source, UserDto destination);
 }

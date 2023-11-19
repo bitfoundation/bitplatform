@@ -38,13 +38,15 @@ public class AuthDelegatingHandler
         {
             return await base.SendAsync(request, cancellationToken);
         }
-        catch (Exception _) when (_ is ForbiddenException or UnauthorizedException)
+        catch (Exception _) when ((_ is ForbiddenException or UnauthorizedException) && _tokenProvider.IsInitialized)
         {
             // Notes about ForbiddenException:
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            var refresh_token = await _tokenProvider.GetRefreshTokenAsync();
+            var _jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
+
+            var refresh_token = await _jsRuntime.GetLocalStorage("refresh_token");
 
             if (refresh_token is not null)
             {
@@ -53,15 +55,10 @@ public class AuthDelegatingHandler
                 var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                     .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
 
-                var _jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
                 var appAuthStateProvider = _serviceProvider.GetRequiredService<AppAuthenticationStateProvider>();
 
-                try
-                {
-                    await _jsRuntime.StoreToken(refreshTokenResponse!, true);
-                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
-                }
-                catch (InvalidOperationException) { /* Ignore js runtime exception during pre rendering */ }
+                await _jsRuntime.StoreToken(refreshTokenResponse!, true);
+                await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
 
