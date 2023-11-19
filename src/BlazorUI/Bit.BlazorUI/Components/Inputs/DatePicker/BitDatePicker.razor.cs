@@ -1239,12 +1239,9 @@ public partial class BitDatePicker
 
         _isPointerDown = true;
 
-        await InvokeAsync(async () =>
-        {
-            await Task.Delay(INITIAL_STEP_DELAY);
+        await Task.Delay(INITIAL_STEP_DELAY);
 
-            await ChangeTime(isNext, isHour);
-        });
+        await ChangeTime(isNext, isHour);
     }
 
     private async Task ChangeTime(bool isNext, bool isHour)
