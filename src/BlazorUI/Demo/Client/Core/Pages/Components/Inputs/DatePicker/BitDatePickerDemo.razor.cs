@@ -969,6 +969,14 @@ public partial class BitDatePickerDemo
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
     }
+
+    .custom-increase-btn {
+        background-color: #48900f;
+    }
+
+    .custom-decrease-btn {
+        background-color: #c70505;
+    }
 </style>
 
 
@@ -981,16 +989,21 @@ public partial class BitDatePickerDemo
                                    TodayDayButton = """"background-color: red;"""",
                                    SelectedDayButton = """"background-color: purple;"""",
                                    YearPickerToggleButton = """"color: blue;"""" })"""" />
-<BitDatePicker Classes=""""@(new() { Root = """"custom-root"""",
-                                    DayPickerWrapper = """"custom-day-picker"""",
-                                    DayButton = """"custom-day"""",
-                                    TodayDayButton = """"custom-today-day"""",
-                                    PrevMonthNavButton = """"custom-prev-month"""",
-                                    NextMonthNavButton = """"custom-next-month"""",
-                                    DayPickerMonth = """"custom-day-month"""",
-                                    DayPickerHeader = """"custom-day-header"""",
-                                    WeekNumbersHeader = """"custom-week-header"""",
-                                    YearMonthPickerWrapper = """"custom-year-picker""""})"""" />";
+<BitDatePicker ShowTimePicker=""true""
+               Classes=""@(new() { Root = ""custom-root"",
+                                  DayPickerWrapper = ""custom-day-picker"",
+                                  DayButton = ""custom-day"",
+                                  TodayDayButton = ""custom-today-day"",
+                                  PrevMonthNavButton = ""custom-prev-month"",
+                                  NextMonthNavButton = ""custom-next-month"",
+                                  DayPickerMonth = ""custom-day-month"",
+                                  DayPickerHeader = ""custom-day-header"",
+                                  WeekNumbersHeader = ""custom-week-header"",
+                                  YearMonthPickerWrapper = ""custom-year-picker"",
+                                  TimePickerIncreaseHourButton = ""custom-increase-btn"",
+                                  TimePickerIncreaseMinuteButton = ""custom-increase-btn"",
+                                  TimePickerDecreaseHourButton = ""custom-decrease-btn"",
+                                  TimePickerDecreaseMinuteButton = ""custom-decrease-btn""})"" />";
 
     private readonly string example6RazorCode = @"
 <BitDatePicker @bind-Value=""@selectedDate"" />

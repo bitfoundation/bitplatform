@@ -88,9 +88,29 @@ public class BitDatePickerClassStyles
     public string? GoToTodayButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the Go to now button of the BitDatePicker.
+    /// </summary>
+    public string? GoToNowButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the hide time-picker button of the BitDatePicker.
+    /// </summary>
+    public string? HideTimePickerButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the hide time-picker icon of the BitDatePicker.
+    /// </summary>
+    public string? HideTimePickerIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the Go to today icon of the BitDatePicker.
     /// </summary>
     public string? GoToTodayIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Go to now icon of the BitDatePicker.
+    /// </summary>
+    public string? GoToNowIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the close button of the BitDatePicker.
@@ -148,9 +168,19 @@ public class BitDatePickerClassStyles
     public string? SelectedDayButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time-picker's main container of the BitDatePicker.
+    /// Custom CSS classes/styles for the time-picker's input container of the BitDatePicker.
     /// </summary>
-    public string? TimePickerContainer { get; set; }
+    public string? TimeInputContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's hour input container of the BitDatePicker.
+    /// </summary>
+    public string? HourInputContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's minute input container of the BitDatePicker.
+    /// </summary>
+    public string? MinuteInputContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's wrapper of the BitDatePicker.
@@ -171,6 +201,46 @@ public class BitDatePickerClassStyles
     /// Custom CSS classes/styles for the time-picker's minute input of the BitDatePicker.
     /// </summary>
     public string? TimePickerMinuteInput { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's increase hour button of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerIncreaseHourButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's increase hour icon of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerIncreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's decrease hour button of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerDecreaseHourButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's decrease hour icon of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerDecreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's increase minute button of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerIncreaseMinuteButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's increase minute icon of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerIncreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's decrease minute button of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerDecreaseMinuteButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the time-picker's decrease minute icon of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerDecreaseMinuteIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's Am Pm container of the BitDatePicker.
@@ -203,14 +273,34 @@ public class BitDatePickerClassStyles
     public string? MonthPickerHeader { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the time-picker's header of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerHeader { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the year-picker's toggle button of the BitDatePicker.
     /// </summary>
     public string? YearPickerToggleButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the show time-picker button of the BitDatePicker.
+    /// </summary>
+    public string? ShowTimePickerButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the show time-picker icon of the BitDatePicker.
+    /// </summary>
+    public string? ShowTimePickerIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the wrapper of the month-picker's nav buttons of the BitDatePicker.
     /// </summary>
     public string? MonthPickerNavWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the wrapper of the time-picker's nav buttons of the BitDatePicker.
+    /// </summary>
+    public string? TimePickerNavWrapper { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the Go to previous year button of the BitDatePicker.
