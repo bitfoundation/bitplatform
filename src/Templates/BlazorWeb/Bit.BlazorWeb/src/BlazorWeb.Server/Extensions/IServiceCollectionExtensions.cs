@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using BlazorWeb.Client.Services;
 using BlazorWeb.Client.Services.HttpMessageHandlers;
@@ -8,7 +7,6 @@ using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.JSInterop;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -22,30 +20,18 @@ public static class IServiceCollectionExtensions
 
         services.AddTransient(sp =>
         {
-            IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return httpClientFactory.CreateClient("BlazorHttpClient");
-            // This registers HttpClient for pre rendering & blazor server only, so to use http client to call 3rd party apis and other use cases,
-            // either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
-        });
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
-        // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
-        services.AddHttpClient("BlazorHttpClient")
-            .AddHttpMessageHandler(sp => new RequestHeadersDelegationHandler())
-            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp, sp.GetRequiredService<IJSRuntime>()))
-            .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
-            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
-            .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
-            .ConfigureHttpClient((sp, httpClient) =>
+            if (apiServerAddress!.IsAbsoluteUri is false)
             {
-                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+            }
 
-                if (apiServerAddress!.IsAbsoluteUri is false)
-                {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
-                }
-
-                httpClient.BaseAddress = apiServerAddress;
-            });
+            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
+            {
+                BaseAddress = apiServerAddress
+            };
+        });
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()

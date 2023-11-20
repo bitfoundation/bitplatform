@@ -23,11 +23,9 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAccessTokenAsync()
     {
-        var jsRuntime = _httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IJSRuntime>();
-
         if (IsInitialized)
         {
-            return await jsRuntime.GetCookie("access_token");
+            return await _jsRuntime.GetCookie("access_token");
         }
 
         return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];

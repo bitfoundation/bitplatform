@@ -3,20 +3,9 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class RequestHeadersDelegationHandler
-    : DelegatingHandler
+public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
+    : DelegatingHandler(handler)
 {
-    public RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
-        : base(handler)
-    {
-
-    }
-
-    public RequestHeadersDelegationHandler()
-    {
-
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         request.SetBrowserResponseStreamingEnabled(true);

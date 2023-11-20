@@ -154,17 +154,17 @@ const login = async (swagger, userName, password) => {
     })
     if (response.ok) {
         const result = await response.json();
-        const accessToken = result.accessToken;
+        const access_token = result.accessToken;
         accessTokenExpiresIn = result.expiresIn;
 
-        const authorizationObject = getAuthorizationRequestObject(accessToken);
+        const authorizationObject = getAuthorizationRequestObject(access_token);
         swagger.authActions.authorize(authorizationObject);
     } else {
         alert(await response.text())
     }
 }
 
-const getAuthorizationRequestObject = (accessToken) => {
+const getAuthorizationRequestObject = (access_token) => {
     return {
         "bearerAuth": {
             "name": "Bearer",
@@ -174,7 +174,7 @@ const getAuthorizationRequestObject = (accessToken) => {
                 "name": "Authorization",
                 "in": "header"
             },
-            value: accessToken
+            value: access_token
         },
     };
 }
