@@ -28,8 +28,8 @@ internal static class BitFileUploadJsExtension
         await jsRuntime.InvokeVoidAsync("BitFileUpload.pause", index);
     }
 
-    internal static async Task OpenBrowseWindow(this IJSRuntime jsRuntime, ElementReference inputFileElement)
+    internal static async Task Browse(this IJSRuntime jsRuntime, ElementReference inputFileElement)
     {
-        await jsRuntime.InvokeVoidAsync("BitFileUpload.openBrowseWindow", inputFileElement);
+        await jsRuntime.InvokeVoidAsync("BitFileUpload.browse", inputFileElement);
     }
 }

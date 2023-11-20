@@ -267,21 +267,25 @@ public partial class BitFileUploadDemo
     private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"FileUpload/RemoveFile";
-
     private BitFileUpload bitFileUpload;
+    private BitFileUpload bitFileUploadWithBrowseFile;
+
     private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+
     private async Task HandleUploadOnClick()
     {
         if (bitFileUpload.Files is null) return;
 
         await bitFileUpload.Upload();
     }
+
     private async Task HandleRemoveOnClick()
     {
         if (bitFileUpload.Files is null) return;
 
         await bitFileUpload.RemoveFile();
     }
+
     private static int GetFileUploadPercent(BitFileInfo file)
     {
         int uploadedPercent;
@@ -296,6 +300,7 @@ public partial class BitFileUploadDemo
 
         return uploadedPercent;
     }
+
     private static string GetFileUploadSize(BitFileInfo file)
     {
         long totalSize = file.Size / 1024;
@@ -311,6 +316,7 @@ public partial class BitFileUploadDemo
 
         return $"{uploadSize}KB / {totalSize}KB";
     }
+
     private string GetUploadMessageStr(BitFileInfo file)
         => file.Status switch
         {
@@ -319,6 +325,7 @@ public partial class BitFileUploadDemo
             BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
             _ => string.Empty,
         };
+
     private bool IsFileTypeNotAllowed(BitFileInfo file)
     {
         if (bitFileUpload.Accept is not null) return false;
@@ -326,6 +333,11 @@ public partial class BitFileUploadDemo
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
         return bitFileUpload.AllowedExtensions.Count > 0 && bitFileUpload.AllowedExtensions.All(ext => ext != "*") && bitFileUpload.AllowedExtensions.All(ext => ext != extension);
+    }
+
+    private async Task HandleBrowseFileOnClick()
+    {
+        await bitFileUploadWithBrowseFile.Browse();
     }
 
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
@@ -402,6 +414,17 @@ private bool IsFileTypeNotAllowed(BitFileInfo file)
     var fileSections = file.Name.Split('.');
     var extension = $"".{fileSections?.Last()}"";
     return bitFileUpload.AllowedExtensions.Count > 0 && bitFileUpload.AllowedExtensions.All(ext => ext != ""*"") && bitFileUpload.AllowedExtensions.All(ext => ext != extension);
+}
+";
+
+    private readonly string example10CsharpCode = @"
+private string NonChunkedUploadUrl = ""/Upload"";
+private string RemoveUrl => ""/RemoveFile"";
+private BitFileUpload bitFileUploadWithBrowseFile;
+
+private async Task HandleBrowseFileOnClick()
+{
+    await bitFileUploadWithBrowseFile.Browse();
 }
 ";
 
@@ -685,4 +708,11 @@ private string RemoveUrl = $""/Remove"";
 <br />
 
 <BitButton OnClick=""HandleUploadOnClick"">Upload</BitButton>";
+
+    private readonly string example10RazorCode = @"
+<BitFileUpload @ref=""bitFileUploadWithBrowseFile""
+               Label=""""
+               UploadUrl=""@NonChunkedUploadUrl""
+               RemoveUrl=""@RemoveUrl""
+               MaxSize=""1024 * 1024 * 500"" />";
 }

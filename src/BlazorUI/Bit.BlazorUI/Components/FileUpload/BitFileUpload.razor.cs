@@ -319,11 +319,11 @@ public partial class BitFileUpload : IDisposable
     /// Open a file selection dialog
     /// </summary>
     /// <returns></returns>
-    public async Task OpenBrowseWindow()
+    public async Task Browse()
     {
         if (IsEnabled is false) return;
 
-        await _js.OpenBrowseWindow(inputFileElement);
+        await _js.Browse(inputFileElement);
     }
 
     protected override Task OnInitializedAsync()

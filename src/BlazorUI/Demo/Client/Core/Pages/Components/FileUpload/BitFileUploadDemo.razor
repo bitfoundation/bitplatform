@@ -208,4 +208,21 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Browse file" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div class="example-desc">Use a custom method for the open file selection dialog.</div>
+            <div>
+                <BitFileUpload @ref="bitFileUploadWithBrowseFile"
+                               Label=""
+                               UploadUrl="@NonChunkedUploadUrl"
+                               RemoveUrl="@RemoveUrl"
+                               MaxSize="1024 * 1024 * 500" />
+
+                <br />
+
+                <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>

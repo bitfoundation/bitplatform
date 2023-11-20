@@ -90,7 +90,7 @@ class BitFileUpload {
         }
     }
 
-    static openBrowseWindow(inputFile: HTMLInputElement) {
+    static browse(inputFile: HTMLInputElement) {
         inputFile.click();
     }
 }
