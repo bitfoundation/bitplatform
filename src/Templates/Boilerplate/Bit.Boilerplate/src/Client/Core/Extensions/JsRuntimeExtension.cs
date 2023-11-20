@@ -19,4 +19,53 @@ public static class JSRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
     }
+
+    public static async Task SetCookie(this IJSRuntime jsRuntime, string key, string value, long expiresIn, bool rememberMe)
+    {
+        await jsRuntime.InvokeVoidAsync("App.setCookie", key, value, expiresIn, rememberMe);
+    }
+
+    public static async Task RemoveCookie(this IJSRuntime jsRuntime, string key)
+    {
+        await jsRuntime.InvokeVoidAsync("App.removeCookie", key);
+    }
+
+    public static async Task<string?> GetCookie(this IJSRuntime jsRuntime, string key)
+    {
+        return await jsRuntime.InvokeAsync<string?>("App.getCookie", key);
+    }
+
+    public static async Task SetLocalStorage(this IJSRuntime jsRuntime, string key, string value, bool rememberMe)
+    {
+        await jsRuntime.InvokeVoidAsync($"window.{(rememberMe ? "localStorage" : "sessionStorage")}.setItem", key, value);
+    }
+
+    public static async Task RemoveLocalStorage(this IJSRuntime jsRuntime, string key)
+    {
+        await jsRuntime.InvokeVoidAsync("window.sessionStorage.removeItem", key);
+        await jsRuntime.InvokeVoidAsync("window.localStorage.removeItem", key);
+    }
+
+    public static async Task<string?> GetLocalStorage(this IJSRuntime jsRuntime, string key)
+    {
+        return (await jsRuntime.InvokeAsync<string?>("window.localStorage.getItem", key)) ??
+            (await jsRuntime.InvokeAsync<string?>("window.sessionStorage.getItem", key));
+    }
+
+    public static async Task StoreToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool? rememberMe = null)
+    {
+        if (rememberMe is null)
+        {
+            rememberMe = string.IsNullOrEmpty(await jsRuntime.InvokeAsync<string?>("window.localStorage.getItem", "refresh_token")) is false;
+        }
+
+        await jsRuntime.SetCookie("access_token", tokenResponse.AccessToken!, tokenResponse.ExpiresIn, rememberMe is true);
+        await jsRuntime.SetLocalStorage("refresh_token", tokenResponse.RefreshToken!, rememberMe is true);
+    }
+
+    public static async Task RemoveToken(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.RemoveCookie("access_token");
+        await jsRuntime.RemoveLocalStorage("refresh_token");
+    }
 }

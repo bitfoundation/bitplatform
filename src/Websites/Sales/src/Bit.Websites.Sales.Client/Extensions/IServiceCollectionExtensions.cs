@@ -8,16 +8,16 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
-        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddTransient<HttpClientHandler>();
+        services.AddSingleton<HttpClientHandler>();
 
-        services.AddScoped<MessageBoxService>();
+        services.AddTransient<MessageBoxService>();
 
         return services;
     }

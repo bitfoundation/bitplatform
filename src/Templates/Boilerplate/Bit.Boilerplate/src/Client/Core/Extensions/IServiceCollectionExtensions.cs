@@ -10,22 +10,21 @@ public static class IServiceCollectionExtensions
     {
         // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS and Linux)
 
-        services.AddCascadingAuthenticationState();
-        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<LocalizationDelegatingHandler>();
+        services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddTransient<HttpClientHandler>();
+        services.AddSingleton<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddScoped<MessageBoxService>();
+        services.AddTransient<MessageBoxService>();
 
         return services;
     }

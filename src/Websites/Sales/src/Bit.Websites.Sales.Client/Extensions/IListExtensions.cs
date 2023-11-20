@@ -1,6 +1,6 @@
 ﻿namespace System.Collections.Generic;
 
-public static class IListExtensions
+public static class ICollectionExtensions
 {
     // Basically a Polyfill since we now expose IList instead of List
     // which is better but IList doesn't have AddRange
