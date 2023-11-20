@@ -315,6 +315,17 @@ public partial class BitFileUpload : IDisposable
         IsRemoving = false;
     }
 
+    /// <summary>
+    /// Open a file selection dialog
+    /// </summary>
+    /// <returns></returns>
+    public async Task OpenBrowseWindow()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.OpenBrowseWindow(inputFileElement);
+    }
+
     protected override Task OnInitializedAsync()
     {
         InputId = $"FileUpload-{UniqueId}-input";

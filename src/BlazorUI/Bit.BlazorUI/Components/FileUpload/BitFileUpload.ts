@@ -89,6 +89,10 @@ class BitFileUpload {
             uploader.pause();
         }
     }
+
+    static openBrowseWindow(inputFile: HTMLInputElement) {
+        inputFile.click();
+    }
 }
 
 class BitFileUploader {
