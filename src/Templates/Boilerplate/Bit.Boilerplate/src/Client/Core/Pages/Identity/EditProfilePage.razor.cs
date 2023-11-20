@@ -64,7 +64,6 @@ public partial class EditProfilePage
 
     private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
-
     private async Task DoSave()
     {
         if (_isSaving) return;

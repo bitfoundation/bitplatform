@@ -30,7 +30,7 @@ public static class MauiProgram
 
         Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
 
-        services.AddScoped(sp =>
+        services.AddTransient(sp =>
         {
             var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)

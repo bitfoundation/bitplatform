@@ -11,7 +11,7 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped(sp =>
+        services.AddTransient(sp =>
         {
             Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
             var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();

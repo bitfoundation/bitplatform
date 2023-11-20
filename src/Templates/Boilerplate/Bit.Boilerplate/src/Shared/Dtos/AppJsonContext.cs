@@ -34,7 +34,6 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(SignInRequestDto))]
 [JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(RefreshRequestDto))]
-[JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
 [JsonSerializable(typeof(RestErrorInfo))]

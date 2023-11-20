@@ -18,7 +18,7 @@ public class PubSubService : IPubSubService
         }
     }
 
-    ppublic Action Subscribe(string message, Func<object?, Task> handler)
+    public Action Subscribe(string message, Func<object?, Task> handler)
     {
         var handlers = _handlers.ContainsKey(message)
                             ? _handlers[message]

@@ -11,7 +11,7 @@ public static class IServiceCollectionExtensions
         // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS and Linux)
 
         services.AddTransient<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IPubSubService, PubSubService>();
+        services.AddSessioned<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
         services.AddTransient<RequestHeadersDelegationHandler>();
@@ -26,5 +26,16 @@ public static class IServiceCollectionExtensions
         services.AddTransient<MessageBoxService>();
 
         return services;
+    }
+
+    public static IServiceCollection AddSessioned<TService, TImplementation>(this IServiceCollection services)
+        where TImplementation: class, TService
+        where TService : class
+    {
+#if BlazorHybrid
+        return services.AddSingleton<TService, TImplementation>();
+#else
+        return services.AddTransient<TService, TImplementation>();
+#endif
     }
 }

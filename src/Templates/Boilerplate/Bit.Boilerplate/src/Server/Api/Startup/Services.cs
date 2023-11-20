@@ -12,6 +12,7 @@ using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Boilerplate.Client.Web.Services;
 using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.JSInterop;
 #endif
 
@@ -49,7 +50,7 @@ public static class Services
             };
         });
 
-        services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
+        services.AddTransient<LazyAssemblyLoader>();
         services.AddRazorPages();
 #endif
 

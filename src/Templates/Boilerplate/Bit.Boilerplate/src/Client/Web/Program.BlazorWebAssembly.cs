@@ -32,8 +32,7 @@ public partial class Program
             };
             return httpClient;
         });
-        builder.Services.AddScoped<LazyAssemblyLoader>();
-        builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
+        builder.Services.AddTransient<LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();

@@ -67,7 +67,6 @@
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Boilerplate.Server.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
     </ItemGroup>

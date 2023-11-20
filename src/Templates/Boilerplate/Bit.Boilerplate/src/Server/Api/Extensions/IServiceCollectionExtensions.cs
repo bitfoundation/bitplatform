@@ -5,6 +5,7 @@ using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -96,8 +97,8 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorWeb.Server.xml"));
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "BlazorWeb.Shared.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Shared.xml"));
 
             options.OperationFilter<ODataOperationFilter>();
 
