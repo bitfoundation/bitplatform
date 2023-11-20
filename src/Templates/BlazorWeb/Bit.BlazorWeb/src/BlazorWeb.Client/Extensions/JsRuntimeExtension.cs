@@ -50,7 +50,7 @@ public static class JSRuntimeExtension
 
     public static async Task<string?> GetLocalStorage(this IJSRuntime jsRuntime, string key)
     {
-        return (await jsRuntime.InvokeAsync<string?>("window.localStorage.getItem", key)) ?? 
+        return (await jsRuntime.InvokeAsync<string?>("window.localStorage.getItem", key)) ??
             (await jsRuntime.InvokeAsync<string?>("window.sessionStorage.getItem", key));
     }
 

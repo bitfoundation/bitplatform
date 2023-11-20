@@ -2,9 +2,6 @@
 using BlazorWeb.Shared.Dtos.Identity;
 //#if (sample == "Todo")
 using BlazorWeb.Shared.Dtos.Todo;
-//#elif (sample == "AdminPanel")
-using BlazorWeb.Shared.Dtos.Categories;
-using BlazorWeb.Shared.Dtos.Products;
 //#endif
 using Riok.Mapperly.Abstractions;
 

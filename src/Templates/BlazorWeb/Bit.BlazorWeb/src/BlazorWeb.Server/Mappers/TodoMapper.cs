@@ -1,6 +1,6 @@
-﻿using Riok.Mapperly.Abstractions;
-using BlazorWeb.Server.Models.Todo;
+﻿using BlazorWeb.Server.Models.Todo;
 using BlazorWeb.Shared.Dtos.Todo;
+using Riok.Mapperly.Abstractions;
 
 namespace BlazorWeb.Server.Mappers;
 

@@ -27,7 +27,7 @@ public partial class NotAuthorizedPage
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
             // To prevent infinitie redirect loop, let's append refreshToken=false to the url, so we only redirect in case no refreshToken=false is present
 
-            if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refreshToken=false", StringComparison.InvariantCulture) is false)
+            if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refreshToken=false", StringComparison.InvariantCulture) is null or false)
             {
                 var refreshTokenResponse = await (await HttpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
                     .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);

@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using BlazorWeb.Server;
-using BlazorWeb.Server.Models.Identity;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using BlazorWeb.Client.Services;
 using BlazorWeb.Client.Services.HttpMessageHandlers;
-using Microsoft.AspNetCore.DataProtection;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+using BlazorWeb.Server;
+using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Services;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -122,7 +121,7 @@ public static class IServiceCollectionExtensions
             };
 
             options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
-            
+
             options.Events = new()
             {
                 OnMessageReceived = async context =>

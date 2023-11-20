@@ -6,7 +6,7 @@ namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 public class PrepareRequestDelegatingHandler
     : DelegatingHandler
 {
-    public PrepareRequestDelegatingHandler(AuthDelegatingHandler handler) 
+    public PrepareRequestDelegatingHandler(AuthDelegatingHandler handler)
         : base(handler)
     {
 

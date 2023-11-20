@@ -2,11 +2,11 @@
 using System.IO.Compression;
 using System.Net;
 using System.Net.Mail;
+using BlazorWeb.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorWeb.Server.Services;
 
 namespace BlazorWeb.Server.Startup;
 

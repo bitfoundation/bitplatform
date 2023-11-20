@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace BlazorWeb.Server.Services;
 

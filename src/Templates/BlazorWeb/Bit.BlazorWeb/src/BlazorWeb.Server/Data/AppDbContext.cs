@@ -1,17 +1,17 @@
 ﻿//+:cnd:noEmit
-using BlazorWeb.Server.Models.Identity;
-//#if (sample == "Todo")
-using BlazorWeb.Server.Models.Todo;
 //#elif (sample == "AdminPanel")
 using BlazorWeb.Server.Models.Categories;
+using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Models.Products;
+//#if (sample == "Todo")
+using BlazorWeb.Server.Models.Todo;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 //#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace BlazorWeb.Server.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) 
+public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
