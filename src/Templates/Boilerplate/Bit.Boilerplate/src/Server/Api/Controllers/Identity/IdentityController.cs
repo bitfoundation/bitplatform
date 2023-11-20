@@ -12,11 +12,9 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
-public partial class AuthController : AppControllerBase
+public partial class IdentityController : AppControllerBase
 {
     [AutoInject] private UserManager<User> _userManager = default!;
-
-    [AutoInject] private IJwtService _jwtService = default!;
 
     [AutoInject] private SignInManager<User> _signInManager = default!;
 
@@ -26,7 +24,9 @@ public partial class AuthController : AppControllerBase
 
     [AutoInject] private HtmlRenderer _htmlRenderer = default!;
 
-    [AutoInject] protected IStringLocalizer<IdentityStrings> IdentityLocalizer = default!;
+    [AutoInject] private IStringLocalizer<IdentityStrings> _identityLocalizer = default!;
+
+    [AutoInject] private IOptionsMonitor<BearerTokenOptions> _bearerTokenOptions = default!;
 
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
@@ -47,16 +47,20 @@ public partial class AuthController : AppControllerBase
             }
             else
             {
-                await _userManager.DeleteAsync(existingUser);
+                var deleteResult = await _userManager.DeleteAsync(existingUser);
+                if (!deleteResult.Succeeded)
+                    throw new ResourceValidationException(deleteResult.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
                 userToAdd.ConfirmationEmailRequestedOn = existingUser.ConfirmationEmailRequestedOn;
             }
         }
+
+        userToAdd.LockoutEnabled = true;
 
         var result = await _userManager.CreateAsync(userToAdd, signUpRequest.Password!);
 
         if (result.Succeeded is false)
         {
-            throw new ResourceValidationException(result.Errors.Select(e => IdentityLocalizer.GetString(e.Code, signUpRequest.Email!)).ToArray());
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
         await SendConfirmationEmail(new() { Email = userToAdd.Email }, userToAdd, cancellationToken);
@@ -121,6 +125,76 @@ public partial class AuthController : AppControllerBase
             throw new ResourceValidationException(result.ErrorMessages.Select(err => Localizer[err]).ToArray());
     }
 
+    [HttpGet]
+    public async Task<ActionResult> ConfirmEmail(string email, string token)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
+
+        var emailConfirmed = user.EmailConfirmed;
+        var errors = string.Empty;
+
+        if (emailConfirmed is false)
+        {
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+                errors = string.Join(", ", result.Errors.Select(e => $"{e.Code}: {e.Description}"));
+            emailConfirmed = result.Succeeded;
+        }
+
+        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}{(string.IsNullOrEmpty(errors) ? "" : ($"&error={errors}"))}";
+
+        return Redirect(url);
+    }
+
+    [HttpPost]
+    public async Task SignIn(SignInRequestDto signInRequest)
+    {
+        _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+
+        var result = await _signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+
+        if (result.IsLockedOut)
+        {
+            var user = await _userManager.FindByNameAsync(signInRequest.UserName!);
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
+        }
+
+        /* if (result.RequiresTwoFactor)
+        {
+            if (!string.IsNullOrEmpty(signInRequest.TwoFactorCode))
+            {
+                result = await _signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, rememberClient: true);
+            }
+            else if (!string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode))
+            {
+                result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
+            }
+        } */
+
+        if (result.Succeeded is false)
+            throw new UnauthorizedException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword)));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
+    {
+        var refreshTokenProtector = _bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
+        var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
+
+        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
+                await _signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
+        {
+            return Challenge();
+        }
+
+        var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
+
+        return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
+    }
+
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
           , CancellationToken cancellationToken)
@@ -139,11 +213,7 @@ public partial class AuthController : AppControllerBase
 
         var resetPasswordLink = $"reset-password?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}";
 
-#if BlazorServer
-        resetPasswordLink = $"{AppSettings.WebServerAddress}{resetPasswordLink}";
-#else
         resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
-#endif
 
         var body = await _htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -176,27 +246,6 @@ public partial class AuthController : AppControllerBase
             throw new ResourceValidationException(result.ErrorMessages.Select(err => Localizer[err]).ToArray());
     }
 
-    [HttpGet]
-    public async Task<ActionResult> ConfirmEmail(string email, string token)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
-
-        var emailConfirmed = user.EmailConfirmed || (await _userManager.ConfirmEmailAsync(user, token)).Succeeded;
-
-        string url = $"email-confirmation?email={email}&email-confirmed={emailConfirmed}";
-
-#if BlazorServer
-        url = $"{AppSettings.WebServerAddress}{url}";
-#else
-        url = $"/{url}";
-#endif
-
-        return Redirect(url);
-    }
-
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
     {
@@ -208,25 +257,6 @@ public partial class AuthController : AppControllerBase
         var result = await _userManager.ResetPasswordAsync(user, resetPasswordRequest.Token!, resetPasswordRequest.Password!);
 
         if (!result.Succeeded)
-            throw new ResourceValidationException(result.Errors.Select(e => IdentityLocalizer.GetString(e.Code, resetPasswordRequest.Email!)).ToArray());
-    }
-
-    [HttpPost]
-    public async Task<SignInResponseDto> SignIn(SignInRequestDto signInRequest)
-    {
-        var user = await _userManager.FindByNameAsync(signInRequest.UserName!);
-
-        if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), signInRequest.UserName!));
-
-        var checkPasswordResult = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password!, lockoutOnFailure: true);
-
-        if (checkPasswordResult.IsLockedOut)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")));
-
-        if (!checkPasswordResult.Succeeded)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidUsernameOrPassword), signInRequest.UserName!));
-
-        return await _jwtService.GenerateToken(user);
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 }

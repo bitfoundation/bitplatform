@@ -38,7 +38,7 @@ public partial class CategoryController : AppControllerBase
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<CategoryDto>(await query.ToListAsync(cancellationToken), totalCount);
+        return new PagedResult<CategoryDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
     [HttpPost]
@@ -65,15 +65,13 @@ public partial class CategoryController : AppControllerBase
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        categoryToUpdate.Patch(dto);
-
-        return dto;
+        return categoryToUpdate.Map();
     }
 
     [HttpDelete("{id:int}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        if (await DbContext.Products.AnyAsync(p => p.CategoryId == id))
+        if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }

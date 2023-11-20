@@ -1,6 +1,8 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
 using Bit.Websites.Careers.Server.Components;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
@@ -23,22 +25,7 @@ public class Middlewares
             app.UseResponseCompression();
         }
 
-        app.UseStatusCodePages(options: new()
-        {
-            HandleAsync = async (statusCodeContext) =>
-            {
-                var httpContext = statusCodeContext.HttpContext;
-
-                if (httpContext.Response.StatusCode is 404)
-                {
-                    httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
-                }
-                else if (httpContext.Response.StatusCode is 401)
-                {
-                    httpContext.Response.Redirect($"/not-authorized?redirectUrl={httpContext.Request.GetEncodedPathAndQuery()}");
-                }
-            }
-        });
+        Configure_404_Page(app);
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -81,5 +68,39 @@ public class Middlewares
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(Assembly.Load("Bit.Websites.Careers.Client"));
+    }
+
+    private static void Configure_404_Page(WebApplication app)
+    {
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path.HasValue)
+            {
+                if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                }
+            }
+
+            await next.Invoke(context);
+        });
+
+        app.UseStatusCodePages(options: new()
+        {
+            HandleAsync = async (statusCodeContext) =>
+            {
+                var httpContext = statusCodeContext.HttpContext;
+
+                if (httpContext.Response.StatusCode is 404 &&
+                                    httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
+                {
+                    httpContext.Response.Redirect($"/not-found?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                }
+                else
+                {
+                    await statusCodeContext.Next.Invoke(statusCodeContext.HttpContext);
+                }
+            }
+        });
     }
 }

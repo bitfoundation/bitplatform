@@ -1,18 +1,8 @@
 ﻿namespace Bit.Websites.Platform.Client.Services.HttpMessageHandlers;
 
-public class RetryDelegatingHandler
-    : DelegatingHandler
+public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
+    : DelegatingHandler(handler)
 {
-    public RetryDelegatingHandler(ExceptionDelegatingHandler handler)
-        : base(handler)
-    {
-
-    }
-
-    public RetryDelegatingHandler()
-    {
-
-    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

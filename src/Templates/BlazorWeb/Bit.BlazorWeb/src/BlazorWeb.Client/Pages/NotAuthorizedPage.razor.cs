@@ -19,9 +19,9 @@ public partial class NotAuthorizedPage
 
         // Let's update the access token by refreshing it when a refresh token is available.
         // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
-        // To prevent infinitie redirect loop, let's append refreshToken=false to the url, so we only redirect in case no refreshToken=false is present
+        // To prevent infinitie redirect loop, let's append refresh_token=false to the url, so we only redirect in case no refresh_token=false is present
 
-        if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refreshToken=false", StringComparison.InvariantCulture) is null or false)
+        if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refresh_token=false", StringComparison.InvariantCulture) is null or false)
         {
             await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
@@ -30,7 +30,7 @@ public partial class NotAuthorizedPage
                 if (RedirectUrl is not null)
                 {
                     var @char = RedirectUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{RedirectUrl}{@char}refreshToken=false");
+                    NavigationManager.NavigateTo($"{RedirectUrl}{@char}refresh_token=false");
                 }
             }
         }

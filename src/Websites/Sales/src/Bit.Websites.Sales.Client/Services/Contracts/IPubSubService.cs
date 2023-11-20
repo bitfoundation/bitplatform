@@ -5,6 +5,6 @@
 /// </summary>
 public interface IPubSubService
 {
-    void Publish(string message, object? payload);
-    Action Subscribe(string message, Action<object?> handler);
+    Task Publish(string message, object? payload);
+    Action Subscribe(string message, Func<object?, Task> handler);
 }

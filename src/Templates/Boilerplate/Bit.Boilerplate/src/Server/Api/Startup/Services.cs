@@ -27,7 +27,6 @@ public static class Services
 
         services.AddSharedServices();
 
-        services.AddScoped<IUserInformationProvider, UserInformationProvider>();
         services.AddExceptionHandler<ApiExceptionHandler>();
 
 #if BlazorWebAssembly
@@ -35,29 +34,19 @@ public static class Services
         services.AddClientSharedServices();
         services.AddClientWebServices();
 
-        // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
-        services.AddHttpClient("WebAssemblyPreRenderingHttpClient")
-            .AddHttpMessageHandler(sp => new LocalizationDelegatingHandler())
-            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp.GetRequiredService<IJSRuntime>()))
-            .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
-            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
-            .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
-            .ConfigureHttpClient((sp, httpClient) =>
-            {
-                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
-                if (apiServerAddress!.IsAbsoluteUri is false)
-                {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
-                }
-                httpClient.BaseAddress = apiServerAddress;
-            });
-
-        services.AddScoped(sp =>
+        services.AddTransient(sp =>
         {
-            IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return httpClientFactory.CreateClient("WebAssemblyPreRenderingHttpClient");
-            // this is for pre rendering of blazor client/wasm
-            // for other usages of http client, for example calling 3rd party apis, either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+            if (apiServerAddress!.IsAbsoluteUri is false)
+            {
+                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+            }
+
+            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
+            {
+                BaseAddress = apiServerAddress
+            };
         });
 
         services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
@@ -121,7 +110,7 @@ public static class Services
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -129,11 +118,9 @@ public static class Services
 
         services.AddIdentity(configuration);
 
-        services.AddJwt(configuration);
-
         services.AddHealthChecks(env, configuration);
 
-        services.AddScoped<HtmlRenderer>();
+        services.AddTransient<HtmlRenderer>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 

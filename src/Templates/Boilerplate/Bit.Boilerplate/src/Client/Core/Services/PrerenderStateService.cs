@@ -33,8 +33,6 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 
     void Persist<T>(string key, T value)
     {
-        if (OperatingSystem.IsBrowser()) return;
-
         _values.TryRemove(key, out object? _);
         _values.TryAdd(key, value);
     }

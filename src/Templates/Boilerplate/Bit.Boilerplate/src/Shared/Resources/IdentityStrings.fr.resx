@@ -135,15 +135,6 @@
   <data name="InvalidEmail" xml:space="preserve">
     <value>L'e-mail « {0} » n'est pas valide.</value>
   </data>
-  <data name="InvalidManagerType" xml:space="preserve">
-    <value>Le type {0} doit dériver de {1}&lt;{2}&gt;.</value>
-  </data>
-  <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
-    <value>Le PasswordHasherCompatibilityMode fourni n’est pas valide.</value>
-  </data>
-  <data name="InvalidPasswordHasherIterationCount" xml:space="preserve">
-    <value>Le nombre d'itérations doit être un entier positif.</value>
-  </data>
   <data name="InvalidRoleName" xml:space="preserve">
     <value>Le nom de rôle « {0} » n'est pas valide.</value>
   </data>
@@ -155,15 +146,6 @@
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
     <value>Un utilisateur avec cette connexion existe déjà.</value>
-  </data>
-  <data name="MustCallAddIdentity" xml:space="preserve">
-    <value>AddIdentity doit être appelé sur la collection de services.</value>
-  </data>
-  <data name="NoTokenProvider" xml:space="preserve">
-    <value>Aucun IUserTwoFactorTokenProvider&lt;{0}&gt; nommé '{1}' n'est enregistré.</value>
-  </data>
-  <data name="NullSecurityStamp" xml:space="preserve">
-    <value>Le cachet de sécurité de l'utilisateur ne peut pas être nul.</value>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
     <value>Mot de passe incorrect.</value>
@@ -183,54 +165,6 @@
   <data name="PasswordTooShort" xml:space="preserve">
     <value>Les mots de passe doivent comporter au moins {0} caractères.</value>
   </data>
-  <data name="RoleNotFound" xml:space="preserve">
-    <value>Le rôle {0} n'existe pas.</value>
-  </data>
-  <data name="StoreNotIQueryableRoleStore" xml:space="preserve">
-    <value>Store n’implémente pas IQueryableRoleStore&lt;TRole&gt;.</value>
-  </data>
-  <data name="StoreNotIQueryableUserStore" xml:space="preserve">
-    <value>Store n’implémente pas IQueryableUserStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIRoleClaimStore" xml:space="preserve">
-    <value>Store n’implémente pas IRoleClaimStore&lt;TRole&gt;.</value>
-  </data>
-  <data name="StoreNotIUserAuthenticationTokenStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserAuthenticationTokenStore&lt;User&gt;.</value>
-  </data>
-  <data name="StoreNotIUserClaimStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserClaimStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserConfirmationStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserConfirmationStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserEmailStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserEmailStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserLockoutStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserLockoutStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserLoginStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserLoginStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserPasswordStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserPasswordStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserPhoneNumberStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserPhoneNumberStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserRoleStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserRoleStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserSecurityStampStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserSecurityStampStore&lt;TUser&gt;.</value>
-  </data>
-  <data name="StoreNotIUserAuthenticatorKeyStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserAuthenticatorKeyStore&lt;User&gt;.</value>
-  </data>
-  <data name="StoreNotIUserTwoFactorStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserTwoFactorStore&lt;TUser&gt;.</value>
-  </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
     <value>L'utilisation du code de récupération a échoué.</value>
   </data>
@@ -240,31 +174,13 @@
   <data name="UserAlreadyInRole" xml:space="preserve">
     <value>Utilisateur déjà dans le rôle « {0} ».</value>
   </data>
-  <data name="UserLockedOut" xml:space="preserve">
-    <value>L'utilisateur est verrouillé.</value>
-  </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
     <value>Le verrouillage n'est pas activé pour cet utilisateur.</value>
-  </data>
-  <data name="UserNameNotFound" xml:space="preserve">
-    <value>L'utilisateur {0} n'existe pas.</value>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
     <value>L'utilisateur n'a pas le rôle « {0} ».</value>
   </data>
-  <data name="StoreNotIUserTwoFactorRecoveryCodeStore" xml:space="preserve">
-    <value>Store n’implémente pas IUserTwoFactorRecoveryCodeStore&lt;User&gt;.</value>
-  </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
     <value>Les mots de passe doivent utiliser au moins {0} caractères différents.</value>
-  </data>
-  <data name="NoRoleType" xml:space="preserve">
-    <value>Aucun RoleType n'a été spécifié, essayez AddRoles&lt;TRole&gt;().</value>
-  </data>
-  <data name="StoreNotIProtectedUserStore" xml:space="preserve">
-    <value>Store n’implémente pas IProtectedUserStore&lt;TUser&gt; qui est requis lorsque ProtectPersonalData = true.</value>
-  </data>
-  <data name="NoPersonalDataProtector" xml:space="preserve">
-    <value>Aucun service IPersonalDataProtector n'a été enregistré, cela est requis lorsque ProtectPersonalData = true.</value>
   </data>
 </root>

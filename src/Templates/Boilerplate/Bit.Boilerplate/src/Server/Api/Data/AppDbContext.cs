@@ -6,13 +6,16 @@ using Boilerplate.Server.Api.Models.Todo;
 using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Server.Api.Models.Products;
 //#endif
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Server.Api.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) 
-    : IdentityDbContext<User, Role, int>(options)
+    : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
 {
+
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; }

@@ -36,6 +36,10 @@
             <ValidationMessage For="@(() => _signInModel.Password)" />
         </div>
 
+        <div class="form-input-container form-input-container--no-margin">
+            <BitCheckbox Class="form-checkbox" @bind-Value="_signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+        </div>
+
         <BitButton IsLoading="_isLoading"
                    Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"

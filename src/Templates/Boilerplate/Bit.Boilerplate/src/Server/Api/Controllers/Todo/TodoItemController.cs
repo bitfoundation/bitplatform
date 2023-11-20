@@ -10,7 +10,7 @@ public partial class TodoItemController : AppControllerBase
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get()
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         return DbContext.TodoItems
             .Where(t => t.UserId == userId)
@@ -41,7 +41,7 @@ public partial class TodoItemController : AppControllerBase
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<TodoItemDto>(await query.ToListAsync(cancellationToken), totalCount);
+        return new PagedResult<TodoItemDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
     [HttpPost]

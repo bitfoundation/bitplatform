@@ -1,8 +1,8 @@
-﻿//+:cnd:noEmit
+﻿﻿//+:cnd:noEmit
 [
     {
-        "outputFile": "Shared/MainLayout.razor.css",
-        "inputFile": "Shared/MainLayout.razor.scss",
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -19,8 +19,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss",
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -31,8 +31,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss",
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -43,20 +49,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/NotAuthorizedComponent.razor.css",
-        "inputFile": "Shared/NotAuthorizedComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/SignOutConfirmModal.razor.css",
         "inputFile": "Shared/SignOutConfirmModal.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/PageNotFound.razor.css",
-        "inputFile": "Shared/PageNotFound.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -67,20 +61,32 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/NotAuthorizedPage.razor.css",
+        "inputFile": "Pages/NotAuthorizedPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/NotFoundPage.razor.css",
+        "inputFile": "Pages/NotFoundPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/TermsPage.razor.css",
         "inputFile": "Pages/TermsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Identity/SignUpPage.razor.css",
-        "inputFile": "Pages/Identity/SignUpPage.razor.scss",
+        "outputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Identity/SignInPage.razor.css",
-        "inputFile": "Pages/Identity/SignInPage.razor.scss",
+        "outputFile": "Pages/Identity/EditProfilePage.razor.css",
+        "inputFile": "Pages/Identity/EditProfilePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -103,27 +109,21 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Identity/EditProfilePage.razor.css",
-        "inputFile": "Pages/Identity/EditProfilePage.razor.scss",
+        "outputFile": "Pages/Identity/SignInPage.razor.css",
+        "inputFile": "Pages/Identity/SignInPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Pages/Identity/DeleteAccountConfirmModal.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "wwwroot/styles/app.css",
-        "inputFile": "Styles/app.scss",
+        "outputFile": "Pages/Identity/SignUpPage.razor.css",
+        "inputFile": "Pages/Identity/SignUpPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     //#if (sample == "Todo")
     {
-        "outputFile": "Pages/TodoPage.razor.css",
-        "inputFile": "Pages/TodoPage.razor.scss",
+        "outputFile": "Pages/Todo/TodoPage.razor.css",
+        "inputFile": "Pages/Todo/TodoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -5,8 +5,8 @@ using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Models.Products;
 //#if (sample == "Todo")
 using BlazorWeb.Server.Models.Todo;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 //#endif
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BlazorWeb.Server.Data;

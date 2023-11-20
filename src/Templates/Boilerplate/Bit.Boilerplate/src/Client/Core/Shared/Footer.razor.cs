@@ -3,7 +3,7 @@ namespace Boilerplate.Client.Core.Shared;
 
 public partial class Footer
 {
-    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private BitThemeManager _bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     private BitDropdownItem<string>[] _cultures = default!;
@@ -23,7 +23,7 @@ public partial class Footer
 #if BlazorHybrid
         var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
 #else
-        var preferredCultureCookie = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+        var preferredCultureCookie = await JSRuntime.GetCookie(".AspNetCore.Culture");
 #endif
         SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
 
@@ -42,7 +42,7 @@ public partial class Footer
 #if BlazorHybrid
         Preferences.Set(".AspNetCore.Culture", cultureCookie);
 #else
-        await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
+        await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600, rememberMe: true);
 #endif
 
         NavigationManager.Refresh(forceReload: true);

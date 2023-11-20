@@ -6,6 +6,8 @@ namespace Boilerplate.Client.Core.Services;
 public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
+    [AutoInject] private HttpClient _httpClient = default;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
@@ -16,7 +18,25 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
     {
         var access_token = await _tokenProvider.GetAccessTokenAsync();
 
-        if (string.IsNullOrWhiteSpace(access_token)) return NotSignedIn();
+        if (string.IsNullOrEmpty(access_token))
+        {
+            string? refresh_token = await _jsRuntime.GetLocalStorage("refresh_token");
+
+            if (string.IsNullOrEmpty(refresh_token) is false)
+            {
+                var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
+                    .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+                await _jsRuntime.StoreToken(refreshTokenResponse!);
+
+                access_token = refreshTokenResponse!.AccessToken;
+            }
+        }
+
+        if (string.IsNullOrEmpty(access_token))
+        {
+            return NotSignedIn();
+        }
 
         var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
 
