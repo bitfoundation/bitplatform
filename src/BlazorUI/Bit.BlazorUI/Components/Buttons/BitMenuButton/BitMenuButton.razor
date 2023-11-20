@@ -13,12 +13,12 @@
      class="@ClassBuilder.Value">
     <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
             type="button"
-            style="@GetStyle(SelectedItem);@Styles?.ItemButton"
-            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton"
             tabindex="@(IsEnabled ? 0 : -1)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
-            aria-describedby="@AriaDescription">
+            aria-describedby="@AriaDescription"
+            style="@GetStyle(SelectedItem);@Styles?.ItemButton"
+            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton">
         @if (Sticky)
         {
             var template = GetTemplate(SelectedItem);
@@ -66,7 +66,7 @@
 
     @if (Split)
     {
-        <span style="@Styles?.SplitDivider" class="bit-mnb-spb @Classes?.SplitDivider"></span>
+        <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
 
         <button @onclick="OpenCallout"
                 type="button"
@@ -87,10 +87,7 @@
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
-                if (Sticky)
-                {
-                    if (item == SelectedItem) continue;
-                }
+                if (Sticky && item == SelectedItem) continue;
 
                 var isEnabled = GetIsEnabled(item);
                 var template = GetTemplate(item);

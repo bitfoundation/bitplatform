@@ -343,10 +343,10 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
-                   Name = "SplitDivider",
+                   Name = "Separator",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the split divider of the BitMenuButton."
+                   Description = "Custom CSS classes/styles for the separator of the BitMenuButton."
                },
                new()
                {

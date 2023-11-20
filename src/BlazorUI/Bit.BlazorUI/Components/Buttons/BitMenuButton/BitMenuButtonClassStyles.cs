@@ -23,9 +23,9 @@ public class BitMenuButtonClassStyles
     public string? ChevronDown { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the split divider of the BitMenuButton.
+    /// Custom CSS classes/styles for the separator of the BitMenuButton.
     /// </summary>
-    public string? SplitDivider { get; set; }
+    public string? Separator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the icon of the BitMenuButton.

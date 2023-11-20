@@ -218,6 +218,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                                     });
 
         ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);
+
         ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : "bit-mnb-cds");
     }
 
