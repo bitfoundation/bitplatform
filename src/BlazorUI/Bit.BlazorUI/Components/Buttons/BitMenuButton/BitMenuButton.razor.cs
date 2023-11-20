@@ -208,16 +208,14 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        if (IsEnabled)
-        {
-            ClassBuilder.Register(() => ButtonStyle switch
-            {
-                BitButtonStyle.Primary => "bit-mnb-pri",
-                BitButtonStyle.Standard => "bit-mnb-std",
-                BitButtonStyle.Text => "bit-mnb-txt",
-                _ => "bit-mnb-pri"
-            });
-        }
+        ClassBuilder.Register(() => IsEnabled is false ? string.Empty 
+                                    : ButtonStyle switch
+                                    {
+                                        BitButtonStyle.Primary => "bit-mnb-pri",
+                                        BitButtonStyle.Standard => "bit-mnb-std",
+                                        BitButtonStyle.Text => "bit-mnb-txt",
+                                        _ => "bit-mnb-pri"
+                                    });
 
         ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);
         ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : "bit-mnb-cds");
