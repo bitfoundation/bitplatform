@@ -14,7 +14,7 @@ public static class Services
         services.AddScoped(sp =>
         {
             Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress

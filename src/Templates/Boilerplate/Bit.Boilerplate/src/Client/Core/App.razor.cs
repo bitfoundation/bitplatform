@@ -12,7 +12,7 @@ public partial class App
 #endif
 
     [AutoInject] private IJSRuntime _jsRuntime = default!;
-    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator = default!;
 
 #if BlazorHybrid && MultilingualEnabled
     private bool _cultureHasNotBeenSet = true;

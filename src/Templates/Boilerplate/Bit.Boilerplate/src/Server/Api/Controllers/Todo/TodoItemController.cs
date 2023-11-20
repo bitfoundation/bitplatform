@@ -49,7 +49,7 @@ public partial class TodoItemController : AppControllerBase
     {
         var todoItemToAdd = dto.Map();
 
-        todoItemToAdd.UserId = UserInformationProvider.GetUserId();
+        todoItemToAdd.UserId = User.GetUserId();
 
         todoItemToAdd.Date = DateTimeOffset.UtcNow;
 

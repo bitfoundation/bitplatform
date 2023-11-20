@@ -25,7 +25,7 @@ public partial class Program
 
         builder.Services.AddSingleton(sp =>
         {
-            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress

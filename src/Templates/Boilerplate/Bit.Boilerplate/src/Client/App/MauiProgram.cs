@@ -32,7 +32,7 @@ public static class MauiProgram
 
         services.AddScoped(sp =>
         {
-            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress

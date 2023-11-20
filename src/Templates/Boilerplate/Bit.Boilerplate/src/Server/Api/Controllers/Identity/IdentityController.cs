@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Resources;
 using Boilerplate.Shared.Dtos.Identity;
 using FluentEmail.Core;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 

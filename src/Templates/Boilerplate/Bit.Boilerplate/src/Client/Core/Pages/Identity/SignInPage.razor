@@ -3,11 +3,11 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
 
-    <div class="page-container">
-        <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="_signInModel">
-            <AppDataAnnotationsValidator />
+<div class="page-container">
+    <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="_signInModel">
+        <AppDataAnnotationsValidator />
 
-            @if (string.IsNullOrEmpty(_signInMessage) is false)
+        @if (string.IsNullOrEmpty(_signInMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
                            MessageBarType="@_signInMessageType"
@@ -51,10 +51,10 @@
 
         <div class="form-forgot-password">
             <BitLink Href="/forgot-password">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
-            </div>
+        </div>
 
-            <div>
-                @Localizer[nameof(AppStrings.DontHaveAccountMessage)] <BitLink Href="/sign-up">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
-            </div>
-        </EditForm>
-    </div>
+        <div>
+            @Localizer[nameof(AppStrings.DontHaveAccountMessage)] <BitLink Href="/sign-up">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+        </div>
+    </EditForm>
+</div>
