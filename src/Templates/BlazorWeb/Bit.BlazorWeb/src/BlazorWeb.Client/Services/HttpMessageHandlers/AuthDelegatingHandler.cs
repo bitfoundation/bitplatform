@@ -51,27 +51,25 @@ public class AuthDelegatingHandler
             if (refresh_token is not null)
             {
                 var httpClient = _serviceProvider.GetRequiredService<HttpClient>();
-
-                var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
-                    .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken: cancellationToken);
-
                 var appAuthStateProvider = _serviceProvider.GetRequiredService<AppAuthenticationStateProvider>();
-
-                await _jsRuntime.StoreToken(refreshTokenResponse!, true);
-                await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
-
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
 
                 try
                 {
-                    return await base.SendAsync(request, cancellationToken);
+                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
+                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
+
+                    await _jsRuntime.StoreToken(refreshTokenResponse!, true);
+
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
                 }
-                catch (Exception __) when (__ is UnauthorizedException)
+                catch (ResourceValidationException exp) /* refresh_token is expired */
                 {
                     await _jsRuntime.RemoveToken();
                     await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
-                    throw;
+                    throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
                 }
+
+                return await base.SendAsync(request, cancellationToken);
             }
 
             throw;

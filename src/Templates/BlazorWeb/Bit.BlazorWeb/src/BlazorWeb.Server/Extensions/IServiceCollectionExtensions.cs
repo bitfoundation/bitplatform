@@ -56,11 +56,6 @@ public static class IServiceCollectionExtensions
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
-        // https://github.com/dotnet/aspnetcore/issues/4660
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
         var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
 
         services.AddDataProtection()

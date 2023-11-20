@@ -80,6 +80,8 @@ public partial class NavMenu : IDisposable
             _user = (UserDto)payload;
 
             SetProfileImageUrl();
+
+            StateHasChanged();
         });
 
         _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
