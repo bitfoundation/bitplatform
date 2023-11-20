@@ -27,4 +27,9 @@ internal static class BitFileUploadJsExtension
     {
         await jsRuntime.InvokeVoidAsync("BitFileUpload.pause", index);
     }
+
+    internal static async Task Browse(this IJSRuntime jsRuntime, ElementReference inputFileElement)
+    {
+        await jsRuntime.InvokeVoidAsync("BitFileUpload.browse", inputFileElement);
+    }
 }

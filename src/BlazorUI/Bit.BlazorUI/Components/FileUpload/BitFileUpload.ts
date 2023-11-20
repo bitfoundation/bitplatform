@@ -89,6 +89,10 @@ class BitFileUpload {
             uploader.pause();
         }
     }
+
+    static browse(inputFile: HTMLInputElement) {
+        inputFile.click();
+    }
 }
 
 class BitFileUploader {
