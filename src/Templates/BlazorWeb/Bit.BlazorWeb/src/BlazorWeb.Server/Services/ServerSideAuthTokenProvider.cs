@@ -18,7 +18,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
                                                                 .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
                                                                 .GetProperty("IsInitialized")!;
 
-    public bool IsInitialized => (bool)IsInitializedProp.GetValue(_httpContextAccessor.HttpContext!.RequestServices.GetRequiredService<IJSRuntime>())!;
+    public bool IsInitialized => (bool)IsInitializedProp.GetValue(_jsRuntime)!;
 
     public async Task<string?> GetAccessTokenAsync()
     {

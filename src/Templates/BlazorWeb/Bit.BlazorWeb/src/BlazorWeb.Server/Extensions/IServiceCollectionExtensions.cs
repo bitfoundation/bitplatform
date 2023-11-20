@@ -8,6 +8,7 @@ using BlazorWeb.Server.Models.Identity;
 using BlazorWeb.Server.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.JSInterop;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -17,9 +18,9 @@ public static class IServiceCollectionExtensions
 {
     public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
-        services.AddScoped(sp =>
+        services.AddTransient(sp =>
         {
             IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             return httpClientFactory.CreateClient("BlazorHttpClient");
@@ -29,8 +30,8 @@ public static class IServiceCollectionExtensions
 
         // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
         services.AddHttpClient("BlazorHttpClient")
-            .AddHttpMessageHandler(sp => new PrepareRequestDelegatingHandler())
-            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp))
+            .AddHttpMessageHandler(sp => new RequestHeadersDelegationHandler())
+            .AddHttpMessageHandler(sp => new AuthDelegatingHandler(sp.GetRequiredService<IAuthTokenProvider>(), sp, sp.GetRequiredService<IJSRuntime>()))
             .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
             .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
             .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()

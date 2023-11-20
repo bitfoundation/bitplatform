@@ -10,13 +10,12 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
-        services.AddCascadingAuthenticationState();
         services.AddTransient<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddTransient<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<PrepareRequestDelegatingHandler>();
+        services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
@@ -25,9 +24,9 @@ public static class IServiceCollectionExtensions
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
         services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddScoped<MessageBoxService>();
+        services.AddTransient<MessageBoxService>();
 
-        services.AddScoped<LazyAssemblyLoader>();
+        services.AddTransient<LazyAssemblyLoader>();
 
         return services;
     }

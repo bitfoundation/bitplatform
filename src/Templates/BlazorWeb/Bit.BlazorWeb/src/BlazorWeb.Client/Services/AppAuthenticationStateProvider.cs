@@ -9,7 +9,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
     public async Task RaiseAuthenticationStateHasChanged()
     {
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()

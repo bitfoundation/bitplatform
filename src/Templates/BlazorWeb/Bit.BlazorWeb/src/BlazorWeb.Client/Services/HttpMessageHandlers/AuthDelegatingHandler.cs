@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http.Headers;
 using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
@@ -8,29 +9,36 @@ public class AuthDelegatingHandler
 {
     private IAuthTokenProvider _tokenProvider = default!;
     private IServiceProvider _serviceProvider = default!;
+    private IJSRuntime _jsRuntime = default!;
 
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, RetryDelegatingHandler handler)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
         : base(handler)
     {
         _tokenProvider = tokenProvider;
         _serviceProvider = serviceProvider;
+        _jsRuntime = jsRuntime;
     }
 
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider)
+    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, IJSRuntime jsRuntime)
         : base()
     {
         _tokenProvider = tokenProvider;
         _serviceProvider = serviceProvider;
+        _jsRuntime = jsRuntime;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null)
         {
-            var access_token = await _tokenProvider.GetAccessTokenAsync();
-            if (access_token is not null)
+            if (OperatingSystem.IsBrowser() is false)
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                // Browsers automatically send cookies, yet we still require access_token for pre-rendering purposes.
+                var access_token = await _tokenProvider.GetAccessTokenAsync();
+                if (access_token is not null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                }
             }
         }
 
@@ -44,8 +52,6 @@ public class AuthDelegatingHandler
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            var _jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-
             var refresh_token = await _jsRuntime.GetLocalStorage("refresh_token");
 
             if (refresh_token is not null)
@@ -55,6 +61,8 @@ public class AuthDelegatingHandler
 
                 try
                 {
+                    await Console.Out.WriteLineAsync("!!!!!");
+
                     var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                         .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
 

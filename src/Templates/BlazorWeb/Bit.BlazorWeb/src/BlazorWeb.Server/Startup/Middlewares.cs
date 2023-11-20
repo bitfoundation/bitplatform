@@ -124,7 +124,7 @@ public class Middlewares
                 {
                     bool is403 = httpContext.Response.StatusCode is 403;
 
-                    httpContext.Response.Redirect($"/not-authorized?redirect_url={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
+                    httpContext.Response.Redirect($"/not-authorized?redirect-url={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404 &&
                     httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)

@@ -15,18 +15,21 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
 
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
     {
-        var handler = new JwtSecurityTokenHandler();
-        ClaimsPrincipal? principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
-        if (validToken is JwtSecurityToken validJwt)
+        try
         {
+            var handler = new JwtSecurityTokenHandler();
+            ClaimsPrincipal? principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
+            var validJwt = (JwtSecurityToken)validToken;
             var data = new AuthenticationTicket(principal, properties: new AuthenticationProperties()
             {
                 ExpiresUtc = validJwt.ValidTo
             }, IdentityConstants.BearerScheme);
             return data;
         }
-
-        throw new InvalidOperationException("Jwt token is not valid");
+        catch (Exception exp)
+        {
+            throw new UnauthorizedException(nameof(AppStrings.UnauthorizedException), exp);
+        }
     }
 
     public string Protect(AuthenticationTicket data) => Protect(data, null);

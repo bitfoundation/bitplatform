@@ -3,16 +3,16 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class PrepareRequestDelegatingHandler
+public class RequestHeadersDelegationHandler
     : DelegatingHandler
 {
-    public PrepareRequestDelegatingHandler(AuthDelegatingHandler handler)
+    public RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
         : base(handler)
     {
 
     }
 
-    public PrepareRequestDelegatingHandler()
+    public RequestHeadersDelegationHandler()
     {
 
     }

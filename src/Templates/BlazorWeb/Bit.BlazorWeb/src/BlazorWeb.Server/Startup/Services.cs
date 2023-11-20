@@ -77,7 +77,7 @@ public static class Services
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -87,7 +87,7 @@ public static class Services
 
         services.AddHealthChecks(env, configuration);
 
-        services.AddScoped<HtmlRenderer>();
+        services.AddTransient<HtmlRenderer>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 
