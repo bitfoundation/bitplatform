@@ -66,7 +66,7 @@ public class AuthDelegatingHandler
                     var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                         .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
 
-                    await _jsRuntime.StoreToken(refreshTokenResponse!, true);
+                    await _jsRuntime.StoreToken(refreshTokenResponse!);
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
                 }
