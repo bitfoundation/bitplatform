@@ -13,6 +13,7 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
+        services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
         services.AddSingleton<HttpClientHandler>();
