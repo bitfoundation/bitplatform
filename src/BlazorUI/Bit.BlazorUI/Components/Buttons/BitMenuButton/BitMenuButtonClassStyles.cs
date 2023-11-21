@@ -13,9 +13,19 @@ public class BitMenuButtonClassStyles
     public string? Callout { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the chevron down button of the BitMenuButton.
+    /// </summary>
+    public string? ChevronDownButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the chevron down of the BitMenuButton.
     /// </summary>
     public string? ChevronDown { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the separator of the BitMenuButton.
+    /// </summary>
+    public string? Separator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the icon of the BitMenuButton.

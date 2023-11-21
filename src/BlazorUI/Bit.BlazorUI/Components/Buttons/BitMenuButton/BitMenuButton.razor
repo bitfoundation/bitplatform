@@ -6,27 +6,79 @@
     <div style="display:none" hidden>@(Options ?? ChildContent)</div>
 </CascadingValue>
 
-<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-        id="@_Id"
-        type="button"
-        style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value"
-        tabindex="@(IsEnabled ? 0 : -1)"
-        aria-label="@AriaLabel"
-        aria-hidden="@AriaHidden"
-        aria-describedby="@AriaDescription">
-    @if (HeaderTemplate is not null)
-    {
-        @HeaderTemplate
-    }
-    else
-    {
-        @if (IconName.HasValue())
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+    <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
+            type="button"
+            tabindex="@(IsEnabled ? 0 : -1)"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription"
+            style="@GetStyle(SelectedItem);@Styles?.ItemButton"
+            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton">
+        @if (Sticky)
         {
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            var template = GetTemplate(SelectedItem);
+            if (template is not null)
+            {
+                @template(SelectedItem)
+            }
+            else if (ItemTemplate is not null)
+            {
+                @ItemTemplate(SelectedItem)
+            }
+            else
+            {
+                var iconName = GetIconName(SelectedItem);
+                @if (iconName.HasValue())
+                {
+                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                }
+                <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
+                    @GetText(SelectedItem)
+                </span>
+            }
         }
-        <span style="@Styles?.Text" class="bit-mnb-txt @Classes?.Text">@Text</span>
-        <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
+        else
+        {
+            @if (HeaderTemplate is not null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                @if (IconName.HasValue())
+                {
+                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                }
+
+                @if (Text.HasValue())
+                {
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>   
+                }
+            }
+        }
+
+        @if (Split is false)
+        {
+            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
+        }
+    </button>
+
+    @if (Split)
+    {
+        <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
+
+        <button @onclick="OpenCallout"
+                type="button"
+                tabindex="@(IsEnabled ? 0 : -1)"
+                style="@Styles?.ChevronDownButton"
+                class="bit-mnb-chb @Classes?.ChevronDownButton">
+            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
+        </button>
     }
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
@@ -39,6 +91,8 @@
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
+                if (Sticky && item == SelectedItem) continue;
+
                 var isEnabled = GetIsEnabled(item);
                 var template = GetTemplate(item);
                 <li role="presentation">
@@ -64,7 +118,7 @@
                             {
                                 <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                             }
-                            <span style="@Styles?.ItemText" class="bit-mnb-txt @Classes?.ItemText">
+                            <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
                                 @GetText(item)
                             </span>
                         }
@@ -73,4 +127,4 @@
             }
         </ul>
     </div>
-</button>
+</div>
