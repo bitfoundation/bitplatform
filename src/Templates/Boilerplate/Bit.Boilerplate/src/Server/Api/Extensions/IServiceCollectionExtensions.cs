@@ -97,7 +97,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"));
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Shared.xml"));
 
             options.OperationFilter<ODataOperationFilter>();

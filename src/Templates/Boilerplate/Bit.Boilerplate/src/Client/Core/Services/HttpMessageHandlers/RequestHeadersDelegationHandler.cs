@@ -1,4 +1,7 @@
 ﻿using System.Net.Http.Headers;
+#if BlazorWebAssembly
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
+#endif
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 

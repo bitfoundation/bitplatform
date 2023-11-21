@@ -23,7 +23,7 @@ public partial class Program
             apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
         }
 
-        builder.Services.AddSingleton(sp =>
+        builder.Services.AddTransient(sp =>
         {
             var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)

@@ -1,8 +1,6 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿namespace Microsoft.JSInterop;
 
-namespace Microsoft.JSInterop;
-
-public static class JSRuntimeExtension
+public static class IJSRuntimeExtensions
 {
     /// <summary>
     /// To disable the scrollbar of the body when showing the modal, so the modal can be always shown in the viewport without being scrolled out.
@@ -21,6 +19,14 @@ public static class JSRuntimeExtension
     {
         await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
     }
+
+    public static async Task RemoveToken(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.RemoveCookie("access_token");
+        await jsRuntime.RemoveLocalStorage("refresh_token");
+    }
+
+#if !BlazorHybrid
 
     public static async Task SetCookie(this IJSRuntime jsRuntime, string key, string value, long expiresIn, bool rememberMe)
     {
@@ -64,10 +70,5 @@ public static class JSRuntimeExtension
         await jsRuntime.SetCookie("access_token", tokenResponse.AccessToken!, tokenResponse.ExpiresIn, rememberMe is true);
         await jsRuntime.SetLocalStorage("refresh_token", tokenResponse.RefreshToken!, rememberMe is true);
     }
-
-    public static async Task RemoveToken(this IJSRuntime jsRuntime)
-    {
-        await jsRuntime.RemoveCookie("access_token");
-        await jsRuntime.RemoveLocalStorage("refresh_token");
-    }
+#endif
 }
