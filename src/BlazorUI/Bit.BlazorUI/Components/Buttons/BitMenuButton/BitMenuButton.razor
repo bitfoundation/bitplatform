@@ -54,7 +54,11 @@
                 {
                     <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
                 }
-                <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>
+
+                @if (Text.HasValue())
+                {
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>   
+                }
             }
         }
 

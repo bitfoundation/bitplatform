@@ -28,12 +28,12 @@ public class BitMenuButtonTests : BunitTestContext
        DataRow(false, BitButtonStyle.Primary),
        DataRow(false, BitButtonStyle.Standard)
     ]
-    public void BitMenuButtonTest(bool isEnabled, BitButtonStyle bitButtonStyle)
+    public void BitMenuButtonTest(bool isEnabled, BitButtonStyle buttonStyle)
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, bitButtonStyle);
+            parameters.Add(p => p.ButtonStyle, buttonStyle);
             parameters.Add(p => p.Items, items);
         });
 
@@ -48,8 +48,16 @@ public class BitMenuButtonTests : BunitTestContext
             Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-dis"));
         }
 
-        var buttonStyle = bitButtonStyle is BitButtonStyle.Primary ? "bit-mnb-pri" : "bit-mnb-std";
-        Assert.AreEqual(isEnabled, bitMenuButton.ClassList.Contains(buttonStyle));
+        if (buttonStyle == BitButtonStyle.Standard)
+        {
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-pri"));
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-std"));
+        }
+        else
+        {
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-pri"));
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-std"));
+        }
     }
 
     [DataTestMethod,
