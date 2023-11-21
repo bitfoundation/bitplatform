@@ -13,18 +13,23 @@ namespace Boilerplate.Client.Web.Services;
 #if BlazorServer
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
     [AutoInject] private IHttpContextAccessor _httpContextAccessor = default!;
+    [AutoInject] private IJSRuntime _jsRuntime = default!;
 
     private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
                                                                 .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
                                                                 .GetProperty("IsInitialized")!;
 
-    public bool IsInitialized => true;
+    public bool IsInitialized => (bool)IsInitializedProp.GetValue(_jsRuntime)!;
 
     public async Task<string?> GetAccessTokenAsync()
     {
-        return await _jsRuntime.GetCookie("access_token");
+        if (IsInitialized)
+        {
+            return await _jsRuntime.GetCookie("access_token");
+        }
+
+        return _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
     }
 }
 #else

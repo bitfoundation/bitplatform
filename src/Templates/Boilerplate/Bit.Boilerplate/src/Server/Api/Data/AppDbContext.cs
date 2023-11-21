@@ -14,7 +14,6 @@ namespace Boilerplate.Server.Api.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) 
     : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
 {
-
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     //#if (sample == "Todo")

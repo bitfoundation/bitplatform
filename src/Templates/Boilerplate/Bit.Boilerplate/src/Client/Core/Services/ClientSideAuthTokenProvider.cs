@@ -9,10 +9,6 @@ public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAccessTokenAsync()
     {
-#if BlazorHybrid
-        return Preferences.Get("access_token", null);
-#else
         return await _jsRuntime.GetCookie("access_token");
-#endif
     }
 }

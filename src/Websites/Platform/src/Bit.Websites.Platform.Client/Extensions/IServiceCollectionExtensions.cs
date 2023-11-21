@@ -18,7 +18,7 @@ public static class IServiceCollectionExtensions
         services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddSingleton<HttpClientHandler>();
+        services.AddTransient<HttpClientHandler>();
 
         services.AddTransient<MessageBoxService>();
 

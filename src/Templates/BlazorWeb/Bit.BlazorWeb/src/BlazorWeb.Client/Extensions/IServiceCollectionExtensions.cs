@@ -19,7 +19,7 @@ public static class IServiceCollectionExtensions
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddSingleton<HttpClientHandler>();
+        services.AddTransient<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
         services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());

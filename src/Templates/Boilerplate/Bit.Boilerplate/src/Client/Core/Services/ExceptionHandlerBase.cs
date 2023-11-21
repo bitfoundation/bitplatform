@@ -22,6 +22,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         Debugger.Break();
 #endif
 
-        _ = _messageBoxService.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }
 }

@@ -5,6 +5,7 @@ public partial class NotAuthorizedComponent
     private ClaimsPrincipal _user = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -23,6 +24,9 @@ public partial class NotAuthorizedComponent
 
         if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refresh_token=false", StringComparison.InvariantCulture) is null or false)
         {
+            // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
+            // To ensure this process, consider removing the access_token, prompting the AuthenticationStateProvider to initiate a refresh automatically.
+            await JSRuntime.RemoveCookie("access_token");
             await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
             if ((await AuthenticationStateTask).User.IsAuthenticated())
@@ -55,6 +59,7 @@ public partial class NotAuthorizedComponent
 
     private void RedirectToSignInPage()
     {
-        NavigationManager.NavigateTo($"/sign-in?redirect-url={RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
+        var redirectUrl = RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/sign-in{(string.IsNullOrEmpty(redirectUrl) ? "" : $"?redirect-url={redirectUrl}")}");
     }
 }

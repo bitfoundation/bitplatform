@@ -51,8 +51,11 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
                 catch (ResourceValidationException exp) /* refresh_token is expired */
                 {
                     await jsRuntime.RemoveToken();
-                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
                     throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
+                }
+                finally
+                {
+                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
                 }
 
                 return await base.SendAsync(request, cancellationToken);

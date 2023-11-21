@@ -17,8 +17,8 @@ public static class RenderModeProvider
 
     public static IComponentRenderMode Current =>
 #if DEBUG
-    PrerenderEnabledBlazorServer; // Or BlazorServer, for better development experience.
+    BlazorServer; // Or BlazorServer, for better development experience.
 #else
-    PrerenderEnabledAuto;
+    Auto;
 #endif
 }
