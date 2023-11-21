@@ -1,4 +1,6 @@
-﻿namespace Microsoft.JSInterop;
+﻿using Boilerplate.Shared.Dtos.Identity;
+
+namespace Microsoft.JSInterop;
 
 public static class IJSRuntimeExtensions
 {
