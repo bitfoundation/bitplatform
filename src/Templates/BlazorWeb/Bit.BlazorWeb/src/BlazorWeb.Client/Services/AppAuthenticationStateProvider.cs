@@ -18,7 +18,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
     {
         var access_token = await _tokenProvider.GetAccessTokenAsync();
 
-        if (string.IsNullOrEmpty(access_token))
+        if (string.IsNullOrEmpty(access_token) && _tokenProvider.IsInitialized)
         {
             string? refresh_token = await _jsRuntime.GetLocalStorage("refresh_token");
 
