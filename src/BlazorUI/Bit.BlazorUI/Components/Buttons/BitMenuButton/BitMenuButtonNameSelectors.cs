@@ -18,6 +18,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitMenuButtonItem.IsEnabled));
 
     /// <summary>
+    /// IsSelected field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsSelected { get; set; } = new(nameof(BitMenuButtonItem.IsSelected));
+
+    /// <summary>
     /// Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitMenuButtonItem.Key));

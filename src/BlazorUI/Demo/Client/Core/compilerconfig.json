@@ -156,12 +156,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/SplitButton/BitSplitButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/SplitButton/BitSplitButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss",
         "minify": { "enabled": false },

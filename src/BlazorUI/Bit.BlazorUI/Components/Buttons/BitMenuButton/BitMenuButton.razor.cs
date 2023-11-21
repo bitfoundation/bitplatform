@@ -4,7 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 {
+    private bool SelectedItemHasBeenSet;
+
     private bool isCalloutOpen;
+    private TItem selectedItem;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private string _calloutId = default!;
@@ -84,6 +87,16 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Default value of the SelectedItem.
+    /// </summary>
+    [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// If true, the current item is going to be change selected item.
+    /// </summary>
+    [Parameter] public bool Sticky { get; set; }
+
+    /// <summary>
     /// The content inside the header of BitMenuButton can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
@@ -111,17 +124,41 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     /// <summary>
     /// The callback is called when the BitMenuButton header is clicked.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
     /// <summary>
-    /// OnClick of each item returns that item with its property.
+    /// The callback that is called when the selected item has changed.
     /// </summary>
-    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// Determines the current selected item that acts as the main button.
+    /// </summary>
+    [Parameter]
+    public TItem SelectedItem
+    {
+        get => selectedItem;
+        set
+        {
+            if (selectedItem == value) return;
+
+            selectedItem = value;
+            ClassBuilder.Reset();
+            _ = SelectedItemChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+
+    /// <summary>
+    /// If true, the button will render as a SplitButton.
+    /// </summary>
+    [Parameter] public bool Split { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitMenuButton.
@@ -144,7 +181,17 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
     internal void RegisterOption(BitMenuButtonOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
+
+        _items.Add(item);
+
+        if (SelectedItemHasBeenSet is false && option.IsSelected)
+        {
+            SelectedItem = item;
+        }
+
+        SelectedItem ??= _items.FirstOrDefault();
+
         StateHasChanged();
     }
 
@@ -161,13 +208,17 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsEnabled is false
-                                       ? string.Empty
-                                       : ButtonStyle == BitButtonStyle.Primary
-                                           ? $"{RootElementClass}-pri"
-                                           : $"{RootElementClass}-std");
+        ClassBuilder.Register(() => ButtonStyle switch
+        {
+            BitButtonStyle.Primary => "bit-mnb-pri",
+            BitButtonStyle.Standard => "bit-mnb-std",
+            BitButtonStyle.Text => "bit-mnb-txt",
+            _ => "bit-mnb-pri"
+        });
 
-        ClassBuilder.Register(() => _isCalloutOpen ? $"{RootElementClass}-omn" : string.Empty);
+        ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);
+
+        ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : "bit-mnb-cds");
     }
 
     protected override void RegisterCssStyles()
@@ -178,6 +229,11 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
     protected override void OnInitialized()
     {
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
+
+        if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
+        {
+            SelectedItem = DefaultSelectedItem;
+        }
 
         base.OnInitialized();
     }
@@ -190,6 +246,9 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         {
             _oldItems = Items;
             _items = Items.ToList();
+
+            SelectedItem ??= _items.LastOrDefault(GetIsSelected);
+            SelectedItem ??= _items.FirstOrDefault();
         }
 
         return base.OnParametersSetAsync();
@@ -270,6 +329,30 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         }
 
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private bool GetIsSelected(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsSelected;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsSelected;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
     private string? GetKey(TItem item)
@@ -360,14 +443,27 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-
-    private async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(TItem? item)
     {
         if (IsEnabled is false) return;
 
-        await OpenCallout();
+        if (Split is false)
+        {
+            await OpenCallout();
+        }
 
-        await OnClick.InvokeAsync(e);
+        if (item is not null)
+        {
+            if (GetIsEnabled(item) is false) return;
+
+            await OnClick.InvokeAsync(item);
+
+            await InvokeItemClick(item);
+        }
+        else
+        {
+            await OnClick.InvokeAsync();
+        }
     }
 
     private async Task HandleOnItemClick(TItem item)
@@ -376,8 +472,26 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
 
         await CloseCallout();
 
-        await OnItemClick.InvokeAsync(item);
+        if (Sticky)
+        {
+            if (SelectedItemHasBeenSet is false || SelectedItemChanged.HasDelegate)
+            {
+                SelectedItem = item;
+                await OnChange.InvokeAsync(item);
+            }
+        }
+        else
+        {
+            if (GetIsEnabled(item) is false) return;
 
+            await OnClick.InvokeAsync(item);
+
+            await InvokeItemClick(item);
+        }
+    }
+
+    private async Task InvokeItemClick(TItem item)
+    {
         if (item is BitMenuButtonItem menuButtonItem)
         {
             menuButtonItem.OnClick?.Invoke(menuButtonItem);
@@ -428,7 +542,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                                 0,
                                 "",
                                 "",
-                                false,
+                                true,
                                 RootElementClass);
     }
 
