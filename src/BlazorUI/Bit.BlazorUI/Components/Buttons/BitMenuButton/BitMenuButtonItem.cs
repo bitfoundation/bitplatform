@@ -18,6 +18,11 @@ public class BitMenuButtonItem
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
+    /// Determines the selection state of the item.
+    /// </summary>
+    public bool IsSelected { get; set; }
+
+    /// <summary>
     /// A unique value to use as a key of the item.
     /// </summary>
     public string? Key { get; set; }
