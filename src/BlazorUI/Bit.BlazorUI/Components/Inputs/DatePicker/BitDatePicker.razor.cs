@@ -15,6 +15,8 @@ public partial class BitDatePicker
     private bool IsOpenHasBeenSet;
 
     private bool isOpen;
+    private bool isUnderlined;
+    private bool hasBorder = true;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
 
@@ -120,8 +122,6 @@ public partial class BitDatePicker
     private string? _activeDescendantId;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
-
-
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -231,8 +231,18 @@ public partial class BitDatePicker
     /// <summary>
     /// Determines if the DatePicker has a border.
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter]
+    public bool HasBorder
+    {
+        get => hasBorder;
+        set
+        {
+            if (value == hasBorder) return;
 
+            hasBorder = value;
+            ClassBuilder.Reset();
+        }
+    }
     /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
@@ -306,7 +316,18 @@ public partial class BitDatePicker
     /// <summary>
     /// Whether or not the text field of the DatePicker is underlined.
     /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter]
+    public bool IsUnderlined
+    {
+        get => isUnderlined;
+        set
+        {
+            if (value == isUnderlined) return;
+
+            isUnderlined = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The text of the DatePicker's label.
