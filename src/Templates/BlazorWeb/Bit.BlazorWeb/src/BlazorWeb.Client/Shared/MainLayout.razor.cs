@@ -46,6 +46,7 @@ public partial class MainLayout : IDisposable
     {
         try
         {
+            await Task.Yield();
             _isUserAuthenticated = (await AuthenticationStateTask).User.IsAuthenticated();
         }
         catch (Exception ex)

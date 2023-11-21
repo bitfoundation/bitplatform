@@ -20,6 +20,7 @@ public partial class Header : IDisposable
     {
         try
         {
+            await Task.Yield();
             _isUserAuthenticated = (await AuthenticationStateTask).User.IsAuthenticated();
         }
         catch (Exception ex)

@@ -38,11 +38,11 @@ public class ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
+                throw new UnauthorizedException(AppStrings.YouNeedToSignIn);
             }
             if (response.StatusCode is HttpStatusCode.Forbidden)
             {
-                throw new ForbiddenException(nameof(AppStrings.YouNeedToSignIn));
+                throw new ForbiddenException(AppStrings.ForbiddenException);
             }
 
             response.EnsureSuccessStatusCode();
