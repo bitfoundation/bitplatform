@@ -1,96 +1,194 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example31">
     <ExamplePreview>
         <div>
-            Present a variety of basic BitMenuButton instances with different button styles: Primary, Standard, Text, and Disabled. Explore customization options for various button appearances and states.
+            The MenuButton offers three style options: Primary (default), Standard, and Text.
         </div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Primary" TItem="BitMenuButtonOption">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
 
             <BitMenuButton Text="Standard"
                            TItem="BitMenuButtonOption"
                            ButtonStyle="BitButtonStyle.Standard">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
 
             <BitMenuButton Text="Text"
                            TItem="BitMenuButtonOption"
                            ButtonStyle="BitButtonStyle.Text">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
+            </BitMenuButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" Id="example2">
+    <ExamplePreview>
+        <div>
+            Primary menu buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+        </div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Default</BitLabel>
+                <BitMenuButton Text="Options" TItem="BitMenuButtonOption">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitMenuButton Text="Options" IsEnabled="false" TItem="BitMenuButtonOption">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" Id="example3">
+    <ExamplePreview>
+        <div>
+            Standard menu buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text menu buttons and the more prominent Primary menu buttons, providing flexibility in emphasis.
+        </div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Default</BitLabel>
+                <BitMenuButton Text="Options"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitMenuButton Text="Options"
+                               IsEnabled="false"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" Id="example4">
+    <ExamplePreview>
+        <div>
+            Text menu buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
+        </div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>Default</BitLabel>
+                <BitMenuButton Text="Options"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Text">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitMenuButton Text="Options"
+                               IsEnabled="false"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Text">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Split" RazorCode="@example5RazorCode" Id="example5">
+    <ExamplePreview>
+        <div>
+            Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Split Text="Primary" TItem="BitMenuButtonOption">
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
 
-            <BitMenuButton Text="Disabled"
+            <BitMenuButton Split
+                           Text="Standard"
                            TItem="BitMenuButtonOption"
-                           IsEnabled="false">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                           ButtonStyle="BitButtonStyle.Standard">
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
+            </BitMenuButton>
+
+            <BitMenuButton Split
+                           Text="Text"
+                           TItem="BitMenuButtonOption"
+                           ButtonStyle="BitButtonStyle.Text">
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Events" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example32">
+<ComponentExampleBox Title="Sticky" RazorCode="@example6RazorCode" Id="example6">
     <ExamplePreview>
         <div>
-            Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Option Disabled" OnClick="(BitMenuButtonOption item) => example2SelectedItem = item?.Key">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-            </BitMenuButton>
-
-            <BitMenuButton Text="Option OnClick" TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" OnClick="@(_ => example2SelectedItem = $"Option A - OnClick")" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => example2SelectedItem = $"Option C - OnClick")" />
-            </BitMenuButton>
-        </div>
-        <div class="clicked-item">Clicked Item: @example2SelectedItem</div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Split" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example33">
-    <ExamplePreview>
-        <div>
-            Display split BitMenuButton instances featuring both sticky and non-sticky behaviors, providing users with flexible options for interaction and selection within the menu buttons.
+            Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.
         </div>
         <br />
         <div class="example-content">
             <div>
-                <BitLabel>Sticky</BitLabel>
-                <BitMenuButton Split Sticky OnClick="(BitMenuButtonOption item) => example2SelectedItem = item?.Key">
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitLabel>Default</BitLabel>
+                <BitMenuButton Sticky TItem="BitMenuButtonOption">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
                 </BitMenuButton>
             </div>
 
             <div>
-                <BitLabel>Non-Sticky</BitLabel>
-                <BitMenuButton Split Text="Split" TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" OnClick="@(_ => example2SelectedItem = $"Option A - OnClick")" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => example2SelectedItem = $"Option C - OnClick")" />
+                <BitLabel>Split</BitLabel>
+                <BitMenuButton Split Sticky
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
                 </BitMenuButton>
             </div>
         </div>
-        <div class="clicked-item">Clicked Item: @example2SelectedItem</div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Icons" RazorCode="@example4RazorCode" Id="example34">
+<ComponentExampleBox Title="Icons" RazorCode="@example7RazorCode" Id="example7">
     <ExamplePreview>
         <div>
             Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.
@@ -105,7 +203,8 @@
                 <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
             </BitMenuButton>
 
-            <BitMenuButton Text="ChevronDownIcon"
+            <BitMenuButton Split
+                           Text="ChevronDownIcon"
                            IconName="@BitIconName.Add"
                            TItem="BitMenuButtonOption"
                            ButtonStyle="BitButtonStyle.Standard"
@@ -118,7 +217,112 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example35">
+<ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div>
+            Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.
+        </div>
+        <br />
+        <div>
+            <BitLabel>Non-Sticky</BitLabel>
+            <div class="example-content">
+                <BitMenuButton Text="Options" OnClick="(BitMenuButtonOption item) => exampleSelectedOption = item?.Key">
+                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitMenuButton>
+
+                <BitMenuButton Split Text="Options" TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" OnClick="@(_ => exampleSelectedOption = $"Option A - OnClick")" />
+                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => exampleSelectedOption = $"Option C - OnClick")" />
+                </BitMenuButton>
+            </div>
+
+            <BitLabel>Sticky</BitLabel>
+            <div class="example-content">
+                <BitMenuButton Sticky OnClick="(BitMenuButtonOption item) => exampleSelectedOption = item?.Key">
+                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                </BitMenuButton>
+
+                <BitMenuButton Split Sticky TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" OnClick="@(_ => exampleSelectedOption = $"Option A - OnClick")" />
+                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => exampleSelectedOption = $"Option C - OnClick")" />
+                </BitMenuButton>
+            </div>
+        </div>
+        <div class="clicked-item">Clicked option: @exampleSelectedOption</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Customization" RazorCode="@example9RazorCode" Id="example9">
+    <ExamplePreview>
+        <div>
+            Explore BitMenuButton's customization capabilities.
+            <br />
+            Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.
+        </div>
+        <br />
+        <div class="example-content">
+            <div>
+                <BitLabel>HeaderTemplate</BitLabel>
+                <BitMenuButton TItem="BitMenuButtonOption">
+                    <HeaderTemplate>
+                        <div style="font-weight: bold; color: #d13438;">
+                            Custom Header!
+                        </div>
+                    </HeaderTemplate>
+                    <Options>
+                        <BitMenuButtonOption Text="Option A" Key="A" />
+                        <BitMenuButtonOption Text="Option B" Key="B" />
+                        <BitMenuButtonOption Text="Option C" Key="C" />
+                    </Options>
+                </BitMenuButton>
+            </div>
+
+            <div>
+                <BitLabel>ItemTemplate</BitLabel>
+                <BitMenuButton Split
+                               Text="Options"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard">
+                    <ItemTemplate Context="item">
+                        <div class="item-template-box">
+                            <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
+                                @item.Text (@item.Key)
+                            </span>
+                        </div>
+                    </ItemTemplate>
+                    <Options>
+                        <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
+                        <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
+                        <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
+                    </Options>
+                </BitMenuButton>
+            </div>
+
+            <div>
+                <BitLabel>Item's template</BitLabel>
+                <BitMenuButton Text="Options" TItem="BitMenuButtonOption">
+                    <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add">
+                        <Template Context="item"><div class="item-template-box" style="color:green">@item.Text (@item.Key)</div></Template>
+                    </BitMenuButtonOption>
+                    <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit">
+                        <Template Context="item"><div class="item-template-box" style="color:yellow">@item.Text (@item.Key)</div></Template>
+                    </BitMenuButtonOption>
+                    <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete">
+                        <Template Context="item"><div class="item-template-box" style="color:red">@item.Text (@item.Key)</div></Template>
+                    </BitMenuButtonOption>
+                </BitMenuButton>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
     <ExamplePreview>
         <div>
             Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -129,22 +333,22 @@
         <div class="example-content">
             <BitMenuButton Text="Styled Button"
                            TItem="BitMenuButtonOption"
-                           Style="width: 200px; height: 40px; background-color: #888;">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                           Style="width: 200px; height: 40px;">
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
 
             <BitMenuButton Text="Classed Button"
                            Class="custom-class"
                            TItem="BitMenuButtonOption">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
         </div>
         <br /><br /><br /><br />
-        <div>Item's Style & Class:</div>
+        <div>Option's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitMenuButton Text="Option Styled & Classed Button" TItem="BitMenuButtonOption">
@@ -164,9 +368,9 @@
                                              Text = "color: aqua;",
                                              ItemText = "color: dodgerblue; font-size: 11px;",
                                              Overlay = "background-color: var(--bit-clr-bg-overlay);" })">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A"/>
+                <BitMenuButtonOption Text="Option B" Key="B"/>
+                <BitMenuButtonOption Text="Option C" Key="C"/>
             </BitMenuButton>
 
             <BitMenuButton Text="Classes"
@@ -174,148 +378,53 @@
                            IconName="@BitIconName.ExpandMenu"
                            ButtonStyle="BitButtonStyle.Standard"
                            Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })">
-                <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+                <BitMenuButtonOption Text="Option A" Key="A" />
+                <BitMenuButtonOption Text="Option B" Key="B" />
+                <BitMenuButtonOption Text="Option C" Key="C" />
             </BitMenuButton>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example36">
+<ComponentExampleBox Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
-        <div>
-            You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
-        </div>
-        <br />
-        <div class="example-content column">
-            <div style="display: inline-flex">
-                Visible: [
-                <BitMenuButton Visibility="BitVisibility.Visible" Text="Visible menu button" TItem="BitMenuButtonOption">
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-                </BitMenuButton> ]
-            </div>
-            <div style="display: inline-flex">
-                Hidden: [
-                <BitMenuButton Visibility="BitVisibility.Hidden" Text="Hidden menu button" TItem="BitMenuButtonOption">
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-                </BitMenuButton> ]
-            </div>
-            <div style="display: inline-flex">
-                Collapsed: [
-                <BitMenuButton Visibility="BitVisibility.Collapsed" Text="Collapsed menu button" TItem="BitMenuButtonOption">
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-                </BitMenuButton> ]
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way SelectedItem</BitLabel>
+                <BitMenuButton Sticky @bind-SelectedItem="twoWaySelectedOption"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+                <br />
+                <div>Selected item: <b>@twoWaySelectedOption?.Text</b></div>
             </div>
         </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="HeaderTemplate" RazorCode="@example7RazorCode" Id="example37">
-    <ExamplePreview>
-        <div>
-            Display BitMenuButton instances with customized header templates, allowing unique and distinct header presentations within the menu buttons.
-        </div>
-        <br />
+        <br /><br />
         <div class="example-content">
-            <BitMenuButton TItem="BitMenuButtonOption">
-                <HeaderTemplate>
-                    <BitIcon IconName="@BitIconName.Warning" />
-                    <div style="font-weight: 600; color: white;">
-                        Custom Header!
-                    </div>
-                    <BitIcon IconName="@BitIconName.Warning" />
-                </HeaderTemplate>
-                <Options>
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitMenuButton Split Sticky OnChange="(BitMenuButtonOption item) => changedSelectedOption = item">
+                    <BitMenuButtonOption Text="Option A" Key="A" />
+                    <BitMenuButtonOption Text="Option B" Key="B" />
+                    <BitMenuButtonOption Text="Option C" Key="C" />
+                </BitMenuButton>
+                <br />
+                <div>Changed item: <b>@changedSelectedOption?.Text</b></div>
+            </div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>
+                <BitLabel>IsSelected</BitLabel>
+                <BitMenuButton Sticky TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
                     <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
                     <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-                    <BitMenuButtonOption Text="Option D" Key="D" IconName="@BitIconName.Emoji" />
-                </Options>
-            </BitMenuButton>
-
-            <BitMenuButton ButtonStyle="BitButtonStyle.Standard" TItem="BitMenuButtonOption">
-                <HeaderTemplate>
-                    <div style="font-weight: bold; color: #d13438;">
-                        Custom Header!
-                    </div>
-                </HeaderTemplate>
-                <Options>
-                    <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
-                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-                    <BitMenuButtonOption Text="Option D" Key="D" IconName="@BitIconName.Emoji" />
-                </Options>
-            </BitMenuButton>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="ItemTemplate" RazorCode="@example8RazorCode" Id="example38">
-    <ExamplePreview>
-        <div>
-            Providing unique and styled representations for each menu item using ItemTemplate.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Primary Button"
-                           IconName="@BitIconName.Edit"
-                           TItem="BitMenuButtonOption">
-                <ItemTemplate Context="item">
-                    <div class="item-template-box">
-                        <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
-                            @item.Text (@item.Key)
-                        </span>
-                    </div>
-                </ItemTemplate>
-                <Options>
-                    <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
-                    <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
-                    <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
-                </Options>
-            </BitMenuButton>
-
-            <BitMenuButton Text="Standard Button"
-                           IconName="@BitIconName.Edit"
-                           TItem="BitMenuButtonOption"
-                           ButtonStyle="BitButtonStyle.Standard">
-                <ItemTemplate Context="item">
-                    <div class="item-template-box">
-                        <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
-                            @item.Text (@item.Key)
-                        </span>
-                    </div>
-                </ItemTemplate>
-                <Options>
-                    <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add" />
-                    <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit" />
-                    <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete" />
-                </Options>
-            </BitMenuButton>
-        </div>
-        <br /><br /><br /><br />
-        <div>Item's Template</div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Primary Button"
-                           IconName="@BitIconName.Edit"
-                           TItem="BitMenuButtonOption">
-                <BitMenuButtonOption Text="Add" Key="add-key" IconName="@BitIconName.Add">
-                    <Template Context="item"><div class="item-template-box" style="color:green">@item.Text (@item.Key)</div></Template>
-                </BitMenuButtonOption>
-                <BitMenuButtonOption Text="Edit" Key="edit-key" IconName="@BitIconName.Edit">
-                    <Template Context="item"><div class="item-template-box" style="color:yellow">@item.Text (@item.Key)</div></Template>
-                </BitMenuButtonOption>
-                <BitMenuButtonOption Text="Delete" Key="delete-key" IconName="@BitIconName.Delete">
-                    <Template Context="item"><div class="item-template-box" style="color:red">@item.Text (@item.Key)</div></Template>
-                </BitMenuButtonOption>
-            </BitMenuButton>
+                    <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" IsSelected="true" />
+                </BitMenuButton>
+            </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
