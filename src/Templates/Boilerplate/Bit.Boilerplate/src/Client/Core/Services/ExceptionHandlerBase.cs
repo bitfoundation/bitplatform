@@ -14,7 +14,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 #if DEBUG
             exception.ToString();
 #else
-            _localizer[nameof(AppStrings.UnknownException)];
+            Localizer[nameof(AppStrings.UnknownException)];
 #endif
 
         _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
