@@ -14,9 +14,9 @@ public partial class BitFileUpload : IDisposable
     private long? chunkSize;
 
     private bool _disposed;
-    private ElementReference _inputFileElement;
-    private IJSObjectReference? _dropZoneInstance;
+    private ElementReference _inputRef;
     private long _internalChunkSize = MIN_CHUNK_SIZE;
+    private IJSObjectReference _dropZoneRef = default!;
     private DotNetObjectReference<BitFileUpload> _dotnetObj = default!;
 
 
@@ -325,7 +325,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (IsEnabled is false) return;
 
-        await _js.Browse(_inputFileElement);
+        await _js.BrowseFile(_inputRef);
     }
 
 
@@ -345,7 +345,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (firstRender is false) return;
 
-        _dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, _inputFileElement);
+        _dropZoneRef = await _js.SetupFileUploadDropzone(RootElement, _inputRef);
     }
 
 
@@ -356,7 +356,7 @@ public partial class BitFileUpload : IDisposable
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputFileElement, url, UploadRequestHttpHeaders);
+        Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
@@ -675,14 +675,17 @@ public partial class BitFileUpload : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        if (_dropZoneInstance is not null)
+        if (_dropZoneRef is not null)
         {
-            await _dropZoneInstance.InvokeVoidAsync("dispose");
-            await _dropZoneInstance.DisposeAsync();
-            _dropZoneInstance = null;
+            await _dropZoneRef.InvokeVoidAsync("dispose");
+            await _dropZoneRef.DisposeAsync();
         }
 
-        _dotnetObj?.Dispose();
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+            await _js.DisposeFileUpload(UniqueId);
+        }
 
         _disposed = true;
     }

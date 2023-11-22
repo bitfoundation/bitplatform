@@ -91,6 +91,10 @@
     public static browse(inputFile: HTMLInputElement) {
         inputFile.click();
     }
+
+    public static dispose(id: string) {
+        this.fileUploaders = this.fileUploaders.filter(u => u.id !== id);
+    }
 }
 
 class BitFileUploader {

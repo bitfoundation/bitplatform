@@ -5,9 +5,9 @@ namespace Microsoft.JSInterop;
 
 internal static class BitFileUploadJsExtension
 {
-    internal static async Task<IJSObjectReference?> SetupFileUploadDropzone(this IJSRuntime jsRuntime, ElementReference dragDropZoneElement, ElementReference inputFileElement)
+    internal static async Task<IJSObjectReference> SetupFileUploadDropzone(this IJSRuntime jsRuntime, ElementReference dragDropZoneElement, ElementReference inputFileElement)
     {
-        return await jsRuntime.InvokeAsync<IJSObjectReference?>("BitFileUpload.setupDropzone", dragDropZoneElement, inputFileElement);
+        return await jsRuntime.InvokeAsync<IJSObjectReference>("BitFileUpload.setupDropzone", dragDropZoneElement, inputFileElement);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
@@ -31,8 +31,13 @@ internal static class BitFileUploadJsExtension
         await jsRuntime.InvokeVoidAsync("BitFileUpload.pause", id.ToString(), index);
     }
 
-    internal static async Task Browse(this IJSRuntime jsRuntime, ElementReference inputFileElement)
+    internal static async Task BrowseFile(this IJSRuntime jsRuntime, ElementReference inputFileElement)
     {
         await jsRuntime.InvokeVoidAsync("BitFileUpload.browse", inputFileElement);
+    }
+
+    internal static async Task DisposeFileUpload(this IJSRuntime jsRuntime, Guid id)
+    {
+        await jsRuntime.InvokeVoidAsync("BitFileUpload.dispose", id.ToString());
     }
 }
