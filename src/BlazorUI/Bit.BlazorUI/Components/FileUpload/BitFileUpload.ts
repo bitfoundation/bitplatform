@@ -14,11 +14,13 @@
             name: file.name,
             size: file.size,
             type: file.type,
+            fileId: Bit.uuidv4(),
             index
         }));
 
-        files.forEach((_, index) => {
-            let uploader = new BitFileUploader(id, dotnetReference, inputElement, uploadEndpointUrl, { ...headers, ...{ 'BIT_FILE_ID': Bit.uuidv4() } }, index);
+        files.forEach((f, index) => {
+            const h = { ...headers, ...{ 'BIT_FILE_ID': f.fileId } };
+            const uploader = new BitFileUploader(id, dotnetReference, inputElement, uploadEndpointUrl, h, index);
             this.fileUploaders.push(uploader);
         });
 

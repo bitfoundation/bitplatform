@@ -266,7 +266,7 @@ public partial class BitFileUploadDemo
     private string onAllUploadsCompleteText = "No File";
     private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
-    private string RemoveUrl => $"FileUpload/RemoveFile";
+    private string RemoveUrl => $"{Configuration.GetApiServerAddress()}FileUpload/RemoveFile";
     private BitFileUpload bitFileUpload;
     private BitFileUpload bitFileUploadWithBrowseFile;
 

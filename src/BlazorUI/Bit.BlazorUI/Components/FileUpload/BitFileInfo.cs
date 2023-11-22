@@ -7,6 +7,7 @@ public class BitFileInfo
     [JsonPropertyName("type")] public string ContentType { get; set; } = string.Empty;
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
     [JsonPropertyName("size")] public long Size { get; set; }
+    [JsonPropertyName("fileId")] public string FileId { get; set; } = string.Empty;
     [JsonPropertyName("index")] public int Index { get; set; }
 
 
