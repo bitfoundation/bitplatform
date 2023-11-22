@@ -251,9 +251,9 @@
                         {
                             var prevDisabled = CanChangeYear(false) is false;
                             var nextDisabled = CanChangeYear(true) is false;
-                            var toggleTitle = string.Format(YearPickerToggleTitle, _displayYear);
-                            var prevTitle = string.Format(GoToPrevYearTitle, _displayYear - 1);
-                            var nextTitle = string.Format(GoToNextYearTitle, _displayYear + 1);
+                            var toggleTitle = string.Format(YearPickerToggleTitle, _currentYear);
+                            var prevTitle = string.Format(GoToPrevYearTitle, _currentYear - 1);
+                            var nextTitle = string.Format(GoToNextYearTitle, _currentYear + 1);
                             <div style="@Styles?.MonthPickerHeader" class="bit-dtp-pkh @Classes?.MonthPickerHeader">
                                 <button @onclick="ToggleBetweenMonthAndYearPicker"
                                         tabindex="0"
@@ -264,7 +264,7 @@
                                         aria-label="@toggleTitle"
                                         style="@Styles?.YearPickerToggleButton"
                                         class="bit-dtp-ptb @Classes?.YearPickerToggleButton">
-                                    @_displayYear
+                                    @_currentYear
                                 </button>
                                 <div style="@Styles?.MonthPickerNavWrapper" class="bit-dtp-nbc @Classes?.MonthPickerNavWrapper">
                                     <button @onclick="() => HandleYearChange(false)"
@@ -323,7 +323,7 @@
                                     }
                                 </div>
                             </div>
-                            <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_displayYear">
+                            <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_currentYear">
                                 @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                                 {
                                     <div style="@Styles?.MonthsRow" class="bit-dtp-pkr @Classes?.MonthsRow" role="row">
@@ -398,7 +398,7 @@
                                                 aria-label="@GoToTodayTitle"
                                                 style="@Styles?.GoToTodayButton"
                                                 class="bit-dtp-gtb @Classes?.GoToTodayButton"
-                                                disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
+                                                disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth, true)">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
                                                class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
