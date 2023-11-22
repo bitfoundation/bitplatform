@@ -200,24 +200,9 @@ public class MenuActionItem
 
 private List<MenuActionItem> basicCustoms = new()
 {
-    new()
-    {
-        Name = ""Custom A"",
-        Id = ""A"",
-        Icon = BitIconName.Emoji
-    },
-    new()
-    {
-        Name = ""Custom B"",
-        Id = ""B"",
-        Icon = BitIconName.Emoji
-    },
-    new()
-    {
-        Name = ""Custom C"",
-        Id = ""C"",
-        Icon = BitIconName.Emoji2
-    }
+    new() { Name = ""Custom A"", Id = ""A"" },
+    new() { Name = ""Custom B"", Id = ""B"" },
+    new() { Name = ""Custom C"", Id = ""C"" }
 };";
 
     private readonly string example2RazorCode = @"

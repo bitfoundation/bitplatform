@@ -503,18 +503,18 @@ private List<BitMenuButtonItem> itemTemplateItems2 = new()
 
 
 <BitMenuButton Text=""Styles""
-                Items=""basicItems""
-                IconName=""@BitIconName.ExpandMenu""
-                Styles=""@(new() { Icon = ""color: red;"",
-                                  Text = ""color: aqua;"",
-                                  ItemText = ""color: dodgerblue; font-size: 11px;"",
-                                  Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
+               Items=""basicItems""
+               IconName=""@BitIconName.ExpandMenu""
+               Styles=""@(new() { Icon = ""color: red;"",
+                                 Text = ""color: aqua;"",
+                                 ItemText = ""color: dodgerblue; font-size: 11px;"",
+                                 Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
 
 <BitMenuButton Text=""Classes""
-                Items=""basicItems""
-                IconName=""@BitIconName.ExpandMenu""
-                ButtonStyle=""BitButtonStyle.Standard""
-                Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
+               Items=""basicItems""
+               IconName=""@BitIconName.ExpandMenu""
+               ButtonStyle=""BitButtonStyle.Standard""
+               Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
     private readonly string example10CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
