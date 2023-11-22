@@ -11,12 +11,13 @@ public partial class BitFileUpload : IDisposable
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
 
-    private bool _disposed;
     private long? chunkSize;
-    private ElementReference inputFileElement;
-    private IJSObjectReference? dropZoneInstance;
+
+    private bool _disposed;
+    private ElementReference _inputFileElement;
+    private IJSObjectReference? _dropZoneInstance;
     private long _internalChunkSize = MIN_CHUNK_SIZE;
-    private DotNetObjectReference<BitFileUpload>? _dotnetObj;
+    private DotNetObjectReference<BitFileUpload> _dotnetObj = default!;
 
 
 
@@ -60,6 +61,8 @@ public partial class BitFileUpload : IDisposable
         get => chunkSize;
         set
         {
+            if (value == chunkSize) return;
+
             chunkSize = value;
 
             if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
@@ -189,6 +192,7 @@ public partial class BitFileUpload : IDisposable
     [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
 
 
+
     /// <summary>
     /// All selected files.
     /// </summary>
@@ -209,8 +213,6 @@ public partial class BitFileUpload : IDisposable
     /// </summary>
     public bool IsRemoving { get; private set; }
 
-
-    protected override string RootElementClass => "bit-upl";
 
     /// <summary>
     /// Starts Uploading the file(s).
@@ -323,8 +325,12 @@ public partial class BitFileUpload : IDisposable
     {
         if (IsEnabled is false) return;
 
-        await _js.Browse(inputFileElement);
+        await _js.Browse(_inputFileElement);
     }
+
+
+
+    protected override string RootElementClass => "bit-upl";
 
     protected override Task OnInitializedAsync()
     {
@@ -339,8 +345,10 @@ public partial class BitFileUpload : IDisposable
     {
         if (firstRender is false) return;
 
-        dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
+        _dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, _inputFileElement);
     }
+
+
 
     private async Task HandleOnChange()
     {
@@ -348,7 +356,7 @@ public partial class BitFileUpload : IDisposable
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await _js.InitFileUpload(inputFileElement, _dotnetObj, url, UploadRequestHttpHeaders);
+        Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputFileElement, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
@@ -413,14 +421,14 @@ public partial class BitFileUpload : IDisposable
             to = fileInfo.Size;
         }
 
-        await _js.UploadFile(from, to, fileInfo.Index);
+        await _js.UploadFile(UniqueId, from, to, fileInfo.Index);
     }
 
     private async Task PauseUploadOneFile(int index)
     {
         if (Files is null) return;
 
-        await _js.PauseFile(index);
+        await _js.PauseFile(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Paused, file);
         file.PauseUploadRequested = false;
@@ -501,7 +509,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null) return;
 
-        await _js.PauseFile(index);
+        await _js.PauseFile(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Canceled, file);
         file.CancelUploadRequested = false;
@@ -658,27 +666,23 @@ public partial class BitFileUpload : IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _ = Dispose(true);
         GC.SuppressFinalize(this);
     }
 
 
-    protected virtual void Dispose(bool disposing)
+    private async Task Dispose(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        if (dropZoneInstance is not null)
+        if (_dropZoneInstance is not null)
         {
-            _ = dropZoneInstance.InvokeVoidAsync("dispose").AsTask();
-            _ = dropZoneInstance.DisposeAsync().AsTask();
-            dropZoneInstance = null;
+            await _dropZoneInstance.InvokeVoidAsync("dispose");
+            await _dropZoneInstance.DisposeAsync();
+            _dropZoneInstance = null;
         }
 
-        if (_dotnetObj != null)
-        {
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
-        }
+        _dotnetObj?.Dispose();
 
         _disposed = true;
     }

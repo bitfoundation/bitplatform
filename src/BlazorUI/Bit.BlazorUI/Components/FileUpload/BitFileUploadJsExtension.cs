@@ -11,21 +11,24 @@ internal static class BitFileUploadJsExtension
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
-    internal static async Task<BitFileInfo[]?> InitFileUpload(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<BitFileUpload>? dotnetObjectReference, string uploadAddress, IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
+    internal static async Task<BitFileInfo[]?> ResetFileUpload(this IJSRuntime jsRuntime,
+                                                                   Guid id,
+                                                                   DotNetObjectReference<BitFileUpload>? dotnetObjectReference,
+                                                                   ElementReference element,
+                                                                   string uploadAddress,
+                                                                   IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
     {
-        if (uploadAddress.HasNoValue() || dotnetObjectReference is null) return null;
-
-        return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUpload.init", element, dotnetObjectReference, uploadAddress, uploadRequestHttpHeaders);
+        return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUpload.reset", id.ToString(), dotnetObjectReference, element, uploadAddress, uploadRequestHttpHeaders);
     }
 
-    internal static async Task UploadFile(this IJSRuntime jsRuntime, long from, long to, int index = -1)
+    internal static async Task UploadFile(this IJSRuntime jsRuntime, Guid id, long from, long to, int index = -1)
     {
-        await jsRuntime.InvokeVoidAsync("BitFileUpload.upload", from, to, index);
+        await jsRuntime.InvokeVoidAsync("BitFileUpload.upload", id.ToString(), from, to, index);
     }
 
-    internal static async Task PauseFile(this IJSRuntime jsRuntime, int index = -1)
+    internal static async Task PauseFile(this IJSRuntime jsRuntime, Guid id, int index = -1)
     {
-        await jsRuntime.InvokeVoidAsync("BitFileUpload.pause", index);
+        await jsRuntime.InvokeVoidAsync("BitFileUpload.pause", id.ToString(), index);
     }
 
     internal static async Task Browse(this IJSRuntime jsRuntime, ElementReference inputFileElement)
