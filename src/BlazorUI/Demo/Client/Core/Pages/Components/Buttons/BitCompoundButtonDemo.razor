@@ -66,7 +66,28 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                BitCompoundButton has an icon slot that, if specified, renders an icon that can be set at the start or end of component using IconPosition.
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitCompoundButton Icon="@BitIconName.Emoji" SecondaryText="IconPosition Start">
+                    Default (Start)
+                </BitCompoundButton>
+
+                <BitCompoundButton Icon="@BitIconName.Emoji2"
+                                   IconPosition="BitIconPosition.End"
+                                   SecondaryText="IconPosition End"
+                                   ButtonStyle="BitButtonStyle.Standard">
+                    End
+                </BitCompoundButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>
                 Managing button click event (OnClick).
@@ -78,7 +99,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Button Type" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div>
                 BitCompoundButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
@@ -113,7 +134,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Template" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Template" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>
                 Here are some examples of customizing the button content.
@@ -143,7 +164,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Color" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>
                 Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
@@ -179,7 +200,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="Size" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div>
                 Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
@@ -205,7 +226,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ClassStyles" RazorCode="@example10RazorCode" Id="example10">
+    <ComponentExampleBox Title="ClassStyles" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -230,7 +251,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>
                 You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.

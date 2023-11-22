@@ -14,8 +14,14 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
+        @if (Icon.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-cmb-icn bit-icon bit-icon--@Icon @Classes?.Icon" />
+        }
         <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
-            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">
+                @(PrimaryTemplate ?? ChildContent)
+            </span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate
@@ -39,8 +45,14 @@ else
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
+        @if (Icon.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-cmb-icn bit-icon bit-icon--@Icon @Classes?.Icon" />
+        }
         <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
-            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">@(PrimaryTemplate ?? ChildContent)</span>
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">
+                @(PrimaryTemplate ?? ChildContent)
+            </span>
             @if (SecondaryTemplate is not null)
             {
                 @SecondaryTemplate

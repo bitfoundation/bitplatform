@@ -13,6 +13,11 @@ public class BitCompoundButtonClassStyles
     public string? Container { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the icon of the BitCompoundButton.
+    /// </summary>
+    public string? Icon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the primary section of the BitCompoundButton.
     /// </summary>
     public string? Primary { get; set; }

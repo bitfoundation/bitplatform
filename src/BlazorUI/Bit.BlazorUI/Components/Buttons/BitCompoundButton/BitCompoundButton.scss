@@ -3,6 +3,7 @@
 .bit-cmb {
     cursor: pointer;
     text-align: left;
+    gap: spacing(1.5);
     position: relative;
     display: inline-flex;
     min-width: spacing(9);
@@ -95,6 +96,18 @@
     }
 }
 
+.bit-cmb-srt {
+    flex-direction: row;
+}
+
+.bit-cmb-end {
+    flex-direction: row-reverse;
+}
+
+.bit-cmb-icn {
+    font-size: spacing(5);
+}
+
 .bit-cmb-tcn {
     display: block;
 }
@@ -183,6 +196,10 @@
     .bit-cmb-sct {
         font-size: spacing(1.25);
     }
+
+    .bit-cmb-icn {
+        font-size: spacing(4.25);
+    }
 }
 
 .bit-cmb-lg {
@@ -196,5 +213,9 @@
 
     .bit-cmb-sct {
         font-size: spacing(2);
+    }
+
+    .bit-cmb-icn {
+        font-size: spacing(6.75);
     }
 }
