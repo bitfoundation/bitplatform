@@ -7,6 +7,7 @@ public class BitFileInfo
     [JsonPropertyName("type")] public string ContentType { get; set; } = string.Empty;
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
     [JsonPropertyName("size")] public long Size { get; set; }
+    [JsonPropertyName("index")] public int Index { get; set; }
 
 
     public long LastChunkUploadedSize { get; internal set; }
@@ -17,7 +18,6 @@ public class BitFileInfo
     internal bool CancelUploadRequested { get; set; }
 
 
-    [JsonIgnore] public int Index { get; internal set; }
     [JsonIgnore] public string? Message { get; internal set; }
     [JsonIgnore] public BitFileUploadStatus Status { get; internal set; }
     [JsonIgnore] internal DateTime? StartTimeUpload { get; set; }

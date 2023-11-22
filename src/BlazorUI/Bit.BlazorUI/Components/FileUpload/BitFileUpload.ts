@@ -1,10 +1,53 @@
-﻿interface IFiles { name: string; size: number, type: string }
+﻿class BitFileUpload {
+    private static fileUploaders: BitFileUploader[] = [];
 
-class BitFileUpload {
-    static bitFileUploaders: BitFileUploader[];
-    static headers: Record<string, string>;
+    public static reset(
+        id: string,
+        dotnetReference: DotNetObject,
+        inputElement: HTMLInputElement,
+        uploadEndpointUrl: string,
+        headers: Record<string, string>) {
 
-    static setupDropzone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
+        this.fileUploaders = this.fileUploaders.filter(u => u.id !== id);
+
+        const files = Array.from(inputElement.files!).map((file, index) => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            index
+        }));
+
+        files.forEach((_, index) => {
+            let uploader = new BitFileUploader(id, dotnetReference, inputElement, uploadEndpointUrl, { ...headers, ...{ 'BIT_FILE_ID': Bit.uuidv4() } }, index);
+            this.fileUploaders.push(uploader);
+        });
+
+        return files;
+    }
+
+    public static upload(id: string, from: number, to: number, index: number): void {
+        const uploaders = this.fileUploaders.filter(u => u.id === id);
+
+        if (index === -1) {
+            uploaders.forEach(u => u.upload(from, to));
+        } else {
+            const uploader = uploaders.filter(u => u.index === index)[0];
+            uploader.upload(from, to);
+        }
+    }
+
+    public static pause(id: string, index: number): void {
+        const uploaders = this.fileUploaders.filter(u => u.id === id);
+
+        if (index === -1) {
+            uploaders.forEach(u => u.pause());
+        } else {
+            const uploader = uploaders.filter(u => u.index === index)[0];
+            uploader.pause();
+        }
+    }
+
+    public static setupDropzone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
 
         function onDragHover(e: DragEvent) {
             e.preventDefault();
@@ -45,70 +88,32 @@ class BitFileUpload {
 
     }
 
-    static init(inputElement: HTMLInputElement,
-        dotnetReference: DotNetObject,
-        uploadEndpointUrl: string,
-        headers: Record<string, string>): IFiles[] {
-
-        let filesArray: IFiles[] = Array.from<IFiles>(inputElement.files!).map(file => ({
-            name: file.name,
-            size: file.size,
-            type: file.type
-        }));
-
-        this.bitFileUploaders = [];
-        this.headers = headers;
-
-        filesArray.forEach((_, index) => {
-            const headers = { ...this.headers, ...{ 'BIT_FILE_ID': Bit.uuidv4() } };
-            let uploader: BitFileUploader = new BitFileUploader(dotnetReference, uploadEndpointUrl, inputElement, index, headers);
-            this.bitFileUploaders.push(uploader);
-        });
-
-        return filesArray;
-    }
-
-    static upload(from: number, to: number, index: number): void {
-        if (index === -1) {
-            this.bitFileUploaders.forEach(bitFileUpload => {
-                bitFileUpload.upload(from, to);
-            });
-        } else {
-            const uploader = this.bitFileUploaders.filter(f => f.index === index)[0];
-            uploader.upload(from, to);
-        }
-    }
-
-    static pause(index: number): void {
-        if (index === -1) {
-            this.bitFileUploaders.forEach(uploader => {
-                uploader.pause();
-            });
-        } else {
-            const uploader = this.bitFileUploaders.filter(u => u.index === index)[0];
-            uploader.pause();
-        }
-    }
-
-    static browse(inputFile: HTMLInputElement) {
+    public static browse(inputFile: HTMLInputElement) {
         inputFile.click();
+    }
+
+    public static dispose(id: string) {
+        this.fileUploaders = this.fileUploaders.filter(u => u.id !== id);
     }
 }
 
 class BitFileUploader {
+    id: string;
     dotnetReference: DotNetObject;
-    uploadEndpointUrl: string;
     inputElement: HTMLInputElement;
-    index: number;
+    uploadEndpointUrl: string;
     headers: Record<string, string>;
-    xhr: XMLHttpRequest = new XMLHttpRequest();
+    index: number;
 
-    constructor(dotnetReference: DotNetObject, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number, headers: Record<string, string>) {
+    private xhr: XMLHttpRequest = new XMLHttpRequest();
+
+    constructor(id: string, dotnetReference: DotNetObject, inputElement: HTMLInputElement, uploadEndpointUrl: string, headers: Record<string, string>, index: number) {
+        this.id = id;
         this.dotnetReference = dotnetReference;
-        this.uploadEndpointUrl = uploadEndpointUrl;
         this.inputElement = inputElement;
-        this.index = index;
+        this.uploadEndpointUrl = uploadEndpointUrl;
         this.headers = headers;
+        this.index = index;
 
         if (index < 0) return;
 
