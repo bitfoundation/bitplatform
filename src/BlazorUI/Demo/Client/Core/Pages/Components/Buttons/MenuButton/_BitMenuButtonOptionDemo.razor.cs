@@ -47,17 +47,17 @@ public partial class _BitMenuButtonOptionDemo
 
     private readonly string example3RazorCode = @"
 <BitMenuButton Text=""Options""
-                TItem=""BitMenuButtonOption""
-                ButtonStyle=""BitButtonStyle.Standard"">
+               TItem=""BitMenuButtonOption""
+               ButtonStyle=""BitButtonStyle.Standard"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Options""
-                IsEnabled=""false""
-                TItem=""BitMenuButtonOption""
-                ButtonStyle=""BitButtonStyle.Standard"">
+               IsEnabled=""false""
+               TItem=""BitMenuButtonOption""
+               ButtonStyle=""BitButtonStyle.Standard"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -65,17 +65,17 @@ public partial class _BitMenuButtonOptionDemo
 
     private readonly string example4RazorCode = @"
 <BitMenuButton Text=""Options""
-                TItem=""BitMenuButtonOption""
-                ButtonStyle=""BitButtonStyle.Text"">
+               TItem=""BitMenuButtonOption""
+               ButtonStyle=""BitButtonStyle.Text"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Options""
-                IsEnabled=""false""
-                TItem=""BitMenuButtonOption""
-                ButtonStyle=""BitButtonStyle.Text"">
+               IsEnabled=""false""
+               TItem=""BitMenuButtonOption""
+               ButtonStyle=""BitButtonStyle.Text"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -148,7 +148,11 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Split Text=""Options"" TItem=""BitMenuButtonOption"" ButtonStyle=""BitButtonStyle.Standard"">
+<BitMenuButton Split
+               Text=""Options""
+               TItem=""BitMenuButtonOption""
+               ButtonStyle=""BitButtonStyle.Standard""
+               OnClick=""@((BitMenuButtonOption item) => exampleSelectedOption = ""Main button clicked"")"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" OnClick=""@(_ => exampleSelectedOption = $""Option A - OnClick"")"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" OnClick=""@(_ => exampleSelectedOption = $""Option C - OnClick"")"" />

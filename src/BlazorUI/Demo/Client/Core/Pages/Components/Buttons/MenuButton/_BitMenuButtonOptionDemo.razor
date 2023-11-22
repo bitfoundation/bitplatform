@@ -232,7 +232,11 @@
                     <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
                 </BitMenuButton>
 
-                <BitMenuButton Split Text="Options" TItem="BitMenuButtonOption" ButtonStyle="BitButtonStyle.Standard">
+                <BitMenuButton Split
+                               Text="Options"
+                               TItem="BitMenuButtonOption"
+                               ButtonStyle="BitButtonStyle.Standard"
+                               OnClick="@((BitMenuButtonOption item) => exampleSelectedOption = "Main button clicked")">
                     <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" OnClick="@(_ => exampleSelectedOption = $"Option A - OnClick")" />
                     <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
                     <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => exampleSelectedOption = $"Option C - OnClick")" />
@@ -388,6 +392,10 @@
 
 <ComponentExampleBox Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
+        <div>
+            This example demonstrates different ways to handle item selection and changes within the component.
+        </div>
+        <br />
         <div class="example-content">
             <div>
                 <BitLabel>Two-way SelectedItem</BitLabel>
