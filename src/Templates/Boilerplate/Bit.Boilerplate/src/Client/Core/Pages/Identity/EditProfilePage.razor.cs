@@ -52,7 +52,7 @@ public partial class EditProfilePage
     {
         await LoadEditProfileData();
 
-        await PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
+        PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
     }
 
     private void UpdateEditProfileData()
@@ -80,7 +80,7 @@ public partial class EditProfilePage
             (await (await HttpClient.PutAsJsonAsync("User/Update", _userToEdit, AppJsonContext.Default.EditUserDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto))!.Patch(_user);
 
-            await PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
+            PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
 
             _editProfileMessageType = BitMessageBarType.Success;
             _editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];

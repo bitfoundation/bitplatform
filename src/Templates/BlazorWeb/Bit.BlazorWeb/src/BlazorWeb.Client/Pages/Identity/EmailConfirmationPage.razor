@@ -5,12 +5,12 @@
 
 <div class="page-container">
     <div class="form">
-        @if (string.IsNullOrEmpty(Errors) is false)
+        @if (string.IsNullOrEmpty(_resendLinkErrors ?? Errors) is false)
         {
             <BitMessageBar Class="form-message-bar"
                            MessageBarType="@_emailConfirmationMessageType"
-                           OnDismiss="() => Errors = null">
-                @Errors
+                           OnDismiss="() => _resendLinkErrors = Errors = null">
+                @(_resendLinkErrors ?? Errors)
             </BitMessageBar>
         }
 

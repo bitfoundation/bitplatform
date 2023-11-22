@@ -154,7 +154,7 @@ const login = async (swagger, userName, password) => {
     })
     if (response.ok) {
         const result = await response.json();
-        const access_token = result.access_token;
+        const access_token = result.accessToken;
         accessTokenExpiresIn = result.expiresIn;
 
         const authorizationObject = getAuthorizationRequestObject(access_token);

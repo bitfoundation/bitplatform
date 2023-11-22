@@ -27,7 +27,7 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
                 var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
                     .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-                await _jsRuntime.StoreToken(refreshTokenResponse!);
+                await _jsRuntime.StoreAuthToken(refreshTokenResponse!);
 
                 access_token = refreshTokenResponse!.AccessToken;
             }

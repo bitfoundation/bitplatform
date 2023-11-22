@@ -3,9 +3,14 @@
 public partial class EmailConfirmationPage
 {
     private bool _isLoading;
+    private string? _resendLinkErrors;
     private BitMessageBarType _emailConfirmationMessageType = BitMessageBarType.Error;
 
     [SupplyParameterFromQuery, Parameter] public string? Email { get; set; }
+
+    /// <summary>
+    /// Email confirmation errors populated by api/Identity/ConfirmEmail endpoint.
+    /// </summary>
     [SupplyParameterFromQuery, Parameter] public string? Errors { get; set; }
 
     [SupplyParameterFromQuery(Name = "email-confirmed"), Parameter] public bool EmailConfirmed { get; set; }
@@ -20,7 +25,7 @@ public partial class EmailConfirmationPage
         if (_isLoading) return;
 
         _isLoading = true;
-        Errors = null;
+        _resendLinkErrors = Errors = null;
 
         try
         {
@@ -28,13 +33,13 @@ public partial class EmailConfirmationPage
 
             _emailConfirmationMessageType = BitMessageBarType.Success;
 
-            Errors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            _resendLinkErrors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             _emailConfirmationMessageType = BitMessageBarType.Error;
 
-            Errors = e.Message;
+            _resendLinkErrors = e.Message;
         }
         finally
         {

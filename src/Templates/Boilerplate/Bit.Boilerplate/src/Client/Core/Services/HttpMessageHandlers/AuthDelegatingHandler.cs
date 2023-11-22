@@ -43,13 +43,13 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
                     var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
                         .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
 
-                    await jsRuntime.StoreToken(refreshTokenResponse!);
+                    await jsRuntime.StoreAuthToken(refreshTokenResponse!);
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
                 }
                 catch (ResourceValidationException exp) /* refresh_token is expired */
                 {
-                    await jsRuntime.RemoveToken();
+                    await jsRuntime.RemoveAuthTokens();
                     throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
                 }
                 finally

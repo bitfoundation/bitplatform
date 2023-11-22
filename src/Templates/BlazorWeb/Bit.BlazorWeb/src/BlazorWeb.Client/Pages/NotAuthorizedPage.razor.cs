@@ -49,7 +49,7 @@ public partial class NotAuthorizedPage
 
     private async Task SignIn()
     {
-        await JSRuntime.RemoveToken();
+        await JSRuntime.RemoveAuthTokens();
 
         await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
         

@@ -54,7 +54,7 @@ public static class IJSRuntimeExtensions
             (await jsRuntime.InvokeAsync<string?>("window.sessionStorage.getItem", key));
     }
 
-    public static async Task StoreToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool? rememberMe = null)
+    public static async Task StoreAuthToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool? rememberMe = null)
     {
         if (rememberMe is null)
         {
@@ -65,7 +65,7 @@ public static class IJSRuntimeExtensions
         await jsRuntime.SetLocalStorage("refresh_token", tokenResponse.RefreshToken!, rememberMe is true);
     }
 
-    public static async Task RemoveToken(this IJSRuntime jsRuntime)
+    public static async Task RemoveAuthTokens(this IJSRuntime jsRuntime)
     {
         await jsRuntime.RemoveCookie("access_token");
         await jsRuntime.RemoveLocalStorage("refresh_token");

@@ -46,7 +46,7 @@ public static class IJSRuntimeHybridExtensions
         return await jsRuntime.GetCookie(key);
     }
 
-    public static async Task StoreToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool? rememberMe = null)
+    public static async Task StoreAuthToken(this IJSRuntime jsRuntime, TokenResponseDto tokenResponse, bool? rememberMe = null)
     {
         if (rememberMe is null)
         {

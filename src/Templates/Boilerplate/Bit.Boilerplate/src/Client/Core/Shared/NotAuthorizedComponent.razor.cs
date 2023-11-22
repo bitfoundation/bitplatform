@@ -50,7 +50,7 @@ public partial class NotAuthorizedComponent
 
     private async Task SignIn()
     {
-        await JSRuntime.RemoveToken();
+        await JSRuntime.RemoveAuthTokens();
 
         await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 

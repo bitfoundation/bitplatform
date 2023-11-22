@@ -33,7 +33,7 @@ public partial class SignInPage
             var result = await (await HttpClient.PostAsJsonAsync("Identity/SignIn", _signInModel, AppJsonContext.Default.SignInRequestDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-            await JSRuntime.StoreToken(result!, _signInModel.RememberMe);
+            await JSRuntime.StoreAuthToken(result!, _signInModel.RememberMe);
 
             await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
