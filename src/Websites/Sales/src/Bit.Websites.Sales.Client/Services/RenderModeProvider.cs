@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿//-:cnd:noEmit
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Websites.Sales.Client.Services;
 
@@ -14,5 +15,10 @@ public static class RenderModeProvider
 
     // PrerenderOnly: In order to have prerender only mode, simply remove @rendermode usages from App.razor
 
-    public static IComponentRenderMode Current => PrerenderEnabledAuto;
+    public static IComponentRenderMode Current =>
+#if DEBUG
+    PrerenderEnabledBlazorServer; // Or BlazorServer, for better development experience.
+#else
+    PrerenderEnabledAuto;
+#endif
 }

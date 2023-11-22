@@ -1,8 +1,12 @@
 ﻿class App {
-    public static setCookie(name: string, value: string, seconds: number) {
+    public static setCookie(name: string, value: string, seconds: number, remeber: boolean) {
         const date = new Date();
         date.setSeconds(date.getSeconds() + seconds);
-        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;samesite=strict;`;
+        let cookie = `${name}=${value};path=/;samesite=strict;`;
+        if (remeber == true) {
+            cookie = cookie += `expires=${date.toUTCString()};`;
+        }
+        document.cookie = cookie;
     }
 
     public static getCookie(name: string): string | null {

@@ -38,7 +38,7 @@ public partial class ProductController : AppControllerBase
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<ProductDto>(await query.ToListAsync(cancellationToken), totalCount);
+        return new PagedResult<ProductDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
     [HttpPost]
@@ -65,9 +65,7 @@ public partial class ProductController : AppControllerBase
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        productToUpdate.Patch(dto);
-
-        return dto;
+        return productToUpdate.Map();
     }
 
     [HttpDelete("{id:int}")]

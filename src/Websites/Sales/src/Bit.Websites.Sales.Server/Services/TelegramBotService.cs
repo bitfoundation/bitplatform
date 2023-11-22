@@ -4,7 +4,7 @@ namespace Bit.Websites.Sales.Server.Services;
 
 public partial class TelegramBotService
 {
-    [AutoInject] protected TelegramBotApiClient TelegramBotApiClient = default!;
+    [AutoInject] private TelegramBotApiClient _telegramBotApiClient = default!;
 
     public async Task SendContactUsMessage(string? email, string? name, string? message, CancellationToken cancellationToken)
     {
@@ -14,6 +14,6 @@ public partial class TelegramBotService
         messageBuilder.AppendLine(string.IsNullOrEmpty(name) ? $"📥 *Name:* `-`" : $"📥 *Name:* `{name.Trim()}`");
         messageBuilder.AppendLine($"📜 *Message*: {message}");
 
-        await TelegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
+        await _telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
     }
 }

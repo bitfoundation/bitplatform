@@ -2,8 +2,7 @@
 
 public partial class SignOutConfirmModal
 {
-    [Parameter]
-    public bool IsOpen { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -16,7 +15,9 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await AuthenticationService.SignOut();
+        await JSRuntime.RemoveAuthTokens();
+
+        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
         await CloseModal();
     }

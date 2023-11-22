@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using BlazorWeb.Client.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -9,23 +10,23 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
-        services.AddCascadingAuthenticationState();
-        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<LocalizationDelegatingHandler>();
+        services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
         services.AddTransient<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddScoped<MessageBoxService>();
+        services.AddTransient<MessageBoxService>();
+
+        services.AddTransient<LazyAssemblyLoader>();
 
         return services;
     }

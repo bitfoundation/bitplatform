@@ -20,9 +20,9 @@ public static class IServiceCollectionExtensions
         services.AddClientWindowsServices();
 #endif
 
-        services.AddScoped<MainPage>();
+        services.AddTransient<MainPage>();
         services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
-        services.AddScoped<IExceptionHandler, AppExceptionHandler>();
+        services.AddTransient<IExceptionHandler, AppExceptionHandler>();
 
         return services;
     }

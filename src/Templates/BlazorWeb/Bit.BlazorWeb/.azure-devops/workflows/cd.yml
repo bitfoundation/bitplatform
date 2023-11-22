@@ -7,8 +7,8 @@ variables:
   APP_SERVICE_NAME: 'app-service-td-test'
   AZURE_SERVICE_CONNECTION: 'td-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
-  AppSettings.JwtSettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
-  # ApiServerAddress: 'api/'
+  AppSettings.IdentitySettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
+  ApiServerAddress: 'api/'
   # // You can also use absolute urls such as https://todob.bitplatform.dev/api/
 
 jobs:

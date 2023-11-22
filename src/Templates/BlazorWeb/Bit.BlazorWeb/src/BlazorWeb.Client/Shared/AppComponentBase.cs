@@ -24,11 +24,11 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
-    [AutoInject] protected IAuthenticationService AuthenticationService = default!;
-
-    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
     [AutoInject] protected AppAuthenticationStateProvider AuthenticationStateProvider = default!;
+
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected sealed override async Task OnInitializedAsync()
     {

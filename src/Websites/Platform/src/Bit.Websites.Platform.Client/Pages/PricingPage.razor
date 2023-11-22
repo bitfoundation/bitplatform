@@ -23,22 +23,22 @@
         <div class="page-section-content">
             <div class="mid-container">
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="blue-txt">
-                     Get the features and support you need today
-                 </BitTypography>
-                 <hr style="width:100%" />
-                 <BitTypography Variant="BitTypographyVariant.H5">
-                     Easily upgrade as your needs evolve
-                 </BitTypography>
-             </div>
-         </div>
-     </section>
+                    Get the features and support you need today
+                </BitTypography>
+                <hr style="width:100%" />
+                <BitTypography Variant="BitTypographyVariant.H5">
+                    Easily upgrade as your needs evolve
+                </BitTypography>
+            </div>
+        </div>
+    </section>
 
-     <section class="page-section plans-section">
-         <div class="page-section-content">
-             <div class="plan-card-list">
-                 <div class="plan-card">
-                     <div class="plan-card-header">
-                         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Community</BitTypography>
+    <section class="page-section plans-section">
+        <div class="page-section-content">
+            <div class="plan-card-list">
+                <div class="plan-card">
+                    <div class="plan-card-header">
+                        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Community</BitTypography>
                     </div>
                     <div class="plan-card-body">
                         <div class="plan-card-title">
@@ -117,9 +117,9 @@
         {
             <div class="modal-message-container">
                 <BitTypography Variant="BitTypographyVariant.H3" Gutter>Thanks</BitTypography>
-             <BitTypography Variant="BitTypographyVariant.H6" Gutter>Your request has been sent</BitTypography>
-             <BitTypography Variant="BitTypographyVariant.Body1">We will contact you soon</BitTypography>
-             <BitTypography Variant="BitTypographyVariant.Body1"><b>@_buyPackageModel.Email</b></BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Your request has been sent</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1">We will contact you soon</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1"><b>@_buyPackageModel.Email</b></BitTypography>
             </div>
         }
         else
@@ -129,22 +129,22 @@
                 <DataAnnotationsValidator />
                 <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@_selectedPackageTitle</span> Package</BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter>@_selectedPackagePrice</BitTypography>
-                    <BitTextField @bind-Value="@_buyPackageModel.Email"
-                                  Label="Email"
-                                  IsRequired="true"
-                                  Class="modal-text-field"
-                                  Placeholder="Enter your email address" />
-                    <ValidationMessage For="() => _buyPackageModel.Email" />
+                <BitTextField @bind-Value="@_buyPackageModel.Email"
+                              Label="Email"
+                              IsRequired="true"
+                              Class="modal-text-field"
+                              Placeholder="Enter your email address" />
+                <ValidationMessage For="() => _buyPackageModel.Email" />
 
-                    <BitTextField @bind-Value="@_buyPackageModel.Message"
-                                  Label="Message"
-                                  IsMultiline="true"
-                                  Class="modal-text-field"
-                                  Placeholder="Enter your message" />
-                    <ValidationMessage For="() => _buyPackageModel.Message" />
+                <BitTextField @bind-Value="@_buyPackageModel.Message"
+                              Label="Message"
+                              IsMultiline="true"
+                              Class="modal-text-field"
+                              Placeholder="Enter your message" />
+                <ValidationMessage For="() => _buyPackageModel.Message" />
 
-                    <BitButton ButtonType="BitButtonType.Submit" IsLoading="_isSending">Send</BitButton>
-                </EditForm>
+                <BitButton ButtonType="BitButtonType.Submit" IsLoading="_isSending">Send</BitButton>
+            </EditForm>
         }
     </BitModal>
 </div>

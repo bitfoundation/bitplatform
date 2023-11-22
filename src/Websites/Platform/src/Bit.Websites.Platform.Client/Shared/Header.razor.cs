@@ -7,8 +7,8 @@ public partial class Header : IDisposable
     private string _currentUrl = string.Empty;
     private bool _isHeaderMenuOpen;
 
-    [AutoInject] public NavManuService _navManuService { get; set; } = default!;
-    [AutoInject] public BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] public NavManuService _navManuService = default!;
+    [AutoInject] public BitThemeManager _bitThemeManager  = default!;
 
     protected override async Task OnInitAsync()
     {

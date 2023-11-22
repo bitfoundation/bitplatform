@@ -23,17 +23,16 @@ public partial class Program
             apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
         }
 
-        builder.Services.AddSingleton(sp =>
+        builder.Services.AddTransient(sp =>
         {
-            var handler = sp.GetRequiredService<LocalizationDelegatingHandler>();
+            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress
             };
             return httpClient;
         });
-        builder.Services.AddScoped<LazyAssemblyLoader>();
-        builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
+        builder.Services.AddTransient<LazyAssemblyLoader>();
         builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();

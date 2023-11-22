@@ -9,15 +9,13 @@ public partial class SignInPage
     private BitMessageBarType _signInMessageType;
     private SignInRequestDto _signInModel = new();
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? RedirectUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
-        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
+        if ((await AuthenticationStateTask).User.IsAuthenticated())
         {
             NavigationManager.NavigateTo("/");
         }
@@ -32,7 +30,12 @@ public partial class SignInPage
 
         try
         {
-            await AuthenticationService.SignIn(_signInModel);
+            var result = await (await HttpClient.PostAsJsonAsync("Identity/SignIn", _signInModel, AppJsonContext.Default.SignInRequestDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+            await JSRuntime.StoreAuthToken(result!, _signInModel.RememberMe);
+
+            await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }

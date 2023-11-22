@@ -2,20 +2,9 @@
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class ExceptionDelegatingHandler
-    : DelegatingHandler
+public class ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
+    : DelegatingHandler(httpClientHandler)
 {
-    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
-        : base(httpClientHandler)
-    {
-
-    }
-
-    public ExceptionDelegatingHandler()
-    {
-
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         bool serverCommunicationSuccess = false;
@@ -25,11 +14,6 @@ public class ExceptionDelegatingHandler
             var response = await base.SendAsync(request, cancellationToken);
 
             serverCommunicationSuccess = true;
-
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedException();
-            }
 
             if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
@@ -50,6 +34,15 @@ public class ExceptionDelegatingHandler
 
                     throw exp;
                 }
+            }
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedException(AppStrings.YouNeedToSignIn);
+            }
+            if (response.StatusCode is HttpStatusCode.Forbidden)
+            {
+                throw new ForbiddenException(AppStrings.ForbiddenException);
             }
 
             response.EnsureSuccessStatusCode();

@@ -1,21 +1,8 @@
-﻿using System.Net;
+﻿namespace Bit.Websites.Careers.Client.Services.HttpMessageHandlers;
 
-namespace Bit.Websites.Careers.Client.Services.HttpMessageHandlers;
-
-public class ExceptionDelegatingHandler
-    : DelegatingHandler
+public class ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
+    : DelegatingHandler(httpClientHandler)
 {
-    public ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
-        : base(httpClientHandler)
-    {
-
-    }
-
-    public ExceptionDelegatingHandler()
-    {
-
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         bool serverCommunicationSuccess = false;

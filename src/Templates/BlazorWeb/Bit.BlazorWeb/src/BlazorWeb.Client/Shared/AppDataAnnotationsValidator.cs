@@ -21,17 +21,17 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
     [AutoInject] private IServiceProvider _serviceProvider = default!;
     [AutoInject] private IStringLocalizerFactory _stringLocalizerFactory = default!;
 
-    [CascadingParameter] private EditContext _editContext { get; set; } = default!;
+    [CascadingParameter] public EditContext EditContext { get; set; } = default!;
 
     protected override Task OnInitAsync()
     {
-        if (_editContext is null)
+        if (EditContext is null)
             throw new InvalidOperationException("EditContext is required");
 
-        _editContext.OnFieldChanged += OnFieldChanged;
-        _editContext.OnValidationRequested += OnValidationRequested;
+        EditContext.OnFieldChanged += OnFieldChanged;
+        EditContext.OnValidationRequested += OnValidationRequested;
 
-        _validationMessageStore = new ValidationMessageStore(_editContext);
+        _validationMessageStore = new ValidationMessageStore(EditContext);
 
         return base.OnInitAsync();
     }
@@ -98,12 +98,12 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
             _validationMessageStore.Add(fieldIdentifier, result.ErrorMessage!);
         }
 
-        _editContext.NotifyValidationStateChanged();
+        EditContext.NotifyValidationStateChanged();
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
     {
-        var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+        var validationContext = new ValidationContext(EditContext.Model, _serviceProvider, items: null);
         var results = new List<ValidationResult>();
 
         var objectType = validationContext.ObjectType;
@@ -156,7 +156,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         }
         else
         {
-            Validator.TryValidateObject(_editContext.Model, validationContext, results, true);
+            Validator.TryValidateObject(EditContext.Model, validationContext, results, true);
         }
 
         _validationMessageStore.Clear();
@@ -168,15 +168,15 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
             foreach (var memberName in validationResult.MemberNames)
             {
                 hasMemberNames = true;
-                _validationMessageStore.Add(_editContext.Field(memberName), validationResult.ErrorMessage!);
+                _validationMessageStore.Add(EditContext.Field(memberName), validationResult.ErrorMessage!);
             }
 
             if (hasMemberNames) continue;
 
-            _validationMessageStore.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
+            _validationMessageStore.Add(new FieldIdentifier(EditContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
         }
 
-        _editContext.NotifyValidationStateChanged();
+        EditContext.NotifyValidationStateChanged();
     }
 
     public void Dispose()
@@ -189,10 +189,10 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        if (_editContext is not null)
+        if (EditContext is not null)
         {
-            _editContext.OnFieldChanged -= OnFieldChanged;
-            _editContext.OnValidationRequested -= OnValidationRequested;
+            EditContext.OnFieldChanged -= OnFieldChanged;
+            EditContext.OnValidationRequested -= OnValidationRequested;
         }
 
         _disposed = true;

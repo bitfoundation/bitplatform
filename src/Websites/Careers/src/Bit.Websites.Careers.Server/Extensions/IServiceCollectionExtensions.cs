@@ -9,32 +9,20 @@ public static class IServiceCollectionExtensions
 {
     public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped(sp =>
+        services.AddTransient(sp =>
         {
-            IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return httpClientFactory.CreateClient("BlazorHttpClient");
-            // This registers HttpClient for pre rendering & blazor server only, so to use http client to call 3rd party apis and other use cases,
-            // either use services.AddHttpClient("NamedHttpClient") or services.AddHttpClient<TypedHttpClient>();
-        });
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
-        // In the Pre-Rendering mode, the configured HttpClient will use the access_token provided by the cookie in the request, so the pre-rendered content would be fitting for the current user.
-        services.AddHttpClient("BlazorHttpClient")
-            .AddHttpMessageHandler(sp => new RetryDelegatingHandler())
-            .AddHttpMessageHandler(sp => new ExceptionDelegatingHandler())
-            .ConfigurePrimaryHttpMessageHandler<HttpClientHandler>()
-            .ConfigureHttpClient((sp, httpClient) =>
+            if (apiServerAddress!.IsAbsoluteUri is false)
             {
-                Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+            }
 
-                if (apiServerAddress!.IsAbsoluteUri is false)
-                {
-                    apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
-                }
-
-                httpClient.BaseAddress = apiServerAddress;
-            });
-
-        services.AddScoped<LazyAssemblyLoader>();
+            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
+            {
+                BaseAddress = apiServerAddress
+            };
+        });
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()

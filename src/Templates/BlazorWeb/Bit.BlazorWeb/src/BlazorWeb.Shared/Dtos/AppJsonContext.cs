@@ -1,11 +1,11 @@
 ﻿//#if (sample == "Todo")
-using BlazorWeb.Shared.Dtos.Todo;
 //#elif (sample == "AdminPanel")
 using BlazorWeb.Shared.Dtos.Categories;
 using BlazorWeb.Shared.Dtos.Dashboard;
-using BlazorWeb.Shared.Dtos.Products;
 //#endif
 using BlazorWeb.Shared.Dtos.Identity;
+using BlazorWeb.Shared.Dtos.Products;
+using BlazorWeb.Shared.Dtos.Todo;
 
 namespace BlazorWeb.Shared.Dtos;
 
@@ -32,7 +32,8 @@ namespace BlazorWeb.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
 //#endif
 [JsonSerializable(typeof(SignInRequestDto))]
-[JsonSerializable(typeof(SignInResponseDto))]
+[JsonSerializable(typeof(RefreshRequestDto))]
+[JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
 [JsonSerializable(typeof(RestErrorInfo))]

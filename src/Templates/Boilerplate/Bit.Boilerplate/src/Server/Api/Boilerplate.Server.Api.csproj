@@ -27,7 +27,7 @@
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.0" />
 
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.3" />
@@ -67,7 +67,6 @@
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Boilerplate.Server.Api.Services.Contracts" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
     </ItemGroup>

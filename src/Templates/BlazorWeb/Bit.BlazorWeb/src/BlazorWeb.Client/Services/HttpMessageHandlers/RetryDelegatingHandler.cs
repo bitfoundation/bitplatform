@@ -1,19 +1,8 @@
 ﻿namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class RetryDelegatingHandler
-    : DelegatingHandler
+public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
+    : DelegatingHandler(handler)
 {
-    public RetryDelegatingHandler(ExceptionDelegatingHandler handler)
-        : base(handler)
-    {
-
-    }
-
-    public RetryDelegatingHandler()
-    {
-
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var delays = GetDelays(scaleFirstTry: TimeSpan.FromSeconds(3), maxRetries: 3).ToArray();

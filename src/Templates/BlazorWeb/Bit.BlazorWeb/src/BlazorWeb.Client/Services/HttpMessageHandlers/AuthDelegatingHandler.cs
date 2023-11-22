@@ -1,35 +1,24 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http.Headers;
+using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class AuthDelegatingHandler
-    : DelegatingHandler
+public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
+    : DelegatingHandler(handler)
 {
-    private IAuthTokenProvider _tokenProvider = default!;
-    private IJSRuntime _jsRuntime = default!;
-
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime, RetryDelegatingHandler handler)
-        : base(handler)
-    {
-        _tokenProvider = tokenProvider;
-        _jsRuntime = jsRuntime;
-    }
-
-    public AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IJSRuntime jsRuntime)
-        : base()
-    {
-        _tokenProvider = tokenProvider;
-        _jsRuntime = jsRuntime;
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null)
         {
-            var access_token = await _tokenProvider.GetAccessTokenAsync();
-            if (access_token is not null)
+            if (OperatingSystem.IsBrowser() is false)
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                // Browsers automatically send cookies, yet we still require access_token for pre-rendering purposes.
+                var access_token = await tokenProvider.GetAccessTokenAsync();
+                if (access_token is not null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                }
             }
         }
 
@@ -37,10 +26,41 @@ public class AuthDelegatingHandler
         {
             return await base.SendAsync(request, cancellationToken);
         }
-        catch (UnauthorizedException)
+        catch (Exception _) when ((_ is ForbiddenException or UnauthorizedException) && tokenProvider.IsInitialized)
         {
-            // try to get refresh token, store access token and refresh token,
-            // then use the new access token to request's authorization header and call base.SendAsync again.
+            // Notes about ForbiddenException:
+            // Let's update the access token by refreshing it when a refresh token is available.
+            // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
+
+            var refresh_token = await jsRuntime.GetLocalStorage("refresh_token");
+
+            if (refresh_token is not null)
+            {
+                var httpClient = serviceProvider.GetRequiredService<HttpClient>();
+                var appAuthStateProvider = serviceProvider.GetRequiredService<AppAuthenticationStateProvider>();
+
+                try
+                {
+                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
+                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
+
+                    await jsRuntime.StoreAuthToken(refreshTokenResponse!);
+
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
+                }
+                catch (ResourceValidationException exp) /* refresh_token is expired */
+                {
+                    await jsRuntime.RemoveAuthTokens();
+                    throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
+                }
+                finally
+                {
+                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
+                }
+
+                return await base.SendAsync(request, cancellationToken);
+            }
+
             throw;
         }
     }

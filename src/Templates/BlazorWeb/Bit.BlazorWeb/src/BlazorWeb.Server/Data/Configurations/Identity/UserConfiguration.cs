@@ -12,6 +12,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         {
             Id = 1,
             EmailConfirmed = true,
+            LockoutEnabled = true,
             Gender = Gender.Other,
             BirthDate = new DateTime(2023, 1, 1),
             FullName = "BlazorWeb test account",

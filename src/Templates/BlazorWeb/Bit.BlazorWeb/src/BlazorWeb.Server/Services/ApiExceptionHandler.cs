@@ -7,6 +7,7 @@ namespace BlazorWeb.Server.Services;
 public partial class ApiExceptionHandler : IExceptionHandler
 {
     [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> _localizer = default!;
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
     {
@@ -14,18 +15,17 @@ public partial class ApiExceptionHandler : IExceptionHandler
         httpContext.Response.Headers.Append("Request-ID", httpContext.TraceIdentifier);
 
         var exception = UnWrapException(e);
-        var localizer = httpContext.RequestServices.GetRequiredService<IStringLocalizer<AppStrings>>();
         var knownException = exception as KnownException;
 
         // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
         var key = knownException?.Key ?? nameof(UnknownException);
-        var message = knownException?.Message ?? (_webHostEnvironment.IsDevelopment() ? exception.Message : localizer[nameof(UnknownException)]);
+        var message = knownException?.Message ?? (_webHostEnvironment.IsDevelopment() ? exception.Message : _localizer[nameof(UnknownException)]);
 
         var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
         if (exception is KnownException && message == key)
         {
-            message = localizer[message];
+            message = _localizer[message];
         }
 
         var restExceptionPayload = new RestErrorInfo

@@ -13,7 +13,6 @@ if (apiServerAddress!.IsAbsoluteUri is false)
 }
 
 builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<RetryDelegatingHandler>()) { BaseAddress = apiServerAddress });
-builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();
 
 builder.Services.AddClientSharedServices();
 
