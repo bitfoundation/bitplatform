@@ -13,7 +13,7 @@ public partial class NavMenu : IDisposable
     private List<BitNavItem> _navItems = [];
     private Action _unsubscribe = default!;
 
-    [AutoInject] private NavigationManager _navManager { get; set; } = default!;
+    [AutoInject] private NavigationManager _navManager = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 
@@ -73,7 +73,7 @@ public partial class NavMenu : IDisposable
             }
         ];
 
-        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, payload =>
+        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
 

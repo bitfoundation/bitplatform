@@ -11,12 +11,13 @@ public partial class BitFileUpload : IDisposable
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
 
-    private bool _disposed;
     private long? chunkSize;
-    private ElementReference inputFileElement;
-    private IJSObjectReference? dropZoneInstance;
+
+    private bool _disposed;
+    private ElementReference _inputRef;
     private long _internalChunkSize = MIN_CHUNK_SIZE;
-    private DotNetObjectReference<BitFileUpload>? _dotnetObj;
+    private IJSObjectReference _dropZoneRef = default!;
+    private DotNetObjectReference<BitFileUpload> _dotnetObj = default!;
 
 
 
@@ -60,6 +61,8 @@ public partial class BitFileUpload : IDisposable
         get => chunkSize;
         set
         {
+            if (value == chunkSize) return;
+
             chunkSize = value;
 
             if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
@@ -77,6 +80,11 @@ public partial class BitFileUpload : IDisposable
     /// The message shown for failed file uploads.
     /// </summary>
     [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
+
+    /// <summary>
+    /// The message shown for failed file removes.
+    /// </summary>
+    [Parameter] public string FailedRemoveMessage { get; set; } = "File remove failed";
 
     /// <summary>
     /// Enables multi-file select and upload.
@@ -189,6 +197,7 @@ public partial class BitFileUpload : IDisposable
     [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
 
 
+
     /// <summary>
     /// All selected files.
     /// </summary>
@@ -209,8 +218,6 @@ public partial class BitFileUpload : IDisposable
     /// </summary>
     public bool IsRemoving { get; private set; }
 
-
-    protected override string RootElementClass => "bit-upl";
 
     /// <summary>
     /// Starts Uploading the file(s).
@@ -315,6 +322,21 @@ public partial class BitFileUpload : IDisposable
         IsRemoving = false;
     }
 
+    /// <summary>
+    /// Open a file selection dialog
+    /// </summary>
+    /// <returns></returns>
+    public async Task Browse()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.BrowseFile(_inputRef);
+    }
+
+
+
+    protected override string RootElementClass => "bit-upl";
+
     protected override Task OnInitializedAsync()
     {
         InputId = $"FileUpload-{UniqueId}-input";
@@ -328,8 +350,10 @@ public partial class BitFileUpload : IDisposable
     {
         if (firstRender is false) return;
 
-        dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
+        _dropZoneRef = await _js.SetupFileUploadDropzone(RootElement, _inputRef);
     }
+
+
 
     private async Task HandleOnChange()
     {
@@ -337,7 +361,7 @@ public partial class BitFileUpload : IDisposable
 
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await _js.InitFileUpload(inputFileElement, _dotnetObj, url, UploadRequestHttpHeaders);
+        Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
@@ -402,14 +426,14 @@ public partial class BitFileUpload : IDisposable
             to = fileInfo.Size;
         }
 
-        await _js.UploadFile(from, to, fileInfo.Index);
+        await _js.UploadFile(UniqueId, from, to, fileInfo.Index);
     }
 
     private async Task PauseUploadOneFile(int index)
     {
         if (Files is null) return;
 
-        await _js.PauseFile(index);
+        await _js.PauseFile(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Paused, file);
         file.PauseUploadRequested = false;
@@ -490,7 +514,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null) return;
 
-        await _js.PauseFile(index);
+        await _js.PauseFile(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Canceled, file);
         file.CancelUploadRequested = false;
@@ -520,6 +544,8 @@ public partial class BitFileUpload : IDisposable
             url = AddQueryString(url, RemoveRequestQueryStrings);
 
             using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+
+            request.Headers.Add("BIT_FILE_ID", fileInfo.FileId);
 
             foreach (var header in RemoveRequestHttpHeaders)
             {
@@ -647,26 +673,25 @@ public partial class BitFileUpload : IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        _ = Dispose(true);
         GC.SuppressFinalize(this);
     }
 
 
-    protected virtual void Dispose(bool disposing)
+    private async Task Dispose(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        if (dropZoneInstance is not null)
+        if (_dropZoneRef is not null)
         {
-            _ = dropZoneInstance.InvokeVoidAsync("dispose").AsTask();
-            _ = dropZoneInstance.DisposeAsync().AsTask();
-            dropZoneInstance = null;
+            await _dropZoneRef.InvokeVoidAsync("dispose");
+            await _dropZoneRef.DisposeAsync();
         }
 
-        if (_dotnetObj != null)
+        if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
-            _dotnetObj = null;
+            await _js.DisposeFileUpload(UniqueId);
         }
 
         _disposed = true;

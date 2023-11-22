@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,18 +10,18 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.0" />
 
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.3" />
@@ -64,7 +62,6 @@
         <Using Include="BlazorWeb.Server.Data" />
         <Using Include="BlazorWeb.Server.Mappers" />
         <Using Include="BlazorWeb.Shared.Enums" />
-        <Using Include="BlazorWeb.Server.Services.Contracts" />
     </ItemGroup>
 
     <ItemGroup>

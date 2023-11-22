@@ -3,7 +3,7 @@ namespace BlazorWeb.Client.Shared;
 
 public partial class Footer
 {
-    [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private BitThemeManager _bitThemeManager = default!;
 
     private BitDropdownItem<string>[] _cultures = default!;
 
@@ -18,7 +18,7 @@ public partial class Footer
 #if MultilingualEnabled
     protected async override Task OnAfterFirstRenderAsync()
     {
-        var preferredCultureCookie = await JSRuntime.InvokeAsync<string?>("window.App.getCookie", ".AspNetCore.Culture");
+        var preferredCultureCookie = await JSRuntime.GetCookie(".AspNetCore.Culture");
 
         SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
 
@@ -34,7 +34,7 @@ public partial class Footer
     {
         var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
 
-        await JSRuntime.InvokeVoidAsync("window.App.setCookie", ".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600);
+        await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600, rememberMe: true);
 
         NavigationManager.Refresh(forceReload: true);
     }

@@ -7,12 +7,12 @@ namespace Bit.Websites.Platform.Server.Controllers;
 [ApiController]
 public partial class ContactUsController : AppControllerBase
 {
-    [AutoInject] protected TelegramBotService TelegramBotService = default!;
+    [AutoInject] private TelegramBotService _telegramBotService = default!;
 
     [HttpPost]
     public async Task<IActionResult> SendMessage(ContactUsDto contactUsDto, CancellationToken cancellationToken)
     {
-        await TelegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Message, cancellationToken);
+        await _telegramBotService.SendContactUsMessage(contactUsDto.Email, contactUsDto.Message, cancellationToken);
         return Ok();
     }
 }

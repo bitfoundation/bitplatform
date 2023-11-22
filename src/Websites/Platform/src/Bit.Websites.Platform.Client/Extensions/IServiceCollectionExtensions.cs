@@ -10,16 +10,17 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<NavManuService>();
 
-        services.AddScoped<IPrerenderStateService, PrerenderStateService>();
-        services.AddScoped<IExceptionHandler, ExceptionHandler>();
+        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
 
+        services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<RetryDelegatingHandler>();
         services.AddTransient<ExceptionDelegatingHandler>();
         services.AddTransient<HttpClientHandler>();
 
-        services.AddScoped<MessageBoxService>();
+        services.AddTransient<MessageBoxService>();
 
         return services;
     }

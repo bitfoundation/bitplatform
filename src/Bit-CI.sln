@@ -139,19 +139,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Assets", "Blaz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Icons", "BlazorUI\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj", "{6B5C3E91-47F9-4DEE-B74B-20ED2D24585A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Api", "Websites\Sales\src\Bit.Websites.Sales.Api\Bit.Websites.Sales.Api.csproj", "{090DDD5F-6BB9-46C2-B81E-E9DF384721A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Server", "Websites\Sales\src\Bit.Websites.Sales.Server\Bit.Websites.Sales.Server.csproj", "{090DDD5F-6BB9-46C2-B81E-E9DF384721A5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Shared", "Websites\Sales\src\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj", "{01078AA6-DE42-46A4-B541-E019DDAE54AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Web", "Websites\Sales\src\Bit.Websites.Sales.Web\Bit.Websites.Sales.Web.csproj", "{756CB468-1026-43D6-B58C-4234A77EAD7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Sales.Client", "Websites\Sales\src\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj", "{756CB468-1026-43D6-B58C-4234A77EAD7A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Shared", "Websites\Platform\src\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj", "{32C64C9A-2A6A-4C87-9307-DC370BCD695C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Api", "Websites\Careers\src\Bit.Websites.Careers.Api\Bit.Websites.Careers.Api.csproj", "{E3A65354-187C-42BF-A5B5-706BF4DEF4EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Server", "Websites\Careers\src\Bit.Websites.Careers.Server\Bit.Websites.Careers.Server.csproj", "{E3A65354-187C-42BF-A5B5-706BF4DEF4EC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Shared", "Websites\Careers\src\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj", "{1F9140AC-FAB2-4325-A6A6-5294C65C9613}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Web", "Websites\Careers\src\Bit.Websites.Careers.Web\Bit.Websites.Careers.Web.csproj", "{9CF8208A-AE33-43B2-8E41-BD7D6B0FDF40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Client", "Websites\Careers\src\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj", "{9CF8208A-AE33-43B2-8E41-BD7D6B0FDF40}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWeb", "BlazorWeb", "{0C76F4C8-8FB3-42A0-B06F-0F94828AC7F3}"
 	ProjectSection(SolutionItems) = preProject

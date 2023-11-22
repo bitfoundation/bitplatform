@@ -1,63 +1,27 @@
 ﻿class BitColorPicker {
-    static listOfAbortControllers: BitAbortController[] = [];
+    private static abortControllers: BitAbortController[] = [];
 
-    static registerOnWindowPointerUpEvent(dotnetHelper: DotNetObject, callback: string): string {
-        const controller = new BitAbortController();
-
-        const listenerOptions = new BitEventListenerOptions();
-        listenerOptions.signal = controller.abortController.signal;
-
-        document.addEventListener('pointerup', e => {
-            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
-            dotnetHelper.invokeMethodAsync(callback, eventArgs);
-        }, listenerOptions);
-
-        BitColorPicker.listOfAbortControllers.push(controller)
-
-        return controller.id;
-    }
-
-    static registerOnWindowPointerMoveEvent(dotnetHelper: DotNetObject, callback: string): string {
-        const controller = new BitAbortController();
+    public static register(event: string, dotnetObj: DotNetObject, methodName: string): string {
+        const bitController = new BitAbortController();
 
         const listenerOptions = new BitEventListenerOptions();
-        listenerOptions.signal = controller.abortController.signal;
+        listenerOptions.signal = bitController.controller.signal;
 
-        document.addEventListener('pointermove', e => {
-            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
-            dotnetHelper.invokeMethodAsync(callback, eventArgs);
+        document.addEventListener(event, e => {
+            dotnetObj.invokeMethodAsync(methodName, BitColorPicker.extractArgs(e as MouseEvent));
         }, listenerOptions);
 
-        BitColorPicker.listOfAbortControllers.push(controller)
+        BitColorPicker.abortControllers.push(bitController)
 
-        return controller.id;
+        return bitController.id;
     }
 
-    static toPointerEventArgsMapper(e: MouseEvent): object {
-        return {
-            altKey: e.altKey,
-            button: e.button,
-            buttons: e.buttons,
-            clientX: e.clientX,
-            clientY: e.clientY,
-            ctrlKey: e.ctrlKey,
-            detail: e.detail,
-            metaKey: e.metaKey,
-            offsetX: e.offsetX,
-            offsetY: e.offsetY,
-            screenY: e.screenY,
-            screenX: e.screenX,
-            shiftKey: e.shiftKey,
-            type: e.type
-        };
+    public static abort(id: string): void {
+        BitColorPicker.abortControllers.find(ac => ac.id == id)?.controller?.abort();
     }
 
-    static abortProcedure(id: string): void {
-        const aborController = BitColorPicker.listOfAbortControllers.find(ac => ac.id == id)?.abortController;
-
-        if (aborController) {
-            aborController.abort();
-        }
+    private static extractArgs(e: MouseEvent): object {
+        return { ClientX: e.clientX, ClientY: e.clientY };
     }
 }
 
@@ -68,5 +32,5 @@ class BitEventListenerOptions implements EventListenerOptions {
 
 class BitAbortController {
     id: string = Date.now().toString();
-    abortController = new AbortController();
+    controller = new AbortController();
 }

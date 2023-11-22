@@ -9,11 +9,13 @@ public partial class MainLayout : IDisposable
     private bool _isUserAuthenticated;
     private ErrorBoundary ErrorBoundaryRef = default!;
 
-    [AutoInject] private IPrerenderStateService _stateService = default!;
+    [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
     [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
+
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected override void OnParametersSet()
     {
@@ -30,7 +32,7 @@ public partial class MainLayout : IDisposable
         {
             _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            _isUserAuthenticated = await _stateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", _authStateProvider.IsUserAuthenticatedAsync);
+            _isUserAuthenticated = await _prerenderStateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             await base.OnInitializedAsync();
         }
@@ -44,7 +46,7 @@ public partial class MainLayout : IDisposable
     {
         try
         {
-            _isUserAuthenticated = await _authStateProvider.IsUserAuthenticatedAsync();
+            _isUserAuthenticated = (await task).User.IsAuthenticated();
         }
         catch (Exception ex)
         {

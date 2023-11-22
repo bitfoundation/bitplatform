@@ -2,11 +2,11 @@
 using System.IO.Compression;
 using System.Net;
 using System.Net.Mail;
+using BlazorWeb.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-using BlazorWeb.Server.Services;
 
 namespace BlazorWeb.Server.Startup;
 
@@ -20,7 +20,6 @@ public static class Services
 
         services.AddClientSharedServices();
 
-        services.AddScoped<IUserInformationProvider, UserInformationProvider>();
         services.AddExceptionHandler<ApiExceptionHandler>();
 
         services.AddBlazor(configuration);
@@ -78,7 +77,7 @@ public static class Services
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -86,11 +85,9 @@ public static class Services
 
         services.AddIdentity(configuration);
 
-        services.AddJwt(configuration);
-
         services.AddHealthChecks(env, configuration);
 
-        services.AddScoped<HtmlRenderer>();
+        services.AddTransient<HtmlRenderer>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 

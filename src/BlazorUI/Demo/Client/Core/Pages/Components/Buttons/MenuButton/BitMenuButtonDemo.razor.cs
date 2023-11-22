@@ -61,6 +61,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "DefaultSelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Default value of the SelectedItem."
+        },
+        new()
+        {
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -119,6 +126,27 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "SelectedItem",
+            Type = "TItem?",
+            DefaultValue = "null",
+            Description = "Determines the current selected item that acts as the main button."
+        },
+        new()
+        {
+            Name = "Split",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the button will render as a SplitButton."
+        },
+        new()
+        {
+            Name = "Sticky",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the current item is going to be change selected item."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",
@@ -163,6 +191,13 @@ public partial class BitMenuButtonDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the item is enabled.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines the selection state of the item.",
                },
                new()
                {
@@ -230,6 +265,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines the selection state of the item.",
+               },
+               new()
+               {
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
@@ -287,10 +329,24 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "ChevronDownButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chevron down button of the BitMenuButton."
+               },
+               new()
+               {
                    Name = "ChevronDown",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the chevron down of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "Separator",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the separator of the BitMenuButton."
                },
                new()
                {
@@ -366,6 +422,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.IsEnabled))",
                     Description = "IsEnabled field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "IsSelected",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.IsSelected))",
+                    Description = "IsSelected field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -449,6 +514,12 @@ public partial class BitMenuButtonDemo
                     Name= "Standard",
                     Description="The button with black text on a white background.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="The button for less-pronounced actions.",
+                    Value="2",
                 }
             }
         },

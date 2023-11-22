@@ -196,17 +196,17 @@ namespace BlazorWeb.Server.Data.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "a93803e4-4826-4f8f-a3c0-9b3915222944",
+                            ConcurrencyStamp = "3e496120-43ec-4f42-b607-7cdf2a3cd843",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "BlazorWeb test account",
                             Gender = 2,
-                            LockoutEnabled = false,
+                            LockoutEnabled = true,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHkXKL/4p8zGmGPVrQLM4FFbgg0ZDGlCtICfXdEArQg/Ih7Kkn9LfNCZME2+wd0APw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBv9z0VdfunYh4mV9x8IJiLvR1WefLnibCf5ugcGZH5E9FstjLa9oQiDMGXDJguDiw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e8fe621c-97fd-41ec-9d33-29c931496432",
+                            SecurityStamp = "e8c42956-0730-46cb-8e7b-fdcd7acbd4bf",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
                         });
@@ -479,6 +479,25 @@ namespace BlazorWeb.Server.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("TodoItems");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

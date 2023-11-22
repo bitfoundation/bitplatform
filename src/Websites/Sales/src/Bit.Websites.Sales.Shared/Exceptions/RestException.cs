@@ -5,7 +5,7 @@ namespace Bit.Websites.Sales.Shared.Exceptions;
 public class RestException : KnownException
 {
     public RestException()
-        : base(nameof(AppStrings.RestException))
+        : base(nameof(RestException))
     {
     }
 
@@ -15,16 +15,6 @@ public class RestException : KnownException
     }
 
     public RestException(string message, Exception? innerException)
-        : base(message, innerException)
-    {
-    }
-
-    public RestException(LocalizedString message)
-        : base(message)
-    {
-    }
-
-    public RestException(LocalizedString message, Exception? innerException)
         : base(message, innerException)
     {
     }

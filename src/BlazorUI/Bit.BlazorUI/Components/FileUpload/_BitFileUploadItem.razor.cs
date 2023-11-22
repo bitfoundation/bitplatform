@@ -50,6 +50,7 @@ public partial class _BitFileUploadItem
         {
             BitFileUploadStatus.Completed => FileUpload.SuccessfulUploadMessage,
             BitFileUploadStatus.Failed => FileUpload.FailedUploadMessage,
+            BitFileUploadStatus.RemoveFailed => FileUpload.FailedRemoveMessage,
             BitFileUploadStatus.NotAllowed => FileUpload.IsFileTypeNotAllowed(file) ? FileUpload.NotAllowedExtensionErrorMessage : FileUpload.MaxSizeErrorMessage,
             _ => string.Empty,
         };

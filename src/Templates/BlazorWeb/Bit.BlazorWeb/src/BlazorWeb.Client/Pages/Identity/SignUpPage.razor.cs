@@ -15,7 +15,7 @@ public partial class SignUpPage
     {
         await base.OnAfterFirstRenderAsync();
 
-        if (await AuthenticationStateProvider.IsUserAuthenticatedAsync())
+        if ((await AuthenticationStateTask).User.IsAuthenticated())
         {
             NavigationManager.NavigateTo("/");
         }
@@ -30,7 +30,7 @@ public partial class SignUpPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SignUp", _signUpModel, AppJsonContext.Default.SignUpRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SignUp", _signUpModel, AppJsonContext.Default.SignUpRequestDto);
 
             _isSignedUp = true;
         }
@@ -59,7 +59,7 @@ public partial class SignUpPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Auth/SendConfirmationEmail", new() { Email = _signUpModel.Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = _signUpModel.Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
             _signUpMessageType = BitMessageBarType.Success;
             _signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];

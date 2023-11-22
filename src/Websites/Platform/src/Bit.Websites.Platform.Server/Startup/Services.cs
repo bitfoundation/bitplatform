@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Platform.Server.Services;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -13,6 +14,7 @@ public static class Services
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
+        services.AddTransient<IAntiforgery, NullAntiforgery>();
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();
 
@@ -47,7 +49,7 @@ public static class Services
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddScoped(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 

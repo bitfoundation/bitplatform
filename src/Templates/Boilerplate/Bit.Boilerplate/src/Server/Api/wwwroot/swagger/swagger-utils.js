@@ -104,6 +104,7 @@ const createLoginUI = function (swagger, rootDiv) {
 
     const userNameInput = document.createElement("input");
     userNameInput.type = "text";
+    userNameInput.placeholder = "test@bitplatform.dev";
     userNameInput.style = "margin-left: 10px; margin-right: 10px;";
     userNameLabel.appendChild(userNameInput);
 
@@ -116,6 +117,7 @@ const createLoginUI = function (swagger, rootDiv) {
     passwordLabel.appendChild(passwordSpan);
 
     const passwordInput = document.createElement("input");
+    passwordInput.placeholder = "123456";
     passwordInput.type = "password";
     passwordInput.style = "margin-left: 10px; margin-right: 10px;";
     passwordLabel.appendChild(passwordInput);
@@ -145,24 +147,24 @@ const createLoginUI = function (swagger, rootDiv) {
 }
 
 const login = async (swagger, userName, password) => {
-    const response = await fetch('/api/Auth/SignIn', {
+    const response = await fetch('/api/Identity/SignIn', {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
         body: JSON.stringify({ "userName": userName, "password": password })
     })
     if (response.ok) {
         const result = await response.json();
-        const accessToken = result.accessToken;
+        const access_token = result.accessToken;
         accessTokenExpiresIn = result.expiresIn;
 
-        const authorizationObject = getAuthorizationRequestObject(accessToken);
+        const authorizationObject = getAuthorizationRequestObject(access_token);
         swagger.authActions.authorize(authorizationObject);
     } else {
         alert(await response.text())
     }
 }
 
-const getAuthorizationRequestObject = (accessToken) => {
+const getAuthorizationRequestObject = (access_token) => {
     return {
         "bearerAuth": {
             "name": "Bearer",
@@ -172,7 +174,7 @@ const getAuthorizationRequestObject = (accessToken) => {
                 "name": "Authorization",
                 "in": "header"
             },
-            value: accessToken
+            value: access_token
         },
     };
 }

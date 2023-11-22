@@ -3,16 +3,16 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.TodoTitle)]</PageTitle>
 
-    <div class="page-container">
-        <div class="search-box-container">
-            <BitSearchBox Style="width: 300px"
-                          OnChange="SearchTodoItems"
-                          OnClear="@(() => SearchTodoItems(""))"
-                          Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
-        </div>
+<div class="page-container">
+    <div class="search-box-container">
+        <BitSearchBox Style="width: 300px"
+                      OnChange="SearchTodoItems"
+                      OnClear="@(() => SearchTodoItems(""))"
+                      Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
+    </div>
 
-        <div class="todo-content">
-            <h1 class="main-title">@Localizer[nameof(AppStrings.TodoTitle)]</h1>
+    <div class="todo-content">
+        <h1 class="main-title">@Localizer[nameof(AppStrings.TodoTitle)]</h1>
         <div class="add-todo-container">
             <BitTextField @bind-Value="_newTodoTitle"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
@@ -61,7 +61,7 @@
                         <div class="todo-list--empty-state">
                             <img src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg">
                             <BitLabel>@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
-                            </div>
+                        </div>
                     }
                     else
                     {

@@ -2,9 +2,6 @@
 using BlazorWeb.Shared.Dtos.Identity;
 //#if (sample == "Todo")
 using BlazorWeb.Shared.Dtos.Todo;
-//#elif (sample == "AdminPanel")
-using BlazorWeb.Shared.Dtos.Categories;
-using BlazorWeb.Shared.Dtos.Products;
 //#endif
 using Riok.Mapperly.Abstractions;
 
@@ -24,9 +21,6 @@ public static partial class Mapper
 {
     //#if (sample == "Todo")
     public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
-    //#elif (sample == "AdminPanel")
-    public static partial void Patch(this CategoryDto source, CategoryDto destination);
-    public static partial void Patch(this ProductDto source, ProductDto destination);
     //#endif
     public static partial void Patch(this UserDto source, UserDto destination);
 }

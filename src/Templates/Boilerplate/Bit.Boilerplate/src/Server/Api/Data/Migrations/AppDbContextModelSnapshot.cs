@@ -196,17 +196,17 @@ namespace Boilerplate.Server.Api.Data.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
-                            ConcurrencyStamp = "abc2cc9f-82d8-4d0f-8b30-bdf46771be8a",
+                            ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "Boilerplate test account",
                             Gender = 2,
-                            LockoutEnabled = false,
+                            LockoutEnabled = true,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
                             NormalizedUserName = "TEST@BITPLATFORM.DEV",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPoTVhWmCK6tZktIeSD0sVticLeZ1o2EVYZ9tUbY+PPr3tnJ/ZbSn7ZTBq6N+vl7UQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "bf6a9576-4c37-40bc-a4c2-7b42f3ec10cf",
+                            SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
                             TwoFactorEnabled = false,
                             UserName = "test@bitplatform.dev"
                         });
@@ -479,6 +479,25 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("TodoItems");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

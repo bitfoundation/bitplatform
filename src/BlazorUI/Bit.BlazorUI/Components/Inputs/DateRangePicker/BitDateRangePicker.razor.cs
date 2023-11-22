@@ -14,6 +14,8 @@ public partial class BitDateRangePicker
     private bool IsOpenHasBeenSet;
 
     private bool isOpen;
+    private bool isUnderlined;
+    private bool hasBorder = true;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
 
@@ -279,8 +281,18 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Determines if the DateRangePicker has a border.
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter]
+    public bool HasBorder
+    {
+        get => hasBorder;
+        set
+        {
+            if (value == hasBorder) return;
 
+            hasBorder = value;
+            ClassBuilder.Reset();
+        }
+    }
     /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
@@ -354,7 +366,18 @@ public partial class BitDateRangePicker
     /// <summary>
     /// Whether or not the Text field of the DateRangePicker is underlined.
     /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter]
+    public bool IsUnderlined
+    {
+        get => isUnderlined;
+        set
+        {
+            if (value == isUnderlined) return;
+
+            isUnderlined = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The text of the DateRangePicker's label.

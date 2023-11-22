@@ -3,19 +3,25 @@
 /// <summary>
 /// For more information <see cref="IPubSubService"/> docs.
 /// </summary>
-public class PubSubService : IPubSubService
+public partial class PubSubService : IPubSubService
 {
-    private readonly ConcurrentDictionary<string, List<Action<object?>>> _handlers = new();
+    [AutoInject] private IServiceProvider _serviceProvider = default!;
+
+    private readonly ConcurrentDictionary<string, List<Func<object?, Task>>> _handlers = new();
 
     public void Publish(string message, object? payload)
     {
         if (_handlers.TryGetValue(message, out var handlers))
         {
-            handlers.ForEach(handler => handler(payload));
+            foreach (var handler in handlers)
+            {
+                handler(payload)
+                    .ContinueWith(t => _serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!), TaskContinuationOptions.OnlyOnFaulted);
+            }
         }
     }
 
-    public Action Subscribe(string message, Action<object?> handler)
+    public Action Subscribe(string message, Func<object?, Task> handler)
     {
         var handlers = _handlers.ContainsKey(message)
                             ? _handlers[message]

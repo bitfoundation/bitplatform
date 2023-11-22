@@ -20,7 +20,7 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected NavigationManager NavigationManager = default!;
 
-    [AutoInject] protected IExceptionHandler ExceptionHandler { get; set; } = default!;
+    [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
     protected sealed override async Task OnInitializedAsync()
     {

@@ -2,8 +2,6 @@
 
 public partial class HomePage
 {
-    [AutoInject] public IJSRuntime JSRuntime { get; set; } = default!;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);

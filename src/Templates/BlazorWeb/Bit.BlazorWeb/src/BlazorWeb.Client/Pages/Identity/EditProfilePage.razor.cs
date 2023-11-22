@@ -43,16 +43,14 @@ public partial class EditProfilePage
 
     private async Task LoadEditProfileData()
     {
-        _user = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", GetCurrentUser) ?? new();
+        _user = await GetCurrentUser() ?? new();
 
         UpdateEditProfileData();
     }
 
     private async Task RefreshProfileData()
     {
-        _user = await GetCurrentUser() ?? new();
-
-        UpdateEditProfileData();
+        await LoadEditProfileData();
 
         PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, _user);
     }
@@ -64,8 +62,7 @@ public partial class EditProfilePage
         _userToEdit.BirthDate = _user.BirthDate;
     }
 
-    private Task<UserDto?> GetCurrentUser() => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto);
-
+    private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(_user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
 
     private async Task DoSave()
     {

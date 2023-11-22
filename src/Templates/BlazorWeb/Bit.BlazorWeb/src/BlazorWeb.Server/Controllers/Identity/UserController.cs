@@ -34,7 +34,9 @@ public partial class UserController : AppControllerBase
 
         userDto.Patch(user);
 
-        await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
         return await GetCurrentUser(cancellationToken);
     }
@@ -42,11 +44,13 @@ public partial class UserController : AppControllerBase
     [HttpDelete]
     public async Task Delete(CancellationToken cancellationToken)
     {
-        var userId = UserInformationProvider.GetUserId();
+        var userId = User.GetUserId();
 
         var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
                     ?? throw new ResourceNotFoundException();
 
-        await _userManager.DeleteAsync(user);
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 }

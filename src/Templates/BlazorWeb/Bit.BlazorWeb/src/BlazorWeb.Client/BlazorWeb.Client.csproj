@@ -4,8 +4,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
@@ -30,17 +28,17 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.0.1" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.0.1" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.1.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.1.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.1.0" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.0.1" />
+        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.1.0" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.0.1">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -62,6 +60,13 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
+    <!--/+:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''">
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <!--/-:msbuild-conditional:noEmit -->
     <ItemGroup>
         <ProjectReference Include="..\BlazorWeb.Shared\BlazorWeb.Shared.csproj" />
     </ItemGroup>

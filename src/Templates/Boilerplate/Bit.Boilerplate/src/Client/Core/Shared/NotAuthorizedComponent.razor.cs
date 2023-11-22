@@ -5,6 +5,7 @@ public partial class NotAuthorizedComponent
     private ClaimsPrincipal _user = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -13,36 +14,52 @@ public partial class NotAuthorizedComponent
         await base.OnParamsSetAsync();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        base.OnAfterRender(firstRender);
+        string? refresh_token = await JSRuntime.GetLocalStorage("refresh_token");
 
-        if (firstRender is false) return;
+        // Let's update the access token by refreshing it when a refresh token is available.
+        // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
+        // To prevent infinitie redirect loop, let's append refresh_token=false to the url, so we only redirect in case no refresh_token=false is present
 
-        try
+        if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refresh_token=false", StringComparison.InvariantCulture) is null or false)
         {
-            if (_user.Identity?.IsAuthenticated is false)
+            // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
+            // To ensure this process, consider removing the access_token, prompting the AuthenticationStateProvider to initiate a refresh automatically.
+            await JSRuntime.RemoveCookie("access_token");
+            await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+
+            if ((await AuthenticationStateTask).User.IsAuthenticated())
             {
-                RedirectToSignInPage();
+                if (RedirectUrl is not null)
+                {
+                    var @char = RedirectUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                    NavigationManager.NavigateTo($"{RedirectUrl}{@char}refresh_token=false");
+                }
             }
         }
-        catch (Exception exp)
+
+        if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
         {
-            ExceptionHandler.Handle(exp);
+            // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
+            await SignIn();
         }
+
+        await base.OnAfterFirstRenderAsync();
     }
 
     private async Task SignIn()
     {
-        await AuthenticationService.SignOut();
+        await JSRuntime.RemoveAuthTokens();
+
+        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
 
         RedirectToSignInPage();
     }
 
     private void RedirectToSignInPage()
     {
-        var redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-
-        NavigationManager.NavigateTo($"/sign-in?redirectUrl={redirectUrl}");
+        var redirectUrl = RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/sign-in{(string.IsNullOrEmpty(redirectUrl) ? "" : $"?redirect-url={redirectUrl}")}");
     }
 }

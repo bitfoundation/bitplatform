@@ -136,7 +136,6 @@ class BitCallouts {
 
             if (responsiveMode == BitResponsiveMode.Top) {
                 callout.style.width = '100%';
-                callout.style.aspectRatio = '1';
             }
 
             setTimeout(() => {

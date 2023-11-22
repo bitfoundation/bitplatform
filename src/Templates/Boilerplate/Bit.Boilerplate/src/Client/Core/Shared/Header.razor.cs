@@ -11,7 +11,7 @@ public partial class Header : IDisposable
     {
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        _isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-isUserAuthenticated", AuthenticationStateProvider.IsUserAuthenticatedAsync);
+        _isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
         await base.OnInitAsync();
     }
@@ -20,7 +20,7 @@ public partial class Header : IDisposable
     {
         try
         {
-            _isUserAuthenticated = await AuthenticationStateProvider.IsUserAuthenticatedAsync();
+            _isUserAuthenticated = (await task).User.IsAuthenticated();
         }
         catch (Exception ex)
         {
