@@ -45,10 +45,9 @@ public partial class FileUploadController : AppControllerBase
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task<IActionResult> UploadChunkedFile(
-        IFormFile file,
-        [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadChunkedFile(IFormFile file,
+                                                       [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId,
+                                                       CancellationToken cancellationToken)
     {
         if (file is null)
         {
@@ -77,7 +76,8 @@ public partial class FileUploadController : AppControllerBase
 
 
     [HttpDelete]
-    public IActionResult RemoveFile(string fileName, [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId)
+    public IActionResult RemoveFile(string fileName,
+                                    [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId)
     {
         var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{fileName}");
 

@@ -174,6 +174,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "FailedRemoveMessage",
+            Type = "string",
+            DefaultValue = "File remove failed",
+            Description = "The message shown for failed file removes."
+        },
+        new()
+        {
             Name = "UploadRequestHttpHeaders",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
