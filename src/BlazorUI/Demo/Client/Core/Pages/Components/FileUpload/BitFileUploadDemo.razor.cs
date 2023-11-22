@@ -174,6 +174,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "FailedRemoveMessage",
+            Type = "string",
+            DefaultValue = "File remove failed",
+            Description = "The message shown for failed file removes."
+        },
+        new()
+        {
             Name = "UploadRequestHttpHeaders",
             Type = "IReadOnlyDictionary<string, string>",
             DefaultValue = "new Dictionary<string, string>()",
@@ -266,7 +273,7 @@ public partial class BitFileUploadDemo
     private string onAllUploadsCompleteText = "No File";
     private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
-    private string RemoveUrl => $"FileUpload/RemoveFile";
+    private string RemoveUrl => $"{Configuration.GetApiServerAddress()}FileUpload/RemoveFile";
     private BitFileUpload bitFileUpload;
     private BitFileUpload bitFileUploadWithBrowseFile;
 

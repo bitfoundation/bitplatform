@@ -82,6 +82,11 @@ public partial class BitFileUpload : IDisposable
     [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
 
     /// <summary>
+    /// The message shown for failed file removes.
+    /// </summary>
+    [Parameter] public string FailedRemoveMessage { get; set; } = "File remove failed";
+
+    /// <summary>
     /// Enables multi-file select and upload.
     /// </summary>
     [Parameter] public bool IsMultiSelect { get; set; }
@@ -539,6 +544,8 @@ public partial class BitFileUpload : IDisposable
             url = AddQueryString(url, RemoveRequestQueryStrings);
 
             using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+
+            request.Headers.Add("BIT_FILE_ID", fileInfo.FileId);
 
             foreach (var header in RemoveRequestHttpHeaders)
             {

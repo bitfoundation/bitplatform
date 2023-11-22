@@ -45,7 +45,9 @@ public partial class FileUploadController : AppControllerBase
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    public async Task<IActionResult> UploadChunkedFile(IFormFile file, [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadChunkedFile(IFormFile file,
+                                                       [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId,
+                                                       CancellationToken cancellationToken)
     {
         if (file is null)
         {
@@ -62,7 +64,7 @@ public partial class FileUploadController : AppControllerBase
 
         var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{file.FileName}");
 
-        using var targetStream = System.IO.File.Exists(path) 
+        using var targetStream = System.IO.File.Exists(path)
             ? System.IO.File.Open(path, FileMode.Append)
             : System.IO.File.Create(path);
 
@@ -74,9 +76,10 @@ public partial class FileUploadController : AppControllerBase
 
 
     [HttpDelete]
-    public IActionResult RemoveFile(string fileName)
+    public IActionResult RemoveFile(string fileName,
+                                    [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId)
     {
-        var path = Path.Combine(_settings.UploadPath, fileName);
+        var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{fileName}");
 
         if (!System.IO.File.Exists(path))
         {
