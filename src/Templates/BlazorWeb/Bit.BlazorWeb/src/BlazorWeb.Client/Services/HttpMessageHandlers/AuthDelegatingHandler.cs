@@ -37,7 +37,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
 
                 await authManager.RefreshToken();
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await jsRuntime.GetLocalStorage("access_token"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", (await jsRuntime.GetLocalStorage("access_token")) ?? throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
 
                 return await base.SendAsync(request, cancellationToken);
             }
