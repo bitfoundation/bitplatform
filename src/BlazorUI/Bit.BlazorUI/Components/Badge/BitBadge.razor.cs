@@ -30,14 +30,12 @@ public partial class BitBadge
     /// <summary>
     /// Applies a border around the badge.
     /// </summary>
-    [Parameter]
-    public bool Bordered { get; set; }
+    [Parameter] public bool Bordered { get; set; }
 
     /// <summary>
     /// Child content of component, the content that the badge will apply to.
     /// </summary>
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitBadge.
@@ -63,32 +61,27 @@ public partial class BitBadge
     /// <summary>
     /// Content you want inside the badge. Supported types are string and integer.
     /// </summary>
-    [Parameter]
-    public object? Content { get; set; }
+    [Parameter] public object? Content { get; set; }
 
     /// <summary>
     /// Reduces the size of the badge and hide any of its content.
     /// </summary>
-    [Parameter]
-    public bool Dot { get; set; }
+    [Parameter] public bool Dot { get; set; }
 
     /// <summary>
     /// The visibility of the badge.
     /// </summary>
-    [Parameter]
-    public bool Hidden { get; set; }
+    [Parameter] public bool Hidden { get; set; }
 
     /// <summary>
     /// Sets the Icon to use in the badge.
     /// </summary>
-    [Parameter]
-    public string? Icon { get; set; }
+    [Parameter] public string? Icon { get; set; }
 
     /// <summary>
     /// Max value to show when content is integer type.
     /// </summary>
-    [Parameter]
-    public int Max { get; set; } = 99;
+    [Parameter] public int Max { get; set; } = 99;
 
     /// <summary>
     /// Button click event if set.
