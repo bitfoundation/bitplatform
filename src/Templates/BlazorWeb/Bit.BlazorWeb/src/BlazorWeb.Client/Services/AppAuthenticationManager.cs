@@ -17,23 +17,18 @@ public partial class AppAuthenticationManager : AuthenticationStateProvider
 
         await _jsRuntime.StoreAuthToken(result!, signInModel.RememberMe);
 
-        await RaiseAuthenticationStateHasChanged();
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task SignOut()
     {
         await _jsRuntime.RemoveAuthTokens();
-        await RaiseAuthenticationStateHasChanged();
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task RefreshToken()
     {
         await _jsRuntime.RemoveCookie("access_token");
-        await RaiseAuthenticationStateHasChanged();
-    }
-
-    public async Task RaiseAuthenticationStateHasChanged()
-    {
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
