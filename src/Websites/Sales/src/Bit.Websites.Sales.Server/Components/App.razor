@@ -9,9 +9,9 @@
     <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes." />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=RenderModeProvider.Current />
-    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     <style>
         * {
             box-sizing: border-box;
@@ -33,11 +33,11 @@
         }
 
     </style>
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
-    <link rel="stylesheet" href="styles/app.css" />
-    <link rel="stylesheet" href="Bit.Websites.Sales.Client.bundle.scp.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="styles/app.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Sales.Client.bundle.scp.css" />
 </head>
 
 <body>
@@ -46,9 +46,9 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <script src="_framework/blazor.web.js"></script>
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
-        <script src="scripts/app.js"></script>
+        <Script src="_framework/blazor.web.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
     }
 </body>
 
