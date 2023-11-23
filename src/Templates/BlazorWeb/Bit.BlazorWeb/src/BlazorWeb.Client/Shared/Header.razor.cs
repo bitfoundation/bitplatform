@@ -9,7 +9,7 @@ public partial class Header : IDisposable
 
     protected override async Task OnInitAsync()
     {
-        AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+        AuthenticationManager.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
         _isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -47,7 +47,7 @@ public partial class Header : IDisposable
     {
         if (_disposed) return;
 
-        AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        AuthenticationManager.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
 
         _disposed = true;
     }

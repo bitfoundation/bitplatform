@@ -9,13 +9,9 @@ public partial class ResetPasswordPage
     private BitMessageBarType _resetPasswordMessageType;
     private ResetPasswordRequestDto _resetPasswordModel = new();
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? Email { get; set; }
+    [Parameter][SupplyParameterFromQuery] public string? Email { get; set; }
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? Token { get; set; }
+    [Parameter][SupplyParameterFromQuery] public string? Token { get; set; }
 
     protected override async Task OnInitAsync()
     {

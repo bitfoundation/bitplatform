@@ -16,9 +16,7 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await JSRuntime.RemoveAuthTokens();
-
-        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await AuthenticationManager.SignOut();
 
         await CloseModal();
     }

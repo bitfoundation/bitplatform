@@ -24,10 +24,7 @@ public partial class NotAuthorizedComponent
 
         if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("refresh_token=false", StringComparison.InvariantCulture) is null or false)
         {
-            // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
-            // To ensure this process, consider removing the access_token, prompting the AuthenticationStateProvider to initiate a refresh automatically.
-            await JSRuntime.RemoveCookie("access_token");
-            await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+            await AuthenticationManager.RefreshToken();
 
             if ((await AuthenticationStateTask).User.IsAuthenticated())
             {
@@ -50,9 +47,7 @@ public partial class NotAuthorizedComponent
 
     private async Task SignIn()
     {
-        await JSRuntime.RemoveAuthTokens();
-
-        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await AuthenticationManager.SignOut();
 
         RedirectToSignInPage();
     }

@@ -65,6 +65,7 @@ public partial class ProductsPage
             }
             catch (Exception exp)
             {
+                ExceptionHandler.Handle(exp);
                 return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
             }
             finally

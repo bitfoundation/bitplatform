@@ -15,11 +15,9 @@ public partial class DeleteAccountConfirmModal
 
     private async Task DeleteAccount()
     {
-        await HttpClient.DeleteAsync("User/Delete");
+        await HttpClient.DeleteAsync("User/Delete");        
 
-        await JSRuntime.RemoveAuthTokens();
-
-        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await AuthenticationManager.SignOut();
 
         await CloseModal();
     }
