@@ -36,6 +36,8 @@ public static class IServiceCollectionExtensions
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+
+        services.AddMvc();
     }
 
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
