@@ -10,31 +10,31 @@
     <meta name="theme-color">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The BlazorWeb is built with ASP.NET Core, Identity, Web API, EF Core and Blazor." />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=RenderModeProvider.Current />
-    <link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary">
 
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     @*#if (sample == "AdminPanel")*@
-    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     @*#endif*@
-    <link rel="stylesheet" href="styles/app.css" />
-    <link rel="stylesheet" href="BlazorWeb.Client.bundle.scp.css" />
+    <Link rel="stylesheet" href="styles/app.css" />
+    <Link rel="stylesheet" href="BlazorWeb.Client.bundle.scp.css" />
 
     <Routes @rendermode=RenderModeProvider.Current />
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <script src="_framework/blazor.web.js"></script>
-        <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
-        <script src="scripts/app.js"></script>
+        <Script src="_framework/blazor.web.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
         @*#if (sample == "AdminPanel")*@
-        <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
         @*#endif*@
     }
 </body>
