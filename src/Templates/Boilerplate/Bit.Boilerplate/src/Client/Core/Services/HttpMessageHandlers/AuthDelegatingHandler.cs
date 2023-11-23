@@ -38,7 +38,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
                 // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
                 await authManager.RefreshToken();
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", (await jsRuntime.GetLocalStorage("access_token")) ?? throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await jsRuntime.GetLocalStorage("access_token"));
 
                 return await base.SendAsync(request, cancellationToken);
             }
