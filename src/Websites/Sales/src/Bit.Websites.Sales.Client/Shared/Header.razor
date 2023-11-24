@@ -18,7 +18,7 @@
     </div>
 </header>
 
-@if (_isMenuOpen)
+@if (isMenuOpen)
 {
     <section class="menu-shadow" id="menuShadow" @onclick="CloseMenu">
         <div class="menu" id="menu" @onclick:stopPropagation="true">

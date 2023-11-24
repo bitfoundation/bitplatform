@@ -11,9 +11,9 @@
             {
                 <BitMessageBar MessageBarType="@BitMessageBarType.Success">@successMessage</BitMessageBar>
             }
-            else if (string.IsNullOrWhiteSpace(_erorMessage) is false)
+            else if (string.IsNullOrWhiteSpace(errorMessage) is false)
             {
-                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@_erorMessage</BitMessageBar>
+                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@errorMessage</BitMessageBar>
             }
 
             <DataAnnotationsValidator />

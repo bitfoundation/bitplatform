@@ -16,11 +16,11 @@ public partial class ExceptionHandler : IExceptionHandler
 #else
         if (exception is KnownException knownException)
         {
-            _ = _messageBoxService.Show(knownException.Message, "Error");
+            _ = messageBoxService.Show(knownException.Message, "Error");
         }
         else
         {
-            _ = _messageBoxService.Show("Unknown error", "Error");
+            _ = messageBoxService.Show("Unknown error", "Error");
         }
 #endif
     }

@@ -19,31 +19,31 @@
             </BitTypography>
 
             <div class="contact-container">
-                <EditForm Model="_contactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
+                <EditForm Model="contactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
                     <DataAnnotationsValidator />
 
                     <BitTypography Variant="BitTypographyVariant.H5" Gutter>
                         Have any feedbacks?
                         <BitIconButton IconName="@BitIconName.Reset" Title="Reset form"
                                        ButtonType="BitButtonType.Button"
-                                       OnClick="() => _contactUsModel = new()">Reset</BitIconButton>
+                                       OnClick="() => contactUsModel = new()">Reset</BitIconButton>
                     </BitTypography>
 
-                    <BitTextField @bind-Value="@_contactUsModel.Email"
+                    <BitTextField @bind-Value="@contactUsModel.Email"
                                   Label="Email"
                                   Class="contact-text-field"
                                   Placeholder="Enter your email address" />
-                    <ValidationMessage For="() => _contactUsModel.Email" />
+                    <ValidationMessage For="() => contactUsModel.Email" />
 
-                    <BitTextField @bind-Value="@_contactUsModel.Message"
+                    <BitTextField @bind-Value="@contactUsModel.Message"
                                   Label="Message"
                                   IsRequired=true
                                   IsMultiline=true
                                   Class="contact-text-field"
                                   Placeholder="Enter your message" />
-                    <ValidationMessage For="() => _contactUsModel.Message" />
+                    <ValidationMessage For="() => contactUsModel.Message" />
 
-                    <BitButton IsLoading="_isSending" ButtonType="BitButtonType.Submit">Send</BitButton>
+                    <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">Send</BitButton>
                 </EditForm>
             </div>
         </div>

@@ -14,7 +14,7 @@ public partial class ExceptionHandler : IExceptionHandler
 #if DEBUG
             exception.ToString();
 #else
-            _localizer[nameof(AppStrings.UnknownException)];
+            localizer[nameof(AppStrings.UnknownException)];
 #endif
 
 #if DEBUG

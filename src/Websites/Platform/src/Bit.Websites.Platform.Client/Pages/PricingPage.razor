@@ -111,39 +111,39 @@
         </div>
     </section>
 
-    <BitModal IsOpen=@_isBuyModalOpen Classes="@(new() { Content = "modal-container" })">
+    <BitModal IsOpen=@isBuyModalOpen Classes="@(new() { Content = "modal-container" })">
         <BitIconButton Class="close-btn" OnClick=@WrapHandled(CloseModal) IconName="@BitIconName.ChromeClose" />
-        @if (_isSent)
+        @if (isSent)
         {
             <div class="modal-message-container">
                 <BitTypography Variant="BitTypographyVariant.H3" Gutter>Thanks</BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Your request has been sent</BitTypography>
                 <BitTypography Variant="BitTypographyVariant.Body1">We will contact you soon</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.Body1"><b>@_buyPackageModel.Email</b></BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1"><b>@buyPackageModel.Email</b></BitTypography>
             </div>
         }
         else
         {
 
-            <EditForm Model="_buyPackageModel" OnValidSubmit="SendMessage" class="form">
+            <EditForm Model="buyPackageModel" OnValidSubmit="SendMessage" class="form">
                 <DataAnnotationsValidator />
-                <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@_selectedPackageTitle</span> Package</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H4" Gutter>@_selectedPackagePrice</BitTypography>
-                <BitTextField @bind-Value="@_buyPackageModel.Email"
+                <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@selectedPackageTitle</span> Package</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter>@selectedPackagePrice</BitTypography>
+                <BitTextField @bind-Value="@buyPackageModel.Email"
                               Label="Email"
                               IsRequired="true"
                               Class="modal-text-field"
                               Placeholder="Enter your email address" />
-                <ValidationMessage For="() => _buyPackageModel.Email" />
+                <ValidationMessage For="() => buyPackageModel.Email" />
 
-                <BitTextField @bind-Value="@_buyPackageModel.Message"
+                <BitTextField @bind-Value="@buyPackageModel.Message"
                               Label="Message"
                               IsMultiline="true"
                               Class="modal-text-field"
                               Placeholder="Enter your message" />
-                <ValidationMessage For="() => _buyPackageModel.Message" />
+                <ValidationMessage For="() => buyPackageModel.Message" />
 
-                <BitButton ButtonType="BitButtonType.Submit" IsLoading="_isSending">Send</BitButton>
+                <BitButton ButtonType="BitButtonType.Submit" IsLoading="isSending">Send</BitButton>
             </EditForm>
         }
     </BitModal>
