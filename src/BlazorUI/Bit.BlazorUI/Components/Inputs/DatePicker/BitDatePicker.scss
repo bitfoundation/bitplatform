@@ -217,11 +217,6 @@
         font-size: spacing(4);
         margin: spacing(0.25);
     }
-
-    .bit-dtp-cbn {
-        display: block;
-        max-width: spacing(5);
-    }
 }
 
 .bit-dtp-cac {
@@ -627,7 +622,6 @@
     box-shadow: none;
     box-sizing: border-box;
     align-items: center;
-    align-content: center;
     justify-content: center;
     flex: 0.85;
     gap: spacing(1);
@@ -636,7 +630,6 @@
 .bit-dtp-tpr {
     display: flex;
     flex-direction: column;
-    align-content: center;
     align-items: center;
     justify-content: space-between;
     gap: spacing(0.25);
@@ -645,7 +638,6 @@
 .bit-dtp-tdv {
     display: flex;
     justify-content: center;
-    align-content: center;
     align-items: center;
     font-size: spacing(2.5);
     font-weight: $typography-font-weight;
@@ -687,14 +679,6 @@
         border-bottom: $shape-border-width $shape-border-style $color-action-active-border-primary;
         outline: none;
     }
-}
-
-.bit-dtp-cbn {
-    position: absolute;
-    top: spacing(1.5);
-    right: spacing(1.5);
-    max-width: spacing(5.5);
-    max-height: spacing(5.5);
 }
 
 .bit-dtp-bam,
