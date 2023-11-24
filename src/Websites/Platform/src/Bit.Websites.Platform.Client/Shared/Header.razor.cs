@@ -4,15 +4,15 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class Header : IDisposable
 {
-    private string _currentUrl = string.Empty;
-    private bool _isHeaderMenuOpen;
+    private string currentUrl = string.Empty;
+    private bool isHeaderMenuOpen;
 
-    [AutoInject] public NavManuService _navManuService = default!;
-    [AutoInject] public BitThemeManager _bitThemeManager  = default!;
+    [AutoInject] public NavManuService navManuService = default!;
+    [AutoInject] public BitThemeManager bitThemeManager  = default!;
 
     protected override async Task OnInitAsync()
     {
-        _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         NavigationManager.LocationChanged += OnLocationChanged;
 
         await base.OnInitAsync();
@@ -20,22 +20,22 @@ public partial class Header : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        _currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
         StateHasChanged();
     }
 
     private void ToggleMenu()
     {
-        _navManuService.ToggleMenu();
+        navManuService.ToggleMenu();
     }
 
     private string GetActiveRouteName()
     {
-        if (_currentUrl.Contains("templates"))
+        if (currentUrl.Contains("templates"))
         {
             return "Products & Services";
         }
-        else return _currentUrl switch
+        else return currentUrl switch
         {
             Urls.HomePage => "Home",
             Urls.Components => "Products & Services",
@@ -53,23 +53,23 @@ public partial class Header : IDisposable
 
     private bool IsProductsServicesActive()
     {
-        return (_currentUrl.Contains("templates") ||
-           _currentUrl == Urls.Components ||
-           _currentUrl == Urls.CloudHostingSolutins ||
-           _currentUrl == Urls.Support ||
-           _currentUrl == Urls.Academy);
+        return (currentUrl.Contains("templates") ||
+           currentUrl == Urls.Components ||
+           currentUrl == Urls.CloudHostingSolutins ||
+           currentUrl == Urls.Support ||
+           currentUrl == Urls.Academy);
     }
 
     private async Task ToggleHeaderMenu()
     {
-        _isHeaderMenuOpen = !_isHeaderMenuOpen;
-        await JSRuntime.ToggleBodyOverflow(_isHeaderMenuOpen);
+        isHeaderMenuOpen = !isHeaderMenuOpen;
+        await JSRuntime.ToggleBodyOverflow(isHeaderMenuOpen);
         StateHasChanged();
     }
 
     private async Task ToggleTheme()
     {
-        var newTheme = await _bitThemeManager.ToggleDarkLightAsync();
+        var newTheme = await bitThemeManager.ToggleDarkLightAsync();
         var isDark = newTheme.Contains("dark");
     }
 

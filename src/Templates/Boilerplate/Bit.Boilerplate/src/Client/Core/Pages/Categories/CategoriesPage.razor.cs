@@ -6,20 +6,20 @@ namespace Boilerplate.Client.Core.Pages.Categories;
 [Authorize]
 public partial class CategoriesPage
 {
-    private bool _isLoading;
-    private string _categoryNameFilter = string.Empty;
+    private bool isLoading;
+    private string categoryNameFilter = string.Empty;
 
-    private ConfirmMessageBox _confirmMessageBox = default!;
-    private BitDataGrid<CategoryDto>? _dataGrid;
-    private BitDataGridItemsProvider<CategoryDto> _categoriesProvider = default!;
-    private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };
+    private ConfirmMessageBox confirmMessageBox = default!;
+    private BitDataGrid<CategoryDto>? dataGrid;
+    private BitDataGridItemsProvider<CategoryDto> categoriesProvider = default!;
+    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
     private string CategoryNameFilter
     {
-        get => _categoryNameFilter;
+        get => categoryNameFilter;
         set
         {
-            _categoryNameFilter = value;
+            categoryNameFilter = value;
             _ = RefreshData();
         }
     }
@@ -33,9 +33,9 @@ public partial class CategoriesPage
 
     private void PrepareGridDataProvider()
     {
-        _categoriesProvider = async req =>
+        categoriesProvider = async req =>
         {
-            _isLoading = true;
+            isLoading = true;
 
             try
             {
@@ -46,9 +46,9 @@ public partial class CategoriesPage
                     { "$skip", req.StartIndex }
                 };
 
-                if (string.IsNullOrEmpty(_categoryNameFilter) is false)
+                if (string.IsNullOrEmpty(categoryNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,'{_categoryNameFilter}')");
+                    query.Add("$filter", $"contains(Name,'{categoryNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
@@ -69,7 +69,7 @@ public partial class CategoriesPage
             }
             finally
             {
-                _isLoading = false;
+                isLoading = false;
 
                 StateHasChanged();
             }
@@ -78,7 +78,7 @@ public partial class CategoriesPage
 
     private async Task RefreshData()
     {
-        await _dataGrid!.RefreshDataAsync();
+        await dataGrid!.RefreshDataAsync();
     }
 
     private void CreateCategory()
@@ -93,7 +93,7 @@ public partial class CategoriesPage
 
     private async Task DeleteCategory(CategoryDto category)
     {
-        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty),
+        var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty),
                                                      Localizer[nameof(AppStrings.DeleteCategory)]);
 
         if (confirmed)

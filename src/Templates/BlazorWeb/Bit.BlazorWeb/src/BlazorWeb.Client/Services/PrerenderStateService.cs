@@ -6,19 +6,19 @@ namespace BlazorWeb.Client.Services;
 
 public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
-    private PersistingComponentStateSubscription? _subscription;
-    private readonly PersistentComponentState _applicationState;
-    private readonly ConcurrentDictionary<string, object?> _values = new();
+    private PersistingComponentStateSubscription? subscription;
+    private readonly PersistentComponentState applicationState;
+    private readonly ConcurrentDictionary<string, object?> values = new();
 
-    public PrerenderStateService(PersistentComponentState applicationState)
+    public PrerenderStateService(PersistentComponentState state)
     {
-        _applicationState = applicationState;
-        _subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.Current);
+        applicationState = state;
+        subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.Current);
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (_applicationState.TryTakeFromJson(key, out T? value))
+        if (applicationState.TryTakeFromJson(key, out T? value))
             return value;
         var result = await factory();
         Persist(key, result);
@@ -27,18 +27,18 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 
     void Persist<T>(string key, T value)
     {
-        _values.TryRemove(key, out object? _);
-        _values.TryAdd(key, value);
+        values.TryRemove(key, out object? _);
+        values.TryAdd(key, value);
     }
 
     async Task PersistAsJson()
     {
-        foreach (var item in _values)
-            _applicationState.PersistAsJson(item.Key, item.Value);
+        foreach (var item in values)
+            applicationState.PersistAsJson(item.Key, item.Value);
     }
 
     public async ValueTask DisposeAsync()
     {
-        _subscription?.Dispose();
+        subscription?.Dispose();
     }
 }

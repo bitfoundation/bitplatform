@@ -5,7 +5,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.CategoriesPageTitle)]</PageTitle>
 
 <div class="page-container">
-    @if (_isLoading)
+    @if (isLoading)
     {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="grid">
-        <BitDataGrid @ref="_dataGrid" ItemsProvider="_categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="_pagination">
+        <BitDataGrid @ref="dataGrid" ItemsProvider="categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="pagination">
             <BitDataGridPropertyColumn Class="id-col" Sortable="true" Property="c => c!.Id" Align="BitDataGridAlign.Left"
                                        Title="@Localizer[nameof(AppStrings.Id)]" IsDefaultSort="BitDataGridSortDirection.Ascending" />
             <BitDataGridPropertyColumn Sortable="true" Property="c => c!.Name" Title="@Localizer[nameof(AppStrings.Name)]" Align="BitDataGridAlign.Left">
@@ -38,8 +38,8 @@
                                OnClick="WrapHandled(() => DeleteCategory(category!))" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>
-        <BitDataGridPaginator Value="_pagination" />
+        <BitDataGridPaginator Value="pagination" />
     </div>
 </div>
 
-<ConfirmMessageBox @ref=_confirmMessageBox />
+<ConfirmMessageBox @ref=confirmMessageBox />

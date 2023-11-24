@@ -9,17 +9,17 @@ public partial class ChangePrerenderResponseStatusCode : AppComponentBase
 {
     [Parameter] public HttpStatusCode StatusCode { get; set; }
 
-    private static readonly Type? _httpContextAccessorType = Type.GetType("Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.Abstractions");
+    private static readonly Type? httpContextAccessorType = Type.GetType("Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.Abstractions");
 
-    [AutoInject] public IServiceProvider _serviceProvider = default!;
+    [AutoInject] public IServiceProvider serviceProvider = default!;
 
     protected override Task OnInitAsync()
     {
-        if (_httpContextAccessorType is not null && BlazorModeDetector.Current.IsBlazorWebAssembly())
+        if (httpContextAccessorType is not null && BlazorModeDetector.Current.IsBlazorWebAssembly())
         {
-            var httpContextAccessor = _serviceProvider.GetService(_httpContextAccessorType);
+            var httpContextAccessor = serviceProvider.GetService(httpContextAccessorType);
 
-            var httpContextProperty = _httpContextAccessorType.GetProperty("HttpContext")!;
+            var httpContextProperty = httpContextAccessorType.GetProperty("HttpContext")!;
 
             var httpContext = httpContextProperty.GetValue(httpContextAccessor)!;
 

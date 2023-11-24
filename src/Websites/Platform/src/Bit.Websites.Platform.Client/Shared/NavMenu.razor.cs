@@ -2,11 +2,11 @@
 
 public partial class NavMenu : IDisposable
 {
-    private bool _disposed;
-    private bool _isNavOpen = false;
-    private string _searchText = string.Empty;
-    private List<BitNavItem> _filteredNavItems = default!;
-    private readonly List<BitNavItem> _allNavItems = new()
+    private bool disposed;
+    private bool isNavOpen = false;
+    private string searchText = string.Empty;
+    private List<BitNavItem> filteredNavItems = default!;
+    private readonly List<BitNavItem> allNavItems = new()
     {
         new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = new string[] { "/admin-panel/overview", "/todo-template/overview" } },
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites", AdditionalUrls = new string[] { "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites" } },
@@ -25,14 +25,14 @@ public partial class NavMenu : IDisposable
     };
 
 
-    [AutoInject] private NavManuService _navMenuService = default!;
+    [AutoInject] private NavManuService navMenuService = default!;
 
 
     public string CurrentUrl { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
-        _navMenuService.OnToggleMenu += ToggleMenu;
+        navMenuService.OnToggleMenu += ToggleMenu;
 
         HandleOnClear();
 
@@ -44,9 +44,9 @@ public partial class NavMenu : IDisposable
     {
         try
         {
-            _isNavOpen = !_isNavOpen;
+            isNavOpen = !isNavOpen;
 
-            await JSRuntime.ToggleBodyOverflow(_isNavOpen);
+            await JSRuntime.ToggleBodyOverflow(isNavOpen);
         }
         catch (Exception ex)
         {
@@ -60,32 +60,32 @@ public partial class NavMenu : IDisposable
 
     private void HandleOnClear()
     {
-        _filteredNavItems = _allNavItems;
+        filteredNavItems = allNavItems;
     }
 
     private void HandleValueChanged(string text)
     {
-        _searchText = text;
-        _filteredNavItems = _allNavItems;
+        searchText = text;
+        filteredNavItems = allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        var flatNavLinkList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-        _filteredNavItems = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        var flatNavLinkList = Flatten(allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        filteredNavItems = flatNavLinkList.FindAll(link => link.Text.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private async Task HandleOnItemClick(BitNavItem item)
     {
         if (string.IsNullOrWhiteSpace(item.Url)) return;
 
-        _searchText = string.Empty;
-        _filteredNavItems = _allNavItems;
+        searchText = string.Empty;
+        filteredNavItems = allNavItems;
 
         await ToggleMenu();
     }
 
     private string GetNavMenuClass()
     {
-        if (string.IsNullOrEmpty(_searchText))
+        if (string.IsNullOrEmpty(searchText))
         {
             return "side-nav";
         }
@@ -99,10 +99,10 @@ public partial class NavMenu : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (disposed) return;
 
-        _navMenuService.OnToggleMenu -= ToggleMenu;
+        navMenuService.OnToggleMenu -= ToggleMenu;
 
-        _disposed = true;
+        disposed = true;
     }
 }

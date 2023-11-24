@@ -14,7 +14,7 @@ else if (ErrorContent is null)
             <img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
         </div>
         <h1 class="title">Oops, something went wrong...</h1>
-        @if (_showException)
+        @if (showException)
         {
             <div class="exception">@CurrentException?.ToString()</div>
         }

@@ -8,13 +8,13 @@
         <div class="subtitle">@Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]</div>
     </div>
     <div class="card-body">
-        @if (_isLoading)
+        @if (isLoading)
         {
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         }
         else
         {
-            <BitChart Config="_config" />
+            <BitChart Config="config" />
         }
     </div>
 </div>

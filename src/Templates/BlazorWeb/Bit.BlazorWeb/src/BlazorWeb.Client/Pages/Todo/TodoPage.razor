@@ -14,31 +14,31 @@
     <div class="todo-content">
         <h1 class="main-title">@Localizer[nameof(AppStrings.TodoTitle)]</h1>
         <div class="add-todo-container">
-            <BitTextField @bind-Value="_newTodoTitle"
+            <BitTextField @bind-Value="newTodoTitle"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
                           Class="add-todo-input" />
-            <BitButton IsLoading="_isAdding"
+            <BitButton IsLoading="isAdding"
                        OnClick="WrapHandled(AddTodoItem)"
                        Class="add-todo-button"
                        Title="@Localizer[nameof(AppStrings.Add)]"
                        AriaLabel="@Localizer[nameof(AppStrings.Add)]"
-                       IsEnabled="(string.IsNullOrWhiteSpace(_newTodoTitle) is false)">
+                       IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
                 @Localizer[nameof(AppStrings.Add)]
             </BitButton>
         </div>
 
         <div class="todo-list-container">
             <div class="filter-container">
-                <BitPivot SelectedKey="@_selectedFilter" SelectedKeyChanged="FilterTodoItems">
+                <BitPivot SelectedKey="@selectedFilter" SelectedKeyChanged="FilterTodoItems">
                     <BitPivotItem Key="@nameof(AppStrings.All)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.All)]" />
                     <BitPivotItem Key="@nameof(AppStrings.Active)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Active)]" />
                     <BitPivotItem Key="@nameof(AppStrings.Completed)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Completed)]" />
                 </BitPivot>
                 <div class="sort-drp-container">
                     <BitDropdown Class="sort-todo-drp"
-                                 Items="_sortItems"
+                                 Items="sortItems"
                                  OnSelectItem="(BitDropdownItem<string> item) => SortTodoItems(item)"
-                                 DefaultValue="@_sortItems[0].Value"
+                                 DefaultValue="@sortItems[0].Value"
                                  IsResponsive="true">
                         <CaretDownTemplate>
                             <BitIcon IconName="@BitIconName.Sort" Class="sort-todo-icn" />
@@ -48,7 +48,7 @@
             </div>
 
             <div class="todo-list">
-                @if (_isLoading)
+                @if (isLoading)
                 {
                     <div class="todo-list-spinner">
                         <BitSpinner />
@@ -56,7 +56,7 @@
                 }
                 else
                 {
-                    if (_viewTodoItems?.Any() is false or null)
+                    if (viewTodoItems?.Any() is false or null)
                     {
                         <div class="todo-list--empty-state">
                             <img src="/images/backgrounds/empty-todo-list-bg.svg">
@@ -66,13 +66,13 @@
                     else
                     {
                         <BitBasicList Style="width: 100%; height: inherit"
-                                      Items="_viewTodoItems"
+                                      Items="viewTodoItems"
                                       EnableVirtualization="true">
                             <RowTemplate Context="todo">
                                 <div class="todo-item@(todo.IsInEditMode ? " edit-mode" : "")" role="listitem" @key=@todo.Id>
                                     @if (todo.IsInEditMode)
                                     {
-                                        <BitTextField Class="todo-input" @bind-Value="_underEditTodoItemTitle" />
+                                        <BitTextField Class="todo-input" @bind-Value="underEditTodoItemTitle" />
                                         <div class="edit-btn-group">
                                             <BitButton Title="@Localizer[nameof(AppStrings.Edit)]"
                                                        AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
@@ -122,4 +122,4 @@
     </div>
 </div>
 
-<ConfirmMessageBox @ref=_confirmMessageBox />
+<ConfirmMessageBox @ref=confirmMessageBox />

@@ -5,12 +5,12 @@
 
 <div class="page-container">
     <div class="content-container profile-panel">
-        @if (string.IsNullOrEmpty(_editProfileMessage) is false)
+        @if (string.IsNullOrEmpty(editProfileMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@_editProfileMessageType"
-                           OnDismiss="() => _editProfileMessage = null">
-                @_editProfileMessage
+                           MessageBarType="@editProfileMessageType"
+                           OnDismiss="() => editProfileMessage = null">
+                @editProfileMessage
             </BitMessageBar>
         }
 
@@ -18,7 +18,7 @@
             @Localizer[nameof(AppStrings.EditProfileTitle)]
         </h1>
 
-        @if (_isLoading)
+        @if (isLoading)
         {
             <div class="loading-container">
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -27,17 +27,17 @@
         else
         {
             <div class="form-profile-container">
-                <BitPersona ImageUrl="@(_user.ProfileImageName is not null ? $"{_profileImageUrl}&file={_user.ProfileImageName}" : null)"
+                <BitPersona ImageUrl="@(user.ProfileImageName is not null ? $"{profileImageUrl}&file={user.ProfileImageName}" : null)"
                             Size=@BitPersonaSize.Size72
-                            Text="@_user.FullName"
-                            SecondaryText="@_user.UserName"
+                            Text="@user.FullName"
+                            SecondaryText="@user.UserName"
                             Presence="BitPersonaPresenceStatus.Online" />
             </div>
 
             <div class="form-input-container">
-                @if (_user.ProfileImageName is not null)
+                @if (user.ProfileImageName is not null)
                 {
-                    <BitButton IsLoading="_isRemoving"
+                    <BitButton IsLoading="isRemoving"
                                ButtonStyle="BitButtonStyle.Standard"
                                OnClick="RemoveProfileImage">
                         @Localizer[nameof(AppStrings.Remove)]
@@ -45,38 +45,38 @@
                 }
 
                 <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
-                <BitFileUpload @onfocus="() => _profileImageError = null"
+                <BitFileUpload @onfocus="() => profileImageError = null"
                                Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
                                Accept="image/*"
                                AutoUploadEnabled="true"
-                               UploadUrl="@_profileImageUploadUrl"
+                               UploadUrl="@profileImageUploadUrl"
                                OnUploadComplete="WrapHandled(RefreshProfileData)"
-                               OnUploadFailed="() => _profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
+                               OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
                                MaxSize="1024 * 1024 * 10"
                                ChunkedUploadEnabled="false" />
-                <div class="form-input-error">@_profileImageError</div>
+                <div class="form-input-error">@profileImageError</div>
             </div>
 
-            <EditForm Model="_userToEdit" OnValidSubmit="WrapHandled(DoSave)" class="edit-profile-form">
+            <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" class="edit-profile-form">
                 <AppDataAnnotationsValidator />
 
                 <div class="form-input-container">
-                    <BitTextField @bind-Value="_userToEdit.FullName"
+                    <BitTextField @bind-Value="userToEdit.FullName"
                                   Label="@Localizer[nameof(AppStrings.FullName)]"
                                   Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
-                    <ValidationMessage For="@(() => _userToEdit.FullName)" />
+                    <ValidationMessage For="@(() => userToEdit.FullName)" />
                 </div>
 
                 <div class="form-input-container">
-                    <BitDatePicker @bind-Value="_userToEdit.BirthDate"
+                    <BitDatePicker @bind-Value="userToEdit.BirthDate"
                                    Label="@Localizer[nameof(AppStrings.BirthDate)]"
                                    Class="edit-profile-dtp"
                                    Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" GoToToday="@Localizer[nameof(AppStrings.GoToToday)]" />
-                    <ValidationMessage For="@(() => _userToEdit.BirthDate)" />
+                    <ValidationMessage For="@(() => userToEdit.BirthDate)" />
                 </div>
 
                 <div class="form-choice-container">
-                    <BitChoiceGroup @bind-Value="_userToEdit.GenderAsString"
+                    <BitChoiceGroup @bind-Value="userToEdit.GenderAsString"
                                     TItem="BitChoiceGroupOption<string?>" TValue="string"
                                     LayoutFlow="BitLayoutFlow.Horizontal"
                                     Label="@Localizer[nameof(AppStrings.Gender)]">
@@ -92,7 +92,7 @@
                     </BitChoiceGroup>
                 </div>
 
-                <BitButton IsLoading="_isSaving"
+                <BitButton IsLoading="isSaving"
                            ButtonType="BitButtonType.Submit"
                            ButtonStyle="BitButtonStyle.Primary"
                            Title="@Localizer[nameof(AppStrings.Save)]"
@@ -119,10 +119,10 @@
                    Style=" color: #dc0000; border-color: #dc0000"
                    Title="@Localizer[nameof(AppStrings.DeleteAccount)]"
                    AriaLabel="@Localizer[nameof(AppStrings.DeleteAccount)]"
-                   OnClick="() => _isDeleteAccountConfirmModalOpen = true">
+                   OnClick="() => isDeleteAccountConfirmModalOpen = true">
             @Localizer[nameof(AppStrings.DeleteAccount)]
         </BitButton>
     </div>
 </div>
 
-<DeleteAccountConfirmModal @bind-IsOpen="_isDeleteAccountConfirmModalOpen" />
+<DeleteAccountConfirmModal @bind-IsOpen="isDeleteAccountConfirmModalOpen" />

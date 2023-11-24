@@ -5,12 +5,12 @@ namespace Boilerplate.Client.Core.Pages.Products;
 public partial class AddOrEditProductModal
 {
 
-    private bool _isOpen;
-    private bool _isLoading;
-    private bool _isSaving;
-    private ProductDto _product = new();
-    private List<BitDropdownItem<string>> _allCategoryList = [];
-    private string _selectedCategoyId = string.Empty;
+    private bool isOpen;
+    private bool isLoading;
+    private bool isSaving;
+    private ProductDto product = new();
+    private List<BitDropdownItem<string>> allCategoryList = [];
+    private string selectedCategoyId = string.Empty;
 
     [Parameter] public EventCallback OnSave { get; set; }
 
@@ -19,15 +19,15 @@ public partial class AddOrEditProductModal
         await LoadAllCategoriesAsync();
     }
 
-    public async Task ShowModal(ProductDto product)
+    public async Task ShowModal(ProductDto productToShow)
     {
         await InvokeAsync(() =>
         {
             _ = JSRuntime.SetBodyOverflow(true);
 
-            _isOpen = true;
-            _product = product;
-            _selectedCategoyId = (_product.CategoryId ?? 0).ToString();
+            isOpen = true;
+            product = productToShow;
+            selectedCategoyId = (productToShow.CategoryId ?? 0).ToString();
 
             StateHasChanged();
         });
@@ -35,7 +35,7 @@ public partial class AddOrEditProductModal
 
     private async Task LoadAllCategoriesAsync()
     {
-        _isLoading = true;
+        isLoading = true;
 
         try
         {
@@ -43,7 +43,7 @@ public partial class AddOrEditProductModal
                                         async () => await HttpClient.GetFromJsonAsync("Category/Get",
                                             AppJsonContext.Default.ListCategoryDto)) ?? [];
 
-            _allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
+            allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
             {
                 ItemType = BitDropdownItemType.Normal,
                 Text = c.Name ?? string.Empty,
@@ -52,34 +52,34 @@ public partial class AddOrEditProductModal
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private async Task Save()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isSaving = true;
+        isSaving = true;
 
         try
         {
-            if (_product.Id == 0)
+            if (product.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Product/Create", _product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PostAsJsonAsync("Product/Create", product, AppJsonContext.Default.ProductDto);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Product/Update", _product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PutAsJsonAsync("Product/Update", product, AppJsonContext.Default.ProductDto);
             }
 
-            _isOpen = false;
+            isOpen = false;
 
             await JSRuntime.SetBodyOverflow(false);
         }
         finally
         {
-            _isSaving = false;
+            isSaving = false;
 
             await OnSave.InvokeAsync();
         }
@@ -87,7 +87,7 @@ public partial class AddOrEditProductModal
 
     private async Task OnCloseClick()
     {
-        _isOpen = false;
+        isOpen = false;
 
         await JSRuntime.SetBodyOverflow(false);
     }

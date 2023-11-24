@@ -5,12 +5,12 @@
 
 <div class="page-container">
     <div class="form">
-        @if (string.IsNullOrEmpty(_resendLinkErrors ?? Errors) is false)
+        @if (string.IsNullOrEmpty(resendLinkErrors ?? Errors) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@_emailConfirmationMessageType"
-                           OnDismiss="() => _resendLinkErrors = Errors = null">
-                @(_resendLinkErrors ?? Errors)
+                           MessageBarType="@emailConfirmationMessageType"
+                           OnDismiss="() => resendLinkErrors = Errors = null">
+                @(resendLinkErrors ?? Errors)
             </BitMessageBar>
         }
 
@@ -37,7 +37,7 @@
                 @Localizer[nameof(AppStrings.InvalidConfirmationLinkMessage)]
             </div>
 
-            <BitButton IsLoading="_isLoading"
+            <BitButton IsLoading="isLoading"
                        Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"
                        Title="@Localizer[nameof(AppStrings.ResendEmail)]"

@@ -6,13 +6,13 @@
         <div class="subtitle">@Localizer[nameof(AppStrings.ProductsCountPerCategoryChartText)]</div>
     </div>
     <div class="card-body">
-        @if (_isLoading)
+        @if (isLoading)
         {
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
         }
         else
         {
-            <BitChart Config="_config" @ref="_chart" />
+            <BitChart Config="config" @ref="chart" />
         }
     </div>
 </div>

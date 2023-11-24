@@ -7,17 +7,17 @@ public partial class TelegramBotApiClient
 {
     private const int MAX_LENGTH_MESSAGE = 4096;
 
-    [AutoInject] private HttpClient _httpClient = default!;
-    [AutoInject] private AppSettings _appSettings = default!;
+    [AutoInject] private HttpClient httpClient = default!;
+    [AutoInject] private AppSettings appSettings = default!;
 
     public async Task SendMessageAsync(string message, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_appSettings.TelegramBotSettings.Token) || _appSettings.TelegramBotSettings.ChatIds.Length < 1 || string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(appSettings.TelegramBotSettings.Token) || appSettings.TelegramBotSettings.ChatIds.Length < 1 || string.IsNullOrEmpty(message))
         {
             return;
         }
 
-        foreach (var chatId in _appSettings.TelegramBotSettings.ChatIds)
+        foreach (var chatId in appSettings.TelegramBotSettings.ChatIds)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -40,8 +40,8 @@ public partial class TelegramBotApiClient
             parse_mode = "Markdown"
         };
         var json = JsonSerializer.Serialize(value: payload);
-        var apiUrl = new Uri(uriString: $"https://api.telegram.org/bot{_appSettings.TelegramBotSettings.Token}/sendMessage");
-        await _httpClient.PostAsync(requestUri: apiUrl,
+        var apiUrl = new Uri(uriString: $"https://api.telegram.org/bot{appSettings.TelegramBotSettings.Token}/sendMessage");
+        await httpClient.PostAsync(requestUri: apiUrl,
             content: new StringContent(content: json, encoding: Encoding.UTF8, mediaType: "application/json"), cancellationToken);
     }
 

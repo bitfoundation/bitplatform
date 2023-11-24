@@ -4,14 +4,14 @@ namespace Boilerplate.Server.Api.Services;
 
 public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
 {
-    [AutoInject] IStringLocalizer<IdentityStrings> _localizer = default!;
+    [AutoInject] IStringLocalizer<IdentityStrings> localizer = default!;
 
     IdentityError CreateIdentityError(string code, params object[] args)
     {
         return new()
         {
             Code = code,
-            Description = _localizer.GetString(code, args)
+            Description = localizer.GetString(code, args)
         };
     }
 

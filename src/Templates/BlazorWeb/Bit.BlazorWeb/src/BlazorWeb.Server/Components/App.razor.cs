@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using BlazorWeb.Client.Services;
+using Microsoft.AspNetCore.Components;
 
 namespace BlazorWeb.Server.Components;
 

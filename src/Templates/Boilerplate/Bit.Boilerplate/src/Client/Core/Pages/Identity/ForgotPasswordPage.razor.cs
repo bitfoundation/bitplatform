@@ -4,35 +4,35 @@ namespace Boilerplate.Client.Core.Pages.Identity;
 
 public partial class ForgotPasswordPage
 {
-    private bool _isLoading;
-    private string? _forgotPasswordMessage;
-    private BitMessageBarType _forgotPasswordMessageType;
-    private SendResetPasswordEmailRequestDto _forgotPasswordModel = new();
+    private bool isLoading;
+    private string? forgotPasswordMessage;
+    private BitMessageBarType forgotPasswordMessageType;
+    private SendResetPasswordEmailRequestDto forgotPasswordModel = new();
 
     private async Task DoSubmit()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _forgotPasswordMessage = null;
+        isLoading = true;
+        forgotPasswordMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SendResetPasswordEmail", _forgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SendResetPasswordEmail", forgotPasswordModel, AppJsonContext.Default.SendResetPasswordEmailRequestDto);
 
-            _forgotPasswordMessageType = BitMessageBarType.Success;
+            forgotPasswordMessageType = BitMessageBarType.Success;
 
-            _forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
+            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
         }
         catch (KnownException e)
         {
-            _forgotPasswordMessageType = BitMessageBarType.Error;
+            forgotPasswordMessageType = BitMessageBarType.Error;
 
-            _forgotPasswordMessage = e.Message;
+            forgotPasswordMessage = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

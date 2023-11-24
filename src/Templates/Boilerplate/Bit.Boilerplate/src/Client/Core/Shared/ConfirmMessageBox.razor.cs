@@ -2,37 +2,37 @@
 
 public partial class ConfirmMessageBox
 {
-    private bool _isOpen;
-    private string? _title;
-    private string? _message;
+    private bool isOpen;
+    private string? title;
+    private string? message;
 
     public async Task<bool> Show(string message, string title)
     {
-        if (_tsc is not null)
-            await _tsc.Task;
+        if (tcs is not null)
+            await tcs.Task;
 
-        _tsc = new TaskCompletionSource<bool>();
+        tcs = new TaskCompletionSource<bool>();
 
         await InvokeAsync(() =>
         {
             _ = JSRuntime.SetBodyOverflow(true);
 
-            _isOpen = true;
-            _title = title;
-            _message = message;
+            isOpen = true;
+            this.title = title;
+            this.message = message;
 
             StateHasChanged();
         });
 
-        return await _tsc.Task;
+        return await tcs.Task;
     }
 
-    private TaskCompletionSource<bool>? _tsc;
+    private TaskCompletionSource<bool>? tcs;
 
     public async Task Confirm(bool value)
     {
-        _isOpen = false;
+        isOpen = false;
         await JSRuntime.SetBodyOverflow(false);
-        _tsc?.SetResult(value);
+        tcs?.SetResult(value);
     }
 }

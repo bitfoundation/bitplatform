@@ -6,40 +6,39 @@ namespace BlazorWeb.Client.Services;
 
 public partial class AppAuthenticationManager : AuthenticationStateProvider
 {
-    [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
-    [AutoInject] private HttpClient _httpClient = default;
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
-    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] private IAuthTokenProvider tokenProvider = default!;
+    [AutoInject] private HttpClient httpClient = default;
+    [AutoInject] private IJSRuntime jsRuntime = default!;
 
     public async Task SignIn(SignInRequestDto signInModel)
     {
-        var result = await (await _httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto))
+        var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-        await _jsRuntime.StoreAuthToken(result!, signInModel.RememberMe);
+        await jsRuntime.StoreAuthToken(result!, signInModel.RememberMe);
 
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task SignOut()
     {
-        await _jsRuntime.RemoveAuthTokens();
+        await jsRuntime.RemoveAuthTokens();
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task RefreshToken()
     {
-        await _jsRuntime.RemoveCookie("access_token");
+        await jsRuntime.RemoveCookie("access_token");
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var access_token = await _tokenProvider.GetAccessTokenAsync();
+        var access_token = await tokenProvider.GetAccessTokenAsync();
 
-        if (string.IsNullOrEmpty(access_token) && _tokenProvider.IsInitialized)
+        if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
         {
-            string? refresh_token = await _jsRuntime.GetLocalStorage("refresh_token");
+            string? refresh_token = await jsRuntime.GetLocalStorage("refresh_token");
 
             if (string.IsNullOrEmpty(refresh_token) is false)
             {
@@ -49,16 +48,16 @@ public partial class AppAuthenticationManager : AuthenticationStateProvider
 
                 try
                 {
-                    var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
+                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
                         .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-                    await _jsRuntime.StoreAuthToken(refreshTokenResponse!);
+                    await jsRuntime.StoreAuthToken(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
                 }
                 catch (ResourceValidationException exp) // refresh_token in invalid or expired
                 {
-                    await _jsRuntime.RemoveAuthTokens();
-                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)], exp);
+                    await jsRuntime.RemoveAuthTokens();
+                    throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
                 }
             }
         }

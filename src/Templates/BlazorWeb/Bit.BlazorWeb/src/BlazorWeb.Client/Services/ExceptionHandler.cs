@@ -5,8 +5,8 @@ namespace BlazorWeb.Client.Services;
 
 public partial class ExceptionHandler : IExceptionHandler
 {
-    [AutoInject] IStringLocalizer<AppStrings> _localizer = default!;
-    [AutoInject] MessageBoxService _messageBoxService = default!;
+    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] MessageBoxService messageBoxService = default!;
 
     public void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
@@ -14,7 +14,7 @@ public partial class ExceptionHandler : IExceptionHandler
 #if DEBUG
             exception.ToString();
 #else
-            _localizer[nameof(AppStrings.UnknownException)];
+            localizer[nameof(AppStrings.UnknownException)];
 #endif
 
 #if DEBUG
@@ -22,6 +22,6 @@ public partial class ExceptionHandler : IExceptionHandler
         Debugger.Break();
 #endif
 
-        _ = _messageBoxService.Show(exceptionMessage, _localizer[nameof(AppStrings.Error)]);
+        _ = messageBoxService.Show(exceptionMessage, localizer[nameof(AppStrings.Error)]);
     }
 }

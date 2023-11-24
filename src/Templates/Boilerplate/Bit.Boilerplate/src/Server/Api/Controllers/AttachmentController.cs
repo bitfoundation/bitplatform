@@ -9,9 +9,9 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController]
 public partial class AttachmentController : AppControllerBase
 {
-    [AutoInject] private UserManager<User> _userManager = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
 
-    [AutoInject] private IWebHostEnvironment _webHostEnvironment = default!;
+    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -22,7 +22,7 @@ public partial class AttachmentController : AppControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
             throw new ResourceNotFoundException();
@@ -74,7 +74,7 @@ public partial class AttachmentController : AppControllerBase
 
             user.ProfileImageName = destFileName;
 
-            var result = await _userManager.UpdateAsync(user);
+            var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
                 throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
         }
@@ -96,7 +96,7 @@ public partial class AttachmentController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
@@ -110,7 +110,7 @@ public partial class AttachmentController : AppControllerBase
 
         user.ProfileImageName = null;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
@@ -122,7 +122,7 @@ public partial class AttachmentController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
@@ -134,7 +134,7 @@ public partial class AttachmentController : AppControllerBase
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
-        return PhysicalFile(Path.Combine(_webHostEnvironment.ContentRootPath, filePath),
+        return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
             MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
     }
 }

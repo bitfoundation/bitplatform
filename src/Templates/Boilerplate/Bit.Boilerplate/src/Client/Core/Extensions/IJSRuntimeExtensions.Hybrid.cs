@@ -6,7 +6,7 @@ namespace Microsoft.JSInterop;
 public static class IJSRuntimeHybridExtensions
 {
 #if BlazorHybrid
-    private static readonly Dictionary<string, string?> _sessionStorage = [];
+    private static readonly Dictionary<string, string?> sessionStorage = [];
 
     public static async Task SetCookie(this IJSRuntime jsRuntime, string key, string value, long expiresIn, bool rememberMe)
     {
@@ -16,19 +16,19 @@ public static class IJSRuntimeHybridExtensions
         }
         else
         {
-            _sessionStorage[key] = value;
+            sessionStorage[key] = value;
         }
     }
 
     public static async Task RemoveCookie(this IJSRuntime jsRuntime, string key)
     {
-        _sessionStorage.Remove(key);
+        sessionStorage.Remove(key);
         Preferences.Remove(key);
     }
 
     public static async Task<string?> GetCookie(this IJSRuntime jsRuntime, string key)
     {
-        return _sessionStorage.TryGetValue(key, out string? value) ? value : Preferences.Get(key, null);
+        return sessionStorage.TryGetValue(key, out string? value) ? value : Preferences.Get(key, null);
     }
 
     public static async Task SetLocalStorage(this IJSRuntime jsRuntime, string key, string value, bool rememberMe)

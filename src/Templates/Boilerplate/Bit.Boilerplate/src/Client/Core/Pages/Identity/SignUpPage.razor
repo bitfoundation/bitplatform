@@ -4,19 +4,19 @@
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
 
 <div class="page-container">
-    <EditForm Model="_signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
+    <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
         <AppDataAnnotationsValidator />
 
-        @if (string.IsNullOrEmpty(_signUpMessage) is false)
+        @if (string.IsNullOrEmpty(signUpMessage) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@_signUpMessageType"
-                           OnDismiss="() => _signUpMessage = null">
-                @_signUpMessage
+                           MessageBarType="@signUpMessageType"
+                           OnDismiss="() => signUpMessage = null">
+                @signUpMessage
             </BitMessageBar>
         }
 
-        @if (_isSignedUp)
+        @if (isSignedUp)
         {
             <h1 class="form-title">
                 @Localizer[nameof(AppStrings.ConfirmEmailTitle)]
@@ -35,7 +35,7 @@
                 <br />
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
-            <BitButton IsLoading="_isLoading"
+            <BitButton IsLoading="isLoading"
                        Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"
                        Title="@Localizer[nameof(AppStrings.ResendEmail)]"
@@ -55,33 +55,33 @@
             </h1>
 
             <div class="form-input-container">
-                <BitTextField @bind-Value="_signUpModel.Email"
+                <BitTextField @bind-Value="signUpModel.Email"
                               Label="@Localizer[nameof(AppStrings.Email)]"
                               Placeholder="@Localizer[nameof(AppStrings.Email)]"
                               Type="BitTextFieldType.Email" />
-                <ValidationMessage For="@(() => _signUpModel.Email)" />
+                <ValidationMessage For="@(() => signUpModel.Email)" />
             </div>
 
             <div class="form-input-container">
-                <BitTextField @bind-Value="_signUpModel.Password"
+                <BitTextField @bind-Value="signUpModel.Password"
                               Label="@Localizer[nameof(AppStrings.Password)]"
                               AutoComplete="new-password"
                               Type="BitTextFieldType.Password"
                               CanRevealPassword="true"
                               Placeholder="@Localizer[nameof(AppStrings.Password)]" />
-                <ValidationMessage For="@(() => _signUpModel.Password)" />
+                <ValidationMessage For="@(() => signUpModel.Password)" />
             </div>
 
             <div class="form-input-container form-input-container--no-margin">
-                <BitCheckbox Class="form-checkbox" @bind-Value="_signUpModel.TermsAccepted">
+                <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
                     <LabelTemplate>
                         <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="/terms">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
                     </LabelTemplate>
                 </BitCheckbox>
-                <ValidationMessage For="@(() => _signUpModel.TermsAccepted)" />
+                <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
             </div>
 
-            <BitButton IsLoading="_isLoading"
+            <BitButton IsLoading="isLoading"
                        Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"
                        Title="@Localizer[nameof(AppStrings.SignUp)]"

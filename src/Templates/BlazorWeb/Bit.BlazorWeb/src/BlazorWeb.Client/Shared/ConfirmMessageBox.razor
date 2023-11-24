@@ -1,13 +1,13 @@
 ﻿@inherits AppComponentBase;
 
-<BitModal @bind-IsOpen="_isOpen">
+<BitModal @bind-IsOpen="isOpen">
     <div class="main-container">
         <div class="header">
-            <span class="title">@_title</span>
+            <span class="title">@title</span>
             <BitIconButton IconName="@BitIconName.ChromeClose" OnClick="@(() => Confirm(false))" />
         </div>
         <div class="body">
-            @_message
+            @message
         </div>
         <div class="btn-group">
             <BitButton ButtonStyle="BitButtonStyle.Primary"

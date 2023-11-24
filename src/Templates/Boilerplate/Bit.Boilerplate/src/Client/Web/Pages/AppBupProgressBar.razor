@@ -29,19 +29,19 @@
 </style>
 
 @code {
-    private bool _showLoading = true;
+    private bool showLoading = true;
 
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
         if (firstRender is false) return;
 
-        _showLoading = false;
+        showLoading = false;
         StateHasChanged();
     }
 }
 
-@if (_showLoading)
+@if (showLoading)
 {
     <div>
         <BupProgress>

@@ -2,38 +2,38 @@
 
 public partial class MessageBox : IDisposable
 {
-    private bool _isOpen;
-    private string? _title;
-    private string? _body;
+    private bool isOpen;
+    private string? title;
+    private string? body;
 
-    private TaskCompletionSource<object?>? _tsc;
+    private TaskCompletionSource<object?>? tcs;
 
     private async Task OnCloseClick()
     {
-        _isOpen = false;
+        isOpen = false;
         await JSRuntime.SetBodyOverflow(false);
-        _tsc?.SetResult(null);
-        _tsc = null;
+        tcs?.SetResult(null);
+        tcs = null;
     }
 
     private async Task OnOkClick()
     {
-        _isOpen = false;
+        isOpen = false;
         await JSRuntime.SetBodyOverflow(false);
-        _tsc?.SetResult(null);
-        _tsc = null;
+        tcs?.SetResult(null);
+        tcs = null;
     }
 
     Action? _dispose;
-    bool _disposed = false;
+    bool disposed = false;
 
     protected override Task OnInitAsync()
     {
         _dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
-            (var message, string title, TaskCompletionSource<object?> tsc) = ((string message, string title, TaskCompletionSource<object?> tsc))args!;
-            await (_tsc?.Task ?? Task.CompletedTask);
-            _tsc = tsc;
+            (var message, string title, TaskCompletionSource<object?> tcs) = ((string message, string title, TaskCompletionSource<object?> tcs))args!;
+            await (tcs?.Task ?? Task.CompletedTask);
+            this.tcs = tcs;
             await ShowMessageBox(message, title);
         });
 
@@ -46,9 +46,9 @@ public partial class MessageBox : IDisposable
         {
             _ = JSRuntime.SetBodyOverflow(true);
 
-            _isOpen = true;
-            _title = title;
-            _body = message;
+            isOpen = true;
+            this.title = title;
+            body = message;
 
             StateHasChanged();
         });
@@ -62,12 +62,12 @@ public partial class MessageBox : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (disposed || disposing is false) return;
 
-        _tsc?.TrySetResult(null);
-        _tsc = null;
+        tcs?.TrySetResult(null);
+        tcs = null;
         _dispose?.Invoke();
 
-        _disposed = true;
+        disposed = true;
     }
 }
