@@ -7,12 +7,12 @@
     [Parameter] public required string Href { get; set; } = "";
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
 
-    private string _href = "";
+    private string href = "";
 
     protected override void OnInitialized()
     {
-        _href = AppendVersion ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Href) : Href;
+        href = AppendVersion ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Href) : Href;
     }
 }
 
-<link href="@_href" @attributes="AdditionalAttributes" />
+<link href="@href" @attributes="AdditionalAttributes" />

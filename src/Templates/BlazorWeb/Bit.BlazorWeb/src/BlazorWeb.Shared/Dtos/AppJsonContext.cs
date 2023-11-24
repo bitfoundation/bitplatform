@@ -1,11 +1,11 @@
 ﻿//#if (sample == "Todo")
+using BlazorWeb.Shared.Dtos.Todo;
 //#elif (sample == "AdminPanel")
 using BlazorWeb.Shared.Dtos.Categories;
+using BlazorWeb.Shared.Dtos.Products;
 using BlazorWeb.Shared.Dtos.Dashboard;
 //#endif
 using BlazorWeb.Shared.Dtos.Identity;
-using BlazorWeb.Shared.Dtos.Products;
-using BlazorWeb.Shared.Dtos.Todo;
 
 namespace BlazorWeb.Shared.Dtos;
 

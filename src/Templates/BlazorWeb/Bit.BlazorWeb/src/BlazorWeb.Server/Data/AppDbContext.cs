@@ -1,11 +1,11 @@
 ﻿//+:cnd:noEmit
-//#elif (sample == "AdminPanel")
-using BlazorWeb.Server.Models.Categories;
-using BlazorWeb.Server.Models.Identity;
-using BlazorWeb.Server.Models.Products;
 //#if (sample == "Todo")
 using BlazorWeb.Server.Models.Todo;
+//#elif (sample == "AdminPanel")
+using BlazorWeb.Server.Models.Categories;
+using BlazorWeb.Server.Models.Products;
 //#endif
+using BlazorWeb.Server.Models.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 

@@ -4,16 +4,15 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class MainLayout : IDisposable
 {
-    [Inject]
-    public NavigationManager NavigationManager { get; set; } = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
-    private bool _isTemplateDocRoute;
+    private bool isTemplateDocRoute;
 
     protected override Task OnInitializedAsync()
     {
         SetCurrentUrl();
 
-        NavigationManager.LocationChanged += OnLocationChanged;
+        navigationManager.LocationChanged += OnLocationChanged;
 
         return base.OnInitializedAsync();
     }
@@ -27,13 +26,13 @@ public partial class MainLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        var currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
-        _isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
+        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
     }
 
     public void Dispose()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        navigationManager.LocationChanged -= OnLocationChanged;
     }
 }
