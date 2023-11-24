@@ -10,7 +10,9 @@ public static class IServiceCollectionExtensions
 
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
-        services.AddAuthorizationCore();
+        // Define authorization policies here to seamlessly integrate them across various components,
+        // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages, and programmatically in C# for enhanced security and access control.
+        services.AddAuthorizationCore(options => options.AddPolicy("AdminOnly", authPolicyBuilder => authPolicyBuilder.RequireRole("Admin")));
 
         services.AddLocalization();
 
