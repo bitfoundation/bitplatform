@@ -6,22 +6,22 @@ public partial class MessageBox : IDisposable
     private string? title;
     private string? body;
 
-    private TaskCompletionSource<object?>? currentTcs;
+    private TaskCompletionSource<object?>? tcs;
 
     private async Task OnCloseClick()
     {
         isOpen = false;
         await JSRuntime.ToggleBodyOverflow(false);
-        currentTcs?.SetResult(null);
-        currentTcs = null;
+        tcs?.SetResult(null);
+        tcs = null;
     }
 
     private async Task OnOkClick()
     {
         isOpen = false;
         await JSRuntime.ToggleBodyOverflow(false);
-        currentTcs?.SetResult(null);
-        currentTcs = null;
+        tcs?.SetResult(null);
+        tcs = null;
     }
 
     Action? _dispose;
@@ -32,8 +32,8 @@ public partial class MessageBox : IDisposable
         _dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
             (var message, string title, TaskCompletionSource<object?> tcs) = ((string message, string title, TaskCompletionSource<object?> tsc))args!;
-            await (currentTcs?.Task ?? Task.CompletedTask);
-            currentTcs = tcs;
+            await (this.tcs?.Task ?? Task.CompletedTask);
+            this.tcs = tcs;
             await ShowMessageBox(message, title);
         });
 
@@ -64,8 +64,8 @@ public partial class MessageBox : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        currentTcs?.TrySetResult(null);
-        currentTcs = null;
+        tcs?.TrySetResult(null);
+        tcs = null;
         _dispose?.Invoke();
 
         _disposed = true;

@@ -6,14 +6,14 @@
         <div class="title">Free Consultation</div>
         <div class="title-underline"></div>
 
-        <EditForm class="form" Model="_contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
-            @if (string.IsNullOrWhiteSpace(_successMessage) is false)
+        <EditForm class="form" Model="contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
+            @if (string.IsNullOrWhiteSpace(successMessage) is false)
             {
-                <BitMessageBar MessageBarType="@BitMessageBarType.Success">@_successMessage</BitMessageBar>
+                <BitMessageBar MessageBarType="@BitMessageBarType.Success">@successMessage</BitMessageBar>
             }
-            else if (string.IsNullOrWhiteSpace(_errorMessage) is false)
+            else if (string.IsNullOrWhiteSpace(_erorMessage) is false)
             {
-                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@_errorMessage</BitMessageBar>
+                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@_erorMessage</BitMessageBar>
             }
 
             <DataAnnotationsValidator />
@@ -22,7 +22,7 @@
 
             <div class="input-row">
                 <div class="input-container">
-                    <BitTextField Label="Email *" @bind-Value="_contactUs.Email" Class="text-field" />
+                    <BitTextField Label="Email *" @bind-Value="contactUs.Email" Class="text-field" />
                     @*<ValidationMessage For="() => _contactUs.Email" />*@
                 </div>
                 @* <div class="input-container">
@@ -32,10 +32,10 @@
             </div>
 
             <div class="text-area-container">
-                <BitTextField Label="Tell us about your project" @bind-Value="_contactUs.Information" IsMultiline="true" Rows="3" Class="text-area" />
+                <BitTextField Label="Tell us about your project" @bind-Value="contactUs.Information" IsMultiline="true" Rows="3" Class="text-area" />
             </div>
 
-            <BitButton IsLoading="_isLoading"
+            <BitButton IsLoading="isLoading"
                        Title="Send"
                        AriaLabel="Send"
                        Class="submit-btn--primary"

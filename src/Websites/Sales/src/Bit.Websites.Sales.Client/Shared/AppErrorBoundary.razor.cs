@@ -6,31 +6,31 @@ namespace Bit.Websites.Sales.Client.Shared;
 /// </summary>
 public partial class AppErrorBoundary
 {
-    private bool _showException;
+    private bool showException;
 
-    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
-    [AutoInject] private NavigationManager _navigationManager = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
 #if DEBUG
     protected override void OnInitialized()
     {
-        _showException = true;
+        showException = true;
     }
 #endif
 
     protected override async Task OnErrorAsync(Exception exception)
     {
-        _exceptionHandler.Handle(exception);
+        exceptionHandler.Handle(exception);
     }
 
     private void Refresh()
     {
-        _navigationManager.Refresh(forceReload: true);
+        navigationManager.Refresh(forceReload: true);
     }
 
     private void GoHome()
     {
-        _navigationManager.NavigateTo("/", true);
+        navigationManager.NavigateTo("/", true);
     }
 }

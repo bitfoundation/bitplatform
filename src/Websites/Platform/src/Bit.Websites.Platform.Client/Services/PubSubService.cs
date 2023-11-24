@@ -21,14 +21,14 @@ public partial class PubSubService : IPubSubService
         }
     }
 
-    public Action Subscribe(string message, Func<object?, Task> messageHandlers)
+    public Action Subscribe(string message, Func<object?, Task> handler)
     {
-        var handlersPair = handlers.ContainsKey(message)
+        var messageHandlers = handlers.ContainsKey(message)
                             ? handlers[message]
                             : handlers[message] = [];
 
-        handlersPair.Add(messageHandlers);
+        messageHandlers.Add(handler);
 
-        return () => handlersPair.Remove(messageHandlers);
+        return () => messageHandlers.Remove(handler);
     }
 }
