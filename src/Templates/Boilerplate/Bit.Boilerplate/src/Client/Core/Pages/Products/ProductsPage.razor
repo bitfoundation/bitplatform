@@ -5,7 +5,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>
 
 <div class="page-container">
-    @if (_isLoading)
+    @if (isLoading)
     {
         <div class="loading-contianer">
             <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="grid">
-        <BitDataGrid @ref="_dataGrid" ItemsProvider="_productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="_pagination">
+        <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
             <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
                                        Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
             <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
@@ -35,9 +35,9 @@
                 <BitIconButton IconName="@BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(product!))" Title="@Localizer[(nameof(AppStrings.Delete))]" />
             </BitDataGridTemplateColumn>
         </BitDataGrid>
-        <BitDataGridPaginator Value="_pagination" />
+        <BitDataGridPaginator Value="pagination" />
     </div>
 </div>
 
-<AddOrEditProductModal @ref="_modal" OnSave="WrapHandled(RefreshData)" />
-<ConfirmMessageBox @ref=_confirmMessageBox />
+<AddOrEditProductModal @ref="modal" OnSave="WrapHandled(RefreshData)" />
+<ConfirmMessageBox @ref=confirmMessageBox />

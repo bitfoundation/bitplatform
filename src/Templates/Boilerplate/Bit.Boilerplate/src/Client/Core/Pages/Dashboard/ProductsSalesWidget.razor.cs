@@ -2,13 +2,13 @@
 
 public partial class ProductsSalesWidget
 {
-    private bool _isLoading;
-    private BitChart? _chart;
-    private BitChartBarConfig _config = default!;
+    private bool isLoading;
+    private BitChart? chart;
+    private BitChartBarConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
-        _config = new BitChartBarConfig
+        config = new BitChartBarConfig
         {
             Options = new BitChartBarOptions
             {
@@ -27,7 +27,7 @@ public partial class ProductsSalesWidget
     {
         try
         {
-            _isLoading = true;
+            isLoading = true;
 
             var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsSalesWidget)}",
                                 async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats",
@@ -35,12 +35,12 @@ public partial class ProductsSalesWidget
 
             BitChartBarDataset<decimal> chartDataSet = [.. data.Select(d => d.SaleAmount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
-            _config.Data.Datasets.Add(chartDataSet);
-            _config.Data.Labels.AddRange(data.Select(d => d.ProductName ?? string.Empty));
+            config.Data.Datasets.Add(chartDataSet);
+            config.Data.Labels.AddRange(data.Select(d => d.ProductName ?? string.Empty));
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

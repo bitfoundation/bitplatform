@@ -4,10 +4,10 @@ namespace BlazorWeb.Client.Pages.Identity;
 
 public partial class ResetPasswordPage
 {
-    private bool _isLoading;
-    private string? _resetPasswordMessage;
-    private BitMessageBarType _resetPasswordMessageType;
-    private ResetPasswordRequestDto _resetPasswordModel = new();
+    private bool isLoading;
+    private string? resetPasswordMessage;
+    private BitMessageBarType resetPasswordMessageType;
+    private ResetPasswordRequestDto resetPasswordModel = new();
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -19,8 +19,8 @@ public partial class ResetPasswordPage
 
     protected override async Task OnInitAsync()
     {
-        _resetPasswordModel.Email = Email;
-        _resetPasswordModel.Token = Token;
+        resetPasswordModel.Email = Email;
+        resetPasswordModel.Token = Token;
 
         await base.OnInitAsync();
     }
@@ -37,28 +37,28 @@ public partial class ResetPasswordPage
 
     private async Task DoSubmit()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _resetPasswordMessage = null;
+        isLoading = true;
+        resetPasswordMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/ResetPassword", _resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/ResetPassword", resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto);
 
-            _resetPasswordMessageType = BitMessageBarType.Success;
+            resetPasswordMessageType = BitMessageBarType.Success;
 
-            _resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
+            resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
-            _resetPasswordMessageType = BitMessageBarType.Error;
+            resetPasswordMessageType = BitMessageBarType.Error;
 
-            _resetPasswordMessage = e.Message;
+            resetPasswordMessage = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

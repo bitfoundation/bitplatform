@@ -7,14 +7,14 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [ApiController]
 public partial class UserController : AppControllerBase
 {
-    [AutoInject] private UserManager<User> _userManager = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
@@ -27,14 +27,14 @@ public partial class UserController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
 
         if (user is null)
             throw new ResourceNotFoundException();
 
         userDto.Patch(user);
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
@@ -46,10 +46,10 @@ public partial class UserController : AppControllerBase
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
+        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
                     ?? throw new ResourceNotFoundException();
 
-        var result = await _userManager.DeleteAsync(user);
+        var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }

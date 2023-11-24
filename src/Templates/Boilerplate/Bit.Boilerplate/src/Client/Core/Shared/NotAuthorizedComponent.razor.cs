@@ -2,14 +2,14 @@
 
 public partial class NotAuthorizedComponent
 {
-    private ClaimsPrincipal _user = default!;
+    private ClaimsPrincipal user = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
     [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
-        _user = (await AuthenticationState).User;
+        user = (await AuthenticationState).User;
 
         await base.OnParamsSetAsync();
     }

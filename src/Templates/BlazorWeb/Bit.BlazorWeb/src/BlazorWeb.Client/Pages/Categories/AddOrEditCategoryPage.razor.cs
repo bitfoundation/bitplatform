@@ -7,12 +7,12 @@ public partial class AddOrEditCategoryPage
 {
     [Parameter] public int? Id { get; set; }
 
-    private bool _isLoading;
-    private bool _isSaving;
-    private string? _saveMessage;
-    private bool _isColorPickerOpen;
-    private BitMessageBarType _saveMessageType;
-    private CategoryDto _category = new();
+    private bool isLoading;
+    private bool isSaving;
+    private string? saveMessage;
+    private bool isColorPickerOpen;
+    private BitMessageBarType saveMessageType;
+    private CategoryDto category = new();
 
     protected override async Task OnInitAsync()
     {
@@ -23,61 +23,61 @@ public partial class AddOrEditCategoryPage
     {
         if (Id is null) return;
 
-        _isLoading = true;
+        isLoading = true;
 
         try
         {
-            _category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto) ?? new();
+            category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto) ?? new();
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private void SetCategoryColor(string color)
     {
-        _category.Color = color;
+        category.Color = color;
     }
 
     private void ToggleColorPicker()
     {
-        _isColorPickerOpen = !_isColorPickerOpen;
+        isColorPickerOpen = !isColorPickerOpen;
     }
 
     private async Task Save()
     {
-        if (_isSaving) return;
+        if (isSaving) return;
 
-        _isSaving = true;
+        isSaving = true;
 
         try
         {
-            if (_category.Id == 0)
+            if (category.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Category/Create", _category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PostAsJsonAsync("Category/Create", category, AppJsonContext.Default.CategoryDto);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Category/Update", _category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PutAsJsonAsync("Category/Update", category, AppJsonContext.Default.CategoryDto);
             }
 
             NavigationManager.NavigateTo("categories");
         }
         catch (ResourceValidationException e)
         {
-            _saveMessageType = BitMessageBarType.Error;
+            saveMessageType = BitMessageBarType.Error;
 
-            _saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
+            saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
-            _saveMessage = e.Message;
-            _saveMessageType = BitMessageBarType.Error;
+            saveMessage = e.Message;
+            saveMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            _isSaving = false;
+            isSaving = false;
         }
     }
 }

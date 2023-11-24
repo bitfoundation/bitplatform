@@ -3,13 +3,13 @@ namespace Boilerplate.Client.App;
 
 public partial class MainPage
 {
-    private readonly IExceptionHandler _exceptionHandler;
-    private readonly IBitDeviceCoordinator _deviceCoordinator;
+    private readonly IExceptionHandler exceptionHandler;
+    private readonly IBitDeviceCoordinator deviceCoordinator;
 
     public MainPage(IExceptionHandler exceptionHandler, IBitDeviceCoordinator deviceCoordinator)
     {
-        _exceptionHandler = exceptionHandler;
-        _deviceCoordinator = deviceCoordinator;
+        this.exceptionHandler = exceptionHandler;
+        this.deviceCoordinator = deviceCoordinator;
 
         InitializeComponent();
 
@@ -79,7 +79,7 @@ public partial class MainPage
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         };
     }
@@ -90,11 +90,11 @@ public partial class MainPage
         {
             try
             {
-                await _deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
+                await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
             }
             catch (Exception exp)
             {
-                _exceptionHandler.Handle(exp);
+                exceptionHandler.Handle(exp);
             }
         });
     }

@@ -4,16 +4,16 @@ namespace Boilerplate.Client.Core.Shared;
 
 public partial class MainLayout : IDisposable
 {
-    private bool _disposed;
-    private bool _isMenuOpen;
-    private bool _isUserAuthenticated;
+    private bool disposed;
+    private bool isMenuOpen;
+    private bool isUserAuthenticated;
     private ErrorBoundary ErrorBoundaryRef = default!;
 
-    [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
+    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
-    [AutoInject] private IExceptionHandler _exceptionHandler = default!;
+    [AutoInject] private IExceptionHandler exceptionHandler = default!;
 
-    [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
+    [AutoInject] private AuthenticationManager authManager = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -30,15 +30,15 @@ public partial class MainLayout : IDisposable
     {
         try
         {
-            _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            authManager.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-            _isUserAuthenticated = await _prerenderStateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
+            isUserAuthenticated = await prerenderStateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             await base.OnInitializedAsync();
         }
         catch (Exception exp)
         {
-            _exceptionHandler.Handle(exp);
+            exceptionHandler.Handle(exp);
         }
     }
 
@@ -46,11 +46,11 @@ public partial class MainLayout : IDisposable
     {
         try
         {
-            _isUserAuthenticated = (await task).User.IsAuthenticated();
+            isUserAuthenticated = (await task).User.IsAuthenticated();
         }
         catch (Exception ex)
         {
-            _exceptionHandler.Handle(ex);
+            exceptionHandler.Handle(ex);
         }
         finally
         {
@@ -60,7 +60,7 @@ public partial class MainLayout : IDisposable
 
     private void ToggleMenuHandler()
     {
-        _isMenuOpen = !_isMenuOpen;
+        isMenuOpen = !isMenuOpen;
     }
 
     public void Dispose()
@@ -71,10 +71,10 @@ public partial class MainLayout : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (disposed) return;
 
-        _authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        authManager.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
 
-        _disposed = true;
+        disposed = true;
     }
 }

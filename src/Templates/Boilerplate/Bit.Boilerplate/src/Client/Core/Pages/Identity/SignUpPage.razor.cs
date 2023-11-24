@@ -4,11 +4,11 @@ namespace Boilerplate.Client.Core.Pages.Identity;
 
 public partial class SignUpPage
 {
-    private bool _isLoading;
-    private bool _isSignedUp;
-    private string? _signUpMessage;
-    private BitMessageBarType _signUpMessageType;
-    private SignUpRequestDto _signUpModel = new();
+    private bool isLoading;
+    private bool isSignedUp;
+    private string? signUpMessage;
+    private BitMessageBarType signUpMessageType;
+    private SignUpRequestDto signUpModel = new();
 
 
     protected override async Task OnAfterFirstRenderAsync()
@@ -23,55 +23,55 @@ public partial class SignUpPage
 
     private async Task DoSignUp()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _signUpMessage = null;
+        isLoading = true;
+        signUpMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SignUp", _signUpModel, AppJsonContext.Default.SignUpRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SignUp", signUpModel, AppJsonContext.Default.SignUpRequestDto);
 
-            _isSignedUp = true;
+            isSignedUp = true;
         }
         catch (ResourceValidationException e)
         {
-            _signUpMessageType = BitMessageBarType.Error;
-            _signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
+            signUpMessageType = BitMessageBarType.Error;
+            signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
-            _signUpMessage = e.Message;
-            _signUpMessageType = BitMessageBarType.Error;
+            signUpMessage = e.Message;
+            signUpMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private async Task DoResendLink()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _signUpMessage = null;
+        isLoading = true;
+        signUpMessage = null;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = _signUpModel.Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = signUpModel.Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
-            _signUpMessageType = BitMessageBarType.Success;
-            _signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            signUpMessageType = BitMessageBarType.Success;
+            signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
-            _signUpMessage = e.Message;
-            _signUpMessageType = BitMessageBarType.Error;
+            signUpMessage = e.Message;
+            signUpMessageType = BitMessageBarType.Error;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

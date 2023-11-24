@@ -3,7 +3,7 @@
 @inherits AppComponentBase
 
 <PageTitle>
-    @if (_category.Id == 0)
+    @if (category.Id == 0)
     {
         @Localizer[nameof(AppStrings.AddCategory)]
     }
@@ -20,7 +20,7 @@
                        IconName="@BitIconName.Back"
                        Title="@Localizer[nameof(AppStrings.Back)]" />
         <h1 class="page-title">
-            @if (_category.Id == 0)
+            @if (category.Id == 0)
             {
                 @Localizer[nameof(AppStrings.AddCategory)]
             }
@@ -30,26 +30,26 @@
             }
         </h1>
     </div>
-    <EditForm Model="_category" OnValidSubmit="WrapHandled(Save)">
+    <EditForm Model="category" OnValidSubmit="WrapHandled(Save)">
         <AppDataAnnotationsValidator />
 
-        @if (_isLoading)
+        @if (isLoading)
         {
             <div class="loading-continaer">
                 <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
             </div>
         }
 
-        @if (string.IsNullOrEmpty(_saveMessage) is false)
+        @if (string.IsNullOrEmpty(saveMessage) is false)
         {
-            <BitMessageBar MessageBarType="@_saveMessageType" OnDismiss="() => _saveMessage = null">@_saveMessage</BitMessageBar>
+            <BitMessageBar MessageBarType="@saveMessageType" OnDismiss="() => saveMessage = null">@saveMessage</BitMessageBar>
         }
 
         <div class="form-input-container">
-            <BitTextField @bind-Value="_category.Name"
+            <BitTextField @bind-Value="category.Name"
                           Label="@Localizer[nameof(AppStrings.Name)]"
                           Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
-            <ValidationMessage For="() => _category.Name" />
+            <ValidationMessage For="() => category.Name" />
         </div>
 
         <div class="form-input-container">
@@ -58,31 +58,31 @@
                 @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                 {
                     <button @onclick="() => SetCategoryColor(color)"
-                            class="color-btn @(_category.Color == color ? "color-btn--active" : null)"
+                            class="color-btn @(category.Color == color ? "color-btn--active" : null)"
                             style="background-color: @color"
                             type="button" />
                 }
                 <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
                     <div class="custom-color-container">
-                        <div class="color-square" style="background-color: @_category.Color"></div>
+                        <div class="color-square" style="background-color: @category.Color"></div>
                         @Localizer[(nameof(AppStrings.CustomColor))]
                     </div>
                 </BitButton>
             </div>
-            @if (_isColorPickerOpen)
+            @if (isColorPickerOpen)
             {
                 <div class="color-picker-container">
-                    <BitColorPicker @bind-Color="_category.Color"
+                    <BitColorPicker @bind-Color="category.Color"
                                     id="catColorInput"
                                     ShowPreview="true">
                         @Localizer[nameof(AppStrings.DefaultColorPicker)]
                     </BitColorPicker>
                 </div>
             }
-            <ValidationMessage For="() => _category.Color" />
+            <ValidationMessage For="() => category.Color" />
         </div>
 
-        <BitButton IsLoading="_isSaving"
+        <BitButton IsLoading="isSaving"
                    ButtonStyle="BitButtonStyle.Primary"
                    ButtonType="BitButtonType.Submit"
                    AriaLabel="Category">

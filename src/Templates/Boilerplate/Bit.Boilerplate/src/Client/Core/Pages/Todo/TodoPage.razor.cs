@@ -5,24 +5,24 @@ namespace Boilerplate.Client.Core.Pages.Todo;
 [Authorize]
 public partial class TodoPage
 {
-    private bool _isAdding;
-    private bool _isLoading;
-    private string? _searchText;
-    private string? _selectedSort;
-    private string? _selectedFilter;
-    private string? _underEditTodoItemTitle;
-    private string _newTodoTitle = string.Empty;
-    private ConfirmMessageBox _confirmMessageBox = default!;
-    private IList<TodoItemDto> _allTodoItems = default!;
-    private IList<TodoItemDto> _viewTodoItems = default!;
-    private List<BitDropdownItem<string>> _sortItems = [];
+    private bool isAdding;
+    private bool isLoading;
+    private string? searchText;
+    private string? selectedSort;
+    private string? selectedFilter;
+    private string? underEditTodoItemTitle;
+    private string newTodoTitle = string.Empty;
+    private ConfirmMessageBox confirmMessageBox = default!;
+    private IList<TodoItemDto> allTodoItems = default!;
+    private IList<TodoItemDto> viewTodoItems = default!;
+    private List<BitDropdownItem<string>> sortItems = [];
 
     protected override async Task OnInitAsync()
     {
-        _selectedFilter = nameof(AppStrings.All);
-        _selectedSort = nameof(AppStrings.Alphabetical);
+        selectedFilter = nameof(AppStrings.All);
+        selectedSort = nameof(AppStrings.Alphabetical);
 
-        _sortItems =
+        sortItems =
         [
             new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Alphabetical)], Value = nameof(AppStrings.Alphabetical) },
             new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Date)], Value = nameof(AppStrings.Date) }
@@ -35,36 +35,36 @@ public partial class TodoPage
 
     private async Task LoadTodoItems()
     {
-        _isLoading = true;
+        isLoading = true;
 
         try
         {
-            _allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
+            allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
                                 async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto)) ?? [];
 
             FilterViewTodoItems();
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private void FilterViewTodoItems()
     {
-        _viewTodoItems = _allTodoItems
+        viewTodoItems = allTodoItems
             .Where(t => TodoItemIsVisible(t))
-            .OrderByIf(_selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-            .OrderByIf(_selectedSort == nameof(AppStrings.Date), t => t.Date!)
+            .OrderByIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
+            .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.Date!)
             .ToList();
     }
 
     private bool TodoItemIsVisible(TodoItemDto todoItem)
     {
-        var condition1 = string.IsNullOrWhiteSpace(_searchText) || todoItem.Title!.Contains(_searchText!, StringComparison.OrdinalIgnoreCase);
+        var condition1 = string.IsNullOrWhiteSpace(searchText) || todoItem.Title!.Contains(searchText!, StringComparison.OrdinalIgnoreCase);
 
-        var condition2 = _selectedFilter == nameof(AppStrings.Active) ? todoItem.IsDone is false
-            : _selectedFilter == nameof(AppStrings.Completed) ? todoItem.IsDone
+        var condition2 = selectedFilter == nameof(AppStrings.Active) ? todoItem.IsDone is false
+            : selectedFilter == nameof(AppStrings.Completed) ? todoItem.IsDone
             : true;
 
         return condition1 && condition2;
@@ -77,102 +77,102 @@ public partial class TodoPage
         await UpdateTodoItem(todoItem);
     }
 
-    private void SearchTodoItems(string searchText)
+    private void SearchTodoItems(string text)
     {
-        _searchText = searchText;
+        searchText = text;
 
         FilterViewTodoItems();
     }
 
     private void SortTodoItems(BitDropdownItem<string> sort)
     {
-        _selectedSort = sort.Value;
+        selectedSort = sort.Value;
 
         FilterViewTodoItems();
     }
 
     private void FilterTodoItems(string filter)
     {
-        _selectedFilter = filter;
+        selectedFilter = filter;
 
         FilterViewTodoItems();
     }
 
     private void ToggleEditMode(TodoItemDto todoItem)
     {
-        _underEditTodoItemTitle = todoItem.Title;
+        underEditTodoItemTitle = todoItem.Title;
         todoItem.IsInEditMode = !todoItem.IsInEditMode;
     }
 
     private async Task AddTodoItem()
     {
-        if (_isAdding) return;
+        if (isAdding) return;
 
-        _isAdding = true;
+        isAdding = true;
 
         try
         {
-            var addedTodoItem = await (await HttpClient.PostAsJsonAsync("TodoItem/Create", new() { Title = _newTodoTitle }, AppJsonContext.Default.TodoItemDto))
+            var addedTodoItem = await (await HttpClient.PostAsJsonAsync("TodoItem/Create", new() { Title = newTodoTitle }, AppJsonContext.Default.TodoItemDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto);
 
-            _allTodoItems.Add(addedTodoItem!);
+            allTodoItems.Add(addedTodoItem!);
 
             if (TodoItemIsVisible(addedTodoItem!))
             {
-                _viewTodoItems.Add(addedTodoItem!);
+                viewTodoItems.Add(addedTodoItem!);
             }
 
-            _newTodoTitle = "";
+            newTodoTitle = "";
         }
         finally
         {
-            _isAdding = false;
+            isAdding = false;
         }
     }
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
         try
         {
-            var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title!),
+            var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title!),
                                                      Localizer[nameof(AppStrings.DeleteTodoItem)]);
 
             if (confirmed)
             {
-                _isLoading = true;
+                isLoading = true;
 
                 StateHasChanged();
 
                 await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}");
 
-                _allTodoItems.Remove(todoItem);
+                allTodoItems.Remove(todoItem);
 
-                _viewTodoItems.Remove(todoItem);
+                viewTodoItems.Remove(todoItem);
             }
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private async Task SaveTodoItem(TodoItemDto todoItem)
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
+        isLoading = true;
 
         try
         {
-            todoItem.Title = _underEditTodoItemTitle;
+            todoItem.Title = underEditTodoItemTitle;
 
             await UpdateTodoItem(todoItem);
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
@@ -185,7 +185,7 @@ public partial class TodoPage
 
         if (TodoItemIsVisible(todoItem) is false)
         {
-            _viewTodoItems.Remove(todoItem);
+            viewTodoItems.Remove(todoItem);
         }
     }
 }

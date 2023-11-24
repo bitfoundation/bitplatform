@@ -2,9 +2,9 @@
 
 public partial class EmailConfirmationPage
 {
-    private bool _isLoading;
-    private string? _resendLinkErrors;
-    private BitMessageBarType _emailConfirmationMessageType = BitMessageBarType.Error;
+    private bool isLoading;
+    private string? resendLinkErrors;
+    private BitMessageBarType emailConfirmationMessageType = BitMessageBarType.Error;
 
     [SupplyParameterFromQuery, Parameter] public string? Email { get; set; }
 
@@ -22,28 +22,28 @@ public partial class EmailConfirmationPage
 
     private async Task DoResendLink()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _resendLinkErrors = Errors = null;
+        isLoading = true;
+        resendLinkErrors = Errors = null;
 
         try
         {
             await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
 
-            _emailConfirmationMessageType = BitMessageBarType.Success;
+            emailConfirmationMessageType = BitMessageBarType.Success;
 
-            _resendLinkErrors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            resendLinkErrors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
-            _emailConfirmationMessageType = BitMessageBarType.Error;
+            emailConfirmationMessageType = BitMessageBarType.Error;
 
-            _resendLinkErrors = e.Message;
+            resendLinkErrors = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

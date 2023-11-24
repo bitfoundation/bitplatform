@@ -4,12 +4,12 @@
 
 <Header OnToggleMenu=ToggleMenuHandler />
 
-@if (_isUserAuthenticated)
+@if (isUserAuthenticated)
 {
-    <NavMenu @bind-IsMenuOpen=_isMenuOpen />
+    <NavMenu @bind-IsMenuOpen=isMenuOpen />
 }
 
-<div class="main @(_isUserAuthenticated ? "main--authenticated" : null)">
+<div class="main @(isUserAuthenticated ? "main--authenticated" : null)">
     <div class="main-content">
         <AppErrorBoundary>
             @Body

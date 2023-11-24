@@ -4,10 +4,10 @@ namespace Boilerplate.Client.Core.Pages.Identity;
 
 public partial class SignInPage
 {
-    private bool _isLoading;
-    private string? _signInMessage;
-    private BitMessageBarType _signInMessageType;
-    private SignInRequestDto _signInModel = new();
+    private bool isLoading;
+    private string? signInMessage;
+    private BitMessageBarType signInMessageType;
+    private SignInRequestDto signInModel = new();
 
     [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
@@ -23,31 +23,26 @@ public partial class SignInPage
 
     private async Task DoSignIn()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
-        _signInMessage = null;
+        isLoading = true;
+        signInMessage = null;
 
         try
         {
-            var result = await (await HttpClient.PostAsJsonAsync("Identity/SignIn", _signInModel, AppJsonContext.Default.SignInRequestDto))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
-
-            await JSRuntime.StoreAuthToken(result!, _signInModel.RememberMe);
-
-            await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+            await AuthenticationManager.SignIn(signInModel);
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }
         catch (KnownException e)
         {
-            _signInMessageType = BitMessageBarType.Error;
+            signInMessageType = BitMessageBarType.Error;
 
-            _signInMessage = e.Message;
+            signInMessage = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

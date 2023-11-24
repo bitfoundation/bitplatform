@@ -5,15 +5,15 @@ namespace BlazorWeb.Client.Shared;
 
 public partial class NavMenu : IDisposable
 {
-    private bool _disposed;
-    private bool _isSignOutModalOpen;
-    private string? _profileImageUrl;
-    private string? _profileImageUrlBase;
-    private UserDto _user = new();
-    private List<BitNavItem> _navItems = [];
-    private Action _unsubscribe = default!;
+    private bool disposed;
+    private bool isSignOutModalOpen;
+    private string? profileImageUrl;
+    private string? profileImageUrlBase;
+    private UserDto user = new();
+    private List<BitNavItem> navItems = [];
+    private Action unsubscribe = default!;
 
-    [AutoInject] private NavigationManager _navManager = default!;
+    [AutoInject] private NavigationManager navManager = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 
@@ -21,7 +21,7 @@ public partial class NavMenu : IDisposable
 
     protected override async Task OnInitAsync()
     {
-        _navItems =
+        navItems =
         [
             new BitNavItem
             {
@@ -73,34 +73,34 @@ public partial class NavMenu : IDisposable
             }
         ];
 
-        _unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
+        unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
 
-            _user = (UserDto)payload;
+            user = (UserDto)payload;
 
             SetProfileImageUrl();
 
             StateHasChanged();
         });
 
-        _user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(_user)}", async () =>
+        user = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-{nameof(user)}", async () =>
             await HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto)) ?? new();
 
         var access_token = await PrerenderStateService.GetValue($"{nameof(NavMenu)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
-        _profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
+        profileImageUrlBase = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}&file=";
 
         SetProfileImageUrl();
     }
 
     private void SetProfileImageUrl()
     {
-        _profileImageUrl = _user.ProfileImageName is not null ? _profileImageUrlBase + _user.ProfileImageName : null;
+        profileImageUrl = user.ProfileImageName is not null ? profileImageUrlBase + user.ProfileImageName : null;
     }
 
     private async Task DoSignOut()
     {
-        _isSignOutModalOpen = true;
+        isSignOutModalOpen = true;
 
         await CloseMenu();
     }
@@ -108,7 +108,7 @@ public partial class NavMenu : IDisposable
     private async Task GoToEditProfile()
     {
         await CloseMenu();
-        _navManager.NavigateTo("edit-profile");
+        navManager.NavigateTo("edit-profile");
     }
 
     private async Task CloseMenu()
@@ -125,10 +125,10 @@ public partial class NavMenu : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (disposed || disposing is false) return;
 
-        _unsubscribe?.Invoke();
+        unsubscribe?.Invoke();
 
-        _disposed = true;
+        disposed = true;
     }
 }

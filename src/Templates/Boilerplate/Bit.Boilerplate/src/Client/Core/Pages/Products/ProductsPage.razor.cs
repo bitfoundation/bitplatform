@@ -6,21 +6,21 @@ namespace Boilerplate.Client.Core.Pages.Products;
 [Authorize]
 public partial class ProductsPage
 {
-    private bool _isLoading;
-    private AddOrEditProductModal? _modal;
-    private string _productNameFilter = string.Empty;
+    private bool isLoading;
+    private AddOrEditProductModal? modal;
+    private string productNameFilter = string.Empty;
 
-    private ConfirmMessageBox _confirmMessageBox = default!;
-    private BitDataGrid<ProductDto>? _dataGrid;
-    private BitDataGridItemsProvider<ProductDto> _productsProvider = default!;
-    private BitDataGridPaginationState _pagination = new() { ItemsPerPage = 10 };
+    private ConfirmMessageBox confirmMessageBox = default!;
+    private BitDataGrid<ProductDto>? dataGrid;
+    private BitDataGridItemsProvider<ProductDto> productsProvider = default!;
+    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
     string ProductNameFilter
     {
-        get => _productNameFilter;
+        get => productNameFilter;
         set
         {
-            _productNameFilter = value;
+            productNameFilter = value;
             _ = RefreshData();
         }
     }
@@ -34,9 +34,9 @@ public partial class ProductsPage
 
     private void PrepareGridDataProvider()
     {
-        _productsProvider = async req =>
+        productsProvider = async req =>
         {
-            _isLoading = true;
+            isLoading = true;
 
             try
             {
@@ -47,9 +47,9 @@ public partial class ProductsPage
                     { "$skip", req.StartIndex }
                 };
 
-                if (string.IsNullOrEmpty(_productNameFilter) is false)
+                if (string.IsNullOrEmpty(productNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,'{_productNameFilter}')");
+                    query.Add("$filter", $"contains(Name,'{productNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
@@ -70,7 +70,7 @@ public partial class ProductsPage
             }
             finally
             {
-                _isLoading = false;
+                isLoading = false;
 
                 StateHasChanged();
             }
@@ -79,22 +79,22 @@ public partial class ProductsPage
 
     private async Task RefreshData()
     {
-        await _dataGrid!.RefreshDataAsync();
+        await dataGrid!.RefreshDataAsync();
     }
 
     private async Task CreateProduct()
     {
-        await _modal!.ShowModal(new ProductDto());
+        await modal!.ShowModal(new ProductDto());
     }
 
     private async Task EditProduct(ProductDto product)
     {
-        await _modal!.ShowModal(product);
+        await modal!.ShowModal(product);
     }
 
     private async Task DeleteProduct(ProductDto product)
     {
-        var confirmed = await _confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty),
+        var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty),
                                                      Localizer[nameof(AppStrings.DeleteProduct)]);
 
         if (confirmed)

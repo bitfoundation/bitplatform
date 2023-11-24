@@ -2,8 +2,8 @@
 
 public partial class Header : IDisposable
 {
-    private bool _disposed;
-    private bool _isUserAuthenticated;
+    private bool disposed;
+    private bool isUserAuthenticated;
 
     [Parameter] public EventCallback OnToggleMenu { get; set; }
 
@@ -11,7 +11,7 @@ public partial class Header : IDisposable
     {
         AuthenticationStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
-        _isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
+        isUserAuthenticated = await PrerenderStateService.GetValue($"{nameof(Header)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
         await base.OnInitAsync();
     }
@@ -20,7 +20,7 @@ public partial class Header : IDisposable
     {
         try
         {
-            _isUserAuthenticated = (await task).User.IsAuthenticated();
+            isUserAuthenticated = (await task).User.IsAuthenticated();
         }
         catch (Exception ex)
         {
@@ -45,10 +45,10 @@ public partial class Header : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (disposed) return;
 
         AuthenticationStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
 
-        _disposed = true;
+        disposed = true;
     }
 }

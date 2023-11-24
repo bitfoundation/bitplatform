@@ -6,16 +6,16 @@ namespace Boilerplate.Client.Core;
 public partial class App
 {
 #if BlazorWebAssembly && !BlazorHybrid
-    private List<System.Reflection.Assembly> _lazyLoadedAssemblies = new();
-    [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader _assemblyLoader = default!;
-    [AutoInject] private AuthenticationStateProvider _authenticationStateProvider = default!;
+    private List<System.Reflection.Assembly> lazyLoadedAssemblies = new();
+    [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader assemblyLoader = default!;
+    [AutoInject] private AuthenticationStateProvider authenticationStateProvider = default!;
 #endif
 
-    [AutoInject] private IJSRuntime _jsRuntime = default!;
-    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator = default!;
+    [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
 #if BlazorHybrid && MultilingualEnabled
-    private bool _cultureHasNotBeenSet = true;
+    private bool cultureHasNotBeenSet = true;
 #endif
 
 #if BlazorHybrid
@@ -79,7 +79,7 @@ public partial class App
         }
 
         var cssVariables = new Dictionary<string, string>();
-        var statusBarHeight = _bitDeviceCoordinator.GetStatusBarHeight();
+        var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
 
         if (OperatingSystem.IsMacCatalyst() is false)
         {
@@ -90,7 +90,7 @@ public partial class App
         }
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
-        await _jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
+        await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
     private async Task OnNavigateAsync(NavigationContext args)
@@ -99,22 +99,22 @@ public partial class App
         // Android, windows and iOS have to set culture programmatically.
         // Browser's culture is handled in the Web project's Program.BlazorWebAssembly.cs
 #if BlazorHybrid && MultilingualEnabled
-        if (_cultureHasNotBeenSet)
+        if (cultureHasNotBeenSet)
         {
-            _cultureHasNotBeenSet = false;
+            cultureHasNotBeenSet = false;
             var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
             CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
         }
 #endif
 
 #if BlazorWebAssembly && !BlazorHybrid
-        if ((args.Path is "dashboard") && _lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
+        if ((args.Path is "dashboard") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
-            var isAuthenticated = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User?.Identity?.IsAuthenticated is true;
+            var isAuthenticated = (await authenticationStateProvider.GetAuthenticationStateAsync()).User?.Identity?.IsAuthenticated is true;
             if (isAuthenticated)
             {
-                var assemblies = await _assemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
-                _lazyLoadedAssemblies.AddRange(assemblies);
+                var assemblies = await assemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+                lazyLoadedAssemblies.AddRange(assemblies);
             }
         }
 #endif

@@ -2,12 +2,12 @@
 
 public partial class ProductsPercentageWidget
 {
-    private bool _isLoading;
-    private BitChartPieConfig _config = default!;
+    private bool isLoading;
+    private BitChartPieConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
-        _config = new BitChartPieConfig
+        config = new BitChartPieConfig
         {
             Options = new BitChartPieOptions
             {
@@ -20,7 +20,7 @@ public partial class ProductsPercentageWidget
 
     private async Task GetData()
     {
-        _isLoading = true;
+        isLoading = true;
 
         try
         {
@@ -30,12 +30,12 @@ public partial class ProductsPercentageWidget
 
             BitChartPieDataset<float> chartDataSet = [.. data!.Select(d => d.ProductPercentage)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
-            _config.Data.Datasets.Add(chartDataSet);
-            _config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
+            config.Data.Datasets.Add(chartDataSet);
+            config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }
