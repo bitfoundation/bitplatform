@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -27,7 +26,6 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
         }
         catch (Exception _) when ((_ is ForbiddenException or UnauthorizedException) && tokenProvider.IsInitialized)
         {
-            // Notes about ForbiddenException:
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
@@ -35,27 +33,12 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
 
             if (refresh_token is not null)
             {
-                var httpClient = serviceProvider.GetRequiredService<HttpClient>();
-                var appAuthStateProvider = serviceProvider.GetRequiredService<AppAuthenticationStateProvider>();
+                var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
-                try
-                {
-                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new RefreshRequestDto { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto, cancellationToken))
-                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
+                // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
+                await authManager.RefreshToken();
 
-                    await jsRuntime.StoreAuthToken(refreshTokenResponse!);
-
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshTokenResponse!.AccessToken);
-                }
-                catch (ResourceValidationException exp) /* refresh_token is expired */
-                {
-                    await jsRuntime.RemoveAuthTokens();
-                    throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
-                }
-                finally
-                {
-                    await appAuthStateProvider.RaiseAuthenticationStateHasChanged();
-                }
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await jsRuntime.GetLocalStorage("access_token"));
 
                 return await base.SendAsync(request, cancellationToken);
             }

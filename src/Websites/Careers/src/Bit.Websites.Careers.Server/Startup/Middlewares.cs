@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Reflection;
+using System.Runtime.Loader;
 using Bit.Websites.Careers.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -67,7 +68,7 @@ public class Middlewares
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(Assembly.Load("Bit.Websites.Careers.Client"));
+            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Websites.Careers") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 
     private static void Configure_404_Page(WebApplication app)

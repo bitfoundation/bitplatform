@@ -1,9 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
+public partial class AuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private HttpClient httpClient = default;

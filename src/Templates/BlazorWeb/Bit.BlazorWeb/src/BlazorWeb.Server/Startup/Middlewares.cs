@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Net;
 using System.Reflection;
+using System.Runtime.Loader;
 using BlazorWeb.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -83,7 +84,7 @@ public class Middlewares
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(Assembly.Load("BlazorWeb.Client"));
+            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("BlazorWeb") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 
     /// <summary>

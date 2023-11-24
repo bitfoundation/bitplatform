@@ -2,7 +2,7 @@
 
 namespace BlazorWeb.Client.Services.HttpMessageHandlers;
 
-public class ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
+public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, HttpClientHandler httpClientHandler)
     : DelegatingHandler(httpClientHandler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -38,11 +38,11 @@ public class ExceptionDelegatingHandler(HttpClientHandler httpClientHandler)
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                throw new UnauthorizedException(AppStrings.YouNeedToSignIn);
+                throw new UnauthorizedException(localizer[AppStrings.YouNeedToSignIn]);
             }
             if (response.StatusCode is HttpStatusCode.Forbidden)
             {
-                throw new ForbiddenException(AppStrings.ForbiddenException);
+                throw new ForbiddenException(localizer[AppStrings.ForbiddenException]);
             }
 
             response.EnsureSuccessStatusCode();

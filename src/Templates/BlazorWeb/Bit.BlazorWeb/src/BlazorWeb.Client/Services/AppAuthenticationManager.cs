@@ -1,9 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
+using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Services;
 
-public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
+public partial class AppAuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private HttpClient httpClient = default;
