@@ -2,8 +2,7 @@
 
 public partial class DeleteAccountConfirmModal
 {
-    [Parameter]
-    public bool IsOpen { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -18,9 +17,7 @@ public partial class DeleteAccountConfirmModal
     {
         await HttpClient.DeleteAsync("User/Delete");
 
-        await JSRuntime.RemoveAuthTokens();
-
-        await AuthenticationStateProvider.RaiseAuthenticationStateHasChanged();
+        await AuthenticationManager.SignOut();
 
         await CloseModal();
     }

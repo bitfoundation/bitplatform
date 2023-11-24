@@ -39,11 +39,7 @@ public partial class Footer
     {
         var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
 
-#if BlazorHybrid
-        Preferences.Set(".AspNetCore.Culture", cultureCookie);
-#else
         await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600, rememberMe: true);
-#endif
 
         NavigationManager.Refresh(forceReload: true);
     }

@@ -21,8 +21,8 @@ public static class IServiceCollectionExtensions
         services.AddTransient<ExceptionDelegatingHandler>();
         services.AddTransient<HttpClientHandler>();
 
-        services.AddScoped<AuthenticationStateProvider, AppAuthenticationStateProvider>();
-        services.AddScoped(sp => (AppAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddScoped<AuthenticationStateProvider, AppAuthenticationManager>();
+        services.AddScoped(sp => (AppAuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddTransient<MessageBoxService>();
 

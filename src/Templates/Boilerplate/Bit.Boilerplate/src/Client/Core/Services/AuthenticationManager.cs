@@ -1,16 +1,35 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Boilerplate.Shared.Dtos.Identity;
 
-namespace BlazorWeb.Client.Services;
+namespace Boilerplate.Client.Core.Services;
 
-public partial class AppAuthenticationStateProvider : AuthenticationStateProvider
+public partial class AuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider _tokenProvider = default!;
     [AutoInject] private HttpClient _httpClient = default;
     [AutoInject] private IJSRuntime _jsRuntime = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
-    public async Task RaiseAuthenticationStateHasChanged()
+    public async Task SignIn(SignInRequestDto signInModel)
     {
+        var result = await (await _httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+
+        await _jsRuntime.StoreAuthToken(result!, signInModel.RememberMe);
+
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+    }
+
+    public async Task SignOut()
+    {
+        await _jsRuntime.RemoveAuthTokens();
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+    }
+
+    public async Task RefreshToken()
+    {
+        await _jsRuntime.RemoveCookie("access_token");
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
@@ -24,12 +43,23 @@ public partial class AppAuthenticationStateProvider : AuthenticationStateProvide
 
             if (string.IsNullOrEmpty(refresh_token) is false)
             {
-                var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
-                    .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+                // We refresh the access_token to ensure a seamless user experience, preventing unnecessary 'NotAuthorized' page redirects and improving overall UX.
+                // This method is triggered after 401 and 403 server responses in AuthDelegationHandler,
+                // as well as when accessing pages without the required permissions in NotAuthorizedPage, ensuring that any recent claims granted to the user are promptly reflected.
 
-                await _jsRuntime.StoreAuthToken(refreshTokenResponse!);
+                try
+                {
+                    var refreshTokenResponse = await (await _httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
+                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-                access_token = refreshTokenResponse!.AccessToken;
+                    await _jsRuntime.StoreAuthToken(refreshTokenResponse!);
+                    access_token = refreshTokenResponse!.AccessToken;
+                }
+                catch (ResourceValidationException exp) // refresh_token in invalid or expired
+                {
+                    await _jsRuntime.RemoveAuthTokens();
+                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)], exp);
+                }
             }
         }
 

@@ -13,7 +13,7 @@ public partial class MainLayout : IDisposable
 
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
 
-    [AutoInject] private AppAuthenticationStateProvider _authStateProvider = default!;
+    [AutoInject] private AuthenticationManager _authManager = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -30,7 +30,7 @@ public partial class MainLayout : IDisposable
     {
         try
         {
-            _authStateProvider.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
+            _authManager.AuthenticationStateChanged += VerifyUserIsAuthenticatedOrNot;
 
             _isUserAuthenticated = await _prerenderStateService.GetValue($"{nameof(MainLayout)}-isUserAuthenticated", async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -73,7 +73,7 @@ public partial class MainLayout : IDisposable
     {
         if (_disposed) return;
 
-        _authStateProvider.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
+        _authManager.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
 
         _disposed = true;
     }
