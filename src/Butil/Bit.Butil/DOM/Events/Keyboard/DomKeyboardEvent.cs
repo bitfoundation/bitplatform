@@ -5,18 +5,11 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class DomKeyboardEventArgs : EventArgs
-{
-    internal static readonly string[] SelectedMembers = new string[] { "code" };
-
-    public string Code { get; set; } = string.Empty;
-}
-
 public static class DomKeyboardEvent
 {
     internal const string InvokeMethodName = "InvokeKeyboardEvent";
 
-    private static readonly Dictionary<Guid, Listener> Listeners = new();
+    private static readonly Dictionary<Guid, Listener> Listeners = [];
 
     private static Action<DomKeyboardEventArgs> GetListener(Guid id)
     {
@@ -32,12 +25,13 @@ public static class DomKeyboardEvent
 
     internal static Guid[] RemoveListener(Action<DomKeyboardEventArgs> action, string element, object options)
     {
-        return Listeners.Where(l => l.Value.Action == action && l.Value.Element == element && l.Value.Options == options)
-                        .Select(l =>
-                        {
-                            Listeners.Remove(l.Key);
-                            return l.Key;
-                        }).ToArray();
+        var listenersToRemove = Listeners.Where(l => l.Value.Action == action && l.Value.Element == element && l.Value.Options == options).ToArray();
+
+        return listenersToRemove.Select(l =>
+        {
+            Listeners.Remove(l.Key);
+            return l.Key;
+        }).ToArray();
     }
 
     [JSInvokable(InvokeMethodName)]

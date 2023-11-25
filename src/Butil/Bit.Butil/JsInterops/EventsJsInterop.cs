@@ -1,28 +1,38 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public static class EventsJsInterop
+internal static class EventsJsInterop
 {
-    private static bool _isInitialized;
-    private static IJSRuntime _js = default!;
-
-    public static void Init(IJSRuntime jsRuntime)
+    internal static async Task AddEventListener(this IJSRuntime js,
+        string elementName,
+        string eventName,
+        string dotnetMethodName,
+        Guid dotnetListenerId,
+        string[] selectedMembers,
+        object? options = null)
     {
-        if (_isInitialized) return;
-
-        _isInitialized = true;
-        _js = jsRuntime;
+        await js.InvokeVoidAsync("BitButil.events.addEventListener",
+            elementName,
+            eventName,
+            dotnetMethodName,
+            dotnetListenerId,
+            selectedMembers,
+            options);
     }
 
-    internal static void AddEventListener(string elementName, string eventName, string dotnetMethodName, Guid dotnetListenerId, string[] selectedMembers, object? options = null)
+    internal static async Task RemoveEventListener(this IJSRuntime js,
+        string elementName,
+        string eventName,
+        Guid[] dotnetListenerIds,
+        object? options = null)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.events.addEventListener", elementName, eventName, dotnetMethodName, dotnetListenerId, selectedMembers, options);
-    }
-
-    internal static void RemoveEventListener(string elementName, string eventName, Guid[] dotnetListenerIds, object? options = null)
-    {
-        var _ = _js.InvokeVoidAsync("BitButil.events.removeEventListener", elementName, eventName, dotnetListenerIds, options);
+        await js.InvokeVoidAsync("BitButil.events.removeEventListener",
+            elementName,
+            eventName,
+            dotnetListenerIds,
+            options);
     }
 }

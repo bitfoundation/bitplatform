@@ -1,132 +1,122 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public static class ConsoleJsInterop
+internal static class ConsoleJsInterop
 {
-    private static bool _isInitialized;
-    private static IJSRuntime _js = default!;
-
-    public static void Init(IJSRuntime jsRuntime)
+    internal static async Task Assert(this IJSRuntime js, bool? condition, params object?[]? args)
     {
-        if (_isInitialized) return;
-
-        _isInitialized = true;
-        _js = jsRuntime;
+        await js.InvokeVoidAsync("BitButil.console.assert", [condition, ..args]);
     }
 
-    internal static void Assert(bool? condition, params object?[]? args)
+    internal static async Task Clear(this IJSRuntime js)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.assert", condition, args);
+        await js.InvokeVoidAsync("BitButil.console.clear");
     }
 
-    internal static void Clear()
+    internal static async Task Count(this IJSRuntime js, string? label)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.clear");
+        await js.InvokeVoidAsync("BitButil.console.count", label);
     }
 
-    internal static void Count(string? label)
+    internal static async Task CountReset(this IJSRuntime js, string? label)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.count", label);
+        await js.InvokeVoidAsync("BitButil.console.countReset", label);
     }
 
-    internal static void CountReset(string? label)
+    internal static async Task Debug(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.countReset", label);
+        await js.InvokeVoidAsync("BitButil.console.debug", args);
     }
 
-    internal static void Debug(params object?[]? args)
+    internal static async Task Dir(this IJSRuntime js, object? item, object? options)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.debug", args);
+        await js.InvokeVoidAsync("BitButil.console.dir", item, options);
     }
 
-    internal static void Dir(object? item, object? options)
+    internal static async Task Dirxml(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.dir", item, options);
+        await js.InvokeVoidAsync("BitButil.console.dirxml", args);
     }
 
-    internal static void Dirxml(params object?[]? args)
+    internal static async Task Error(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.dirxml", args);
+        await js.InvokeVoidAsync("BitButil.console.error", args);
     }
 
-    internal static void Error(params object?[]? args)
+    internal static async Task Group(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.error", args);
+        await js.InvokeVoidAsync("BitButil.console.group", args);
     }
 
-    internal static void Group(params object?[]? args)
+    internal static async Task GroupCollapsed(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.group", args);
+        await js.InvokeVoidAsync("BitButil.console.groupCollapsed", args);
     }
 
-    internal static void GroupCollapsed(params object?[]? args)
+    internal static async Task GroupEnd(this IJSRuntime js)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.groupCollapsed", args);
+        await js.InvokeVoidAsync("BitButil.console.groupEnd");
     }
 
-    internal static void GroupEnd()
+    internal static async Task Info(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.groupEnd");
+        await js.InvokeVoidAsync("BitButil.console.info", args);
     }
 
-    internal static void Info(params object?[]? args)
+    internal static async Task Log(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.info", args);
+        await js.InvokeVoidAsync("BitButil.console.log", args);
     }
 
-    internal static void Log(params object?[]? args)
+    internal static async Task Memory(this IJSRuntime js)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.log", args);
+        await js.InvokeVoidAsync("BitButil.console.memory");
     }
 
-    internal static void Memory()
+    internal static async Task Profile(this IJSRuntime js)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.memory");
+        await js.InvokeVoidAsync("BitButil.console.profile");
     }
 
-    internal static void Profile()
+    internal static async Task ProfileEnd(this IJSRuntime js)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.profile");
+        await js.InvokeVoidAsync("BitButil.console.profileEnd");
     }
 
-    internal static void ProfileEnd()
+    internal static async Task Table(this IJSRuntime js, object? data, object? properties)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.profileEnd");
+        await js.InvokeVoidAsync("BitButil.console.table", data, properties);
     }
 
-    internal static void Table(object? data, object? properties)
+    internal static async Task Time(this IJSRuntime js, string? label)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.table", data, properties);
+        await js.InvokeVoidAsync("BitButil.console.time", label);
     }
 
-    internal static void Time(string? label)
+    internal static async Task TimeEnd(this IJSRuntime js, string? label)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.time", label);
+        await js.InvokeVoidAsync("BitButil.console.timeEnd", label);
     }
 
-    internal static void TimeEnd(string? label)
+    internal static async Task TimeLog(this IJSRuntime js, string? label, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.timeEnd", label);
+        await js.InvokeVoidAsync("BitButil.console.timeLog", [label, ..args]);
     }
 
-    internal static void TimeLog(string? label, params object?[]? args)
+    internal static async Task TimeStamp(this IJSRuntime js, string? label)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.timeLog", label, args);
+        await js.InvokeVoidAsync("BitButil.console.timeStamp", label);
     }
 
-    internal static void TimeStamp(string? label)
+    internal static async Task Trace(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.timeStamp", label);
+        await js.InvokeVoidAsync("BitButil.console.trace", args);
     }
 
-    internal static void Trace(params object?[]? args)
+    internal static async Task Warn(this IJSRuntime js, params object?[]? args)
     {
-        var _ = _js.InvokeVoidAsync("BitButil.console.trace", args);
-    }
-
-    internal static void Warn(params object?[]? args)
-    {
-        var _ = _js.InvokeVoidAsync("BitButil.console.warn", args);
+        await js.InvokeVoidAsync("BitButil.console.warn", args);
     }
 }
