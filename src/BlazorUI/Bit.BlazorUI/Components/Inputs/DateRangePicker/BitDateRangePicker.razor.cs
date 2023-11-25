@@ -8,6 +8,8 @@ public partial class BitDateRangePicker
 {
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
+    private const int STEP_DELAY = 75;
+    private const int INITIAL_STEP_DELAY = 400;
 
 
 
@@ -161,15 +163,18 @@ public partial class BitDateRangePicker
     private int _currentYear;
     private int _displayYear;
     private int _currentMonth;
+    private bool _isPointerDown;
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private int? _selectedEndDateWeek;
     private int? _selectedStartDateWeek;
     private bool _showMonthPicker = true;
     private int? _selectedEndDateDayOfWeek;
+    private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
     private int? _selectedStartDateDayOfWeek;
     private string _monthTitle = string.Empty;
+    private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
     private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
@@ -277,6 +282,16 @@ public partial class BitDateRangePicker
     /// The title of the GoToToday button (tooltip).
     /// </summary>
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+
+    /// <summary>
+    /// The title of the ShowTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+
+    /// <summary>
+    /// The title of the HideTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string HideTimePickerTitle { get; set; } = "Hide time picker";
 
     /// <summary>
     /// Determines if the DateRangePicker has a border.
@@ -504,6 +519,10 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
+    /// <summary>
+    /// Show month picker on top of date picker when visible.
+    /// </summary>
+    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
 
 
     public Task OpenCallout()
@@ -632,6 +651,16 @@ public partial class BitDateRangePicker
         if (_showMonthPickerAsOverlayInternal)
         {
             _isMonthPickerOverlayOnTop = false;
+        }
+
+        if (_showTimePickerAsOverlayInternal is false)
+        {
+            _showTimePickerAsOverlayInternal = result;
+        }
+
+        if (_showTimePickerAsOverlayInternal)
+        {
+            _isTimePickerOverlayOnTop = false;
         }
 
         if (CurrentValue is not null)
@@ -1069,6 +1098,11 @@ public partial class BitDateRangePicker
         _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
     }
 
+    private void ToggleTimePickerOverlay()
+    {
+        _isTimePickerOverlayOnTop = !_isTimePickerOverlayOnTop;
+    }
+
     private bool CanChangeMonth(bool isNext)
     {
         if (isNext && MaxDate.HasValue)
@@ -1358,18 +1392,18 @@ public partial class BitDateRangePicker
         return new DateTimeOffset(Culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
     }
 
-    private async Task HandleOnStartTimeHourFocus()
+    private async Task HandleOnTimeHourFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputStartTimeHourRef);
+        await _js.SelectText(isStartTime ? _inputStartTimeHourRef : _inputEndTimeHourRef);
     }
 
-    private async Task HandleOnStartTimeMinuteFocus()
+    private async Task HandleOnTimeMinuteFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputStartTimeMinuteRef);
+        await _js.SelectText(isStartTime ? _inputStartTimeMinuteRef : _inputEndTimeMinuteRef);
     }
 
     private async Task HandleOnEndTimeHourFocus()
@@ -1400,6 +1434,163 @@ public partial class BitDateRangePicker
         _endTimeHourView = _endTimeHour + (_endTimeHour >= 12 ? -12 : 12);
     }
 
+    private void HandleOnAmClick(bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            _startTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+        }
+        else
+        {
+            _endTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+        }
+        UpdateTime();
+    }
+
+    private void HandleOnPmClick(bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            if (_startTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+            {
+                _startTimeHour += 12;
+            }
+
+            _startTimeHour %= 24;
+        }
+        else
+        {
+            if (_endTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+            {
+                _endTimeHour += 12;
+            }
+
+            _endTimeHour %= 24;
+        }
+
+        UpdateTime();
+    }
+
+    private bool? IsAm(int hour)
+    {
+        if (CurrentValue is null) return null;
+
+        return hour >= 0 && hour < 12; // am is 00:00 to 11:59
+    }
+
+    private async Task HandleOnPointerDown(bool isNext, bool isHour, bool isStartTime)
+    {
+        if (IsEnabled is false) return;
+
+        _isPointerDown = true;
+
+        await ChangeTime(isNext, isHour, isStartTime, INITIAL_STEP_DELAY);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour, bool isStartTime, int stepDelay)
+    {
+        if (_isPointerDown is false) return;
+
+        if (isHour)
+        {
+            ChangeHour(isNext, isStartTime);
+        }
+        else
+        {
+            ChangeMinute(isNext, isStartTime);
+        }
+        StateHasChanged();
+
+        await Task.Delay(stepDelay);
+
+        await ChangeTime(isNext, isHour, isStartTime, STEP_DELAY);
+    }
+
+    private void HandleOnPointerUpOrOut()
+    {
+        _isPointerDown = false;
+    }
+
+    private void ChangeHour(bool isNext, bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            ChangeHour(ref _startTimeHour);
+        }
+        else
+        {
+            ChangeHour(ref _endTimeHour);
+        }
+
+        void ChangeHour(ref int hour)
+        {
+            if (isNext)
+            {
+                if (hour < 23)
+                {
+                    hour++;
+                }
+                else
+                {
+                    hour = 0;
+                }
+            }
+            else
+            {
+                if (hour > 0)
+                {
+                    hour--;
+                }
+                else
+                {
+                    hour = 23;
+                }
+            }
+        }
+
+        UpdateTime();
+    }
+
+    private void ChangeMinute(bool isNext, bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            ChangeMinute(ref _startTimeMinute);
+        }
+        else
+        {
+            ChangeMinute(ref _endTimeMinute);
+        }
+
+        void ChangeMinute(ref int minute)
+        {
+            if (isNext)
+            {
+                if (minute < 59)
+                {
+                    minute++;
+                }
+                else
+                {
+                    minute = 0;
+                }
+            }
+            else
+            {
+                if (minute > 0)
+                {
+                    minute--;
+                }
+                else
+                {
+                    minute = 59;
+                }
+            }
+        }
+
+        UpdateTime();
+    }
+
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
@@ -1409,6 +1600,44 @@ public partial class BitDateRangePicker
         await ToggleCallout();
 
         StateHasChanged();
+    }
+
+    private bool ShowDayPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false);
+        }
+    }
+
+    private bool ShowMonthPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return (_showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop)) && _isTimePickerOverlayOnTop is false;
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop);
+        }
     }
 
     [JSInvokable("CloseCallout")]
@@ -1427,6 +1656,8 @@ public partial class BitDateRangePicker
 
         _isMonthPickerOverlayOnTop = false;
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+        _isTimePickerOverlayOnTop = false;
+        _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _dateRangePickerId,

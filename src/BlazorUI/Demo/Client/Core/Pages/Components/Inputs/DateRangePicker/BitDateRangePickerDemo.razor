@@ -81,7 +81,8 @@
                                                       StartAndEndSelectionDays = "background-color: rebeccapurple;",
                                                       YearPickerToggleButton = "color: blue;" })" />
 
-                <BitDateRangePicker Classes="@(new() { Root = "custom-root",
+                <BitDateRangePicker ShowTimePicker="true"
+                                    Classes="@(new() { Root = "custom-root",
                                                        Callout = "custom-callout",
                                                        DayPickerWrapper = "custom-day-picker",
                                                        DayButton = "custom-day",
@@ -93,7 +94,15 @@
                                                        DayPickerMonth = "custom-day-month",
                                                        DayPickerHeader = "custom-day-header",
                                                        WeekNumbersHeader = "custom-week-header",
-                                                       YearMonthPickerWrapper = "custom-year-picker"})" />
+                                                       YearMonthPickerWrapper = "custom-year-picker",
+                                                       StartTimePickerIncreaseHourButton = "custom-increase-btn",
+                                                       StartTimePickerIncreaseMinuteButton = "custom-increase-btn",
+                                                       StartTimePickerDecreaseHourButton = "custom-decrease-btn",
+                                                       StartTimePickerDecreaseMinuteButton = "custom-decrease-btn",
+                                                       EndTimePickerIncreaseHourButton = "custom-increase-btn",
+                                                       EndTimePickerIncreaseMinuteButton = "custom-increase-btn",
+                                                       EndTimePickerDecreaseHourButton = "custom-decrease-btn",
+                                                       EndTimePickerDecreaseMinuteButton = "custom-decrease-btn" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
