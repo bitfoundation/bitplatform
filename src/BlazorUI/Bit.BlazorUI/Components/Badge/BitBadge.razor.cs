@@ -29,11 +29,6 @@ public partial class BitBadge
     }
 
     /// <summary>
-    /// Applies a border around the badge.
-    /// </summary>
-    [Parameter] public bool Bordered { get; set; }
-
-    /// <summary>
     /// Child content of component, the content that the badge will apply to.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -199,7 +194,6 @@ public partial class BitBadge
 
         className.Append(Dot ? "bit-bdg-dot" : string.Empty);
         className.Append(Overlap ? " bit-bdg-orp" : string.Empty);
-        className.Append(Bordered ? " bit-bdg-brd" : string.Empty);
 
         if (Icon.HasValue() && Dot is false)
         {

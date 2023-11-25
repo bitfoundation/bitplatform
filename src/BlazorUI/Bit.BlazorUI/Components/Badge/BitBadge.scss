@@ -155,22 +155,6 @@
         }
     }
 
-    &.bit-bdg-brd {
-        border-color: $color-secondary-text;
-        padding: spacing(0.375) spacing(0.5);
-
-        &.bit-bdg-icn {
-            padding: spacing(0.5) spacing(0.75);
-
-            & .bit-icon-bdg {
-                margin-top: -spacing(0.5);
-                margin-left: -spacing(0.5);
-                margin-inline-end: unset;
-                margin-inline-start: -spacing(0.5);
-            }
-        }
-    }
-
     &.bit-bdg-icon {
         width: spacing(2.5);
         height: spacing(2.5);
