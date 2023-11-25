@@ -82,7 +82,7 @@ public partial class BitSlider
     /// Whether to render the Slider as readonly
     /// </summary>
     [Parameter]
-    public bool IsReadonly
+    public bool IsReadOnly
     {
         get => isReadOnly;
         set
@@ -245,7 +245,7 @@ public partial class BitSlider
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadonly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
     }
