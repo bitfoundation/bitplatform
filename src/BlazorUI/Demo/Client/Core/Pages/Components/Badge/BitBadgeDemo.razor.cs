@@ -310,20 +310,20 @@ public partial class BitBadgeDemo
 
 
     private readonly string example1RazorCode = @"
-<BitBadge Content=""5"" />
-<BitBadge Content=""15"" Appearance=""BitAppearance.Standard"" />
-<BitBadge Content=""25"" Appearance=""BitAppearance.Text"" />";
+<BitBadge Content=""5"">Primary</BitBadge>
+<BitBadge Content=""15"" Appearance=""BitAppearance.Standard"">Standard</BitBadge>
+<BitBadge Content=""25"" Appearance=""BitAppearance.Text"">Text</BitBadge>";
 
     private readonly string example2RazorCode = @"
-<BitBadge Content=""35"">Primary</BitBadge>
+<BitBadge Content=""35"">Default</BitBadge>
 <BitBadge Content=""45"" IsEnabled=""false"">Disabled</BitBadge>";
 
     private readonly string example3RazorCode = @"
-<BitBadge Content=""55"" Appearance=""BitAppearance.Standard"">Standard</BitBadge>
+<BitBadge Content=""55"" Appearance=""BitAppearance.Standard"">Default</BitBadge>
 <BitBadge Content=""65"" Appearance=""BitAppearance.Standard"" IsEnabled=""false"">Disabled</BitBadge>";
 
     private readonly string example4RazorCode = @"
-<BitBadge Content=""75"" Appearance=""BitAppearance.Text"">Text</BitBadge>
+<BitBadge Content=""75"" Appearance=""BitAppearance.Text"">Default</BitBadge>
 <BitBadge Content=""85"" Appearance=""BitAppearance.Text"" IsEnabled=""false"">Disabled</BitBadge>";
 
     private readonly string example5RazorCode = @"
