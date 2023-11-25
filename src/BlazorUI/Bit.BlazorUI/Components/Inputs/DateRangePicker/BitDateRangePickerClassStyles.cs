@@ -173,199 +173,199 @@ public class BitDateRangePickerClassStyles
     public string? StartAndEndSelectionDays { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time-picker's input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the time's input container of the BitDateRangePicker.
     /// </summary>
     public string? TimeInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's input container of the BitDateRangePicker.
     /// </summary>
     public string? StartTimeInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's input container of the BitDateRangePicker.
     /// </summary>
     public string? EndTimeInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's hour input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's hour input container of the BitDateRangePicker.
     /// </summary>
-    public string? StartHourInputContainer { get; set; }
+    public string? StartTimeHourInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's hour input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's hour input container of the BitDateRangePicker.
     /// </summary>
-    public string? EndHourInputContainer { get; set; }
+    public string? EndTimeHourInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's minute input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's minute input container of the BitDateRangePicker.
     /// </summary>
-    public string? StartMinuteInputContainer { get; set; }
+    public string? StartTimeMinuteInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's minute input container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's minute input container of the BitDateRangePicker.
     /// </summary>
-    public string? EndMinuteInputContainer { get; set; }
+    public string? EndTimeMinuteInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's wrapper of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's wrapper of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerWrapper { get; set; }
+    public string? StartTimeWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's wrapper of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's wrapper of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerWrapper { get; set; }
+    public string? EndTimeWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time-picker's wrapper of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the time's wrapper of the BitDateRangePicker.
     /// </summary>
     public string? TimePickerWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time-picker's header of the BitDatePicker.
+    /// Custom CSS classes/styles for the time's header of the BitDatePicker.
     /// </summary>
     public string? TimePickerHeader { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's hour input of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's hour input of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerHourInput { get; set; }
+    public string? StartTimeHourInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's hour input of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's hour input of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerHourInput { get; set; }
+    public string? EndTimeHourInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's divider of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's divider of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerDivider { get; set; }
+    public string? StartTimeDivider { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's divider of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's divider of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerDivider { get; set; }
+    public string? EndTimeDivider { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's minute input of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's minute input of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerMinuteInput { get; set; }
+    public string? StartTimeMinuteInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's minute input of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's minute input of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerMinuteInput { get; set; }
+    public string? EndTimeMinuteInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's increase hour button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's increase hour button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerIncreaseHourButton { get; set; }
+    public string? StartTimeIncreaseHourButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's increase hour icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's increase hour icon of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerIncreaseHourIcon { get; set; }
+    public string? StartTimeIncreaseHourIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's decrease hour button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's decrease hour button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerDecreaseHourButton { get; set; }
+    public string? StartTimeDecreaseHourButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's decrease hour icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's decrease hour icon of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerDecreaseHourIcon { get; set; }
+    public string? StartTimeDecreaseHourIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's increase minute button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's increase minute button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerIncreaseMinuteButton { get; set; }
+    public string? StartTimeIncreaseMinuteButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's increase minute icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's increase minute icon of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerIncreaseMinuteIcon { get; set; }
+    public string? StartTimeIncreaseMinuteIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's decrease minute button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's decrease minute button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerDecreaseMinuteButton { get; set; }
+    public string? StartTimeDecreaseMinuteButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's decrease minute icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's decrease minute icon of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerDecreaseMinuteIcon { get; set; }
+    public string? StartTimeDecreaseMinuteIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's Am Pm container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's Am Pm container of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerAmPmContainer { get; set; }
+    public string? StartTimeAmPmContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's increase hour button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's increase hour button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerIncreaseHourButton { get; set; }
+    public string? EndTimeIncreaseHourButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's increase hour icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's increase hour icon of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerIncreaseHourIcon { get; set; }
+    public string? EndTimeIncreaseHourIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's decrease hour button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's decrease hour button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerDecreaseHourButton { get; set; }
+    public string? EndTimeDecreaseHourButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's decrease hour icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's decrease hour icon of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerDecreaseHourIcon { get; set; }
+    public string? EndTimeDecreaseHourIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's increase minute button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's increase minute button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerIncreaseMinuteButton { get; set; }
+    public string? EndTimeIncreaseMinuteButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's increase minute icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's increase minute icon of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerIncreaseMinuteIcon { get; set; }
+    public string? EndTimeIncreaseMinuteIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's decrease minute button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's decrease minute button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerDecreaseMinuteButton { get; set; }
+    public string? EndTimeDecreaseMinuteButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's decrease minute icon of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's decrease minute icon of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerDecreaseMinuteIcon { get; set; }
+    public string? EndTimeDecreaseMinuteIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's Am Pm container of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's Am Pm container of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerAmPmContainer { get; set; }
+    public string? EndTimeAmPmContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's Am button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's Am button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerAmButton { get; set; }
+    public string? StartTimeAmButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's Am button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's Am button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerAmButton { get; set; }
+    public string? EndTimeAmButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time-picker's Pm button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's Pm button of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimePickerPmButton { get; set; }
+    public string? StartTimePmButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time-picker's Pm button of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's Pm button of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimePickerPmButton { get; set; }
+    public string? EndTimePmButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the main divider of the BitDateRangePicker.
