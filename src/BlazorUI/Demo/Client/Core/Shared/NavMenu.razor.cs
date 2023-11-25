@@ -82,6 +82,7 @@ public partial class NavMenu : IDisposable
             Text = "Notification & Engagement",
             ChildItems = new()
             {
+                new() { Text = "Badge", Url = "/components/badge" },
                 new() { Text = "MessageBar", Url = "/components/messagebar", AdditionalUrls = new string[] { "/components/message-bar" } },
                 new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },
