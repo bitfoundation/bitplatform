@@ -2,9 +2,9 @@
 
 public enum BitBadgePosition
 {
-    TopLeft,
-    TopCenter,
     TopRight,
+    TopCenter,
+    TopLeft,
     CenterLeft,
     Center,
     CenterRight,

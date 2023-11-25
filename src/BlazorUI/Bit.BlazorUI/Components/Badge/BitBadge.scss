@@ -28,7 +28,7 @@
         justify-content: flex-start;
     }
 
-    &.bit-bdg-tcn {
+    &.bit-bdg-tcr {
         align-items: flex-start;
         justify-content: center;
     }
@@ -57,7 +57,7 @@
         justify-content: flex-start;
     }
 
-    &.bit-bdg-bcn {
+    &.bit-bdg-bcr {
         align-items: flex-end;
         justify-content: center;
     }
@@ -99,7 +99,7 @@
         }
     }
 
-    &.bit-bdg-tcn {
+    &.bit-bdg-tcr {
         bottom: calc(100% - spacing(0.5));
 
         &.bit-bdg-orp {
@@ -139,7 +139,7 @@
         }
     }
 
-    &.bit-bdg-bcn {
+    &.bit-bdg-bcr {
         top: calc(100% - spacing(0.5));
 
         &.bit-bdg-orp {

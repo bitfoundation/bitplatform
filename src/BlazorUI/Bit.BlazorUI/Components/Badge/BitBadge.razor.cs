@@ -193,6 +193,7 @@ public partial class BitBadge
         StringBuilder className = new StringBuilder();
 
         className.Append(Dot ? "bit-bdg-dot" : string.Empty);
+
         className.Append(Overlap ? " bit-bdg-orp" : string.Empty);
 
         if (Icon.HasValue() && Dot is false)
