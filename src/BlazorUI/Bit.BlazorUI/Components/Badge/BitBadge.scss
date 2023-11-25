@@ -77,16 +77,19 @@
     letter-spacing: 0;
     position: absolute;
     text-align: center;
+    align-items: center;
     white-space: nowrap;
-    pointer-events: auto;
     height: spacing(2.5);
+    display: inline-flex;
+    pointer-events: auto;
+    box-sizing: border-box;
     min-width: spacing(2.5);
     font-size: spacing(1.5);
     -webkit-user-select: none;
     border-radius: spacing(1.25);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
-    padding: spacing(0.5) spacing(0.75);
+    padding: spacing(0) spacing(0.75);
 
     &.bit-bdg-tlf {
         inset: auto calc(100% - spacing(0.5)) calc(100% - spacing(0.5)) auto;
@@ -199,7 +202,7 @@
     --bit-bdg-pri-brd-clr: #{$color-primary-main};
     --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
 
-    &.bit-dis {
+    .bit-dis & {
         border-color: $color-border-disabled;
         background-color: $color-background-disabled;
     }
@@ -213,7 +216,7 @@
     --bit-bdg-sec-brd-clr: #{$color-secondary-text};
     --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
 
-    &.bit-dis {
+    .bit-dis & {
         border-color: $color-border-disabled;
     }
 }
@@ -271,3 +274,18 @@
     --bit-bdg-sec-brd-clr: #{$color-state-error};
 }
 
+.bit-bdg-sm {
+    height: spacing(2);
+    min-width: spacing(2);
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.25);
+    border-radius: spacing(1);
+}
+
+.bit-bdg-lg {
+    height: spacing(3);
+    min-width: spacing(3);
+    font-size: spacing(1.5);
+    border-radius: spacing(1.5);
+    padding: spacing(0) spacing(0.75);
+}

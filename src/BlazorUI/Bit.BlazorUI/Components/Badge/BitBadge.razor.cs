@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitBadge
 {
+    private BitBadgeSize? size;
     private BitBadgeColor? color;
     private BitBadgeStyle badgeStyle = BitBadgeStyle.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
@@ -79,9 +80,9 @@ public partial class BitBadge
     [Parameter] public string? Icon { get; set; }
 
     /// <summary>
-    /// Max value to show when content is integer type.
+    /// Max value to display when content is integer type.
     /// </summary>
-    [Parameter] public int Max { get; set; } = 99;
+    [Parameter] public int OverflowCount { get; set; } = 99;
 
     /// <summary>
     /// Button click event if set.
@@ -105,6 +106,22 @@ public partial class BitBadge
             if (badgePosition == value) return;
 
             badgePosition = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The size of badge, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitBadgeSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
             ClassBuilder.Reset();
         }
     }
@@ -135,9 +152,9 @@ public partial class BitBadge
         }
         else if (Content is int numberContent)
         {
-            if (numberContent > Max)
+            if (numberContent > OverflowCount)
             {
-                _content = Max + "+";
+                _content = OverflowCount + "+";
             }
             else
             {
@@ -204,6 +221,14 @@ public partial class BitBadge
             BitBadgeColor.Warning => "bit-bdg-wrn",
             BitBadgeColor.SevereWarning => "bit-bdg-swr",
             BitBadgeColor.Error => "bit-bdg-err",
+            _ => string.Empty
+        });
+
+        className.Append(' ').Append(Size switch
+        {
+            BitBadgeSize.Small => "bit-bdg-sm",
+            BitBadgeSize.Medium => "bit-bdg-md",
+            BitBadgeSize.Large => "bit-bdg-lg",
             _ => string.Empty
         });
 
