@@ -155,27 +155,6 @@
             inset: calc(100% - spacing(1.5)) auto auto calc(100% - spacing(1.5));
         }
     }
-
-    &.bit-bdg-icon {
-        width: spacing(2.5);
-        height: spacing(2.5);
-
-        & .bit-icon-bdg {
-            color: inherit;
-            font-size: spacing(1.5);
-            margin-left: -spacing(0.25);
-            margin-inline-end: unset;
-            margin-inline-start: -spacing(0.25);
-        }
-    }
-
-    &.bit-bdg-dot {
-        padding: 0;
-        min-width: 0;
-        border-radius: 50%;
-        width: spacing(1.125);
-        height: spacing(1.125);
-    }
 }
 
 .bit-bdg-pri {
@@ -212,6 +191,19 @@
     background-color: transparent;
     --bit-bdg-sec-clr: #{$color-secondary-text};
     --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
+}
+
+.bit-bdg-icon {
+    min-width: spacing(2.5);
+    min-height: spacing(2.5);
+}
+
+.bit-bdg-dot {
+    padding: 0;
+    min-width: 0;
+    border-radius: 50%;
+    width: spacing(1.125);
+    height: spacing(1.125);
 }
 
 .bit-bdg-inf {

@@ -327,7 +327,7 @@ public partial class BitBadgeDemo
 <BitBadge Content=""85"" Appearance=""BitAppearance.Text"" IsEnabled=""false"">Disabled</BitBadge>";
 
     private readonly string example5RazorCode = @"
-<BitBadge Max=""85"" Content=""95"" />";
+<BitBadge Max=""85"" Content=""95"">Max value</BitBadge>";
 
     private readonly string example6RazorCode = @"
 <BitBadge Icon=""Clock"">
