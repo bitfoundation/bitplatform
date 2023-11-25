@@ -6,7 +6,7 @@ public partial class BitTextField
 {
     private bool hasBorder = true;
     private bool isMultiline;
-    private bool isReadonly;
+    private bool isReadOnly;
     private bool isRequired;
     private bool isUnderlined;
     private bool isResizable = true;
@@ -95,12 +95,12 @@ public partial class BitTextField
     [Parameter]
     public bool IsReadOnly
     {
-        get => isReadonly;
+        get => isReadOnly;
         set
         {
-            if (isReadonly == value) return;
+            if (isReadOnly == value) return;
 
-            isReadonly = value;
+            isReadOnly = value;
             ClassBuilder.Reset();
         }
     }
