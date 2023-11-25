@@ -1,0 +1,60 @@
+﻿.badges-container {
+    gap: 3rem;
+    display: flex;
+    padding: 1rem;
+    flex-flow: row wrap;
+    align-items: center;
+    max-width: max-content;
+}
+
+.badges-container-grid {
+    display: grid;
+    padding: 1rem;
+}
+
+.custom-loading {
+    display: flex;
+    gap: 0.3125rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-container {
+    max-width: 20rem;
+}
+
+::deep {
+    .validation-message {
+        color: red;
+    }
+
+    .custom-class {
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 0.5rem;
+
+        div {
+            padding: 0.5rem;
+            color: blueviolet;
+        }
+    }
+
+    .custom-root {
+        margin-left: 1rem;
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-wrapper {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-badge {
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: unset;
+        border-end-start-radius: unset;
+        border-start-start-radius: 0.5rem;
+    }
+
+    .custom-icon {
+        color: dodgerblue;
+    }
+}
