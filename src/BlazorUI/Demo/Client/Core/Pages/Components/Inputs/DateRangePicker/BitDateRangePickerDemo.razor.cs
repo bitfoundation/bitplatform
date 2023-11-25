@@ -304,7 +304,7 @@ public partial class BitDateRangePickerDemo
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
+            Description = "Show month picker on top of date range picker when visible.",
         },
         new()
         {
@@ -318,7 +318,7 @@ public partial class BitDateRangePickerDemo
             Name = "ShowTimePickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
+            Description = "Show month picker on top of date range picker when visible.",
         },
         new()
         {

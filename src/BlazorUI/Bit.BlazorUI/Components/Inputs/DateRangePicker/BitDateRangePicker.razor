@@ -486,10 +486,10 @@
                                             class="bit-dtrp-tbt @Classes?.StartTimePickerIncreaseHourButton">
                                         <i style="@Styles?.StartTimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimePickerIncreaseHourIcon" aria-hidden="true" />
                                     </button>
-                                    <input @ref="_inputStartTimeHourRef"
+                                    <input @ref="_startTimeHourInputRef"
                                            @bind="@_startTimeHourView"
                                            @bind:event="oninput"
-                                           @onfocus="() => HandleOnTimeHourFocus(true)"
+                                           @onfocus="() => HandleOnHourInputFocus(true)"
                                            min="0"
                                            max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                            type="number"
@@ -516,10 +516,10 @@
                                             class="bit-dtrp-tbt @Classes?.StartTimePickerIncreaseMinuteButton">
                                         <i style="@Styles?.StartTimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimePickerIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
-                                    <input @ref="_inputStartTimeMinuteRef"
+                                    <input @ref="_startTimeMinuteInputRef"
                                            @bind="@_startTimeMinuteView"
                                            @bind:event="oninput"
-                                           @onfocus="() => HandleOnTimeMinuteFocus(true)"
+                                           @onfocus="() => HandleOnMinuteInputFocus(true)"
                                            min="0"
                                            max="59"
                                            type="number"
@@ -567,10 +567,10 @@
                                             class="bit-dtrp-tbt @Classes?.EndTimePickerIncreaseHourButton">
                                         <i style="@Styles?.EndTimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimePickerIncreaseHourIcon" aria-hidden="true" />
                                     </button>
-                                    <input @ref="_inputEndTimeHourRef"
+                                    <input @ref="_endTimeHourInputRef"
                                            @bind="@_endTimeHourView"
                                            @bind:event="oninput"
-                                           @onfocus="() => HandleOnTimeHourFocus(false)"
+                                           @onfocus="() => HandleOnHourInputFocus(false)"
                                            min="0"
                                            max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                            type="number"
@@ -597,10 +597,10 @@
                                             class="bit-dtrp-tbt @Classes?.EndTimePickerIncreaseMinuteButton">
                                         <i style="@Styles?.EndTimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimePickerIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
-                                    <input @ref="_inputEndTimeMinuteRef"
+                                    <input @ref="_endTimeMinuteInputRef"
                                            @bind="@_endTimeMinuteView"
                                            @bind:event="oninput"
-                                           @onfocus="() => HandleOnTimeMinuteFocus(false)"
+                                           @onfocus="() => HandleOnMinuteInputFocus(false)"
                                            min="0"
                                            max="59"
                                            type="number"

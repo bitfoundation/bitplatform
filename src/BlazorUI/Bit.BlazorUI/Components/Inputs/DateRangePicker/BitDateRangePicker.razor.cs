@@ -184,10 +184,10 @@ public partial class BitDateRangePicker
     private string? _labelId;
     private string? _inputId;
     private string? _activeDescendantId;
-    private ElementReference _inputStartTimeHourRef = default!;
-    private ElementReference _inputStartTimeMinuteRef = default!;
-    private ElementReference _inputEndTimeHourRef = default!;
-    private ElementReference _inputEndTimeMinuteRef = default!;
+    private ElementReference _startTimeHourInputRef = default!;
+    private ElementReference _startTimeMinuteInputRef = default!;
+    private ElementReference _endTimeHourInputRef = default!;
+    private ElementReference _endTimeMinuteInputRef = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -465,7 +465,7 @@ public partial class BitDateRangePicker
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
-    /// Show month picker on top of date picker when visible.
+    /// Show month picker on top of date range picker when visible.
     /// </summary>
     [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
@@ -520,7 +520,7 @@ public partial class BitDateRangePicker
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
     /// <summary>
-    /// Show month picker on top of date picker when visible.
+    /// Show month picker on top of date range picker when visible.
     /// </summary>
     [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
 
@@ -1392,46 +1392,18 @@ public partial class BitDateRangePicker
         return new DateTimeOffset(Culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
     }
 
-    private async Task HandleOnTimeHourFocus(bool isStartTime)
+    private async Task HandleOnHourInputFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(isStartTime ? _inputStartTimeHourRef : _inputEndTimeHourRef);
+        await _js.SelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
     }
 
-    private async Task HandleOnTimeMinuteFocus(bool isStartTime)
+    private async Task HandleOnMinuteInputFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(isStartTime ? _inputStartTimeMinuteRef : _inputEndTimeMinuteRef);
-    }
-
-    private async Task HandleOnEndTimeHourFocus()
-    {
-        if (IsEnabled is false || ShowTimePicker is false) return;
-
-        await _js.SelectText(_inputEndTimeHourRef);
-    }
-
-    private async Task HandleOnEndTimeMinuteFocus()
-    {
-        if (IsEnabled is false || ShowTimePicker is false) return;
-
-        await _js.SelectText(_inputEndTimeMinuteRef);
-    }
-
-    private void ToggleStartTimeAmPm()
-    {
-        if (IsEnabled is false) return;
-
-        _startTimeHourView = _startTimeHour + (_startTimeHour >= 12 ? -12 : 12);
-    }
-
-    private void ToggleEndTimeAmPm()
-    {
-        if (IsEnabled is false) return;
-
-        _endTimeHourView = _endTimeHour + (_endTimeHour >= 12 ? -12 : 12);
+        await _js.SelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
     }
 
     private void HandleOnAmClick(bool isStartTime)
