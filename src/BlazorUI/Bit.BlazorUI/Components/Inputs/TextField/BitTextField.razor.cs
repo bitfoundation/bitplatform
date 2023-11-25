@@ -93,7 +93,7 @@ public partial class BitTextField
     /// If true, the text field is readonly.
     /// </summary>
     [Parameter]
-    public bool IsReadonly
+    public bool IsReadOnly
     {
         get => isReadonly;
         set
