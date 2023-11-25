@@ -9,6 +9,8 @@ internal class DomEventArgs
         return domEvent switch
         {
             DomEvents.KeyDown => typeof(DomKeyboardEventArgs),
+            DomEvents.KeyUp => typeof(DomKeyboardEventArgs),
+            DomEvents.KeyPress => typeof(DomKeyboardEventArgs),
             _ => throw new NotSupportedException(domEvent),
         };
     }

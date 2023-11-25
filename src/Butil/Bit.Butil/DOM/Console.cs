@@ -1,119 +1,122 @@
-﻿namespace Bit.Butil;
+﻿using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
-public static class Console
+namespace Bit.Butil;
+
+public class Console(IJSRuntime js)
 {
-    public static void Assert(bool? condition, params object?[]? args)
+    public async Task Assert(bool? condition, params object?[]? args)
     {
-        ConsoleJsInterop.Assert(condition, args);
+        await js.Assert(condition, args);
     }
 
-    public static void Clear()
+    public async Task Clear()
     {
-        ConsoleJsInterop.Clear();
+        await js.Clear();
     }
 
-    public static void Count(string? label)
+    public async Task Count(string? label)
     {
-        ConsoleJsInterop.Count(label);
+        await js.Count(label);
     }
 
-    public static void CountReset(string? label)
+    public async Task CountReset(string? label)
     {
-        ConsoleJsInterop.CountReset(label);
+        await js.CountReset(label);
     }
 
-    public static void Debug(params object?[]? args)
+    public async Task Debug(params object?[]? args)
     {
-        ConsoleJsInterop.Debug(args);
+        await js.Debug(args);
     }
 
-    public static void Dir(object? item, object? options)
+    public async Task Dir(object? item, object? options)
     {
-        ConsoleJsInterop.Dir(item, options);
+        await js.Dir(item, options);
     }
 
-    public static void Dirxml(params object?[]? args)
+    public async Task Dirxml(params object?[]? args)
     {
-        ConsoleJsInterop.Dirxml(args);
+        await js.Dirxml(args);
     }
 
-    public static void Error(params object?[]? args)
+    public async Task Error(params object?[]? args)
     {
-        ConsoleJsInterop.Error(args);
+        await js.Error(args);
     }
 
-    public static void Group(params object?[]? args)
+    public async Task Group(params object?[]? args)
     {
-        ConsoleJsInterop.Group(args);
+        await js.Group(args);
     }
 
-    public static void GroupCollapsed(params object?[]? args)
+    public async Task GroupCollapsed(params object?[]? args)
     {
-        ConsoleJsInterop.GroupCollapsed(args);
+        await js.GroupCollapsed(args);
     }
 
-    public static void GroupEnd()
+    public async Task GroupEnd()
     {
-        ConsoleJsInterop.GroupEnd();
+        await js.GroupEnd();
     }
 
-    public static void Info(params object?[]? args)
+    public async Task Info(params object?[]? args)
     {
-        ConsoleJsInterop.Info(args);
+        await js.Info(args);
     }
 
-    public static void Log(params object?[]? args)
+    public async Task Log(params object?[]? args)
     {
-        ConsoleJsInterop.Log(args);
+        await js.Log(args);
     }
 
-    public static void Memory()
+    public async Task Memory()
     {
-        ConsoleJsInterop.Memory();
+        await js.Memory();
     }
 
-    public static void Profile()
+    public async Task Profile()
     {
-        ConsoleJsInterop.Profile();
+        await js.Profile();
     }
 
-    public static void ProfileEnd()
+    public async Task ProfileEnd()
     {
-        ConsoleJsInterop.ProfileEnd();
+        await js.ProfileEnd();
     }
 
-    public static void Table(object? data, object? properties)
+    public async Task Table(object? data, object? properties)
     {
-        ConsoleJsInterop.Table(data, properties);
+        await js.Table(data, properties);
     }
 
-    public static void Time(string? label)
+    public async Task Time(string? label)
     {
-        ConsoleJsInterop.Time(label);
+        await js.Time(label);
     }
 
-    public static void TimeEnd(string? label)
+    public async Task TimeEnd(string? label)
     {
-        ConsoleJsInterop.TimeEnd(label);
+        await js.TimeEnd(label);
     }
 
-    public static void TimeLog(string? label, params object?[]? args)
+    public async Task TimeLog(string? label, params object?[]? args)
     {
-        ConsoleJsInterop.TimeLog(label, args);
+        await js.TimeLog(label, args);
     }
 
-    public static void TimeStamp(string? label)
+    public async Task TimeStamp(string? label)
     {
-        ConsoleJsInterop.TimeStamp(label);
+        await js.TimeStamp(label);
     }
 
-    public static void Trace(params object?[]? args)
+    public async Task Trace(params object?[]? args)
     {
-        ConsoleJsInterop.Trace(args);
+        await js.Trace(args);
     }
 
-    public static void Warn(params object?[]? args)
+    public async Task Warn(params object?[]? args)
     {
-        ConsoleJsInterop.Warn(args);
+        await js.Warn(args);
     }
 }

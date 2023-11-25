@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public static class Document
+public class Document(IJSRuntime js)
 {
     private const string ElementName = "document";
 
-    public static void AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
+    public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        DomEventDispatcher.AddEventListener<T>(ElementName, domEvent, listener, useCapture);
+        await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
     }
 
-    public static void RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
+    public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        DomEventDispatcher.RemoveEventListener<T>(ElementName, domEvent, listener, useCapture);
+        await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
     }
 }

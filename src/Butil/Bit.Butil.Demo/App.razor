@@ -1,6 +1,4 @@
-﻿@inject IJSRuntime js
-
-<LayoutView Layout="typeof(MainLayout)">
+﻿<LayoutView Layout="typeof(MainLayout)">
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
@@ -11,12 +9,3 @@
         </NotFound>
     </Router>
 </LayoutView>
-
-@code {
-    protected override void OnInitialized()
-    {
-        BitButil.Init(js);
-
-        base.OnInitialized();
-    }
-}

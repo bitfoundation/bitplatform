@@ -6,8 +6,8 @@ var BitButil = BitButil || {};
         info, log, memory, profile, profileEnd, table, time, timeEnd, timeLog, timeStamp, trace, warn
     };
 
-    function assert(condition?: boolean, ...data: any[]) {
-        console.assert(condition, ...data);
+    function assert(...data: any[]) {
+        console.assert(...data);
     }
 
     function clear() {
@@ -82,8 +82,8 @@ var BitButil = BitButil || {};
         console.timeEnd(label);
     }
 
-    function timeLog(label?: string, ...data: any[]) {
-        console.timeLog(label, ...data);
+    function timeLog(...data: any[]) {
+        console.timeLog(...data);
     }
 
     function timeStamp(label?: string) {
