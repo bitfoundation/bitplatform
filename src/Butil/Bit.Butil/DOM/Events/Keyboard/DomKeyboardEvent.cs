@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -9,17 +9,12 @@ public static class DomKeyboardEvent
 {
     internal const string InvokeMethodName = "InvokeKeyboardEvent";
 
-    private static readonly Dictionary<Guid, Listener> Listeners = [];
-
-    private static Action<DomKeyboardEventArgs> GetListener(Guid id)
-    {
-        return Listeners[id].Action;
-    }
+    private static readonly ConcurrentDictionary<Guid, Listener> Listeners = [];
 
     internal static Guid SetListener(Action<DomKeyboardEventArgs> action, string element, object options)
     {
         var id = Guid.NewGuid();
-        Listeners[id] = new Listener { Action = action, Element = element, Options = options };
+        Listeners.TryAdd(id, new Listener { Action = action, Element = element, Options = options });
         return id;
     }
 
@@ -29,7 +24,7 @@ public static class DomKeyboardEvent
 
         return listenersToRemove.Select(l =>
         {
-            Listeners.Remove(l.Key);
+            Listeners.TryRemove(l.Key, out _);
             return l.Key;
         }).ToArray();
     }
@@ -37,8 +32,8 @@ public static class DomKeyboardEvent
     [JSInvokable(InvokeMethodName)]
     public static void Invoke(Guid id, DomKeyboardEventArgs args)
     {
-        var listener = GetListener(id);
-        listener.Invoke(args);
+        Listeners.TryGetValue(id, out Listener? listener);
+        listener?.Action.Invoke(args);
     }
 
     private class Listener
