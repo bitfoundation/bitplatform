@@ -6,24 +6,24 @@ public partial class BitBadge
 {
     private BitBadgeSize? size;
     private BitBadgeColor? color;
-    private BitBadgeStyle badgeStyle = BitBadgeStyle.Primary;
+    private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
     
     private string? _content;
 
 
     /// <summary>
-    /// The style of badge, Possible values: Primary | Standard | Text
+    /// The appearance of badge, Possible values: Primary | Standard | Text
     /// </summary>
     [Parameter]
-    public BitBadgeStyle BadgeStyle
+    public BitAppearance Appearance
     {
-        get => badgeStyle;
+        get => appearance;
         set
         {
-            if (badgeStyle == value) return;
+            if (appearance == value) return;
 
-            badgeStyle = value;
+            appearance = value;
             ClassBuilder.Reset();
         }
     }
@@ -77,7 +77,7 @@ public partial class BitBadge
     /// <summary>
     /// Max value to display when content is integer type.
     /// </summary>
-    [Parameter] public int OverflowCount { get; set; } = 99;
+    [Parameter] public int Max { get; set; } = 99;
 
     /// <summary>
     /// Button click event if set.
@@ -147,9 +147,9 @@ public partial class BitBadge
         }
         else if (Content is int numberContent)
         {
-            if (numberContent > OverflowCount)
+            if (numberContent > Max)
             {
-                _content = OverflowCount + "+";
+                _content = Max + "+";
             }
             else
             {
@@ -201,11 +201,11 @@ public partial class BitBadge
             className.Append(" bit-bdg-icn");
         }
 
-        className.Append(' ').Append(BadgeStyle switch
+        className.Append(' ').Append(Appearance switch
         {
-            BitBadgeStyle.Primary => "bit-bdg-pri",
-            BitBadgeStyle.Standard => "bit-bdg-std",
-            BitBadgeStyle.Text => "bit-bdg-txt",
+            BitAppearance.Primary => "bit-bdg-pri",
+            BitAppearance.Standard => "bit-bdg-std",
+            BitAppearance.Text => "bit-bdg-txt",
             _ => "bit-bdg-pri"
         });
 

@@ -72,7 +72,6 @@
     top: auto;
     text-indent: 0;
     line-height: 1;
-    transition: .1s;
     font-weight: 600;
     user-select: none;
     letter-spacing: 0;
@@ -271,7 +270,7 @@
 .bit-bdg-lg {
     height: spacing(3);
     min-width: spacing(3);
-    font-size: spacing(1.5);
+    font-size: spacing(1.75);
     border-radius: spacing(1.5);
     padding: spacing(0) spacing(0.75);
 }
