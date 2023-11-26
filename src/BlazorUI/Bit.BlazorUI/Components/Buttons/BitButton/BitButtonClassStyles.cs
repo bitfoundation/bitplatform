@@ -8,6 +8,11 @@ public class BitButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the icon of the BitButton.
+    /// </summary>
+    public string? Icon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the internal container of the BitButton.
     /// </summary>
     public string? LoadingContainer { get; set; }

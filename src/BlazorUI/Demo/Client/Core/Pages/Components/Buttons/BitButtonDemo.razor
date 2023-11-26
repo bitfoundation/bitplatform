@@ -65,7 +65,27 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                BitButton has an icon slot that, if specified, renders an icon that can be set at the start or end of component using IconPosition.
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitButton Icon="@BitIconName.Emoji">
+                    Default (Start)
+                </BitButton>
+
+                <BitButton Icon="@BitIconName.Emoji2"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           IconPosition="BitButtonIconPosition.End">
+                    End
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>
                 Managing button click event (OnClick).
@@ -77,7 +97,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" Id="example6">
+        <ComponentExampleBox Title="Color" RazorCode="@example7RazorCode" Id="example7">
             <ExamplePreview>
                 <div>
                     Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
@@ -113,7 +133,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
+        <ComponentExampleBox Title="Size" RazorCode="@example8RazorCode" Id="example8">
             <ExamplePreview>
                 <div>
                     Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
@@ -139,7 +159,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Custom content" RazorCode="@example8RazorCode" Id="example8">
+        <ComponentExampleBox Title="Custom content" RazorCode="@example9RazorCode" Id="example9">
             <ExamplePreview>
                 <div>
                     Here are some examples of customizing the button content.
@@ -167,7 +187,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ComponentExampleBox Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <ExamplePreview>
                 <div>
                     BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
@@ -202,7 +222,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Loading button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Loading button" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div>
                 Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.
@@ -233,7 +253,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LoadingLabel position" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="LoadingLabel position" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>
                 Explore different loading label positions for buttons, including right, left, bottom, and top. Customize the loading labels and positions to enhance the user experience.
@@ -277,7 +297,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LoadingTemplate" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="LoadingTemplate" RazorCode="@example13RazorCode" Id="example13">
         <ExamplePreview>
             <div>
                 Utilize the "LoadingTemplate" feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.
@@ -301,7 +321,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -343,21 +363,6 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Visibility" RazorCode="@example14RazorCode" Id="example14">
-        <ExamplePreview>
-            <div>
-                You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
-            </div>
-            <br />
-            <div class="buttons-container-grid">
-                <div>Visible: [ <BitButton Visibility="BitVisibility.Visible">Visible Button</BitButton> ]</div>
-                <div>Hidden: [ <BitButton Visibility="BitVisibility.Hidden">Hidden Button</BitButton> ]</div>
-                <div>Collapsed: [ <BitButton Visibility="BitVisibility.Collapsed">Collapsed Button</BitButton> ]</div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
 </ComponentDemo>
 
 @code {

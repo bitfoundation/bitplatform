@@ -14,6 +14,11 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
+        @if (Icon.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@Icon @Classes?.Icon" />
+        }
+
         @(Content ?? ChildContent)
     </a>
 }
@@ -50,6 +55,11 @@ else
         }
         else
         {
+            @if (Icon.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@Icon @Classes?.Icon" />
+            }
+
             @(Content ?? ChildContent)
         }
     </button>

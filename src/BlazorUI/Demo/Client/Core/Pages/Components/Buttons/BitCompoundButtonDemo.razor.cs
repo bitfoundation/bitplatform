@@ -85,8 +85,8 @@ public partial class BitCompoundButtonDemo
         new()
         {
             Name = "IconPosition",
-            Type = "BitIconPosition",
-            DefaultValue = "BitIconPosition.Start",
+            Type = "BitButtonIconPosition",
+            DefaultValue = "BitButtonIconPosition.Start",
             Description = "Specifies Icon position which can be rendered either on start or end of the component.",
             LinkType = LinkType.Link,
             Href = "#button-icon-enum"
@@ -318,7 +318,7 @@ public partial class BitCompoundButtonDemo
         new()
         {
             Id = "button-icon-enum",
-            Name = "BitIconPosition",
+            Name = "BitButtonIconPosition",
             Description = "",
             Items = new()
             {
@@ -366,7 +366,7 @@ public partial class BitCompoundButtonDemo
 </BitCompoundButton>
 
 <BitCompoundButton Icon=""@BitIconName.Emoji2""
-                   IconPosition=""BitIconPosition.End""
+                   IconPosition=""BitButtonIconPosition.End""
                    SecondaryText=""IconPosition End""
                    ButtonStyle=""BitButtonStyle.Standard"">
     End

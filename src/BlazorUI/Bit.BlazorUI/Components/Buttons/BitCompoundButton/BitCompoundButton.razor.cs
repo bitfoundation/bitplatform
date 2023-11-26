@@ -7,7 +7,7 @@ public partial class BitCompoundButton
     private BitButtonSize? size;
     private BitButtonColor? color;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private BitIconPosition? iconPosition = BitIconPosition.Start;
+    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -93,7 +93,7 @@ public partial class BitCompoundButton
     /// Specifies Icon position which can be rendered either at the start or end of the component.
     /// </summary>
     [Parameter]
-    public BitIconPosition? IconPosition
+    public BitButtonIconPosition? IconPosition
     {
         get => iconPosition;
         set
@@ -191,8 +191,8 @@ public partial class BitCompoundButton
 
         ClassBuilder.Register(() => IconPosition switch
         {
-            BitIconPosition.Start => "bit-cmb-srt",
-            BitIconPosition.End => "bit-cmb-end",
+            BitButtonIconPosition.Start => "bit-cmb-srt",
+            BitButtonIconPosition.End => "bit-cmb-end",
             _ => "bit-cmb-srt"
         });
     }

@@ -4,9 +4,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private BitButtonColor? color;
     private BitButtonSize? size;
+    private BitButtonColor? color;
+    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -89,6 +90,27 @@ public partial class BitButton
     /// URL the link points to, if provided, button renders as an anchor
     /// </summary>
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// The icon to show inside the BitButton.
+    /// </summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>
+    /// Specifies Icon position which can be rendered either at the start or end of the component.
+    /// </summary>
+    [Parameter]
+    public BitButtonIconPosition? IconPosition
+    {
+        get => iconPosition;
+        set
+        {
+            if (iconPosition == value) return;
+
+            iconPosition = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Determine whether the button is in loading mode or not.
@@ -177,6 +199,13 @@ public partial class BitButton
             BitButtonSize.Medium => "bit-btn-md",
             BitButtonSize.Large => "bit-btn-lg",
             _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => IconPosition switch
+        {
+            BitButtonIconPosition.Start => "bit-btn-srt",
+            BitButtonIconPosition.End => "bit-btn-end",
+            _ => "bit-btn-srt"
         });
     }
 
