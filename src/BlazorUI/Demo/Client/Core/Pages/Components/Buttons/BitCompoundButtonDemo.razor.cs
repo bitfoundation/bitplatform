@@ -361,11 +361,11 @@ public partial class BitCompoundButtonDemo
 <BitCompoundButton ButtonStyle=""BitButtonStyle.Text"" SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
 
     private readonly string example5RazorCode = @"
-<BitCompoundButton Icon=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"">
+<BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"">
     Default (Start)
 </BitCompoundButton>
 
-<BitCompoundButton Icon=""@BitIconName.Emoji2""
+<BitCompoundButton IconName=""@BitIconName.Emoji2""
                    IconPosition=""BitButtonIconPosition.End""
                    SecondaryText=""IconPosition End""
                    ButtonStyle=""BitButtonStyle.Standard"">

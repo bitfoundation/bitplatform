@@ -383,11 +383,11 @@ public partial class BitButtonDemo
 <BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
 
     private readonly string example5RazorCode = @"
-<BitButton Icon=""@BitIconName.Emoji"">
+<BitButton IconName=""@BitIconName.Emoji"">
     Default (Start)
 </BitButton>
 
-<BitButton Icon=""@BitIconName.Emoji2""
+<BitButton IconName=""@BitIconName.Emoji2""
            ButtonStyle=""BitButtonStyle.Standard""
            IconPosition=""BitButtonIconPosition.End"">
     End

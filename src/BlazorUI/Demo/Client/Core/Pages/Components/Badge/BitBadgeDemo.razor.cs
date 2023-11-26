@@ -352,7 +352,7 @@ public partial class BitBadgeDemo
 </BitBadge>";
 
     private readonly string example6RazorCode = @"
-<BitBadge Icon=""Clock"">
+<BitBadge IconName=""Clock"">
     Icon
 </BitBadge>
 
@@ -533,14 +533,14 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
     <div>Item 3</div>
 </BitBadge>
 
-<BitBadge Content=""100"" Icon=""Info""
+<BitBadge Content=""100"" IconName=""Info""
           Styles=""@(new() { Root = ""color: tomato;"",
                             Badge = ""border-radius: unset;"",
                             Icon = ""color: tomato;"" })"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Icon=""Info""
+<BitBadge Content=""100"" IconName=""Info""
           Appearance=""BitAppearance.Standard""
           Classes=""@(new() { Root = ""custom-root"",
                              BadgeWrapper = ""custom-wrapper"",
