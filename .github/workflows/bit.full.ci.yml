@@ -1,7 +1,6 @@
 name: bit platform full CI
 
 on:
-  workflow_dispatch:
   pull_request:
     types: [ labeled ]
 
