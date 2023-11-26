@@ -8,6 +8,7 @@ internal class DomEventArgs
     {
         return domEvent switch
         {
+            ButilEvents.Click => typeof(ButilMouseEventArgs),
             ButilEvents.KeyDown => typeof(ButilKeyboardEventArgs),
             ButilEvents.KeyUp => typeof(ButilKeyboardEventArgs),
             ButilEvents.KeyPress => typeof(ButilKeyboardEventArgs),

@@ -28,6 +28,12 @@ internal static class DomEventDispatcher
             var action = (listener as Action<ButilKeyboardEventArgs>)!;
             await DomKeyboardEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
         }
+
+        if (domEventType == typeof(ButilMouseEventArgs))
+        {
+            var action = (listener as Action<ButilMouseEventArgs>)!;
+            await DomMouseEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
+        }
     }
 
     internal static async Task RemoveEventListener<T>(IJSRuntime js, string elementName, string domEvent, Action<T> listener, bool useCapture = false)
@@ -42,6 +48,12 @@ internal static class DomEventDispatcher
         {
             var action = (listener as Action<ButilKeyboardEventArgs>)!;
             await DomKeyboardEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
+        }
+
+        if (domEventType == typeof(ButilMouseEventArgs))
+        {
+            var action = (listener as Action<ButilMouseEventArgs>)!;
+            await DomMouseEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
         }
     }
 }

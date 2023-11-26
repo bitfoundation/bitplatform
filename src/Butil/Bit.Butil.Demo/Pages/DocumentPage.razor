@@ -11,7 +11,7 @@
 
 @@code {
     ...
-    await document.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    await document.AddEventListener(ButilEvents.Click, args => { ... });
     ...
 }
 </pre>
@@ -29,24 +29,24 @@
 @code {
     private bool isRegistered = false;
 
-    private Action<ButilKeyboardEventArgs> _handler = default!;
+    private Action<ButilMouseEventArgs> _handler = default!;
 
     protected override void OnInitialized()
     {
-        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
+        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C#:", arg.ClientX, arg.ClientY);
 
         base.OnInitialized();
     }
 
     private void AddEventListener()
     {
-        _ = document.AddEventListener(ButilEvents.KeyDown, _handler);
+        _ = document.AddEventListener(ButilEvents.Click, _handler);
         isRegistered = true;
     }
 
     private void RemoveEventListener()
     {
-        _ = document.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        _ = document.RemoveEventListener(ButilEvents.Click, _handler);
         isRegistered = false;
     }
 }
