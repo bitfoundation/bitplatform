@@ -34,8 +34,10 @@ jobs:
         dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
         dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
 
-    - name: Release build todo sample + Blazor server + sqlite database (witout install maui and wasm workloads)
-      run: dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
+    - name: Release build todo sample + Blazor server + sqlite database (witout install maui and wasm workloads but tizen?!)
+      run: |
+        dotnet workload install maui-tizen
+        dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
 
     - name: Release build empty sample + Blazor hybrid + no database
       run: |
