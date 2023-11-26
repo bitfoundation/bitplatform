@@ -9,8 +9,8 @@ internal static class EventsJsInterop
     internal static async Task AddEventListener(this IJSRuntime js,
         string elementName,
         string eventName,
-        string dotnetMethodName,
-        Guid dotnetListenerId,
+        string methodName,
+        Guid listenerId,
         string[] argsMembers,
         object? options = null,
         bool preventDefault = false,
@@ -19,8 +19,8 @@ internal static class EventsJsInterop
         await js.InvokeVoidAsync("BitButil.events.addEventListener",
             elementName,
             eventName,
-            dotnetMethodName,
-            dotnetListenerId,
+            methodName,
+            listenerId,
             argsMembers,
             options,
             preventDefault,
@@ -30,13 +30,13 @@ internal static class EventsJsInterop
     internal static async Task RemoveEventListener(this IJSRuntime js,
         string elementName,
         string eventName,
-        Guid[] dotnetListenerIds,
+        Guid[] listenerIds,
         object? options = null)
     {
         await js.InvokeVoidAsync("BitButil.events.removeEventListener",
             elementName,
             eventName,
-            dotnetListenerIds,
+            listenerIds,
             options);
     }
 }

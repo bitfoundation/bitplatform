@@ -20,20 +20,16 @@
 <h3>Open the DevTools and start pressing F9 and Ctrl+Alt+F10</h3>
 
 @code {
-    private Guid id1;
-    private Guid id2;
-
     protected override async Task OnInitializedAsync()
     {
-        id1 = await keyboard.Add("F9", () => _ = console.Log("F9 is pressed!"));
-        id2 = await keyboard.Add("F10", () => _ = console.Log("Ctrl+Alt+F10 is pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+        await keyboard.Add("F5", () => _ = console.Log("F5 is pressed!"));
+        await keyboard.Add("F10", () => _ = console.Log("Ctrl+Alt+F10 is pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
 
         base.OnInitialized();
     }
 
     public void Dispose()
     {
-        _ = keyboard.Remove(id1);
-        _ = keyboard.Remove(id2);
+        keyboard.Dispose();
     }
 }

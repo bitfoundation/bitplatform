@@ -25,7 +25,8 @@ internal static class DomEventDispatcher
 
         if (domEventType == typeof(ButilKeyboardEventArgs))
         {
-            await DomMouseEventHandler.AddListener(js, elementName, domEvent, listener, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
+            var action = (listener as Action<ButilKeyboardEventArgs>)!;
+            await DomKeyboardEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
         }
     }
 
@@ -39,7 +40,8 @@ internal static class DomEventDispatcher
 
         if (domEventType == typeof(ButilKeyboardEventArgs))
         {
-            await DomMouseEventHandler.RemoveListener(js, elementName, domEvent, listener, useCapture ? TrueUseCapture : FalseUseCapture);
+            var action = (listener as Action<ButilKeyboardEventArgs>)!;
+            await DomKeyboardEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
         }
     }
 }

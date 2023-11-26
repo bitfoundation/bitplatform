@@ -6,27 +6,23 @@ namespace Bit.Butil;
 
 internal static class DomKeyboardEventHandler
 {
-    internal static async Task AddListener<T>(IJSRuntime js,
+    internal static async Task AddListener(IJSRuntime js,
         string elementName,
         string domEvent,
-        Action<T> listener,
+        Action<ButilKeyboardEventArgs> listener,
         object options,
         bool preventDefault = false,
         bool stopPropagation = false)
     {
-        var action = (listener as Action<ButilKeyboardEventArgs>)!;
-
-        var id = DomKeyboardEventListenersManager.SetListener(action, elementName, options);
+        var id = DomKeyboardEventListenersManager.SetListener(listener, elementName, options);
 
         await js.AddEventListener(elementName, domEvent, DomKeyboardEventListenersManager.InvokeMethodName, id, ButilKeyboardEventArgs.EventArgsMembers, options, preventDefault, stopPropagation);
     }
 
 
-    internal static async Task RemoveListener<T>(IJSRuntime js, string elementName, string domEvent, Action<T> listener, object options)
+    internal static async Task RemoveListener(IJSRuntime js, string elementName, string domEvent, Action<ButilKeyboardEventArgs> listener, object options)
     {
-        var action = (listener as Action<ButilKeyboardEventArgs>)!;
-
-        var ids = DomKeyboardEventListenersManager.RemoveListener(action, elementName, options);
+        var ids = DomKeyboardEventListenersManager.RemoveListener(listener, elementName, options);
 
         await js.RemoveEventListener(elementName, domEvent, ids, options);
     }

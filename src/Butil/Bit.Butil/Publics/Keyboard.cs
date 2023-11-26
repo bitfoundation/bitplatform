@@ -1,66 +1,65 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Keyboard(Document document) : IDisposable
+public class Keyboard(IJSRuntime js) : IDisposable
 {
-    private bool _isInitialized;
-    private readonly ConcurrentDictionary<Guid, Listener> _listeners = new();
+    private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
-
-    private async Task Init()
+    public async Task<Guid> Add(string key, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
     {
-        if (_isInitialized) return;
+        var listenerId = KeyboardListenersManager.AddListener(handler);
+        _handlers.TryAdd(listenerId, handler);
 
-        await document.AddEventListener<ButilKeyboardEventArgs>(ButilEvents.KeyUp, RunHandlers, false, true, true);
+        await js.AddKeyboard(KeyboardListenersManager.InvokeMethodName, listenerId, key,
+            modifiers.HasFlag(ButilModifiers.Alt),
+            modifiers.HasFlag(ButilModifiers.Ctrl),
+            modifiers.HasFlag(ButilModifiers.Meta),
+            modifiers.HasFlag(ButilModifiers.Shift),
+            preventDefault,
+            stopPropagation,
+            repeat);
 
-        _isInitialized = true;
+        return listenerId;
     }
 
-    private void RunHandlers(ButilKeyboardEventArgs args)
+    public Guid[] Remove(Action handler)
     {
-        foreach (var (_, listener) in _listeners)
+        var ids = KeyboardListenersManager.RemoveListener(handler);
+
+        Remove(ids);
+
+        return ids;
+    }
+
+    public void Remove(Guid id)
+    {
+        KeyboardListenersManager.RemoveListeners([id]);
+
+        Remove([id]);
+    }
+
+    private void Remove(Guid[] ids)
+    {
+        foreach (var id in ids)
         {
-            var key = listener.Key;
-            var handler = listener.Handler;
-            var modifiers = listener.Modifiers;
-
-            if (handler is null) continue;
-
-            if (string.Equals(key, args.Key, StringComparison.OrdinalIgnoreCase) is false) continue;
-
-            if (modifiers.HasFlag(ButilModifiers.Alt) && args.AltKey is false) continue;
-            if (modifiers.HasFlag(ButilModifiers.Ctrl) && args.CtrlKey is false) continue;
-            if (modifiers.HasFlag(ButilModifiers.Meta) && args.MetaKey is false) continue;
-            if (modifiers.HasFlag(ButilModifiers.Shift) && args.ShiftKey is false) continue;
-
-            try { Task.Run(handler); } catch { }
+            _handlers.TryRemove(id, out _);
         }
-    }
 
-    public async Task<Guid> Add(string key, Action handler, ButilModifiers modifiers = ButilModifiers.None)
-    {
-        await Init();
-
-        var id = Guid.NewGuid();
-
-        var listener = new Listener { Key = key, Handler = handler, Modifiers = modifiers };
-
-        _listeners.TryAdd(id, listener);
-
-        return id;
-    }
-
-    public async Task<bool> Remove(Guid id)
-    {
-        return _listeners.TryRemove(id, out _);
+        _ = js.RemoveKeyboard(ids);
     }
 
     public void Dispose()
     {
-        _ = document.RemoveEventListener<ButilKeyboardEventArgs>(ButilEvents.KeyDown, RunHandlers);
+        var ids = _handlers.Select(h => h.Key).ToArray();
+
+        KeyboardListenersManager.RemoveListeners(ids);
+
+        _ = js.RemoveKeyboard(ids);
     }
 
     private class Listener
