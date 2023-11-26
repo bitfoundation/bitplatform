@@ -39,14 +39,14 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-        cd ../../../
+        cd ../../../../
         dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
 
     - name: Release build empty sample + Blazor hybrid + no database
       run: |
         dotnet workload install maui-android
         dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
-        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release
+        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Release build admin panel sample + Blazor webassembly + SqlServer database
       run: |
@@ -68,7 +68,7 @@ jobs:
       run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
     - name: Release build bit blazor ui demo - Blazor hybrid
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
       run: |
@@ -88,7 +88,7 @@ jobs:
       run: |
         cd TodoWebSqlite/src/TodoWebSqlite.Server/ && dotnet tool restore
         dotnet ef migrations add InitialMigration && dotnet ef database update
-        cd ../../
+        cd ../../../
         dotnet build TodoWebSqlite/TodoWebSqlite.sln -p:Configuration=Release
         dotnet build AdminWebSqlServer/AdminWebSqlServer.sln -p:Configuration=Release
         dotnet build EmptyWeb/EmptyWeb.sln -p:Configuration=Release
