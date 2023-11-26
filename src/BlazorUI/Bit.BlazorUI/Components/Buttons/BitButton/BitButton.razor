@@ -14,9 +14,9 @@
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        @if (Icon.HasValue())
+        @if (IconName.HasValue())
         {
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@Icon @Classes?.Icon" />
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         }
 
         @(Content ?? ChildContent)
@@ -55,9 +55,9 @@ else
         }
         else
         {
-            @if (Icon.HasValue())
+            @if (IconName.HasValue())
             {
-                <i style="@Styles?.Icon" class="bit-icon bit-icon--@Icon @Classes?.Icon" />
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
 
             @(Content ?? ChildContent)

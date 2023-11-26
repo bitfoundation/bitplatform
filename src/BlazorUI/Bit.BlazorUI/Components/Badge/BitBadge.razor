@@ -12,9 +12,9 @@
             <span style="@Styles?.Badge" class="bit-bdg-ctn @GetBadgeClasses() @Classes?.Badge" @onclick="HandleOnClick">
                 @if (Dot is false)
                 {
-                    if (Icon.HasValue())
+                    if (IconName.HasValue())
                     {
-                        <i style="@Styles?.Icon" class="bit-icon bit-icon--@Icon @Classes?.Icon" />
+                        <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
                     }
 
                     if (_content.HasValue())

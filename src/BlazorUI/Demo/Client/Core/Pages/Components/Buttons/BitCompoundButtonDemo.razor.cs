@@ -77,7 +77,7 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
-            Name = "Icon",
+            Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon to show inside the BitCompoundButton.",

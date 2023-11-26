@@ -36,15 +36,6 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "BitButtonColor",
-            LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the button.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
@@ -70,6 +61,15 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitButtonColor",
+            LinkType = LinkType.Link,
+            Href = "#button-color-enum",
+            DefaultValue = "null",
+            Description = "The color of the button.",
+        },
+        new()
+        {
             Name = "Content",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -84,7 +84,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Icon",
+            Name = "IconName",
             Type = "string",
             DefaultValue = "null",
             Description = "The icon to show inside the BitButton."

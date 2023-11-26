@@ -61,7 +61,7 @@ public partial class BitBadgeDemo
         },
         new()
         {
-            Name = "Icon",
+            Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
             Description = "Sets the Icon to use in the badge."

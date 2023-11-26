@@ -72,7 +72,7 @@ public partial class BitBadge
     /// <summary>
     /// Sets the Icon to use in the badge.
     /// </summary>
-    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Max value to display when content is integer type.
@@ -85,7 +85,7 @@ public partial class BitBadge
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Overlaps the childcontent on top of the content.
+    /// Overlaps the child content on top of the content.
     /// </summary>
     [Parameter] public bool Overlap { get; set; }
 
@@ -196,7 +196,7 @@ public partial class BitBadge
 
         className.Append(Overlap ? " bit-bdg-orp" : string.Empty);
 
-        if (Icon.HasValue() && Dot is false)
+        if (IconName.HasValue() && Dot is false)
         {
             className.Append(" bit-bdg-icn");
         }
