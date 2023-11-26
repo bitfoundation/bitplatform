@@ -1,4 +1,4 @@
-﻿﻿//+:cnd:noEmit
+﻿//+:cnd:noEmit
 [
     {
         "outputFile": "wwwroot/styles/app.css",
