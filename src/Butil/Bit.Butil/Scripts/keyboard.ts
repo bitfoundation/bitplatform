@@ -1,0 +1,39 @@
+var BitButil = BitButil || {};
+
+(function (butil: any) {
+    const _handlers = {};
+
+    butil.keyboard = {
+        add,
+        remove
+    };
+
+    function add(methodName, listenerId, key, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat) {
+        const handler = e => {
+            if (e.key !== key) return;
+            
+            if (!alt && e.altKey) return;
+            if (!ctrl && e.ctrlKey) return;
+            if (!meta && e.metaKey) return;
+            if (!shift && e.shiftKey) return;
+
+            if (!repeat && e.repeat) return;
+
+            preventDefault && e.preventDefault();
+            stopPropagation && e.stopPropagation();
+
+            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+        };
+
+        _handlers[listenerId] = handler;
+
+        document.addEventListener('keydown', handler);
+    }
+
+    function remove(ids) {
+        ids.forEach(id => {
+            const handler = _handlers[id];
+            document.removeEventListener('keydown', handler);
+        });
+    }
+}(BitButil));

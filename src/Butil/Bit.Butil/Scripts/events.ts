@@ -8,12 +8,15 @@ var BitButil = BitButil || {};
         removeEventListener
     };
 
-    function addEventListener(elementName, eventName, dotnetMethodName, dotnetListenerId, selectedMembers, options) {
+    function addEventListener(elementName, eventName, methodName, listenerId, argsMembers, options, preventDefault, stopPropagation) {
+        const argsMap = e => (argsMembers || []).reduce((pre, cur) => (pre[cur] = e[cur], pre), {});
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', dotnetMethodName, dotnetListenerId, selectedMembers && selectedMembers.reduce((pre, cur) => (pre[cur] = e[cur], pre), {}));
+            preventDefault && e.preventDefault();
+            stopPropagation && e.stopPropagation();
+            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, argsMap(e));
         };
 
-        _handlers[dotnetListenerId] = handler;
+        _handlers[listenerId] = handler;
 
         window[elementName].addEventListener(eventName, handler, options);
     }

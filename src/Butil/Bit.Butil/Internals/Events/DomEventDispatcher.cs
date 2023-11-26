@@ -9,7 +9,13 @@ internal static class DomEventDispatcher
     private static readonly object FalseUseCapture = false;
     private static readonly object TrueUseCapture = true;
 
-    internal static async Task AddEventListener<T>(IJSRuntime js, string elementName, string domEvent, Action<T> listener, bool useCapture = false)
+    internal static async Task AddEventListener<T>(IJSRuntime js,
+        string elementName,
+        string domEvent,
+        Action<T> listener,
+        bool useCapture = false,
+        bool preventDefault = false,
+        bool stopPropagation = false)
     {
         var domEventType = DomEventArgs.TypeOf(domEvent);
         var listenerType = typeof(T);
@@ -17,9 +23,10 @@ internal static class DomEventDispatcher
         if (listenerType != domEventType)
             throw new InvalidOperationException($"Invalid listener type ({listenerType}) for this dom event type ({domEventType})");
 
-        if (domEventType == typeof(DomKeyboardEventArgs))
+        if (domEventType == typeof(ButilKeyboardEventArgs))
         {
-            await DomKeyboardEventHandler.AddListener(js, elementName, domEvent, listener, useCapture ? TrueUseCapture : FalseUseCapture);
+            var action = (listener as Action<ButilKeyboardEventArgs>)!;
+            await DomKeyboardEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
         }
     }
 
@@ -31,9 +38,10 @@ internal static class DomEventDispatcher
         if (listenerType != domEventType)
             throw new InvalidOperationException($"Invalid listener type ({listenerType}) for this dom event type ({domEventType})");
 
-        if (domEventType == typeof(DomKeyboardEventArgs))
+        if (domEventType == typeof(ButilKeyboardEventArgs))
         {
-            await DomKeyboardEventHandler.RemoveListener(js, elementName, domEvent, listener, useCapture ? TrueUseCapture : FalseUseCapture);
+            var action = (listener as Action<ButilKeyboardEventArgs>)!;
+            await DomKeyboardEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
         }
     }
 }

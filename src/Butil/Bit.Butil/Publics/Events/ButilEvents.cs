@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class DomEvents
+public class ButilEvents
 {
     public const string Click = "click";
     public const string KeyDown = "keydown";
