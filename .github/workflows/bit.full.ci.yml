@@ -1,0 +1,97 @@
+name: bit platform full CI
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+
+  build:
+    if: ${{ github.event.label.name == 'high risk' }}
+    name: build and test
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Create projects from Boilerplate project template with different parameters
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+        dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
+        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
+        dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
+
+    - name: Release build todo sample + Blazor server + sqlite database (witout install maui and wasm workloads)
+      run: dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
+
+    - name: Release build empty sample + Blazor hybrid + no database
+      run: |
+        dotnet workload install maui-android
+        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release
+
+    - name: Release build admin panel sample + Blazor webassembly + SqlServer database
+      run: |
+        dotnet workload install wasm-tools wasm-experimental
+        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
+        dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
+
+    - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators
+      run: dotnet build src/Bit-CI-release.sln -c Release
+
+    - name: Release build careers, platform, sales websites
+      run: |
+        dotnet build -c Release src/Websites/Platform/Bit.Websites.Platform.sln
+        dotnet build -c Release src/Websites/Careers/Bit.Websites.Careers.sln
+        dotnet build -c Release src/Websites/Sales/Bit.Websites.Sales.sln
+
+    - name: Run bit blazor ui tests
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
+
+    - name: Release build bit blazor ui demo - Blazor hybrid
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release
+
+    - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
+      run: |
+        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
+        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
+
+    - name: Create projects from BlazorWeb project template with different parameters
+      run: |
+        cd src/Templates/BlazorWeb && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.BlazorWeb.0.0.0.nupkg && cd ../../../
+        dotnet new bit-bp --name TodoWebSqlite --database sqlite --sample todo --pipeline other
+        dotnet new bit-bp --name AdminWebSqlServer --database sqlserver --sample adminpanel --pipeline github
+        dotnet new bit-bp --name EmptyWeb --database other --sample none --pipeline azure
+
+    - name: Release build blazor web based projects
+      run: |
+        dotnet build TodoWebSqlite/TodoWebSqlite.sln -p:Configuration=Release
+        dotnet build AdminWebSqlServer/AdminWebSqlServer.sln -p:Configuration=Release
+        dotnet build EmptyWeb/EmptyWeb.sln -p:Configuration=Release
+
+    - name: Create projects from BlazorEmpty project template with different parameters
+      run: |
+        cd src/Templates/BlazorEmpty && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
+        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
+        dotnet new bit-empty --name SsrPerPage --interactivity None
+
+    - name: Release build blazor empty based projects
+      run: |
+        dotnet build AutoGlobal/AutoGlobal.sln -p:Configuration=Release
+        dotnet build SsrPerPage/SsrPerPage.csproj -p:Configuration=Release
