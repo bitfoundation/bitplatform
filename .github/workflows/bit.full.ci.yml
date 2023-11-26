@@ -1,6 +1,7 @@
 name: bit platform full CI
 
 on:
+  workflow_dispatch:
   pull_request:
     types: [ labeled ]
 
@@ -25,28 +26,32 @@ jobs:
       with:
         node-version: 18
 
-    - name: Create projects from Boilerplate project template with different parameters
+    - name: Install Bit.Boilerplate from local source
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-        dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
-        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
-        dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
 
     - name: Release build todo sample + Blazor server + sqlite database (without installing maui and wasm workloads but tizen?!)
       run: |
         dotnet workload install maui-tizen
+        dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
+        cd TodoBPBlazorServerSqlite/src/Server/Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
         dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
 
     - name: Release build empty sample + Blazor hybrid + no database
       run: |
         dotnet workload install maui-android
+        dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
         dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release
 
     - name: Release build admin panel sample + Blazor webassembly + SqlServer database
       run: |
         dotnet workload install wasm-tools wasm-experimental
+        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
         sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
         dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
 
