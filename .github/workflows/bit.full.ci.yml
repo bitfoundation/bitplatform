@@ -79,12 +79,14 @@ jobs:
         cd src/Templates/BlazorWeb && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.BlazorWeb.0.0.0.nupkg && cd ../../../
-        dotnet new bit-bp --name TodoWebSqlite --database sqlite --sample todo --pipeline other
-        dotnet new bit-bp --name AdminWebSqlServer --database sqlserver --sample adminpanel --pipeline github
-        dotnet new bit-bp --name EmptyWeb --database other --sample none --pipeline azure
+        dotnet new bit-web --name TodoWebSqlite --database sqlite --sample todo --pipeline other
+        dotnet new bit-web --name AdminWebSqlServer --database sqlserver --sample adminpanel --pipeline github
+        dotnet new bit-web --name EmptyWeb --database other --sample none --pipeline azure
 
     - name: Release build blazor web based projects
       run: |
+        cd TodoWebSqlite/src/TodoWebSqlite.Server/ && dotnet tool restore
+        dotnet ef migrations add InitialMigration && dotnet ef database update && cd ../../
         dotnet build TodoWebSqlite/TodoWebSqlite.sln -p:Configuration=Release
         dotnet build AdminWebSqlServer/AdminWebSqlServer.sln -p:Configuration=Release
         dotnet build EmptyWeb/EmptyWeb.sln -p:Configuration=Release
