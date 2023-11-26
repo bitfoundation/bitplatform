@@ -36,15 +36,6 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "BitButtonColor",
-            LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the button.",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType",
             LinkType = LinkType.Link,
@@ -70,6 +61,15 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitButtonColor",
+            LinkType = LinkType.Link,
+            Href = "#button-color-enum",
+            DefaultValue = "null",
+            Description = "The color of the button.",
+        },
+        new()
+        {
             Name = "Content",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -84,7 +84,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Icon",
+            Name = "IconName",
             Type = "string",
             DefaultValue = "null",
             Description = "The icon to show inside the BitButton."
@@ -383,11 +383,11 @@ public partial class BitButtonDemo
 <BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
 
     private readonly string example5RazorCode = @"
-<BitButton Icon=""@BitIconName.Emoji"">
+<BitButton IconName=""@BitIconName.Emoji"">
     Default (Start)
 </BitButton>
 
-<BitButton Icon=""@BitIconName.Emoji2""
+<BitButton IconName=""@BitIconName.Emoji2""
            ButtonStyle=""BitButtonStyle.Standard""
            IconPosition=""BitButtonIconPosition.End"">
     End

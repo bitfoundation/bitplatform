@@ -87,7 +87,7 @@ public partial class BitCompoundButton
     /// <summary>
     /// The icon to show inside the BitCompoundButton.
     /// </summary>
-    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Specifies Icon position which can be rendered either at the start or end of the component.
