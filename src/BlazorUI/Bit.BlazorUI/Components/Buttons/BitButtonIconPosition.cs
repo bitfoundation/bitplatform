@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitIconPosition
+public enum BitButtonIconPosition
 {
     /// <summary>
     /// Renders the icon at the start of component.
