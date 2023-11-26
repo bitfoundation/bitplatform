@@ -1,0 +1,39 @@
+﻿@page "/keyboard"
+@implements IDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Keyboard keyboard
+
+<PageTitle>Keyboard Samples</PageTitle>
+
+<h1>Keyboard</h1>
+
+<pre style="font-family:Consolas">
+@inject Bit.Butil.Keyboard keyboard
+
+@@code {
+    ...
+    await keyboard.Add("F10", args => { ... }, , ButilModifiers.Alt | ButilModifiers.Ctrl);
+    ...
+}
+</pre>
+
+<h3>Open the DevTools and start pressing F9 and Ctrl+Alt+F10</h3>
+
+@code {
+    private Guid id1;
+    private Guid id2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        id1 = await keyboard.Add("F9", () => _ = console.Log("F9 is pressed!"));
+        id2 = await keyboard.Add("F10", () => _ = console.Log("Ctrl+Alt+F10 is pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        _ = keyboard.Remove(id1);
+        _ = keyboard.Remove(id2);
+    }
+}

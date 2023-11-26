@@ -5,20 +5,22 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public static class DomKeyboardEvent
+public static class DomKeyboardEventListenersManager
 {
     internal const string InvokeMethodName = "InvokeKeyboardEvent";
 
     private static readonly ConcurrentDictionary<Guid, Listener> Listeners = [];
 
-    internal static Guid SetListener(Action<DomKeyboardEventArgs> action, string element, object options)
+    internal static Guid SetListener(Action<ButilKeyboardEventArgs> action, string element, object options)
     {
         var id = Guid.NewGuid();
+
         Listeners.TryAdd(id, new Listener { Action = action, Element = element, Options = options });
+        
         return id;
     }
 
-    internal static Guid[] RemoveListener(Action<DomKeyboardEventArgs> action, string element, object options)
+    internal static Guid[] RemoveListener(Action<ButilKeyboardEventArgs> action, string element, object options)
     {
         var listenersToRemove = Listeners.Where(l => l.Value.Action == action && l.Value.Element == element && l.Value.Options == options).ToArray();
 
@@ -30,7 +32,7 @@ public static class DomKeyboardEvent
     }
 
     [JSInvokable(InvokeMethodName)]
-    public static void Invoke(Guid id, DomKeyboardEventArgs args)
+    public static void Invoke(Guid id, ButilKeyboardEventArgs args)
     {
         Listeners.TryGetValue(id, out Listener? listener);
         listener?.Action.Invoke(args);
@@ -40,6 +42,6 @@ public static class DomKeyboardEvent
     {
         public string Element { get; set; } = string.Empty;
         public object Options { get; set; } = default!;
-        public Action<DomKeyboardEventArgs> Action { get; set; } = default!;
+        public Action<ButilKeyboardEventArgs> Action { get; set; } = default!;
     }
 }

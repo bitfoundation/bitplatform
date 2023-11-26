@@ -6,7 +6,17 @@
 
 <h1>Window</h1>
 
-<h3>Open the DevTools</h3>
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Window window
+
+@@code {
+    ...
+    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    ...
+}
+</pre>
+
+<h3>Open the DevTools and start pressing keys on your keyboard</h3>
 
 <button @onclick=AddEventListener>AddEventListener</button>
 &nbsp;
@@ -19,24 +29,24 @@
 @code {
     private bool isRegistered = false;
 
-    private Action<DomKeyboardEventArgs> _handler = default!;
+    private Action<ButilKeyboardEventArgs> _handler = default!;
 
     protected override void OnInitialized()
     {
-        _handler = (DomKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
+        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
 
         base.OnInitialized();
     }
 
     private void AddEventListener()
     {
-        _ = window.AddEventListener(DomEvents.KeyDown, _handler);
+        _ = window.AddEventListener(ButilEvents.KeyDown, _handler);
         isRegistered = true;
     }
 
     private void RemoveEventListener()
     {
-        _ = window.RemoveEventListener(DomEvents.KeyDown, _handler);
+        _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
         isRegistered = false;
     }
 }

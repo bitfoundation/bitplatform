@@ -6,11 +6,21 @@
 
 <h1>Document</h1>
 
-<h3>Open the DevTools</h3>
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Document document
 
-<button @onclick=AddEvenetListener>AddEvenetListener</button>
+@@code {
+    ...
+    await document.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    ...
+}
+</pre>
+
+<h3>Open the DevTools and start pressing keys on your keyboard</h3>
+
+<button @onclick=AddEventListener>AddEventListener</button>
 &nbsp;
-<button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+<button @onclick=RemoveEventListener>RemoveEventListener</button>
 
 <hr />
 
@@ -19,24 +29,24 @@
 @code {
     private bool isRegistered = false;
 
-    private Action<DomKeyboardEventArgs> _handler = default!;
+    private Action<ButilKeyboardEventArgs> _handler = default!;
 
     protected override void OnInitialized()
     {
-        _handler = (DomKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
+        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
 
         base.OnInitialized();
     }
 
-    private void AddEvenetListener()
+    private void AddEventListener()
     {
-        _ = document.AddEventListener(DomEvents.KeyDown, _handler);
+        _ = document.AddEventListener(ButilEvents.KeyDown, _handler);
         isRegistered = true;
     }
 
-    private void RemoveEvenetListener()
+    private void RemoveEventListener()
     {
-        _ = document.RemoveEventListener(DomEvents.KeyDown, _handler);
+        _ = document.RemoveEventListener(ButilEvents.KeyDown, _handler);
         isRegistered = false;
     }
 }
