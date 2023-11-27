@@ -11,6 +11,7 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
 #if BlazorWebAssembly
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 #endif
 

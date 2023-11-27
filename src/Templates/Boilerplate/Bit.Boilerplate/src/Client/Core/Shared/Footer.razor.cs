@@ -13,33 +13,23 @@ public partial class Footer
         cultures = CultureInfoManager.SupportedCultures
                                       .Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name })
                                       .ToArray();
+
+        SelectedCulture = CultureInfoManager.GetCurrentCulture();
+
         return base.OnInitAsync();
     }
-
-
-#if MultilingualEnabled
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-#if BlazorHybrid
-        var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
-#else
-        var preferredCultureCookie = await JSRuntime.GetCookie(".AspNetCore.Culture");
-#endif
-        SelectedCulture = CultureInfoManager.GetCurrentCulture(preferredCultureCookie);
-
-        StateHasChanged();
-
-        await base.OnAfterFirstRenderAsync();
-    }
-#endif
 
     private string? SelectedCulture;
 
     private async Task OnCultureChanged()
     {
-        var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
+        if (WebAppDeploymentTypeDetector.Current.IsPrerenderEnabled() && BlazorModeDetector.Current.IsBlazorHybrid() is false)
+        {
+            var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
+            await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, expiresIn: 30 * 24 * 3600, rememberMe: true);
+        }
 
-        await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, 30 * 24 * 3600, rememberMe: true);
+        await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
 
         NavigationManager.Refresh(forceReload: true);
     }

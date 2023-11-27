@@ -210,7 +210,7 @@ function isAuthorized(swagger) {
 function setCookie(name, value, seconds) {
     const date = new Date();
     date.setSeconds(date.getSeconds() + seconds);
-    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;samesite=strict;`;
 }
 
 function getCookie(name) {

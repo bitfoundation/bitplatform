@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 
 using System.Reflection;
+using Boilerplate.Client.App.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.Extensions.FileProviders;
 
@@ -39,9 +40,7 @@ public static class MauiProgram
             };
             return httpClient;
         });
-
-
-        services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.AddTransient<IStorageService, AppStorageService>();
         services.AddSharedServices();
         services.AddClientSharedServices();
         services.AddClientAppServices();

@@ -8,6 +8,11 @@ public class WebAppDeploymentTypeDetector
 {
     public static WebAppDeploymentTypeDetector Current { get; set; } = new WebAppDeploymentTypeDetector();
 
+    public virtual bool IsPrerenderEnabled()
+    {
+        return IsPrerenderedOnly() || IsPwaPrerendered() || IsSpaPrerendered();
+    }
+
     public virtual bool IsPrerenderedOnly()
     {
         return Mode == WebAppDeploymentType.PrerenderedOnly;

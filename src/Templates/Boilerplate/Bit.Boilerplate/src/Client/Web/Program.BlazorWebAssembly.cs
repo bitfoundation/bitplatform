@@ -33,7 +33,6 @@ public partial class Program
             return httpClient;
         });
         builder.Services.AddTransient<LazyAssemblyLoader>();
-        builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
         builder.Services.AddSharedServices();
         builder.Services.AddClientSharedServices();
@@ -42,8 +41,8 @@ public partial class Program
         var host = builder.Build();
 
 #if MultilingualEnabled
-        var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
-        CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+        var culture = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string>("window.localStorage.getItem", "Culture");
+        CultureInfoManager.SetCurrentCulture(culture);
 #endif
 
         return host;

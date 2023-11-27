@@ -8,6 +8,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private HttpClient httpClient = default;
+    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
 
     public async Task SignIn(SignInRequestDto signInModel)
@@ -15,20 +16,29 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-        await jsRuntime.StoreAuthToken(result!, signInModel.RememberMe);
+        await StoreToken(result!, signInModel.RememberMe);
 
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task SignOut()
     {
-        await jsRuntime.RemoveAuthTokens();
+        await storageService.RemoveItem("access_token");
+        await storageService.RemoveItem("refresh_token");
+        if (WebAppDeploymentTypeDetector.Current.IsPrerenderEnabled() && BlazorModeDetector.Current.IsBlazorHybrid() is false)
+        {
+            await jsRuntime.RemoveCookie("access_token");
+        }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task RefreshToken()
     {
-        await jsRuntime.RemoveCookie("access_token");
+        if (WebAppDeploymentTypeDetector.Current.IsPrerenderEnabled() && BlazorModeDetector.Current.IsBlazorHybrid() is false)
+        {
+            await jsRuntime.RemoveCookie("access_token");
+        }
+        await storageService.RemoveItem("access_token");
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
@@ -38,7 +48,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
         {
-            string? refresh_token = await jsRuntime.GetLocalStorage("refresh_token");
+            string? refresh_token = await storageService.GetItem("refresh_token");
 
             if (string.IsNullOrEmpty(refresh_token) is false)
             {
@@ -51,12 +61,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                     var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
                         .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
 
-                    await jsRuntime.StoreAuthToken(refreshTokenResponse!);
+                    await StoreToken(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
                 }
                 catch (ResourceValidationException exp) // refresh_token in invalid or expired
                 {
-                    await jsRuntime.RemoveAuthTokens();
+                    await storageService.RemoveItem("refresh_token");
                     throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
                 }
             }
@@ -70,6 +80,20 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         var identity = new ClaimsIdentity(claims: ParseTokenClaims(access_token), authenticationType: "Bearer", nameType: "name", roleType: "role");
 
         return new AuthenticationState(new ClaimsPrincipal(identity));
+    }
+
+    private async Task StoreToken(TokenResponseDto tokenResponseDto, bool? rememberMe = null)
+    {
+        if (rememberMe is null)
+        {
+            rememberMe = await storageService.IsPersistent("refresh_token");
+        }
+        await storageService.SetItem("access_token", tokenResponseDto!.AccessToken, rememberMe is true);
+        await storageService.SetItem("refresh_token", tokenResponseDto!.RefreshToken, rememberMe is true);
+        if (WebAppDeploymentTypeDetector.Current.IsPrerenderEnabled() && BlazorModeDetector.Current.IsBlazorHybrid() is false)
+        {
+            await jsRuntime.SetCookie("access_token", tokenResponseDto.AccessToken!, tokenResponseDto.ExpiresIn, rememberMe is true);
+        }
     }
 
     private static AuthenticationState NotSignedIn()

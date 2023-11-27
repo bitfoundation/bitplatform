@@ -10,20 +10,22 @@ public static class IServiceCollectionExtensions
     {
         // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS and Linux)
 
-        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
-        services.AddSessioned<IPubSubService, PubSubService>();
+        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.TryAddSessioned<IPubSubService, PubSubService>();
+        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.TryAddTransient<IStorageService, LocalStorageService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<RequestHeadersDelegationHandler>();
-        services.AddTransient<AuthDelegatingHandler>();
-        services.AddTransient<RetryDelegatingHandler>();
-        services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddTransient<HttpClientHandler>();
+        services.TryAddTransient<RequestHeadersDelegationHandler>();
+        services.TryAddTransient<AuthDelegatingHandler>();
+        services.TryAddTransient<RetryDelegatingHandler>();
+        services.TryAddTransient<ExceptionDelegatingHandler>();
+        services.TryAddTransient<HttpClientHandler>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
-        services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddTransient<MessageBoxService>();
+        services.TryAddTransient<MessageBoxService>();
 
         return services;
     }
@@ -49,16 +51,37 @@ public static class IServiceCollectionExtensions
     /// <summary>
     /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
     /// </summary>
-    public static IServiceCollection AddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+    public static IServiceCollection TryAddSessioned<TService, TImplementation>(this IServiceCollection services)
+        where TImplementation : class, TService
         where TService : class
     {
         if (BlazorModeDetector.Current.IsBlazorElectron() || BlazorModeDetector.Current.IsBlazorHybrid() || OperatingSystem.IsBrowser())
         {
-            return services.AddSingleton(implementationFactory);
+            services.TryAddSingleton<TService, TImplementation>();
         }
         else
         {
-            return services.AddScoped(implementationFactory);
+            services.TryAddScoped<TService, TImplementation>();
         }
+
+        return services;
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
+    /// </summary>
+    public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+        where TService : class
+    {
+        if (BlazorModeDetector.Current.IsBlazorElectron() || BlazorModeDetector.Current.IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        {
+            services.TryAddSingleton(implementationFactory);
+        }
+        else
+        {
+            services.TryAddScoped(implementationFactory);
+        }
+
+        return services;
     }
 }

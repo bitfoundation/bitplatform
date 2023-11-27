@@ -8,7 +8,7 @@ public static class IServiceCollectionExtensions
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows, macOS and Linux)
 
-        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+        services.TryAddTransient<IDateTimeProvider, DateTimeProvider>();
 
         // Define authorization policies here to seamlessly integrate them across various components,
         // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages, and programmatically in C# for enhanced security and access control.

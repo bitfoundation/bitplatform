@@ -10,7 +10,6 @@
         <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
-        <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(MultilingualEnabled)' == 'true'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->

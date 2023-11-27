@@ -59,6 +59,7 @@
         <Using Include="Microsoft.Extensions.Localization" />
         <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
         <Using Include="Boilerplate" />
         <Using Include="Boilerplate.Shared.Dtos" />
         <Using Include="Boilerplate.Shared.Enums" />

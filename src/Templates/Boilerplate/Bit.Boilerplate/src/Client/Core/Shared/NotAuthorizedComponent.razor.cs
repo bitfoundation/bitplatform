@@ -16,7 +16,7 @@ public partial class NotAuthorizedComponent
 
     protected override async Task OnAfterFirstRenderAsync()
     {
-        string? refresh_token = await JSRuntime.GetLocalStorage("refresh_token");
+        string? refresh_token = await StorageService.GetItem("refresh_token");
 
         // Let's update the access token by refreshing it when a refresh token is available.
         // Following this procedure, the newly acquired access token may now include the necessary roles or claims.

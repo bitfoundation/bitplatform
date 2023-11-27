@@ -12,9 +12,9 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
     private readonly PersistentComponentState applicationState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    public PrerenderStateService(PersistentComponentState applicationState)
+    public PrerenderStateService(PersistentComponentState state)
     {
-        applicationState = applicationState;
+        applicationState = state;
         subscription = applicationState.RegisterOnPersisting(PersistAsJson);
     }
 

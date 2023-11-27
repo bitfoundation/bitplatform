@@ -4,6 +4,8 @@ public partial class AppComponentBase : ComponentBase
 {
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
+    [AutoInject] protected IStorageService StorageService = default!;
+
     [AutoInject] protected HttpClient HttpClient = default!;
 
     /// <summary>
