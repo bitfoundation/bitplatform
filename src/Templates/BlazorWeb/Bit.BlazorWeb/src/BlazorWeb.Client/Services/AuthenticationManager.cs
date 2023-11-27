@@ -4,7 +4,7 @@ using BlazorWeb.Shared.Dtos.Identity;
 
 namespace BlazorWeb.Client.Services;
 
-public partial class AppAuthenticationManager : AuthenticationStateProvider
+public partial class AuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;

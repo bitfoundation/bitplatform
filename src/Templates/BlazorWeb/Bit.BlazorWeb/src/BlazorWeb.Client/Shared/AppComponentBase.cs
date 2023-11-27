@@ -28,7 +28,7 @@ public partial class AppComponentBase : ComponentBase
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
-    [AutoInject] protected AppAuthenticationManager AuthenticationManager = default!;
+    [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 

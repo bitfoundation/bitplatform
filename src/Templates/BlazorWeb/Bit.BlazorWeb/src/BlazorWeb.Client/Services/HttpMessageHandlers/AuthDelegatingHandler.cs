@@ -25,7 +25,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            var authManager = serviceProvider.GetRequiredService<AppAuthenticationManager>();
+            var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
             var refresh_token = await storageService.GetItem("refresh_token");
 
             if (refresh_token is not null)

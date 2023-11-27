@@ -11,7 +11,7 @@ public partial class MainLayout : IDisposable
 
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
-    [AutoInject] private AppAuthenticationManager authManager = default!;
+    [AutoInject] private AuthenticationManager authManager = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
