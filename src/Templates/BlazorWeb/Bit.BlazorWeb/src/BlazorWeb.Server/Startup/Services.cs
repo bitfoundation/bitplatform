@@ -18,11 +18,11 @@ public static class Services
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        services.AddClientSharedServices();
-
         services.AddExceptionHandler<ApiExceptionHandler>();
 
         services.AddBlazor(configuration);
+
+        services.AddClientSharedServices();
 
         services
             .AddControllers()

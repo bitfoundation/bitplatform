@@ -10,24 +10,25 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
-        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
-        services.AddTransient<IExceptionHandler, ExceptionHandler>();
-        services.AddScoped<IPubSubService, PubSubService>();
-        services.AddTransient<IStorageService, LocalStorageService>();
+        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.TryAddTransient<IExceptionHandler, ExceptionHandler>();
+        services.TryAddScoped<IPubSubService, PubSubService>();
+        services.TryAddTransient<IStorageService, LocalStorageService>();
         services.AddBitBlazorUIServices();
 
-        services.AddTransient<RequestHeadersDelegationHandler>();
-        services.AddTransient<AuthDelegatingHandler>();
-        services.AddTransient<RetryDelegatingHandler>();
-        services.AddTransient<ExceptionDelegatingHandler>();
-        services.AddTransient<HttpClientHandler>();
+        services.TryAddTransient<RequestHeadersDelegationHandler>();
+        services.TryAddTransient<AuthDelegatingHandler>();
+        services.TryAddTransient<RetryDelegatingHandler>();
+        services.TryAddTransient<ExceptionDelegatingHandler>();
+        services.TryAddTransient<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AppAuthenticationManager>();
-        services.AddScoped(sp => (AppAuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.TryAddScoped(sp => (AppAuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddTransient<MessageBoxService>();
+        services.TryAddTransient<MessageBoxService>();
 
-        services.AddTransient<LazyAssemblyLoader>();
+        services.TryAddTransient<LazyAssemblyLoader>();
 
         return services;
     }

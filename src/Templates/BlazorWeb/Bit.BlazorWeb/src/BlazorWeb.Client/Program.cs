@@ -13,7 +13,6 @@ if (apiServerAddress!.IsAbsoluteUri is false)
 }
 
 builder.Services.AddTransient(sp => new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>()) { BaseAddress = apiServerAddress });
-builder.Services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
 
 builder.Services.AddClientSharedServices();
 

@@ -24,6 +24,7 @@
         <Using Include="Microsoft.Extensions.Localization" />
         <Using Include="Microsoft.Extensions.Configuration" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
         <Using Include="BlazorWeb" />
         <Using Include="BlazorWeb.Shared.Dtos" />
         <Using Include="BlazorWeb.Shared.Enums" />
