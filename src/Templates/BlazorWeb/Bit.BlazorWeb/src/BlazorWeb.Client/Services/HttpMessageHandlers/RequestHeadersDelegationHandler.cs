@@ -8,6 +8,7 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
 #if MultilingualEnabled

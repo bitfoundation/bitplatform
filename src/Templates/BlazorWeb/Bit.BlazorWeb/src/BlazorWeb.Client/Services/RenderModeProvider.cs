@@ -5,12 +5,10 @@ namespace BlazorWeb.Client.Services;
 
 public static class RenderModeProvider
 {
-    public static IComponentRenderMode PrerenderEnabledAuto { get; } = RenderMode.InteractiveAuto;
-    public static IComponentRenderMode PrerenderEnabledBlazorWasm { get; } = RenderMode.InteractiveWebAssembly;
-    public static IComponentRenderMode PrerenderEnabledBlazorServer { get; } = RenderMode.InteractiveServer;    
-    public static IComponentRenderMode Auto { get; } = new InteractiveAutoRenderMode(prerender: false);
-    public static IComponentRenderMode BlazorWasm { get; } = new InteractiveWebAssemblyRenderMode(prerender: false);
-    public static IComponentRenderMode BlazorServer { get; } = new InteractiveServerRenderMode(prerender: false);
+    public static bool PrerenderEnabled { get; set; } = false;
+    public static IComponentRenderMode Auto { get; } = new InteractiveAutoRenderMode(PrerenderEnabled);
+    public static IComponentRenderMode BlazorWasm { get; } = new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
+    public static IComponentRenderMode BlazorServer { get; } = new InteractiveServerRenderMode(PrerenderEnabled);
 
     // PrerenderOnly: In order to have prerender only mode, simply remove @rendermode usages from App.razor
 

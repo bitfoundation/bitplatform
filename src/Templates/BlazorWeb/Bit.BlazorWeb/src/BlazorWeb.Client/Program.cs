@@ -20,8 +20,8 @@ builder.Services.AddClientSharedServices();
 var host = builder.Build();
 
 #if MultilingualEnabled
-var preferredCultureCookie = ((IJSInProcessRuntime)host.Services.GetRequiredService<IJSRuntime>()).Invoke<string?>("window.App.getCookie", ".AspNetCore.Culture");
-CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
+CultureInfoManager.SetCurrentCulture(culture);
 #endif
 
 await host.RunAsync();

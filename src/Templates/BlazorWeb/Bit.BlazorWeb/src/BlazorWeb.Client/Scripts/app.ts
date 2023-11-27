@@ -1,17 +1,15 @@
 ﻿class App {
-    public static setCookie(name: string, value: string, seconds: number, remeber: boolean) {
+    public static setCookie(name: string, value: string, seconds: number, remeber: boolean, secure: boolean) {
         const date = new Date();
         date.setSeconds(date.getSeconds() + seconds);
         let cookie = `${name}=${value};path=/;samesite=strict;`;
         if (remeber == true) {
             cookie = cookie += `expires=${date.toUTCString()};`;
         }
+        if (secure == true) {
+            cookie = `${cookie};secure`;
+        }
         document.cookie = cookie;
-    }
-
-    public static getCookie(name: string): string | null {
-        // https://stackoverflow.com/a/25490531/2720104
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || null;
     }
 
     public static removeCookie(name: string): void {

@@ -14,6 +14,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private IStorageService storageService = default!;
 
     private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
                                                                 .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
@@ -25,7 +26,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     {
         if (IsInitialized)
         {
-            return await jsRuntime.GetCookie("access_token");
+            return await storageService.GetItem("access_token");
         }
 
         return httpContextAccessor.HttpContext?.Request.Cookies["access_token"];

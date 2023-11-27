@@ -32,13 +32,9 @@ public class CultureInfoManager
         CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
-    public static string GetCurrentCulture(string? preferredCultureCookie)
+    public static string GetCurrentCulture(string? preferredCulture = null)
     {
-        string culture = CultureInfo.CurrentUICulture.Name;
-        if (preferredCultureCookie is not null)
-        {
-            culture = preferredCultureCookie[(preferredCultureCookie.IndexOf("|uic=") + 5)..];
-        }
+        string culture = preferredCulture ?? CultureInfo.CurrentUICulture.Name;
         if (SupportedCultures.Any(sc => sc.code == culture) is false)
         {
             culture = DefaultCulture.code;
