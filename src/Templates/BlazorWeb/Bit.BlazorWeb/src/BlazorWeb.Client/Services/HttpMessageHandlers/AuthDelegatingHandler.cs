@@ -32,7 +32,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
             {
                 await authManager.RefreshToken();
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await storageService.GetItem("access_token"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await tokenProvider.GetAccessTokenAsync());
 
                 return await base.SendAsync(request, cancellationToken);
             }
