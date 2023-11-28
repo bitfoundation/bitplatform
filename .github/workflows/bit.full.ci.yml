@@ -49,7 +49,7 @@ jobs:
     - name: Release build admin panel sample + Blazor webassembly + SqlServer database
       run: |
         dotnet workload install wasm-tools wasm-experimental
-        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
+        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample admin --pipeline github
         dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:Configuration=Release
 
     - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators

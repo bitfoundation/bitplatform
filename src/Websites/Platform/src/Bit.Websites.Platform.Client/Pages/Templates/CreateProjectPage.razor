@@ -31,13 +31,13 @@ dotnet new install Bit.Boilerplate::8.2.0-pre-01</pre>
                 <li>--name (default is current folder name)</li>
                 <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
                 <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>Other</i></li>
-                <li>--sample default to <i>AdminPanel</i> among the following options: <i>AdminPanel</i>, <i>Todo</i>, <i>None</i></li>
+                <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
             </ul>
         </div>
         Examples:
         <pre class="code-box">
 1- Create a web based admin panel with SQL Server, using Azure DevOps for CI/CD:
-dotnet new bit-web --name MyAdminPanel --database SqlServer --pipeline Azure --sample AdminPanel
+dotnet new bit-web --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin
 
 2- Create a cross-platform Todo app for mobile, desktop, and web with GitHub Actions and a SQLite database.
 dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo

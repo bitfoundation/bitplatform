@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "AdminPanel")
+//#if (sample == "Admin")
 using Boilerplate.Server.Models.Categories;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Models.Products;
@@ -18,7 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; }
-    //#elif (sample == "AdminPanel")
+    //#elif (sample == "Admin")
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     //#endif

@@ -127,7 +127,7 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
-    //#elif (sample == "AdminPanel")
+    //#elif (sample == "Admin")
     {
         "outputFile": "Pages/Categories/AddOrEditCategoryPage.razor.css",
         "inputFile": "Pages/Categories/AddOrEditCategoryPage.razor.scss",

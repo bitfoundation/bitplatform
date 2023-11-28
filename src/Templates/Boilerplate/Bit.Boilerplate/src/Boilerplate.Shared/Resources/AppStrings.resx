@@ -462,7 +462,7 @@ Please confirm your email by clicking on the link.</value>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
-  <!--#elif (sample == "AdminPanel") -->
+  <!--#elif (sample == "Admin") -->
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
   </data>

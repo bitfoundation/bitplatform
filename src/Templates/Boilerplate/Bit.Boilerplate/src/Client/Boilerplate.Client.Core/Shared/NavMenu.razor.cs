@@ -29,7 +29,7 @@ public partial class NavMenu : IDisposable
                 IconName = BitIconName.Home,
                 Url = "/",
             },
-            //#if (sample == "AdminPanel")
+            //#if (sample == "Admin")
             new BitNavItem
             {
                 Text = Localizer[nameof(AppStrings.ProductCategory)],

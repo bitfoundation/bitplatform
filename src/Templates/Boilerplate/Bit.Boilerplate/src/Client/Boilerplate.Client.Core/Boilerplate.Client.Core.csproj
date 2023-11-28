@@ -20,7 +20,7 @@
         <PackageReference Include="Bit.BlazorUI.Icons" Version="8.2.0-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.2.0-pre-01" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.2.0-pre-01" />
+        <PackageReference Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.2.0-pre-01" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.2.0-pre-01">
             <PrivateAssets>all</PrivateAssets>

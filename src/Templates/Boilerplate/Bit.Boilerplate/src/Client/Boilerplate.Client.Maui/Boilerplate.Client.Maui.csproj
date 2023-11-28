@@ -40,7 +40,7 @@
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <EnableSGenConc>True</EnableSGenConc>
         <!--/+:msbuild-conditional:noEmit -->
-        <MtouchInterpreter Condition=" '$(sample)' == 'AdminPanel' or '$(sample)' == ''">all</MtouchInterpreter>
+        <MtouchInterpreter Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''">all</MtouchInterpreter>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 

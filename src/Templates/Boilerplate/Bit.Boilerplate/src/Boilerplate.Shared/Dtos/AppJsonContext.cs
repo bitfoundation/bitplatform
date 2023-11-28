@@ -1,6 +1,6 @@
 ﻿//#if (sample == "Todo")
 using Boilerplate.Shared.Dtos.Todo;
-//#elif (sample == "AdminPanel")
+//#elif (sample == "Admin")
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Dtos.Dashboard;
 using Boilerplate.Shared.Dtos.Products;
@@ -19,7 +19,7 @@ namespace Boilerplate.Shared.Dtos;
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
-//#elif (sample == "AdminPanel")
+//#elif (sample == "Admin")
 [JsonSerializable(typeof(OverallAnalyticsStatsDataDto))]
 [JsonSerializable(typeof(List<ProductsCountPerCategoryDto>))]
 [JsonSerializable(typeof(List<ProductSaleStatDto>))]

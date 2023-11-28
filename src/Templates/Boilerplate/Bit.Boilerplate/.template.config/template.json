@@ -82,11 +82,11 @@
             "displayName": "Sample",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "AdminPanel",
+            "defaultValue": "None",
             "choices": [
                 {
-                    "choice": "AdminPanel",
-                    "description": "AdminPanel"
+                    "choice": "Admin",
+                    "description": "Admin Panel"
                 },
                 {
                     "choice": "Todo",
@@ -133,7 +133,7 @@
                     "exclude": [ ".azure-devops/**" ]
                 },
                 {
-                    "condition": "(sample != AdminPanel)",
+                    "condition": "(sample != Admin)",
                     "exclude": [ "src/Shared/Dtos/Categories/**",
 						"src/Shared/Dtos/Dashboard/**",
 						"src/Shared/Dtos/Products/**",

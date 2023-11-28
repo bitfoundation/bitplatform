@@ -35,7 +35,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
        
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -123,7 +123,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
   
     - uses: actions/setup-node@v3
       with:
@@ -170,7 +170,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
 
     - uses: actions/setup-node@v3
       with:
@@ -228,7 +228,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
@@ -279,7 +279,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample AdminPanel
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 

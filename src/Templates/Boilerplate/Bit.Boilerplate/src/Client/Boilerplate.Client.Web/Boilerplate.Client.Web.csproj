@@ -43,7 +43,7 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(sample)' == 'AdminPanel'  or '$(sample)' == ''">
+    <ItemGroup Condition=" '$(sample)' == 'Admin'  or '$(sample)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
