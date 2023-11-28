@@ -4,7 +4,6 @@ trigger:
 # https://bitplatform.dev/templates/devops
 
 variables:
-  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   APP_SERVICE_NAME: 'app-service-bp-test'
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
@@ -13,8 +12,8 @@ variables:
 
 jobs:
 
-- job: build_blazor_api_wasm
-  displayName: 'build blazor api + web assembly'
+- job: build_api_blazor
+  displayName: 'build api + blazor'
 
   pool:
     vmImage: 'ubuntu-22.04'
@@ -30,13 +29,7 @@ jobs:
     inputs:
       versionSpec: '18.x'
     displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Switch to blazor web assembly'
-    inputs:
-      targetType: 'inline'
-      script: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/Boilerplate.Client.Web.csproj
-
+    
   - task: Bash@3
     displayName: 'Install wasm'
     inputs:
@@ -49,19 +42,19 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Server/Api/Boilerplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload api-web artifact
@@ -74,18 +67,18 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/Server/Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj'
+      script: 'cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/Server/Api/efbundle'
+      targetPath: 'src/Boilerplate.Server/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 
-- job: deploy_blazor_api_wasm
-  dependsOn: build_blazor_api_wasm
-  displayName: 'deploy blazor api + web assembly'
+- job: deploy_api_blazor
+  dependsOn: build_api_blazor
+  displayName: 'deploy api + blazor'
 
   pool:
     vmImage: 'ubuntu-22.04'
@@ -165,7 +158,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
 
   - task: Bash@3
     displayName: 'Install maui'
@@ -177,18 +170,18 @@ jobs:
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build exe'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
     inputs:
-      targetPath: 'src/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86'
+      targetPath: 'src/Client/Boilerplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86'
       artifact: 'win-exe-bundle'
       publishLocation: 'pipeline'
 
@@ -223,7 +216,7 @@ jobs:
       secureFile: 'Boilerplate.keystore'
 
   - script: |
-      cp $(AndroidKeyStore.secureFilePath) src/Client/App/Boilerplate.keystore
+      cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.Maui/Boilerplate.keystore
     failOnStderr: true
     displayName: Copy keystore to app project folder
 
@@ -232,29 +225,29 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
   
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - task: Bash@3
     displayName: 'Build apk'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - script: |
       mkdir drop
-      cp ./src/Client/App/bin/Release/net8.0-android/*-Signed.* drop/
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.* drop/
     failOnStderr: true
     displayName: Copy apk/aab files to drop folder
 
@@ -288,7 +281,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
 
   - task: Bash@3
     displayName: 'Install maui'
@@ -300,17 +293,17 @@ jobs:
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
     displayName: 'Build pkg'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
 
   - script: |
       mkdir drop
-      cp ./src/Client/App/bin/Release/net8.0-maccatalyst/*.pkg drop/
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-maccatalyst/*.pkg drop/
     failOnStderr: true
     displayName: Copy pkg file to drop folder
 

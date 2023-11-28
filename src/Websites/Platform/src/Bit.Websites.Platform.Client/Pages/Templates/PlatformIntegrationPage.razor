@@ -59,9 +59,9 @@ else // Windows, Web, macOS, Linux
         <div class="section-card-txt">
             Now, what if Maui Essentials doesn't have the needed feature?
             <br />
-            You can define an interface in the <b>src/Client/Core/Services/Contracts</b> and implement it separately in the <b>src/Client/App/Platforms/Android</b> and iOS directories.
+            You can define an interface in the <b>src\Client\Boilerplate.Client.Core/Services/Contracts</b> and implement it separately in the <b>src/Client/Boilerplate.Client.Maui/Platforms/Android</b> and iOS directories.
             <br />
-            Then register it in the <b>src/Client/App/Platforms/Android/Extensions/IServiceCollectionExtensions</b> file for the android and relevant file for the iOS.
+            Then register it in the <b>src/Client/Boilerplate.Client.Maui/Platforms/Android/Extensions/IServiceCollectionExtensions</b> file for the android and relevant file for the iOS.
             <br />
             You can also have a Windows/Web-specific implementation that simply reads contacts previously saved on the server using an http client.
             <br />
@@ -73,7 +73,7 @@ else // Windows, Web, macOS, Linux
             Sample code:
         </div>
 
-        src/Client/Core/Services/Contracts
+        src\Client\Boilerplate.Client.Core/Services/Contracts
         <pre class="code-box">public class ContactData
 {
     public string Name { get;set; }
@@ -85,7 +85,7 @@ public interface IContactsService
 }
         </pre>
 
-        src/Client/App/Platforms/Android/Contracts
+        src/Client/Boilerplate.Client.Maui/Platforms/Android/Contracts
         <pre class="code-box">public class AndroidContactsService : IContactsService
 {
     public async Task&lt;List&lt;ContactData&gt;&gt; GetContactData()
@@ -116,7 +116,7 @@ public interface IContactsService
         <div class="section-card-txt">
             Lastly, you might want to use Xaml Controls, like the well-known MediaElement from the Maui Community Toolkit.
             <br />
-            In this case, inject <b>IPubService</b> on your razor page, publish a message, and inject IPubSubService in the constructor of the MainPage class in <b>src/Client/App/MainPage.xaml.cs</b>.
+            In this case, inject <b>IPubService</b> on your razor page, publish a message, and inject IPubSubService in the constructor of the MainPage class in <b>src/Client/Boilerplate.Client.Maui/MainPage.xaml.cs</b>.
             <br />
             Then subscribe to the relevant key and display your new Xaml page using <b>App.Current.MainPage.PushAsync</b>.
             <br />
