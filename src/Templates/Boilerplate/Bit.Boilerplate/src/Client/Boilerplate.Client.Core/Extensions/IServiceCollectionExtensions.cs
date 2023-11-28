@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using OS = OperatingSystem;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -38,7 +39,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (BlazorModeDetector.Current.IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -55,7 +56,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (BlazorModeDetector.Current.IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }
@@ -73,7 +74,7 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        if (BlazorModeDetector.Current.IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton(implementationFactory);
         }
@@ -83,5 +84,10 @@ public static class IServiceCollectionExtensions
         }
 
         return services;
+    }
+
+    private static bool IsBlazorHybrid()
+    {
+        return OS.IsAndroid() || OS.IsIOS() || OS.IsMacOS() || OS.IsMacCatalyst() || OS.IsWindows();
     }
 }

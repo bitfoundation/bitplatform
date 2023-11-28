@@ -6,8 +6,6 @@
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!--/-:msbuild-conditional:noEmit -->
-        <ServiceWorkerAssetsManifest Condition="$(WebAppDeploymentType.Contains('Pwa'))">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources Condition="$(WebAppDeploymentType.Contains('Pwa'))">false</BlazorCacheBootResources>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
@@ -27,16 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!--/-:msbuild-conditional:noEmit -->
-        <!-- In the Blazor Web Assembly mode, the Server project will host the web client app itself -->
-        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
-        <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
-        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\ServerSideAuthTokenProvider.cs" />
-        <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Extensions\HttpRequestExtensions.cs" />
-        <!--/+:msbuild-conditional:noEmit -->
-    </ItemGroup>
-
-    <ItemGroup>
 		<PackageReference Include="Bit.Bup" Version="8.2.0-pre-01" />
         <PackageReference Include="Bit.Bswup" Version="8.2.0-pre-01" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.2.0-pre-01">
@@ -47,14 +35,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
-        <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
-        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="$(WebAppDeploymentType.Contains('Pwa'))" />
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
@@ -76,7 +60,6 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
         <Error Text="To run in BlazorServer mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" '$(BlazorMode)' == 'BlazorServer' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
     </Target>

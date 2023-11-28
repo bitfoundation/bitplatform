@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using Microsoft.AspNetCore.Components.Routing;
+using OS = OperatingSystem;
 
 namespace Boilerplate.Client.Core;
 
@@ -21,7 +22,7 @@ public partial class App
 
     protected override async Task OnInitializedAsync()
     {
-        if(BlazorModeDetector.Current.IsBlazorHybrid())
+        if (IsBlazorHybrid())
         {
             await SetupBodyClasses();
             await base.OnInitializedAsync();
@@ -29,7 +30,7 @@ public partial class App
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && BlazorModeDetector.Current.IsBlazorHybrid() is false)
+        if (firstRender && IsBlazorHybrid() is false)
         {
             await SetupBodyClasses();
         }
@@ -41,15 +42,7 @@ public partial class App
     {
         var cssClasses = new List<string>();
 
-        if (BlazorModeDetector.Current.IsBlazorWebAssembly())
-        {
-            cssClasses.Add("bit-blazor-wasm");
-        }
-        else if (BlazorModeDetector.Current.IsBlazorServer())
-        {
-            cssClasses.Add("bit-blazor-server");
-        }
-        else if (BlazorModeDetector.Current.IsBlazorHybrid())
+        if (IsBlazorHybrid())
         {
             cssClasses.Add("bit-blazor-hybrid");
 
@@ -74,6 +67,10 @@ public partial class App
                 cssClasses.Add("bit-android");
             }
         }
+        else
+        {
+            cssClasses.Add("bit-blazor-web");
+        }
 
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
@@ -96,7 +93,7 @@ public partial class App
         // Android, windows and iOS have to set culture programmatically.
         // Browser's culture is handled in the Web project's Program.BlazorWebAssembly.cs
 #if MultilingualEnabled
-        if (cultureHasNotBeenSet && BlazorModeDetector.Current.IsBlazorHybrid())
+        if (cultureHasNotBeenSet && IsBlazorHybrid())
         {
             cultureHasNotBeenSet = false;
             var preferredCulture = await storageService.GetItem("Culture");
@@ -115,5 +112,10 @@ public partial class App
             }
         }
 #endif
+    }
+
+    private bool IsBlazorHybrid()
+    {
+        return OS.IsAndroid() || OS.IsIOS() || OS.IsMacOS() || OS.IsMacCatalyst() || OS.IsWindows();
     }
 }

@@ -38,7 +38,7 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../../
-        dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
+        dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:Configuration=Release
 
     - name: Release build empty sample + Blazor hybrid + no database
       run: |
@@ -51,7 +51,7 @@ jobs:
         dotnet workload install wasm-tools wasm-experimental
         dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
         sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/AdminBPBlazorWasmSqlServer.Client.Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
-        dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
+        dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:Configuration=Release
 
     - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
@@ -71,7 +71,7 @@ jobs:
     - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
       run: |
         sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
-        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
+        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:Configuration=Release
 
     - name: Create projects from BlazorWeb project template with different parameters
       run: |

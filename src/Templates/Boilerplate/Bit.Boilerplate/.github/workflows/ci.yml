@@ -2,9 +2,6 @@ name: Boilerplate CI
 
 # https://bitplatform.dev/templates/dev-ops
 
-env:
-  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
-
 on:
   workflow_dispatch:
   push:
@@ -31,7 +28,7 @@ jobs:
         node-version: 18
       
     - name: Build
-      run: dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -p:Configuration=Release
 
   build-blazor-hybrid-android:
     name: build blazor hybrid (android)
@@ -130,7 +127,7 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-maccatalyst
 
   build-blazor-api-wasm:
-    name: build blazor api + web assembly
+    name: build api + blazor
     runs-on: ubuntu-22.04
 
     steps:
@@ -154,4 +151,4 @@ jobs:
       run: cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Build
-      run: dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release

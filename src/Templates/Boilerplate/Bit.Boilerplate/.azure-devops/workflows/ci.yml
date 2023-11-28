@@ -3,9 +3,6 @@ trigger:
 
 # https://bitplatform.dev/templates/devops
 
-variables:
-  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
-
 jobs:
 - job: build_blazor_server
   displayName: 'build blazor server'
@@ -29,7 +26,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+      script: 'dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -p:Configuration=Release'
 
 - job: build_blazor_hybrid_android
   displayName: 'build blazor hybrid (android)'
@@ -151,8 +148,8 @@ jobs:
       targetType: 'inline'
       script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-maccatalyst'
 
-- job: build_blazor_api_wasm
-  displayName: 'build blazor api + web assembly'
+- job: build_api_blazor
+  displayName: 'build api + blazor'
 
   pool:
     vmImage: 'ubuntu-22.04'
@@ -176,13 +173,7 @@ jobs:
       script: 'cd src && dotnet workload install wasm-tools wasm-experimental'
 
   - task: Bash@3
-    displayName: 'Switch to blazor web assembly'
-    inputs:
-      targetType: 'inline'
-      script: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj
-
-  - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}"'
+      script: 'dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release'
