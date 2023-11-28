@@ -1,0 +1,94 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<ul @ref="RootElement" @attributes="HtmlAttributes"
+    id="@_Id"
+    style="@StyleBuilder.Value"
+    class="@ClassBuilder.Value">
+    @if (ShowFirstButton)
+    {
+        <li style="@Styles?.ButtonContainer @Styles?.FirstButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer @Classes?.FirstButtonContainer">
+            <button @onclick="@(() => OnClickControlButton(BitPage.First))"
+                    aria-label="First page"
+                    disabled="@(SelectedPage == 1 || IsEnabled is false)"
+                    style="@Styles?.Button @Styles?.FirstButton"
+                    class="bit-pgn-btn @Classes?.Button @Classes?.FirstButton @GetButtonClasses()">
+                <i style="@Styles?.FirstButtonIcon" class="bit-icon bit-icon--@FirstIcon @Styles?.FirstButtonIcon" />
+            </button>
+        </li>
+    }
+
+    @if (ShowPreviousButton)
+    {
+        <li style="@Styles?.ButtonContainer @Styles?.PreviousButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer @Classes?.PreviousButtonContainer">
+            <button @onclick="@(() => OnClickControlButton(BitPage.Previous))"
+                    aria-label="Previous page"
+                    disabled="@(SelectedPage == 1 || IsEnabled is false)"
+                    style="@Styles?.Button @Styles?.PreviousButton"
+                    class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
+                <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@BeforeIcon @Classes?.PreviousButtonIcon" />
+            </button>
+        </li>
+    }
+
+    @foreach (var state in GeneratePagination())
+    {
+        var currentPage = state;
+        if (currentPage == -1)
+        {
+            <li style="@Styles?.ButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer">
+                <p disabled="@(IsEnabled is false)">...</p>
+            </li>
+        }
+        else if (currentPage == SelectedPage)
+        {
+            <li style="@Styles?.ButtonContainer @Styles?.SelectedButtonContainer" class="bit-pgn-itm bit-pgn-sit @Classes?.ButtonContainer @Classes?.SelectedButtonContainer">
+                <button disabled="@(IsEnabled is false)"
+                        aria-current="page"
+                        aria-label="@($"Current page {currentPage}")"
+                        style="@Styles?.Button @Styles?.SelectedButton"
+                        class="bit-pgn-btn @Classes?.Button @Classes?.SelectedButton @GetButtonClasses()">
+                    @currentPage
+                </button>
+            </li>
+        }
+        else
+        {
+            <li style="@Styles?.ButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer">
+                <button @onclick="@(() => SelectedPage = currentPage)"
+                        disabled="@(IsEnabled is false)"
+                        aria-label="@($"Page {currentPage}")"
+                        style="@Styles?.Button @Styles?.SelectedButton"
+                        class="bit-pgn-btn @Classes?.Button @GetButtonClasses()">
+                    @currentPage
+                </button>
+            </li>
+        }
+    }
+
+    @if (ShowNextButton)
+    {
+        <li style="@Styles?.ButtonContainer @Styles?.NextButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer @Classes?.NextButtonContainer">
+            <button @onclick="@(() => OnClickControlButton(BitPage.Next))"
+                    aria-label="Next page"
+                    disabled="@(SelectedPage == Count || IsEnabled is false)"
+                    style="@Styles?.Button @Styles?.NextButton"
+                    class="bit-pgn-btn @Classes?.Button @Classes?.NextButton @GetButtonClasses()">
+                <i style="@Styles?.NextButtonIcon" class="bit-icon bit-icon--@NextIcon @Classes?.NextButtonIcon" />
+            </button>
+        </li>
+    }
+
+    @if (ShowLastButton)
+    {
+        <li style="@Styles?.ButtonContainer @Styles?.LastButtonContainer" class="bit-pgn-itm @Classes?.ButtonContainer @Classes?.LastButtonContainer">
+            <button @onclick="@(() => OnClickControlButton(BitPage.Last))"
+                    aria-label="Last page"
+                    disabled="@(SelectedPage == Count || IsEnabled is false)"
+                    style="@Styles?.Button @Styles?.LastButton"
+                    class="bit-pgn-btn @Classes?.Button @Classes?.LastButton @GetButtonClasses()">
+                <i style="@Styles?.LastButtonIcon" class="bit-icon bit-icon--@LastIcon @Classes?.LastButtonIcon" />
+            </button>
+        </li>
+    }
+</ul>
