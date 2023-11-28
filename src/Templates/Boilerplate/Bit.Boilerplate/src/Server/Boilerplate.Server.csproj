@@ -7,10 +7,10 @@
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
         <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
-        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
-        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Services\ServerSideAuthTokenProvider.cs" Link="Services\ServerSideAuthTokenProvider.cs" />
-        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Client\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
+        <Content Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Client\Web\Pages\_Layout.cshtml" Link="Pages\_Layout.cshtml" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Client\Web\Services\ServerSideAuthTokenProvider.cs" Link="Services\ServerSideAuthTokenProvider.cs" />
+        <Compile Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\Client\Web\Extensions\HttpRequestExtensions.cs" Link="Extensions\HttpRequestExtensions.cs" />
         <PackageReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
         <ProjectReference Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' " Include="..\..\Client\Web\Boilerplate.Client.Web.csproj" />
         <!--/+:msbuild-conditional:noEmit -->
