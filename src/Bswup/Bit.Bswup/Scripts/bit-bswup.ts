@@ -112,6 +112,7 @@ class BitBswup {
             }
 
             if (e.data === 'CLIENTS_CLAIMED') {
+                console.log('starting blazor...');
                 Blazor.start().then(() => {
                     blazorStartResolver(undefined);
                     e.source.postMessage('BLAZOR_STARTED');
@@ -132,6 +133,11 @@ class BitBswup {
                     const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
                 }
+            }
+
+            if (type === 'bypass') {
+                const firstInstall = true; // !(navigator.serviceWorker.controller);
+                handle(BswupMessage.downloadFinished, { reload, firstInstall });
             }
 
             if (type === 'activate') {

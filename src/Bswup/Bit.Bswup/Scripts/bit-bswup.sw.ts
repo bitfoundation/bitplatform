@@ -19,6 +19,7 @@ interface Window {
     ignoreDefaultInclude: any
     ignoreDefaultExclude: any
     isPassive: any
+    disablePassiveFirstBoot: any
     enableIntegrityCheck: any
     enableDiagnostics: any
     enableFetchDiagnostics: any
@@ -214,6 +215,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let keys = await newCache.keys();
     const firstTime = keys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
+    if (passiveFirstTime && self.disablePassiveFirstBoot) {
+        sendMessage({ type: 'bypass' });
+        return;
+    }
 
     diag('passiveFirstTime:', passiveFirstTime);
 
