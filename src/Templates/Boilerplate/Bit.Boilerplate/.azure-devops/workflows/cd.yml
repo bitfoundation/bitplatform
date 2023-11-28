@@ -61,7 +61,7 @@ jobs:
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Server/Api/Boilerplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+      script: 'dotnet publish src/Server/Boilerplate.Server.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ variables.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload api-web artifact
@@ -74,12 +74,12 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/Server/Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj'
+      script: 'cd src/Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/Server/Api/efbundle'
+      targetPath: 'src/Server/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 

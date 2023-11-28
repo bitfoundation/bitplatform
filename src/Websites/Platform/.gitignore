@@ -227,7 +227,7 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/src/Server/Api/Attachments/**/*.*
+/src/Bit.Websites.Platform.Server/Attachments/**/*.*
 
 /src/Bit.Websites.Platform.Client/Scripts/app*.js
 /src/Bit.Websites.Platform.Client/wwwroot/scripts/app*.js

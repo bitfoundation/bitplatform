@@ -154,4 +154,4 @@ jobs:
       run: cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Build
-      run: dotnet build src/Server/Api/Boilerplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build src/Server/Boilerplate.Server.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"

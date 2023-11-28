@@ -131,7 +131,7 @@ public class BpStack : Stack
                 NetFrameworkVersion = "v8.0",
                 FtpsState = FtpsState.Disabled,
                 LinuxFxVersion = "DOTNETCORE|8.0",
-                AppCommandLine = "dotnet Boilerplate.Server.Api.dll",
+                AppCommandLine = "dotnet Boilerplate.Server.dll",
                 AppSettings =
                 [
                     new NameValuePairArgs { Name = "ApplicationInsights__InstrumentationKey", Value = appInsights.InstrumentationKey },

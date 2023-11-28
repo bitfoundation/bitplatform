@@ -33,7 +33,7 @@ jobs:
       run: |
         dotnet workload install maui-tizen
         dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
-        cd TodoBPBlazorServerSqlite/src/Server/Api/
+        cd TodoBPBlazorServerSqlite/src/Server/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update

@@ -5,7 +5,7 @@ using Riok.Mapperly.Abstractions;
 namespace BlazorWeb.Server.Mappers;
 
 /// <summary>
-/// More info at Server/Api/Mappers/README.md
+/// More info at Server/Mappers/README.md
 /// </summary>
 [Mapper(UseDeepCloning = true)]
 public static partial class CategoriesMapper
