@@ -1,39 +1,39 @@
 [
   {
-    "Name": "Api \u002B Blazor Hybrid",
-    "Projects": [
-      {
-        "Name": "src\\Server\\Boilerplate.Server.csproj",
-        "Action": "Start",
-        "DebugTarget": "Boilerplate.Server-Swagger"
-      },
-      {
-        "Name": "src\\Client\\App\\Boilerplate.Client.App.csproj",
-        "Action": "Start",
-        "DebugTarget": "Windows Machine"
-      }
-    ]
-  },
-  {
     "Name": "Api \u002B Blazor Server",
     "Projects": [
       {
-        "Name": "src\\Server\\Boilerplate.Server.csproj",
+        "Name": "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Server-Swagger"
       },
       {
-        "Name": "src\\Client\\Web\\Boilerplate.Client.Web.csproj",
+        "Name": "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Client.Web"
       }
     ]
   },
   {
-    "Name": "Api \u002B Blazor Wasm",
+    "Name": "Api \u002B Blazor Hybrid",
     "Projects": [
       {
-        "Name": "src\\Server\\Boilerplate.Server.csproj",
+        "Name": "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
+        "Action": "Start",
+        "DebugTarget": "Boilerplate.Server-Swagger"
+      },
+      {
+        "Name": "src\\Client\\Boilerplate.Client.App\\Boilerplate.Client.App.csproj",
+        "Action": "Start",
+        "DebugTarget": "Windows Machine"
+      }
+    ]
+  },
+  {
+    "Name": "Api \u002B Blazor WebAssembly",
+    "Projects": [
+      {
+        "Name": "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Server-BlazorWebAssembly"
       }
@@ -43,12 +43,12 @@
     "Name": "Api \u002B Blazor Electron",
     "Projects": [
       {
-        "Name": "src\\Server\\Boilerplate.Server.csproj",
+        "Name": "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Server-Swagger"
       },
       {
-        "Name": "src\\Client\\Web\\Boilerplate.Client.Web.csproj",
+        "Name": "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Client.Web.Electron"
       }
@@ -58,7 +58,7 @@
     "Name": "Api",
     "Projects": [
       {
-        "Name": "src\\Server\\Boilerplate.Server.csproj",
+        "Name": "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
         "Action": "Start",
         "DebugTarget": "Boilerplate.Server-Swagger"
       }

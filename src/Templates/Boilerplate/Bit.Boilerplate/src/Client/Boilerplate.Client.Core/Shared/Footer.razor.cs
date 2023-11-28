@@ -23,13 +23,12 @@ public partial class Footer
 
     private async Task OnCultureChanged()
     {
-        if (WebAppDeploymentTypeDetector.Current.IsPrerenderEnabled() && BlazorModeDetector.Current.IsBlazorHybrid() is false)
-        {
-            var cultureCookie = $"c={SelectedCulture}|uic={SelectedCulture}";
-            await JSRuntime.SetCookie(".AspNetCore.Culture", cultureCookie, expiresIn: 30 * 24 * 3600, rememberMe: true);
-        }
+        await JSRuntime.SetCookie(".AspNetCore.Culture", $"c={SelectedCulture}|uic={SelectedCulture}", expiresIn: 30 * 24 * 3600, rememberMe: true);
 
         await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
+
+        // Relevant in the context of Blazor Hybrid, where the reloading of the web view doesn't result in the resetting of all static in memory data on the client side
+        CultureInfoManager.SetCurrentCulture(SelectedCulture);
 
         NavigationManager.Refresh(forceReload: true);
     }

@@ -102,7 +102,7 @@ public partial class App
         if (cultureHasNotBeenSet)
         {
             cultureHasNotBeenSet = false;
-            var preferredCultureCookie = Preferences.Get(".AspNetCore.Culture", null);
+            var preferredCultureCookie = Preferences.Get("Culture", null);
             CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
         }
 #endif
