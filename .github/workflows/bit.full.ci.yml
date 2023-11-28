@@ -29,9 +29,9 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
 
-    - name: Release build todo sample + Blazor server + sqlite database (without installing maui and wasm workloads but tizen?!)
+    - name: Release build todo sample + Blazor server + sqlite database
       run: |
-        dotnet workload install maui-tizen
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
         dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
         cd TodoBPBlazorServerSqlite/src/TodoBPBlazorServerSqlite.Server/
         dotnet tool restore
@@ -42,13 +42,11 @@ jobs:
 
     - name: Release build empty sample + Blazor hybrid + no database
       run: |
-        dotnet workload install maui-android
         dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
         dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Release build admin panel sample + Blazor webassembly + SqlServer database
       run: |
-        dotnet workload install wasm-tools wasm-experimental
         dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample admin --pipeline github
         dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:Configuration=Release
 
