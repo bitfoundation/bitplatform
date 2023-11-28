@@ -85,7 +85,7 @@ public partial class BitBadgeDemo
             Name = "Overlap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Overlaps the childcontent on top of the content."
+            Description = "Overlaps the badge on top of the child content."
         },
         new()
         {

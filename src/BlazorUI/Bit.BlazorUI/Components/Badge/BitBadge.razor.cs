@@ -86,7 +86,7 @@ public partial class BitBadge
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Overlaps the badge content on top of the child content.
+    /// Overlaps the badge on top of the child content.
     /// </summary>
     [Parameter] public bool Overlap { get; set; }
 
