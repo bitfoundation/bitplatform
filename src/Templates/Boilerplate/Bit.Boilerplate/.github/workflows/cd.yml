@@ -157,7 +157,7 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -204,10 +204,10 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Build apk
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -247,7 +247,7 @@ jobs:
        run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
+       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
@@ -312,7 +312,7 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2

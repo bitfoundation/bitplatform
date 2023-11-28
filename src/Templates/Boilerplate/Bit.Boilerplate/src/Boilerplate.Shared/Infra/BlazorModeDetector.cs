@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 namespace Boilerplate.Shared.Infra;
+using OS = OperatingSystem;
 
 /// <summary>
 /// https://bitplatform.dev/templates/hosting-models
@@ -20,7 +21,7 @@ public class BlazorModeDetector
 
     public virtual bool IsBlazorHybrid()
     {
-        return Mode == BlazorMode.BlazorHybrid;
+        return OS.IsAndroid() || OS.IsIOS() || OS.IsMacOS() || OS.IsMacCatalyst() || OS.IsWindows();
     }
 
     public virtual BlazorMode Mode
@@ -29,8 +30,6 @@ public class BlazorModeDetector
         {
 #if BlazorWebAssembly                  
             return BlazorMode.BlazorWebAssembly;
-#elif BlazorHybrid
-            return BlazorMode.BlazorHybrid;
 #else
             return BlazorMode.BlazorServer;
 #endif

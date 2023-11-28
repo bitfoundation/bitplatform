@@ -11,10 +11,6 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-#if !BlazorHybrid
-        throw new InvalidOperationException("Please switch to blazor hybrid as described in https://bitplatform.dev/templates/hosting-models");
-#endif
-
         var builder = MauiApp.CreateBuilder();
         var assembly = typeof(MainLayout).GetTypeInfo().Assembly;
 

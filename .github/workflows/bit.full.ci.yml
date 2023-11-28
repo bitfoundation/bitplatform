@@ -44,7 +44,7 @@ jobs:
       run: |
         dotnet workload install maui-android
         dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
-        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false
+        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Release build admin panel sample + Blazor webassembly + SqlServer database
       run: |
@@ -66,7 +66,7 @@ jobs:
       run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
     - name: Release build bit blazor ui demo - Blazor hybrid
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
       run: |

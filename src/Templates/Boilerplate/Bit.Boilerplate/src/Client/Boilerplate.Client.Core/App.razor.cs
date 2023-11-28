@@ -5,36 +5,37 @@ namespace Boilerplate.Client.Core;
 
 public partial class App
 {
-#if BlazorWebAssembly && !BlazorHybrid
+#if BlazorWebAssembly
     private List<System.Reflection.Assembly> lazyLoadedAssemblies = new();
     [AutoInject] private Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader assemblyLoader = default!;
     [AutoInject] private AuthenticationStateProvider authenticationStateProvider = default!;
 #endif
 
+    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
-#if BlazorHybrid && MultilingualEnabled
+#if MultilingualEnabled
     private bool cultureHasNotBeenSet = true;
 #endif
 
-#if BlazorHybrid
     protected override async Task OnInitializedAsync()
     {
-        await SetupBodyClasses();
-        await base.OnInitializedAsync();
+        if(BlazorModeDetector.Current.IsBlazorHybrid())
+        {
+            await SetupBodyClasses();
+            await base.OnInitializedAsync();
+        }
     }
-#else
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && BlazorModeDetector.Current.IsBlazorHybrid() is false)
         {
             await SetupBodyClasses();
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
-#endif
 
     private async Task SetupBodyClasses()
     {
@@ -94,16 +95,16 @@ public partial class App
         // Blazor Server & Pre Rendering use created cultures in UseRequestLocalization middleware
         // Android, windows and iOS have to set culture programmatically.
         // Browser's culture is handled in the Web project's Program.BlazorWebAssembly.cs
-#if BlazorHybrid && MultilingualEnabled
-        if (cultureHasNotBeenSet)
+#if MultilingualEnabled
+        if (cultureHasNotBeenSet && BlazorModeDetector.Current.IsBlazorHybrid())
         {
             cultureHasNotBeenSet = false;
-            var preferredCultureCookie = Preferences.Get("Culture", null);
-            CultureInfoManager.SetCurrentCulture(preferredCultureCookie);
+            var preferredCulture = await storageService.GetItem("Culture");
+            CultureInfoManager.SetCurrentCulture(preferredCulture);
         }
 #endif
 
-#if BlazorWebAssembly && !BlazorHybrid
+#if BlazorWebAssembly
         if ((args.Path is "dashboard") && lazyLoadedAssemblies.Any(asm => asm.GetName().Name == "Newtonsoft.Json") is false)
         {
             var isAuthenticated = (await authenticationStateProvider.GetAuthenticationStateAsync()).User?.Identity?.IsAuthenticated is true;

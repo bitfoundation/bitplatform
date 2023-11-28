@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <UseMauiEssentials Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">true</UseMauiEssentials>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -49,22 +48,6 @@
         <Using Include="Boilerplate.Client.Core.Services" />
 
         <Watch Remove="*.scss" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.3" />
-        <Using Include="Microsoft.Maui" />
-        <Using Include="Microsoft.Maui.Graphics" />
-        <Using Include="Microsoft.Maui.Accessibility" />
-        <Using Include="Microsoft.Maui.ApplicationModel" />
-        <Using Include="Microsoft.Maui.ApplicationModel.Communication" />
-        <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" />
-        <Using Include="Microsoft.Maui.Authentication" />
-        <Using Include="Microsoft.Maui.Devices" />
-        <Using Include="Microsoft.Maui.Devices.Sensors" />
-        <Using Include="Microsoft.Maui.Media" />
-        <Using Include="Microsoft.Maui.Networking" />
-        <Using Include="Microsoft.Maui.Storage" />
     </ItemGroup>
 
     <ItemGroup>

@@ -4,7 +4,7 @@
     <PropertyGroup>
         
         <BlazorMode>BlazorServer</BlazorMode>
-        <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid -->
+        <!-- You can use either BlazorServer, BlazorWebAssembly -->
         <!-- Learn more about blazor modes at https://bitplatform.dev/templates/hosting-models -->
 
         <WebAppDeploymentType>Spa</WebAppDeploymentType>
@@ -13,7 +13,6 @@
         
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>
-        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorHybrid' ">$(DefineConstants);BlazorHybrid</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Spa' ">$(DefineConstants);Spa</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'Pwa' ">$(DefineConstants);Pwa</DefineConstants>
         <DefineConstants Condition=" '$(WebAppDeploymentType)' == 'SpaPrerendered' ">$(DefineConstants);SpaPrerendered</DefineConstants>
