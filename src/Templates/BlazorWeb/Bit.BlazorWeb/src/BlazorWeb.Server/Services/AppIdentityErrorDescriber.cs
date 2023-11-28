@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace BlazorWeb.Client.Services;
+namespace BlazorWeb.Server.Services;
 
 public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
 {

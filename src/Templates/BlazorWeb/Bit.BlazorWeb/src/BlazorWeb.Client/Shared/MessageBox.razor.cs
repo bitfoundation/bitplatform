@@ -23,12 +23,12 @@ public partial class MessageBox : IDisposable
         tcs = null;
     }
 
-    Action? _dispose;
-    bool _disposed = false;
+    Action? dispose;
+    bool disposed = false;
 
     protected override Task OnInitAsync()
     {
-        _dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
+        dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
             (var message, string title, TaskCompletionSource<object?> tcs) = ((string message, string title, TaskCompletionSource<object?> mtcs))args!;
             await (this.tcs?.Task ?? Task.CompletedTask);
@@ -61,12 +61,12 @@ public partial class MessageBox : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed || disposing is false) return;
+        if (disposed || disposing is false) return;
 
         tcs?.TrySetResult(null);
         tcs = null;
-        _dispose?.Invoke();
+        dispose?.Invoke();
 
-        _disposed = true;
+        disposed = true;
     }
 }

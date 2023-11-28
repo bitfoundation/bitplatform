@@ -27,7 +27,7 @@ public partial class AddOrEditProductModal
 
             isOpen = true;
             product = productToShow;
-            selectedCategoyId = (productToShow.CategoryId ?? 0).ToString();
+            selectedCategoyId = (product.CategoryId ?? 0).ToString();
 
             StateHasChanged();
         });

@@ -7,7 +7,7 @@ public partial class MainLayout : IDisposable
     private bool disposed;
     private bool isMenuOpen;
     private bool isUserAuthenticated;
-    private ErrorBoundary ErrorBoundaryRef = default!;
+    private ErrorBoundary errorBoundaryRef = default!;
 
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 

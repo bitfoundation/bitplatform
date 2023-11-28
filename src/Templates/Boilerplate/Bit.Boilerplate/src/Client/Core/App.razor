@@ -5,12 +5,12 @@
                 OnNavigateAsync="@OnNavigateAsync">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData">
-                    <NotAuthorized>
-                        <NotAuthorizedComponent />
-                    </NotAuthorized>
                     <Authorizing>
                         <LoadingComponent Color="#FFF" />
                     </Authorizing>
+                    <NotAuthorized>
+                        <NotAuthorizedComponent />
+                    </NotAuthorized>
                 </AuthorizeRouteView>
             </Found>
             <NotFound>

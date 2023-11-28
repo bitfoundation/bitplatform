@@ -17,11 +17,11 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
             Localizer[nameof(AppStrings.UnknownException)];
 #endif
 
-        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
-
 #if DEBUG
         _ = Console.Out.WriteLineAsync(exceptionMessage);
         Debugger.Break();
 #endif
+
+        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }
 }

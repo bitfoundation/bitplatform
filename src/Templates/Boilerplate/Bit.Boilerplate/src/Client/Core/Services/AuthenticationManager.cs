@@ -7,9 +7,9 @@ namespace Boilerplate.Client.Core.Services;
 public partial class AuthenticationManager : AuthenticationStateProvider
 {
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
-    [AutoInject] private HttpClient httpClient = default;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private HttpClient httpClient = default;
 
     public async Task SignIn(SignInRequestDto signInModel)
     {

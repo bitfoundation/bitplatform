@@ -57,18 +57,17 @@
 
     <ItemGroup>
         <Using Include="Microsoft.AspNetCore.Mvc" />
+        <Using Include="Microsoft.Extensions.Options" />
+        <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
-        <Using Include="Boilerplate.Server.Api.Data" />
+        <Using Include="Microsoft.AspNetCore.OData.Query" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="Microsoft.AspNetCore.Identity" />
-        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
-        <Using Include="Microsoft.Extensions.Options" />
         <Using Include="Boilerplate.Server.Api.Data" />
         <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Microsoft.AspNetCore.OData.Query" />
     </ItemGroup>
 
     <ItemGroup>

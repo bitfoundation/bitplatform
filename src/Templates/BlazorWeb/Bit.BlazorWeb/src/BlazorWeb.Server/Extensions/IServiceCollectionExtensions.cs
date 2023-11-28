@@ -156,14 +156,14 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static void AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
-            return;
+            return services;
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
@@ -192,5 +192,7 @@ public static class IServiceCollectionExtensions
                     }
                 });
         }
+
+        return services;
     }
 }
