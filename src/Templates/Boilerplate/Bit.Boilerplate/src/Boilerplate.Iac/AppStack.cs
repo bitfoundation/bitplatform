@@ -20,16 +20,16 @@ using WebAppManagedServiceIdentityArgs = Pulumi.AzureNative.Web.Inputs.ManagedSe
 
 namespace Boilerplate.Iac;
 
-public class BpStack : Stack
+public class AppStack : Stack
 {
-    public BpStack()
+    public AppStack()
     {
         string stackName = Pulumi.Deployment.Instance.StackName;
 
         Config pulumiConfig = new();
 
-        var sqlDatabaseDbAdminId = pulumiConfig.Require("sql-server-bp-db-admin-id");
-        var sqlDatabaseDbAdminPassword = pulumiConfig.RequireSecret("sql-server-bp-db-admin-password");
+        var sqlDatabaseDbAdminId = pulumiConfig.Require("sql-server-app-db-admin-id");
+        var sqlDatabaseDbAdminPassword = pulumiConfig.RequireSecret("sql-server-app-db-admin-password");
 
         var defaultEmailFrom = pulumiConfig.Require("default-email-from");
         var emailServerHost = pulumiConfig.Require("email-server-host");
@@ -39,22 +39,22 @@ public class BpStack : Stack
 
         var identityCertificatePassword = pulumiConfig.RequireSecret("identity-certificate-password");
 
-        ResourceGroup resourceGroup = new($"bp-{stackName}", new ResourceGroupArgs
+        ResourceGroup resourceGroup = new($"app-{stackName}", new ResourceGroupArgs
         {
-            ResourceGroupName = $"bp-{stackName}"
-        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/bp-prod" });
+            ResourceGroupName = $"app-{stackName}"
+        }, options: new() { ImportId = $"/subscriptions/{GetClientConfig.InvokeAsync().GetAwaiter().GetResult().SubscriptionId}/resourceGroups/app-prod" });
 
-        Workspace appInsightsWorkspace = new($"insights-wkspc-bp-{stackName}", new()
+        Workspace appInsightsWorkspace = new($"insights-wkspc-app-{stackName}", new()
         {
-            WorkspaceName = $"insights-wkspc-bp-{stackName}",
+            WorkspaceName = $"insights-wkspc-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             RetentionInDays = 30
         });
 
-        AppInsights appInsights = new($"app-insights-bp-{stackName}", new()
+        AppInsights appInsights = new($"app-insights-app-{stackName}", new()
         {
-            ResourceName = $"app-insights-bp-{stackName}",
+            ResourceName = $"app-insights-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ApplicationType = AppInsightsWebApplicationType.Web,
@@ -68,18 +68,18 @@ public class BpStack : Stack
             }).Apply(workspace => workspace.Id)
         });
 
-        SqlServer sqlServer = new($"sql-server-bp-{stackName}", new()
+        SqlServer sqlServer = new($"sql-server-app-{stackName}", new()
         {
-            ServerName = $"sql-server-bp-{stackName}",
+            ServerName = $"sql-server-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             AdministratorLogin = sqlDatabaseDbAdminId,
             AdministratorLoginPassword = sqlDatabaseDbAdminPassword
         });
 
-        SqlDatabase sqlDatabase = new($"sql-database-bp-{stackName}", new()
+        SqlDatabase sqlDatabase = new($"sql-database-app-{stackName}", new()
         {
-            DatabaseName = $"sql-database-bp-{stackName}",
+            DatabaseName = $"sql-database-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ServerName = sqlServer.Name,
@@ -91,9 +91,9 @@ public class BpStack : Stack
             }
         });
 
-        AppServicePlan appServicePlan = new($"app-plan-bp-{stackName}", new()
+        AppServicePlan appServicePlan = new($"app-plan-app-{stackName}", new()
         {
-            Name = $"app-plan-bp-{stackName}",
+            Name = $"app-plan-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             Kind = "Linux",
@@ -108,14 +108,14 @@ public class BpStack : Stack
             }
         });
 
-        string vaultName = $"vault-bp-{stackName}";
+        string vaultName = $"vault-app-{stackName}";
         string sqlDatabaseConnectionStringSecretName = $"sql-connection-secret";
         string emailServerPasswordSecretName = "email-server-password-secret";
         string identityCertificatePasswordSecretName = "identity-certificate-password-secret";
 
-        WebApp webApp = new($"app-service-bp-{stackName}", new()
+        WebApp webApp = new($"app-service-app-{stackName}", new()
         {
-            Name = $"app-service-bp-{stackName}",
+            Name = $"app-service-app-{stackName}",
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             ServerFarmId = appServicePlan.Id,
@@ -201,7 +201,7 @@ public class BpStack : Stack
             return string.Empty;
         });
 
-        Vault vault = new Vault($"vault-bp-{stackName}", new()
+        Vault vault = new Vault($"vault-app-{stackName}", new()
         {
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,

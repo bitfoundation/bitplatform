@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class LocalStorageService : IStorageService
+public partial class BrowserStorageService : IStorageService
 {
     [AutoInject] private IJSRuntime jsRuntime;
 

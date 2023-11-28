@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Maui.Services;
 
-public class AppStorageService : IStorageService
+public class MauiStorageService : IStorageService
 {
     private readonly Dictionary<string, string?> tempStorage = [];
 

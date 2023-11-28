@@ -28,7 +28,7 @@ public static class Services
 
         services.AddSharedServices();
 
-        services.AddExceptionHandler<ApiExceptionHandler>();
+        services.AddExceptionHandler<ServerExceptionHandler>();
 
 #if BlazorWebAssembly
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();

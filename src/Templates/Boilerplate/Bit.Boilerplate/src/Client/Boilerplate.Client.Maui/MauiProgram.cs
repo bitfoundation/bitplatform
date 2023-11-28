@@ -40,7 +40,7 @@ public static class MauiProgram
             };
             return httpClient;
         });
-        services.AddTransient<IStorageService, AppStorageService>();
+        services.AddTransient<IStorageService, MauiStorageService>();
         services.AddSharedServices();
         services.AddClientSharedServices();
         services.AddClientAppServices();

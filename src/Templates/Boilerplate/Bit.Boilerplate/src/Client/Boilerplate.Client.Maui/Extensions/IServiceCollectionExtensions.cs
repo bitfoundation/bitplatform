@@ -21,8 +21,8 @@ public static class IServiceCollectionExtensions
 #endif
 
         services.AddTransient<MainPage>();
-        services.AddSingleton<IBitDeviceCoordinator, AppDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, AppExceptionHandler>();
+        services.AddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.AddTransient<IExceptionHandler, MauiExceptionHandler>();
 
         return services;
     }

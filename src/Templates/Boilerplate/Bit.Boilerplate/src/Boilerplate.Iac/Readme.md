@@ -25,26 +25,26 @@ az provider register --namespace 'Microsoft.KeyVault'
 
 ```
 
-2- Create bp-prod resource group
+2- Create app-prod resource group
 
 ```
-az group create --name bp-prod --location eastus
+az group create --name app-prod --location eastus
 ```
 
 Notes:
-* `bp` is an abbreviation for Boilerplate, use the acronym of your choice and replace bp with that (for example abc) using exact match - case sensitive find and replace in this file and AdStack.cs.
+* `app` is an abbreviation for Boilerplate, use the acronym of your choice and replace app with that (for example abc) using exact match - case sensitive find and replace in this file and AdStack.cs.
 * You can use any location supported by azure cloud (run `az account list-locations -o table` to see full list of locations)
 
 3- Create [service principals](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals) for prod using followings:
 
 ```
-az bp sp create-for-rbac -n "bp-prod" --role Contributor --scopes /subscriptions/{subscriptionId}/resourceGroups/bp-prod
+az app sp create-for-rbac -n "app-prod" --role Contributor --scopes /subscriptions/{subscriptionId}/resourceGroups/app-prod
 ```
 
 Notes:
 
 * Replace `{subscriptionId}` with [your own subscription id](https://docs.microsoft.com/en-us/azure/media-services/latest/setup-azure-subscription-how-to)
-* Running `az bp sp` will return a json like response that contains `appId`l, `password` and `tenant`. Store them somewhere safe.
+* Running `az app sp` will return a json like response that contains `appId`l, `password` and `tenant`. Store them somewhere safe.
 
 4- Create the stacks folder first, then create `prod` folder in the `stacks` folder.
 
@@ -86,8 +86,8 @@ pulumi config set azure-native:tenantId
 pulumi config set azure-native:subscriptionId
 
 # Provide SQL server's admin user/pass
-pulumi config set Boilerplate.Iac:sql-server-bp-db-admin-id
-pulumi config set Boilerplate.Iac:sql-server-bp-db-admin-password --secret
+pulumi config set Boilerplate.Iac:sql-server-app-db-admin-id
+pulumi config set Boilerplate.Iac:sql-server-app-db-admin-password --secret
 
 # Provide SMTP server's host, port, user, pass and default email sender.
 pulumi config set Boilerplate.Iac:default-email-from

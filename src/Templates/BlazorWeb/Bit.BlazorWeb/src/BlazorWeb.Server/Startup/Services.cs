@@ -18,7 +18,7 @@ public static class Services
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        services.AddExceptionHandler<ApiExceptionHandler>();
+        services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddBlazor(configuration);
 

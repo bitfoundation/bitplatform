@@ -14,7 +14,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
         services.TryAddTransient<IExceptionHandler, ExceptionHandler>();
         services.TryAddScoped<IPubSubService, PubSubService>();
-        services.TryAddTransient<IStorageService, LocalStorageService>();
+        services.TryAddTransient<IStorageService, BrowserStorageService>();
         services.AddBitBlazorUIServices();
 
         services.TryAddTransient<RequestHeadersDelegationHandler>();

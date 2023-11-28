@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace BlazorWeb.Server.Services;
 
-public partial class ApiExceptionHandler : IExceptionHandler
+public partial class ServerExceptionHandler : IExceptionHandler
 {
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;

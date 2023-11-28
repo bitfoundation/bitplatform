@@ -4,7 +4,7 @@ namespace Boilerplate.Client.Maui.Services;
 /// <summary>
 /// More info at <see cref="IBitDeviceCoordinator"/>
 /// </summary>
-public class AppDeviceCoordinator : IBitDeviceCoordinator
+public class MauiDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()
     {

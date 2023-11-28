@@ -13,7 +13,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.TryAddTransient<IStorageService, LocalStorageService>();
+        services.TryAddTransient<IStorageService, BrowserStorageService>();
         services.AddBitBlazorUIServices();
 
         services.TryAddTransient<RequestHeadersDelegationHandler>();
