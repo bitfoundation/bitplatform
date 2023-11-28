@@ -112,7 +112,6 @@ class BitBswup {
             }
 
             if (e.data === 'CLIENTS_CLAIMED') {
-                console.log('starting blazor...');
                 Blazor.start().then(() => {
                     blazorStartResolver(undefined);
                     e.source.postMessage('BLAZOR_STARTED');
